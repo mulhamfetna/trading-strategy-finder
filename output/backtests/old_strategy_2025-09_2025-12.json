@@ -1,0 +1,53 @@
+{
+  "metrics": {
+    "gross_profit": 830.7839999999997,
+    "total_fees": 20.0,
+    "net_profit": 810.7839999999997,
+    "total_profit": 810.7839999999997,
+    "profit_factor": 3.6661054625330447,
+    "win_rate": 50.0,
+    "sharpe_ratio": 0.5713770260747002,
+    "max_drawdown": 2.7360409799753356,
+    "total_trades": 2,
+    "avg_profit": 1114.8919999999998,
+    "avg_loss": -304.1080000000002,
+    "final_capital": 10810.784,
+    "expected_value": 405.3919999999998,
+    "max_consecutive_losses": 1
+  },
+  "trades": [
+    {
+      "entry_idx": 219,
+      "exit_idx": 669,
+      "direction": "long",
+      "entry_price": 23435.25,
+      "exit_price": 23997.696,
+      "profit_pct": 2.4,
+      "profit_dollars": 1114.8919999999998,
+      "capital_after": 11114.892,
+      "exit_reason": "TP",
+      "fees_paid": 10.0
+    },
+    {
+      "entry_idx": 1123,
+      "exit_idx": 1208,
+      "direction": "short",
+      "entry_price": 24509.0,
+      "exit_price": 24656.054,
+      "profit_pct": -0.6000000000000003,
+      "profit_dollars": -304.1080000000002,
+      "capital_after": 10810.784,
+      "exit_reason": "SL",
+      "fees_paid": 10.0
+    }
+  ],
+  "coverage": {
+    "requested_start": "2025-09-01",
+    "requested_end": "2025-12-31",
+    "actual_start": "2025-09-01",
+    "actual_end": "2025-09-26",
+    "rows": 26994,
+    "has_gap": true
+  },
+  "final_capital": 10810.784
+}

@@ -1,0 +1,28 @@
+{
+  "metrics": {
+    "gross_profit": 0,
+    "total_fees": 0,
+    "net_profit": 0,
+    "profit_factor": 0,
+    "win_rate": 0,
+    "sharpe_ratio": 0,
+    "max_drawdown": 0,
+    "total_trades": 0,
+    "avg_profit": 0,
+    "avg_loss": 0,
+    "final_capital": 10000.0,
+    "expected_value": 0,
+    "max_consecutive_losses": 0,
+    "total_profit": 0
+  },
+  "trades": [],
+  "coverage": {
+    "requested_start": "2026-01-01",
+    "requested_end": "2026-06-30",
+    "actual_start": null,
+    "actual_end": null,
+    "rows": 0,
+    "has_gap": true
+  },
+  "final_capital": 10000.0
+}

@@ -17,6 +17,7 @@ from src.signals.base_signals import generate_scalping_signals
 from src.signals.ml_filter import train_ml_filter, apply_ml_filter, add_ml_features
 from src.backtest.engine import run_backtest
 from src.backtest.metrics import calculate_metrics
+from src.main.backtest_runner import build_dashboard_payload_from_splits, resolve_exit_price_and_reason
 
 
 def get_indicator_at_idx(df, idx):
@@ -353,18 +354,34 @@ def run_backtest_15min(
             entry_idx = i
         
         if in_pos != 0:
-            pnl_pct = (closes[i] - entry_price) / entry_price * 100 if in_pos == 1 else (entry_price - closes[i]) / entry_price * 100
-            
-            if pnl_pct <= -stop_loss or pnl_pct >= take_profit:
-                exit_reason = 'SL' if pnl_pct <= -stop_loss else 'TP'
-                points_moved = (closes[i] - entry_price) if in_pos == 1 else (entry_price - closes[i])
+            if df is not None and 'High' in df.columns and 'Low' in df.columns:
+                high_i = float(df.iloc[i]['High'])
+                low_i = float(df.iloc[i]['Low'])
+            else:
+                high_i = float(closes[i])
+                low_i = float(closes[i])
+
+            close_i = float(closes[i])
+            exit_price, exit_reason = resolve_exit_price_and_reason(
+                direction=in_pos,
+                entry_price=entry_price,
+                high=high_i,
+                low=low_i,
+                close=close_i,
+                stop_loss=stop_loss,
+                take_profit=take_profit,
+            )
+
+            if exit_reason is not None:
+                pnl_pct = (exit_price - entry_price) / entry_price * 100 if in_pos == 1 else (entry_price - exit_price) / entry_price * 100
+                points_moved = (exit_price - entry_price) if in_pos == 1 else (entry_price - exit_price)
                 pnl_dollars = (points_moved * point_value) - fee_per_trade
                 trades.append({
                     'entry_idx': entry_idx,
                     'exit_idx': i,
                     'direction': 'long' if in_pos == 1 else 'short',
                     'entry_price': entry_price,
-                    'exit_price': closes[i],
+                    'exit_price': exit_price,
                     'profit_pct': pnl_pct,
                     'profit_dollars': pnl_dollars,
                     'capital_after': capital + pnl_dollars,
@@ -396,86 +413,21 @@ def create_ultimate_dashboard():
     print(f"Test (15min): {len(test_15)} candles")
     
     print("\nCalculating indicators...")
-    train_prep = prepare_data(train_15)
-    test_prep = prepare_data(test_15)
-    
-    print("Training ML model...")
-    ml_data = train_ml(train_prep, rsi_thresh=25)
-    
-    print("Applying ML filter to test data...")
-    signals = apply_ml_filter(test_prep, ml_data)
-    signals = apply_rsi_entry_filters(signals, test_prep['rsi_5'].values, oversold=25, overbought=75)
-    
-    print("\nRunning backtest...")
-    trades, final_capital = run_backtest_15min(
-        signals, 
-        test_15['Close'].values, 
-        test_prep,
-        initial_capital=10000, 
-        stop_loss=0.6, 
-        take_profit=2.4, 
-        fee_per_trade=10.0
-    )
-    metrics = calculate_metrics(trades, 10000)
-    
-    print(f"\nGross Profit: ${metrics['gross_profit']:.2f}")
-    print(f"Net Profit: ${metrics['net_profit']:.2f}")
-    print(f"Total Fees: ${metrics['total_fees']:.2f}")
-    print(f"Win Rate: {metrics['win_rate']:.1f}%")
-    print(f"Profit Factor: {metrics['profit_factor']:.2f}")
-    
-    print("\nAnalyzing trades...")
-    trade_analysis = []
-    for i, trade in enumerate(trades, 1):
-        analysis = analyze_trade(test_prep, trade, i)
-        trade_analysis.append(analysis)
-    
-    logs = generate_logs(trades, test_prep, metrics)
-    insights = generate_insights(trades, metrics)
-    chart_data = prepare_chart_data(test_prep, trades)
-    
-    winning_trades = [t for t in trade_analysis if t['is_winner']]
-    losing_trades = [t for t in trade_analysis if not t['is_winner']]
-    
-    params = {
-        'timeframe': '15min',
-        'rsi_period': 5, 
-        'rsi_oversold': 25,
-        'rsi_overbought': 75,
-        'ema_fast': 5, 
-        'ema_slow': 15, 
-        'volume_threshold': 1.0,
-        'stop_loss': 0.6, 
-        'take_profit': 2.4,
-        'ml_filter': True
-    }
-    
-    # Save JSON data for the HTML
-    dashboard_data = {
-        'metrics': metrics,
-        'trades': trade_analysis,
-        'logs': logs,
-        'insights': insights,
-        'chart_data': chart_data,
-        'params': params,
-        'winning_count': len(winning_trades),
-        'losing_count': len(losing_trades),
-        'final_capital': final_capital,
-        'total_return': (final_capital - 10000) / 100
-    }
-    
-    with open('docs/dashboard_data.json', 'w') as f:
-        json.dump(dashboard_data, f, default=str)
-    print("Data saved to docs/dashboard_data.json")
-    
-    # Generate HTML
-    generate_html(dashboard_data)
+    dashboard_data = build_dashboard_payload_from_splits(train_15, test_15)
+
+    save_dashboard_payload(dashboard_data, output_dir='output/dashboard', basename='test')
+    print("Data saved to output/dashboard/dashboard_data_test.json")
     
     print("\n" + "=" * 70)
     print("DASHBOARD GENERATION COMPLETE!")
     print("=" * 70)
-    print("\nOpen docs/ultimate_trading_dashboard.html in your browser")
+    print("\nOpen output/dashboard/ultimate_trading_dashboard_test.html in your browser")
     print("=" * 70)
+
+
+def save_dashboard_payload(dashboard_data, output_dir="output/dashboard", basename="test"):
+    from src.main.backtest_runner import save_dashboard_payload as _save_dashboard_payload
+    return _save_dashboard_payload(dashboard_data, output_dir=output_dir, basename=basename)
 
 
 def generate_html(data):

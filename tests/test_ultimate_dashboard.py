@@ -89,5 +89,93 @@ def test_run_backtest_15min_uses_nq_point_value_for_pnl():
 
     assert len(trades) == 1
     assert trades[0]['direction'] == 'long'
-    assert trades[0]['profit_dollars'] == 990.0
-    assert final_capital == 10990.0
+    assert trades[0]['profit_dollars'] == 950.0
+    assert final_capital == 10950.0
+
+
+def test_run_backtest_15min_uses_conservative_sl_when_tp_and_sl_hit_same_candle():
+    import pandas as pd
+
+    signals = np.array([1, 0])
+    closes = np.array([100.0, 101.0])
+    df = pd.DataFrame(
+        {
+            'High': [100.0, 103.0],
+            'Low': [100.0, 99.0],
+            'Close': closes,
+        }
+    )
+
+    trades, _ = run_backtest_15min(
+        signals=signals,
+        closes=closes,
+        df=df,
+        initial_capital=10000.0,
+        stop_loss=0.6,
+        take_profit=2.4,
+        fee_per_trade=10.0,
+        point_value=2.0
+    )
+
+    assert len(trades) == 1
+    assert trades[0]['exit_reason'] == 'SL'
+
+
+def test_create_ultimate_dashboard_writes_output_dashboard_files(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    os.makedirs('output/dashboard', exist_ok=True)
+    from ultimate_dashboard import save_dashboard_payload
+
+    payload = {
+        'metrics': {
+            'gross_profit': 0.0,
+            'total_fees': 0.0,
+            'net_profit': 0.0,
+            'total_profit': 0.0,
+            'profit_factor': 0.0,
+            'win_rate': 0.0,
+            'sharpe_ratio': 0.0,
+            'max_drawdown': 0.0,
+            'total_trades': 0,
+            'avg_profit': 0.0,
+            'avg_loss': 0.0,
+            'final_capital': 10000.0,
+            'expected_value': 0.0,
+            'max_consecutive_losses': 0
+        },
+        'trades': [],
+        'logs': [],
+        'insights': {'key_findings': [], 'recommendations': []},
+        'chart_data': {
+            'dates': [],
+            'opens': [],
+            'highs': [],
+            'lows': [],
+            'closes': [],
+            'volumes': [],
+            'ema_5': [],
+            'ema_15': [],
+            'rsi': [],
+            'volume_spike': [],
+            'trade_markers': []
+        },
+        'params': {
+            'timeframe': '15min',
+            'rsi_period': 5,
+            'rsi_oversold': 25,
+            'rsi_overbought': 75,
+            'ema_fast': 5,
+            'ema_slow': 15,
+            'volume_threshold': 1.0,
+            'stop_loss': 0.6,
+            'take_profit': 2.4,
+            'ml_filter': True
+        },
+        'final_capital': 10000,
+        'total_return': 0
+    }
+
+    save_dashboard_payload(payload, output_dir='output/dashboard')
+
+    assert (tmp_path / 'output' / 'dashboard' / 'dashboard_data_test.json').exists()
+    assert (tmp_path / 'output' / 'dashboard' / 'ultimate_trading_dashboard_test.html').exists()

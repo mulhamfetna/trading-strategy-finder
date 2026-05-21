@@ -52,3 +52,58 @@ def test_calculate_all_metrics():
     assert 'max_drawdown' in metrics
     assert metrics['total_profit'] == 300
     assert abs(metrics['win_rate'] - 66.67) < 1
+
+
+def test_run_period_backtest_reports_requested_vs_actual_coverage():
+    import pandas as pd
+    from src.main.backtest_runner import compute_coverage_metadata
+
+    df = pd.DataFrame(
+        {
+            'Date': pd.to_datetime(['2025-09-05', '2025-09-06']),
+            'Open': [1, 1],
+            'High': [1, 1],
+            'Low': [1, 1],
+            'Close': [1, 1],
+            'Volume': [1, 1],
+        }
+    )
+
+    coverage = compute_coverage_metadata(
+        df=df,
+        requested_start='2025-09-01',
+        requested_end='2025-12-31',
+    )
+
+    assert coverage['requested_start'] == '2025-09-01'
+    assert coverage['requested_end'] == '2025-12-31'
+    assert coverage['actual_start'] == '2025-09-05'
+    assert coverage['actual_end'] == '2025-09-06'
+    assert coverage['has_gap'] is True
+
+
+def test_run_period_backtest_returns_metrics_trades_and_coverage():
+    import pandas as pd
+    from src.main.backtest_runner import run_period_backtest
+
+    df = pd.DataFrame(
+        {
+            'Date': pd.to_datetime(['2025-09-05', '2025-09-06', '2025-09-07']),
+            'Time': ['10:00:00', '10:15:00', '10:30:00'],
+            'Open': [100, 100, 100],
+            'High': [101, 101, 101],
+            'Low': [99, 99, 99],
+            'Close': [100, 100.5, 100.2],
+            'Volume': [10, 10, 10],
+        }
+    )
+
+    result = run_period_backtest(
+        df=df,
+        requested_start='2025-09-01',
+        requested_end='2025-12-31'
+    )
+
+    assert 'metrics' in result
+    assert 'trades' in result
+    assert 'coverage' in result
