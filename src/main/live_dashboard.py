@@ -24,6 +24,13 @@ from src.backtest.engine import run_backtest
 from src.backtest.metrics import calculate_metrics
 
 
+def get_output_paths():
+    output_dir = os.path.join("output", "dashboard")
+    live_dashboard_path = os.path.join(output_dir, "live_trading_dashboard.html")
+    equity_curve_path = os.path.join(output_dir, "equity_curve_dashboard.html")
+    return live_dashboard_path, equity_curve_path
+
+
 def create_live_simulation():
     """Run live trading simulation."""
     
@@ -336,12 +343,15 @@ def create_html_dashboard():
         showlegend=False
     )
     
+    live_dashboard_path, equity_curve_path = get_output_paths()
+    os.makedirs(os.path.dirname(live_dashboard_path), exist_ok=True)
+
     print("\nSaving HTML dashboards...")
-    fig.write_html('docs/live_trading_dashboard.html', auto_open=False)
-    fig2.write_html('docs/equity_curve_dashboard.html', auto_open=False)
-    
-    print("Dashboard saved: docs/live_trading_dashboard.html")
-    print("Equity curve saved: docs/equity_curve_dashboard.html")
+    fig.write_html(live_dashboard_path, auto_open=False)
+    fig2.write_html(equity_curve_path, auto_open=False)
+
+    print(f"Dashboard saved: {live_dashboard_path}")
+    print(f"Equity curve saved: {equity_curve_path}")
     
     return metrics
 
@@ -366,9 +376,10 @@ def main():
     print(f"  Total Strategies Tested: 3")
     print(f"  Best Strategy: SCALPING")
     print(f"  Total Trades: {sum(len(r['trades']) for r in results.values())}")
+    live_dashboard_path, equity_curve_path = get_output_paths()
     print(f"\nOutput Files:")
-    print("  - docs/live_trading_dashboard.html")
-    print("  - docs/equity_curve_dashboard.html")
+    print(f"  - {live_dashboard_path}")
+    print(f"  - {equity_curve_path}")
     print("\nOpen HTML files in browser to see visual dashboard!")
     print("="*60 + "\n")
 

@@ -13,8 +13,12 @@ def _read_dashboard_html(path: str) -> str:
 
 
 app = Dash(__name__)
-live_html = _read_dashboard_html(Path.cwd() / "docs" / "live_trading_dashboard.html")
-equity_html = _read_dashboard_html(Path.cwd() / "docs" / "equity_curve_dashboard.html")
+live_output_path = Path.cwd() / "output" / "dashboard" / "live_trading_dashboard.html"
+equity_output_path = Path.cwd() / "output" / "dashboard" / "equity_curve_dashboard.html"
+live_fallback_path = Path.cwd() / "docs" / "live_trading_dashboard.html"
+equity_fallback_path = Path.cwd() / "docs" / "equity_curve_dashboard.html"
+live_html = _read_dashboard_html(live_output_path if live_output_path.exists() else live_fallback_path)
+equity_html = _read_dashboard_html(equity_output_path if equity_output_path.exists() else equity_fallback_path)
 
 app.layout = html.Div(
     [
