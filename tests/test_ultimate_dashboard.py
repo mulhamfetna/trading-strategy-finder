@@ -179,3 +179,122 @@ def test_create_ultimate_dashboard_writes_output_dashboard_files(tmp_path, monke
 
     assert (tmp_path / 'output' / 'dashboard' / 'dashboard_data_test.json').exists()
     assert (tmp_path / 'output' / 'dashboard' / 'ultimate_trading_dashboard_test.html').exists()
+
+
+def test_generate_html_writes_rendered_output(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    os.makedirs('output/dashboard', exist_ok=True)
+
+    data = {
+        'metrics': {
+            'gross_profit': 0.0,
+            'total_fees': 0.0,
+            'net_profit': 0.0,
+            'total_profit': 0.0,
+            'profit_factor': 0.0,
+            'win_rate': 0.0,
+            'sharpe_ratio': 0.0,
+            'max_drawdown': 0.0,
+            'total_trades': 0,
+            'avg_profit': 0.0,
+            'avg_loss': 0.0,
+            'final_capital': 10000.0,
+            'expected_value': 0.0,
+            'max_consecutive_losses': 0
+        },
+        'trades': [],
+        'logs': [],
+        'insights': {'key_findings': [], 'recommendations': []},
+        'chart_data': {
+            'dates': ['2025-09-01 09:30:00'],
+            'opens': [100.0],
+            'highs': [101.0],
+            'lows': [99.5],
+            'closes': [100.5],
+            'volumes': [1000],
+            'ema_5': [100.25],
+            'ema_15': [100.1],
+            'rsi': [50.0],
+            'volume_spike': [False],
+            'trade_markers': []
+        },
+        'params': {
+            'timeframe': '15min',
+            'rsi_period': 5,
+            'rsi_oversold': 25,
+            'rsi_overbought': 75,
+            'ema_fast': 5,
+            'ema_slow': 15,
+            'volume_threshold': 1.0,
+            'stop_loss': 0.6,
+            'take_profit': 2.4,
+            'ml_filter': True
+        },
+        'final_capital': 10000.0,
+        'total_return': 0.0
+    }
+
+    html = generate_html(data)
+
+    assert '<html' in html.lower()
+    assert (tmp_path / 'output' / 'dashboard' / 'ultimate_trading_dashboard_test.html').exists()
+
+
+def test_generate_html_uses_candlestick_chart(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    os.makedirs('output/dashboard', exist_ok=True)
+
+    data = {
+        'metrics': {
+            'gross_profit': 0.0,
+            'total_fees': 0.0,
+            'net_profit': 0.0,
+            'total_profit': 0.0,
+            'profit_factor': 0.0,
+            'win_rate': 0.0,
+            'sharpe_ratio': 0.0,
+            'max_drawdown': 0.0,
+            'total_trades': 0,
+            'avg_profit': 0.0,
+            'avg_loss': 0.0,
+            'final_capital': 10000.0,
+            'expected_value': 0.0,
+            'max_consecutive_losses': 0
+        },
+        'trades': [],
+        'logs': [],
+        'insights': {'key_findings': [], 'recommendations': []},
+        'chart_data': {
+            'dates': ['2025-09-01 09:30:00'],
+            'opens': [100.0],
+            'highs': [101.0],
+            'lows': [99.5],
+            'closes': [100.5],
+            'volumes': [1000],
+            'ema_5': [100.25],
+            'ema_15': [100.1],
+            'rsi': [50.0],
+            'volume_spike': [False],
+            'trade_markers': []
+        },
+        'params': {
+            'timeframe': '15min',
+            'rsi_period': 5,
+            'rsi_oversold': 25,
+            'rsi_overbought': 75,
+            'ema_fast': 5,
+            'ema_slow': 15,
+            'volume_threshold': 1.0,
+            'stop_loss': 0.6,
+            'take_profit': 2.4,
+            'ml_filter': True
+        },
+        'final_capital': 10000.0,
+        'total_return': 0.0
+    }
+
+    html = generate_html(data)
+
+    assert 'candlestick' in html
+    assert 'Open' in html
+    assert 'Close' in html

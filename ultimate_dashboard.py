@@ -7,6 +7,7 @@ import sys
 import os
 import json
 from datetime import datetime
+from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(__file__))
 
@@ -18,6 +19,7 @@ from src.signals.ml_filter import train_ml_filter, apply_ml_filter, add_ml_featu
 from src.backtest.engine import run_backtest
 from src.backtest.metrics import calculate_metrics
 from src.main.backtest_runner import build_dashboard_payload_from_splits, resolve_exit_price_and_reason
+from src.dashboard.template_renderer import render_template
 
 
 def get_indicator_at_idx(df, idx):
@@ -536,6 +538,30 @@ def generate_html(data):
         recommendations_html += f'<div class="insight-item"><div class="recommendation">{rec}</div></div>'
 
     chart_json = json.dumps(chart_data, default=str)
+    latest_open = chart_data['opens'][-1] if chart_data['opens'] else 0
+    latest_close = chart_data['closes'][-1] if chart_data['closes'] else 0
+    latest_high = chart_data['highs'][-1] if chart_data['highs'] else 0
+    latest_low = chart_data['lows'][-1] if chart_data['lows'] else 0
+    ohlc_summary_html = f'''
+                <div class="metrics-grid" style="margin-bottom: 15px;">
+                    <div class="metric-box">
+                        <div class="metric-value">${latest_open:.2f}</div>
+                        <div class="metric-label">Latest Open</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-value">${latest_close:.2f}</div>
+                        <div class="metric-label">Latest Close</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-value">${latest_high:.2f}</div>
+                        <div class="metric-label">Latest High</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-value">${latest_low:.2f}</div>
+                        <div class="metric-label">Latest Low</div>
+                    </div>
+                </div>
+'''
 
     html = f'''<!DOCTYPE html>
 <html lang="en">
@@ -861,6 +887,7 @@ def generate_html(data):
     <div class="main-container">
         <!-- Chart Section -->
         <div class="chart-section">
+{ohlc_summary_html}
             <div class="chart-container">
                 <div id="main-chart"></div>
             </div>
@@ -1081,11 +1108,14 @@ def generate_html(data):
         function createChart() {{
             const trace1 = {{
                 x: chartData.dates,
-                y: chartData.closes,
-                type: 'scatter',
-                mode: 'lines',
-                name: 'Close Price',
-                line: {{ color: '#2962ff', width: 1 }},
+                open: chartData.opens,
+                high: chartData.highs,
+                low: chartData.lows,
+                close: chartData.closes,
+                type: 'candlestick',
+                name: 'OHLC',
+                increasing: {{ line: {{ color: '#00c853' }}, fillcolor: '#00c853' }},
+                decreasing: {{ line: {{ color: '#ff5252' }}, fillcolor: '#ff5252' }},
                 xaxis: 'x',
                 yaxis: 'y'
             }};
@@ -1242,10 +1272,20 @@ def generate_html(data):
 </html>
 '''
     
+    template_path = Path(__file__).resolve().parent / 'templates' / 'ultimate_dashboard.html.tpl'
+    rendered_html = render_template(template_path, {'BODY': html})
+
+    os.makedirs('docs', exist_ok=True)
+    os.makedirs('output/dashboard', exist_ok=True)
+
     with open('docs/ultimate_trading_dashboard.html', 'w') as f:
-        f.write(html)
-    
-    print("Ultimate dashboard saved to docs/ultimate_trading_dashboard.html")
+        f.write(rendered_html)
+
+    with open('output/dashboard/ultimate_trading_dashboard_test.html', 'w') as f:
+        f.write(rendered_html)
+
+    print("Ultimate dashboard saved to output/dashboard/ultimate_trading_dashboard_test.html")
+    return rendered_html
 
 
 if __name__ == '__main__':

@@ -5,6 +5,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from src.dashboard.visualizer import create_trade_chart, create_equity_curve, calculate_trade_statistics
 from src.dashboard.report import generate_comparison_report, generate_error_analysis, format_metrics_for_display
+from src.dashboard.template_renderer import render_template
 
 
 def test_create_trade_chart():
@@ -55,3 +56,23 @@ def test_format_metrics_for_display():
     assert '$1500.50' in formatted['total_profit']
     assert '66.67%' in formatted['win_rate']
     assert '5.25%' in formatted['max_drawdown']
+
+
+def test_render_template_replaces_placeholders(tmp_path):
+    template_path = tmp_path / 'dashboard.tpl'
+    template_path.write_text('Hello {{NAME}} from {{CITY}}', encoding='utf-8')
+
+    rendered = render_template(template_path, {'NAME': 'NQ', 'CITY': 'Chicago'})
+
+    assert rendered == 'Hello NQ from Chicago'
+
+
+def test_render_template_raises_on_missing_placeholder(tmp_path):
+    template_path = tmp_path / 'dashboard.tpl'
+    template_path.write_text('Hello {{NAME}}', encoding='utf-8')
+
+    try:
+        render_template(template_path, {})
+        assert False, 'Expected KeyError for unresolved placeholder'
+    except KeyError:
+        assert True
