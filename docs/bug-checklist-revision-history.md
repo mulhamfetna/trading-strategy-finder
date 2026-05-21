@@ -88,6 +88,21 @@ Add newly discovered bugs here with unique IDs.
 
 ---
 
+## D) Fixes Needed Report Log (For Development Team)
+
+Append one report summary per revision cycle.
+
+### Revision 2026-05-21 (from latest deep re-review)
+
+| Fix ID | Severity | Segment | Fix Needed | Validation |
+|---|---|---|---|---|
+| FIX-2026-05-21-01 | High | Metrics | Clarify/rename gross metric semantics (`gross_wins` vs pre-fee net) to remove financial ambiguity | Metrics labels reconcile with formulas and trade aggregates |
+| FIX-2026-05-21-02 | High | Playbook/Strategy Framing | Reclassify strategy label from "scalping" or enforce time-based exits to match observed holding profile | Holding-time stats align with declared strategy type |
+| FIX-2026-05-21-03 | High | System Pipeline | Remove silent exception swallowing (`except: pass`) in signal/ML filtering path; surface explicit errors | Error path test confirms failures are observable and traceable |
+| FIX-2026-05-21-04 | Medium | Validation/QA | Add robustness evidence: walk-forward/out-of-sample splits, benchmark comparison, sensitivity checks | Report includes reproducible robustness section each revision |
+
+---
+
 ## Source Reports Consolidated
 
 - `docs/legacy/COMPREHENSIVE_BUG_REPORT.md`
@@ -97,4 +112,3 @@ Add newly discovered bugs here with unique IDs.
 - `docs/ultimate_trading_dashboard_review_v3.md`
 - `docs/legacy/ultimate_trading_dashboard_re_review.md`
 - `docs/legacy/ultimate_trading_dashboard_final_review.md`
-

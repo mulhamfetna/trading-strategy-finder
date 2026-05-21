@@ -148,12 +148,45 @@ Otherwise: **No final submission**.
 
 ---
 
-## 10) Minimal Execution Loop (Per Revision)
+## 10) Mandatory Deliverable: Fixes Needed Report (Dev Team)
+
+At the end of every revision cycle, produce a **Fixes Needed Report** for development.
+
+Required fields per item:
+
+- ID
+- Segment
+- Severity
+- Problem statement
+- Evidence (file/line or metric mismatch)
+- Required fix
+- Owner (team/function)
+- Target revision
+- Validation method
+
+This report is not optional and is a release gate artifact.
+
+---
+
+## 11) Knowledge Base Append Rule (Experience Growth)
+
+After the Fixes Needed Report is produced:
+
+1. Append a new entry to the project knowledge base (`docs/bug-checklist-revision-history.md`).
+2. Add every newly discovered fix item to the `Master Bug Register`.
+3. Mark repeated defects as regression-critical candidates.
+4. Keep history of first seen / last seen / fixed revision.
+
+This ensures accumulated review experience is retained and reused automatically.
+
+---
+
+## 12) Minimal Execution Loop (Per Revision)
 
 1. Load latest generated dashboard artifact(s).
 2. Segment the output.
 3. Run Stage A checklist.
 4. Run Stage B six-lens stress test for every segment.
-5. Append newly found bugs.
-6. Publish consolidated verdict.
-
+5. Publish Fixes Needed Report for dev team.
+6. Append report outcomes to knowledge base.
+7. Publish consolidated verdict.
