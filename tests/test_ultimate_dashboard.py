@@ -4,7 +4,7 @@ import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from ultimate_dashboard import apply_rsi_entry_filters, generate_html, run_backtest_15min
+from src.main.ultimate_dashboard import apply_rsi_entry_filters, generate_html, run_backtest_15min
 
 
 def test_apply_rsi_entry_filters_keeps_valid_longs_and_shorts():

@@ -3,7 +3,7 @@ import json
 import shutil
 import os
 
-import ultimate_dashboard as ud
+from src.main import ultimate_dashboard as ud
 
 OUTPUT_JSON = 'docs/dashboard_data_train.json'
 OUTPUT_HTML_COPY = 'docs/ultimate_trading_dashboard_train.html'
