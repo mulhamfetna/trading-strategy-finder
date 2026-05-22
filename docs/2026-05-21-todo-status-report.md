@@ -62,15 +62,24 @@ Legend: ✅ done · ⚠️ partial · ❌ not started.
   not rebased because it carried template/renderer changes that belong in
   iter 2.
 
-### 4. "Separate HTML stuff into template" — ⚠️ Partial
+### 4. "Separate HTML stuff into template" — ✅ Done (iter 2, 2026-05-22)
 
-- Files added on `phase1-core-engine`:
-  - `templates/ultimate_dashboard.html.tpl`
-  - `src/dashboard/template_renderer.py`
-- **Issue:** the template is essentially `{{BODY}}` only. The entire dashboard
-  body is still composed as a giant Python string in `ultimate_dashboard.py`
-  and then injected into the one placeholder. This is a thin wrapper, not a
-  real template separation.
+- New module `src/dashboard/template_renderer.py` — pure-function renderer.
+  Placeholder syntax `{{NAME}}` (uppercase). Raises `KeyError` on missing
+  values, `FileNotFoundError` on missing template, and does single-pass
+  substitution so a replacement value cannot be re-substituted.
+- New template `templates/ultimate_dashboard.html.tpl` (~650 lines) contains
+  the full HTML shell with **19 named slots** (`{{TITLE}}`, `{{METRICS_BLOCK}}`,
+  `{{OHLC_SUMMARY}}`, `{{TRADES_HTML}}`, `{{LOGS_HTML}}`, `{{CHART_JSON}}`,
+  `{{PARAMS_BLOCK}}`, etc.).
+- `src/main/ultimate_dashboard.py::generate_html` no longer inlines the HTML
+  shell. It builds Python fragments (metrics grid, params table) and calls
+  `render_template(...)`. File shrank from 1329 → 685 lines.
+- 5 new renderer tests + 2 new template-separation tests (locks in: template
+  file exists with all required slots; Python source no longer contains
+  `<!DOCTYPE html>`).
+- All previously-green tests still pass (15 dashboard tests + 12 supporting
+  module tests).
 
 ### 5. "Organize the three Python files into src/main" — ✅ Done
 
@@ -166,11 +175,11 @@ Legend: ✅ done · ⚠️ partial · ❌ not started.
 
 ## Score
 
-- ✅ **Fully done: 5** — items 1, 2 (local only), 3 (iter 1, 2026-05-22), 5, 6a
-- ⚠️ **Partial / skeleton: 4** — items 4, 7, 11, 12
+- ✅ **Fully done: 6** — items 1, 2 (local only), 3, 4 (iter 2, 2026-05-22), 5, 6a
+- ⚠️ **Partial / skeleton: 3** — items 7, 11, 12
 - ❌ **Not started: 4** — items 6b, 8, 9, 10
 
-Approximately 42% solid, 33% partial, 25% untouched.
+Approximately 50% solid, 25% partial, 25% untouched.
 
 ---
 

@@ -1,10 +1,13 @@
 import os
 import sys
 
+import pytest
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from src.dashboard.visualizer import create_trade_chart, create_equity_curve, calculate_trade_statistics
 from src.dashboard.report import generate_comparison_report, generate_error_analysis, format_metrics_for_display
+from src.dashboard.template_renderer import render_template
 
 
 def test_create_trade_chart():
@@ -55,3 +58,50 @@ def test_format_metrics_for_display():
     assert '$1500.50' in formatted['total_profit']
     assert '66.67%' in formatted['win_rate']
     assert '5.25%' in formatted['max_drawdown']
+
+
+# --- Iter 2 (TODO item 4): template renderer ---
+
+def test_render_template_replaces_named_placeholders(tmp_path):
+    tpl = tmp_path / "demo.tpl"
+    tpl.write_text("Hello {{NAME}} from {{CITY}}", encoding="utf-8")
+
+    out = render_template(tpl, {"NAME": "NQ", "CITY": "Chicago"})
+
+    assert out == "Hello NQ from Chicago"
+
+
+def test_render_template_replaces_repeated_placeholder(tmp_path):
+    tpl = tmp_path / "demo.tpl"
+    tpl.write_text("{{X}} and {{X}} and {{X}}", encoding="utf-8")
+
+    out = render_template(tpl, {"X": "ok"})
+
+    assert out == "ok and ok and ok"
+
+
+def test_render_template_raises_on_unresolved_placeholder(tmp_path):
+    tpl = tmp_path / "demo.tpl"
+    tpl.write_text("Hi {{NAME}} from {{CITY}}", encoding="utf-8")
+
+    with pytest.raises(KeyError):
+        render_template(tpl, {"NAME": "NQ"})  # CITY missing
+
+
+def test_render_template_raises_on_missing_file(tmp_path):
+    missing = tmp_path / "nope.tpl"
+
+    with pytest.raises(FileNotFoundError):
+        render_template(missing, {})
+
+
+def test_render_template_does_not_re_substitute_substitution_output(tmp_path):
+    """If a value itself contains '{{X}}' it must NOT be re-substituted."""
+    tpl = tmp_path / "demo.tpl"
+    tpl.write_text("{{A}} {{B}}", encoding="utf-8")
+
+    out = render_template(tpl, {"A": "{{B}}", "B": "safe"})
+
+    # If we naively .replace() in a loop, A's value would be re-substituted.
+    # The renderer must do a single pass.
+    assert out == "{{B}} safe"

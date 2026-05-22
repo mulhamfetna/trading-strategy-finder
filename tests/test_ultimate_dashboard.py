@@ -1,5 +1,7 @@
 import os
 import sys
+from pathlib import Path
+
 import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -139,6 +141,57 @@ def test_generate_html_uses_candlestick_chart(tmp_path, monkeypatch):
     # Body must surface latest OHLC values for quick inspection
     assert 'Latest Open' in html
     assert 'Latest Close' in html
+
+
+def test_ultimate_dashboard_template_file_exists_with_named_slots():
+    """Iter 2 (TODO item 4): the dashboard HTML shell must live in a
+    real template file with named slot placeholders - not be inlined in
+    Python source."""
+    repo_root = Path(__file__).resolve().parents[1]
+    tpl_path = repo_root / 'templates' / 'ultimate_dashboard.html.tpl'
+
+    assert tpl_path.exists(), f"Template file missing: {tpl_path}"
+
+    content = tpl_path.read_text(encoding='utf-8')
+
+    # The template must contain the static HTML shell.
+    assert '<!DOCTYPE html>' in content
+    assert '<html' in content
+    assert '<head>' in content
+    assert '<style>' in content
+
+    # The template must use named slot placeholders, not be a single
+    # {{BODY}} wrapper.
+    required_slots = [
+        '{{TITLE}}',
+        '{{FINAL_CAPITAL}}',
+        '{{TOTAL_RETURN}}',
+        '{{METRICS_BLOCK}}',
+        '{{OHLC_SUMMARY}}',
+        '{{TRADES_HTML}}',
+        '{{LOGS_HTML}}',
+        '{{FINDINGS_HTML}}',
+        '{{RECOMMENDATIONS_HTML}}',
+        '{{CHART_JSON}}',
+        '{{PARAMS_BLOCK}}',
+    ]
+    for slot in required_slots:
+        assert slot in content, f"Missing slot {slot!r} in template"
+
+
+def test_generate_html_python_source_does_not_inline_html_shell():
+    """Iter 2 (TODO item 4): the giant HTML shell must not live in the
+    Python module any more - the doctype/head/body skeleton should come
+    from the template file."""
+    src_path = Path(__file__).resolve().parents[1] / 'src' / 'main' / 'ultimate_dashboard.py'
+    source = src_path.read_text(encoding='utf-8')
+
+    # If the doctype shows up in Python source we haven't actually
+    # extracted the template.
+    assert '<!DOCTYPE html>' not in source, (
+        "ultimate_dashboard.py still inlines the HTML doctype; "
+        "the shell should be in templates/ultimate_dashboard.html.tpl"
+    )
 
 
 def test_run_backtest_15min_uses_nq_point_value_for_pnl():
