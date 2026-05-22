@@ -25,7 +25,8 @@ from src.backtest.metrics import calculate_metrics
 
 
 def get_output_paths():
-    output_dir = os.path.join("output", "dashboard")
+    # Iter 3 (TODO item 11): unified output layout - plural "dashboards/".
+    output_dir = os.path.join("output", "dashboards")
     live_dashboard_path = os.path.join(output_dir, "live_trading_dashboard.html")
     equity_curve_path = os.path.join(output_dir, "equity_curve_dashboard.html")
     return live_dashboard_path, equity_curve_path

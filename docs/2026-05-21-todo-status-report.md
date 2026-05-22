@@ -143,19 +143,24 @@ Legend: ✅ done · ⚠️ partial · ❌ not started.
 - Backtest still resolves TP/SL on per-candle close, ignoring intra-candle
   path.
 
-### 11. "Move outputs to output/ directory" — ⚠️ Partial
+### 11. "Move outputs to output/ directory" — ✅ Done (iter 3, 2026-05-22)
 
-- Commit: `74aa367 refactor(outputs): write live dashboards to output/dashboard`
-  - `src/main/live_dashboard.py` now writes to `output/dashboard/`.
-  - `src/dashboard/dash_app.py` reads from `output/dashboard/` with docs
-    fallback.
-- Phase1 worktree also has
-  `output/dashboard/{ultimate_trading_dashboard_test.html, dashboard_data_test.json}`.
-- **Issues:**
-  - `src/main/ultimate_dashboard.py` on `phase3-live-dashboard` still writes
-    test/train dashboards to `docs/`.
-  - `fast_optimizer.py` still writes `best_config.txt` to repo root.
-  - The two branches don't agree on the output layout.
+All entry scripts now write under `output/`:
+
+- `src/main/ultimate_dashboard.py` → `output/dashboards/{ultimate_trading_dashboard.html,dashboard_data.json}`
+- `src/main/live_dashboard.py` → `output/dashboards/{live_trading_dashboard,equity_curve_dashboard}.html`
+  (was `output/dashboard/` singular - renamed to plural for consistency)
+- `src/main/fast_optimizer.py` → `output/configs/best_config.txt` (was repo root)
+- `run_dashboard_on_train.py` → `output/dashboards/{ultimate_trading_dashboard_train.html,dashboard_data_train.json}`
+- `src/dashboard/dash_app.py` reads from `output/dashboards/` (with `docs/` fallback for legacy)
+
+`.gitignore` adds `output/`. The six stale tracked artifacts in `docs/` were
+removed (`docs/dashboard_data.json`, `docs/dashboard_data_train.json`,
+`docs/equity_curve_dashboard.html`, `docs/live_trading_dashboard.html`,
+`docs/trading_dashboard.html`, `docs/ultimate_trading_dashboard.html`).
+`docs/legacy/index.html` is preserved as a historical archive.
+
+4 new path-constant tests + 1 updated existing test pin the layout.
 
 ### 12. "Sort docs, master documentation router, update content" — ⚠️ Partial
 
@@ -175,11 +180,11 @@ Legend: ✅ done · ⚠️ partial · ❌ not started.
 
 ## Score
 
-- ✅ **Fully done: 6** — items 1, 2 (local only), 3, 4 (iter 2, 2026-05-22), 5, 6a
-- ⚠️ **Partial / skeleton: 3** — items 7, 11, 12
+- ✅ **Fully done: 7** — items 1, 2 (local only), 3, 4, 5, 6a, 11 (iter 3, 2026-05-22)
+- ⚠️ **Partial / skeleton: 2** — items 7, 12
 - ❌ **Not started: 4** — items 6b, 8, 9, 10
 
-Approximately 50% solid, 25% partial, 25% untouched.
+Approximately 58% solid, 17% partial, 33% untouched.
 
 ---
 

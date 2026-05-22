@@ -13,8 +13,9 @@ def _read_dashboard_html(path: str) -> str:
 
 
 app = Dash(__name__)
-live_output_path = Path.cwd() / "output" / "dashboard" / "live_trading_dashboard.html"
-equity_output_path = Path.cwd() / "output" / "dashboard" / "equity_curve_dashboard.html"
+# Iter 3 (TODO item 11): unified output layout - plural "dashboards/".
+live_output_path = Path.cwd() / "output" / "dashboards" / "live_trading_dashboard.html"
+equity_output_path = Path.cwd() / "output" / "dashboards" / "equity_curve_dashboard.html"
 live_fallback_path = Path.cwd() / "docs" / "live_trading_dashboard.html"
 equity_fallback_path = Path.cwd() / "docs" / "equity_curve_dashboard.html"
 live_html = _read_dashboard_html(live_output_path if live_output_path.exists() else live_fallback_path)

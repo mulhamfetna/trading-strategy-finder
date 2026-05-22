@@ -466,9 +466,11 @@ def create_ultimate_dashboard():
         'total_return': (final_capital - 10000) / 100
     }
     
-    with open('docs/dashboard_data.json', 'w') as f:
+    # Save JSON data for the HTML (iter 3 - unified output dir)
+    os.makedirs(os.path.join('output', 'dashboards'), exist_ok=True)
+    with open('output/dashboards/dashboard_data.json', 'w') as f:
         json.dump(dashboard_data, f, default=str)
-    print("Data saved to docs/dashboard_data.json")
+    print("Data saved to output/dashboards/dashboard_data.json")
     
     # Generate HTML
     generate_html(dashboard_data)
@@ -476,7 +478,7 @@ def create_ultimate_dashboard():
     print("\n" + "=" * 70)
     print("DASHBOARD GENERATION COMPLETE!")
     print("=" * 70)
-    print("\nOpen docs/ultimate_trading_dashboard.html in your browser")
+    print("\nOpen output/dashboards/ultimate_trading_dashboard.html in your browser")
     print("=" * 70)
 
 
@@ -652,6 +654,8 @@ def generate_html(data):
     )
 
     # Render the template (iter 2, TODO item 4: real template separation).
+    # Iter 3 (TODO item 11): ensure unified output dir exists.
+    os.makedirs(os.path.join('output', 'dashboards'), exist_ok=True)
     template_path = Path(__file__).resolve().parents[2] / 'templates' / 'ultimate_dashboard.html.tpl'
     html = render_template(template_path, {
         'TITLE': 'NQ Futures Scalping Strategy - Trading Dashboard',
@@ -675,10 +679,10 @@ def generate_html(data):
         'CHART_JSON': chart_json,
     })
 
-    with open('docs/ultimate_trading_dashboard.html', 'w') as f:
+    with open('output/dashboards/ultimate_trading_dashboard.html', 'w') as f:
         f.write(html)
 
-    print("Ultimate dashboard saved to docs/ultimate_trading_dashboard.html")
+    print("Ultimate dashboard saved to output/dashboards/ultimate_trading_dashboard.html")
 
 
 if __name__ == '__main__':

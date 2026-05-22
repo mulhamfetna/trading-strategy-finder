@@ -57,3 +57,6 @@ Thumbs.db
 src/__pycache__/
 tests/__pycache__/
 .worktrees/
+
+# Generated output directory (iter 3 of finish-todo plan)
+output/

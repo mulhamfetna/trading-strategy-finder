@@ -20,7 +20,7 @@ def test_apply_rsi_entry_filters_keeps_valid_longs_and_shorts():
 
 def test_generate_html_has_single_total_fees_label(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    os.makedirs('docs', exist_ok=True)
+    os.makedirs(os.path.join('output', 'dashboards'), exist_ok=True)
 
     data = {
         'metrics': {
@@ -70,7 +70,7 @@ def test_generate_html_has_single_total_fees_label(tmp_path, monkeypatch):
 
     generate_html(data)
 
-    html = (tmp_path / 'docs' / 'ultimate_trading_dashboard.html').read_text(encoding='utf-8')
+    html = (tmp_path / 'output' / 'dashboards' / 'ultimate_trading_dashboard.html').read_text(encoding='utf-8')
     assert html.count('>Total Fees<') == 1
     assert '>Total Trades<' in html
 
@@ -79,7 +79,7 @@ def test_generate_html_uses_candlestick_chart(tmp_path, monkeypatch):
     """Iter 1 (TODO item 3): main chart must be a candlestick (not a close-line)
     and the dashboard body must surface latest open/close/high/low values."""
     monkeypatch.chdir(tmp_path)
-    os.makedirs('docs', exist_ok=True)
+    os.makedirs(os.path.join('output', 'dashboards'), exist_ok=True)
 
     data = {
         'metrics': {
@@ -129,7 +129,7 @@ def test_generate_html_uses_candlestick_chart(tmp_path, monkeypatch):
 
     generate_html(data)
 
-    html = (tmp_path / 'docs' / 'ultimate_trading_dashboard.html').read_text(encoding='utf-8')
+    html = (tmp_path / 'output' / 'dashboards' / 'ultimate_trading_dashboard.html').read_text(encoding='utf-8')
 
     # Chart must be a candlestick trace, not a scatter/line trace
     assert "type: 'candlestick'" in html, "main chart should use Plotly candlestick"
@@ -192,6 +192,53 @@ def test_generate_html_python_source_does_not_inline_html_shell():
         "ultimate_dashboard.py still inlines the HTML doctype; "
         "the shell should be in templates/ultimate_dashboard.html.tpl"
     )
+
+
+def test_ultimate_dashboard_writes_to_output_directory():
+    """Iter 3 (TODO item 11): generated HTML/JSON must land in output/dashboards/
+    rather than docs/."""
+    src_path = Path(__file__).resolve().parents[1] / 'src' / 'main' / 'ultimate_dashboard.py'
+    source = src_path.read_text(encoding='utf-8')
+
+    # No writes to docs/* from this module
+    assert "'docs/ultimate_trading_dashboard.html'" not in source, (
+        "ultimate_dashboard.py still writes the rendered HTML to docs/; "
+        "iter 3 requires output/dashboards/"
+    )
+    assert "'docs/dashboard_data.json'" not in source, (
+        "ultimate_dashboard.py still writes JSON to docs/; "
+        "iter 3 requires output/dashboards/"
+    )
+    # Writes should target output/dashboards/
+    assert 'output/dashboards/ultimate_trading_dashboard.html' in source
+    assert 'output/dashboards/dashboard_data.json' in source
+
+
+def test_fast_optimizer_writes_best_config_to_output_configs():
+    """Iter 3 (TODO item 11): fast_optimizer writes best_config.txt under
+    output/configs/, not at repo root."""
+    src_path = Path(__file__).resolve().parents[1] / 'src' / 'main' / 'fast_optimizer.py'
+    source = src_path.read_text(encoding='utf-8')
+
+    # The old root-level path must be gone
+    assert "open('best_config.txt'" not in source, (
+        "fast_optimizer.py still writes best_config.txt to repo root; "
+        "iter 3 requires output/configs/"
+    )
+    assert 'output/configs/best_config.txt' in source
+
+
+def test_run_dashboard_on_train_uses_output_directory():
+    """Iter 3 (TODO item 11): the train-split runner writes to
+    output/dashboards/, not docs/."""
+    src_path = Path(__file__).resolve().parents[1] / 'run_dashboard_on_train.py'
+    source = src_path.read_text(encoding='utf-8')
+
+    # Output paths must be in output/, not docs/
+    assert "'docs/dashboard_data_train.json'" not in source
+    assert "'docs/ultimate_trading_dashboard_train.html'" not in source
+    assert 'output/dashboards/dashboard_data_train.json' in source
+    assert 'output/dashboards/ultimate_trading_dashboard_train.html' in source
 
 
 def test_run_backtest_15min_uses_nq_point_value_for_pnl():

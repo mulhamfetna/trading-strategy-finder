@@ -1,12 +1,13 @@
-# Runner: generate ultimate dashboard on the training split without editing repo code
+# Runner: generate ultimate dashboard on the training split without editing repo code.
+# Iter 3 (TODO item 11): output paths normalized to output/dashboards/.
 import json
 import shutil
 import os
 
 from src.main import ultimate_dashboard as ud
 
-OUTPUT_JSON = 'docs/dashboard_data_train.json'
-OUTPUT_HTML_COPY = 'docs/ultimate_trading_dashboard_train.html'
+OUTPUT_JSON = 'output/dashboards/dashboard_data_train.json'
+OUTPUT_HTML_COPY = 'output/dashboards/ultimate_trading_dashboard_train.html'
 
 # Load and filter
 df_1min = ud.load_data('1min.csv')
@@ -63,16 +64,16 @@ dashboard_data = {
 }
 
 # Write JSON payload
-os.makedirs('docs', exist_ok=True)
+os.makedirs('output/dashboards', exist_ok=True)
 with open(OUTPUT_JSON, 'w') as f:
     json.dump(dashboard_data, f, indent=2, default=str)
 print(f'Wrote dashboard JSON to {OUTPUT_JSON}')
 
-# Generate HTML using the repository's generator (it writes to docs/ultimate_trading_dashboard.html)
+# Generate HTML using the repository's generator (writes to output/dashboards/ultimate_trading_dashboard.html)
 ud.generate_html(dashboard_data)
 
-# Copy the generated HTML to a training-specific filename to avoid overwriting the existing dashboard
-orig_html = 'docs/ultimate_trading_dashboard.html'
+# Copy the generated HTML to a training-specific filename to avoid overwriting the test-split dashboard
+orig_html = 'output/dashboards/ultimate_trading_dashboard.html'
 if os.path.exists(orig_html):
     shutil.copyfile(orig_html, OUTPUT_HTML_COPY)
     print(f'Copied generated HTML to {OUTPUT_HTML_COPY}')
