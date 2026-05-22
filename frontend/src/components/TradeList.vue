@@ -54,6 +54,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import type { ScalingTrade } from '../types';
 import { useReplayStore } from '../stores/replay';
 
@@ -63,7 +64,7 @@ const props = defineProps<{
 
 const replay = useReplayStore();
 
-const displayed = props.trades; // all trades — 646 rows is trivial for the browser
+const displayed = computed(() => props.trades);
 
 function onRowClick(t: ScalingTrade) {
   replay.jumpToTrade(t.entry_idx);
