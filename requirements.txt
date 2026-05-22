@@ -4,3 +4,6 @@ scikit-learn
 plotly
 pytest
 dash
+fastapi
+uvicorn[standard]
+httpx
