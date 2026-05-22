@@ -101,3 +101,45 @@ class BacktestResponse(BaseModel):
     metrics: Metrics
     trades: List[Trade]
     candles: List[Candle]
+
+
+# ---- /api/backtest/scaling (phase C2, SSE-streamed) ----
+
+class ScalingParamsModel(BaseModel):
+    """Pydantic mirror of src.strategy.scaling_strategy.ScalingParams.
+    Frontend ships these from the settings panel."""
+    total_contracts: int = 4
+    leg1_contracts: int = 1
+    leg2_contracts: int = 1
+    leg3_contracts: int = 2
+    leg2_pullback_points: float = 100.0
+    leg3_pullback_points: float = 150.0
+    big_candle_threshold_points: float = 400.0
+    big_candle_full_contracts: int = 4
+    big_candle_reverses_dir: bool = True
+    tp_target_points: float = 150.0
+    tp_watch_threshold_points: float = 50.0
+    sl_soft_points: float = 200.0
+    sl_hard_points: float = 300.0
+    reentry_enabled: bool = True
+    reentry_cooldown_candles: int = 1
+
+
+class ScalingBacktestRequest(BaseModel):
+    params: ScalingParamsModel = ScalingParamsModel()
+    data_path: str = 'NQ_4h.csv'
+    start: Optional[str] = None
+    end: Optional[str] = None
+
+
+class ScalingTrade(BaseModel):
+    entry_idx: int
+    exit_idx: int
+    direction: str
+    avg_entry_price: float
+    exit_price: float
+    contracts: int
+    profit_points: float
+    profit_dollars: float
+    exit_reason: str
+    legs: List[dict] = []
