@@ -9,7 +9,7 @@
     <div v-if="trades.length === 0" class="p-4 text-center text-xs text-tv-muted">
       No trades yet. Run a backtest to see the trade list.
     </div>
-    <div v-else class="max-h-64 overflow-y-auto">
+    <div v-else class="max-h-96 overflow-y-auto">
       <table class="w-full text-xs">
         <thead class="sticky top-0 bg-tv-surface">
           <tr class="text-left text-tv-muted">
@@ -49,15 +49,11 @@
           </tr>
         </tbody>
       </table>
-      <div v-if="trades.length > displayed.length" class="border-t border-tv-border px-3 py-1 text-center text-xs text-tv-muted">
-        (showing first {{ displayed.length }} of {{ trades.length }})
-      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import type { ScalingTrade } from '../types';
 import { useReplayStore } from '../stores/replay';
 
@@ -67,8 +63,7 @@ const props = defineProps<{
 
 const replay = useReplayStore();
 
-const MAX_ROWS = 200;
-const displayed = computed(() => props.trades.slice(0, MAX_ROWS));
+const displayed = props.trades; // all trades — 646 rows is trivial for the browser
 
 function onRowClick(t: ScalingTrade) {
   replay.jumpToTrade(t.entry_idx);
