@@ -3,16 +3,26 @@
     <header class="flex items-center justify-between border-b border-tv-border bg-tv-surface px-4 py-3">
       <div>
         <h1 class="text-lg font-semibold text-tv-blue">NQ 1-1-2 Scaling Strategy Dashboard</h1>
-        <p class="text-xs text-tv-muted">FastAPI + Vue 3 + Lightweight Charts &middot; phase C</p>
+        <p class="text-xs text-tv-muted">FastAPI + Vue 3 + Lightweight Charts &middot; phase D</p>
       </div>
-      <button
-        class="rounded bg-tv-blue px-4 py-2 text-sm font-semibold text-white shadow disabled:opacity-50"
-        :disabled="backtest.isRunning"
-        data-testid="backtest-button"
-        @click="backtest.run()"
-      >
-        {{ backtest.isRunning ? 'Running...' : 'Run Backtest' }}
-      </button>
+      <div class="flex items-center gap-2">
+        <button
+          v-if="backtest.candles.length && !replay.isActive"
+          class="rounded bg-tv-tile px-4 py-2 text-sm font-semibold text-tv-text shadow hover:bg-tv-border"
+          data-testid="replay-button"
+          @click="replay.activate()"
+        >
+          Replay
+        </button>
+        <button
+          class="rounded bg-tv-blue px-4 py-2 text-sm font-semibold text-white shadow disabled:opacity-50"
+          :disabled="backtest.isRunning"
+          data-testid="backtest-button"
+          @click="backtest.run()"
+        >
+          {{ backtest.isRunning ? 'Running...' : 'Run Backtest' }}
+        </button>
+      </div>
     </header>
 
     <div class="flex flex-1 overflow-hidden">
@@ -21,9 +31,11 @@
         <SettingsPanel />
       </aside>
 
-      <!-- Right: progress + chart + metrics + trades -->
+      <!-- Right: progress + replay + chart + metrics + trades -->
       <main class="flex flex-1 flex-col gap-3 overflow-y-auto p-3">
         <ProgressBar />
+
+        <ReplayBar />
 
         <section class="flex-none">
           <div class="mb-2 flex items-center justify-between px-1 text-xs text-tv-muted">
@@ -51,9 +63,12 @@
 import ChartPane from './components/ChartPane.vue';
 import MetricsCards from './components/MetricsCards.vue';
 import ProgressBar from './components/ProgressBar.vue';
+import ReplayBar from './components/ReplayBar.vue';
 import SettingsPanel from './components/SettingsPanel.vue';
 import TradeList from './components/TradeList.vue';
 import { useBacktestStore } from './stores/backtest';
+import { useReplayStore } from './stores/replay';
 
 const backtest = useBacktestStore();
+const replay = useReplayStore();
 </script>

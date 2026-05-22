@@ -27,6 +27,7 @@ import {
 } from 'lightweight-charts';
 import type { Candle, ScalingTrade } from '../types';
 import { useSettingsStore } from '../stores/settings';
+import { useReplayStore } from '../stores/replay';
 
 const props = withDefaults(
   defineProps<{
@@ -38,6 +39,7 @@ const props = withDefaults(
 
 const { candles, trades } = toRefs(props);
 const settings = useSettingsStore();
+const replay = useReplayStore();
 
 const containerRef = ref<HTMLDivElement | null>(null);
 
@@ -99,12 +101,15 @@ function toLwcData(rows: Candle[]): CandlestickData<Time>[] {
   }));
 }
 
-function toMarkers(rows: Candle[], tradeRows: ScalingTrade[]): SeriesMarker<Time>[] {
+function toMarkers(
+  rows: Candle[],
+  tradeRows: ScalingTrade[],
+  viewTo = Infinity,
+): SeriesMarker<Time>[] {
   if (!rows.length || !tradeRows.length) return [];
   const markers: SeriesMarker<Time>[] = [];
   for (const t of tradeRows) {
     const entry = rows[t.entry_idx];
-    const exit = rows[t.exit_idx];
     if (entry) {
       markers.push({
         time: entry.t as unknown as Time,
@@ -114,14 +119,18 @@ function toMarkers(rows: Candle[], tradeRows: ScalingTrade[]): SeriesMarker<Time
         text: t.direction === 'long' ? 'B' : 'S',
       });
     }
-    if (exit) {
-      markers.push({
-        time: exit.t as unknown as Time,
-        position: t.direction === 'long' ? 'aboveBar' : 'belowBar',
-        color: t.profit_dollars >= 0 ? '#00c853' : '#ff5252',
-        shape: 'square',
-        text: `${t.profit_dollars >= 0 ? '+' : ''}${t.profit_points.toFixed(0)}`,
-      });
+    // Only show exit marker once the exit candle is in view.
+    if (t.exit_idx <= viewTo) {
+      const exit = rows[t.exit_idx];
+      if (exit) {
+        markers.push({
+          time: exit.t as unknown as Time,
+          position: t.direction === 'long' ? 'aboveBar' : 'belowBar',
+          color: t.profit_dollars >= 0 ? '#00c853' : '#ff5252',
+          shape: 'square',
+          text: `${t.profit_dollars >= 0 ? '+' : ''}${t.profit_points.toFixed(0)}`,
+        });
+      }
     }
   }
   return markers.sort((a, b) => String(a.time).localeCompare(String(b.time)));
@@ -131,7 +140,9 @@ function toMarkers(rows: Candle[], tradeRows: ScalingTrade[]): SeriesMarker<Time
 
 function applyData() {
   if (!candleSeries) return;
-  const rows = candles.value;
+  // In replay mode, show only candles up to the current replay index.
+  const viewTo = replay.isActive ? replay.currentIdx : candles.value.length - 1;
+  const rows = candles.value.slice(0, viewTo + 1);
   const closes = rows.map((r) => r.c);
   const times = rows.map((r) => r.t as unknown as Time);
 
@@ -167,8 +178,11 @@ function applyData() {
     rsiSeries?.setData([]);
   }
 
-  // trade markers
-  const m = toMarkers(rows, trades.value);
+  // trade markers — in replay mode filter to trades that have at least started
+  const visibleTrades = replay.isActive
+    ? trades.value.filter((t) => t.entry_idx <= viewTo)
+    : trades.value;
+  const m = toMarkers(rows, visibleTrades, viewTo);
   if (markersApi) {
     markersApi.setMarkers(m);
   } else if (candleSeries) {
@@ -280,7 +294,7 @@ function initChart() {
 onMounted(initChart);
 
 watch([candles, trades], applyData, { deep: false });
-// period changes → recompute data only
+// period / visibility changes → recompute data only
 watch(
   () => [
     settings.indicators.emaFast,
@@ -291,6 +305,9 @@ watch(
   ],
   applyData,
 );
+// replay scrubbing → re-slice
+watch(() => replay.currentIdx, applyData);
+watch(() => replay.isActive, applyData);
 
 onBeforeUnmount(() => {
   markersApi = null;
