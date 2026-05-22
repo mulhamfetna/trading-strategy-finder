@@ -144,25 +144,53 @@ Hybrid OOP/FP per the refactor policy in
 9 new tests in `tests/test_strategy_oop.py` + 4 existing runner tests +
 8 backtest tests + 4 signal tests + 37 other supporting tests all green.
 
-### 7. "Live dashboard using Dash or Streamlit instead of HTML" — ⚠️ Skeleton only
+### 7. "Live dashboard using Dash or Streamlit instead of HTML" — ✅ Done (iter 8, 2026-05-22, combined with item 8)
 
-- Commits:
-  - `4bf5ab7 test(dash): add failing test for Dash app import and layout`
-  - `6015350 feat(dashboard): add minimal Dash app embedding generated HTML dashboards`
-  - `84e3495 docs(dashboard): add Dash live preview run guide`
-- File: `src/dashboard/dash_app.py` (39 lines).
-- **Issue:** the Dash app just **iframes the pre-generated static HTML**. It
-  isn't a live or interactive dashboard. No callbacks, no live data, no
-  controls. Effectively a viewer for the old HTML output.
+### 8. "Dashboard for data resolver + range options (train/test, start/end, timeframe)" — ✅ Done (iter 8, 2026-05-22)
 
-### 8. "Dashboard for data resolver + range options (train/test, start/end, timeframe)" — ❌ Not done (design only)
+Items 7 and 8 were the same goal (per the iter sequencing spec) and were
+implemented together. `src/dashboard/dash_app.py` was rewritten from a
+40-line iframe viewer into a 280-line native Dash app driven by the
+iter 7 OOP classes:
 
-- Spec was being drafted in chat at end of session:
-  - User picked option **B (full native Dash, no iframe)**.
-  - Approved Architecture / Data flow / Error handling / Testing strategy
-    sections.
-  - **Session token expired** before any code was written.
-- No implementation, no tests, no plan file committed.
+**Controls (resolver pane):**
+
+- Dataset radio: `train` / `test` (splits at `2025-06-30` by default).
+- Start/end date inputs (free-form `YYYY-MM-DD`).
+- Timeframe dropdown (`15min` only in v1; placeholder for future TFs).
+- TP/SL resolution dropdown: `conservative` / `optimistic` /
+  `direction-proxy` (wired through to `Backtester` from iter 4).
+- Apply button.
+
+**Outputs:**
+
+- Native Plotly candlestick chart with entry/exit markers (no iframe).
+- 6 metric cards (Net Profit, Win Rate, Profit Factor, Sharpe, Max DD,
+  Total Trades).
+- Trade list (top 50, scrollable).
+- Error panel that surfaces invalid dates, empty ranges, missing CSV,
+  pipeline failures.
+
+**Architecture:**
+
+- `build_app(data_path)` factory — no module-level state; tests can
+  build apps without monkey-patching.
+- `on_apply(...)` extracted as a pure function so callback logic is
+  unit-testable without a Dash server.
+- Pipeline: `load_data` → `filter_by_date_range` (iter 5) →
+  `split_train_test` → `ScalpingStrategy.prepare` (iter 7) →
+  `Backtester.run` (iter 7) → `calculate_metrics`.
+
+**Run:**
+
+```bash
+python3 -m src.dashboard.dash_app
+# Open http://localhost:8050
+```
+
+7 RED layout + 4 RED callback tests added (`tests/test_dash_resolver.py`).
+Existing `test_dash_app.py` updated to require the new Apply button id
+and forbid iframes. All 72 tests green.
 
 ### 9. "Test the old strategy on 9→12 2025 data and 1→6 2026 data" — ✅ Framework done (iter 5, 2026-05-22)
 
@@ -271,13 +299,13 @@ doc paths, no stale `interview_preparation/` in current docs.
 
 ## Score
 
-- ✅ **Fully done: 11** — items 1, 2 (local only), 3, 4, 5, 6a, 6b (iter 7, 2026-05-22), 9 (framework), 10, 11, 12
-- ⚠️ **Partial / skeleton: 1** — item 7
-- ❌ **Not started: 1** — item 8
+- ✅ **Fully done: 13** — items 1, 2 (local only), 3, 4, 5, 6a, 6b, 7 (iter 8), 8 (iter 8), 9 (framework), 10, 11, 12
+- ⚠️ **Partial / skeleton: 0**
+- ❌ **Not started: 0**
 
-Approximately 92% solid, 8% partial, 8% untouched (item 8 is queued as
-iter 8; item 7 is intentionally rolled into iter 8 since they're the
-same goal).
+All 12 numbered TODO items addressed (with item 9 framework-done pending
+data). Item 2 is the only one not pushed to origin yet — that's iter 9's
+job.
 
 ---
 
