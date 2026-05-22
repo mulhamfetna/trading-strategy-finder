@@ -74,13 +74,11 @@ describe('ChartPane', () => {
     // first setData call is always the candlestick series
     const firstCall = mocks.setData.mock.calls[0][0];
     expect(firstCall).toHaveLength(2);
-    expect(firstCall[0]).toMatchObject({
-      time: '2025-09-01T09:30:00',
-      open: 20000,
-      high: 20020,
-      low: 19990,
-      close: 20010,
-    });
+    const item = firstCall[0];
+    // time must be a number (UTCTimestamp in seconds), not a string
+    expect(typeof item.time).toBe('number');
+    expect(item.time).toBeGreaterThan(1_000_000_000);
+    expect(item).toMatchObject({ open: 20000, high: 20020, low: 19990, close: 20010 });
     wrapper.unmount();
   });
 

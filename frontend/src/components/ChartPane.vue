@@ -91,9 +91,23 @@ function computeRSI(prices: number[], period: number): (number | null)[] {
 
 // ---- data converters ----
 
+/**
+ * Convert a candle timestamp string to a LWC UTCTimestamp (seconds since epoch).
+ *
+ * The 4h CSV produces "YYYY-MM-DD HH:MM:SS" (space separator). LWC intraday
+ * charts require a numeric UTCTimestamp — passing a string causes the chart
+ * to silently render nothing.
+ */
+function toUTCTimestamp(t: string): Time {
+  // Accept both "2025-01-01 18:00:00" and "2025-01-01T18:00:00"
+  const iso = t.replace(' ', 'T');
+  const ms = new Date(iso + (iso.endsWith('Z') ? '' : 'Z')).getTime();
+  return (ms / 1000) as unknown as Time;
+}
+
 function toLwcData(rows: Candle[]): CandlestickData<Time>[] {
   return rows.map((row) => ({
-    time: row.t as unknown as Time,
+    time: toUTCTimestamp(row.t),
     open: row.o,
     high: row.h,
     low: row.l,
@@ -112,7 +126,7 @@ function toMarkers(
     const entry = rows[t.entry_idx];
     if (entry) {
       markers.push({
-        time: entry.t as unknown as Time,
+        time: toUTCTimestamp(entry.t),
         position: t.direction === 'long' ? 'belowBar' : 'aboveBar',
         color: t.direction === 'long' ? '#00c853' : '#ff5252',
         shape: t.direction === 'long' ? 'arrowUp' : 'arrowDown',
@@ -124,7 +138,7 @@ function toMarkers(
       const exit = rows[t.exit_idx];
       if (exit) {
         markers.push({
-          time: exit.t as unknown as Time,
+          time: toUTCTimestamp(exit.t),
           position: t.direction === 'long' ? 'aboveBar' : 'belowBar',
           color: t.profit_dollars >= 0 ? '#00c853' : '#ff5252',
           shape: 'square',
@@ -133,7 +147,8 @@ function toMarkers(
       }
     }
   }
-  return markers.sort((a, b) => String(a.time).localeCompare(String(b.time)));
+  // Sort numerically (UTCTimestamp numbers, not strings)
+  return markers.sort((a, b) => (a.time as number) - (b.time as number));
 }
 
 // ---- apply data to all series ----
@@ -144,7 +159,7 @@ function applyData() {
   const viewTo = replay.isActive ? replay.currentIdx : candles.value.length - 1;
   const rows = candles.value.slice(0, viewTo + 1);
   const closes = rows.map((r) => r.c);
-  const times = rows.map((r) => r.t as unknown as Time);
+  const times = rows.map((r) => toUTCTimestamp(r.t));
 
   // candles
   candleSeries.setData(toLwcData(rows));
