@@ -23,43 +23,41 @@ from src.signals.ml_filter import train_ml_filter, apply_ml_filter, add_ml_featu
 from src.backtest.engine import run_backtest
 from src.backtest.metrics import calculate_metrics
 from src.dashboard.report import generate_comparison_report, generate_error_analysis
+from src.strategy.scalping_strategy import ScalpingStrategy
+from src.strategy.backtester import Backtester
 
 
 def run_scalping_strategy(train_df, test_df, initial_capital=10000):
-    """Run scalping strategy on 1min data."""
+    """Run scalping strategy on 1min data.
+
+    Iter 7 (TODO item 6b): pipeline is now driven by ScalpingStrategy +
+    Backtester instead of the previous inline duplication.
+    """
     print("\n--- Testing Scalping Strategy (1min) ---")
-    
-    # Optimized parameters from fast_optimizer.py
-    train_data = calculate_rsi(train_df.copy(), period=5)
-    train_data = calculate_ema(train_data, periods=[5, 15])
-    train_data = calculate_volume_spike(train_data, threshold=2.0)
-    train_data = generate_scalping_signals(train_data, rsi_period=5)
-    train_data = add_ml_features(train_data)
-    ml_data = train_ml_filter(train_data)
-    
-    # CRITICAL FIX: Reverse test data so it's ascending (oldest first)
-    # Data was loaded in descending order causing exit before entry timestamps
-    test_data = test_df.copy().reset_index(drop=True)[::-1].reset_index(drop=True)
-    print(f"  Data reversed for ascending order. First: {test_data.iloc[0]['Date']} {test_data.iloc[0]['Time']}")
-    
-    test_data = calculate_rsi(test_data, period=5)
-    test_data = calculate_ema(test_data, periods=[5, 15])
-    test_data = calculate_volume_spike(test_data, threshold=2.0)
-    test_data = generate_scalping_signals(test_data, rsi_period=5)
-    test_data = add_ml_features(test_data)
-    test_data = apply_ml_filter(test_data, ml_data)
-    
-    trades, final_capital = run_backtest(
-        test_data,
+
+    strat = ScalpingStrategy()  # v1.0.0 defaults: rsi=5, ema=5/15, vol=2.0
+    bt = Backtester(
         initial_capital=initial_capital,
         stop_loss=0.6,
         take_profit=1.8,
         max_daily_trades=10,
-        fee_per_trade=10.0
+        fee_per_trade=10.0,
     )
-    
+
+    train_prepared = strat.prepare(train_df)
+    ml_data = strat.train_ml(train_prepared)
+
+    # CRITICAL FIX (kept): the 1min CSV loads newest-first; reverse for
+    # backtest or trades exit before they enter.
+    test_data = test_df.copy().reset_index(drop=True)[::-1].reset_index(drop=True)
+    print(f"  Data reversed for ascending order. First: {test_data.iloc[0]['Date']} {test_data.iloc[0]['Time']}")
+
+    test_prepared = strat.prepare(test_data)
+    test_filtered = strat.apply_ml(test_prepared, ml_data)
+
+    trades, _final_capital = bt.run(test_filtered)
     metrics = calculate_metrics(trades, initial_capital)
-    
+
     print(f"  Net Profit: ${metrics['total_profit']:.2f}")
     print(f"  Total Fees: ${metrics['total_fees']:.2f}")
     print(f"  Profit Factor: {metrics['profit_factor']:.2f}")
@@ -67,7 +65,7 @@ def run_scalping_strategy(train_df, test_df, initial_capital=10000):
     print(f"  Sharpe Ratio: {metrics['sharpe_ratio']:.2f}")
     print(f"  Max Drawdown: {metrics['max_drawdown']:.2f}%")
     print(f"  Total Trades: {metrics['total_trades']}")
-    
+
     return trades, metrics
 
 

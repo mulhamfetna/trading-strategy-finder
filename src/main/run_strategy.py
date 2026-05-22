@@ -31,10 +31,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 
 from src.data.loader import load_data
 from src.data.splitter import filter_by_date_range, split_train_test
-from src.indicators.scalping import calculate_rsi, calculate_ema, calculate_volume_spike
-from src.signals.base_signals import generate_scalping_signals
-from src.signals.ml_filter import train_ml_filter, apply_ml_filter, add_ml_features
-from src.backtest.engine import run_backtest
+from src.strategy.scalping_strategy import ScalpingStrategy
+from src.strategy.backtester import Backtester
 from src.backtest.metrics import calculate_metrics
 
 
@@ -70,16 +68,6 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _prepare_scalping(df):
-    """Indicator + signal pipeline for the scalping strategy. FP composition."""
-    df = calculate_rsi(df, period=5)
-    df = calculate_ema(df, periods=[5, 15])
-    df = calculate_volume_spike(df, threshold=2.0)
-    df = generate_scalping_signals(df, rsi_period=5)
-    df = add_ml_features(df)
-    return df
-
-
 def run_strategy(
     data_path: str,
     start: str,
@@ -92,7 +80,11 @@ def run_strategy(
     initial_capital: float = 10000.0,
     fee_per_trade: float = 10.0,
 ) -> Dict:
-    """Load data, filter by date range, run strategy, return metrics."""
+    """Load data, filter by date range, run strategy, return metrics.
+
+    Iter 7 (TODO item 6b): pipeline is now driven by ScalpingStrategy +
+    Backtester (OOP) - no more inline _prepare_scalping helper.
+    """
     if strategy not in _STRATEGIES:
         raise ValueError(
             f"strategy must be one of {_STRATEGIES}, got {strategy!r}"
@@ -107,26 +99,26 @@ def run_strategy(
     # 1min data loads newest-first; reverse to ascending for backtest.
     df = df.reset_index(drop=True)[::-1].reset_index(drop=True)
 
-    if train_test_split:
-        train_df, test_df = split_train_test(df, split_date=train_test_split)
-        train_data = _prepare_scalping(train_df.copy())
-        ml_data = train_ml_filter(train_data)
-        test_data = _prepare_scalping(test_df.copy())
-        test_data = apply_ml_filter(test_data, ml_data)
-        backtest_df = test_data
-    else:
-        # No split: use whole range, no ML filter (would leak future data).
-        backtest_df = _prepare_scalping(df.copy())
-
-    trades, _ = run_backtest(
-        backtest_df,
+    strat = ScalpingStrategy()  # v1.0.0 defaults
+    bt = Backtester(
         initial_capital=initial_capital,
         stop_loss=stop_loss,
         take_profit=take_profit,
-        max_daily_trades=10,
         fee_per_trade=fee_per_trade,
         tp_sl_resolution=tp_sl_resolution,
     )
+
+    if train_test_split:
+        train_df, test_df = split_train_test(df, split_date=train_test_split)
+        train_prepared = strat.prepare(train_df)
+        ml_model = strat.train_ml(train_prepared)
+        test_prepared = strat.prepare(test_df)
+        backtest_df = strat.apply_ml(test_prepared, ml_model)
+    else:
+        # No split: use whole range, no ML filter (would leak future data).
+        backtest_df = strat.prepare(df)
+
+    trades, _ = bt.run(backtest_df)
     return calculate_metrics(trades, initial_capital)
 
 

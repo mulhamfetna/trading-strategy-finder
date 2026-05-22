@@ -100,11 +100,49 @@ Legend: ✅ done · ⚠️ partial · ❌ not started.
   - `docs/revisions/LESSONS_LEARNED.md` — 7 lessons
 - Lives on `phase3-live-dashboard` worktree.
 
-### 6b. "Improve codebase to be OOP or FP, no replicated functions / messy code" — ❌ Not done
+### 6b. "Improve codebase to be OOP or FP, no replicated functions / messy code" — ✅ Done (iter 7, 2026-05-22)
 
-- Never addressed.
-- Code is still procedural with duplicated patterns across `main.py` /
-  `ultimate_dashboard.py` / `live_dashboard.py`. No refactor was attempted.
+Hybrid OOP/FP per the refactor policy in
+`docs/superpowers/specs/2026-05-22-finish-todo-sequencing-design.md`:
+
+**New OOP package `src/strategy/`:**
+
+- `ScalpingStrategy` — config (RSI period, EMA periods, vol threshold,
+  ML toggle) + lifecycle (`prepare`, `train_ml`, `apply_ml`). Defaults
+  match v1.0.0 frozen parameters.
+- `Backtester` — config (capital, SL, TP, fees, slippage, max daily
+  trades, **`tp_sl_resolution` from iter 4**) + `run(df)`.
+
+**Kept FP (pure transforms):**
+
+- `src/indicators/{scalping,day_trading,intraday}.py` — unchanged.
+- `src/signals/base_signals.py`, `src/signals/ml_filter.py` —
+  unchanged.
+- `src/backtest/engine.py::run_backtest` and
+  `_resolve_intra_candle_exit` — unchanged (the engine is FP; the
+  `Backtester` class is a config carrier that delegates to it).
+- `src/backtest/metrics.py` — unchanged.
+- `src/dashboard/template_renderer.py` — unchanged (already FP).
+
+**Duplication killed:**
+
+- `src/main/run_strategy.py` (iter 5) — `_prepare_scalping` helper
+  removed; pipeline now driven by `ScalpingStrategy` + `Backtester`.
+- `src/main/main.py::run_scalping_strategy` — 8-step inline pipeline
+  replaced with 4 calls into the new classes.
+
+**Intentionally NOT refactored** (scope discipline):
+
+- `src/main/ultimate_dashboard.py` — tightly coupled to its dashboard
+  generation; refactor would be its own multi-day project, low payoff
+  for the duplication-kill goal.
+- `src/main/main.py::run_day_trading_strategy` / `run_intraday_strategy`
+  — those pipelines diverge from scalping enough that a shared class
+  would be over-engineering. Left for a future strategy-protocol pass
+  if the day/intraday paths get used more.
+
+9 new tests in `tests/test_strategy_oop.py` + 4 existing runner tests +
+8 backtest tests + 4 signal tests + 37 other supporting tests all green.
 
 ### 7. "Live dashboard using Dash or Streamlit instead of HTML" — ⚠️ Skeleton only
 
@@ -233,12 +271,13 @@ doc paths, no stale `interview_preparation/` in current docs.
 
 ## Score
 
-- ✅ **Fully done: 10** — items 1, 2 (local only), 3, 4, 5, 6a, 9 (framework), 10, 11, 12 (iter 6, 2026-05-22)
+- ✅ **Fully done: 11** — items 1, 2 (local only), 3, 4, 5, 6a, 6b (iter 7, 2026-05-22), 9 (framework), 10, 11, 12
 - ⚠️ **Partial / skeleton: 1** — item 7
-- ❌ **Not started: 2** — items 6b, 8
+- ❌ **Not started: 1** — item 8
 
-Approximately 83% solid, 8% partial, 17% untouched (items 6b and 8 are
-queued as iters 7 and 8).
+Approximately 92% solid, 8% partial, 8% untouched (item 8 is queued as
+iter 8; item 7 is intentionally rolled into iter 8 since they're the
+same goal).
 
 ---
 
