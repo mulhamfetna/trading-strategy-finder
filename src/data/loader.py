@@ -31,10 +31,21 @@ def load_data(filepath: str) -> pd.DataFrame:
                 col_mapping[col] = 'Time'
             elif col_lower == 'date':
                 col_mapping[col] = 'Date'
+            elif col_lower == 'datetime':
+                # CSVs like NQ_4h.csv use a single 'datetime' column.
+                # Map to 'Date' so the downstream pipeline can treat it
+                # uniformly with the 1min/15min CSVs.
+                col_mapping[col] = 'Date'
             elif col_lower == 'inc vol':
                 col_mapping[col] = 'IncVol'
         if col_mapping:
             df = df.rename(columns=col_mapping)
+        # If we created a 'Date' from 'datetime', parse to real timestamps.
+        if 'Date' in df.columns and df['Date'].dtype == object:
+            try:
+                df['Date'] = pd.to_datetime(df['Date'])
+            except Exception:
+                pass  # leave as-is; downstream code can still call to_datetime
         return df
     except Exception as e:
         raise Exception(f"Error reading CSV: {e}")
