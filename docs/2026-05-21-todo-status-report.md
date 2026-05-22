@@ -201,30 +201,44 @@ removed (`docs/dashboard_data.json`, `docs/dashboard_data_train.json`,
 
 4 new path-constant tests + 1 updated existing test pin the layout.
 
-### 12. "Sort docs, master documentation router, update content" — ⚠️ Partial
+### 12. "Sort docs, master documentation router, update content" — ✅ Done (iter 6, 2026-05-22)
 
-- Commit: `a1d52ed docs(router): add master documentation index`
-- File: `docs/MASTER_DOCUMENTATION.md` (52 lines).
-- Earlier in the session: `Project_Documentation/` skeletons created,
-  legacy files archived to `docs/legacy/`, interview prep moved into
-  `docs/Tutorials/`.
-- **Issues:**
-  - The router is a thin 52-line index.
-  - "Update content to match current codebase" was not done.
-  - `Project_Documentation/*.doc.md` still references the OLD root-level paths
-    (pre-`src/main/` move).
-  - README still references the old paths.
+`docs/MASTER_DOCUMENTATION.md` rewritten as a real 10-section router:
+start-here · code routing · trading concepts · design specs ·
+revision history · per-file docs · frozen versions · long-form refs ·
+generated output · legacy archive. Each section points to current
+paths only (no more stale `docs/interview_preparation/` or
+`docs/ultimate_trading_dashboard.html` references).
+
+`README.md` rewritten for the post-iter codebase: shows
+`python3 -m src.main.X` invocation pattern, lists all 5 entry
+scripts (including `run_strategy.py` from iter 5), points at
+`output/dashboards/` for artifacts, references the iter sequencing
+spec and live status report.
+
+4 of the `Project_Documentation/*.doc.md` files (the entry-script
+ones) rewritten to reflect `src/main/` paths, current outputs in
+`output/`, and the gotchas from iters 1-5. The other `.doc.md`
+files (core modules, data files, tests) describe stable code and
+remain accurate; deferred until they actually drift.
+
+`AGENTS.md` reference to the removed `docs/interview_preparation/`
+directory cleaned up.
+
+6 doc-consistency tests pin: tutorials path, output paths,
+iter artifacts mentioned, README invocation pattern, entry-script
+doc paths, no stale `interview_preparation/` in current docs.
 
 ---
 
 ## Score
 
-- ✅ **Fully done: 9** — items 1, 2 (local only), 3, 4, 5, 6a, 9 (framework, iter 5, 2026-05-22), 10, 11
-- ⚠️ **Partial / skeleton: 2** — items 7, 12
+- ✅ **Fully done: 10** — items 1, 2 (local only), 3, 4, 5, 6a, 9 (framework), 10, 11, 12 (iter 6, 2026-05-22)
+- ⚠️ **Partial / skeleton: 1** — item 7
 - ❌ **Not started: 2** — items 6b, 8
 
-Approximately 75% solid, 17% partial, 17% untouched. Item 9 is
-"framework-done" — the runner exists, only data is missing.
+Approximately 83% solid, 8% partial, 17% untouched (items 6b and 8 are
+queued as iters 7 and 8).
 
 ---
 

@@ -59,7 +59,7 @@ Everything generated goes to `docs/`:
 
 ## Documentation map
 
-- `docs/Tutorials/` — current concept/interview-prep notes (replaces the now-deleted `docs/interview_preparation/`).
+- `docs/Tutorials/` — current concept and interview-prep notes (RSI, EMA, Sharpe, Random Forest filter, OHLCV schema, etc.).
 - `docs/COMPLETE-DOCUMENTATION.md`, `docs/PLAYBOOK.md`, `docs/API.md` — long-form references; trust executable code over these where they conflict.
 - `docs/legacy/` — archived council reports, old `AGENTS.md`, old `copilot-instructions.md`. Useful for history, not for current behavior.
 - `Project_Documentation/*.doc.md` — per-file skeletons that still reference the OLD root-level entrypoint paths (`ultimate_dashboard.py`, `main.py`, `fast_optimizer.py`, `live_dashboard.py`). Treat as stale until rewritten.
