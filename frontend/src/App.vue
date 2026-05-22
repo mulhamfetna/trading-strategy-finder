@@ -25,12 +25,18 @@
       <main class="flex flex-1 flex-col gap-3 overflow-y-auto p-3">
         <ProgressBar />
 
-        <section class="flex-shrink-0">
-          <MetricsCards :metrics="backtest.metrics" />
+        <section class="flex-none">
+          <div class="mb-2 flex items-center justify-between px-1 text-xs text-tv-muted">
+            <span>Candles</span>
+            <span>{{ backtest.candles.length ? `${backtest.candles.length} loaded` : 'No candles yet' }}</span>
+          </div>
+          <div class="min-h-[520px] overflow-hidden rounded border border-tv-border bg-tv-surface">
+            <ChartPane :candles="backtest.candles" :trades="backtest.trades" />
+          </div>
         </section>
 
-        <section class="min-h-[400px] flex-1 overflow-hidden rounded border border-tv-border bg-tv-surface">
-          <ChartPane :candles="backtest.candles" :trades="backtest.trades" />
+        <section class="flex-shrink-0">
+          <MetricsCards :metrics="backtest.metrics" />
         </section>
 
         <section>

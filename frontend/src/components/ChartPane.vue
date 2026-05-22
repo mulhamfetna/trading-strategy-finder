@@ -1,5 +1,13 @@
 <template>
-  <div ref="containerRef" class="chart-container" data-testid="chart-pane" />
+  <div class="chart-shell" data-testid="chart-pane">
+    <div ref="containerRef" class="chart-container" />
+    <div
+      v-if="!candles.length"
+      class="chart-empty"
+    >
+      No candles loaded yet.
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -122,6 +130,24 @@ onBeforeUnmount(() => {
 .chart-container {
   width: 100%;
   height: 100%;
-  min-height: 400px;
+  min-height: 520px;
+}
+
+.chart-shell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 520px;
+}
+
+.chart-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #787b86;
+  font-size: 12px;
+  pointer-events: none;
 }
 </style>
