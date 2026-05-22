@@ -12,19 +12,22 @@ import { describe, expect, it, vi } from 'vitest';
 // (which is itself hoisted to the top of the file).
 const mocks = vi.hoisted(() => {
   const setData = vi.fn();
+  const setMarkers = vi.fn();
   const remove = vi.fn();
   const fitContent = vi.fn();
   const addSeries = vi.fn(() => ({ setData }));
+  const createSeriesMarkers = vi.fn(() => ({ setMarkers }));
   const createChart = vi.fn(() => ({
     addSeries,
     remove,
     timeScale: () => ({ fitContent }),
   }));
-  return { setData, remove, fitContent, addSeries, createChart };
+  return { setData, setMarkers, remove, fitContent, addSeries, createSeriesMarkers, createChart };
 });
 
 vi.mock('lightweight-charts', () => ({
   createChart: mocks.createChart,
+  createSeriesMarkers: mocks.createSeriesMarkers,
   CandlestickSeries: { __sentinel: 'CandlestickSeries' },
 }));
 

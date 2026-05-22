@@ -6,27 +6,35 @@
 import { onMounted, onBeforeUnmount, watch, ref, toRefs } from 'vue';
 import {
   createChart,
+  createSeriesMarkers,
   CandlestickSeries,
   type IChartApi,
   type ISeriesApi,
+  type ISeriesMarkersPluginApi,
   type CandlestickData,
+  type SeriesMarker,
   type Time,
 } from 'lightweight-charts';
-import type { Candle } from '../types';
+import type { Candle, ScalingTrade } from '../types';
 
-const props = defineProps<{
-  candles: Candle[];
-}>();
+const props = withDefaults(
+  defineProps<{
+    candles: Candle[];
+    trades?: ScalingTrade[];
+  }>(),
+  { trades: () => [] },
+);
 
-const { candles } = toRefs(props);
+const { candles, trades } = toRefs(props);
 
 const containerRef = ref<HTMLDivElement | null>(null);
 let chart: IChartApi | null = null;
 let series: ISeriesApi<'Candlestick'> | null = null;
+let markersApi: ISeriesMarkersPluginApi<Time> | null = null;
 
 function toLwcData(rows: Candle[]): CandlestickData[] {
   return rows.map((row) => ({
-    time: row.t as unknown as Time, // Lightweight Charts accepts ISO strings here
+    time: row.t as unknown as Time,
     open: row.o,
     high: row.h,
     low: row.l,
@@ -34,9 +42,43 @@ function toLwcData(rows: Candle[]): CandlestickData[] {
   }));
 }
 
+function toMarkers(rows: Candle[], tradeRows: ScalingTrade[]): SeriesMarker<Time>[] {
+  if (!rows.length || !tradeRows.length) return [];
+  const markers: SeriesMarker<Time>[] = [];
+  for (const t of tradeRows) {
+    const entry = rows[t.entry_idx];
+    const exit = rows[t.exit_idx];
+    if (entry) {
+      markers.push({
+        time: entry.t as unknown as Time,
+        position: t.direction === 'long' ? 'belowBar' : 'aboveBar',
+        color: t.direction === 'long' ? '#00c853' : '#ff5252',
+        shape: t.direction === 'long' ? 'arrowUp' : 'arrowDown',
+        text: t.direction === 'long' ? 'B' : 'S',
+      });
+    }
+    if (exit) {
+      markers.push({
+        time: exit.t as unknown as Time,
+        position: t.direction === 'long' ? 'aboveBar' : 'belowBar',
+        color: t.profit_dollars >= 0 ? '#00c853' : '#ff5252',
+        shape: 'square',
+        text: `${t.profit_dollars >= 0 ? '+' : ''}${t.profit_points.toFixed(0)}`,
+      });
+    }
+  }
+  return markers.sort((a, b) => String(a.time).localeCompare(String(b.time)));
+}
+
 function applyData() {
   if (!series) return;
   series.setData(toLwcData(candles.value));
+  const m = toMarkers(candles.value, trades.value);
+  if (markersApi) {
+    markersApi.setMarkers(m);
+  } else if (series) {
+    markersApi = createSeriesMarkers(series, m);
+  }
   chart?.timeScale().fitContent();
 }
 
@@ -66,9 +108,10 @@ onMounted(() => {
   applyData();
 });
 
-watch(candles, applyData, { deep: false });
+watch([candles, trades], applyData, { deep: false });
 
 onBeforeUnmount(() => {
+  markersApi = null;
   chart?.remove();
   chart = null;
   series = null;

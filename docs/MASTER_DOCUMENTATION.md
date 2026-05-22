@@ -44,7 +44,7 @@ Single landing page for every documentation source in the repo. Updated
 | `src/backtest/engine.py` | Backtest with fees, slippage, **intra-candle TP/SL resolution** (iter 4: `conservative` / `optimistic` / `direction-proxy`). |
 | `src/backtest/metrics.py` | Aggregate metrics (profit, win-rate, Sharpe, drawdown, EV, max losing streak). |
 | `src/dashboard/template_renderer.py` | **New (iter 2)** — pure-function `{{NAME}}` template renderer. |
-| `src/dashboard/dash_app.py` | Dash live-preview app. |
+| `frontend/` | Vue 3 backtest dashboard (settings, progress, metrics, trades). |
 | `src/dashboard/report.py`, `src/dashboard/visualizer.py` | Console / Plotly summary helpers. |
 
 ### Templates

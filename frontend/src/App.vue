@@ -1,42 +1,53 @@
 <template>
   <div class="flex h-full flex-col bg-tv-bg text-tv-text">
-    <header class="border-b border-tv-border bg-tv-surface p-4">
-      <h1 class="text-lg font-semibold text-tv-blue">NQ Trading Dashboard</h1>
-      <p class="text-xs text-tv-muted">FastAPI + Vue 3 + Lightweight Charts</p>
+    <header class="flex items-center justify-between border-b border-tv-border bg-tv-surface px-4 py-3">
+      <div>
+        <h1 class="text-lg font-semibold text-tv-blue">NQ 1-1-2 Scaling Strategy Dashboard</h1>
+        <p class="text-xs text-tv-muted">FastAPI + Vue 3 + Lightweight Charts &middot; phase C</p>
+      </div>
+      <button
+        class="rounded bg-tv-blue px-4 py-2 text-sm font-semibold text-white shadow disabled:opacity-50"
+        :disabled="backtest.isRunning"
+        data-testid="backtest-button"
+        @click="backtest.run()"
+      >
+        {{ backtest.isRunning ? 'Running...' : 'Run Backtest' }}
+      </button>
     </header>
 
-    <main class="flex flex-1 flex-col gap-4 p-4">
-      <div class="flex items-center gap-3">
-        <button
-          class="rounded bg-tv-blue px-3 py-1 text-sm font-semibold text-white disabled:opacity-50"
-          :disabled="store.loading"
-          @click="reload"
-        >
-          {{ store.loading ? 'Loading...' : 'Load 2025-09-01 to 2025-09-30 (test split)' }}
-        </button>
-        <span v-if="store.range" class="text-xs text-tv-muted">
-          {{ store.candles.length }} candles &middot; {{ store.range.start }} to {{ store.range.end }}
-        </span>
-        <span v-if="store.error" class="text-xs text-tv-red">{{ store.error }}</span>
-      </div>
+    <div class="flex flex-1 overflow-hidden">
+      <!-- Left: settings -->
+      <aside class="w-96 shrink-0 overflow-y-auto border-r border-tv-border bg-tv-bg p-3">
+        <SettingsPanel />
+      </aside>
 
-      <div class="flex-1 overflow-hidden rounded border border-tv-border bg-tv-surface">
-        <ChartPane :candles="store.candles" />
-      </div>
-    </main>
+      <!-- Right: progress + chart + metrics + trades -->
+      <main class="flex flex-1 flex-col gap-3 overflow-y-auto p-3">
+        <ProgressBar />
+
+        <section class="flex-shrink-0">
+          <MetricsCards :metrics="backtest.metrics" />
+        </section>
+
+        <section class="min-h-[400px] flex-1 overflow-hidden rounded border border-tv-border bg-tv-surface">
+          <ChartPane :candles="backtest.candles" :trades="backtest.trades" />
+        </section>
+
+        <section>
+          <TradeList :trades="backtest.trades" />
+        </section>
+      </main>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
 import ChartPane from './components/ChartPane.vue';
-import { useCandlesStore } from './stores/candles';
+import MetricsCards from './components/MetricsCards.vue';
+import ProgressBar from './components/ProgressBar.vue';
+import SettingsPanel from './components/SettingsPanel.vue';
+import TradeList from './components/TradeList.vue';
+import { useBacktestStore } from './stores/backtest';
 
-const store = useCandlesStore();
-
-async function reload() {
-  await store.load('2025-09-01', '2025-09-30', 'test');
-}
-
-onMounted(reload);
+const backtest = useBacktestStore();
 </script>
