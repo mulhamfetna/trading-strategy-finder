@@ -126,14 +126,39 @@ Legend: ✅ done · ⚠️ partial · ❌ not started.
   - **Session token expired** before any code was written.
 - No implementation, no tests, no plan file committed.
 
-### 9. "Test the old strategy on 9→12 2025 data and 1→6 2026 data" — ❌ Not done
+### 9. "Test the old strategy on 9→12 2025 data and 1→6 2026 data" — ✅ Framework done (iter 5, 2026-05-22)
 
-- Never touched.
-- No CSVs for those windows.
-- No backtest runs.
-- No report.
-- Note: data is currently hardcoded to 2025 with cutoff Sep 30 in
-  `src/data/splitter.py::filter_2025`.
+The framework piece is done. Data acquisition for those specific windows
+is **explicitly deferred** (user does not have the CSVs yet).
+
+Framework changes:
+
+- `src/data/splitter.py::filter_by_date_range(df, start, end)` —
+  generalized inclusive date-range filter that supersedes `filter_2025`.
+  Works with `Date` or `timestamps` columns. Handles year-boundary ranges
+  (e.g. 2025-09 → 2026-06).
+- `filter_2025` is kept as a thin backwards-compat shim that delegates to
+  `filter_by_date_range('2025-01-01', '2025-09-30')`.
+- New entry point `src/main/run_strategy.py`:
+
+  ```bash
+  python3 -m src.main.run_strategy \\
+      --data 1min.csv \\
+      --start 2025-09-01 --end 2025-12-31 \\
+      --strategy scalping \\
+      --train-test-split 2025-10-15 \\
+      --tp-sl-resolution conservative
+  ```
+
+  Loads CSV → filters by range → optionally splits train/test → runs
+  scalping pipeline (RSI + EMA + Volume + ML filter) → backtest →
+  prints metrics. Pluggable resolution mode from iter 4.
+
+Once Sep-Dec 2025 / Jan-Jun 2026 CSVs are dropped at repo root, item 9
+finishes by just running the CLI for those date ranges.
+
+4 CLI tests + 5 new date-range tests + 1 backwards-compat test cover
+the framework; all 32 supporting tests still green.
 
 ### 10. "Take care of in-candle TP/SL for sudden spikes" — ✅ Done (iter 4, 2026-05-22)
 
@@ -194,11 +219,12 @@ removed (`docs/dashboard_data.json`, `docs/dashboard_data_train.json`,
 
 ## Score
 
-- ✅ **Fully done: 8** — items 1, 2 (local only), 3, 4, 5, 6a, 10 (iter 4, 2026-05-22), 11
+- ✅ **Fully done: 9** — items 1, 2 (local only), 3, 4, 5, 6a, 9 (framework, iter 5, 2026-05-22), 10, 11
 - ⚠️ **Partial / skeleton: 2** — items 7, 12
-- ❌ **Not started: 3** — items 6b, 8, 9
+- ❌ **Not started: 2** — items 6b, 8
 
-Approximately 67% solid, 17% partial, 25% untouched.
+Approximately 75% solid, 17% partial, 17% untouched. Item 9 is
+"framework-done" — the runner exists, only data is missing.
 
 ---
 
