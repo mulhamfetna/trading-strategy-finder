@@ -585,6 +585,31 @@ def generate_html(data):
 
     chart_json = json.dumps(chart_data, default=str)
 
+    # Iter 1 (TODO item 3): surface latest OHLC values for quick inspection
+    latest_open = chart_data['opens'][-1] if chart_data['opens'] else 0
+    latest_close = chart_data['closes'][-1] if chart_data['closes'] else 0
+    latest_high = chart_data['highs'][-1] if chart_data['highs'] else 0
+    latest_low = chart_data['lows'][-1] if chart_data['lows'] else 0
+    ohlc_summary_html = f'''
+            <div class="metrics-grid" style="margin-bottom: 15px;">
+                <div class="metric-box">
+                    <div class="metric-value">${latest_open:.2f}</div>
+                    <div class="metric-label">Latest Open</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">${latest_close:.2f}</div>
+                    <div class="metric-label">Latest Close</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">${latest_high:.2f}</div>
+                    <div class="metric-label">Latest High</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">${latest_low:.2f}</div>
+                    <div class="metric-label">Latest Low</div>
+                </div>
+            </div>
+'''
     html = f'''<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -909,6 +934,7 @@ def generate_html(data):
     <div class="main-container">
         <!-- Chart Section -->
         <div class="chart-section">
+{ohlc_summary_html}
             <div class="chart-container">
                 <div id="main-chart"></div>
             </div>
@@ -1129,11 +1155,14 @@ def generate_html(data):
         function createChart() {{
             const trace1 = {{
                 x: chartData.dates,
-                y: chartData.closes,
-                type: 'scatter',
-                mode: 'lines',
-                name: 'Close Price',
-                line: {{ color: '#2962ff', width: 1 }},
+                open: chartData.opens,
+                high: chartData.highs,
+                low: chartData.lows,
+                close: chartData.closes,
+                type: 'candlestick',
+                name: 'OHLC',
+                increasing: {{ line: {{ color: '#00c853' }}, fillcolor: '#00c853' }},
+                decreasing: {{ line: {{ color: '#ff5252' }}, fillcolor: '#ff5252' }},
                 xaxis: 'x',
                 yaxis: 'y'
             }};

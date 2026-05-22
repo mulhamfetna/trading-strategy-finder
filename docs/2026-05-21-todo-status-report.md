@@ -49,13 +49,18 @@ Legend: ✅ done · ⚠️ partial · ❌ not started.
   (tag object `635d584`).
 - **Not pushed to `origin`.**
 
-### 3. "Add candle view, closing and opening price" — ✅ Done
+### 3. "Add candle view, closing and opening price" — ✅ Done (iter 1, 2026-05-22)
 
-- Commit: `41aaf79 refactor(dashboard): extract template and candlestick chart`
-  on `phase1-core-engine`.
-- `ultimate_dashboard.py:1115` now emits `type: 'candlestick'`.
-- Caveat: lives on a branch that does **not** contain the `src/main/` move,
-  so a merge is required.
+- `src/main/ultimate_dashboard.py` now emits a Plotly candlestick trace
+  (open/high/low/close) instead of a close-only line.
+- A 4-card OHLC summary panel (Latest Open / Close / High / Low) sits above
+  the chart in the rendered HTML.
+- Test `test_generate_html_uses_candlestick_chart` locks in the candlestick
+  trace + OHLC summary requirements.
+- Implementation was replayed from `phase1-core-engine` (`41aaf79`) onto the
+  current `src/main/ultimate_dashboard.py` path — the original branch was
+  not rebased because it carried template/renderer changes that belong in
+  iter 2.
 
 ### 4. "Separate HTML stuff into template" — ⚠️ Partial
 
@@ -161,11 +166,11 @@ Legend: ✅ done · ⚠️ partial · ❌ not started.
 
 ## Score
 
-- ✅ **Fully done: 4** — items 1, 2 (local only), 5, 6a
-- ⚠️ **Partial / skeleton: 5** — items 3, 4, 7, 11, 12
+- ✅ **Fully done: 5** — items 1, 2 (local only), 3 (iter 1, 2026-05-22), 5, 6a
+- ⚠️ **Partial / skeleton: 4** — items 4, 7, 11, 12
 - ❌ **Not started: 4** — items 6b, 8, 9, 10
 
-Approximately 33% solid, 42% partial, 25% untouched.
+Approximately 42% solid, 33% partial, 25% untouched.
 
 ---
 
