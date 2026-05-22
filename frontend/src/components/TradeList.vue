@@ -26,7 +26,10 @@
           <tr
             v-for="(t, i) in displayed"
             :key="`${t.entry_idx}-${t.exit_idx}`"
-            class="border-t border-tv-border"
+            class="cursor-pointer border-t border-tv-border transition-colors"
+            :class="rowClass(i)"
+            :title="`Click to jump to trade ${i + 1} in replay`"
+            @click="onRowClick(t)"
           >
             <td class="px-3 py-1 text-tv-muted">{{ i + 1 }}</td>
             <td class="px-3 py-1">
@@ -56,11 +59,24 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { ScalingTrade } from '../types';
+import { useReplayStore } from '../stores/replay';
 
 const props = defineProps<{
   trades: ScalingTrade[];
 }>();
 
+const replay = useReplayStore();
+
 const MAX_ROWS = 200;
 const displayed = computed(() => props.trades.slice(0, MAX_ROWS));
+
+function onRowClick(t: ScalingTrade) {
+  replay.jumpToTrade(t.entry_idx);
+}
+
+function rowClass(i: number) {
+  if (!replay.isActive) return 'hover:bg-tv-tile';
+  if (replay.activeTrade === i) return 'bg-tv-tile ring-1 ring-inset ring-tv-blue';
+  return 'hover:bg-tv-tile opacity-60';
+}
 </script>

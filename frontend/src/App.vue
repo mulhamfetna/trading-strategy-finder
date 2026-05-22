@@ -60,6 +60,7 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, onBeforeUnmount } from 'vue';
 import ChartPane from './components/ChartPane.vue';
 import MetricsCards from './components/MetricsCards.vue';
 import ProgressBar from './components/ProgressBar.vue';
@@ -71,4 +72,22 @@ import { useReplayStore } from './stores/replay';
 
 const backtest = useBacktestStore();
 const replay = useReplayStore();
+
+function onKey(e: KeyboardEvent) {
+  if (!replay.isActive) return;
+  if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
+  if (e.code === 'Space') {
+    e.preventDefault();
+    replay.isPlaying ? replay.pause() : replay.play();
+  } else if (e.code === 'ArrowRight') {
+    e.preventDefault();
+    replay.stepForward();
+  } else if (e.code === 'ArrowLeft') {
+    e.preventDefault();
+    replay.stepBack();
+  }
+}
+
+onMounted(() => document.addEventListener('keydown', onKey));
+onBeforeUnmount(() => document.removeEventListener('keydown', onKey));
 </script>

@@ -20,6 +20,20 @@ export const useReplayStore = defineStore('replay', () => {
   );
   const currentCandle = computed(() => backtest.candles[currentIdx.value] ?? null);
 
+  // Sum of P&L for trades that have fully completed (exit candle is in view).
+  const runningPnl = computed(() =>
+    backtest.trades
+      .filter((t) => t.exit_idx <= currentIdx.value)
+      .reduce((s, t) => s + t.profit_dollars, 0),
+  );
+
+  // Index of the trade whose entry≤currentIdx<exit (open trade in replay).
+  const activeTrade = computed(() =>
+    backtest.trades.findIndex(
+      (t) => t.entry_idx <= currentIdx.value && t.exit_idx > currentIdx.value,
+    ),
+  );
+
   function activate() {
     _stopTimer();
     isActive.value = true;
@@ -72,6 +86,14 @@ export const useReplayStore = defineStore('replay', () => {
     }
   }
 
+  function jumpToTrade(entryIdx: number) {
+    if (!isActive.value) {
+      isActive.value = true;
+      isPlaying.value = false;
+    }
+    seekTo(entryIdx);
+  }
+
   return {
     isActive,
     currentIdx,
@@ -80,6 +102,8 @@ export const useReplayStore = defineStore('replay', () => {
     total,
     percent,
     currentCandle,
+    runningPnl,
+    activeTrade,
     activate,
     deactivate,
     play,
@@ -87,5 +111,6 @@ export const useReplayStore = defineStore('replay', () => {
     stepForward,
     stepBack,
     seekTo,
+    jumpToTrade,
   };
 });

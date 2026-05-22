@@ -38,6 +38,14 @@
         </select>
       </label>
 
+      <!-- running P&L -->
+      <span
+        class="rounded px-2 py-0.5 font-semibold"
+        :class="replay.runningPnl >= 0 ? 'text-tv-green' : 'text-tv-red'"
+      >
+        {{ replay.runningPnl >= 0 ? '+' : '' }}${{ replay.runningPnl.toFixed(2) }}
+      </span>
+
       <!-- candle counter -->
       <span class="ml-auto text-tv-muted">
         candle {{ replay.currentIdx + 1 }} / {{ replay.total }}
