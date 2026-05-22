@@ -135,13 +135,27 @@ Legend: ✅ done · ⚠️ partial · ❌ not started.
 - Note: data is currently hardcoded to 2025 with cutoff Sep 30 in
   `src/data/splitter.py::filter_2025`.
 
-### 10. "Take care of in-candle TP/SL for sudden spikes" — ❌ Not done
+### 10. "Take care of in-candle TP/SL for sudden spikes" — ✅ Done (iter 4, 2026-05-22)
 
-- Never touched.
-- `notes.md` records the design intent (SL-first conservative / TP-first
-  optimistic / direction proxy) but no implementation exists.
-- Backtest still resolves TP/SL on per-candle close, ignoring intra-candle
-  path.
+`src/backtest/engine.py` now uses High/Low (not just Close) for TP/SL
+detection and exposes a `tp_sl_resolution` parameter for the tie-break case
+where High >= TP **and** Low <= SL in the same candle:
+
+- `'conservative'` (default) — assume SL hit first (worst case)
+- `'optimistic'` — assume TP hit first (best case)
+- `'direction-proxy'` — green candle (Close > Open) -> TP first; red -> SL
+  first; doji -> falls back to conservative
+
+The new pure-function `_resolve_intra_candle_exit` (FP per refactor policy)
+encapsulates the resolution logic. Exits trigger on the chosen level's
+exact price, then slippage is applied — this matches realistic execution
+better than the previous close-only check.
+
+5 new tests lock in: each mode's behavior, default = conservative, and
+single-side hit (only TP or only SL) exits correctly regardless of mode.
+`run_backtest_15min` in `src/main/ultimate_dashboard.py` is **not** covered
+by this change — it's a separate function and would need its own pass
+(follow-up).
 
 ### 11. "Move outputs to output/ directory" — ✅ Done (iter 3, 2026-05-22)
 
@@ -180,11 +194,11 @@ removed (`docs/dashboard_data.json`, `docs/dashboard_data_train.json`,
 
 ## Score
 
-- ✅ **Fully done: 7** — items 1, 2 (local only), 3, 4, 5, 6a, 11 (iter 3, 2026-05-22)
+- ✅ **Fully done: 8** — items 1, 2 (local only), 3, 4, 5, 6a, 10 (iter 4, 2026-05-22), 11
 - ⚠️ **Partial / skeleton: 2** — items 7, 12
-- ❌ **Not started: 4** — items 6b, 8, 9, 10
+- ❌ **Not started: 3** — items 6b, 8, 9
 
-Approximately 58% solid, 17% partial, 33% untouched.
+Approximately 67% solid, 17% partial, 25% untouched.
 
 ---
 
