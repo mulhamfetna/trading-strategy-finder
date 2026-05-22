@@ -12,21 +12,13 @@
           />
         </label>
         <div></div>
-        <label class="flex flex-col">
-          <span class="text-tv-muted">Start (YYYY-MM-DD, optional)</span>
-          <input
-            v-model="settings.startDate"
-            placeholder="(whole CSV)"
-            class="rounded bg-tv-tile px-2 py-1 text-tv-text outline-none ring-1 ring-tv-border focus:ring-tv-blue"
-          />
+        <label class="flex flex-col gap-1">
+          <span class="text-tv-muted">Start date (optional)</span>
+          <DatePicker v-model="settings.startDate" placeholder="(whole CSV)" />
         </label>
-        <label class="flex flex-col">
-          <span class="text-tv-muted">End (YYYY-MM-DD, optional)</span>
-          <input
-            v-model="settings.endDate"
-            placeholder="(whole CSV)"
-            class="rounded bg-tv-tile px-2 py-1 text-tv-text outline-none ring-1 ring-tv-border focus:ring-tv-blue"
-          />
+        <label class="flex flex-col gap-1">
+          <span class="text-tv-muted">End date (optional)</span>
+          <DatePicker v-model="settings.endDate" placeholder="(whole CSV)" />
         </label>
       </div>
     </section>
@@ -118,6 +110,7 @@
 
 <script setup lang="ts">
 import { useSettingsStore } from '../stores/settings';
+import DatePicker from './DatePicker.vue';
 import NumField from './NumField.vue';
 
 const settings = useSettingsStore();
