@@ -87,6 +87,24 @@
       </div>
     </section>
 
+    <!-- Section: Indicators -->
+    <section class="rounded border border-tv-border bg-tv-surface p-3">
+      <h3 class="mb-2 text-sm font-semibold text-tv-blue">Indicators</h3>
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <NumField label="EMA fast period" v-model.number="settings.indicators.emaFast" :min="2" />
+        <NumField label="EMA slow period" v-model.number="settings.indicators.emaSlow" :min="2" />
+        <label class="col-span-2 flex items-center gap-2">
+          <input type="checkbox" v-model="settings.indicators.showVolume" />
+          <span class="text-tv-text">Show volume panel</span>
+        </label>
+        <label class="col-span-2 flex items-center gap-2">
+          <input type="checkbox" v-model="settings.indicators.showRSI" />
+          <span class="text-tv-text">Show RSI panel</span>
+        </label>
+        <NumField label="RSI period" v-model.number="settings.indicators.rsiPeriod" :min="2" :disabled="!settings.indicators.showRSI" />
+      </div>
+    </section>
+
     <div class="flex justify-between">
       <button
         class="rounded bg-tv-tile px-3 py-1 text-xs text-tv-muted hover:text-tv-text"
