@@ -43,11 +43,27 @@ Legend: ✅ done · ⚠️ partial · ❌ not started.
   is used for the train split too.
 - Outputs were not committed because the regeneration produced an empty diff.
 
-### 2. "Freeze the branch v1.0 working" — ✅ Done (local only)
+### 2. "Freeze the branch v1.0 working" — ✅ Done (iter 9, 2026-05-22)
 
-- Branch `v1.0-working` + annotated tag `v1.0-working` at commit `1890298`
-  (tag object `635d584`).
-- **Not pushed to `origin`.**
+Branch `v1.0-working` + annotated tag `v1.0-working` (object `635d584`)
+both point to commit `1890298` (the revisions log commit, now reachable
+from master via the merge).
+
+**Pushed to origin in iter 9:**
+
+- `master` advanced from `d5dd641` → `c2c5035` (24 new commits covering
+  iters 1–8).
+- `refs/tags/v1.0-working` published.
+- `refs/heads/v1.0-working` published (so the branch is visible on
+  GitHub alongside the tag).
+
+```text
+remote refs after iter 9:
+  c2c5035  master
+  1890298  v1.0-working (branch)
+  635d584  v1.0-working (annotated tag -> 1890298)
+  eb688b4  v1.0.0 (annotated tag -> 7fa6291)
+```
 
 ### 3. "Add candle view, closing and opening price" — ✅ Done (iter 1, 2026-05-22)
 
@@ -299,13 +315,20 @@ doc paths, no stale `interview_preparation/` in current docs.
 
 ## Score
 
-- ✅ **Fully done: 13** — items 1, 2 (local only), 3, 4, 5, 6a, 6b, 7 (iter 8), 8 (iter 8), 9 (framework), 10, 11, 12
+- ✅ **Fully done: 13** — items 1, 2 (iter 9), 3, 4, 5, 6a, 6b, 7 (iter 8), 8 (iter 8), 9 (framework), 10, 11, 12
 - ⚠️ **Partial / skeleton: 0**
 - ❌ **Not started: 0**
 
-All 12 numbered TODO items addressed (with item 9 framework-done pending
-data). Item 2 is the only one not pushed to origin yet — that's iter 9's
-job.
+All 12 numbered TODO items addressed. Item 9 is "framework-done" — the
+runner exists; only the Sep-Dec 2025 and Jan-Jun 2026 CSVs are missing.
+Drop them at repo root and run:
+
+```bash
+python3 -m src.main.run_strategy --data 1min.csv \
+    --start 2025-09-01 --end 2025-12-31 --strategy scalping
+```
+
+**100% of the actionable TODO items are now complete and pushed.**
 
 ---
 
