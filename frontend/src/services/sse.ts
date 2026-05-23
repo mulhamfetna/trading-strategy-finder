@@ -5,6 +5,10 @@
  * ReadableStream reader and parse SSE frames manually.
  */
 
+import {
+  DEFAULT_BOX_DATA_PATH,
+  DEFAULT_DATA_PATH,
+} from '../types';
 import type {
   BoxParams,
   ScalingCompletePayload,
@@ -30,8 +34,8 @@ export function streamBoxBacktest(
 ): AsyncGenerator<ScalingStreamEvent, void, unknown> {
   return _streamSse('/api/backtest/box', {
     params: opts.params,
-    data_path: opts.data_path ?? 'NQ_4h.csv',
-    box_data_path: opts.box_data_path ?? 'NQ_full_data.csv',
+    data_path: opts.data_path ?? DEFAULT_DATA_PATH,
+    box_data_path: opts.box_data_path ?? DEFAULT_BOX_DATA_PATH,
     start: opts.start ?? null,
     end: opts.end ?? null,
   });

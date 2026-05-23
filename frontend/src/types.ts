@@ -191,4 +191,5 @@ export const DEFAULT_BOX_PARAMS: BoxParams = {
   big_candle_resolution: 'big_candle_wins',
 };
 
+export const DEFAULT_DATA_PATH = 'NQ_4h.csv';
 export const DEFAULT_BOX_DATA_PATH = 'NQ_full_data.csv';
