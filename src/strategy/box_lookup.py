@@ -1,15 +1,34 @@
 """
 BoxLookup — loads the shifted weekly/monthly box CSVs and answers:
   1. Which box levels are active for a given date?
-  2. Does a close price generate a LONG, SHORT, or no signal?
+  2. Does a close price generate a LONG, SHORT, or HOLD signal via traversal?
   3. Which specific box level fired, and what were its edges?
 
-Signal rule:
-  close > upper + tick_threshold  →  'long'
-  close < lower − tick_threshold  →  'short'
-  otherwise                       →  None (hold)
+Traversal signal rule (v3.1+, 2026-05-23):
+  Per (box_row_id, level_name) the lookup tracks:
+    - state ∈ {'above', 'below', None}  — last observed side
+    - inside_seen: bool                 — has 'inside' been observed since state was last set?
 
-Both weekly AND monthly must agree on direction.
+  A signal fires only when the close TRAVERSES the box — meaning:
+    1. State was 'above'/'below'
+    2. 'inside' was observed at least once since state was set
+    3. The current close is on the OPPOSITE side
+
+    above → inside → below : 'short'  (price came down THROUGH the box)
+    below → inside → above : 'long'   (price came up THROUGH the box)
+
+  Gap-skips (above → below with no intervening 'inside') do NOT fire — they
+  update the state silently. Same-side repeats, transient inside bars, and
+  first observations all return 'hold'.
+
+  Every level on the active row is evaluated on every bar so multi-level
+  (stacked-box) signals don't get stranded behind a "closest level" pick.
+
+  Aggregate signal uses weekly priority (weekly wins over monthly).
+  Returns 'long', 'short', or 'hold' when at least one side is active,
+  else None (no active box for either timeframe).
+
+See docs/MASTER_STRATEGY_GUIDE.md §2 and docs/BOX_STRATEGY.md "Signal Logic".
 """
 
 from __future__ import annotations
@@ -19,7 +38,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
 
-from src.exceptions import MissingDataFileError
+from src.exceptions import ConfigurationError, MissingDataFileError
 
 # (upper_col, lower_col, label)
 _WEEKLY_LEVELS: List[Tuple[str, str, str]] = [
@@ -87,6 +106,24 @@ class BoxLookup:
         self.monthly_window_days = monthly_window_days
         self._weekly  = self._load(week_path,  window_days=weekly_window_days)
         self._monthly = self._load(month_path, window_days=monthly_window_days)
+        # Per-(row_id, level_name) traversal state machine.
+        # row_id is the pandas Timestamp of the box row's 'Date' field.
+        # state ∈ {'above', 'below'}. Missing key == None (haven't observed).
+        self._state: Dict[Tuple[pd.Timestamp, str], str] = {}
+        # Per-(row_id, level_name): has 'inside' been observed since the
+        # state was last set? Required for the traversal rule — a transition
+        # only fires if the price ENTERED the box (saw 'inside') between
+        # the two opposite-side observations. Defaults to False; reset to
+        # False whenever state is set (entry side recorded).
+        self._inside_seen: Dict[Tuple[pd.Timestamp, str], bool] = {}
+
+    def reset_state(self) -> None:
+        """Clear the traversal state. Idempotent — safe to call repeatedly.
+        Call at the start of each backtest run (or each walk-forward fold)
+        so state does not leak between runs. After this call, the next
+        observation of any (row, level) is treated as the first observation."""
+        self._state = {}
+        self._inside_seen = {}
 
     # ------------------------------------------------------------------
     @staticmethod
@@ -117,58 +154,167 @@ class BoxLookup:
         return self._active_row(self._monthly, ts)
 
     # ------------------------------------------------------------------
+    def _classify(self, close: float, upper: float, lower: float) -> str:
+        """Classify a close relative to a box's edges.
+        Returns 'above', 'below', or 'inside' (within +/- tick_threshold of the edges).
+
+        Raises ConfigurationError when the box geometry is invalid
+        (`upper <= lower`) — no silent fallback; the box CSV must be fixed
+        upstream (typically by re-running `scripts/preprocess_boxes.py`)."""
+        if upper <= lower:
+            raise ConfigurationError(
+                f'Box edges are malformed: upper={upper} lower={lower}. '
+                f'Each box must have upper > lower (positive height).',
+                code='malformed-box-geometry',
+                system_status={
+                    'upper': upper,
+                    'lower': lower,
+                    'tick_threshold': self.tick_threshold,
+                    'hint': 'Inspect the active box CSV row; re-run scripts/preprocess_boxes.py if the data was corrupted.',
+                },
+            )
+        if close > upper + self.tick_threshold:
+            return 'above'
+        if close < lower - self.tick_threshold:
+            return 'below'
+        return 'inside'
+
+    def _step_level(
+        self,
+        close: float,
+        row_date: pd.Timestamp,
+        label: str,
+        upper: float,
+        lower: float,
+    ) -> Tuple[str, str]:
+        """Advance the per-(row, level) state machine by one bar.
+        Returns (signal, side) where:
+          - signal ∈ {'long', 'short', 'hold'}
+          - side   ∈ {'above', 'below', 'inside'} — classification THIS bar
+        """
+        side = self._classify(close, upper, lower)
+        key = (row_date, label)
+        prev_state = self._state.get(key)
+
+        if side == 'inside':
+            # Inside is the "entered the box" observation. Mark it so a
+            # later opposite-side close counts as a real traversal. State
+            # itself is unchanged — the state holds the LAST side observed
+            # outside the box.
+            if prev_state is not None:
+                self._inside_seen[key] = True
+            return 'hold', side
+
+        if prev_state is None:
+            # First observation — record entry side; no fire.
+            self._state[key] = side
+            self._inside_seen[key] = False
+            return 'hold', side
+
+        if prev_state == side:
+            # Same outside side. State doesn't change. Note: if price had
+            # dipped into the box and exited back the same side, inside_seen
+            # is True — we keep it True so a LATER opposite-side close still
+            # counts as a traversal off the inside observation. The user's
+            # spec ("stayed inside the box in both situations is considered
+            # hold") supports this: only the OPPOSITE-side exit fires.
+            return 'hold', side
+
+        # Opposite-side transition. Fire only if 'inside' was observed
+        # between the state-set and now (the box was actually entered).
+        if not self._inside_seen.get(key, False):
+            # Gap-skip — update state silently, no fire.
+            self._state[key] = side
+            return 'hold', side
+
+        signal = 'short' if prev_state == 'above' else 'long'
+        self._state[key] = side
+        self._inside_seen[key] = False
+        return signal, side
+
     def _best_level(
         self,
         close: float,
         row: pd.Series,
         levels: List[Tuple[str, str, str]],
-    ) -> Optional[Tuple[str, str, float, float]]:
-        """Return (direction, label, upper, lower) for the closest firing level,
-        or None if no level fires."""
-        candidates: List[Tuple[float, str, str, float, float]] = []
+    ) -> Optional[Tuple[str, str, float, float, str]]:
+        """Evaluate the traversal state machine for EVERY level on the row,
+        then choose ONE level to report (the firing level if any traversal
+        fired this bar, otherwise the closest level by mid-distance for HOLD).
+
+        Returns (signal, label, upper, lower, side), or None only when no
+        level has both edges present in `row`.
+        """
+        results: List[Tuple[str, str, float, float, str, float]] = []
+        row_date = row['Date']
         for upper_col, lower_col, label in levels:
             upper = row.get(upper_col)
             lower = row.get(lower_col)
             if pd.isna(upper) or pd.isna(lower):
                 continue
             upper, lower = float(upper), float(lower)
-            mid  = (upper + lower) / 2.0
+            mid = (upper + lower) / 2.0
             dist = abs(close - mid)
-            if close > upper + self.tick_threshold:
-                candidates.append((dist, 'long',  label, upper, lower))
-            elif close < lower - self.tick_threshold:
-                candidates.append((dist, 'short', label, upper, lower))
+            signal, side = self._step_level(close, row_date, label, upper, lower)
+            results.append((signal, label, upper, lower, side, dist))
 
-        if not candidates:
+        if not results:
             return None
-        candidates.sort(key=lambda x: x[0])
-        _, direction, label, upper, lower = candidates[0]
-        return direction, label, upper, lower
+
+        # Firing level (if any) wins. Multiple traversals on the same bar
+        # are tie-broken by closest mid-distance.
+        firing = [r for r in results if r[0] in ('long', 'short')]
+        if firing:
+            firing.sort(key=lambda x: x[5])
+            sig, label, upper, lower, side, _ = firing[0]
+            return sig, label, upper, lower, side
+
+        # No traversal fired — report the closest level for HOLD context.
+        results.sort(key=lambda x: x[5])
+        sig, label, upper, lower, side, _ = results[0]
+        return sig, label, upper, lower, side
 
     # ------------------------------------------------------------------
     def get_signal(self, close: float, ts: pd.Timestamp) -> Optional[str]:
-        """Return 'long', 'short', or None.
-        Fires as soon as price crosses ONE box level (weekly takes priority).
+        """Return 'long', 'short', 'hold', or None.
+
+        - 'long' / 'short': a traversal fired on this bar (weekly priority).
+        - 'hold': at least one timeframe has an active box but no traversal fired.
+        - None: neither weekly nor monthly has an active box row (data gap).
+
+        NOTE: This call mutates the internal state machine. Call exactly once
+        per (close, ts) per backtest run. Use `reset_state()` between runs.
         """
         weekly_row  = self.get_active_weekly_box(ts)
         monthly_row = self.get_active_monthly_box(ts)
         w = self._best_level(close, weekly_row,  _WEEKLY_LEVELS)  if weekly_row  is not None else None
         m = self._best_level(close, monthly_row, _MONTHLY_LEVELS) if monthly_row is not None else None
-        if w is not None:
-            return w[0]
-        if m is not None:
-            return m[0]
-        return None
+        if w is None and m is None:
+            return None
+        w_sig = w[0] if w else None
+        m_sig = m[0] if m else None
+        # Weekly priority: if weekly fired a directional signal, use it.
+        if w_sig in ('long', 'short'):
+            return w_sig
+        if m_sig in ('long', 'short'):
+            return m_sig
+        # Neither fired a traversal; at least one side has an active row → 'hold'.
+        return 'hold'
 
     def get_signal_detail(self, close: float, ts: pd.Timestamp) -> Dict[str, Any]:
         """Like get_signal but returns full detail for trade logging.
 
-        Adds a `conflict` flag (FIX-21): the weekly and monthly sides fire
-        independently, so they may produce opposite directions. The aggregate
-        `signal` resolves the conflict by weekly-priority (see get_signal),
-        but the conflict flag lets the UI label the trade with
-        "weekly fired despite monthly disagreement" rather than silently
-        hiding the disagreement.
+        Returned `signal` is 'long' / 'short' / 'hold' when at least one side
+        has an active box row, else None (no active row anywhere — data gap).
+
+        Per-side `weekly_signal` / `monthly_signal` is 'long' / 'short' / 'hold'
+        when that side has an active row, else None.
+
+        `conflict = True` when weekly and monthly fire opposite *directional*
+        signals on the same bar.
+
+        NOTE: This call mutates the internal state machine. Call exactly once
+        per (close, ts) per backtest run. Use `reset_state()` between runs.
         """
         weekly_row  = self.get_active_weekly_box(ts)
         monthly_row = self.get_active_monthly_box(ts)
@@ -176,10 +322,25 @@ class BoxLookup:
         w = self._best_level(close, weekly_row,  _WEEKLY_LEVELS)  if weekly_row  is not None else None
         m = self._best_level(close, monthly_row, _MONTHLY_LEVELS) if monthly_row is not None else None
 
-        w_sig   = w[0] if w else None
-        m_sig   = m[0] if m else None
-        signal  = w_sig if w_sig is not None else m_sig
-        conflict = w_sig is not None and m_sig is not None and w_sig != m_sig
+        w_sig = w[0] if w else None
+        m_sig = m[0] if m else None
+
+        # Aggregate: weekly priority for directional fires; otherwise 'hold'
+        # if at least one side is active; else None (no active row anywhere).
+        if w_sig in ('long', 'short'):
+            signal: Optional[str] = w_sig
+        elif m_sig in ('long', 'short'):
+            signal = m_sig
+        elif w_sig is not None or m_sig is not None:
+            signal = 'hold'
+        else:
+            signal = None
+
+        conflict = (
+            w_sig in ('long', 'short')
+            and m_sig in ('long', 'short')
+            and w_sig != m_sig
+        )
 
         return {
             'signal':            signal,
@@ -192,6 +353,8 @@ class BoxLookup:
             'weekly_lower':      w[3] if w else None,
             'monthly_upper':     m[2] if m else None,
             'monthly_lower':     m[3] if m else None,
+            'weekly_side':       w[4] if w else None,
+            'monthly_side':      m[4] if m else None,
             'weekly_box_start':  str(weekly_row['Date'].date())  if weekly_row  is not None else None,
             'monthly_box_start': str(monthly_row['Date'].date()) if monthly_row is not None else None,
         }
@@ -225,7 +388,11 @@ class BoxLookup:
                     lower = row.get(lower_col)
                     if pd.isna(upper) or pd.isna(lower):
                         continue
-                    fill, border = _LEVEL_COLORS.get(label, ('rgba(128,128,128,0.05)', 'rgba(128,128,128,0.3)'))
+                    # Direct lookup — every label in _WEEKLY_LEVELS / _MONTHLY_LEVELS
+                    # is also a key in _LEVEL_COLORS. KeyError here indicates a
+                    # palette/label-list mismatch the developer must fix; no
+                    # silent grey-rgba fallback.
+                    fill, border = _LEVEL_COLORS[label]
                     rects.append({
                         'start_time':   box_start,
                         'end_time':     box_end,

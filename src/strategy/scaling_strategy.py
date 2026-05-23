@@ -195,6 +195,10 @@ class ScalingStrategy:
 
             prev_close = float(df.iloc[idx - 1]['Close']) if idx > 0 else opn
 
+            # Per-bar observation hook for subclasses that need to see EVERY
+            # bar (e.g., BoxStrategy's traversal state machine). Default no-op.
+            self._on_bar(idx, candle)
+
             exit_event: Optional[Dict] = None
 
             # ----- EXIT CHECKS (if position open) -----
@@ -258,6 +262,13 @@ class ScalingStrategy:
     # ------------------------------------------------------------------
     # Per-candle decision helpers (pure functions on `position` state)
     # ------------------------------------------------------------------
+
+    def _on_bar(self, idx: int, candle: pd.Series) -> None:
+        """Hook called once per bar from `backtest`, BEFORE exits/entries.
+
+        Default no-op. BoxStrategy overrides this to drive its traversal
+        state machine on every bar regardless of position/cooldown state."""
+        pass
 
     def _maybe_open_position(
         self,
