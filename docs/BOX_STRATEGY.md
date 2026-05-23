@@ -55,29 +55,76 @@
 
 ---
 
-## Signal Logic
+## Signal Logic — Traversal (v3.1+, 2026-05-23 onward)
 
 ### For each 4h candle close:
 
 1. **Find active weekly box** — the weekly row where `date_shifted ≤ candle_date < date_shifted + 7 days`
 2. **Find active monthly box** — the monthly row where `date_shifted ≤ candle_date < date_shifted + 30 days`
-3. **For each box level** (checking individual boxes, not intersections):
-   - `close > upper_edge + 0.75` → **LONG** signal for that box
-   - `close < lower_edge − 0.75` → **SHORT** signal for that box
-   - Otherwise → HOLD for that box
+3. **For each box level**, classify the close relative to the box edges:
+   - `close > upper_edge + 0.75` → **above**
+   - `close < lower_edge − 0.75` → **below**
+   - otherwise                   → **inside**
+4. **Per-level state machine** keyed by `(box_row_id, level_name)` tracks the last `above`/`below` observation. A signal fires only when the classification **transitions** from one side to the opposite side. Same-side repeats and inside-box bars return `hold`.
 
-### Validation rule (current — single-box, weekly priority):
-- Signal fires as soon as **one** box level produces a direction signal — we do **not** require weekly and monthly to agree.
-- Weekly takes priority: if the weekly side fires `long`/`short`, we trade that direction; only if the weekly side is silent does the monthly side fire.
-- If one box is null (TH/TL not present) → that side simply abstains.
-- Intersected boxes are **not** counted in this iteration.
+```text
+states: { 'above', 'below', None }   # None = haven't observed this (row, level) yet
 
-> **History:** The legacy rule (≤ 2026-05-23) required weekly AND monthly to agree before firing. That rule was abandoned in favour of single-box firing so the strategy reacts as soon as price crosses any tracked level. The active implementation in `src/strategy/box_lookup.py:get_signal` matches the single-box rule above.
+on each bar t with close c:
+  c_side = classify(c, upper(row, level), lower(row, level))
+
+  if c_side == 'inside':
+    signal := 'hold'                 # transient — do not change state
+  elif state is None:
+    state := c_side                  # first observation — record only
+    signal := 'hold'
+  elif state == c_side:
+    signal := 'hold'                 # same side, no transition
+  else:                              # opposite-side transition
+    signal := 'short' if state == 'above' else 'long'
+    state := c_side
+```
+
+Going **down through the box** (`above → below`) → **SHORT**.
+Going **up through the box** (`below → above`) → **LONG**.
+Entering the box and exiting back the same side → **HOLD** (state never changed).
+
+### Aggregating weekly + monthly:
+
+- Per box (weekly / monthly) we evaluate every level and pick the closest one to the close as the **active level** for that side.
+- The aggregate signal uses **weekly priority**: if the weekly side fires `long`/`short`, use it; otherwise use the monthly side.
+- `conflict = True` when weekly and monthly fire opposite directions on the same bar.
+- If one side has no active box row → that side reports `None` (distinct from `'hold'`).
+- The aggregate signal is `'long'`, `'short'`, or `'hold'` when at least one side has an active row — never `None` unless both sides have no box.
+
+### Three states (the headline change):
+
+| Aggregate signal | Meaning | Action taken |
+|---|---|---|
+| `'long'`  | Close traversed the box bottom-to-top this bar | Open a long position |
+| `'short'` | Close traversed the box top-to-bottom this bar | Open a short position |
+| `'hold'`  | At least one side has an active box but no traversal fired | Do nothing |
+| `None`    | Neither weekly nor monthly has an active row | Do nothing (data gap) |
 
 ### Entry:
 - Signal confirmed at close of 4h candle
 - Enter at **open of next 4h candle**
 - Same 1-1-2 scaling mechanics as current ScalingStrategy
+
+---
+
+## Signal Logic — Legacy (pre-v3.1, ≤ 2026-05-23) — FROZEN
+
+> The rule below was the active behaviour before the traversal rewrite. Kept for historical context; do not use as a reference for current implementation.
+
+For each 4h candle close:
+- `close > upper_edge + 0.75` → **LONG** signal for that box
+- `close < lower_edge − 0.75` → **SHORT** signal for that box
+- Otherwise → HOLD
+
+Validation rule (single-box, weekly priority): signal fires as soon as **one** box level produces a direction signal. Weekly takes priority over monthly. No state machine; every bar past the edge re-fires.
+
+Earlier still (pre-2026-05-23): the rule required weekly AND monthly to agree before firing. That was abandoned in favour of single-box firing.
 
 ---
 

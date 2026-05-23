@@ -84,3 +84,24 @@ def test_candles_with_string_date_string_time():
 def test_empty_df_returns_empty_list():
     df = _ohlcv({'Date': []})
     assert _candles_from_df(df) == []
+
+
+def test_missing_volume_column_raises_configuration_error():
+    """No-fallback rule: a CSV missing the Volume column must NOT silently
+    substitute zeros — it must raise ConfigurationError so the caller can
+    show the user a concrete data-quality error."""
+    import pytest
+    from src.exceptions import ConfigurationError
+
+    df = pd.DataFrame({
+        'Date': pd.to_datetime(['2025-01-01 09:30:00']),
+        'Open': [20000.0],
+        'High': [20010.0],
+        'Low':  [19990.0],
+        'Close': [20005.0],
+        # NOTE: no Volume column
+    })
+    with pytest.raises(ConfigurationError) as exc:
+        _candles_from_df(df)
+    assert exc.value.code == 'missing-candle-columns'
+    assert 'Volume' in exc.value.system_status['missing_columns']

@@ -63,6 +63,15 @@ class BoxStrategy(ScalingStrategy):
         The FastAPI endpoint owns BoxLookup construction so it can
         validate file existence + raise MissingDataFileError before
         spinning up the worker thread.
+
+        Re-entry note (C2): under traversal semantics, re-entry after a
+        profitable exit naturally requires a NEW traversal to fire — the
+        state machine doesn't grant a "free" re-entry on the same side,
+        because doing so would contradict the user's spec ("stayed inside
+        the box in both situations is considered hold"). The
+        `reentry_cooldown_candles` parameter still gates how soon after an
+        exit a new entry can fire; the traversal itself decides which
+        direction.
         """
         if params is None:
             raise MissingParameterError(
@@ -92,17 +101,38 @@ class BoxStrategy(ScalingStrategy):
     ) -> Tuple[List[Dict], Dict]:
         self._df4h = df
         self._signal_details = {}
+        # Traversal state machine is per-run. Reset so a fresh backtest does
+        # not inherit observations from a prior run (matters for re-using
+        # the same BoxLookup across walk-forward folds).
+        self._box.reset_state()
         trades, state = super().backtest(df, on_progress=on_progress)
-        # Post-process: attach box_signal to each trade.
+        # Post-process: attach box_signal to each trade. `_on_bar` recorded
+        # the box detail at the bar's idx; entry_idx is that same idx.
+        # Direct access on `entry_idx` — every trade the engine emits carries
+        # it (no silent -1 fallback). `_signal_details.get` may legitimately
+        # return None for that idx if no box was active that bar.
         for trade in trades:
-            entry_idx = trade.get('entry_idx', -1)
-            detail = (
-                self._signal_details.get(entry_idx - 1)
-                or self._signal_details.get(entry_idx)
-            )
+            detail = self._signal_details.get(trade['entry_idx'])
             if detail:
                 trade['box_signal'] = detail
         return trades, state
+
+    # ------------------------------------------------------------------
+    # Per-bar observation hook — drive the traversal state machine on
+    # EVERY bar, regardless of position/cooldown state. This is the C1
+    # fix: without it, bars during an open trade or cooldown were invisible
+    # to the state machine and stale state could fire spurious signals
+    # after exit.
+    # ------------------------------------------------------------------
+
+    def _on_bar(self, idx: int, candle: pd.Series) -> None:
+        ts = self._get_ts(idx)
+        if ts is None:
+            return
+        close = float(candle['Close'])
+        # get_signal_detail mutates the state machine — calling it once
+        # per bar here means _maybe_open_position MUST NOT call it again.
+        self._signal_details[idx] = self._box.get_signal_detail(close, ts)
 
     # ------------------------------------------------------------------
     # Override entry — box-based instead of close > prev_close
@@ -121,14 +151,14 @@ class BoxStrategy(ScalingStrategy):
         candle_size = abs(close - opn)
         is_big_candle = candle_size > p.big_candle_threshold_points
 
-        # Compute the Box signal whether or not we're in a big-candle bar —
-        # the conflict-resolution policy may need both.
-        ts = self._get_ts(idx)
-        box_detail: Optional[Dict] = None
-        box_signal: Optional[str] = None
-        if ts is not None:
-            box_detail = self._box.get_signal_detail(close, ts)
-            box_signal = box_detail.get('signal') if box_detail else None
+        # Read the per-bar box signal recorded by `_on_bar`. Do NOT call
+        # `get_signal_detail` here — it would double-advance the state.
+        box_detail: Optional[Dict] = self._signal_details.get(idx)
+        box_signal: Optional[str] = box_detail.get('signal') if box_detail else None
+
+        # 'hold' and None both mean "box did not fire a directional signal".
+        # Treat them as equivalent in the conflict-resolution logic below.
+        box_directional = box_signal if box_signal in ('long', 'short') else None
 
         if is_big_candle:
             # Compute the Big-Candle direction (with the §2 reversal rule
@@ -142,12 +172,12 @@ class BoxStrategy(ScalingStrategy):
             # BoxStrategyParams dataclass enforces it). Unknown values
             # raise instead of silently using the legacy behaviour.
             policy = p.big_candle_resolution
-            if box_signal is None or box_signal == bc_dir:
+            if box_directional is None or box_directional == bc_dir:
                 chosen = bc_dir
             elif policy == 'big_candle_wins':
                 chosen = bc_dir
             elif policy == 'box_wins':
-                chosen = box_signal
+                chosen = box_directional
             elif policy == 'skip':
                 return None
             else:
@@ -162,19 +192,19 @@ class BoxStrategy(ScalingStrategy):
 
             # Attach the box detail so the trade log can show how the
             # conflict was resolved.
-            if box_detail and box_signal is not None:
+            if box_detail and box_directional is not None:
                 self._signal_details[idx] = box_detail
 
             pos = _Position(direction=chosen, base_level=close, opened_at_idx=idx)
             pos.legs.append(_Leg(p.big_candle_full_contracts, close, idx))
             return pos
 
-        # Normal (non-big-candle) box-driven entry.
-        if box_signal is None:
+        # Normal (non-big-candle) box-driven entry — only a traversal fires.
+        if box_directional is None:
             return None
         self._signal_details[idx] = box_detail or {}
 
-        pos = _Position(direction=box_signal, base_level=close, opened_at_idx=idx)
+        pos = _Position(direction=box_directional, base_level=close, opened_at_idx=idx)
         pos.legs.append(_Leg(p.leg1_contracts, close, idx))
         return pos
 

@@ -2,6 +2,7 @@
 
 **Generated:** 2026-05-23 (post no-fallback rule)
 **Updated:** 2026-05-23 (three 🟥 items closed — see "Post-publication update" below)
+**Updated:** 2026-05-23 (Round 14 — Box traversal + HOLD state — see bottom)
 **Supersedes:** V2 (`docs/revisions/hardcoded-scan-2026-05-23/HARDCODED_VALUES_REPORT_V2.md`)
 **Supersedes:** V1 (`docs/revisions/swarm-2026-05-23/HARDCODED_VALUES_REPORT.md`)
 
@@ -256,3 +257,128 @@ Remaining hardcoded values are:
 4. **English UI strings** (~121). Off-scope unless i18n is added.
 
 After the post-publication fixes, the remaining open items are: #1 (frontend CSV path centralisation), #3 (RGBA palette refactor in box_lookup), #6 (named operational constants), #7 (avg_profit/avg_loss N/A formatter), and #8 (i18n — deferred). All five are cosmetic / out-of-scope under the no-fallback rule.
+
+---
+
+## Round 14 update — Box traversal + HOLD state (2026-05-23)
+
+The box directional oracle was rewritten to use TRAVERSAL semantics with a per-`(box_row_id, level_name)` state machine and an explicit `'hold'` state. See `docs/research/BOX_TRAVERSAL_HOLD_STATE_ACTION_PLAN.md` and the bug-bounty report `docs/research/BOX_TRAVERSAL_HOLD_STATE_BUG_BOUNTY_REPORT.md`.
+
+### Net hardcoded-value impact
+
+| Item | Before | After | Notes |
+|---|---|---|---|
+| Strategy-decision defaults in backend | 0 | **0** | Unchanged — the traversal rule is a semantic switch, not a tunable. |
+| Pydantic / dataclass defaults | 0 | **0** | No new optional fields. `BoxStrategyParams` field count unchanged. |
+| Module-level constants in `box_lookup.py` | 0 | **0** | New attributes (`_state`, `_inside_seen`) are runtime per-instance state, not defaults. |
+| Magic strings / enum values | (`'long'`, `'short'`, `None`) | (`'long'`, `'short'`, `'hold'`, `None`) | One new explicit signal value. Documented in `MASTER_STRATEGY_GUIDE.md §2` and `BOX_STRATEGY.md`. |
+
+### New structured-error code introduced
+
+A new `ConfigurationError` was added to *strengthen* the no-fallback rule rather than weaken it. Previously, `_classify` silently produced wrong classifications when a box CSV row had `upper <= lower` (bug-bounty Y13). It now raises:
+
+```python
+ConfigurationError(
+    'Box edges are malformed: upper=… lower=…. Each box must have upper > lower (positive height).',
+    code='malformed-box-geometry',
+    system_status={'upper', 'lower', 'tick_threshold', 'hint'},
+)
+```
+
+- **Code:** `malformed-box-geometry`
+- **Trigger:** `upper <= lower` on any box level evaluated by the traversal state machine.
+- **Rationale:** the prior silent behaviour was a no-fallback rule violation hiding as a defensive comparison; raising surfaces upstream data-prep bugs (typically in `scripts/preprocess_boxes.py`).
+
+### What the traversal change did NOT introduce
+
+- ❌ No new defaults in `ScalingParams`, `BoxStrategyParams`, or the box CSV loader.
+- ❌ No new module constants (the `_inside_seen` and `_state` dicts are per-`BoxLookup`-instance, mutated only via `_step_level` and cleared via `reset_state`).
+- ❌ No new hardcoded thresholds (the existing `tick_threshold` and window-day params remain the only tunables).
+- ❌ No new magic numbers in `box_strategy.py` or `scaling_strategy.py` (the new `_on_bar` hook is a no-arg method).
+
+### What remains a 🟨 documented item after Round 14
+
+The `'long' / 'short' / 'hold' / None` aggregate-signal "enum" is implicit (no `enum.Enum` class). Same as pre-Round 14. Promoting it to `class BoxSignal(str, Enum)` would surface the new `'hold'` value to type-checkers; tracked as a low-priority cleanup (cosmetic, not a no-fallback violation).
+
+### Verification post-Round 14
+
+- 54 backend tests (was 46 — 8 new tests for traversal / gap-skip / stacked-level / state-on-open-position / back-to-back-reset / malformed-geometry) all pass.
+- 77 frontend tests pass (unchanged — no frontend changes).
+- Frontend production build clean.
+
+### Net headline numbers (post-Round 14)
+
+| Category | V3 (post-fix) 🟥 | V3 (post-Round 14) 🟥 |
+|---|---:|---:|
+| Backend strategy/data defaults | 0 | **0** |
+| Backend dead-code defaults | 0 | **0** |
+| Backend dead module constants | 0 | **0** |
+| Frontend display fallbacks | 2 (off-scope) | **2 (off-scope)** |
+| File paths | 0 backend / 3 frontend (allowed) | **0 backend / 3 frontend (allowed)** |
+| Chart colours | 0 | **0** |
+| Tailwind palette escapes | 0 | **0** |
+| Fixed chart height | 0 | **0** |
+| UI strings | ~121 (deferred) | ~121 (deferred) |
+| Silent classification fallbacks | 1 (`_classify` upper<lower, ignored silently) | **0** (now raises `malformed-box-geometry`) |
+
+**Round 14 net:** −1 silent fallback (now raises), +0 new hardcoded values, +1 new explicit signal enum value (`'hold'`), +1 new structured error code (`malformed-box-geometry`).
+
+The headline still stands: **the backend has zero hardcoded strategy decisions**, and Round 14 *tightened* the no-fallback rule by replacing a silent classification bug with an explicit `ConfigurationError`.
+
+---
+
+## Round 14b update — Silent `.get(default)` fallback sweep (2026-05-23)
+
+A targeted re-scan turned up **4 silent `.get(key, default)` fallbacks** that V3 had missed. Each was a stealth no-fallback-rule violation: the call substituted a default value when a key was absent, with no error or warning to the caller. All four are now closed.
+
+### The four 🟥 violations (now fixed)
+
+| # | Location | Old code | New code |
+|---|---|---|---|
+| F1 | `src/api/app.py:184` (`_candles_from_df`) | `v=int(df.iloc[i].get('Volume', 0))` | Direct `df.iloc[i]['Volume']`, after upfront validation that raises `ConfigurationError(code='missing-candle-columns')` when any of `Open/High/Low/Close/Volume` is absent. |
+| F2 | `src/api/app.py:396` (`_trade_to_jsonable`) | `'legs': trade.get('legs', [])` | Direct `trade['legs']` — the engine always emits `legs`; a `KeyError` here signals an engine bug, not a data shape we silently absorb. |
+| F3 | `src/strategy/box_strategy.py:112` (post-process loop) | `entry_idx = trade.get('entry_idx', -1)` | Direct `trade['entry_idx']` — same reasoning as F2. The dead `-1` sentinel was a relic of an older two-stage detail-lookup that no longer exists. |
+| F4 | `src/strategy/box_lookup.py:391` (`get_box_rects`) | `_LEVEL_COLORS.get(label, ('rgba(128,128,128,0.05)', 'rgba(128,128,128,0.3)'))` | Direct `_LEVEL_COLORS[label]`. Every label declared in `_WEEKLY_LEVELS` / `_MONTHLY_LEVELS` has a matching palette entry; a `KeyError` here is a palette/label-list mismatch the developer must fix. |
+
+### Why these weren't user-facing parameters
+
+The user's directive was "fix that by exposing them to the dashboard and creat a fall back sytem for them following the standard we established". None of the four belong on the dashboard:
+
+- **F1 Volume** is a data-file column, not a tunable. The right standard is *raise on missing column*, not *expose a knob*.
+- **F2 legs / F3 entry_idx** are fields the strategy engine *emits*. They are internal contracts between the strategy and the API, not knobs.
+- **F4 box-level colour** is a fixed UI palette — the labels themselves are box-data-schema constants (`_WEEKLY_LEVELS` / `_MONTHLY_LEVELS`).
+
+In every case the "standard we established" is the no-fallback rule, applied at the appropriate layer:
+- Data-file fields → raise `ConfigurationError` with `code` + `message` + `system_status`.
+- Internal-contract fields → direct access; `KeyError` signals an engine bug.
+- UI palette mapping → direct access; `KeyError` signals a developer-side palette/labels mismatch.
+
+### Verification
+
+- 55 backend tests (was 54 — one new test `test_missing_volume_column_raises_configuration_error` covering F1's new error path) all pass.
+- 77 frontend tests still pass (no frontend changes).
+- Frontend production build still clean.
+
+### Updated headline numbers
+
+| Category | V3 (post-Round-14) 🟥 | V3 (post-Round-14b) 🟥 |
+|---|---:|---:|
+| Backend strategy/data defaults | 0 | **0** |
+| Backend dead-code defaults | 0 | **0** |
+| Backend dead module constants | 0 | **0** |
+| Silent `.get(default)` / fallback expressions | 4 (uncaught in V3) | **0** |
+| Silent classification fallbacks | 0 | **0** |
+| Frontend display fallbacks | 2 (off-scope) | 2 (off-scope) |
+| File paths | 0 backend / 3 frontend (allowed) | 0 backend / 3 frontend (allowed) |
+| Chart colours | 0 | **0** |
+| Tailwind palette escapes | 0 | **0** |
+| Fixed chart height | 0 | **0** |
+| UI strings | ~121 (deferred) | ~121 (deferred) |
+
+**Round 14b net:** −4 silent fallbacks (all replaced by direct access or `ConfigurationError`), +1 new error code (`missing-candle-columns`), +1 new test.
+
+The backend's no-fallback compliance is now exhaustive across the patterns we scanned: Pydantic `Field(...)`, dataclass fields, function-arg defaults, module constants, `.get(k, default)`, `getattr(x, name, default)`, and `or fallback` expressions. The only literals remaining inside `src/` are:
+- Operational constants (`MAX_UPLOAD_BYTES`, `CHUNK`, `queue maxsize=512`, `progress_every // 100`) — documented 🟨; not strategy or data decisions.
+- The `_LEVEL_COLORS` palette — UI rendering, not strategy.
+- Percent-conversion arithmetic (`* 100.0`) — documented 🟨.
+- Box-schema constants (`_WEEKLY_LEVELS`, `_MONTHLY_LEVELS`) — describe the CSV format, not tunables.

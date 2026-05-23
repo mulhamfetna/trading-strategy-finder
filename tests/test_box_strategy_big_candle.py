@@ -21,24 +21,29 @@ from tests._fixtures import box_strategy_params
 
 @pytest.fixture
 def df_4h_big_green_above_edge():
-    """A 4h frame whose first bar is a huge green candle closing above the
-    weekly upper edge.
+    """A 4-bar 4h frame engineered to trigger the §5 Big-Candle vs Box conflict
+    under the v3.1 traversal rule (with C3 fix: requires intervening 'inside').
 
-    open=20000, close=20500 → candle_size=500 > big_candle_threshold (400).
-    The weekly RHU edge sits at 20100 with a 0.75 tick threshold, so a
-    close of 20500 is well above the upper edge ⇒ box says LONG.
-
-    1-1-2 §2 (with default big_candle_reverses_dir=True) would call this
-    a SHORT (reverse the green). So big-candle dir = SHORT, box dir = LONG —
-    the §5 conflict case.
+    Bar 0 (setup): closes BELOW the weekly RH box. state(W-RH)='below'.
+    Bar 1 (entered): closes INSIDE the weekly RH box. inside_seen=True.
+    Bar 2 (big green): open=20000, close=20500 → candle_size=500 > 400.
+        Close 20500 is above the weekly RHU edge (20100) → side='above'.
+        Transition below→inside→above (inside_seen=True) ⇒ box says LONG.
+        Big-candle direction reverses the green ⇒ SHORT. CONFLICT (§5).
+    Bar 3 (filler): calm bar so the strategy has room after bar-2 open.
     """
     return pd.DataFrame({
-        'Date':   pd.to_datetime(['2025-01-03 00:00:00', '2025-01-03 04:00:00']),
-        'Open':   [20000.0, 20500.0],
-        'High':   [20520.0, 20510.0],
-        'Low':    [19990.0, 20480.0],
-        'Close':  [20500.0, 20500.0],
-        'Volume': [1000, 800],
+        'Date':   pd.to_datetime([
+            '2025-01-03 00:00:00',
+            '2025-01-03 04:00:00',
+            '2025-01-03 08:00:00',
+            '2025-01-03 12:00:00',
+        ]),
+        'Open':   [19500.0, 20060.0, 20000.0, 20500.0],
+        'High':   [19510.0, 20080.0, 20520.0, 20510.0],
+        'Low':    [19480.0, 20050.0, 19990.0, 20480.0],
+        'Close':  [19490.0, 20075.0, 20500.0, 20500.0],
+        'Volume': [1000, 1000, 1000, 800],
     })
 
 
@@ -68,9 +73,10 @@ def test_big_candle_wins_reverses_against_box(df_4h_big_green_above_edge, box_lo
     params = box_strategy_params(big_candle_resolution='big_candle_wins')
     strat = BoxStrategy(params=params, box_lookup=box_lookup_with_upper_at_20100)
     _trades, state = strat.backtest(df_4h_big_green_above_edge)
-    # The position opens on bar 0; final state shows it.
+    # Position opens on bar 2 (the big-green conflict bar); bars 0-1 set
+    # traversal state ('below' then 'inside').
     assert state['direction'] == 'short', f"expected short, got {state['direction']}"
-    assert state['opened_at_idx'] == 0
+    assert state['opened_at_idx'] == 2
 
 
 def test_box_wins_takes_box_direction(df_4h_big_green_above_edge, box_lookup_with_upper_at_20100):
@@ -83,14 +89,20 @@ def test_box_wins_takes_box_direction(df_4h_big_green_above_edge, box_lookup_wit
 
 
 def test_skip_produces_no_trade_on_conflict(box_lookup_with_upper_at_20100):
-    """A single-bar fixture so the conflict bar's outcome is the only state."""
+    """A 3-bar fixture: bar 0 'below' setup; bar 1 'inside' (entered the box);
+    bar 2 is the big-green traversal-completion bar. With 'skip' the conflict
+    bar must not open a position."""
     df = pd.DataFrame({
-        'Date':   pd.to_datetime(['2025-01-03 00:00:00']),
-        'Open':   [20000.0],
-        'High':   [20520.0],
-        'Low':    [19990.0],
-        'Close':  [20500.0],
-        'Volume': [1000],
+        'Date':   pd.to_datetime([
+            '2025-01-03 00:00:00',
+            '2025-01-03 04:00:00',
+            '2025-01-03 08:00:00',
+        ]),
+        'Open':   [19500.0, 20060.0, 20000.0],
+        'High':   [19510.0, 20080.0, 20520.0],
+        'Low':    [19480.0, 20050.0, 19990.0],
+        'Close':  [19490.0, 20075.0, 20500.0],
+        'Volume': [1000, 1000, 1000],
     })
     params = box_strategy_params(big_candle_resolution='skip')
     strat = BoxStrategy(params=params, box_lookup=box_lookup_with_upper_at_20100)
@@ -100,8 +112,9 @@ def test_skip_produces_no_trade_on_conflict(box_lookup_with_upper_at_20100):
 
 
 def test_no_conflict_when_box_signal_agrees(tmp_path):
-    """A big green bar that also crosses the weekly LOWER edge from above
-    (i.e., closes below it) would make BOTH say SHORT — no conflict."""
+    """A big green bar that closes BELOW the weekly RL box (after a setup bar
+    above the RL box) traverses above→below ⇒ SHORT. Big-candle reversal
+    (green→short) also says SHORT. No conflict — all three policies trade short."""
     week_csv = tmp_path / 'week.csv'
     cols = ['WTHU', 'WTHD', 'WTH1', 'WTH2', 'WRHU', 'WRHD',
             'WIHU', 'WIHD', 'WILU', 'WILD', 'WRLU', 'WRLD',
@@ -117,20 +130,30 @@ def test_no_conflict_when_box_signal_agrees(tmp_path):
              'MTLU', 'MTLD', 'MTL1', 'MTL2']
     pd.DataFrame({'Date': ['2025-01-01'], **{c: [None] for c in mcols}}).to_csv(month_csv, index=False)
 
-    lookup = BoxLookup(week_path=str(week_csv), month_path=str(month_csv), tick_threshold=0.75, weekly_window_days=7, monthly_window_days=30)
-
-    # Huge green bar closing FAR below the weekly RL box → box says SHORT.
-    # Big-candle reversal (green→short) also says SHORT. No conflict.
+    # 3-bar fixture: bar 0 above WRL box (state='above'); bar 1 inside WRL
+    # box (inside_seen=True); bar 2 is a big-green that closes below WRL.
     df = pd.DataFrame({
-        'Date':   pd.to_datetime(['2025-01-03 00:00:00']),
-        'Open':   [19000.0],
-        'High':   [19450.0],
-        'Low':    [18990.0],
-        'Close':  [19400.0],
-        'Volume': [1000],
+        'Date':   pd.to_datetime([
+            '2025-01-03 00:00:00',
+            '2025-01-03 04:00:00',
+            '2025-01-03 08:00:00',
+        ]),
+        'Open':   [19550.0, 19490.0, 18950.0],
+        'High':   [19560.0, 19495.0, 19450.0],
+        'Low':    [19540.0, 19470.0, 18940.0],
+        'Close':  [19555.0, 19475.0, 19400.0],
+        'Volume': [1000, 1000, 1000],
     })
 
     for policy in ('big_candle_wins', 'box_wins', 'skip'):
+        # Fresh BoxLookup so state doesn't leak between policies.
+        lookup = BoxLookup(
+            week_path=str(week_csv),
+            month_path=str(month_csv),
+            tick_threshold=0.75,
+            weekly_window_days=7,
+            monthly_window_days=30,
+        )
         strat = BoxStrategy(
             params=box_strategy_params(big_candle_resolution=policy),
             box_lookup=lookup,

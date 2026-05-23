@@ -24,7 +24,8 @@ The system runs **one master strategy** built from two layers:
                                   │
 ┌────────────────────────────────────────────────────────────────────────┐
 │              DIRECTIONAL ORACLE — TradingView Box                      │
-│  Direction = which box edge the 4h close crossed (weekly priority).    │
+│  Direction = which side of a box the close TRAVERSED to (weekly       │
+│  priority). Three states: long, short, hold.                           │
 │  Source: BOXES_Strategy.md / §2 of this guide.                         │
 └────────────────────────────────────────────────────────────────────────┘
 ```
@@ -42,24 +43,57 @@ The execution framework is silent about direction; the directional oracle is sil
 
 ## 2. The directional oracle (TradingView Box)
 
-For every 4h candle close, ask `BoxLookup.get_signal_detail(close, timestamp)`:
+The Box engine emits **one of three states** for every 4h candle close: `'long'`, `'short'`, `'hold'`. Signals fire on **traversal** of a box — the close moves from one side of the box to the *opposite* side, having previously been outside on the first side. The close staying put, oscillating inside, or exiting back the same side returns `'hold'`.
 
-1. Look up the **active weekly box** — the most recent row in `NQ_week_data_shifted.csv` where `date_shifted ≤ candle_date < date_shifted + weekly_window_days`.
-2. Look up the **active monthly box** — same logic with `monthly_window_days`.
-3. For each box level (RH / IH / IL / RL / TH / TL with optional sub-levels TH1/TH2, TL1/TL2):
-   - `close > upper_edge + box_tick_threshold` ⇒ LONG candidate
-   - `close < lower_edge − box_tick_threshold` ⇒ SHORT candidate
-   - Otherwise ⇒ no fire from that level
-4. The **closest firing level** wins for each timeframe (weekly / monthly), separately.
-5. Aggregate using the **single-box weekly-priority rule** (current policy):
-   - If weekly fires, take the weekly direction.
-   - Else if monthly fires, take the monthly direction.
-   - Else no trade.
-6. If both fire opposite directions, set `conflict = True` on the trade so the UI can flag it; the aggregate still uses weekly priority.
+### 2.1 The traversal rule
+
+For each box level (RH / IH / IL / RL / TH / TL plus the TH1/TH2, TL1/TL2 sub-levels), the engine classifies the close as:
+
+- `above` — `close > upper_edge + box_tick_threshold`
+- `below` — `close < lower_edge − box_tick_threshold`
+- `inside` — everything in between
+
+It keeps a per-level memory of the **last outside side** it saw (`above` or `below`). The signal rule on each bar:
+
+```
+on bar t with close c, for level L:
+    side := classify(c, upper(L), lower(L))   // above | below | inside
+    case side of
+      'inside'                       → signal := 'hold'   (state unchanged)
+      first-observation of (row, L)  → signal := 'hold'   (state := side)
+      side == last_state             → signal := 'hold'   (no transition)
+      'below' and last_state=='above' → signal := 'short' (state := 'below')
+      'above' and last_state=='below' → signal := 'long'  (state := 'above')
+```
+
+Two practical consequences worth being explicit about:
+
+- **One signal per traversal.** If the close stays beyond an edge for 10 consecutive bars, only the first of those bars fires; bars 2–10 return `'hold'`. The strategy never repeatedly opens positions on the same continuation move.
+- **First observation never fires.** The first time the engine sees a (box-row, level) pair, it records the side but doesn't signal. There's no "you were already past the edge on day 1" assumption.
 
 The 0.75-point `box_tick_threshold` is **3 NQ ticks** of 0.25 each. It's a noise filter — price must clear the edge meaningfully, not just wick through it.
 
-### 2.1 Box data — files and preprocessing
+### 2.2 Aggregating weekly + monthly
+
+For each timeframe (weekly, monthly), the **closest firing level** wins. Then the two timeframes are combined under the **single-box weekly-priority** rule:
+
+1. If the weekly side fires `'long'` or `'short'`, take the weekly direction.
+2. Else if the monthly side fires `'long'` or `'short'`, take the monthly direction.
+3. Else the aggregate signal is `'hold'`.
+
+If both sides fire opposite directions, `conflict = True` is flagged on the trade detail; the aggregate still uses weekly priority.
+
+### 2.3 What's in the returned detail
+
+`BoxLookup.get_signal_detail(close, timestamp)` returns a dict where:
+
+- `signal` is **always one of `'long' | 'short' | 'hold'`** when at least one timeframe has an active box row; `None` only when neither timeframe is active.
+- `weekly_signal` / `monthly_signal` are `'long' | 'short' | 'hold' | None` (the `None` value here means no active box row for *that* timeframe specifically).
+- `conflict` is `True` when both sides traversed in opposite directions on the same bar.
+
+The 0.75-point `box_tick_threshold` is **3 NQ ticks** of 0.25 each. It's a noise filter — price must clear the edge meaningfully, not just wick through it.
+
+### 2.4 Box data — files and preprocessing
 
 | File | Window | Columns |
 |---|---|---|
@@ -84,11 +118,15 @@ TH and TL boxes can have null edges (~42% present in real data) when price never
 
 **One-time preprocessing** (`scripts/preprocess_boxes.py`): subtract 2 calendar days from every `Date`, save as `NQ_*_data_shifted.csv`. Reason: the raw exports record the box's defining day but the box is active starting from the prior session. Run once; commit results; never re-run.
 
-### 2.2 Stacked boxes and re-fires
+### 2.5 Stacked boxes and re-fires
 
-Boxes stack vertically. As price rises through a tracked range, it can cross multiple upper edges in sequence (WRHU then WIHU, then WTHU). Each crossing is a fresh signal — the same row can produce multiple LONG signals over successive 4h closes as price walks up through nested boxes.
+Boxes stack vertically. As price rises through a tracked range, it can traverse multiple upper edges in sequence (WRHU then WIHU, then WTHU). Each *traversal* is a fresh signal — the same row can produce multiple LONG signals as price walks up through nested boxes, but each individual edge only fires once per traversal (continuous bars above the edge after the traversal return `'hold'`).
 
 Intersected boxes (where weekly and monthly boundaries overlap to create a finer-grained zone) are **out of scope for this iteration** — single-box logic only. The legacy "both must agree" rule was abandoned on 2026-05-23.
+
+### 2.6 State reset across runs
+
+Per-(row, level) state lives on the `BoxLookup` instance. `BoxStrategy.backtest()` calls `BoxLookup.reset_state()` at the start of every run so a single `BoxLookup` can be reused across multiple `backtest()` calls (or walk-forward folds) without state leakage. State also resets implicitly when the active box row changes — last week's W-RH state isn't comparable to this week's W-RH because the price levels differ.
 
 ---
 

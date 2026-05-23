@@ -156,6 +156,21 @@ def _candles_from_df(df: pd.DataFrame) -> List[Candle]:
     """
     if len(df) == 0:
         return []
+    # No-fallback rule: every column the chart needs must be present in the
+    # input CSV; we do not silently substitute zero / NaN for missing OHLCV.
+    required_cols = ('Open', 'High', 'Low', 'Close', 'Volume')
+    missing = [c for c in required_cols if c not in df.columns]
+    if missing:
+        raise ConfigurationError(
+            f'Candle data missing required columns: {missing}.',
+            code='missing-candle-columns',
+            system_status={
+                'missing_columns': missing,
+                'available_columns': list(df.columns),
+                'required_columns': list(required_cols),
+                'hint': 'The 4h data CSV must carry Open/High/Low/Close/Volume columns.',
+            },
+        )
     timestamps: List[str]
     if 'Date' in df.columns and 'Time' in df.columns:
         if pd.api.types.is_datetime64_any_dtype(df['Date']):
@@ -181,7 +196,7 @@ def _candles_from_df(df: pd.DataFrame) -> List[Candle]:
             h=float(df.iloc[i]['High']),
             l=float(df.iloc[i]['Low']),
             c=float(df.iloc[i]['Close']),
-            v=int(df.iloc[i].get('Volume', 0)),
+            v=int(df.iloc[i]['Volume']),
         )
         for i in range(len(df))
     ]
@@ -393,7 +408,9 @@ def _trade_to_jsonable(trade: Dict) -> Dict:
         'profit_points': float(trade['profit_points']),
         'profit_dollars': float(trade['profit_dollars']),
         'exit_reason': trade['exit_reason'],
-        'legs': trade.get('legs', []),
+        # Direct access — every trade the engine emits carries `legs`.
+        # No silent fallback to []; if missing it indicates an engine bug.
+        'legs': trade['legs'],
     }
     known = set(out.keys())
     for k, v in trade.items():
