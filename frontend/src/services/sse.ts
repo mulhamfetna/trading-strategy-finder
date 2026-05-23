@@ -5,6 +5,10 @@
  * ReadableStream reader and parse SSE frames manually.
  */
 
+import {
+  DEFAULT_BOX_DATA_PATH,
+  DEFAULT_DATA_PATH,
+} from '../types';
 import type {
   BoxParams,
   ScalingCompletePayload,
@@ -20,8 +24,7 @@ export type ScalingStreamEvent =
 interface BoxRunOptions {
   params: BoxParams;
   data_path?: string;
-  week_data_path?: string;
-  month_data_path?: string;
+  box_data_path?: string;
   start?: string;
   end?: string;
 }
@@ -31,9 +34,8 @@ export function streamBoxBacktest(
 ): AsyncGenerator<ScalingStreamEvent, void, unknown> {
   return _streamSse('/api/backtest/box', {
     params: opts.params,
-    data_path: opts.data_path ?? 'NQ_4h.csv',
-    week_data_path: opts.week_data_path ?? 'NQ_week_data_shifted.csv',
-    month_data_path: opts.month_data_path ?? 'NQ_month_data_shifted.csv',
+    data_path: opts.data_path ?? DEFAULT_DATA_PATH,
+    box_data_path: opts.box_data_path ?? DEFAULT_BOX_DATA_PATH,
     start: opts.start ?? null,
     end: opts.end ?? null,
   });

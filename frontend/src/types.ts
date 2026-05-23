@@ -84,8 +84,6 @@ export type BigCandleResolution = 'big_candle_wins' | 'box_wins' | 'skip';
 
 export interface BoxParams extends ScalingParams {
   box_tick_threshold: number;
-  weekly_window_days: number;
-  monthly_window_days: number;
   /** Conflict policy when a big bar AND a box edge-cross disagree — see MASTER_STRATEGY_GUIDE §5. */
   big_candle_resolution: BigCandleResolution;
 }
@@ -190,12 +188,8 @@ export const DEFAULT_SCALING_PARAMS: ScalingParams = {
 export const DEFAULT_BOX_PARAMS: BoxParams = {
   ...DEFAULT_SCALING_PARAMS,
   box_tick_threshold: 0.75,
-  weekly_window_days: 7,
-  monthly_window_days: 30,
   big_candle_resolution: 'big_candle_wins',
 };
 
-export const DEFAULT_BOX_DATA_PATHS = {
-  week_data_path: 'NQ_week_data_shifted.csv',
-  month_data_path: 'NQ_month_data_shifted.csv',
-};
+export const DEFAULT_DATA_PATH = 'NQ_4h.csv';
+export const DEFAULT_BOX_DATA_PATH = 'NQ_full_data.csv';

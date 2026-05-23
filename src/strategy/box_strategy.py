@@ -24,18 +24,15 @@ from src.strategy.scaling_strategy import ScalingParams, ScalingStrategy, _Leg, 
 
 @dataclass
 class BoxStrategyParams(ScalingParams):
-    """ScalingParams + box-specific decisions and data file paths.
+    """ScalingParams + box-specific decisions and data file path.
 
     Per the no-fallback rule, every field is REQUIRED — no defaults.
     """
-    # Data files
-    week_data_path:  str
-    month_data_path: str
+    # Data file (unified CSV containing all box levels)
+    box_data_path: str
 
     # §Box-rule decisions
     box_tick_threshold: float
-    weekly_window_days: int
-    monthly_window_days: int
 
     # Big-Candle vs Box conflict resolution. See MASTER_STRATEGY_GUIDE.md §5.
     # 'big_candle_wins' | 'box_wins' | 'skip'

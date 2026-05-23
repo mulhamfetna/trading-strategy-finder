@@ -24,10 +24,9 @@ describe('useSettingsStore', () => {
     expect(s.params.tp_watch_threshold_points).toBe(50);
     expect(s.params.point_value).toBe(2);
     expect(s.params.box_tick_threshold).toBe(0.75);
-    expect(s.params.weekly_window_days).toBe(7);
-    expect(s.params.monthly_window_days).toBe(30);
     expect(s.params.big_candle_resolution).toBe('big_candle_wins');
     expect(s.dataPath).toBe('NQ_4h.csv');
+    expect(s.boxDataPath).toBe('NQ_full_data.csv');
   });
 
   it('reset() restores defaults after edits', () => {

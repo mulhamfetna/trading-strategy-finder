@@ -154,6 +154,25 @@ Action plan: `docs/revisions/swarm-2026-05-23/ACTION_PLAN.md`.
 | FIX-2026-05-23-23 | Hygiene (Phase 5) **DONE** | Tests | `pytest.ini` added at repo root; `test_loader_4h.py` uses `pytest.skip(...)` instead of silent `return`. | ✅ pytest discovers tests; missing-CSV path reports SKIP. |
 | FIX-2026-05-23-24 | Polish (Phase 6) **DONE** | A11y | aria-labels on icon buttons (replay step/play/exit, CSV export). Focus rings on header buttons. EMA-insufficient-data overlay on ChartPane (orange chip top-right when period > candle count). CSV filename now includes HHMMSS. | ✅ Build clean; 77 frontend tests, 36 backend tests still green. |
 
+### Revision 2026-05-24 (v4 unified-box migration + bug-bounty sweep)
+
+Scope: replacement of two-file box lookup (`NQ_week_data_shifted.csv` + `NQ_month_data_shifted.csv`)
+with a single unified file (`NQ_full_data.csv`). Post-migration bug-bounty review.
+
+| Fix ID | Severity | Segment | Fix Needed | Validation |
+|---|---|---|---|---|
+| FIX-2026-05-24-01 | ~~Critical~~ **DONE** | Box lookup crash | **C1 — `sort_values('Date')` ambiguity crash** — BUG-027. With `drop=False` in `set_index`, pandas ≥ 1.5 raises `ValueError` when 'Date' is both an index level and column name. Fixed by replacing `.sort_values('Date')` with `.sort_index()` in `get_box_rects()`. | ✅ 55 backend tests pass. |
+| FIX-2026-05-24-02 | ~~Critical~~ **DONE** | Box lookup silent miss | **C2 — tz-aware timestamp key miss** — BUG-028. A tz-aware `pd.Timestamp` used as a `.loc[]` key against a tz-naive index silently returns `KeyError`, so all box signals returned `None` when the candle timestamp carried timezone info. Fixed by stripping timezone in `_candle_to_box_date()` before building the lookup key. | ✅ 55 backend tests pass. |
+| FIX-2026-05-24-03 | ~~Medium~~ **DONE** | Frontend error display | **Y5 — blank error toasts** — BUG-029. Structured `ConfigurationError` payloads use `message` (not `detail`); `backtest.ts` only checked `ev.data.detail`, producing blank error toasts. Fixed: `error.value = ev.data.detail ?? ev.data.message ?? 'Unknown error'`. | ✅ 77 frontend tests pass. |
+| FIX-2026-05-24-04 | ~~Medium~~ **DONE** | Frontend constants | **H1 — hardcoded `'NQ_4h.csv'` string** — BUG-030. `settings.ts` and `sse.ts` used the string literal `'NQ_4h.csv'` instead of a named constant, unlike `boxDataPath` which already used `DEFAULT_BOX_DATA_PATH`. Added `DEFAULT_DATA_PATH = 'NQ_4h.csv'` to `types.ts`; `settings.ts` and `sse.ts` now import and use it. | ✅ 77 frontend tests pass. |
+
+| New ID | Revision | Segment | Lens That Found It | Severity | Evidence | Added By |
+|---|---|---|---|---|---|---|
+| BUG-027 | v4-2026-05-24 | Box lookup | Bug-bounty C-series | Critical | `src/strategy/box_lookup.py:get_box_rects()` — `.sort_values('Date')` with `drop=False` raises ValueError on pandas ≥ 1.5 | bounty C1 |
+| BUG-028 | v4-2026-05-24 | Box lookup | Bug-bounty C-series | Critical | `src/strategy/box_lookup.py:_candle_to_box_date()` — tz-aware key silently misses tz-naive DatetimeIndex | bounty C2 |
+| BUG-029 | v4-2026-05-24 | Frontend SSE | Bug-bounty Y-series | Medium | `frontend/src/stores/backtest.ts:75` — `ev.data.detail` undefined for ConfigurationError (`message` key instead) | bounty Y5 |
+| BUG-030 | v4-2026-05-24 | Frontend constants | Hardcoded-values scan H-series | Medium | `frontend/src/stores/settings.ts:27,36`, `frontend/src/services/sse.ts:33` — `'NQ_4h.csv'` string literal instead of named constant | scan H1 |
+
 ---
 
 ## Source Reports Consolidated

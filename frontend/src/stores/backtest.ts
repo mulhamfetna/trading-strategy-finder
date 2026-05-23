@@ -50,8 +50,7 @@ export const useBacktestStore = defineStore('backtest', () => {
     const runPayload = {
       params: settings.params,
       data_path: settings.dataPath,
-      week_data_path: settings.weekDataPath,
-      month_data_path: settings.monthDataPath,
+      box_data_path: settings.boxDataPath,
       start: settings.startDate || undefined,
       end: settings.endDate || undefined,
     };
@@ -72,7 +71,8 @@ export const useBacktestStore = defineStore('backtest', () => {
         } else if (ev.type === 'warning') {
           warnings.value = [...warnings.value, `${ev.data.stage}: ${ev.data.message}`];
         } else if (ev.type === 'error') {
-          error.value = ev.data.detail;
+          // Structured errors use `message`; legacy path uses `detail`.
+          error.value = ev.data.detail ?? ev.data.message ?? 'Unknown error';
         }
       }
     } catch (err) {
@@ -88,8 +88,7 @@ export const useBacktestStore = defineStore('backtest', () => {
     const current = JSON.stringify({
       params: settings.params,
       data_path: settings.dataPath,
-      week_data_path: settings.weekDataPath,
-      month_data_path: settings.monthDataPath,
+      box_data_path: settings.boxDataPath,
       start: settings.startDate || undefined,
       end: settings.endDate || undefined,
     });

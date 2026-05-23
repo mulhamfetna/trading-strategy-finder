@@ -30,27 +30,23 @@ _W_COLS = ['WTHU', 'WTHD', 'WTH1', 'WTH2', 'WRHU', 'WRHD',
 _M_COLS = ['MTHU', 'MTHD', 'MTH1', 'MTH2', 'MRHU', 'MRHD',
            'MIHU', 'MIHD', 'MILU', 'MILD', 'MRLU', 'MRLD',
            'MTLU', 'MTLD', 'MTL1', 'MTL2']
+_ALL_COLS = _W_COLS + _M_COLS
 
 
-def _write_box_csv(path, cols, dates=None, **levels):
+def _unified_csv(path, dates=None, **levels):
+    """Build a unified box CSV with all W* and M* columns."""
     if dates is None:
-        dates = ['2025-01-01']
+        dates = ['2025-01-03']
     n = len(dates)
     row_data = {}
-    for c in cols:
+    for c in _ALL_COLS:
         val = levels.get(c)
         row_data[c] = ([val] * n) if not isinstance(val, list) else val
     pd.DataFrame({'Date': dates, **row_data}).to_csv(path, index=False)
 
 
-def _lookup(tmp_path):
-    return BoxLookup(
-        week_path=str(tmp_path / 'w.csv'),
-        month_path=str(tmp_path / 'm.csv'),
-        tick_threshold=0.75,
-        weekly_window_days=7,
-        monthly_window_days=30,
-    )
+def _lookup(path):
+    return BoxLookup(unified_path=str(path), tick_threshold=0.75)
 
 
 def test_state_machine_observes_bars_while_position_is_open(tmp_path):
@@ -60,9 +56,16 @@ def test_state_machine_observes_bars_while_position_is_open(tmp_path):
     state from before the trade.
     """
     # WRH box at 20100..20110. Tick threshold 0.75.
-    _write_box_csv(tmp_path / 'w.csv', _W_COLS, WRHU=20110.0, WRHD=20100.0)
-    _write_box_csv(tmp_path / 'm.csv', _M_COLS)
-    lookup = _lookup(tmp_path)
+    # Bar 5 is '2025-01-03 20:00' (hour=20 ≥ 18 → box_date=2025-01-04) and
+    # bar 6-7 are on 2025-01-04 (box_date=2025-01-04), so we need rows for
+    # both 2025-01-03 and 2025-01-04 with the same levels.
+    _unified_csv(
+        tmp_path / 'u.csv',
+        dates=['2025-01-03', '2025-01-04'],
+        WRHU=20110.0,
+        WRHD=20100.0,
+    )
+    lookup = _lookup(tmp_path / 'u.csv')
 
     # 8-bar fixture:
     #   Bar 0: close=20000 → below. state(W-RH)='below', inside_seen=False
@@ -112,7 +115,7 @@ def test_state_machine_observes_bars_while_position_is_open(tmp_path):
     # (close=20000, while position open). We can verify by inspecting the
     # state directly. The (row_date, 'W-RH') state should be 'below', NOT
     # 'above' (which it would be if bars 3-5 were invisible).
-    row_date = lookup.get_active_weekly_box(pd.Timestamp('2025-01-04 04:00')).Date
+    row_date = lookup.get_active_weekly_box(pd.Timestamp('2025-01-04 04:00'))['Date']
     state_key = (row_date, 'W-RH')
     assert lookup._state.get(state_key) == 'below', (
         f"C1 regression: state(W-RH)={lookup._state.get(state_key)} expected 'below'. "
@@ -125,9 +128,8 @@ def test_state_machine_observes_bars_while_position_is_open(tmp_path):
 def test_back_to_back_backtest_resets_state(tmp_path):
     """C1+Y1: BoxStrategy.backtest must call reset_state so a second run on
     the same BoxLookup produces the same trade list as a fresh run."""
-    _write_box_csv(tmp_path / 'w.csv', _W_COLS, WRHU=20110.0, WRHD=20100.0)
-    _write_box_csv(tmp_path / 'm.csv', _M_COLS)
-    lookup = _lookup(tmp_path)
+    _unified_csv(tmp_path / 'u.csv', WRHU=20110.0, WRHD=20100.0)
+    lookup = _lookup(tmp_path / 'u.csv')
 
     df = pd.DataFrame({
         'Date':  pd.to_datetime([
@@ -156,9 +158,8 @@ def test_gap_skip_does_not_open_position(tmp_path):
     """C3 integration: a 2-bar fixture where bar 0 is below and bar 1 is
     above the box with NO intervening inside bar must not open any position
     (gap-skip)."""
-    _write_box_csv(tmp_path / 'w.csv', _W_COLS, WRHU=20110.0, WRHD=20100.0)
-    _write_box_csv(tmp_path / 'm.csv', _M_COLS)
-    lookup = _lookup(tmp_path)
+    _unified_csv(tmp_path / 'u.csv', WRHU=20110.0, WRHD=20100.0)
+    lookup = _lookup(tmp_path / 'u.csv')
 
     df = pd.DataFrame({
         'Date':  pd.to_datetime(['2025-01-03 00:00:00', '2025-01-03 04:00:00']),
@@ -183,13 +184,15 @@ def test_stacked_levels_both_can_fire(tmp_path):
     A multi-bar fixture exercises a traversal through W-RH and then a
     separate traversal through W-IH; both must produce trades."""
     # W-RH at 20100..20110 (upper band), W-IH at 19900..19910 (lower band).
-    _write_box_csv(
-        tmp_path / 'w.csv', _W_COLS,
+    # Bar 5 is '2025-01-03 20:00' (hour ≥ 18 → box_date=2025-01-04) and bar 6
+    # is '2025-01-04 00:00' (box_date=2025-01-04) — need both dates in CSV.
+    _unified_csv(
+        tmp_path / 'u.csv',
+        dates=['2025-01-03', '2025-01-04'],
         WRHU=20110.0, WRHD=20100.0,
         WIHU=19910.0, WIHD=19900.0,
     )
-    _write_box_csv(tmp_path / 'm.csv', _M_COLS)
-    lookup = _lookup(tmp_path)
+    lookup = _lookup(tmp_path / 'u.csv')
 
     df = pd.DataFrame({
         'Date':  pd.to_datetime([
