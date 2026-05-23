@@ -17,14 +17,16 @@ const mocks = vi.hoisted(() => {
   const remove = vi.fn();
   const fitContent = vi.fn();
   const createPriceLine = vi.fn();
-  const addSeries = vi.fn(() => ({ setData, createPriceLine }));
+  const attachPrimitive = vi.fn();
+  const applyOptions = vi.fn();
+  const addSeries = vi.fn(() => ({ setData, createPriceLine, attachPrimitive, applyOptions }));
   const createSeriesMarkers = vi.fn(() => ({ setMarkers }));
   const createChart = vi.fn(() => ({
     addSeries,
     remove,
-    timeScale: () => ({ fitContent }),
+    timeScale: () => ({ fitContent, timeToCoordinate: vi.fn(() => 0) }),
   }));
-  return { setData, setMarkers, remove, fitContent, addSeries, createSeriesMarkers, createChart, createPriceLine };
+  return { setData, setMarkers, remove, fitContent, addSeries, createSeriesMarkers, createChart, createPriceLine, attachPrimitive, applyOptions };
 });
 
 vi.mock('lightweight-charts', () => ({
@@ -38,6 +40,7 @@ vi.mock('lightweight-charts', () => ({
 
 import { mount } from '@vue/test-utils';
 import ChartPane from '../src/components/ChartPane.vue';
+import { useSettingsStore } from '../src/stores/settings';
 import type { Candle } from '../src/types';
 
 const SAMPLE_CANDLES: Candle[] = [
@@ -101,5 +104,47 @@ describe('ChartPane', () => {
     wrapper.unmount();
 
     expect(mocks.remove).toHaveBeenCalledTimes(1);
+  });
+
+  // FIX-17: fitContent must not fire on every replay tick / indicator change —
+  // only when the candles array identity itself changes.
+  it('calls fitContent only when the candles prop changes, not on indicator edits', async () => {
+    mocks.fitContent.mockClear();
+    const wrapper = mountChart(SAMPLE_CANDLES);
+    const initialFits = mocks.fitContent.mock.calls.length;
+    expect(initialFits).toBeGreaterThanOrEqual(1); // initial mount fits
+
+    // Indicator change — should NOT re-fit.
+    const settings = useSettingsStore();
+    settings.indicators.emaFast = 30;
+    await wrapper.vm.$nextTick();
+    expect(mocks.fitContent.mock.calls.length).toBe(initialFits);
+
+    // New candles array (e.g. a fresh backtest run) — SHOULD re-fit.
+    await wrapper.setProps({
+      candles: [
+        ...SAMPLE_CANDLES,
+        { t: '2025-09-01T10:00:00', o: 20025, h: 20040, l: 20010, c: 20035, v: 1200 },
+      ],
+    });
+    expect(mocks.fitContent.mock.calls.length).toBeGreaterThan(initialFits);
+    wrapper.unmount();
+  });
+
+  // BUG-023: EMA pane titles are baked in at addSeries time and don't
+  // update when the user changes the period in SettingsPanel.
+  it('updates EMA series titles when emaFast/emaSlow change', async () => {
+    mocks.applyOptions.mockClear();
+    const wrapper = mountChart(SAMPLE_CANDLES);
+    const settings = useSettingsStore();
+
+    settings.indicators.emaFast = 30;
+    settings.indicators.emaSlow = 100;
+    await wrapper.vm.$nextTick();
+
+    const titles = mocks.applyOptions.mock.calls.map((c) => c[0]?.title);
+    expect(titles).toContain('EMA30');
+    expect(titles).toContain('EMA100');
+    wrapper.unmount();
   });
 });

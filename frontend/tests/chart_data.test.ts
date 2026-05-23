@@ -2,67 +2,18 @@
  * Tests for ChartPane data-conversion functions and LWC timestamp handling.
  * Catches the "space timestamp" bug where "2025-01-01 18:00:00" is passed
  * to LWC instead of a UTCTimestamp number.
+ *
+ * BUG-025 fix: this file imports the production helpers. Previously it
+ * inlined copies, so the tests passed even when ChartPane drifted.
  */
 import { describe, it, expect } from 'vitest';
 import type { Candle } from '../src/types';
-
-// ---- Inline the helpers from ChartPane so we can unit-test them ----
-
-type Time = number; // UTCTimestamp
-
-interface CandlestickData { time: Time; open: number; high: number; low: number; close: number; }
-interface LineData { time: Time; value: number; }
-interface HistogramData { time: Time; value: number; color: string; }
-
-function toUTCTimestamp(t: string): number {
-  // "2025-01-01 18:00:00" or "2025-01-01T18:00:00"
-  const normalized = t.replace(' ', 'T');
-  const ts = new Date(normalized + (normalized.includes('Z') ? '' : 'Z')).getTime();
-  if (isNaN(ts)) throw new Error(`Invalid candle timestamp: ${t}`);
-  return ts / 1000;
-}
-
-function toLwcData(rows: Candle[]): CandlestickData[] {
-  return rows.map((row) => ({
-    time: toUTCTimestamp(row.t),
-    open: row.o, high: row.h, low: row.l, close: row.c,
-  }));
-}
-
-function computeEMA(prices: number[], period: number): (number | null)[] {
-  if (prices.length < period) return prices.map(() => null);
-  const k = 2 / (period + 1);
-  const out: (number | null)[] = new Array(period - 1).fill(null);
-  let ema = prices.slice(0, period).reduce((s, v) => s + v, 0) / period;
-  out.push(ema);
-  for (let i = period; i < prices.length; i++) {
-    ema = prices[i] * k + ema * (1 - k);
-    out.push(ema);
-  }
-  return out;
-}
-
-function computeRSI(prices: number[], period: number): (number | null)[] {
-  if (prices.length < period + 1) return prices.map(() => null);
-  const out: (number | null)[] = new Array(period).fill(null);
-  let avgGain = 0, avgLoss = 0;
-  for (let i = 1; i <= period; i++) {
-    const d = prices[i] - prices[i - 1];
-    if (d > 0) avgGain += d; else avgLoss -= d;
-  }
-  avgGain /= period;
-  avgLoss /= period;
-  out.push(avgLoss === 0 ? 100 : 100 - 100 / (1 + avgGain / avgLoss));
-  for (let i = period + 1; i < prices.length; i++) {
-    const d = prices[i] - prices[i - 1];
-    const gain = d > 0 ? d : 0;
-    const loss = d < 0 ? -d : 0;
-    avgGain = (avgGain * (period - 1) + gain) / period;
-    avgLoss = (avgLoss * (period - 1) + loss) / period;
-    out.push(avgLoss === 0 ? 100 : 100 - 100 / (1 + avgGain / avgLoss));
-  }
-  return out;
-}
+import {
+  toUTCTimestamp,
+  toLwcData,
+  computeEMA,
+  computeRSI,
+} from '../src/services/chart_helpers';
 
 // ---- Tests ----
 
@@ -72,18 +23,22 @@ const SAMPLE: Candle[] = [
   { t: '2025-01-02 02:00:00', o: 21419.0,  h: 21419.0, l: 21047.5,  c: 21057.75, v: 9031 },
 ];
 
+// toUTCTimestamp returns LWC's branded `Time` type. At runtime it's a
+// plain number — cast here for numeric assertions.
+const asNum = (t: unknown): number => t as number;
+
 describe('candle timestamp conversion', () => {
   it('converts space-separated timestamp to UTCTimestamp (number)', () => {
     const ts = toUTCTimestamp('2025-01-01 18:00:00');
     expect(typeof ts).toBe('number');
-    expect(isNaN(ts)).toBe(false);
-    expect(ts).toBeGreaterThan(1_000_000_000); // definitely a Unix ts in seconds
+    expect(isNaN(asNum(ts))).toBe(false);
+    expect(asNum(ts)).toBeGreaterThan(1_000_000_000);
   });
 
   it('converts T-separated ISO timestamp to UTCTimestamp', () => {
     const ts = toUTCTimestamp('2025-01-01T18:00:00');
     expect(typeof ts).toBe('number');
-    expect(isNaN(ts)).toBe(false);
+    expect(isNaN(asNum(ts))).toBe(false);
   });
 
   it('both formats produce the same Unix timestamp', () => {
@@ -95,7 +50,7 @@ describe('candle timestamp conversion', () => {
   it('timestamps are monotonically increasing across candles', () => {
     const lwc = toLwcData(SAMPLE);
     for (let i = 1; i < lwc.length; i++) {
-      expect(lwc[i].time).toBeGreaterThan(lwc[i - 1].time);
+      expect(asNum(lwc[i].time)).toBeGreaterThan(asNum(lwc[i - 1].time));
     }
   });
 

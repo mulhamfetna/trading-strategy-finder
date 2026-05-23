@@ -21,6 +21,7 @@ import pandas as pd
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from src.strategy.scaling_strategy import ScalingStrategy, ScalingParams
+from tests._fixtures import scaling_params
 
 
 def _candles(rows):
@@ -33,7 +34,7 @@ def _candles(rows):
 # ---- defaults ----
 
 def test_default_params_match_playbook_values():
-    p = ScalingParams()
+    p = scaling_params()
     assert p.total_contracts == 4
     assert p.leg1_contracts == 1
     assert p.leg2_contracts == 1
@@ -60,7 +61,7 @@ def test_long_entry_when_candle_closes_above_prior_close():
         ('2025-01-01 00:00', 20000, 20010, 19990, 20000),  # prev close = 20000
         ('2025-01-01 04:00', 20001, 20050, 19995, 20030),  # close > prev close -> long
     ])
-    strat = ScalingStrategy(params=ScalingParams())
+    strat = ScalingStrategy(params=scaling_params())
 
     trades, _ = strat.backtest(df)
 
@@ -78,7 +79,7 @@ def test_short_entry_when_candle_closes_below_prior_close():
         ('2025-01-01 00:00', 20000, 20010, 19990, 20000),
         ('2025-01-01 04:00', 19999, 20005, 19950, 19970),  # close < prev close -> short
     ])
-    strat = ScalingStrategy(params=ScalingParams())
+    strat = ScalingStrategy(params=scaling_params())
 
     strat.backtest(df)
 
@@ -94,7 +95,7 @@ def test_big_candle_exception_reverses_direction_and_takes_full_size():
         ('2025-01-01 00:00', 20000, 20010, 19990, 20000),
         ('2025-01-01 04:00', 20000, 20500, 19990, 20450),  # close - open = 450 > 400 (big)
     ])
-    strat = ScalingStrategy(params=ScalingParams())
+    strat = ScalingStrategy(params=scaling_params())
 
     strat.backtest(df)
 
@@ -114,7 +115,7 @@ def test_leg2_fills_at_100_point_pullback():
         ('2025-01-01 04:00', 20001, 20050, 19995, 20030),  # leg 1 long, base 20000
         ('2025-01-01 08:00', 20030, 20030, 19899, 19920),  # low touches 19899 < 19900 -> leg 2 fires
     ])
-    strat = ScalingStrategy(params=ScalingParams())
+    strat = ScalingStrategy(params=scaling_params())
 
     strat.backtest(df)
 
@@ -131,7 +132,7 @@ def test_leg3_fills_at_150_point_pullback():
         ('2025-01-01 08:00', 20030, 20030, 19899, 19920),       # leg 2 fires at 19900
         ('2025-01-01 12:00', 19920, 19925, 19849, 19870),       # low 19849 <= 19850 -> leg 3 (2 contracts)
     ])
-    strat = ScalingStrategy(params=ScalingParams())
+    strat = ScalingStrategy(params=scaling_params())
 
     strat.backtest(df)
 
@@ -153,7 +154,7 @@ def test_tp_exit_when_high_reaches_target_after_full_load():
         ('2025-01-01 12:00', 19920, 19925, 19849, 19870),       # fully loaded after this candle
         ('2025-01-01 16:00', 19870, 20055, 19860, 20050),       # high 20055 >= 19900 + 150 = 20050
     ])
-    strat = ScalingStrategy(params=ScalingParams())
+    strat = ScalingStrategy(params=scaling_params())
 
     trades, _ = strat.backtest(df)
 
@@ -172,7 +173,7 @@ def test_sl_soft_exit_when_close_below_soft_line():
         ('2025-01-01 04:00', 20001, 20050, 19995, 20030),     # leg 1 long, base 20000
         ('2025-01-01 08:00', 20030, 20035, 19795, 19799),     # closes BELOW 19800 -> soft SL exit
     ])
-    strat = ScalingStrategy(params=ScalingParams())
+    strat = ScalingStrategy(params=scaling_params())
 
     trades, _ = strat.backtest(df)
 
@@ -189,7 +190,7 @@ def test_sl_soft_does_not_exit_on_wick_only():
         ('2025-01-01 04:00', 20001, 20050, 19995, 20030),
         ('2025-01-01 08:00', 20030, 20035, 19790, 19850),     # wicks to 19790 but closes at 19850 (above SL)
     ])
-    strat = ScalingStrategy(params=ScalingParams())
+    strat = ScalingStrategy(params=scaling_params())
 
     trades, _ = strat.backtest(df)
 
@@ -212,7 +213,7 @@ def test_progress_callback_invoked_for_every_candle():
     def on_progress(event):
         progress_events.append(event)
 
-    strat = ScalingStrategy(params=ScalingParams())
+    strat = ScalingStrategy(params=scaling_params())
     strat.backtest(df, on_progress=on_progress)
 
     assert len(progress_events) == len(df)

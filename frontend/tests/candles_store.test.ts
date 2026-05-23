@@ -43,7 +43,7 @@ describe('useCandlesStore', () => {
     const store = useCandlesStore();
     await store.load('2025-09-01', '2025-09-30', 'test');
 
-    expect(fetchCandlesMock).toHaveBeenCalledWith('2025-09-01', '2025-09-30', 'test');
+    expect(fetchCandlesMock).toHaveBeenCalledWith('2025-09-01', '2025-09-30', 'test', expect.any(String));
     expect(store.candles).toHaveLength(1);
     expect(store.range).toEqual({ start: '2025-09-01', end: '2025-09-30' });
     expect(store.loading).toBe(false);

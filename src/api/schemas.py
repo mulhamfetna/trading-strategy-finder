@@ -1,7 +1,15 @@
 """Pydantic request/response schemas for the FastAPI backend.
 
-Phase A of the FastAPI + Vue migration. The frontend gets typed
-contracts via these models; the backend gets validation for free.
+Single-strategy surface: only the Master Strategy (1-1-2 execution +
+Box directional oracle) is exposed.
+
+**No-fallback rule (see docs/CODING_RULES.md):** every field on every
+request model is REQUIRED. Pydantic enforces this at the API boundary
+and raises ValidationError when a field is missing — the FastAPI
+exception handler wraps that into a 422 with structured system_status.
+
+The frontend's DEFAULT_BOX_PARAMS is the *form's* starter state, not an
+engine fallback. The form always sends every field.
 """
 
 from __future__ import annotations
@@ -9,22 +17,6 @@ from __future__ import annotations
 from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field
-
-
-# ---- /api/strategy/config ----
-
-class StrategyConfig(BaseModel):
-    rsi_period: int = 5
-    ema_fast: int = 5
-    ema_slow: int = 15
-    vol_threshold: float = 2.0
-    stop_loss: float = 0.6
-    take_profit: float = 1.8
-    tp_sl_resolution: Literal['conservative', 'optimistic', 'direction-proxy'] = 'conservative'
-
-    tp_sl_resolution_options: List[str] = ['conservative', 'optimistic', 'direction-proxy']
-    timeframe_options: List[str] = ['15min']
-    dataset_options: List[str] = ['train', 'test']
 
 
 # ---- /api/candles ----
@@ -50,96 +42,95 @@ class CandlesResponse(BaseModel):
     range: CandlesRange
 
 
-# ---- /api/backtest ----
-
-class BacktestRequest(BaseModel):
-    start: str
-    end: str
-    dataset: Literal['train', 'test'] = 'test'
-    timeframe: Literal['15min'] = '15min'
-    tp_sl_resolution: Literal['conservative', 'optimistic', 'direction-proxy'] = 'conservative'
-    stop_loss: float = 0.6
-    take_profit: float = 1.8
-    initial_capital: float = 10000.0
-    fee_per_trade: float = 10.0
-    data_path: str = '1min.csv'
-
-
-class Trade(BaseModel):
-    entry_idx: int
-    exit_idx: int
-    entry_price: float
-    exit_price: float
-    direction: str
-    profit_pct: float
-    profit_dollars: float
-    capital_after: float
-    exit_reason: str
-    fees_paid: float
-
+# ---- /api/backtest/box (master strategy, SSE-streamed) ----
 
 class Metrics(BaseModel):
+    """Shape of the `metrics` object inside the SSE `complete` payload.
+
+    `profit_factor` and `sharpe_ratio` are `None` when mathematically
+    undefined (no losses for PF; <2 trades or zero variance for Sharpe).
+    Frontend renders "N/A" in that case (BUG-011).
+    """
     total_profit: float
-    total_fees: float = 0.0
-    profit_factor: float
+    profit_factor: Optional[float]
     win_rate: float
-    sharpe_ratio: float
+    sharpe_ratio: Optional[float]
     max_drawdown: float
     total_trades: int
-    avg_profit: Optional[float] = None
-    avg_loss: Optional[float] = None
-    expected_value: Optional[float] = None
-    max_consecutive_losses: Optional[int] = None
-    final_capital: Optional[float] = None
-    gross_profit: Optional[float] = None
-    net_profit: Optional[float] = None
+    avg_profit: Optional[float] = Field(...)
+    avg_loss: Optional[float] = Field(...)
+    expected_value: Optional[float] = Field(...)
+    gross_profit: Optional[float] = Field(...)
+    gross_loss: Optional[float] = Field(...)
+    wins: Optional[int] = Field(...)
+    losses: Optional[int] = Field(...)
 
-    model_config = {'extra': 'allow'}  # metrics dict has more keys; accept them
+    model_config = {'extra': 'allow'}
 
-
-class BacktestResponse(BaseModel):
-    metrics: Metrics
-    trades: List[Trade]
-    candles: List[Candle]
-
-
-# ---- /api/backtest/scaling (phase C2, SSE-streamed) ----
 
 class ScalingParamsModel(BaseModel):
     """Pydantic mirror of src.strategy.scaling_strategy.ScalingParams.
-    Frontend ships these from the settings panel."""
-    total_contracts: int = 4
-    leg1_contracts: int = 1
-    leg2_contracts: int = 1
-    leg3_contracts: int = 2
-    leg2_pullback_points: float = 100.0
-    leg3_pullback_points: float = 150.0
-    big_candle_threshold_points: float = 400.0
-    big_candle_full_contracts: int = 4
-    big_candle_reverses_dir: bool = True
-    tp_target_points: float = 150.0
-    tp_watch_threshold_points: float = 50.0
-    sl_soft_points: float = 200.0
-    sl_hard_points: float = 300.0
-    reentry_enabled: bool = True
-    reentry_cooldown_candles: int = 1
+
+    NO defaults — the no-fallback rule requires every field to be supplied
+    explicitly by the caller. The frontend's form pre-populates from
+    DEFAULT_SCALING_PARAMS so the user always submits a complete payload;
+    the backend rejects partial payloads with 422.
+    """
+    # §1 Entry distribution & sizing
+    total_contracts: int = Field(..., description="Total target position size in contracts.")
+    leg1_contracts: int = Field(..., description="Leg-1 contracts (Base Level fill).")
+    leg2_contracts: int = Field(..., description="Leg-2 contracts (first pullback fill).")
+    leg3_contracts: int = Field(..., description="Leg-3 contracts (deep pullback fill).")
+    leg2_pullback_points: float = Field(..., description="Pullback in points before leg-2 fills.")
+    leg3_pullback_points: float = Field(..., description="Pullback in points before leg-3 fills.")
+
+    # §2 Big candle exception
+    big_candle_threshold_points: float
+    big_candle_full_contracts: int
+    big_candle_reverses_dir: bool
+
+    # §3 Entry trigger (15-second confirmation; not enforced in 4h-only mode)
+    entry_confirmation_timeframe_seconds: int
+    entry1_confirmation_candles: int
+    entry23_confirmation_candles: int
+
+    # §4 Stop loss
+    sl_soft_points: float
+    sl_hard_points: float
+    soft_sl_confirmation_timeframe_minutes: int
+    hard_sl_confirmation_timeframe_seconds: int
+
+    # §5 Take profit
+    tp_target_points: float
+    tp_watch_threshold_points: float
+    tp_confirmation_timeframe_minutes: int
+
+    # Re-entry
+    reentry_enabled: bool
+    reentry_cooldown_candles: int
+
+    # Instrument constants
+    point_value: float
 
 
-class ScalingBacktestRequest(BaseModel):
-    params: ScalingParamsModel = ScalingParamsModel()
-    data_path: str = 'NQ_4h.csv'
-    start: Optional[str] = None
-    end: Optional[str] = None
+class BoxParamsModel(ScalingParamsModel):
+    """ScalingParamsModel + box-specific decision params. All required."""
+    # Box-rule decisions
+    box_tick_threshold: float
+    weekly_window_days: int
+    monthly_window_days: int
+
+    # Big-Candle vs Box conflict resolution (see MASTER_STRATEGY_GUIDE.md §5).
+    big_candle_resolution: Literal['big_candle_wins', 'box_wins', 'skip']
 
 
-class ScalingTrade(BaseModel):
-    entry_idx: int
-    exit_idx: int
-    direction: str
-    avg_entry_price: float
-    exit_price: float
-    contracts: int
-    profit_points: float
-    profit_dollars: float
-    exit_reason: str
-    legs: List[dict] = []
+class BoxBacktestRequest(BaseModel):
+    """Master-strategy backtest request. Every field required."""
+    params: BoxParamsModel
+    data_path: str
+    week_data_path: str
+    month_data_path: str
+    # Date range is optional in semantics (None = whole CSV) but the
+    # field is REQUIRED — caller must send `null` explicitly.
+    start: Optional[str] = Field(...)
+    end: Optional[str] = Field(...)

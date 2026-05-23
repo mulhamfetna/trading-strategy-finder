@@ -1,27 +1,12 @@
 /**
  * Tests for the SSE parser in sse.ts — exercising the exact shapes
  * the backend sends, including the large complete event.
+ *
+ * BUG-025 fix: this file imports the production parser. Previously it
+ * inlined a copy, so the tests passed even when sse.ts drifted.
  */
 import { describe, it, expect } from 'vitest';
-
-// Re-implement parseSseFrame here so we can test it in isolation.
-// (It's not exported from sse.ts, so we inline a copy.)
-function parseSseFrame(raw: string): { type: string; data: unknown } | null {
-  if (!raw.trim()) return null;
-  let eventType: string | null = null;
-  const dataLines: string[] = [];
-  for (const line of raw.split('\n')) {
-    if (line.startsWith('event:')) eventType = line.slice('event:'.length).trim();
-    else if (line.startsWith('data:')) dataLines.push(line.slice('data:'.length).trim());
-  }
-  if (!eventType || dataLines.length === 0) return null;
-  try {
-    const data = JSON.parse(dataLines.join('\n'));
-    if (['progress', 'complete', 'error'].includes(eventType))
-      return { type: eventType, data };
-  } catch { return null; }
-  return null;
-}
+import { parseSseFrame } from '../src/services/sse';
 
 describe('SSE frame parser', () => {
   it('parses a progress event', () => {

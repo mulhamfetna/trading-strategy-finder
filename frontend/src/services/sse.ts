@@ -1,46 +1,52 @@
 /**
- * Server-Sent Events client for /api/backtest/scaling.
+ * Server-Sent Events client for /api/backtest/box — the master strategy.
  *
  * Browser EventSource doesn't support POST, so we use fetch() + a
- * ReadableStream reader and parse SSE frames manually. The async
- * generator yields one event per frame.
+ * ReadableStream reader and parse SSE frames manually.
  */
 
-import type { ScalingCompletePayload, ScalingParams, ScalingProgress } from '../types';
+import type {
+  BoxParams,
+  ScalingCompletePayload,
+  ScalingProgress,
+} from '../types';
 
 export type ScalingStreamEvent =
   | { type: 'progress'; data: ScalingProgress }
   | { type: 'complete'; data: ScalingCompletePayload }
+  | { type: 'warning'; data: { stage: string; message: string } }
   | { type: 'error'; data: { detail: string } };
 
-interface RunOptions {
-  params: ScalingParams;
+interface BoxRunOptions {
+  params: BoxParams;
   data_path?: string;
+  week_data_path?: string;
+  month_data_path?: string;
   start?: string;
   end?: string;
 }
 
-/**
- * Stream a scaling backtest from the backend, yielding parsed SSE events.
- *
- * Usage:
- *   for await (const ev of streamScalingBacktest({ params })) {
- *     if (ev.type === 'progress') ...
- *     if (ev.type === 'complete') ...
- *   }
- */
-export async function* streamScalingBacktest(
-  opts: RunOptions,
+export function streamBoxBacktest(
+  opts: BoxRunOptions,
 ): AsyncGenerator<ScalingStreamEvent, void, unknown> {
-  const response = await fetch('/api/backtest/scaling', {
+  return _streamSse('/api/backtest/box', {
+    params: opts.params,
+    data_path: opts.data_path ?? 'NQ_4h.csv',
+    week_data_path: opts.week_data_path ?? 'NQ_week_data_shifted.csv',
+    month_data_path: opts.month_data_path ?? 'NQ_month_data_shifted.csv',
+    start: opts.start ?? null,
+    end: opts.end ?? null,
+  });
+}
+
+async function* _streamSse(
+  endpoint: string,
+  body: unknown,
+): AsyncGenerator<ScalingStreamEvent, void, unknown> {
+  const response = await fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      params: opts.params,
-      data_path: opts.data_path ?? 'NQ_4h.csv',
-      start: opts.start ?? null,
-      end: opts.end ?? null,
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok || !response.body) {
@@ -55,8 +61,6 @@ export async function* streamScalingBacktest(
     const { value, done } = await reader.read();
     if (done) break;
     buffer += decoder.decode(value, { stream: true });
-
-    // SSE frames are separated by a blank line ("\n\n").
     let boundary = buffer.indexOf('\n\n');
     while (boundary !== -1) {
       const rawFrame = buffer.slice(0, boundary);
@@ -66,12 +70,13 @@ export async function* streamScalingBacktest(
       boundary = buffer.indexOf('\n\n');
     }
   }
-  // Flush any trailing frame
   const tail = parseSseFrame(buffer);
   if (tail) yield tail;
 }
 
-function parseSseFrame(raw: string): ScalingStreamEvent | null {
+// Exported so tests verify the SAME parser the production stream uses
+// (BUG-025 — the test file used to inline a copy).
+export function parseSseFrame(raw: string): ScalingStreamEvent | null {
   if (!raw.trim()) return null;
   let eventType: string | null = null;
   const dataLines: string[] = [];
@@ -87,6 +92,7 @@ function parseSseFrame(raw: string): ScalingStreamEvent | null {
     const data = JSON.parse(dataLines.join('\n'));
     if (eventType === 'progress') return { type: 'progress', data };
     if (eventType === 'complete') return { type: 'complete', data };
+    if (eventType === 'warning') return { type: 'warning', data };
     if (eventType === 'error') return { type: 'error', data };
   } catch {
     return null;

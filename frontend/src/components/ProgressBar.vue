@@ -7,7 +7,7 @@
       <span class="font-semibold text-tv-blue">
         <span v-if="isRunning">Running backtest...</span>
         <span v-else-if="error" class="text-tv-red">Error</span>
-        <span v-else-if="hasResults">Backtest complete{{ elapsedMs !== null ? ` (${elapsedMs} ms)` : '' }}</span>
+        <span v-else-if="hasResults">Backtest complete{{ elapsedMs !== null ? ` (${formatElapsed(elapsedMs)})` : '' }}</span>
         <span v-else class="text-tv-muted">Idle</span>
       </span>
       <span class="text-tv-muted">{{ percentText }}</span>
@@ -29,7 +29,7 @@
       <StatusItem
         label="PnL"
         :value="formatDollar(progress.pnl_so_far)"
-        :color="progress.pnl_so_far >= 0 ? 'text-tv-green' : 'text-tv-red'"
+        :color="signColor(progress.pnl_so_far)"
       />
       <StatusItem
         label="Win rate"
@@ -47,6 +47,7 @@
         "
       />
       <StatusItem
+        v-if="progress.current_legs_filled !== undefined"
         label="Legs filled"
         :value="`${progress.current_legs_filled} / ${maxLegs}`"
       />
@@ -55,6 +56,15 @@
     <div v-if="error" class="mt-2 rounded bg-tv-red/10 p-2 text-xs text-tv-red">
       {{ error }}
     </div>
+
+    <!-- BUG-017: non-fatal SSE warnings -->
+    <div
+      v-if="warnings.length"
+      class="mt-2 space-y-1 rounded bg-tv-blue/10 p-2 text-xs text-tv-blue"
+      data-testid="progress-warnings"
+    >
+      <div v-for="(w, i) in warnings" :key="i">{{ w }}</div>
+    </div>
   </div>
 </template>
 
@@ -62,6 +72,7 @@
 import { computed } from 'vue';
 import { useBacktestStore } from '../stores/backtest';
 import { useSettingsStore } from '../stores/settings';
+import { formatDollar, formatElapsed, signColor } from '../services/format';
 import StatusItem from './StatusItem.vue';
 
 const store = useBacktestStore();
@@ -70,6 +81,7 @@ const settings = useSettingsStore();
 const isRunning = computed(() => store.isRunning);
 const progress = computed(() => store.progress);
 const error = computed(() => store.error);
+const warnings = computed(() => store.warnings);
 const elapsedMs = computed(() => store.elapsedMs);
 const hasResults = computed(() => store.hasResults);
 
@@ -79,9 +91,4 @@ const maxLegs = computed(
 
 const percentText = computed(() => `${store.percent.toFixed(1)}%`);
 const barWidth = computed(() => `${Math.min(100, store.percent)}%`);
-
-function formatDollar(n: number): string {
-  const sign = n >= 0 ? '+' : '';
-  return `${sign}$${n.toFixed(2)}`;
-}
 </script>

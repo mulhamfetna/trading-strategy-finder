@@ -2,20 +2,29 @@
   <div class="flex h-full flex-col bg-tv-bg text-tv-text">
     <header class="flex items-center justify-between border-b border-tv-border bg-tv-surface px-4 py-3">
       <div>
-        <h1 class="text-lg font-semibold text-tv-blue">NQ 1-1-2 Scaling Strategy Dashboard</h1>
-        <p class="text-xs text-tv-muted">FastAPI + Vue 3 + Lightweight Charts &middot; phase D</p>
+        <h1 class="text-lg font-semibold text-tv-blue" data-testid="app-title">{{ title }}</h1>
+        <p class="text-xs text-tv-muted">FastAPI + Vue 3 + Lightweight Charts</p>
       </div>
       <div class="flex items-center gap-2">
+        <span
+          v-if="backtest.isDirty"
+          class="text-xs text-tv-blue"
+          data-testid="dirty-hint"
+          title="Settings have changed since the last run"
+        >
+          Settings changed — Run Backtest to apply
+        </span>
         <button
           v-if="backtest.candles.length && !replay.isActive"
-          class="rounded bg-tv-tile px-4 py-2 text-sm font-semibold text-tv-text shadow hover:bg-tv-border"
+          class="rounded bg-tv-tile px-4 py-2 text-sm font-semibold text-tv-text shadow hover:bg-tv-border focus:outline-none focus:ring-2 focus:ring-tv-blue"
           data-testid="replay-button"
           @click="replay.activate()"
         >
           Replay
         </button>
         <button
-          class="rounded bg-tv-blue px-4 py-2 text-sm font-semibold text-white shadow disabled:opacity-50"
+          class="rounded bg-tv-blue px-4 py-2 text-sm font-semibold text-white shadow disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-tv-blue focus:ring-offset-2 focus:ring-offset-tv-surface"
+          :class="backtest.isDirty ? 'ring-2 ring-tv-blue ring-offset-2 ring-offset-tv-surface' : ''"
           :disabled="backtest.isRunning"
           data-testid="backtest-button"
           @click="backtest.run()"
@@ -37,18 +46,18 @@
 
         <ReplayBar />
 
+        <section class="flex-shrink-0">
+          <MetricsCards :metrics="backtest.metrics" />
+        </section>
+
         <section class="flex-none">
           <div class="mb-2 flex items-center justify-between px-1 text-xs text-tv-muted">
             <span>Candles</span>
             <span>{{ backtest.candles.length ? `${backtest.candles.length} loaded` : 'No candles yet' }}</span>
           </div>
           <div class="min-h-[520px] overflow-hidden rounded border border-tv-border bg-tv-surface">
-            <ChartPane :candles="backtest.candles" :trades="backtest.trades" />
+            <ChartPane :candles="backtest.candles" :trades="backtest.trades" :boxes="backtest.boxes" />
           </div>
-        </section>
-
-        <section class="flex-shrink-0">
-          <MetricsCards :metrics="backtest.metrics" />
         </section>
 
         <section>
@@ -72,6 +81,9 @@ import { useReplayStore } from './stores/replay';
 
 const backtest = useBacktestStore();
 const replay = useReplayStore();
+
+// Single master strategy: 1-1-2 execution + TradingView Box directional oracle.
+const title = 'NQ Master Strategy Dashboard';
 
 function onKey(e: KeyboardEvent) {
   if (!replay.isActive) return;

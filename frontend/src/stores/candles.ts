@@ -7,6 +7,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import type { Candle } from '../types';
 import { fetchCandles } from '../services/api';
+import { useSettingsStore } from './settings';
 
 export const useCandlesStore = defineStore('candles', () => {
   const candles = ref<Candle[]>([]);
@@ -21,8 +22,9 @@ export const useCandlesStore = defineStore('candles', () => {
   ): Promise<void> {
     loading.value = true;
     error.value = null;
+    const settings = useSettingsStore();
     try {
-      const resp = await fetchCandles(start, end, dataset);
+      const resp = await fetchCandles(start, end, dataset, settings.dataPath);
       candles.value = resp.candles;
       range.value = resp.range;
     } catch (err) {

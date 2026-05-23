@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useBacktestStore } from './backtest';
+import { useSettingsStore } from './settings';
 
 const TICK_MS = 200;
 
@@ -15,13 +16,36 @@ export const useReplayStore = defineStore('replay', () => {
   let timer: ReturnType<typeof setInterval> | null = null;
 
   const total = computed(() => backtest.candles.length);
+
+  // BUG-020: when the backtest store clears candles (`run()` resets the
+  // arrays before the new SSE stream starts) we must drop replay state
+  // — otherwise the scrubber's `:max` becomes -1 and currentCandle goes
+  // undefined while the timer keeps ticking.
+  // flush:sync so the cleanup runs in the same tick as the candles
+  // reassignment, before any setInterval callback can observe total=0.
+  watch(
+    total,
+    (newTotal) => {
+      if (newTotal === 0) {
+        deactivate();
+        currentIdx.value = 0;
+      } else if (currentIdx.value >= newTotal) {
+        currentIdx.value = newTotal - 1;
+      }
+    },
+    { flush: 'sync' },
+  );
   const percent = computed(() =>
     total.value > 1 ? (currentIdx.value / (total.value - 1)) * 100 : 0,
   );
   const currentCandle = computed(() => backtest.candles[currentIdx.value] ?? null);
 
-  // Sum of P&L for trades that have fully completed (exit candle is in view).
-  const runningPnl = computed(() =>
+  // FIX-16: realised PnL (trades that closed at or before the current
+  // bar) + mark-to-market of any trade still open at this bar.
+  // Without the MTM component the running PnL line snaps from 0 to the
+  // final close value the moment the exit bar is reached, hiding all
+  // drawdown / max-favourable-excursion behaviour during the hold.
+  const realisedPnl = computed(() =>
     backtest.trades
       .filter((t) => t.exit_idx <= currentIdx.value)
       .reduce((s, t) => s + t.profit_dollars, 0),
@@ -33,6 +57,20 @@ export const useReplayStore = defineStore('replay', () => {
       (t) => t.entry_idx <= currentIdx.value && t.exit_idx > currentIdx.value,
     ),
   );
+
+  const unrealisedPnl = computed(() => {
+    const idx = activeTrade.value;
+    if (idx < 0) return 0;
+    const t = backtest.trades[idx];
+    const candle = backtest.candles[currentIdx.value];
+    if (!t || !candle) return 0;
+    const settings = useSettingsStore();
+    const pointValue = settings.params.point_value;
+    const dirSign = t.direction === 'long' ? 1 : -1;
+    return (candle.c - t.avg_entry_price) * t.contracts * pointValue * dirSign;
+  });
+
+  const runningPnl = computed(() => realisedPnl.value + unrealisedPnl.value);
 
   function activate() {
     _stopTimer();
@@ -103,6 +141,8 @@ export const useReplayStore = defineStore('replay', () => {
     percent,
     currentCandle,
     runningPnl,
+    realisedPnl,
+    unrealisedPnl,
     activeTrade,
     activate,
     deactivate,

@@ -5,36 +5,21 @@
  */
 
 import axios from 'axios';
-import type {
-  BacktestRequest,
-  BacktestResponse,
-  CandlesResponse,
-  StrategyConfig,
-} from '../types';
+import type { CandlesResponse } from '../types';
 
 const client = axios.create({
   baseURL: '/api',
   timeout: 30_000,
 });
 
-export async function fetchStrategyConfig(): Promise<StrategyConfig> {
-  const resp = await client.get<StrategyConfig>('/strategy/config');
-  return resp.data;
-}
-
 export async function fetchCandles(
   start: string,
   end: string,
   dataset: 'train' | 'test',
-  dataPath = '1min.csv',
+  dataPath: string,
 ): Promise<CandlesResponse> {
   const resp = await client.get<CandlesResponse>('/candles', {
     params: { start, end, dataset, data_path: dataPath },
   });
-  return resp.data;
-}
-
-export async function runBacktest(req: BacktestRequest): Promise<BacktestResponse> {
-  const resp = await client.post<BacktestResponse>('/backtest', req);
   return resp.data;
 }

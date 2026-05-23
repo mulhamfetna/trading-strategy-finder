@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
@@ -43,8 +44,8 @@ def test_load_real_nq_4h_csv():
     repo_root = Path(__file__).resolve().parents[1]
     csv = repo_root / 'NQ_4h.csv'
     if not csv.exists():
-        # File is gitignored; skip if not present in this checkout.
-        return
+        # File is gitignored; explicit skip so CI shows it as SKIP, not PASS.
+        pytest.skip(f"NQ_4h.csv missing at {csv}; gitignored data file.")
 
     df = load_data(str(csv))
 

@@ -1,14 +1,31 @@
 <template>
-  <div class="chart-shell" data-testid="chart-pane">
+  <!-- CSS variables sourced from CHART_THEME so scoped CSS doesn't
+       need to repeat any hex literals. -->
+  <div
+    class="chart-shell"
+    data-testid="chart-pane"
+    :style="{
+      '--chart-muted': CHART_THEME.muted,
+      '--chart-ema-fast': CHART_THEME.emaFast,
+    }"
+  >
     <div ref="containerRef" class="chart-container" />
     <div v-if="!candles.length" class="chart-empty">
       No candles loaded yet.
+    </div>
+    <!-- QC-CP-4: explain when an EMA disappears for lack of candles -->
+    <div
+      v-if="emaWarning"
+      class="chart-warning"
+      data-testid="ema-warning"
+    >
+      {{ emaWarning }}
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, watch, ref, toRefs } from 'vue';
+import { computed, onMounted, onBeforeUnmount, watch, ref, toRefs } from 'vue';
 import {
   createChart,
   createSeriesMarkers,
@@ -19,13 +36,20 @@ import {
   type IChartApi,
   type ISeriesApi,
   type ISeriesMarkersPluginApi,
-  type CandlestickData,
   type LineData,
   type HistogramData,
   type SeriesMarker,
   type Time,
 } from 'lightweight-charts';
-import type { Candle, ScalingTrade } from '../types';
+import type { BoxRect, Candle, ScalingTrade } from '../types';
+import { BoxesPrimitive } from './BoxesPrimitive';
+import {
+  computeEMA,
+  computeRSI,
+  toLwcData,
+  toUTCTimestamp,
+} from '../services/chart_helpers';
+import { CHART_THEME } from '../services/chart_theme';
 import { useSettingsStore } from '../stores/settings';
 import { useReplayStore } from '../stores/replay';
 
@@ -33,15 +57,28 @@ const props = withDefaults(
   defineProps<{
     candles: Candle[];
     trades?: ScalingTrade[];
+    boxes?: BoxRect[];
   }>(),
-  { trades: () => [] },
+  { trades: () => [], boxes: () => [] },
 );
 
-const { candles, trades } = toRefs(props);
+const { candles, trades, boxes } = toRefs(props);
 const settings = useSettingsStore();
 const replay = useReplayStore();
 
 const containerRef = ref<HTMLDivElement | null>(null);
+
+// QC-CP-4: explain to the user when an EMA goes blank because there
+// aren't enough candles loaded for its warmup period.
+const emaWarning = computed(() => {
+  const n = candles.value.length;
+  if (n === 0) return '';
+  const missing: string[] = [];
+  if (settings.indicators.emaFast > n) missing.push(`EMA${settings.indicators.emaFast}`);
+  if (settings.indicators.emaSlow > n) missing.push(`EMA${settings.indicators.emaSlow}`);
+  if (!missing.length) return '';
+  return `${missing.join(' / ')} hidden — only ${n} candles loaded.`;
+});
 
 let chart: IChartApi | null = null;
 let candleSeries: ISeriesApi<'Candlestick'> | null = null;
@@ -50,70 +87,7 @@ let emaFastSeries: ISeriesApi<'Line'> | null = null;
 let emaSlowSeries: ISeriesApi<'Line'> | null = null;
 let volSeries: ISeriesApi<'Histogram'> | null = null;
 let rsiSeries: ISeriesApi<'Line'> | null = null;
-
-// ---- indicator math ----
-
-function computeEMA(prices: number[], period: number): (number | null)[] {
-  if (prices.length < period) return prices.map(() => null);
-  const k = 2 / (period + 1);
-  const out: (number | null)[] = new Array(period - 1).fill(null);
-  let ema = prices.slice(0, period).reduce((s, v) => s + v, 0) / period;
-  out.push(ema);
-  for (let i = period; i < prices.length; i++) {
-    ema = prices[i] * k + ema * (1 - k);
-    out.push(ema);
-  }
-  return out;
-}
-
-function computeRSI(prices: number[], period: number): (number | null)[] {
-  if (prices.length < period + 1) return prices.map(() => null);
-  const out: (number | null)[] = new Array(period).fill(null);
-  let avgGain = 0;
-  let avgLoss = 0;
-  for (let i = 1; i <= period; i++) {
-    const d = prices[i] - prices[i - 1];
-    if (d > 0) avgGain += d; else avgLoss -= d;
-  }
-  avgGain /= period;
-  avgLoss /= period;
-  out.push(avgLoss === 0 ? 100 : 100 - 100 / (1 + avgGain / avgLoss));
-  for (let i = period + 1; i < prices.length; i++) {
-    const d = prices[i] - prices[i - 1];
-    const gain = d > 0 ? d : 0;
-    const loss = d < 0 ? -d : 0;
-    avgGain = (avgGain * (period - 1) + gain) / period;
-    avgLoss = (avgLoss * (period - 1) + loss) / period;
-    out.push(avgLoss === 0 ? 100 : 100 - 100 / (1 + avgGain / avgLoss));
-  }
-  return out;
-}
-
-// ---- data converters ----
-
-/**
- * Convert a candle timestamp string to a LWC UTCTimestamp (seconds since epoch).
- *
- * The 4h CSV produces "YYYY-MM-DD HH:MM:SS" (space separator). LWC intraday
- * charts require a numeric UTCTimestamp — passing a string causes the chart
- * to silently render nothing.
- */
-function toUTCTimestamp(t: string): Time {
-  // Accept both "2025-01-01 18:00:00" and "2025-01-01T18:00:00"
-  const iso = t.replace(' ', 'T');
-  const ms = new Date(iso + (iso.endsWith('Z') ? '' : 'Z')).getTime();
-  return (ms / 1000) as unknown as Time;
-}
-
-function toLwcData(rows: Candle[]): CandlestickData<Time>[] {
-  return rows.map((row) => ({
-    time: toUTCTimestamp(row.t),
-    open: row.o,
-    high: row.h,
-    low: row.l,
-    close: row.c,
-  }));
-}
+let boxesPrimitive: BoxesPrimitive | null = null;
 
 function toMarkers(
   rows: Candle[],
@@ -128,7 +102,7 @@ function toMarkers(
       markers.push({
         time: toUTCTimestamp(entry.t),
         position: t.direction === 'long' ? 'belowBar' : 'aboveBar',
-        color: t.direction === 'long' ? '#00c853' : '#ff5252',
+        color: t.direction === 'long' ? CHART_THEME.bull : CHART_THEME.bear,
         shape: t.direction === 'long' ? 'arrowUp' : 'arrowDown',
         text: t.direction === 'long' ? 'B' : 'S',
       });
@@ -140,7 +114,7 @@ function toMarkers(
         markers.push({
           time: toUTCTimestamp(exit.t),
           position: t.direction === 'long' ? 'aboveBar' : 'belowBar',
-          color: t.profit_dollars >= 0 ? '#00c853' : '#ff5252',
+          color: t.profit_dollars >= 0 ? CHART_THEME.bull : CHART_THEME.bear,
           shape: 'square',
           text: `${t.profit_dollars >= 0 ? '+' : ''}${t.profit_points.toFixed(0)}`,
         });
@@ -153,6 +127,12 @@ function toMarkers(
 
 // ---- apply data to all series ----
 
+// FIX-17: track the candles array identity so we only call `fitContent()`
+// when the underlying dataset actually changes (new backtest result),
+// NOT on every replay scrub tick or indicator-period change. Calling
+// fitContent on every tick destroys any manual pan/zoom the user did.
+let lastCandlesRef: typeof candles.value | null = null;
+
 function applyData() {
   if (!candleSeries) return;
   // In replay mode, show only candles up to the current replay index.
@@ -160,6 +140,8 @@ function applyData() {
   const rows = candles.value.slice(0, viewTo + 1);
   const closes = rows.map((r) => r.c);
   const times = rows.map((r) => toUTCTimestamp(r.t));
+  const candlesChanged = candles.value !== lastCandlesRef;
+  lastCandlesRef = candles.value;
 
   // candles
   candleSeries.setData(toLwcData(rows));
@@ -179,7 +161,7 @@ function applyData() {
     const volData: HistogramData<Time>[] = rows.map((r, i) => ({
       time: times[i],
       value: r.v,
-      color: r.c >= r.o ? '#00c85344' : '#ff525244',
+      color: r.c >= r.o ? CHART_THEME.bullTinted : CHART_THEME.bearTinted,
     }));
     volSeries?.setData(volData);
   } else {
@@ -204,7 +186,17 @@ function applyData() {
     markersApi = createSeriesMarkers(candleSeries, m);
   }
 
-  chart?.timeScale().fitContent();
+  // boxes overlay — always sync bar times so x-coordinates snap to real bars
+  if (boxesPrimitive) {
+    const barTimes = rows.map((r) => (toUTCTimestamp(r.t) as unknown as number));
+    boxesPrimitive.setBarTimes(barTimes);
+    boxesPrimitive.setBoxes(boxes.value);
+  }
+
+  // Only fit on a real data reload — preserve user pan/zoom during replay.
+  if (candlesChanged) {
+    chart?.timeScale().fitContent();
+  }
 }
 
 // ---- chart init/teardown ----
@@ -212,6 +204,7 @@ function applyData() {
 function initChart() {
   if (chart) {
     markersApi = null;
+    boxesPrimitive = null;
     chart.remove();
     chart = null;
     candleSeries = null;
@@ -220,31 +213,36 @@ function initChart() {
     volSeries = null;
     rsiSeries = null;
   }
+  lastCandlesRef = null;  // ensure the first applyData() call triggers a fit
   if (!containerRef.value) return;
 
   chart = createChart(containerRef.value, {
-    layout: { background: { color: '#131722' }, textColor: '#d1d4dc' },
-    grid: { vertLines: { color: '#363a45' }, horzLines: { color: '#363a45' } },
-    timeScale: { borderColor: '#363a45' },
-    rightPriceScale: { borderColor: '#363a45' },
+    layout: { background: { color: CHART_THEME.bg }, textColor: CHART_THEME.text },
+    grid: { vertLines: { color: CHART_THEME.border }, horzLines: { color: CHART_THEME.border } },
+    timeScale: { borderColor: CHART_THEME.border },
+    rightPriceScale: { borderColor: CHART_THEME.border },
     autoSize: true,
   });
 
   // pane 0: candlesticks
   candleSeries = chart.addSeries(CandlestickSeries, {
-    upColor: '#00c853',
-    downColor: '#ff5252',
-    borderUpColor: '#00c853',
-    borderDownColor: '#ff5252',
-    wickUpColor: '#00c853',
-    wickDownColor: '#ff5252',
+    upColor: CHART_THEME.bull,
+    downColor: CHART_THEME.bear,
+    borderUpColor: CHART_THEME.bull,
+    borderDownColor: CHART_THEME.bear,
+    wickUpColor: CHART_THEME.bull,
+    wickDownColor: CHART_THEME.bear,
   });
+
+  // box overlay primitive (draws behind candles)
+  boxesPrimitive = new BoxesPrimitive();
+  candleSeries.attachPrimitive(boxesPrimitive);
 
   // EMA overlays (pane 0)
   emaFastSeries = chart.addSeries(
     LineSeries,
     {
-      color: '#f7931a',
+      color: CHART_THEME.emaFast,
       lineWidth: 1,
       title: `EMA${settings.indicators.emaFast}`,
       priceLineVisible: false,
@@ -255,7 +253,7 @@ function initChart() {
   emaSlowSeries = chart.addSeries(
     LineSeries,
     {
-      color: '#2962ff',
+      color: CHART_THEME.emaSlow,
       lineWidth: 1,
       title: `EMA${settings.indicators.emaSlow}`,
       priceLineVisible: false,
@@ -278,7 +276,7 @@ function initChart() {
   rsiSeries = chart.addSeries(
     LineSeries,
     {
-      color: '#9c27b0',
+      color: CHART_THEME.rsi,
       lineWidth: 1,
       title: 'RSI',
       priceLineVisible: false,
@@ -288,7 +286,7 @@ function initChart() {
   );
   rsiSeries.createPriceLine({
     price: 70,
-    color: '#ff525288',
+    color: CHART_THEME.bearThreshold,
     lineWidth: 1,
     lineStyle: LineStyle.Dashed,
     axisLabelVisible: true,
@@ -296,7 +294,7 @@ function initChart() {
   });
   rsiSeries.createPriceLine({
     price: 30,
-    color: '#00c85388',
+    color: CHART_THEME.bullThreshold,
     lineWidth: 1,
     lineStyle: LineStyle.Dashed,
     axisLabelVisible: true,
@@ -308,8 +306,9 @@ function initChart() {
 
 onMounted(initChart);
 
-watch([candles, trades], applyData, { deep: false });
-// period / visibility changes → recompute data only
+watch([candles, trades, boxes], applyData, { deep: false });
+// period / visibility changes → recompute data + refresh pane titles
+// (BUG-023: titles are baked at addSeries time and don't update on period change)
 watch(
   () => [
     settings.indicators.emaFast,
@@ -318,7 +317,11 @@ watch(
     settings.indicators.showVolume,
     settings.indicators.showRSI,
   ],
-  applyData,
+  () => {
+    emaFastSeries?.applyOptions({ title: `EMA${settings.indicators.emaFast}` });
+    emaSlowSeries?.applyOptions({ title: `EMA${settings.indicators.emaSlow}` });
+    applyData();
+  },
 );
 // replay scrubbing → re-slice
 watch(() => replay.currentIdx, applyData);
@@ -326,6 +329,7 @@ watch(() => replay.isActive, applyData);
 
 onBeforeUnmount(() => {
   markersApi = null;
+  boxesPrimitive = null;
   chart?.remove();
   chart = null;
   candleSeries = null;
@@ -337,17 +341,21 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* Responsive chart height: floor of 360px (still useful on mobile),
+ * 55% of the viewport at the comfort zone, ceiling of 720px so the
+ * chart doesn't dominate on ultrawide displays.
+ */
 .chart-container {
   width: 100%;
   height: 100%;
-  min-height: 520px;
+  min-height: clamp(360px, 55vh, 720px);
 }
 
 .chart-shell {
   position: relative;
   width: 100%;
   height: 100%;
-  min-height: 520px;
+  min-height: clamp(360px, 55vh, 720px);
 }
 
 .chart-empty {
@@ -356,8 +364,21 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #787b86;
+  color: var(--chart-muted);
   font-size: 12px;
+  pointer-events: none;
+}
+
+.chart-warning {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  /* 15% alpha background built from the same hex token. */
+  background: color-mix(in srgb, var(--chart-ema-fast) 15%, transparent);
+  color: var(--chart-ema-fast);
+  font-size: 11px;
   pointer-events: none;
 }
 </style>

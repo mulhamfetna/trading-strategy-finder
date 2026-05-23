@@ -1,20 +1,10 @@
 /**
  * TypeScript types matching the FastAPI backend Pydantic schemas.
- * Keep these in lock-step with src/api/schemas.py.
+ *
+ * Two strategies (1-1-2 Scaling + Box variant) share execution and
+ * trade shape. Every numeric strategy decision lives on `ScalingParams`
+ * (Box extends it). Keep this file in lockstep with src/api/schemas.py.
  */
-
-export interface StrategyConfig {
-  rsi_period: number;
-  ema_fast: number;
-  ema_slow: number;
-  vol_threshold: number;
-  stop_loss: number;
-  take_profit: number;
-  tp_sl_resolution: 'conservative' | 'optimistic' | 'direction-proxy';
-  tp_sl_resolution_options: Array<'conservative' | 'optimistic' | 'direction-proxy'>;
-  timeframe_options: string[];
-  dataset_options: Array<'train' | 'test'>;
-}
 
 export interface Candle {
   t: string;
@@ -31,78 +21,76 @@ export interface CandlesResponse {
   range: { start: string; end: string };
 }
 
-export interface BacktestRequest {
-  start: string;
-  end: string;
-  dataset: 'train' | 'test';
-  timeframe: '15min';
-  tp_sl_resolution: 'conservative' | 'optimistic' | 'direction-proxy';
-  stop_loss?: number;
-  take_profit?: number;
-  initial_capital?: number;
-  fee_per_trade?: number;
-  data_path?: string;
-}
-
-export interface Trade {
-  entry_idx: number;
-  exit_idx: number;
-  entry_price: number;
-  exit_price: number;
-  direction: string;
-  profit_pct: number;
-  profit_dollars: number;
-  capital_after: number;
-  exit_reason: string;
-  fees_paid: number;
-}
-
 export interface Metrics {
   total_profit: number;
-  total_fees?: number;
-  profit_factor: number;
+  profit_factor: number | null;
   win_rate: number;
-  sharpe_ratio: number;
+  sharpe_ratio: number | null;
   max_drawdown: number;
   total_trades: number;
   avg_profit?: number;
   avg_loss?: number;
   expected_value?: number;
-  max_consecutive_losses?: number;
-  final_capital?: number;
   gross_profit?: number;
-  net_profit?: number;
+  gross_loss?: number;
   wins?: number;
   losses?: number;
-  gross_loss?: number;
   [key: string]: unknown;
 }
 
-export interface BacktestResponse {
-  metrics: Metrics;
-  trades: Trade[];
-  candles: Candle[];
-}
-
-// ---- scaling strategy (phase C) ----
+// ---- 1-1-2 Scaling strategy params ----
 
 export interface ScalingParams {
+  // §1 Entry distribution & sizing
   total_contracts: number;
   leg1_contracts: number;
   leg2_contracts: number;
   leg3_contracts: number;
   leg2_pullback_points: number;
   leg3_pullback_points: number;
+
+  // §2 Big candle exception
   big_candle_threshold_points: number;
   big_candle_full_contracts: number;
   big_candle_reverses_dir: boolean;
-  tp_target_points: number;
-  tp_watch_threshold_points: number;
+
+  // §3 Entry trigger (15-second confirmation)
+  entry_confirmation_timeframe_seconds: number;
+  entry1_confirmation_candles: number;
+  entry23_confirmation_candles: number;
+
+  // §4 Stop loss
   sl_soft_points: number;
   sl_hard_points: number;
+  soft_sl_confirmation_timeframe_minutes: number;
+  hard_sl_confirmation_timeframe_seconds: number;
+
+  // §5 Take profit
+  tp_target_points: number;
+  tp_watch_threshold_points: number;
+  tp_confirmation_timeframe_minutes: number;
+
+  // Re-entry
   reentry_enabled: boolean;
   reentry_cooldown_candles: number;
+
+  // Instrument
+  point_value: number;
 }
+
+// ---- Box strategy params (extends ScalingParams with box-rule decisions) ----
+
+export type BigCandleResolution = 'big_candle_wins' | 'box_wins' | 'skip';
+
+export interface BoxParams extends ScalingParams {
+  box_tick_threshold: number;
+  weekly_window_days: number;
+  monthly_window_days: number;
+  /** Conflict policy when a big bar AND a box edge-cross disagree — see MASTER_STRATEGY_GUIDE §5. */
+  big_candle_resolution: BigCandleResolution;
+}
+
+// ---- Trades / progress / SSE payload ----
 
 export interface ScalingTrade {
   entry_idx: number;
@@ -115,6 +103,8 @@ export interface ScalingTrade {
   profit_dollars: number;
   exit_reason: string;
   legs: Array<{ contracts: number; price: number; candle_idx: number }>;
+  exit_time?: string;
+  box_signal?: BoxSignal;
 }
 
 export interface ScalingProgress {
@@ -134,22 +124,78 @@ export interface ScalingCompletePayload {
   trades: ScalingTrade[];
   candles: Candle[];
   elapsed_ms: number;
+  boxes?: BoxRect[];
 }
 
+export interface BoxSignal {
+  signal: string | null;
+  weekly_signal: string | null;
+  monthly_signal: string | null;
+  conflict?: boolean;
+  weekly_level: string | null;
+  monthly_level: string | null;
+  weekly_upper: number | null;
+  weekly_lower: number | null;
+  monthly_upper: number | null;
+  monthly_lower: number | null;
+  weekly_box_start: string | null;
+  monthly_box_start: string | null;
+}
+
+export interface BoxRect {
+  start_time: number;
+  end_time: number;
+  upper: number;
+  lower: number;
+  level: string;
+  timeframe: 'weekly' | 'monthly';
+  fill_color: string;
+  border_color: string;
+}
+
+// ---- Defaults ----
+
 export const DEFAULT_SCALING_PARAMS: ScalingParams = {
+  // §1
   total_contracts: 4,
   leg1_contracts: 1,
   leg2_contracts: 1,
   leg3_contracts: 2,
   leg2_pullback_points: 100,
   leg3_pullback_points: 150,
+  // §2
   big_candle_threshold_points: 400,
   big_candle_full_contracts: 4,
   big_candle_reverses_dir: true,
-  tp_target_points: 150,
-  tp_watch_threshold_points: 50,
+  // §3
+  entry_confirmation_timeframe_seconds: 15,
+  entry1_confirmation_candles: 3,
+  entry23_confirmation_candles: 1,
+  // §4
   sl_soft_points: 200,
   sl_hard_points: 300,
+  soft_sl_confirmation_timeframe_minutes: 2,
+  hard_sl_confirmation_timeframe_seconds: 5,
+  // §5
+  tp_target_points: 150,
+  tp_watch_threshold_points: 50,
+  tp_confirmation_timeframe_minutes: 2,
+  // Re-entry
   reentry_enabled: true,
   reentry_cooldown_candles: 1,
+  // Instrument
+  point_value: 2,
+};
+
+export const DEFAULT_BOX_PARAMS: BoxParams = {
+  ...DEFAULT_SCALING_PARAMS,
+  box_tick_threshold: 0.75,
+  weekly_window_days: 7,
+  monthly_window_days: 30,
+  big_candle_resolution: 'big_candle_wins',
+};
+
+export const DEFAULT_BOX_DATA_PATHS = {
+  week_data_path: 'NQ_week_data_shifted.csv',
+  month_data_path: 'NQ_month_data_shifted.csv',
 };

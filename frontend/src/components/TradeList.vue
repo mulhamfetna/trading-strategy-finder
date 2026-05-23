@@ -7,11 +7,12 @@
       <span class="text-xs font-semibold text-tv-blue">Trades ({{ trades.length }})</span>
       <button
         v-if="trades.length"
-        class="flex items-center gap-1 rounded bg-tv-tile px-2 py-0.5 text-xs text-tv-muted hover:bg-tv-border hover:text-tv-text"
+        class="flex items-center gap-1 rounded bg-tv-tile px-2 py-0.5 text-xs text-tv-muted hover:bg-tv-border hover:text-tv-text focus:outline-none focus:ring-2 focus:ring-tv-blue"
         title="Export trades to CSV"
+        aria-label="Export trades to CSV"
         @click="exportCsv"
       >
-        <svg class="h-3 w-3" viewBox="0 0 16 16" fill="currentColor">
+        <svg class="h-3 w-3" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
           <path d="M8 1v9m0 0-3-3m3 3 3-3M2 12v2a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-2" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         Save CSV
@@ -26,20 +27,23 @@
           <tr class="text-left text-tv-muted">
             <th class="px-3 py-1">#</th>
             <th class="px-3 py-1">Dir</th>
-            <th class="px-3 py-1">Entry</th>
-            <th class="px-3 py-1">Exit</th>
+            <th class="px-3 py-1">Entry time</th>
+            <th class="px-3 py-1">Exit time</th>
+            <th class="px-3 py-1">Entry px</th>
+            <th class="px-3 py-1">Exit px</th>
             <th class="px-3 py-1">Pts</th>
             <th class="px-3 py-1">$</th>
             <th class="px-3 py-1">Reason</th>
+            <th class="px-3 py-1">Box signal</th>
           </tr>
         </thead>
         <tbody>
           <tr
             v-for="(t, i) in displayed"
-            :key="`${t.entry_idx}-${t.exit_idx}`"
+            :key="`${i}-${t.entry_idx}-${t.exit_idx}`"
             class="cursor-pointer border-t border-tv-border transition-colors"
             :class="rowClass(i)"
-            :title="`Click to jump to trade ${i + 1} in replay`"
+            :title="boxTooltip(t)"
             @click="onRowClick(t)"
           >
             <td class="px-3 py-1 text-tv-muted">{{ i + 1 }}</td>
@@ -48,15 +52,37 @@
                 {{ t.direction.toUpperCase() }}
               </span>
             </td>
-            <td class="px-3 py-1">{{ t.avg_entry_price.toFixed(2) }}</td>
-            <td class="px-3 py-1">{{ t.exit_price.toFixed(2) }}</td>
-            <td class="px-3 py-1" :class="t.profit_points >= 0 ? 'text-tv-green' : 'text-tv-red'">
-              {{ t.profit_points >= 0 ? '+' : '' }}{{ t.profit_points.toFixed(1) }}
+            <td class="px-3 py-1 text-tv-muted">{{ candleTime(t.entry_idx) }}</td>
+            <td class="px-3 py-1 text-tv-muted tabular-nums">{{ exitTime(t) }}</td>
+            <td class="px-3 py-1 tabular-nums">{{ priceFmt.format(t.avg_entry_price) }}</td>
+            <td class="px-3 py-1 tabular-nums">{{ priceFmt.format(t.exit_price) }}</td>
+            <td class="px-3 py-1 tabular-nums" :class="signColor(t.profit_points) ?? 'text-tv-muted'">
+              {{ formatPoints(t.profit_points) }}
             </td>
-            <td class="px-3 py-1 font-semibold" :class="t.profit_dollars >= 0 ? 'text-tv-green' : 'text-tv-red'">
-              {{ t.profit_dollars >= 0 ? '+' : '' }}${{ t.profit_dollars.toFixed(2) }}
+            <td class="px-3 py-1 font-semibold tabular-nums" :class="signColor(t.profit_dollars) ?? 'text-tv-muted'">
+              {{ formatDollar(t.profit_dollars) }}
             </td>
-            <td class="px-3 py-1 text-tv-muted">{{ t.exit_reason }}</td>
+            <td class="px-3 py-1 text-tv-muted truncate max-w-[180px]" :title="t.exit_reason">{{ t.exit_reason }}</td>
+            <td class="px-3 py-1 max-w-[200px] truncate" :title="boxCellTooltip(t)">
+              <template v-if="t.box_signal">
+                <!-- FIX-20: previous "weekly + monthly" rendering implied both
+                     contributed. Single-box logic fires on weekly OR monthly
+                     (weekly priority). Show only the firing side with a
+                     priority/conflict badge when relevant. -->
+                <div class="text-[10px] leading-tight">
+                  <span class="font-mono text-tv-blue">{{ boxFiringLabel(t.box_signal) }}</span>
+                  <span
+                    v-if="t.box_signal.conflict"
+                    class="ml-1 rounded bg-tv-red/20 px-1 text-[9px] text-tv-red"
+                    title="Weekly fired despite monthly disagreement"
+                  >conflict</span>
+                </div>
+                <div class="text-[9px] text-tv-muted leading-tight">
+                  {{ boxStartLabel(t.box_signal) }}
+                </div>
+              </template>
+              <span v-else class="text-tv-muted text-[10px]">—</span>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -67,15 +93,76 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { ScalingTrade } from '../types';
+import { useBacktestStore } from '../stores/backtest';
 import { useReplayStore } from '../stores/replay';
+import { formatDollar, signColor } from '../services/format';
 
 const props = defineProps<{
   trades: ScalingTrade[];
 }>();
 
+const backtest = useBacktestStore();
 const replay = useReplayStore();
 
 const displayed = computed(() => props.trades);
+
+// Price column formatter: thousands separator + 2 decimals.
+const priceFmt = new Intl.NumberFormat('en-US', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+// Signed points: same zero-is-neutral rule as the dollar formatter.
+function formatPoints(n: number): string {
+  if (Math.abs(n) < 0.05) return '0.0';
+  const sign = n > 0 ? '+' : '-';
+  return `${sign}${Math.abs(n).toFixed(1)}`;
+}
+
+// "2025-01-03 18:00:00" → "2025-01-03 18:00"
+function candleTime(idx: number): string {
+  const c = backtest.candles[idx];
+  if (!c) return '—';
+  return c.t.replace('T', ' ').slice(0, 16);
+}
+
+function exitTime(t: ScalingTrade): string {
+  if (t.exit_time) return t.exit_time.replace('T', ' ').slice(0, 16);
+  return candleTime(t.exit_idx);
+}
+
+function boxTooltip(t: ScalingTrade): string {
+  if (!t.box_signal) return `Click to jump to trade in replay`;
+  const b = t.box_signal;
+  const lines = [
+    `Box signal: ${(b.signal ?? '—').toUpperCase()}`,
+    `Weekly : ${b.weekly_level ?? '—'} (${(b.weekly_signal ?? '—').toUpperCase()})`,
+    b.weekly_upper != null ? `  edges: ${b.weekly_upper.toFixed(2)} / ${b.weekly_lower?.toFixed(2)}` : '',
+    `Monthly: ${b.monthly_level ?? '—'} (${(b.monthly_signal ?? '—').toUpperCase()})`,
+    b.monthly_upper != null ? `  edges: ${b.monthly_upper.toFixed(2)} / ${b.monthly_lower?.toFixed(2)}` : '',
+    `Weekly box start : ${b.weekly_box_start ?? '—'}`,
+    `Monthly box start: ${b.monthly_box_start ?? '—'}`,
+    b.conflict ? 'NOTE: weekly and monthly disagreed; aggregate uses weekly priority.' : '',
+  ];
+  return lines.filter(Boolean).join('\n');
+}
+
+// FIX-20: show only the firing side (weekly takes priority).
+function boxFiringLabel(b: NonNullable<ScalingTrade['box_signal']>): string {
+  if (b.weekly_signal && b.weekly_level) return `${b.weekly_level} (W)`;
+  if (b.monthly_signal && b.monthly_level) return `${b.monthly_level} (M)`;
+  return '—';
+}
+
+function boxStartLabel(b: NonNullable<ScalingTrade['box_signal']>): string {
+  if (b.weekly_signal && b.weekly_box_start) return `since ${b.weekly_box_start}`;
+  if (b.monthly_signal && b.monthly_box_start) return `since ${b.monthly_box_start}`;
+  return '';
+}
+
+function boxCellTooltip(t: ScalingTrade): string {
+  return boxTooltip(t);
+}
 
 function onRowClick(t: ScalingTrade) {
   replay.jumpToTrade(t.entry_idx);
@@ -88,16 +175,22 @@ function rowClass(i: number) {
 }
 
 function exportCsv() {
-  const headers = ['#', 'Direction', 'Avg Entry', 'Exit Price', 'Contracts', 'Points', 'Dollars', 'Exit Reason'];
+  const headers = ['#', 'Direction', 'Entry Time', 'Exit Time', 'Entry Price', 'Exit Price', 'Contracts', 'Points', 'Dollars', 'Exit Reason', 'Weekly Box', 'Monthly Box', 'W-Box Start', 'M-Box Start'];
   const rows = props.trades.map((t, i) => [
     i + 1,
     t.direction.toUpperCase(),
+    candleTime(t.entry_idx),
+    exitTime(t),
     t.avg_entry_price.toFixed(2),
     t.exit_price.toFixed(2),
     t.contracts,
     t.profit_points.toFixed(1),
     t.profit_dollars.toFixed(2),
     t.exit_reason,
+    t.box_signal?.weekly_level ?? '',
+    t.box_signal?.monthly_level ?? '',
+    t.box_signal?.weekly_box_start ?? '',
+    t.box_signal?.monthly_box_start ?? '',
   ]);
 
   const csv = [headers, ...rows]
@@ -108,7 +201,15 @@ function exportCsv() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `trades_${new Date().toISOString().slice(0, 10)}.csv`;
+  // Filename includes HHMMSS so same-day exports don't overwrite each other.
+  const now = new Date();
+  const stamp =
+    now.toISOString().slice(0, 10) +
+    '_' +
+    String(now.getHours()).padStart(2, '0') +
+    String(now.getMinutes()).padStart(2, '0') +
+    String(now.getSeconds()).padStart(2, '0');
+  a.download = `trades_${stamp}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }

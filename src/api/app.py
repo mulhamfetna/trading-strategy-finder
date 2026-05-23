@@ -18,27 +18,23 @@ from dataclasses import asdict
 from typing import Any, Dict, Iterator, List, Optional
 
 import pandas as pd
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, File, HTTPException, Query, Request, UploadFile
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from src.api.schemas import (
-    BacktestRequest,
-    BacktestResponse,
+    BoxBacktestRequest,
     Candle,
     CandlesRange,
     CandlesResponse,
     Metrics,
-    ScalingBacktestRequest,
-    StrategyConfig,
-    Trade,
 )
-from src.backtest.metrics import calculate_metrics
+from src.exceptions import ConfigurationError, MissingDataFileError
 from src.data.loader import load_data
-from src.data.splitter import filter_by_date_range, split_train_test
-from src.strategy.backtester import Backtester
-from src.strategy.scaling_strategy import ScalingParams, ScalingStrategy
-from src.strategy.scalping_strategy import ScalpingStrategy
+from src.data.splitter import filter_by_date_range
+from src.strategy.box_lookup import BoxLookup
+from src.strategy.box_strategy import BoxStrategy, BoxStrategyParams
 
 
 app = FastAPI(
@@ -50,31 +46,81 @@ app = FastAPI(
     version="2.0.0-dev",
 )
 
-# Permissive CORS for development. Lock down in production.
+# ---- No-fallback rule: exception handlers (see docs/CODING_RULES.md) ----
+
+@app.exception_handler(ConfigurationError)
+async def _handle_configuration_error(request: Request, exc: ConfigurationError) -> JSONResponse:
+    """Map internal ConfigurationError to a 422 JSON body. The structured
+    `code` / `message` / `system_status` shape matches what SSE workers
+    emit as `event: error` so frontend clients see one consistent
+    contract regardless of transport."""
+    return JSONResponse(status_code=422, content=exc.to_payload())
+
+
+@app.exception_handler(RequestValidationError)
+async def _handle_request_validation_error(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
+    """Wrap Pydantic ValidationError with system status. The no-fallback
+    rule makes every request field required; missing/wrong-type fields
+    surface here as a 422 with the list of validation errors plus the
+    request path + body the caller actually sent."""
+    body: Any
+    try:
+        body = await request.json()
+    except Exception:
+        body = None
+    return JSONResponse(
+        status_code=422,
+        content={
+            'code': 'request-validation-error',
+            'message': 'One or more required fields are missing or invalid.',
+            'system_status': {
+                'path': str(request.url.path),
+                'method': request.method,
+                'errors': [
+                    {'loc': list(e['loc']), 'msg': e['msg'], 'type': e['type']}
+                    for e in exc.errors()
+                ],
+                'received_body': body,
+            },
+        },
+    )
+
+
+# CORS: dev allows the local Vite server only; override via env for prod.
+_ALLOWED_ORIGINS = [
+    o.strip()
+    for o in os.environ.get(
+        'TRADING_DASH_ALLOW_ORIGINS',
+        'http://localhost:5173,http://127.0.0.1:5173',
+    ).split(',')
+    if o.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_ALLOWED_ORIGINS,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# BUG-022: cap uploads to prevent OOM/disk-fill via /api/upload-data-file.
+# 200 MB is well above the largest active CSV (~135 MB for 1min historical).
+MAX_UPLOAD_BYTES = 200 * 1024 * 1024
+
 
 # ---- helpers ---------------------------------------------------------
-
-_DEFAULT_SPLIT = '2025-06-30'
-
 
 def _load_and_filter(
     data_path: str,
     start: str,
     end: str,
-    dataset: str,
 ) -> pd.DataFrame:
-    """Shared load + date-range filter + train/test split. Raises
-    HTTPException with the appropriate status code on failures."""
+    """Shared load + date-range filter. Raises ConfigurationError /
+    HTTPException with structured detail on failure."""
     if not os.path.exists(data_path):
-        raise HTTPException(status_code=404, detail=f"data file not found: {data_path}")
+        raise MissingDataFileError(data_path, role='candles')
 
     try:
         start_ts = pd.Timestamp(start)
@@ -90,33 +136,39 @@ def _load_and_filter(
 
     try:
         df = load_data(data_path)
+    except MissingDataFileError:
+        raise
     except Exception as exc:  # noqa: BLE001 - we surface message to caller
         raise HTTPException(status_code=500, detail=f"failed to load {data_path}: {exc}")
 
     df = filter_by_date_range(df, start=start, end=end)
-    if len(df) == 0:
-        # Empty isn't a 4xx - it's a valid empty range. Caller decides.
-        return df
-
-    # 1min CSVs load newest-first; reverse to ascending.
-    df = df.reset_index(drop=True)[::-1].reset_index(drop=True)
-
-    if dataset in ('train', 'test'):
-        train_df, test_df = split_train_test(df, split_date=_DEFAULT_SPLIT)
-        df = train_df if dataset == 'train' else test_df
-
     return df.reset_index(drop=True)
 
 
 def _candles_from_df(df: pd.DataFrame) -> List[Candle]:
-    """Convert an OHLCV DataFrame to a list of Candle models."""
+    """Convert an OHLCV DataFrame to a list of Candle models.
+
+    BUG-016: if Date is a parsed `Timestamp` and a separate Time column
+    exists, `astype(str)` on Date yields `"YYYY-MM-DD HH:MM:SS"`, and
+    concatenating with Time produces the BUG-003 corruption pattern
+    `"YYYY-MM-DD 00:00:00THH:MM:SS"`. Normalise via dt.strftime so the
+    output always matches `^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$`.
+    """
     if len(df) == 0:
         return []
     timestamps: List[str]
     if 'Date' in df.columns and 'Time' in df.columns:
-        timestamps = [f"{d}T{t}" for d, t in zip(df['Date'].astype(str), df['Time'].astype(str))]
+        if pd.api.types.is_datetime64_any_dtype(df['Date']):
+            dates = df['Date'].dt.strftime('%Y-%m-%d')
+        else:
+            dates = df['Date'].astype(str).str.slice(0, 10)
+        times = df['Time'].astype(str)
+        timestamps = [f"{d}T{t}" for d, t in zip(dates, times)]
     elif 'Date' in df.columns:
-        timestamps = df['Date'].astype(str).tolist()
+        if pd.api.types.is_datetime64_any_dtype(df['Date']):
+            timestamps = df['Date'].dt.strftime('%Y-%m-%dT%H:%M:%S').tolist()
+        else:
+            timestamps = df['Date'].astype(str).tolist()
     elif 'timestamps' in df.columns:
         timestamps = df['timestamps'].astype(str).tolist()
     else:
@@ -137,62 +189,18 @@ def _candles_from_df(df: pd.DataFrame) -> List[Candle]:
 
 # ---- endpoints -------------------------------------------------------
 
-@app.get("/api/strategy/config", response_model=StrategyConfig)
-def get_strategy_config() -> StrategyConfig:
-    """Return the v1 strategy defaults + the enumerations the frontend
-    needs to populate dropdowns/radios."""
-    return StrategyConfig()
-
-
 @app.get("/api/candles", response_model=CandlesResponse)
 def get_candles(
     start: str = Query(..., description="Inclusive YYYY-MM-DD."),
     end: str = Query(..., description="Inclusive YYYY-MM-DD."),
-    dataset: str = Query('test', description="train | test"),
-    data_path: str = Query('1min.csv', description="Path to OHLCV CSV."),
+    data_path: str = Query(..., description="Path to OHLCV CSV (required)."),
 ) -> CandlesResponse:
-    df = _load_and_filter(data_path, start=start, end=end, dataset=dataset)
+    df = _load_and_filter(data_path, start=start, end=end)
     candles = _candles_from_df(df)
     return CandlesResponse(
         candles=candles,
         count=len(candles),
         range=CandlesRange(start=start, end=end),
-    )
-
-
-@app.post("/api/backtest", response_model=BacktestResponse)
-def post_backtest(req: BacktestRequest) -> BacktestResponse:
-    df = _load_and_filter(req.data_path, start=req.start, end=req.end, dataset=req.dataset)
-
-    if len(df) == 0:
-        return BacktestResponse(
-            metrics=Metrics(**calculate_metrics([], req.initial_capital)),
-            trades=[],
-            candles=[],
-        )
-
-    strat = ScalpingStrategy()  # v1.0.0 defaults
-    bt = Backtester(
-        initial_capital=req.initial_capital,
-        stop_loss=req.stop_loss,
-        take_profit=req.take_profit,
-        fee_per_trade=req.fee_per_trade,
-        tp_sl_resolution=req.tp_sl_resolution,
-    )
-
-    try:
-        prepared = strat.prepare(df)
-        trades, _ = bt.run(prepared)
-    except Exception as exc:  # noqa: BLE001 - surface pipeline failure as 500
-        raise HTTPException(status_code=500, detail=f"pipeline failed: {exc}")
-
-    metrics_dict = calculate_metrics(trades, req.initial_capital)
-    candles = _candles_from_df(prepared)
-
-    return BacktestResponse(
-        metrics=Metrics(**metrics_dict),
-        trades=[Trade(**t) for t in trades],
-        candles=candles,
     )
 
 
@@ -202,7 +210,86 @@ def health() -> dict:
     return {"status": "ok", "version": app.version}
 
 
-# ---- /api/backtest/scaling (phase C2, Server-Sent Events) ----------
+@app.get("/api/boxes")
+def get_boxes(
+    start: str = Query(..., description="Start date YYYY-MM-DD."),
+    end: str = Query(..., description="End date YYYY-MM-DD."),
+    week_path: str = Query(..., description="Weekly box CSV path (required)."),
+    month_path: str = Query(..., description="Monthly box CSV path (required)."),
+    tick_threshold: float = Query(..., description="Points margin past edge before firing."),
+    weekly_window_days: int = Query(..., description="How many days a weekly box covers."),
+    monthly_window_days: int = Query(..., description="How many days a monthly box covers."),
+) -> dict:
+    """Return all box-level rectangles active in [start, end] for chart rendering."""
+    bl = BoxLookup(
+        week_path=week_path,
+        month_path=month_path,
+        tick_threshold=tick_threshold,
+        weekly_window_days=weekly_window_days,
+        monthly_window_days=monthly_window_days,
+    )
+    rects = bl.get_box_rects(start, end)
+    return {"boxes": rects}
+
+
+@app.get("/api/data-files")
+def list_data_files() -> dict:
+    """Return the names of all .csv files in the project root directory."""
+    root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    files = sorted(
+        f for f in os.listdir(root)
+        if f.lower().endswith('.csv') and os.path.isfile(os.path.join(root, f))
+    )
+    return {"files": files}
+
+
+@app.post("/api/upload-data-file")
+async def upload_data_file(file: UploadFile = File(...)) -> dict:
+    """Accept a CSV upload, save it to the project root, return its path.
+
+    BUG-022: caps the upload at MAX_UPLOAD_BYTES and streams in chunks
+    instead of `await file.read()` so a multi-GB upload can't exhaust
+    server memory. `basename` strips any traversal segments.
+    """
+    if not file.filename or not file.filename.lower().endswith('.csv'):
+        raise HTTPException(status_code=400, detail="Only .csv files are accepted.")
+    safe_name = os.path.basename(file.filename)
+    if not safe_name or safe_name in ('.', '..'):
+        raise HTTPException(status_code=400, detail="Invalid filename.")
+
+    root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    dest = os.path.join(root, safe_name)
+    # Defence-in-depth: resolved path must stay under repo root.
+    if os.path.commonpath([os.path.realpath(dest), os.path.realpath(root)]) != os.path.realpath(root):
+        raise HTTPException(status_code=400, detail="Invalid destination path.")
+
+    written = 0
+    CHUNK = 1024 * 1024  # 1 MB
+    try:
+        with open(dest, 'wb') as fh:
+            while True:
+                chunk = await file.read(CHUNK)
+                if not chunk:
+                    break
+                written += len(chunk)
+                if written > MAX_UPLOAD_BYTES:
+                    fh.close()
+                    os.remove(dest)
+                    raise HTTPException(
+                        status_code=413,
+                        detail=f"Upload exceeds {MAX_UPLOAD_BYTES} bytes.",
+                    )
+                fh.write(chunk)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        if os.path.exists(dest):
+            os.remove(dest)
+        raise HTTPException(status_code=500, detail=f"upload failed: {exc}")
+    return {"path": safe_name, "bytes": written}
+
+
+# ---- SSE helpers ------------------------------------------------------
 
 _SENTINEL_DONE = object()
 
@@ -213,93 +300,13 @@ def _sse_format(event_type: str, data: Any) -> str:
     return f"event: {event_type}\ndata: {payload}\n\n"
 
 
-def _scaling_event_stream(req: ScalingBacktestRequest) -> Iterator[str]:
-    """Generator that runs the scaling backtest in a worker thread and
-    yields SSE frames as progress + complete + error events.
+def _box_metrics(trades: List[Dict]) -> Dict[str, Any]:
+    """Build a metrics dict for the box strategy trades.
 
-    Progress events are throttled: at most ~100 over the whole run, so
-    long backtests don't flood the client.
-    """
-    start_wall = time.perf_counter()
-
-    # --- Load + filter (outside the worker so we can fail fast w/ error event) ---
-    if not os.path.exists(req.data_path):
-        yield _sse_format('error', {'detail': f'data file not found: {req.data_path}'})
-        return
-
-    try:
-        df = load_data(req.data_path)
-    except Exception as exc:  # noqa: BLE001
-        yield _sse_format('error', {'detail': f'failed to load {req.data_path}: {exc}'})
-        return
-
-    if req.start and req.end:
-        try:
-            df = filter_by_date_range(df, start=req.start, end=req.end)
-        except Exception as exc:  # noqa: BLE001
-            yield _sse_format('error', {'detail': f'date filter failed: {exc}'})
-            return
-
-    if len(df) == 0:
-        yield _sse_format('error', {'detail': 'no candles in the requested range'})
-        return
-
-    df = df.reset_index(drop=True)
-
-    # --- Bridge sync strategy callbacks -> SSE generator via a Queue ---
-    q: "queue.Queue[Any]" = queue.Queue(maxsize=512)
-
-    params_dict = req.params.model_dump()
-    strat = ScalingStrategy(params=ScalingParams(**params_dict))
-
-    progress_every = max(1, len(df) // 100)  # ~100 progress events total
-    last_emitted_idx = [-progress_every]
-
-    def on_progress(event: Dict) -> None:
-        idx = event['current_idx']
-        # Throttle: emit at most every `progress_every` candles, plus the last.
-        if (
-            idx - last_emitted_idx[0] >= progress_every
-            or idx == event['total'] - 1
-        ):
-            q.put(('progress', event))
-            last_emitted_idx[0] = idx
-
-    def worker():
-        try:
-            trades, _state = strat.backtest(df, on_progress=on_progress)
-            elapsed_ms = int((time.perf_counter() - start_wall) * 1000)
-            # Build the complete payload.
-            candles = _candles_from_df(df)
-            metrics = _scaling_metrics(trades)
-            complete_payload = {
-                'metrics': metrics,
-                'trades': [_trade_to_jsonable(t) for t in trades],
-                'candles': [c.model_dump() for c in candles],
-                'elapsed_ms': elapsed_ms,
-            }
-            q.put(('complete', complete_payload))
-        except Exception as exc:  # noqa: BLE001
-            q.put(('error', {'detail': f'backtest failed: {exc}'}))
-        finally:
-            q.put(_SENTINEL_DONE)
-
-    threading.Thread(target=worker, daemon=True).start()
-
-    while True:
-        item = q.get()
-        if item is _SENTINEL_DONE:
-            break
-        event_type, data = item
-        yield _sse_format(event_type, data)
-
-
-def _scaling_metrics(trades: List[Dict]) -> Dict[str, float]:
-    """Build a metrics dict for the scaling strategy trades.
-
-    Different shape from src/backtest/metrics.py::calculate_metrics
-    because scaling trades carry profit_points + contracts + multi-leg
-    entries. Keep the canonical keys the frontend expects.
+    `profit_factor` and `sharpe_ratio` are `None` when undefined (no
+    losses for PF, no variance / <2 trades for Sharpe) — the frontend
+    renders "N/A" in that case. See BUG-011 in
+    docs/bug-checklist-revision-history.md.
     """
     n = len(trades)
     if n == 0:
@@ -307,14 +314,14 @@ def _scaling_metrics(trades: List[Dict]) -> Dict[str, float]:
             'total_profit': 0.0,
             'total_trades': 0,
             'win_rate': 0.0,
-            'profit_factor': 0.0,
+            'profit_factor': None,
             'avg_profit': 0.0,
             'avg_loss': 0.0,
             'gross_profit': 0.0,
             'gross_loss': 0.0,
             'expected_value': 0.0,
             'max_drawdown': 0.0,
-            'sharpe_ratio': 0.0,
+            'sharpe_ratio': None,
             'wins': 0,
             'losses': 0,
         }
@@ -338,16 +345,24 @@ def _scaling_metrics(trades: List[Dict]) -> Dict[str, float]:
         if dd > max_dd:
             max_dd = dd
         returns.append(t['profit_dollars'])
-    # Sharpe: mean / std of trade-level returns (no annualization here)
+    # Sharpe: mean / std of trade-level returns (no annualization here).
+    # Undefined when n < 2 or all returns identical (std == 0).
     mean_r = sum(returns) / len(returns)
-    var = sum((r - mean_r) ** 2 for r in returns) / len(returns)
-    std = var ** 0.5
-    sharpe = (mean_r / std) if std > 0 else 0.0
+    if n < 2:
+        sharpe: Optional[float] = None
+    else:
+        var = sum((r - mean_r) ** 2 for r in returns) / len(returns)
+        std = var ** 0.5
+        sharpe = (mean_r / std) if std > 0 else None
+    # Profit factor: gross_profit / |gross_loss|. Undefined when no losses.
+    profit_factor: Optional[float] = (
+        (gross_profit / abs(gross_loss)) if gross_loss < 0 else None
+    )
     return {
         'total_profit': total_profit,
         'total_trades': n,
         'win_rate': len(wins) / n * 100.0,
-        'profit_factor': (gross_profit / abs(gross_loss)) if gross_loss < 0 else 0.0,
+        'profit_factor': profit_factor,
         'avg_profit': avg_profit,
         'avg_loss': avg_loss,
         'gross_profit': gross_profit,
@@ -361,8 +376,14 @@ def _scaling_metrics(trades: List[Dict]) -> Dict[str, float]:
 
 
 def _trade_to_jsonable(trade: Dict) -> Dict:
-    """Coerce numpy / pandas scalar types in the trade dict to plain floats."""
-    return {
+    """Coerce numpy / pandas scalar types in the trade dict to plain Python types.
+
+    ScalingStrategy and BoxStrategy both produce a `legs` array and an
+    `avg_entry_price`. The 1-1-2 engine fills 3 legs; the box engine fills
+    1 leg (or 1 big-candle leg). All known numeric fields are coerced
+    explicitly; anything extra (box_signal, legs, ...) is passed through.
+    """
+    out: Dict = {
         'entry_idx': int(trade['entry_idx']),
         'exit_idx': int(trade['exit_idx']),
         'direction': trade['direction'],
@@ -374,27 +395,166 @@ def _trade_to_jsonable(trade: Dict) -> Dict:
         'exit_reason': trade['exit_reason'],
         'legs': trade.get('legs', []),
     }
+    known = set(out.keys())
+    for k, v in trade.items():
+        if k not in known:
+            out[k] = v
+    return out
 
 
-@app.post("/api/backtest/scaling")
-def post_scaling_backtest(req: ScalingBacktestRequest):
-    """Run the 1-1-2 scaling backtest as a Server-Sent Events stream.
+# ---- /api/backtest/box (master strategy, SSE-streamed) ----
 
-    Events:
-      event: progress    { current_idx, total, percent, phase, trades_so_far,
-                            pnl_so_far, win_rate_so_far,
-                            current_position, current_legs_filled }
-      event: complete    { metrics, trades, candles, elapsed_ms }
-      event: error       { detail }
+def _box_event_stream(req: BoxBacktestRequest) -> Iterator[str]:
+    """SSE stream for the master-strategy backtest."""
+    start_wall = time.perf_counter()
 
-    The frontend connects via fetch() with a ReadableStream reader.
-    EventSource doesn't support POST so we don't use it client-side.
+    if not os.path.exists(req.data_path):
+        yield _sse_format('error', MissingDataFileError(
+            req.data_path, role='4h-candles'
+        ).to_payload())
+        return
+
+    try:
+        df = load_data(req.data_path)
+    except ConfigurationError as exc:
+        yield _sse_format('error', exc.to_payload())
+        return
+    except Exception as exc:  # noqa: BLE001
+        yield _sse_format('error', {
+            'code': 'data-load-failed',
+            'message': f'failed to load {req.data_path}: {exc}',
+            'system_status': {
+                'data_path': req.data_path,
+                'exception_type': type(exc).__name__,
+            },
+        })
+        return
+
+    if req.start and req.end:
+        try:
+            df = filter_by_date_range(df, start=req.start, end=req.end)
+        except Exception as exc:  # noqa: BLE001
+            yield _sse_format('error', {'detail': f'date filter failed: {exc}'})
+            return
+
+    if len(df) == 0:
+        yield _sse_format('error', {'detail': 'no candles in the requested range'})
+        return
+
+    df = df.reset_index(drop=True)
+
+    # Validate box files exist and construct BoxLookup. ConfigurationError /
+    # MissingDataFileError propagate as structured SSE error frames.
+    try:
+        box_lookup = BoxLookup(
+            week_path=req.week_data_path,
+            month_path=req.month_data_path,
+            tick_threshold=req.params.box_tick_threshold,
+            weekly_window_days=req.params.weekly_window_days,
+            monthly_window_days=req.params.monthly_window_days,
+        )
+    except ConfigurationError as exc:
+        yield _sse_format('error', exc.to_payload())
+        return
+    except Exception as exc:  # noqa: BLE001
+        yield _sse_format('error', {
+            'code': 'box-data-load-failed',
+            'message': f'failed to load box data: {exc}',
+            'system_status': {
+                'week_data_path': req.week_data_path,
+                'month_data_path': req.month_data_path,
+                'exception_type': type(exc).__name__,
+            },
+        })
+        return
+
+    q: "queue.Queue[Any]" = queue.Queue(maxsize=512)
+
+    # BoxStrategyParams needs every dataclass field including the box CSV
+    # paths — the Pydantic model carries the params block (sizing, SL, TP)
+    # and the BoxBacktestRequest carries the paths.
+    params_dict = {
+        **req.params.model_dump(),
+        'week_data_path': req.week_data_path,
+        'month_data_path': req.month_data_path,
+    }
+    strat = BoxStrategy(params=BoxStrategyParams(**params_dict), box_lookup=box_lookup)
+
+    # Pre-compute box rects for the chart overlay
+    # BUG-017: surface failures as a non-fatal warning instead of swallowing.
+    box_rects: List[Dict] = []
+    try:
+        range_start = req.start or str(df['Date'].iloc[0])[:10]
+        range_end   = req.end   or str(df['Date'].iloc[-1])[:10]
+        box_rects = box_lookup.get_box_rects(range_start, range_end)
+    except Exception as exc:
+        yield _sse_format('warning', {
+            'stage': 'box_rects_precompute',
+            'message': f'box-rect overlay disabled ({exc}); trades still computed.',
+        })
+
+    progress_every = max(1, len(df) // 100)
+    last_emitted_idx = [-progress_every]
+
+    def on_progress(event: Dict) -> None:
+        idx = event['current_idx']
+        if (
+            idx - last_emitted_idx[0] >= progress_every
+            or idx == event['total'] - 1
+        ):
+            q.put(('progress', event))
+            last_emitted_idx[0] = idx
+
+    def worker():
+        try:
+            trades, _state = strat.backtest(df, on_progress=on_progress)
+            elapsed_ms = int((time.perf_counter() - start_wall) * 1000)
+            candles = _candles_from_df(df)
+            metrics = Metrics.model_validate(_box_metrics(trades)).model_dump()
+            complete_payload = {
+                'metrics': metrics,
+                'trades': [_trade_to_jsonable(t) for t in trades],
+                'candles': [c.model_dump() for c in candles],
+                'elapsed_ms': elapsed_ms,
+                'boxes': box_rects,
+            }
+            q.put(('complete', complete_payload))
+        except ConfigurationError as exc:
+            # Structured error: ship the full system_status payload.
+            q.put(('error', exc.to_payload()))
+        except Exception as exc:  # noqa: BLE001
+            q.put(('error', {
+                'code': 'backtest-failed',
+                'message': f'backtest failed: {exc}',
+                'system_status': {'exception_type': type(exc).__name__},
+                # Back-compat with older clients reading `detail`.
+                'detail': f'backtest failed: {exc}',
+            }))
+        finally:
+            q.put(_SENTINEL_DONE)
+
+    threading.Thread(target=worker, daemon=True).start()
+
+    while True:
+        item = q.get()
+        if item is _SENTINEL_DONE:
+            break
+        event_type, data = item
+        yield _sse_format(event_type, data)
+
+
+@app.post("/api/backtest/box")
+def post_box_backtest(req: BoxBacktestRequest):
+    """Run the master strategy backtest as an SSE stream.
+
+    Master strategy = 1-1-2 execution framework + TradingView Box
+    directional oracle (see docs/MASTER_STRATEGY_GUIDE.md).
     """
     return StreamingResponse(
-        _scaling_event_stream(req),
+        _box_event_stream(req),
         media_type='text/event-stream',
         headers={
             'Cache-Control': 'no-cache',
-            'X-Accel-Buffering': 'no',  # disable buffering when behind nginx
+            'X-Accel-Buffering': 'no',
         },
     )

@@ -36,35 +36,56 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 import pandas as pd
 
+from src.exceptions import MissingParameterError
+
 
 @dataclass
 class ScalingParams:
-    """Every parameter the strategy exposes to the settings UI."""
+    """Every parameter the strategy exposes to the settings UI.
 
-    # Entry distribution & sizing -------------------------------------------
-    total_contracts: int = 4
-    leg1_contracts: int = 1
-    leg2_contracts: int = 1
-    leg3_contracts: int = 2
-    leg2_pullback_points: float = 100.0
-    leg3_pullback_points: float = 150.0
+    Every value below is a *decision* the playbook makes
+    (Currunt_Strategy_Algo_for_Trading.md). Per the no-fallback rule
+    (see docs/CODING_RULES.md) every field is REQUIRED — there are no
+    dataclass defaults. The frontend supplies all of them at the API
+    boundary; tests should use a fixture helper instead of relying on
+    field defaults.
+    """
 
-    # Big candle exception --------------------------------------------------
-    big_candle_threshold_points: float = 400.0
-    big_candle_full_contracts: int = 4
-    big_candle_reverses_dir: bool = True
+    # §1 Entry distribution & sizing ----------------------------------------
+    total_contracts: int
+    leg1_contracts: int
+    leg2_contracts: int
+    leg3_contracts: int
+    leg2_pullback_points: float
+    leg3_pullback_points: float
 
-    # Take profit -----------------------------------------------------------
-    tp_target_points: float = 150.0
-    tp_watch_threshold_points: float = 50.0
+    # §2 Big candle exception -----------------------------------------------
+    big_candle_threshold_points: float
+    big_candle_full_contracts: int
+    big_candle_reverses_dir: bool
 
-    # Stop loss (the playbook is vague on distances; conservative defaults)
-    sl_soft_points: float = 200.0
-    sl_hard_points: float = 300.0
+    # §3 Entry trigger (15-second confirmation; not enforced in 4h-only mode)
+    entry_confirmation_timeframe_seconds: int
+    entry1_confirmation_candles: int
+    entry23_confirmation_candles: int
+
+    # §4 Stop loss ----------------------------------------------------------
+    sl_soft_points: float
+    sl_hard_points: float
+    soft_sl_confirmation_timeframe_minutes: int
+    hard_sl_confirmation_timeframe_seconds: int
+
+    # §5 Take profit --------------------------------------------------------
+    tp_target_points: float
+    tp_watch_threshold_points: float
+    tp_confirmation_timeframe_minutes: int
 
     # Re-entry --------------------------------------------------------------
-    reentry_enabled: bool = True
-    reentry_cooldown_candles: int = 1
+    reentry_enabled: bool
+    reentry_cooldown_candles: int
+
+    # Instrument: $/point/contract. NQ=2.0, ES=50.0, MES=5.0.
+    point_value: float
 
 
 @dataclass
@@ -113,10 +134,21 @@ class _Position:
 
 
 class ScalingStrategy:
-    """Stateful simulator of the 1-1-2 scaling strategy."""
+    """Stateful simulator of the 1-1-2 scaling strategy.
 
-    def __init__(self, params: Optional[ScalingParams] = None):
-        self.params = params or ScalingParams()
+    Per the no-fallback rule, the `params` argument is REQUIRED. The
+    caller (FastAPI endpoint or a test fixture) must construct a fully-
+    populated ScalingParams and pass it explicitly.
+    """
+
+    def __init__(self, params: ScalingParams) -> None:
+        if params is None:
+            raise MissingParameterError(
+                'params',
+                where='ScalingStrategy.__init__',
+                system_status={'hint': 'pass a fully-populated ScalingParams'},
+            )
+        self.params = params
         self.last_state: Dict = {}
 
     # ------------------------------------------------------------------
@@ -377,9 +409,7 @@ class ScalingStrategy:
             profit_points = exit_price - avg
         else:
             profit_points = avg - exit_price
-        # NQ futures: $2 per point per contract (matches the rest of the codebase).
-        nq_point_value = 2.0
-        profit_dollars = profit_points * contracts * nq_point_value
+        profit_dollars = profit_points * contracts * self.params.point_value
         return {
             'entry_idx': position.opened_at_idx,
             'exit_idx': exit_idx,

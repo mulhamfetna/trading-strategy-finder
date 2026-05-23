@@ -15,6 +15,13 @@ export default {
           red: '#ff5252',
           blue: '#2962ff',
           orange: '#ff9800',
+          // Error-state tokens used by FilePicker.vue. Pre-mixed against
+          // the dark tv-bg so they read as "muted error" rather than the
+          // shouty Tailwind red palette.
+          'error-bg':     '#3a0c12',   // tv-red mixed with tv-bg (dark)
+          'error-ring':   '#ff5252',   // = tv-red, full strength
+          'error-text':   '#ff8a8a',   // tv-red lightened for readable text on dark
+          'error-text-hover': '#ffcccc',
         },
       },
     },

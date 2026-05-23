@@ -1,6 +1,5 @@
 /**
- * SettingsPanel component tests - the panel renders inputs bound to
- * the settings store; editing an input updates the store.
+ * SettingsPanel component tests — sections render, inputs bind, validation surfaces.
  */
 
 import { describe, expect, it, beforeEach } from 'vitest';
@@ -17,18 +16,20 @@ describe('SettingsPanel', () => {
   it('renders sections for every parameter group', () => {
     const w = mount(SettingsPanel);
     const text = w.text();
+    expect(text).toContain('Data');
     expect(text).toContain('Entry distribution');
     expect(text).toContain('Big candle');
-    expect(text).toContain('Take profit');
+    expect(text).toContain('Entry trigger');
     expect(text).toContain('Stop loss');
+    expect(text).toContain('Take profit');
     expect(text).toContain('Re-entry');
-    expect(text).toContain('Data');
+    expect(text).toContain('Box-rule decisions');
+    expect(text).toContain('Indicators');
   });
 
   it('binds inputs to the settings store (TP target field updates store)', async () => {
     const w = mount(SettingsPanel);
     const settings = useSettingsStore();
-    // Find a number input whose label contains "Target (pts from avg)"
     const labels = w.findAll('label');
     const tpLabel = labels.find((l) => l.text().includes('Target (pts from avg)'));
     expect(tpLabel).toBeTruthy();
@@ -48,5 +49,31 @@ describe('SettingsPanel', () => {
     await resetBtn!.trigger('click');
 
     expect(settings.params.total_contracts).toBe(4);
+  });
+
+  it('shows SL order error when hard SL < soft SL', async () => {
+    const w = mount(SettingsPanel);
+    const settings = useSettingsStore();
+    settings.params.sl_soft_points = 300;
+    settings.params.sl_hard_points = 150;
+    await w.vm.$nextTick();
+    expect(w.find('[data-testid="sl-order-error"]').exists()).toBe(true);
+    expect(w.text()).toContain('Hard SL must be at least');
+  });
+
+  it('shows leg-pullback order error when leg3 <= leg2', async () => {
+    const w = mount(SettingsPanel);
+    const settings = useSettingsStore();
+    settings.params.leg2_pullback_points = 200;
+    settings.params.leg3_pullback_points = 100;
+    await w.vm.$nextTick();
+    expect(w.find('[data-testid="leg-order-error"]').exists()).toBe(true);
+    expect(w.text()).toContain('Leg 3 pullback must be deeper');
+  });
+
+  it('Box-rule decisions section is always visible', () => {
+    const w = mount(SettingsPanel);
+    expect(w.text()).toContain('Box-rule decisions');
+    expect(w.text()).toContain('Big-Candle vs Box conflict policy');
   });
 });

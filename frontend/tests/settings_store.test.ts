@@ -1,6 +1,5 @@
 /**
- * Settings store tests - check that defaults match the playbook
- * and that reset() restores them.
+ * Settings store tests — defaults match the master strategy playbook.
  */
 
 import { describe, expect, it, beforeEach } from 'vitest';
@@ -12,7 +11,7 @@ describe('useSettingsStore', () => {
     setActivePinia(createPinia());
   });
 
-  it('defaults match Currunt_Strategy_Algo_for_Trading.md playbook values', () => {
+  it('defaults match the master strategy playbook', () => {
     const s = useSettingsStore();
     expect(s.params.total_contracts).toBe(4);
     expect(s.params.leg1_contracts).toBe(1);
@@ -23,6 +22,11 @@ describe('useSettingsStore', () => {
     expect(s.params.big_candle_threshold_points).toBe(400);
     expect(s.params.tp_target_points).toBe(150);
     expect(s.params.tp_watch_threshold_points).toBe(50);
+    expect(s.params.point_value).toBe(2);
+    expect(s.params.box_tick_threshold).toBe(0.75);
+    expect(s.params.weekly_window_days).toBe(7);
+    expect(s.params.monthly_window_days).toBe(30);
+    expect(s.params.big_candle_resolution).toBe('big_candle_wins');
     expect(s.dataPath).toBe('NQ_4h.csv');
   });
 

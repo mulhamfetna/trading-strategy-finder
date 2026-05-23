@@ -39,31 +39,6 @@ def _write_synth_15min_csv(path, n_rows=200):
     df.to_csv(path, index=False)
 
 
-# ---- /api/strategy/config ----
-
-def test_strategy_config_returns_v1_defaults():
-    """Strategy config endpoint returns the v1.0.0 frozen defaults and
-    the enumerated control options the frontend needs."""
-    resp = client.get('/api/strategy/config')
-
-    assert resp.status_code == 200
-    data = resp.json()
-    # v1 frozen defaults
-    assert data['rsi_period'] == 5
-    assert data['ema_fast'] == 5
-    assert data['ema_slow'] == 15
-    assert data['vol_threshold'] == 2.0
-    assert data['stop_loss'] == 0.6
-    assert data['take_profit'] == 1.8
-    assert data['tp_sl_resolution'] == 'conservative'
-    # enumerations the frontend needs to populate controls
-    assert set(data['tp_sl_resolution_options']) == {
-        'conservative', 'optimistic', 'direction-proxy',
-    }
-    assert '15min' in data['timeframe_options']
-    assert set(data['dataset_options']) == {'train', 'test'}
-
-
 # ---- /api/candles ----
 
 def test_candles_returns_ohlcv_in_range(tmp_path):
@@ -90,15 +65,18 @@ def test_candles_returns_ohlcv_in_range(tmp_path):
 
 
 def test_candles_handles_missing_data_path():
+    """No-fallback rule: missing file → ConfigurationError → 422 with
+    structured code/system_status."""
     resp = client.get('/api/candles', params={
         'start': '2025-09-01',
         'end': '2025-09-30',
-        'dataset': 'test',
         'data_path': '/tmp/opencode/does-not-exist.csv',
     })
 
-    assert resp.status_code == 404
-    assert 'detail' in resp.json()
+    assert resp.status_code == 422
+    body = resp.json()
+    assert body['code'] == 'missing-data-file'
+    assert body['system_status']['role'] == 'candles'
 
 
 def test_candles_handles_inverted_range(tmp_path):
@@ -115,87 +93,54 @@ def test_candles_handles_inverted_range(tmp_path):
     assert resp.status_code == 400
 
 
-# ---- /api/backtest ----
+# ---- /api/upload-data-file ---- (BUG-022 regression locks)
 
-def test_backtest_runs_pipeline_and_returns_metrics(tmp_path):
-    csv = tmp_path / 'synth.csv'
-    _write_synth_15min_csv(csv, n_rows=200)
-
-    resp = client.post('/api/backtest', json={
-        'start': '2025-09-01',
-        'end': '2025-12-31',
-        'dataset': 'test',
-        'timeframe': '15min',
-        'tp_sl_resolution': 'conservative',
-        'stop_loss': 0.6,
-        'take_profit': 1.8,
-        'data_path': str(csv),
-    })
-
-    assert resp.status_code == 200, resp.text
-    data = resp.json()
-    # Required output blocks
-    assert 'metrics' in data
-    assert 'trades' in data
-    assert 'candles' in data
-    # Metrics dict has the canonical keys
-    for key in ('total_profit', 'win_rate', 'profit_factor', 'total_trades'):
-        assert key in data['metrics'], f"missing metric: {key}"
-    # Trades is a list (possibly empty for synth data)
-    assert isinstance(data['trades'], list)
-
-
-def test_backtest_passes_tp_sl_resolution_through(tmp_path):
-    """The resolution mode must reach the engine - same regression
-    guard as test_dash_resolver.test_on_apply_passes_tp_sl_resolution_through."""
-    csv = tmp_path / 'synth.csv'
-    _write_synth_15min_csv(csv, n_rows=200)
-
-    for mode in ('conservative', 'optimistic', 'direction-proxy'):
-        resp = client.post('/api/backtest', json={
-            'start': '2025-09-01',
-            'end': '2025-12-31',
-            'dataset': 'test',
-            'timeframe': '15min',
-            'tp_sl_resolution': mode,
-            'stop_loss': 0.6,
-            'take_profit': 1.8,
-            'data_path': str(csv),
-        })
-        assert resp.status_code == 200, f"mode={mode}: {resp.text}"
-
-
-def test_backtest_rejects_unknown_tp_sl_resolution(tmp_path):
-    csv = tmp_path / 'synth.csv'
-    _write_synth_15min_csv(csv, n_rows=200)
-
-    resp = client.post('/api/backtest', json={
-        'start': '2025-09-01',
-        'end': '2025-12-31',
-        'dataset': 'test',
-        'timeframe': '15min',
-        'tp_sl_resolution': 'not-a-mode',
-        'stop_loss': 0.6,
-        'take_profit': 1.8,
-        'data_path': str(csv),
-    })
-
-    assert resp.status_code == 422  # Pydantic validation error
-
-
-def test_backtest_handles_inverted_range(tmp_path):
-    csv = tmp_path / 'synth.csv'
-    _write_synth_15min_csv(csv, n_rows=200)
-
-    resp = client.post('/api/backtest', json={
-        'start': '2025-09-30',
-        'end': '2025-09-01',
-        'dataset': 'test',
-        'timeframe': '15min',
-        'tp_sl_resolution': 'conservative',
-        'stop_loss': 0.6,
-        'take_profit': 1.8,
-        'data_path': str(csv),
-    })
-
+def test_upload_rejects_non_csv_extension():
+    resp = client.post(
+        '/api/upload-data-file',
+        files={'file': ('something.exe', b'header,value\n1,2\n', 'application/octet-stream')},
+    )
     assert resp.status_code == 400
+    assert 'csv' in resp.json()['detail'].lower()
+
+
+def test_upload_strips_path_traversal_via_basename(tmp_path):
+    # filename with traversal segments should be reduced to basename;
+    # destination must stay inside the repo root, no .., no nested dirs.
+    resp = client.post(
+        '/api/upload-data-file',
+        files={'file': ('../../etc/passwd.csv', b'a,b\n1,2\n', 'text/csv')},
+    )
+    # Either accepted as basename "passwd.csv" or rejected outright — never written outside the repo.
+    if resp.status_code == 200:
+        # Cleanup the test artifact written at repo root.
+        body = resp.json()
+        assert '/' not in body['path']
+        repo_root = os.path.dirname(os.path.dirname(__file__))
+        written = os.path.join(repo_root, body['path'])
+        if os.path.exists(written):
+            os.remove(written)
+    else:
+        assert resp.status_code in (400, 413)
+
+
+def test_upload_caps_oversize_files(monkeypatch):
+    # Patch the size cap to a tiny value and verify the server rejects.
+    # The src/api/__init__.py re-exports `app` over the submodule name,
+    # so we fetch the real module via sys.modules.
+    import sys
+    app_module = sys.modules['src.api.app']
+
+    monkeypatch.setattr(app_module, 'MAX_UPLOAD_BYTES', 16)
+    payload = b'a,b\n' + b'1,2\n' * 100  # >16 bytes
+
+    resp = client.post(
+        '/api/upload-data-file',
+        files={'file': ('big.csv', payload, 'text/csv')},
+    )
+    assert resp.status_code == 413
+    # Confirm the file was cleaned up.
+    repo_root = os.path.dirname(os.path.dirname(__file__))
+    assert not os.path.exists(os.path.join(repo_root, 'big.csv'))
+
+

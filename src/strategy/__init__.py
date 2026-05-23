@@ -1,14 +1,11 @@
-"""Strategy package (iter 7, TODO item 6b).
+"""Strategy package — 1-1-2 scaling + Box-signal variant.
 
-Hybrid OOP/FP layout per the refactor policy in
-docs/superpowers/specs/2026-05-22-finish-todo-sequencing-design.md:
-
-- Stateful with lifecycle: OOP (this package).
-- Pure transforms (indicators, signals, metrics): stay FP in
-  src/indicators, src/signals, src/backtest/metrics.
+Both strategies are governed by Currunt_Strategy_Algo_for_Trading.md.
+Every numeric decision is exposed via ScalingParams / BoxStrategyParams.
 """
 
-from src.strategy.scalping_strategy import ScalpingStrategy
-from src.strategy.backtester import Backtester
+from src.strategy.scaling_strategy import ScalingParams, ScalingStrategy
+from src.strategy.box_strategy import BoxStrategy, BoxStrategyParams
+from src.strategy.box_lookup import BoxLookup
 
-__all__ = ['ScalpingStrategy', 'Backtester']
+__all__ = ['ScalingParams', 'ScalingStrategy', 'BoxStrategy', 'BoxStrategyParams', 'BoxLookup']

@@ -1,5 +1,5 @@
 /**
- * Pinia store that drives the scaling backtest:
+ * Pinia store that drives the master-strategy backtest:
  *  - holds the live progress event for the ProgressBar
  *  - holds the final metrics / trades / candles for the report panels
  *  - exposes run() which kicks off the SSE stream
@@ -7,8 +7,9 @@
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { streamScalingBacktest } from '../services/sse';
+import { streamBoxBacktest } from '../services/sse';
 import type {
+  BoxRect,
   Candle,
   Metrics,
   ScalingCompletePayload,
@@ -21,11 +22,14 @@ export const useBacktestStore = defineStore('backtest', () => {
   const isRunning = ref(false);
   const progress = ref<ScalingProgress | null>(null);
   const error = ref<string | null>(null);
+  const warnings = ref<string[]>([]);
 
   const candles = ref<Candle[]>([]);
   const trades = ref<ScalingTrade[]>([]);
   const metrics = ref<Metrics | null>(null);
   const elapsedMs = ref<number | null>(null);
+  const boxes = ref<BoxRect[]>([]);
+  const lastRunSettings = ref<string | null>(null);
 
   const percent = computed(() => progress.value?.percent ?? 0);
   const hasResults = computed(() => metrics.value !== null);
@@ -35,21 +39,26 @@ export const useBacktestStore = defineStore('backtest', () => {
     const settings = useSettingsStore();
     isRunning.value = true;
     error.value = null;
+    warnings.value = [];
     progress.value = null;
     metrics.value = null;
     elapsedMs.value = null;
-    // Keep previous candles/trades visible until new ones arrive on 'complete',
-    // OR clear them - we clear so the UI obviously enters the loading state.
     candles.value = [];
     trades.value = [];
+    boxes.value = [];
+
+    const runPayload = {
+      params: settings.params,
+      data_path: settings.dataPath,
+      week_data_path: settings.weekDataPath,
+      month_data_path: settings.monthDataPath,
+      start: settings.startDate || undefined,
+      end: settings.endDate || undefined,
+    };
+    lastRunSettings.value = JSON.stringify(runPayload);
 
     try {
-      const stream = streamScalingBacktest({
-        params: settings.params,
-        data_path: settings.dataPath,
-        start: settings.startDate || undefined,
-        end: settings.endDate || undefined,
-      });
+      const stream = streamBoxBacktest(runPayload);
       for await (const ev of stream) {
         if (ev.type === 'progress') {
           progress.value = ev.data;
@@ -59,6 +68,9 @@ export const useBacktestStore = defineStore('backtest', () => {
           trades.value = payload.trades;
           candles.value = payload.candles;
           elapsedMs.value = payload.elapsed_ms;
+          boxes.value = payload.boxes ?? [];
+        } else if (ev.type === 'warning') {
+          warnings.value = [...warnings.value, `${ev.data.stage}: ${ev.data.message}`];
         } else if (ev.type === 'error') {
           error.value = ev.data.detail;
         }
@@ -70,16 +82,33 @@ export const useBacktestStore = defineStore('backtest', () => {
     }
   }
 
+  const isDirty = computed(() => {
+    if (!hasResults.value || lastRunSettings.value === null) return false;
+    const settings = useSettingsStore();
+    const current = JSON.stringify({
+      params: settings.params,
+      data_path: settings.dataPath,
+      week_data_path: settings.weekDataPath,
+      month_data_path: settings.monthDataPath,
+      start: settings.startDate || undefined,
+      end: settings.endDate || undefined,
+    });
+    return current !== lastRunSettings.value;
+  });
+
   return {
     isRunning,
     progress,
     error,
+    warnings,
     candles,
     trades,
     metrics,
     elapsedMs,
+    boxes,
     percent,
     hasResults,
+    isDirty,
     run,
   };
 });

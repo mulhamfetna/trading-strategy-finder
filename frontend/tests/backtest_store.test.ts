@@ -1,20 +1,16 @@
 /**
- * Backtest store tests - mock streamScalingBacktest and verify the
- * store consumes progress/complete/error events into reactive state.
+ * Backtest store tests — mock streamBoxBacktest (the only SSE entry point
+ * in the master-strategy layout) and verify the store consumes
+ * progress/complete/error events into reactive state.
  */
 
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 
-// Hoisted mock for the SSE service. The store imports
-// streamScalingBacktest from '../services/sse'; tests inject a
-// generator that yields whatever events we want.
 const mocks = vi.hoisted(() => {
   const eventQueue: Array<{ type: string; data: unknown }> = [];
   async function* mockStream() {
     for (const ev of eventQueue) {
-      // Yield asynchronously so the store sees one event at a time
-      // (matches the real SSE behavior).
       await Promise.resolve();
       yield ev;
     }
@@ -23,10 +19,12 @@ const mocks = vi.hoisted(() => {
 });
 
 vi.mock('../src/services/sse', () => ({
-  streamScalingBacktest: () => mocks.mockStream(),
+  streamBoxBacktest: () => mocks.mockStream(),
+  parseSseFrame: () => null,
 }));
 
 import { useBacktestStore } from '../src/stores/backtest';
+import { useSettingsStore } from '../src/stores/settings';
 
 describe('useBacktestStore', () => {
   beforeEach(() => {
@@ -66,8 +64,8 @@ describe('useBacktestStore', () => {
             {
               entry_idx: 1, exit_idx: 3, direction: 'long',
               avg_entry_price: 20000, exit_price: 20150,
-              contracts: 4, profit_points: 150, profit_dollars: 1200,
-              exit_reason: 'TAKE PROFIT', legs: [],
+              contracts: 1, profit_points: 150, profit_dollars: 300,
+              exit_reason: 'TP',
             },
           ],
           candles: [
@@ -99,5 +97,31 @@ describe('useBacktestStore', () => {
 
     expect(s.error).toBe('data not found');
     expect(s.isRunning).toBe(false);
+  });
+
+  // FIX-15: dirty flag = "settings have changed since last run".
+  it('isDirty becomes true when settings change after a completed run', async () => {
+    mocks.eventQueue.push({
+      type: 'complete',
+      data: {
+        metrics: { total_profit: 0, total_trades: 0, win_rate: 0, profit_factor: null, sharpe_ratio: null, max_drawdown: 0 },
+        trades: [], candles: [], elapsed_ms: 0,
+      },
+    });
+
+    const s = useBacktestStore();
+    const settings = useSettingsStore();
+    await s.run();
+
+    expect(s.isDirty).toBe(false);
+    settings.params.tp_target_points = 250;
+    expect(s.isDirty).toBe(true);
+  });
+
+  it('isDirty stays false before any run', () => {
+    const s = useBacktestStore();
+    const settings = useSettingsStore();
+    settings.params.tp_target_points = 999;
+    expect(s.isDirty).toBe(false);
   });
 });
