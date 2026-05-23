@@ -71,7 +71,8 @@ export const useBacktestStore = defineStore('backtest', () => {
         } else if (ev.type === 'warning') {
           warnings.value = [...warnings.value, `${ev.data.stage}: ${ev.data.message}`];
         } else if (ev.type === 'error') {
-          error.value = ev.data.detail;
+          // Structured errors use `message`; legacy path uses `detail`.
+          error.value = ev.data.detail ?? ev.data.message ?? 'Unknown error';
         }
       }
     } catch (err) {

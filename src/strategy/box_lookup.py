@@ -172,7 +172,13 @@ class BoxLookup:
         NQ sessions run 18:00 (day D-1) → 17:00 (day D). The CSV tags
         each row with D (the closing day). Candles with hour ≥ 18 have
         started the NEXT session and belong to the following day's box.
+
+        The CSV index is always tz-naive. Strip any timezone from `ts` so
+        the lookup key always matches — a tz-aware timestamp would produce
+        a tz-aware key that silently misses every row in the index.
         """
+        if ts.tzinfo is not None:
+            ts = ts.tz_localize(None)
         if ts.hour >= 18:
             return (ts + pd.Timedelta(days=1)).normalize()
         return ts.normalize()
@@ -427,10 +433,14 @@ class BoxLookup:
         # Session D runs: (D-1 18:00) .. (D 17:00).  A row is in range when
         # D-1 < end_ts AND D >= start_ts (i.e. Date > start_ts - 1 day).
         df = self._df
+        # Use sort_index() — the Date index is already ordered and using
+        # sort_values('Date') would be ambiguous because 'Date' exists as
+        # both index name and column when drop=False (raises ValueError on
+        # pandas ≥ 1.5).
         in_range = df[
             (df['Date'] > start_ts - pd.Timedelta(days=1)) &
             (df['Date'] <= end_ts + pd.Timedelta(days=1))
-        ].sort_values('Date')
+        ].sort_index()
 
         for levels_list, timeframe in [
             (_WEEKLY_LEVELS,  'weekly'),
