@@ -20,8 +20,7 @@ export type ScalingStreamEvent =
 interface BoxRunOptions {
   params: BoxParams;
   data_path?: string;
-  week_data_path?: string;
-  month_data_path?: string;
+  box_data_path?: string;
   start?: string;
   end?: string;
 }
@@ -32,8 +31,7 @@ export function streamBoxBacktest(
   return _streamSse('/api/backtest/box', {
     params: opts.params,
     data_path: opts.data_path ?? 'NQ_4h.csv',
-    week_data_path: opts.week_data_path ?? 'NQ_week_data_shifted.csv',
-    month_data_path: opts.month_data_path ?? 'NQ_month_data_shifted.csv',
+    box_data_path: opts.box_data_path ?? 'NQ_full_data.csv',
     start: opts.start ?? null,
     end: opts.end ?? null,
   });

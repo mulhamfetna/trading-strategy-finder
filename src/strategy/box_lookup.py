@@ -1,8 +1,23 @@
 """
-BoxLookup — loads the shifted weekly/monthly box CSVs and answers:
-  1. Which box levels are active for a given date?
+BoxLookup — loads the unified box CSV (NQ_full_data.csv) and answers:
+  1. Which box levels are active for a given candle?
   2. Does a close price generate a LONG, SHORT, or HOLD signal via traversal?
   3. Which specific box level fired, and what were its edges?
+
+Data model (v4+, 2026-05-24):
+  Single file with one row per market day (the CLOSING day). Both weekly
+  and monthly levels live on the same row (W* and M* columns). Daily (D*)
+  columns exist in the raw file but are ignored at load time.
+
+  NQ session cycle (New York time):
+    18:00 (day D-1)  →  SESSION OPENS
+    17:00 (day D)    →  SESSION CLOSES
+    17:00–18:00      →  closed (no trade)
+
+  Candle → box date mapping (_candle_to_box_date):
+    candle.hour ≥ 18  →  box_date = candle.date + 1 day
+    candle.hour < 18  →  box_date = candle.date
+  (17:00–18:00 bars never appear in the NQ_4h data per empirical check.)
 
 Traversal signal rule (v3.1+, 2026-05-23):
   Per (box_row_id, level_name) the lookup tracks:
@@ -86,26 +101,20 @@ _LEVEL_COLORS: Dict[str, Tuple[str, str]] = {
 
 class BoxLookup:
     """
-    Load shifted box CSVs and provide per-candle signal lookup.
+    Load the unified box CSV and provide per-candle signal lookup.
 
     Per the no-fallback rule, EVERY argument is required. Caller (the
-    FastAPI endpoint or a test fixture) must supply the file paths,
-    the tick threshold, and both window-day values explicitly.
+    FastAPI endpoint or a test fixture) must supply the file path and the
+    tick threshold explicitly.
     """
 
     def __init__(
         self,
-        week_path: str,
-        month_path: str,
+        unified_path: str,
         tick_threshold: float,
-        weekly_window_days: int,
-        monthly_window_days: int,
     ) -> None:
         self.tick_threshold = tick_threshold
-        self.weekly_window_days = weekly_window_days
-        self.monthly_window_days = monthly_window_days
-        self._weekly  = self._load(week_path,  window_days=weekly_window_days)
-        self._monthly = self._load(month_path, window_days=monthly_window_days)
+        self._df = self._load(unified_path)
         # Per-(row_id, level_name) traversal state machine.
         # row_id is the pandas Timestamp of the box row's 'Date' field.
         # state ∈ {'above', 'below'}. Missing key == None (haven't observed).
@@ -127,31 +136,66 @@ class BoxLookup:
 
     # ------------------------------------------------------------------
     @staticmethod
-    def _load(path: str, window_days: int) -> pd.DataFrame:
+    def _load(path: str) -> pd.DataFrame:
+        """Load unified box CSV, keeping only Date + W* + M* columns.
+
+        Daily (D*) columns and Scraped_At are dropped at parse time — they
+        are ignored throughout the codebase. The Date column is normalised
+        to midnight and used as the lookup key.
+        """
         if not os.path.exists(path):
             raise MissingDataFileError(
                 path,
                 role='box-data',
                 system_status={
-                    'hint': 'Run scripts/preprocess_boxes.py first.',
-                    'window_days': window_days,
+                    'hint': 'Place NQ_full_data.csv in the project root.',
                 },
             )
-        df = pd.read_csv(path, parse_dates=['Date'])
+        keep = {'Date'}
+        for u, l, _ in _WEEKLY_LEVELS + _MONTHLY_LEVELS:
+            keep.add(u)
+            keep.add(l)
+        df = pd.read_csv(
+            path,
+            usecols=lambda c: c in keep,
+            parse_dates=['Date'],
+        )
         df = df.sort_values('Date').reset_index(drop=True)
-        df['_end'] = df['Date'] + pd.Timedelta(days=window_days)
-        return df
+        # Normalise Date to midnight so _candle_to_box_date keys match.
+        df['Date'] = df['Date'].dt.normalize()
+        return df.set_index('Date', drop=False)
 
-    def _active_row(self, df: pd.DataFrame, ts: pd.Timestamp) -> Optional[pd.Series]:
-        mask = (df['Date'] <= ts) & (df['_end'] > ts)
-        rows = df[mask]
-        return rows.iloc[-1] if not rows.empty else None
+    @staticmethod
+    def _candle_to_box_date(ts: pd.Timestamp) -> pd.Timestamp:
+        """Map a candle timestamp to its box closing day (the Date tag in the CSV).
+
+        NQ sessions run 18:00 (day D-1) → 17:00 (day D). The CSV tags
+        each row with D (the closing day). Candles with hour ≥ 18 have
+        started the NEXT session and belong to the following day's box.
+        """
+        if ts.hour >= 18:
+            return (ts + pd.Timedelta(days=1)).normalize()
+        return ts.normalize()
+
+    def _active_row(self, ts: pd.Timestamp) -> Optional[pd.Series]:
+        """Return the box row whose closing day matches the candle's session.
+
+        Raises nothing on a miss — returns None when the date is absent
+        from the CSV (data gap or candle outside the CSV date range).
+        """
+        box_date = self._candle_to_box_date(ts)
+        try:
+            row = self._df.loc[box_date]
+            # If the index has duplicate dates (shouldn't happen), take last.
+            return row.iloc[-1] if isinstance(row, pd.DataFrame) else row
+        except KeyError:
+            return None
 
     def get_active_weekly_box(self, ts: pd.Timestamp) -> Optional[pd.Series]:
-        return self._active_row(self._weekly, ts)
+        return self._active_row(ts)
 
     def get_active_monthly_box(self, ts: pd.Timestamp) -> Optional[pd.Series]:
-        return self._active_row(self._monthly, ts)
+        return self._active_row(ts)
 
     # ------------------------------------------------------------------
     def _classify(self, close: float, upper: float, lower: float) -> str:
@@ -370,34 +414,63 @@ class BoxLookup:
         Each rect: { start_time, end_time, upper, lower, level, timeframe,
                      fill_color, border_color }
         where times are unix integer seconds.
+
+        Consecutive rows with identical price values for a level are merged
+        into a single rectangle. Each session's start_time is 18:00 on the
+        day before its Date tag; end_time is 17:00 on its Date tag.
         """
         rects: List[Dict[str, Any]] = []
         start_ts = pd.Timestamp(start)
         end_ts   = pd.Timestamp(end)
 
-        for df, levels, timeframe in [
-            (self._weekly,  _WEEKLY_LEVELS,  'weekly'),
-            (self._monthly, _MONTHLY_LEVELS, 'monthly'),
+        # Filter rows whose session overlaps [start_ts, end_ts].
+        # Session D runs: (D-1 18:00) .. (D 17:00).  A row is in range when
+        # D-1 < end_ts AND D >= start_ts (i.e. Date > start_ts - 1 day).
+        df = self._df
+        in_range = df[
+            (df['Date'] > start_ts - pd.Timedelta(days=1)) &
+            (df['Date'] <= end_ts + pd.Timedelta(days=1))
+        ].sort_values('Date')
+
+        for levels_list, timeframe in [
+            (_WEEKLY_LEVELS,  'weekly'),
+            (_MONTHLY_LEVELS, 'monthly'),
         ]:
-            mask = (df['_end'] > start_ts) & (df['Date'] <= end_ts)
-            for _, row in df[mask].iterrows():
-                box_start = int(row['Date'].timestamp())
-                box_end   = int(row['_end'].timestamp())
-                for upper_col, lower_col, label in levels:
-                    upper = row.get(upper_col)
-                    lower = row.get(lower_col)
-                    if pd.isna(upper) or pd.isna(lower):
-                        continue
-                    # Direct lookup — every label in _WEEKLY_LEVELS / _MONTHLY_LEVELS
-                    # is also a key in _LEVEL_COLORS. KeyError here indicates a
-                    # palette/label-list mismatch the developer must fix; no
-                    # silent grey-rgba fallback.
-                    fill, border = _LEVEL_COLORS[label]
+            for upper_col, lower_col, label in levels_list:
+                if upper_col not in in_range.columns or lower_col not in in_range.columns:
+                    continue
+                sub = in_range[[upper_col, lower_col, 'Date']].dropna(
+                    subset=[upper_col, lower_col]
+                ).copy()
+                if sub.empty:
+                    continue
+
+                # Group consecutive rows with identical price values.
+                # A gap > 4 calendar days starts a new group even if values
+                # are the same (handles multi-week coincidences).
+                sub['_new_grp'] = (
+                    (sub[upper_col] != sub[upper_col].shift(1)) |
+                    (sub[lower_col] != sub[lower_col].shift(1)) |
+                    (sub['Date'].diff() > pd.Timedelta(days=4))
+                )
+                sub['_grp'] = sub['_new_grp'].cumsum()
+
+                fill, border = _LEVEL_COLORS[label]
+                for _, grp in sub.groupby('_grp', sort=False):
+                    upper = float(grp[upper_col].iloc[0])
+                    lower = float(grp[lower_col].iloc[0])
+                    first_date = grp['Date'].iloc[0]
+                    last_date  = grp['Date'].iloc[-1]
+                    # Session start = 18:00 on (first_date - 1 day).
+                    # midnight - 6h  = 18:00 previous calendar day.
+                    box_start = int((first_date - pd.Timedelta(hours=6)).timestamp())
+                    # Session end = 17:00 on last_date.
+                    box_end   = int((last_date + pd.Timedelta(hours=17)).timestamp())
                     rects.append({
                         'start_time':   box_start,
                         'end_time':     box_end,
-                        'upper':        float(upper),
-                        'lower':        float(lower),
+                        'upper':        upper,
+                        'lower':        lower,
                         'level':        label,
                         'timeframe':    timeframe,
                         'fill_color':   fill,

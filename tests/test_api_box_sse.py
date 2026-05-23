@@ -35,16 +35,24 @@ def _write_synth_4h_csv(path, n_rows=100):
     df.to_csv(path, index=False)
 
 
-def _write_box_csv(path: str, kind: str) -> None:
-    prefix = 'W' if kind == 'week' else 'M'
-    cols = [f'{prefix}{suffix}' for suffix in
-            ['THU', 'THD', 'TH1', 'TH2', 'RHU', 'RHD',
-             'IHU', 'IHD', 'ILU', 'ILD', 'RLU', 'RLD',
-             'TLU', 'TLD', 'TL1', 'TL2']]
-    row = {c: None for c in cols}
-    row[f'{prefix}RHU'] = 20120.0
-    row[f'{prefix}RHD'] = 20100.0
-    pd.DataFrame({'Date': ['2025-01-01'], **{c: [v] for c, v in row.items()}}).to_csv(path, index=False)
+_W_COLS = [f'W{s}' for s in ['THU','THD','TH1','TH2','RHU','RHD','IHU','IHD','ILU','ILD','RLU','RLD','TLU','TLD','TL1','TL2']]
+_M_COLS = [f'M{s}' for s in ['THU','THD','TH1','TH2','RHU','RHD','IHU','IHD','ILU','ILD','RLU','RLD','TLU','TLD','TL1','TL2']]
+
+
+def _write_unified_csv(path: str, start_date: str, end_date: str) -> None:
+    """Create a unified box CSV covering every calendar date in [start, end].
+
+    Uses a W-RH box at 20100/20120 so signals can fire on the synth data.
+    All other levels are null.
+    """
+    dates = pd.date_range(start=start_date, end=end_date, freq='D')
+    n = len(dates)
+    row_data: dict = {'Date': dates.strftime('%Y-%m-%d')}
+    for c in _W_COLS + _M_COLS:
+        row_data[c] = [None] * n
+    row_data['WRHU'] = [20120.0] * n
+    row_data['WRHD'] = [20100.0] * n
+    pd.DataFrame(row_data).to_csv(path, index=False)
 
 
 def _parse_sse_events(text: str):
@@ -66,13 +74,12 @@ def _parse_sse_events(text: str):
     return events
 
 
-def _body(*, data_path: str, week: str, month: str, **param_overrides):
+def _body(*, data_path: str, box: str, **param_overrides):
     """Build a complete /api/backtest/box request body."""
     return {
         'params': box_params_dict(**param_overrides),
         'data_path': data_path,
-        'week_data_path': week,
-        'month_data_path': month,
+        'box_data_path': box,
         'start': None,
         'end': None,
     }
@@ -81,14 +88,13 @@ def _body(*, data_path: str, week: str, month: str, **param_overrides):
 def test_box_backtest_streams_progress_and_complete_events(tmp_path):
     csv = tmp_path / 'synth_4h.csv'
     _write_synth_4h_csv(csv, n_rows=120)
-    week_csv = tmp_path / 'week.csv'
-    month_csv = tmp_path / 'month.csv'
-    _write_box_csv(str(week_csv), 'week')
-    _write_box_csv(str(month_csv), 'month')
+    box_csv = tmp_path / 'box.csv'
+    # 120 bars × 4h starting 2025-01-01 spans ≈20 days; cover up to 2025-01-25.
+    _write_unified_csv(str(box_csv), '2025-01-01', '2025-01-25')
 
     resp = client.post(
         '/api/backtest/box',
-        json=_body(data_path=str(csv), week=str(week_csv), month=str(month_csv)),
+        json=_body(data_path=str(csv), box=str(box_csv)),
     )
     assert resp.status_code == 200, resp.text
     assert resp.headers['content-type'].startswith('text/event-stream')
@@ -114,17 +120,14 @@ def test_box_backtest_streams_progress_and_complete_events(tmp_path):
 def test_box_backtest_accepts_custom_params(tmp_path):
     csv = tmp_path / 'synth_4h.csv'
     _write_synth_4h_csv(csv, n_rows=80)
-    week_csv = tmp_path / 'week.csv'
-    month_csv = tmp_path / 'month.csv'
-    _write_box_csv(str(week_csv), 'week')
-    _write_box_csv(str(month_csv), 'month')
+    box_csv = tmp_path / 'box.csv'
+    _write_unified_csv(str(box_csv), '2025-01-01', '2025-01-15')
 
     resp = client.post(
         '/api/backtest/box',
         json=_body(
             data_path=str(csv),
-            week=str(week_csv),
-            month=str(month_csv),
+            box=str(box_csv),
             tp_target_points=50.0,
             sl_soft_points=25.0,
             sl_hard_points=50.0,
@@ -135,17 +138,14 @@ def test_box_backtest_accepts_custom_params(tmp_path):
 
 
 def test_box_backtest_missing_data_path_returns_error_event(tmp_path):
-    week_csv = tmp_path / 'week.csv'
-    month_csv = tmp_path / 'month.csv'
-    _write_box_csv(str(week_csv), 'week')
-    _write_box_csv(str(month_csv), 'month')
+    box_csv = tmp_path / 'box.csv'
+    _write_unified_csv(str(box_csv), '2025-01-01', '2025-01-15')
 
     resp = client.post(
         '/api/backtest/box',
         json=_body(
             data_path='/tmp/opencode/does-not-exist.csv',
-            week=str(week_csv),
-            month=str(month_csv),
+            box=str(box_csv),
         ),
     )
     assert resp.status_code == 200
@@ -167,8 +167,7 @@ def test_box_backtest_missing_box_file_returns_error_event(tmp_path):
         '/api/backtest/box',
         json=_body(
             data_path=str(csv),
-            week='/tmp/opencode/no-week.csv',
-            month='/tmp/opencode/no-month.csv',
+            box='/tmp/opencode/no-box.csv',
         ),
     )
     assert resp.status_code == 200
@@ -184,7 +183,7 @@ def test_request_validation_error_returns_structured_422(tmp_path):
     """A request missing fields hits Pydantic; the handler wraps with system_status."""
     resp = client.post(
         '/api/backtest/box',
-        json={'params': {}},  # missing data_path, week_data_path, month_data_path, start, end
+        json={'params': {}},  # missing data_path, box_data_path, start, end
     )
     assert resp.status_code == 422
     body = resp.json()

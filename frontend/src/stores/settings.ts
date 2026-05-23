@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { reactive, ref } from 'vue';
 import {
-  DEFAULT_BOX_DATA_PATHS,
+  DEFAULT_BOX_DATA_PATH,
   DEFAULT_BOX_PARAMS,
   type BoxParams,
 } from '../types';
@@ -25,8 +25,7 @@ const DEFAULT_INDICATORS: IndicatorSettings = {
 export const useSettingsStore = defineStore('settings', () => {
   const params = reactive<BoxParams>({ ...DEFAULT_BOX_PARAMS });
   const dataPath = ref<string>('NQ_4h.csv');
-  const weekDataPath = ref<string>(DEFAULT_BOX_DATA_PATHS.week_data_path);
-  const monthDataPath = ref<string>(DEFAULT_BOX_DATA_PATHS.month_data_path);
+  const boxDataPath = ref<string>(DEFAULT_BOX_DATA_PATH);
   const startDate = ref<string>('');
   const endDate = ref<string>('');
   const indicators = reactive<IndicatorSettings>({ ...DEFAULT_INDICATORS });
@@ -35,8 +34,7 @@ export const useSettingsStore = defineStore('settings', () => {
     Object.assign(params, DEFAULT_BOX_PARAMS);
     Object.assign(indicators, DEFAULT_INDICATORS);
     dataPath.value = 'NQ_4h.csv';
-    weekDataPath.value = DEFAULT_BOX_DATA_PATHS.week_data_path;
-    monthDataPath.value = DEFAULT_BOX_DATA_PATHS.month_data_path;
+    boxDataPath.value = DEFAULT_BOX_DATA_PATH;
     startDate.value = '';
     endDate.value = '';
   }
@@ -44,8 +42,7 @@ export const useSettingsStore = defineStore('settings', () => {
   return {
     params,
     dataPath,
-    weekDataPath,
-    monthDataPath,
+    boxDataPath,
     startDate,
     endDate,
     indicators,

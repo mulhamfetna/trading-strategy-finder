@@ -50,8 +50,7 @@ export const useBacktestStore = defineStore('backtest', () => {
     const runPayload = {
       params: settings.params,
       data_path: settings.dataPath,
-      week_data_path: settings.weekDataPath,
-      month_data_path: settings.monthDataPath,
+      box_data_path: settings.boxDataPath,
       start: settings.startDate || undefined,
       end: settings.endDate || undefined,
     };
@@ -88,8 +87,7 @@ export const useBacktestStore = defineStore('backtest', () => {
     const current = JSON.stringify({
       params: settings.params,
       data_path: settings.dataPath,
-      week_data_path: settings.weekDataPath,
-      month_data_path: settings.monthDataPath,
+      box_data_path: settings.boxDataPath,
       start: settings.startDate || undefined,
       end: settings.endDate || undefined,
     });

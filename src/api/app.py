@@ -229,19 +229,13 @@ def health() -> dict:
 def get_boxes(
     start: str = Query(..., description="Start date YYYY-MM-DD."),
     end: str = Query(..., description="End date YYYY-MM-DD."),
-    week_path: str = Query(..., description="Weekly box CSV path (required)."),
-    month_path: str = Query(..., description="Monthly box CSV path (required)."),
+    box_data_path: str = Query(..., description="Unified box CSV path (required)."),
     tick_threshold: float = Query(..., description="Points margin past edge before firing."),
-    weekly_window_days: int = Query(..., description="How many days a weekly box covers."),
-    monthly_window_days: int = Query(..., description="How many days a monthly box covers."),
 ) -> dict:
     """Return all box-level rectangles active in [start, end] for chart rendering."""
     bl = BoxLookup(
-        week_path=week_path,
-        month_path=month_path,
+        unified_path=box_data_path,
         tick_threshold=tick_threshold,
-        weekly_window_days=weekly_window_days,
-        monthly_window_days=monthly_window_days,
     )
     rects = bl.get_box_rects(start, end)
     return {"boxes": rects}
@@ -464,11 +458,8 @@ def _box_event_stream(req: BoxBacktestRequest) -> Iterator[str]:
     # MissingDataFileError propagate as structured SSE error frames.
     try:
         box_lookup = BoxLookup(
-            week_path=req.week_data_path,
-            month_path=req.month_data_path,
+            unified_path=req.box_data_path,
             tick_threshold=req.params.box_tick_threshold,
-            weekly_window_days=req.params.weekly_window_days,
-            monthly_window_days=req.params.monthly_window_days,
         )
     except ConfigurationError as exc:
         yield _sse_format('error', exc.to_payload())
@@ -478,8 +469,7 @@ def _box_event_stream(req: BoxBacktestRequest) -> Iterator[str]:
             'code': 'box-data-load-failed',
             'message': f'failed to load box data: {exc}',
             'system_status': {
-                'week_data_path': req.week_data_path,
-                'month_data_path': req.month_data_path,
+                'box_data_path': req.box_data_path,
                 'exception_type': type(exc).__name__,
             },
         })
@@ -488,12 +478,11 @@ def _box_event_stream(req: BoxBacktestRequest) -> Iterator[str]:
     q: "queue.Queue[Any]" = queue.Queue(maxsize=512)
 
     # BoxStrategyParams needs every dataclass field including the box CSV
-    # paths — the Pydantic model carries the params block (sizing, SL, TP)
-    # and the BoxBacktestRequest carries the paths.
+    # path — the Pydantic model carries the params block (sizing, SL, TP)
+    # and the BoxBacktestRequest carries the path.
     params_dict = {
         **req.params.model_dump(),
-        'week_data_path': req.week_data_path,
-        'month_data_path': req.month_data_path,
+        'box_data_path': req.box_data_path,
     }
     strat = BoxStrategy(params=BoxStrategyParams(**params_dict), box_lookup=box_lookup)
 

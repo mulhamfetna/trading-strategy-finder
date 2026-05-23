@@ -51,11 +51,8 @@ PLAYBOOK_SCALING_DEFAULTS: Dict[str, Any] = {
 }
 
 PLAYBOOK_BOX_EXTRA: Dict[str, Any] = {
-    'week_data_path': 'NQ_week_data_shifted.csv',
-    'month_data_path': 'NQ_month_data_shifted.csv',
+    'box_data_path': 'NQ_full_data.csv',
     'box_tick_threshold': 0.75,
-    'weekly_window_days': 7,
-    'monthly_window_days': 30,
     'big_candle_resolution': 'big_candle_wins',
 }
 

@@ -47,26 +47,35 @@ def df_4h_big_green_above_edge():
     })
 
 
+_W_COLS = ['WTHU', 'WTHD', 'WTH1', 'WTH2', 'WRHU', 'WRHD',
+           'WIHU', 'WIHD', 'WILU', 'WILD', 'WRLU', 'WRLD',
+           'WTLU', 'WTLD', 'WTL1', 'WTL2']
+_M_COLS = ['MTHU', 'MTHD', 'MTH1', 'MTH2', 'MRHU', 'MRHD',
+           'MIHU', 'MIHD', 'MILU', 'MILD', 'MRLU', 'MRLD',
+           'MTLU', 'MTLD', 'MTL1', 'MTL2']
+
+
+def _unified_csv(path, dates=None, **levels):
+    """Build a unified box CSV (all W* and M* columns)."""
+    if dates is None:
+        dates = ['2025-01-03']
+    n = len(dates)
+    row_data = {}
+    for c in _W_COLS + _M_COLS:
+        val = levels.get(c)
+        row_data[c] = ([val] * n) if not isinstance(val, list) else val
+    pd.DataFrame({'Date': dates, **row_data}).to_csv(path, index=False)
+
+
 @pytest.fixture
 def box_lookup_with_upper_at_20100(tmp_path):
     """A BoxLookup whose only active level is a weekly RH box at 20100/20050.
-    Any close > 20100.75 fires LONG; close < 20049.25 fires SHORT."""
-    week_csv = tmp_path / 'week.csv'
-    cols = ['WTHU', 'WTHD', 'WTH1', 'WTH2', 'WRHU', 'WRHD',
-            'WIHU', 'WIHD', 'WILU', 'WILD', 'WRLU', 'WRLD',
-            'WTLU', 'WTLD', 'WTL1', 'WTL2']
-    row = {c: None for c in cols}
-    row['WRHU'] = 20100.0
-    row['WRHD'] = 20050.0
-    pd.DataFrame({'Date': ['2025-01-01'], **{c: [v] for c, v in row.items()}}).to_csv(week_csv, index=False)
+    Any close > 20100.75 fires LONG; close < 20049.25 fires SHORT.
 
-    month_csv = tmp_path / 'month.csv'
-    mcols = ['MTHU', 'MTHD', 'MTH1', 'MTH2', 'MRHU', 'MRHD',
-             'MIHU', 'MIHD', 'MILU', 'MILD', 'MRLU', 'MRLD',
-             'MTLU', 'MTLD', 'MTL1', 'MTL2']
-    pd.DataFrame({'Date': ['2025-01-01'], **{c: [None] for c in mcols}}).to_csv(month_csv, index=False)
-
-    return BoxLookup(week_path=str(week_csv), month_path=str(month_csv), tick_threshold=0.75, weekly_window_days=7, monthly_window_days=30)
+    All test candles are on 2025-01-03 with hour < 18, so box_date=2025-01-03.
+    """
+    _unified_csv(tmp_path / 'u.csv', WRHU=20100.0, WRHD=20050.0)
+    return BoxLookup(unified_path=str(tmp_path / 'u.csv'), tick_threshold=0.75)
 
 
 def test_big_candle_wins_reverses_against_box(df_4h_big_green_above_edge, box_lookup_with_upper_at_20100):
@@ -115,20 +124,8 @@ def test_no_conflict_when_box_signal_agrees(tmp_path):
     """A big green bar that closes BELOW the weekly RL box (after a setup bar
     above the RL box) traverses above→below ⇒ SHORT. Big-candle reversal
     (green→short) also says SHORT. No conflict — all three policies trade short."""
-    week_csv = tmp_path / 'week.csv'
-    cols = ['WTHU', 'WTHD', 'WTH1', 'WTH2', 'WRHU', 'WRHD',
-            'WIHU', 'WIHD', 'WILU', 'WILD', 'WRLU', 'WRLD',
-            'WTLU', 'WTLD', 'WTL1', 'WTL2']
-    row = {c: None for c in cols}
-    row['WRLU'] = 19500.0
-    row['WRLD'] = 19450.0
-    pd.DataFrame({'Date': ['2025-01-01'], **{c: [v] for c, v in row.items()}}).to_csv(week_csv, index=False)
-
-    month_csv = tmp_path / 'month.csv'
-    mcols = ['MTHU', 'MTHD', 'MTH1', 'MTH2', 'MRHU', 'MRHD',
-             'MIHU', 'MIHD', 'MILU', 'MILD', 'MRLU', 'MRLD',
-             'MTLU', 'MTLD', 'MTL1', 'MTL2']
-    pd.DataFrame({'Date': ['2025-01-01'], **{c: [None] for c in mcols}}).to_csv(month_csv, index=False)
+    unified_csv = tmp_path / 'u.csv'
+    _unified_csv(unified_csv, WRLU=19500.0, WRLD=19450.0)
 
     # 3-bar fixture: bar 0 above WRL box (state='above'); bar 1 inside WRL
     # box (inside_seen=True); bar 2 is a big-green that closes below WRL.
@@ -147,13 +144,7 @@ def test_no_conflict_when_box_signal_agrees(tmp_path):
 
     for policy in ('big_candle_wins', 'box_wins', 'skip'):
         # Fresh BoxLookup so state doesn't leak between policies.
-        lookup = BoxLookup(
-            week_path=str(week_csv),
-            month_path=str(month_csv),
-            tick_threshold=0.75,
-            weekly_window_days=7,
-            monthly_window_days=30,
-        )
+        lookup = BoxLookup(unified_path=str(unified_csv), tick_threshold=0.75)
         strat = BoxStrategy(
             params=box_strategy_params(big_candle_resolution=policy),
             box_lookup=lookup,

@@ -9,12 +9,8 @@
           <FilePicker v-model="settings.dataPath" />
         </label>
         <label class="col-span-2 flex flex-col gap-1">
-          <span class="text-tv-muted">Weekly box file</span>
-          <FilePicker v-model="settings.weekDataPath" />
-        </label>
-        <label class="col-span-2 flex flex-col gap-1">
-          <span class="text-tv-muted">Monthly box file</span>
-          <FilePicker v-model="settings.monthDataPath" />
+          <span class="text-tv-muted">Box data file <span class="text-tv-blue">(unified W+M levels)</span></span>
+          <FilePicker v-model="settings.boxDataPath" />
         </label>
         <label class="flex flex-col gap-1">
           <span class="text-tv-muted">Start date (optional)</span>
@@ -114,8 +110,6 @@
       <div class="grid grid-cols-2 gap-2 text-xs">
         <NumField label="Tick threshold (pts above edge)" v-model.number="settings.params.box_tick_threshold" :min="0" :step="0.25" />
         <div></div>
-        <NumField label="Weekly window (days)" v-model.number="settings.params.weekly_window_days" :min="1" />
-        <NumField label="Monthly window (days)" v-model.number="settings.params.monthly_window_days" :min="1" />
       </div>
       <!-- MASTER_STRATEGY_GUIDE §5 — explicit policy for Big-Candle vs Box conflicts -->
       <label class="mt-2 flex flex-col gap-1 text-xs">

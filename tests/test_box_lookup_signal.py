@@ -22,16 +22,23 @@ _W_COLS = ['WTHU', 'WTHD', 'WTH1', 'WTH2', 'WRHU', 'WRHD',
 _M_COLS = ['MTHU', 'MTHD', 'MTH1', 'MTH2', 'MRHU', 'MRHD',
            'MIHU', 'MIHD', 'MILU', 'MILD', 'MRLU', 'MRLD',
            'MTLU', 'MTLD', 'MTL1', 'MTL2']
+_ALL_BOX_COLS = _W_COLS + _M_COLS
 
 
-def _weekly_csv(path, dates=None, **levels) -> None:
-    """Build a weekly box CSV. Pass `dates=` to override the single 2025-01-01 row.
-    Each level kwarg can be a scalar (applies to all rows) or a list (one per row)."""
+def _unified_csv(path, dates=None, **levels) -> None:
+    """Build a unified box CSV with both W* and M* columns.
+
+    Each level kwarg can be a scalar (applied to all rows) or a list
+    (one value per row). Columns not passed default to None.
+
+    Default dates=['2025-01-03']: the canonical test date. All test
+    candles with hour < 18 on 2025-01-03 map to box_date=2025-01-03.
+    """
     if dates is None:
-        dates = ['2025-01-01']
+        dates = ['2025-01-03']
     n = len(dates)
-    row_data = {}
-    for c in _W_COLS:
+    row_data: dict = {}
+    for c in _ALL_BOX_COLS:
         val = levels.get(c)
         if isinstance(val, list):
             assert len(val) == n
@@ -41,29 +48,8 @@ def _weekly_csv(path, dates=None, **levels) -> None:
     pd.DataFrame({'Date': dates, **row_data}).to_csv(path, index=False)
 
 
-def _monthly_csv(path, dates=None, **levels) -> None:
-    if dates is None:
-        dates = ['2025-01-01']
-    n = len(dates)
-    row_data = {}
-    for c in _M_COLS:
-        val = levels.get(c)
-        if isinstance(val, list):
-            assert len(val) == n
-            row_data[c] = val
-        else:
-            row_data[c] = [val] * n
-    pd.DataFrame({'Date': dates, **row_data}).to_csv(path, index=False)
-
-
-def _lookup(tmp_path) -> BoxLookup:
-    return BoxLookup(
-        week_path=str(tmp_path / 'w.csv'),
-        month_path=str(tmp_path / 'm.csv'),
-        tick_threshold=0.75,
-        weekly_window_days=7,
-        monthly_window_days=30,
-    )
+def _lookup(path) -> BoxLookup:
+    return BoxLookup(unified_path=str(path), tick_threshold=0.75)
 
 
 # ----------------------------------------------------------------------
@@ -72,9 +58,8 @@ def _lookup(tmp_path) -> BoxLookup:
 
 def test_first_observation_never_fires(tmp_path):
     """First time a (row, level) is observed, signal must be 'hold' regardless of side."""
-    _weekly_csv(tmp_path / 'w.csv', WRHU=105.0, WRHD=100.0)
-    _monthly_csv(tmp_path / 'm.csv')  # no monthly levels — abstains
-    lookup = _lookup(tmp_path)
+    _unified_csv(tmp_path / 'u.csv', WRHU=105.0, WRHD=100.0)
+    lookup = _lookup(tmp_path / 'u.csv')
 
     # close=200 (well above the box) on the very first bar.
     detail = lookup.get_signal_detail(close=200.0, ts=pd.Timestamp('2025-01-03'))
@@ -86,9 +71,8 @@ def test_first_observation_never_fires(tmp_path):
 def test_traversal_below_to_above_fires_long(tmp_path):
     """A close BELOW the box, then INSIDE, then ABOVE → 'long' on the exit bar.
     The intervening inside observation is required ('entered the box')."""
-    _weekly_csv(tmp_path / 'w.csv', WRHU=105.0, WRHD=100.0)
-    _monthly_csv(tmp_path / 'm.csv')
-    lookup = _lookup(tmp_path)
+    _unified_csv(tmp_path / 'u.csv', WRHU=105.0, WRHD=100.0)
+    lookup = _lookup(tmp_path / 'u.csv')
 
     # Bar 1: below box (state becomes 'below').
     d1 = lookup.get_signal_detail(close=50.0, ts=pd.Timestamp('2025-01-03'))
@@ -109,9 +93,8 @@ def test_traversal_below_to_above_fires_long(tmp_path):
 
 def test_traversal_above_to_below_fires_short(tmp_path):
     """A close ABOVE → INSIDE → BELOW → 'short' on the exit bar."""
-    _weekly_csv(tmp_path / 'w.csv', WRHU=105.0, WRHD=100.0)
-    _monthly_csv(tmp_path / 'm.csv')
-    lookup = _lookup(tmp_path)
+    _unified_csv(tmp_path / 'u.csv', WRHU=105.0, WRHD=100.0)
+    lookup = _lookup(tmp_path / 'u.csv')
 
     lookup.get_signal_detail(close=200.0, ts=pd.Timestamp('2025-01-03'))             # state='above'
     lookup.get_signal_detail(close=102.0, ts=pd.Timestamp('2025-01-03 04:00'))        # inside, inside_seen=True
@@ -124,9 +107,8 @@ def test_gap_skip_does_not_fire(tmp_path):
     """A close that goes straight from one side to the opposite WITHOUT an
     intervening 'inside' observation must NOT fire — the price never entered
     the box, so no traversal occurred. State still advances silently."""
-    _weekly_csv(tmp_path / 'w.csv', WRHU=105.0, WRHD=100.0)
-    _monthly_csv(tmp_path / 'm.csv')
-    lookup = _lookup(tmp_path)
+    _unified_csv(tmp_path / 'u.csv', WRHU=105.0, WRHD=100.0)
+    lookup = _lookup(tmp_path / 'u.csv')
 
     # Bar 1: below box → state='below', inside_seen=False
     lookup.get_signal_detail(close=50.0, ts=pd.Timestamp('2025-01-03'))
@@ -149,9 +131,8 @@ def test_gap_skip_does_not_fire(tmp_path):
 
 def test_same_side_repeat_is_hold(tmp_path):
     """Consecutive bars on the same side after the first observation → 'hold'."""
-    _weekly_csv(tmp_path / 'w.csv', WRHU=105.0, WRHD=100.0)
-    _monthly_csv(tmp_path / 'm.csv')
-    lookup = _lookup(tmp_path)
+    _unified_csv(tmp_path / 'u.csv', WRHU=105.0, WRHD=100.0)
+    lookup = _lookup(tmp_path / 'u.csv')
 
     lookup.get_signal_detail(close=200.0, ts=pd.Timestamp('2025-01-03'))  # state='above'
     for offset in range(1, 5):
@@ -164,9 +145,8 @@ def test_same_side_repeat_is_hold(tmp_path):
 
 def test_inside_box_returns_hold_without_changing_state(tmp_path):
     """Inside-box bars are transient — they return 'hold' and do not reset state."""
-    _weekly_csv(tmp_path / 'w.csv', WRHU=105.0, WRHD=100.0)
-    _monthly_csv(tmp_path / 'm.csv')
-    lookup = _lookup(tmp_path)
+    _unified_csv(tmp_path / 'u.csv', WRHU=105.0, WRHD=100.0)
+    lookup = _lookup(tmp_path / 'u.csv')
 
     # Establish state='above'.
     lookup.get_signal_detail(close=200.0, ts=pd.Timestamp('2025-01-03'))
@@ -184,9 +164,8 @@ def test_inside_box_returns_hold_without_changing_state(tmp_path):
 
 def test_inside_then_same_side_exit_is_hold(tmp_path):
     """above → inside → above stays 'hold' the whole way (state never changed)."""
-    _weekly_csv(tmp_path / 'w.csv', WRHU=105.0, WRHD=100.0)
-    _monthly_csv(tmp_path / 'm.csv')
-    lookup = _lookup(tmp_path)
+    _unified_csv(tmp_path / 'u.csv', WRHU=105.0, WRHD=100.0)
+    lookup = _lookup(tmp_path / 'u.csv')
 
     lookup.get_signal_detail(close=200.0, ts=pd.Timestamp('2025-01-03'))      # state='above'
     d_inside = lookup.get_signal_detail(close=102.0, ts=pd.Timestamp('2025-01-03 04:00'))
@@ -196,22 +175,23 @@ def test_inside_then_same_side_exit_is_hold(tmp_path):
 
 
 def test_state_resets_when_active_box_row_changes(tmp_path):
-    """When the week rolls over to a new row, state is keyed per-row so the
-    new row starts fresh (no carry-over)."""
-    # Two weekly rows: 2025-01-01 (active week 1) and 2025-01-08 (active week 2).
-    _weekly_csv(
-        tmp_path / 'w.csv',
-        dates=['2025-01-01', '2025-01-08'],
+    """When the day rolls over to a new row with different levels, state is
+    keyed per-row so the new row starts fresh (no carry-over)."""
+    # Two rows with different price levels — row 2025-01-03 (week 1 levels)
+    # and 2025-01-09 (week 2 levels). Both dates have hour-0 candles so they
+    # both map via _candle_to_box_date to their own Date directly.
+    _unified_csv(
+        tmp_path / 'u.csv',
+        dates=['2025-01-03', '2025-01-09'],
         WRHU=[105.0, 305.0],
         WRHD=[100.0, 300.0],
     )
-    _monthly_csv(tmp_path / 'm.csv')
-    lookup = _lookup(tmp_path)
+    lookup = _lookup(tmp_path / 'u.csv')
 
-    # Bar in week 1: above the week-1 box → state(week1, W-RH)='above'
+    # Bar on 2025-01-03: above the row-1 box → state(row1, W-RH)='above'
     lookup.get_signal_detail(close=200.0, ts=pd.Timestamp('2025-01-03'))
 
-    # Bar in week 2: state(week2, W-RH) is None → first observation → 'hold'
+    # Bar on 2025-01-09: state(row2, W-RH) is None → first observation → 'hold'
     d = lookup.get_signal_detail(close=400.0, ts=pd.Timestamp('2025-01-09'))
     assert d['weekly_signal'] == 'hold'
     assert d['weekly_side'] == 'above'
@@ -222,12 +202,12 @@ def test_state_resets_when_active_box_row_changes(tmp_path):
 # ----------------------------------------------------------------------
 
 def test_no_active_row_returns_none_signal(tmp_path):
-    """When neither weekly nor monthly has an active row, aggregate signal is None."""
-    _weekly_csv(tmp_path / 'w.csv', WRHU=105.0, WRHD=100.0)  # row covers 2025-01-01..08
-    _monthly_csv(tmp_path / 'm.csv')                          # row covers 2025-01-01..31
-    lookup = _lookup(tmp_path)
+    """When neither weekly nor monthly has a matching date, signal is None."""
+    # CSV has only 2025-01-03. A candle on 2025-03-01 maps to box_date
+    # 2025-03-01 which is absent → no active row.
+    _unified_csv(tmp_path / 'u.csv', WRHU=105.0, WRHD=100.0)
+    lookup = _lookup(tmp_path / 'u.csv')
 
-    # Date AFTER both windows: no active row.
     detail = lookup.get_signal_detail(close=102.0, ts=pd.Timestamp('2025-03-01'))
     assert detail['signal'] is None
     assert detail['weekly_signal'] is None
@@ -236,9 +216,8 @@ def test_no_active_row_returns_none_signal(tmp_path):
 
 def test_aggregate_hold_when_active_row_but_no_traversal(tmp_path):
     """Active row(s) but no traversal this bar → aggregate signal is 'hold'."""
-    _weekly_csv(tmp_path / 'w.csv', WRHU=105.0, WRHD=100.0)
-    _monthly_csv(tmp_path / 'm.csv')
-    lookup = _lookup(tmp_path)
+    _unified_csv(tmp_path / 'u.csv', WRHU=105.0, WRHD=100.0)
+    lookup = _lookup(tmp_path / 'u.csv')
 
     detail = lookup.get_signal_detail(close=102.0, ts=pd.Timestamp('2025-01-03'))
     assert detail['weekly_signal'] == 'hold'
@@ -247,9 +226,8 @@ def test_aggregate_hold_when_active_row_but_no_traversal(tmp_path):
 
 def test_weekly_priority_over_monthly(tmp_path):
     """When weekly fires a directional signal it wins; monthly is ignored."""
-    _weekly_csv(tmp_path / 'w.csv', WRHU=105.0, WRHD=100.0)
-    _monthly_csv(tmp_path / 'm.csv', MRHU=205.0, MRHD=10.0)
-    lookup = _lookup(tmp_path)
+    _unified_csv(tmp_path / 'u.csv', WRHU=105.0, WRHD=100.0, MRHU=205.0, MRHD=10.0)
+    lookup = _lookup(tmp_path / 'u.csv')
 
     # Setup: below weekly box (state='below'); monthly close=50 is 'inside'
     # (10..205) → state(M) untouched.
@@ -265,9 +243,8 @@ def test_weekly_priority_over_monthly(tmp_path):
 def test_monthly_fires_when_weekly_holds(tmp_path):
     """If weekly returns 'hold' but monthly fires a directional traversal, the
     aggregate falls through to monthly."""
-    _weekly_csv(tmp_path / 'w.csv', WRHU=305.0, WRHD=10.0)   # huge weekly box (always 'inside')
-    _monthly_csv(tmp_path / 'm.csv', MRHU=105.0, MRHD=100.0)
-    lookup = _lookup(tmp_path)
+    _unified_csv(tmp_path / 'u.csv', WRHU=305.0, WRHD=10.0, MRHU=105.0, MRHD=100.0)
+    lookup = _lookup(tmp_path / 'u.csv')
 
     # Bar 1: close=50 → weekly 'inside', monthly 'below'. state(M)='below'.
     lookup.get_signal_detail(close=50.0, ts=pd.Timestamp('2025-01-03'))
@@ -286,9 +263,8 @@ def test_conflict_flag_false_under_normal_traversal(tmp_path):
     the same bar. Under traversal semantics with single-close-per-bar this is
     geometrically constrained; this test verifies the flag stays False in a
     normal coupled-traversal scenario."""
-    _weekly_csv(tmp_path / 'w.csv', WRHU=105.0, WRHD=100.0)
-    _monthly_csv(tmp_path / 'm.csv', MRHU=105.0, MRHD=100.0)  # same geometry
-    lookup = _lookup(tmp_path)
+    _unified_csv(tmp_path / 'u.csv', WRHU=105.0, WRHD=100.0, MRHU=105.0, MRHD=100.0)
+    lookup = _lookup(tmp_path / 'u.csv')
 
     lookup.get_signal_detail(close=50.0, ts=pd.Timestamp('2025-01-03'))   # both 'below'
     lookup.get_signal_detail(close=102.0, ts=pd.Timestamp('2025-01-03 04:00'))   # both inside
@@ -307,10 +283,9 @@ def test_multiple_levels_evolve_independently(tmp_path):
     """When the same row has multiple levels (e.g., W-RH and W-IH), the state
     for each level must evolve independently — a 'closest level' pick must not
     strand state on the other level."""
-    # Two levels on the same weekly row: W-RH at 100..110, W-IH at 50..60.
-    _weekly_csv(tmp_path / 'w.csv', WRHU=110.0, WRHD=100.0, WIHU=60.0, WIHD=50.0)
-    _monthly_csv(tmp_path / 'm.csv')
-    lookup = _lookup(tmp_path)
+    # Two levels on the same row: W-RH at 100..110, W-IH at 50..60.
+    _unified_csv(tmp_path / 'u.csv', WRHU=110.0, WRHD=100.0, WIHU=60.0, WIHD=50.0)
+    lookup = _lookup(tmp_path / 'u.csv')
 
     # Bar 1: close=200 → above BOTH boxes. state(W-RH)='above', state(W-IH)='above'.
     lookup.get_signal_detail(close=200.0, ts=pd.Timestamp('2025-01-03'))
@@ -345,9 +320,14 @@ def test_multiple_levels_evolve_independently(tmp_path):
 
 def test_reset_state_clears_history(tmp_path):
     """After reset_state(), the next bar is a fresh first observation."""
-    _weekly_csv(tmp_path / 'w.csv', WRHU=105.0, WRHD=100.0)
-    _monthly_csv(tmp_path / 'm.csv')
-    lookup = _lookup(tmp_path)
+    # Need rows for both 2025-01-03 and 2025-01-04 (two different box dates).
+    _unified_csv(
+        tmp_path / 'u.csv',
+        dates=['2025-01-03', '2025-01-04'],
+        WRHU=105.0,
+        WRHD=100.0,
+    )
+    lookup = _lookup(tmp_path / 'u.csv')
 
     lookup.get_signal_detail(close=50.0, ts=pd.Timestamp('2025-01-03'))   # state='below'
     lookup.reset_state()
@@ -360,9 +340,8 @@ def test_reset_state_clears_history(tmp_path):
 
 def test_get_signal_matches_get_signal_detail(tmp_path):
     """The convenience `get_signal` and `get_signal_detail['signal']` agree."""
-    _weekly_csv(tmp_path / 'w.csv', WRHU=105.0, WRHD=100.0)
-    _monthly_csv(tmp_path / 'm.csv')
-    lookup = _lookup(tmp_path)
+    _unified_csv(tmp_path / 'u.csv', WRHU=105.0, WRHD=100.0)
+    lookup = _lookup(tmp_path / 'u.csv')
 
     # NOTE: each call mutates state, so we test the IDENTICAL sequence twice
     # with a reset between them.
@@ -382,9 +361,8 @@ def test_classify_raises_on_zero_height_box(tmp_path):
     """A box with upper == lower (zero-height) is geometrically undefined and
     must raise — no silent fallback (no-fallback rule)."""
     from src.exceptions import ConfigurationError
-    _weekly_csv(tmp_path / 'w.csv', WRHU=100.0, WRHD=100.0)
-    _monthly_csv(tmp_path / 'm.csv')
-    lookup = _lookup(tmp_path)
+    _unified_csv(tmp_path / 'u.csv', WRHU=100.0, WRHD=100.0)
+    lookup = _lookup(tmp_path / 'u.csv')
     with pytest.raises(ConfigurationError) as exc:
         lookup.get_signal_detail(close=50.0, ts=pd.Timestamp('2025-01-03'))
     assert exc.value.code == 'malformed-box-geometry'
@@ -394,9 +372,8 @@ def test_classify_raises_on_swapped_edges(tmp_path):
     """If a CSV has upper < lower (data prep bug), raise rather than silently
     fix — per the no-fallback rule the data must be corrected upstream."""
     from src.exceptions import ConfigurationError
-    _weekly_csv(tmp_path / 'w.csv', WRHU=100.0, WRHD=110.0)  # swapped
-    _monthly_csv(tmp_path / 'm.csv')
-    lookup = _lookup(tmp_path)
+    _unified_csv(tmp_path / 'u.csv', WRHU=100.0, WRHD=110.0)  # swapped
+    lookup = _lookup(tmp_path / 'u.csv')
     with pytest.raises(ConfigurationError) as exc:
         lookup.get_signal_detail(close=50.0, ts=pd.Timestamp('2025-01-03'))
     assert exc.value.code == 'malformed-box-geometry'

@@ -117,8 +117,6 @@ class BoxParamsModel(ScalingParamsModel):
     """ScalingParamsModel + box-specific decision params. All required."""
     # Box-rule decisions
     box_tick_threshold: float
-    weekly_window_days: int
-    monthly_window_days: int
 
     # Big-Candle vs Box conflict resolution (see MASTER_STRATEGY_GUIDE.md §5).
     big_candle_resolution: Literal['big_candle_wins', 'box_wins', 'skip']
@@ -128,8 +126,7 @@ class BoxBacktestRequest(BaseModel):
     """Master-strategy backtest request. Every field required."""
     params: BoxParamsModel
     data_path: str
-    week_data_path: str
-    month_data_path: str
+    box_data_path: str          # unified CSV containing all W* and M* box levels
     # Date range is optional in semantics (None = whole CSV) but the
     # field is REQUIRED — caller must send `null` explicitly.
     start: Optional[str] = Field(...)
