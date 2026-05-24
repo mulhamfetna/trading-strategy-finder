@@ -94,6 +94,7 @@ class BoxStrategy(ScalingStrategy):
     def backtest(
         self,
         df: pd.DataFrame,
+        df_1min: Optional[pd.DataFrame] = None,
         on_progress: Optional[Callable[[Dict], None]] = None,
     ) -> Tuple[List[Dict], Dict]:
         self._df4h = df
@@ -102,7 +103,7 @@ class BoxStrategy(ScalingStrategy):
         # not inherit observations from a prior run (matters for re-using
         # the same BoxLookup across walk-forward folds).
         self._box.reset_state()
-        trades, state = super().backtest(df, on_progress=on_progress)
+        trades, state = super().backtest(df, df_1min=df_1min, on_progress=on_progress)
         # Post-process: attach box_signal to each trade. `_on_bar` recorded
         # the box detail at the bar's idx; entry_idx is that same idx.
         # Direct access on `entry_idx` — every trade the engine emits carries

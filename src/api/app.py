@@ -414,6 +414,10 @@ def _trade_to_jsonable(trade: Dict) -> Dict:
         'profit_points': float(trade['profit_points']),
         'profit_dollars': float(trade['profit_dollars']),
         'exit_reason': trade['exit_reason'],
+        # Sub-bar timestamp ISO string when the dual-timeframe engine fired
+        # the exit. None in 4h-only mode (frontend falls back to the 4h-bar
+        # timestamp via exit_idx).
+        'exit_time': trade.get('exit_time'),
         # Direct access — every trade the engine emits carries `legs`.
         # No silent fallback to []; if missing it indicates an engine bug.
         'legs': trade['legs'],
@@ -465,6 +469,40 @@ def _box_event_stream(req: BoxBacktestRequest) -> Iterator[str]:
         return
 
     df = df.reset_index(drop=True)
+
+    # ---- 1-min OHLCV: required for dual-timeframe SL/TP (HARD/TP on 1-min, ----
+    #      SOFT/TRAIL on 2-min aggregates of the same frame).
+    if not os.path.exists(req.data_path_1min):
+        yield _sse_format('error', MissingDataFileError(
+            req.data_path_1min, role='1min-candles'
+        ).to_payload())
+        return
+
+    try:
+        df_1min = load_data(req.data_path_1min)
+    except ConfigurationError as exc:
+        yield _sse_format('error', exc.to_payload())
+        return
+    except Exception as exc:  # noqa: BLE001
+        yield _sse_format('error', {
+            'code': 'data-load-failed',
+            'message': f'failed to load {req.data_path_1min}: {exc}',
+            'system_status': {
+                'data_path': req.data_path_1min,
+                'role': '1min-candles',
+                'exception_type': type(exc).__name__,
+            },
+        })
+        return
+
+    if req.start and req.end:
+        try:
+            df_1min = filter_by_date_range(df_1min, start=req.start, end=req.end)
+        except Exception as exc:  # noqa: BLE001
+            yield _sse_format('error', {'detail': f'1min date filter failed: {exc}'})
+            return
+
+    df_1min = df_1min.sort_values('Date').reset_index(drop=True)
 
     # Validate box files exist and construct BoxLookup. ConfigurationError /
     # MissingDataFileError propagate as structured SSE error frames.
@@ -525,7 +563,7 @@ def _box_event_stream(req: BoxBacktestRequest) -> Iterator[str]:
 
     def worker():
         try:
-            trades, _state = strat.backtest(df, on_progress=on_progress)
+            trades, _state = strat.backtest(df, df_1min=df_1min, on_progress=on_progress)
             elapsed_ms = int((time.perf_counter() - start_wall) * 1000)
             candles = _candles_from_df(df)
             metrics = Metrics.model_validate(_box_metrics(trades)).model_dump()

@@ -108,6 +108,14 @@ class _Position:
     legs: List[_Leg] = field(default_factory=list)
     watch_armed: bool = False  # has price ever exceeded avg + tp_watch_threshold?
     opened_at_idx: int = -1
+    # Dual-timeframe sub-bar walker state. Used only when df_1min is
+    # supplied to backtest(); persists across 4h-bar boundaries within a
+    # single position's lifetime. cur_2m_start is the wall-clock-floored
+    # 2-min window start; cur_2m_high / _low aggregate the in-progress
+    # window's high/low. Reset on each new 2-min window.
+    cur_2m_start: Optional[pd.Timestamp] = None
+    cur_2m_high: Optional[float] = None
+    cur_2m_low: Optional[float] = None
 
     @property
     def is_open(self) -> bool:
@@ -162,12 +170,19 @@ class ScalingStrategy:
     def backtest(
         self,
         df: pd.DataFrame,
+        df_1min: Optional[pd.DataFrame] = None,
         on_progress: Optional[Callable[[Dict], None]] = None,
     ) -> Tuple[List[Dict], Dict]:
         """Run the simulation over ``df`` (one row per candle).
 
         Args:
-            df: OHLCV DataFrame with at least Open/High/Low/Close columns.
+            df: 4h OHLCV DataFrame with at least Open/High/Low/Close columns.
+            df_1min: Optional 1-min OHLCV frame covering the same wall-clock
+                span as ``df``. When supplied, hard SL & TP-target trigger on
+                the first 1-min close past the line; soft SL & TP-trail trigger
+                on 2-min aggregates of the same frame. When ``None``, both
+                tiers collapse to the 4h close (legacy mode used by unit tests
+                with synthetic candles).
             on_progress: Optional callback invoked once per candle with a
                 progress dict. Used by the SSE endpoint in phase C2.
 
@@ -180,6 +195,17 @@ class ScalingStrategy:
         if total == 0:
             self.last_state = _Position().to_dict()
             return [], self.last_state
+
+        # Pre-index the 1-min frame for O(log N) per-4h-bar slicing. Each
+        # 4h-bar idx i uses 1-min bars in [start_1m[i], start_1m[i+1]).
+        if df_1min is not None and len(df_1min) > 0:
+            import numpy as np
+            ts_4h_arr = df['Date'].to_numpy()
+            ts_1m_arr = df_1min['Date'].to_numpy()
+            start_1m = np.searchsorted(ts_1m_arr, ts_4h_arr, side='left')
+            start_1m = np.append(start_1m, len(ts_1m_arr))
+        else:
+            start_1m = None
 
         trades: List[Dict] = []
         position = _Position()
@@ -207,12 +233,21 @@ class ScalingStrategy:
 
             # ----- EXIT CHECKS (if position open) -----
             if position.is_open:
-                exit_event = self._check_exits(position, idx, high, low, close)
+                if start_1m is not None:
+                    # Dual-timeframe: walk 1-min bars within this 4h bar.
+                    # The 4h-bar's timespan is [df.Date[idx], df.Date[idx+1]).
+                    lo = int(start_1m[idx])
+                    hi = int(start_1m[idx + 1]) if idx + 1 < total else len(df_1min)
+                    sub_bars = df_1min.iloc[lo:hi]
+                    exit_event = self._check_exits_subbar(position, sub_bars)
+                else:
+                    # Legacy 4h-only path: collapse both SL tiers and TP target
+                    # to the 4h close.
+                    exit_event = self._check_exits(position, idx, high, low, close)
+                    if exit_event is not None:
+                        exit_event['exit_close'] = close
+
                 if exit_event is not None:
-                    # Record the bar's actual close on the exit event so
-                    # `_build_trade` can stamp the trade with a candle-grounded
-                    # exit price (alongside the synthetic SL/TP line).
-                    exit_event['exit_close'] = close
                     trades.append(self._build_trade(position, idx, exit_event))
                     # Decide if we should arm a re-entry watch.
                     if (
@@ -407,7 +442,11 @@ class ScalingStrategy:
         """Arm the trailing-TP watch when the candle CLOSE sustains above
         (long) or below (short) the watch threshold from avg. We use
         close - not the intra-candle high/low - to avoid arming on a
-        wick within the entry candle itself."""
+        wick within the entry candle itself.
+
+        4h-only path. In dual-timeframe mode, arming happens inside
+        `_check_exits_subbar` on a 2-min close.
+        """
         if position.watch_armed:
             return
         p = self.params
@@ -418,6 +457,160 @@ class ScalingStrategy:
         else:
             if close <= avg - p.tp_watch_threshold_points:
                 position.watch_armed = True
+
+    # ------------------------------------------------------------------
+    # Dual-timeframe sub-bar exit walker (#118b)
+    # ------------------------------------------------------------------
+
+    def _check_exits_subbar(
+        self,
+        position: _Position,
+        sub_bars: pd.DataFrame,
+    ) -> Optional[Dict]:
+        """Walk a contiguous slice of 1-min OHLCV bars searching for the
+        first SL/TP trigger that closes the position.
+
+        Trigger contract (user rule 2026-05-24, MASTER_STRATEGY_GUIDE §4-5):
+
+          * HARD SL: 1-min close past `sl_hard_line` → fill AT the line
+                    (loss = exactly sl_hard_points).
+          * TP target: 1-min high (long) / low (short) reaches `tp_target_line`
+                    → fill AT the line.
+          * SOFT SL: 2-min close past `sl_soft_line` → fill AT the 2-min close
+                    (loss can exceed sl_soft_points).
+          * TP trail: once watch is armed (2-min close moved +tp_watch_threshold
+                    in favour), a later 2-min close back through `tp_watch_line`
+                    → fill AT that 2-min close.
+
+        The 2-min window is wall-clock anchored (`ts.floor('2min')`). The
+        accumulator state (cur_2m_*) persists on the `_Position` instance so
+        consecutive calls (each handling one 4h-bar's slice) keep their place
+        across the position's lifetime.
+
+        Returns the first exit_event dict that fires, with `exit_price`,
+        `exit_close`, `exit_time`, `exit_reason` keys. Returns None when no
+        trigger fires inside this slice.
+        """
+        if sub_bars.empty:
+            return None
+
+        p = self.params
+        avg = position.avg_price
+        if position.direction == 'long':
+            sl_hard_line   = avg - p.sl_hard_points
+            sl_soft_line   = avg - p.sl_soft_points
+            tp_target_line = avg + p.tp_target_points
+            tp_watch_line  = avg + p.tp_watch_threshold_points
+        else:
+            sl_hard_line   = avg + p.sl_hard_points
+            sl_soft_line   = avg + p.sl_soft_points
+            tp_target_line = avg - p.tp_target_points
+            tp_watch_line  = avg - p.tp_watch_threshold_points
+
+        watch_arm_threshold = p.tp_watch_threshold_points
+
+        for sub in sub_bars.itertuples(index=False):
+            ts_1m = sub.Date if isinstance(sub.Date, pd.Timestamp) else pd.Timestamp(sub.Date)
+            h_1m = float(sub.High)
+            l_1m = float(sub.Low)
+            c_1m = float(sub.Close)
+
+            # ---- 1-min HARD SL ----
+            if position.direction == 'long':
+                if c_1m <= sl_hard_line:
+                    return {
+                        'exit_reason': 'STOP LOSS (HARD)',
+                        'exit_price': sl_hard_line,
+                        'exit_close': c_1m,
+                        'exit_time': ts_1m.isoformat(),
+                    }
+            else:
+                if c_1m >= sl_hard_line:
+                    return {
+                        'exit_reason': 'STOP LOSS (HARD)',
+                        'exit_price': sl_hard_line,
+                        'exit_close': c_1m,
+                        'exit_time': ts_1m.isoformat(),
+                    }
+
+            # ---- 1-min TP target (intra-bar high/low touches the line) ----
+            if position.direction == 'long':
+                if h_1m >= tp_target_line:
+                    return {
+                        'exit_reason': 'TAKE PROFIT',
+                        'exit_price': tp_target_line,
+                        'exit_close': c_1m,
+                        'exit_time': ts_1m.isoformat(),
+                    }
+            else:
+                if l_1m <= tp_target_line:
+                    return {
+                        'exit_reason': 'TAKE PROFIT',
+                        'exit_price': tp_target_line,
+                        'exit_close': c_1m,
+                        'exit_time': ts_1m.isoformat(),
+                    }
+
+            # ---- 2-min aggregator ----
+            window_start = ts_1m.floor('2min')
+            if position.cur_2m_start != window_start:
+                position.cur_2m_start = window_start
+                position.cur_2m_high = h_1m
+                position.cur_2m_low = l_1m
+            else:
+                position.cur_2m_high = max(position.cur_2m_high, h_1m)
+                position.cur_2m_low  = min(position.cur_2m_low,  l_1m)
+
+            # 2-min window completes when the SECOND minute lands. ts_1m's
+            # minute relative to window_start: 0 = first minute, 1 = second.
+            is_window_end = ((ts_1m - window_start) == pd.Timedelta('1min'))
+
+            if is_window_end:
+                c_2m = c_1m   # close of the 2nd minute = close of the 2-min window
+
+                # ---- 2-min watch arming (one-way) ----
+                if not position.watch_armed:
+                    if position.direction == 'long' and c_2m >= avg + watch_arm_threshold:
+                        position.watch_armed = True
+                    elif position.direction == 'short' and c_2m <= avg - watch_arm_threshold:
+                        position.watch_armed = True
+
+                # ---- 2-min SOFT SL ----
+                if position.direction == 'long':
+                    if c_2m <= sl_soft_line:
+                        return {
+                            'exit_reason': 'STOP LOSS (SOFT)',
+                            'exit_price': c_2m,
+                            'exit_close': c_2m,
+                            'exit_time': ts_1m.isoformat(),
+                        }
+                else:
+                    if c_2m >= sl_soft_line:
+                        return {
+                            'exit_reason': 'STOP LOSS (SOFT)',
+                            'exit_price': c_2m,
+                            'exit_close': c_2m,
+                            'exit_time': ts_1m.isoformat(),
+                        }
+
+                # ---- 2-min TRAIL (only after arm) ----
+                if position.watch_armed:
+                    if position.direction == 'long' and c_2m < tp_watch_line:
+                        return {
+                            'exit_reason': 'TAKE PROFIT (TRAIL)',
+                            'exit_price': c_2m,
+                            'exit_close': c_2m,
+                            'exit_time': ts_1m.isoformat(),
+                        }
+                    if position.direction == 'short' and c_2m > tp_watch_line:
+                        return {
+                            'exit_reason': 'TAKE PROFIT (TRAIL)',
+                            'exit_price': c_2m,
+                            'exit_close': c_2m,
+                            'exit_time': ts_1m.isoformat(),
+                        }
+
+        return None
 
     def _build_trade(
         self,
@@ -450,6 +643,10 @@ class ScalingStrategy:
             'profit_points': profit_points,
             'profit_dollars': profit_dollars,
             'exit_reason': exit_event['exit_reason'],
+            # Sub-bar timestamp ISO string when the dual-timeframe engine
+            # fired the exit; absent (None) in 4h-only legacy mode (the
+            # frontend falls back to the 4h bar's timestamp via exit_idx).
+            'exit_time': exit_event.get('exit_time'),
             'legs': [
                 {'contracts': leg.contracts, 'price': leg.price, 'candle_idx': leg.candle_idx}
                 for leg in position.legs

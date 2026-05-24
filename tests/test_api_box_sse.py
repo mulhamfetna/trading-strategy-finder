@@ -35,6 +35,26 @@ def _write_synth_4h_csv(path, n_rows=100):
     df.to_csv(path, index=False)
 
 
+def _write_synth_1min_csv(path, n_4h_rows=100):
+    """Companion 1-min CSV covering the same wall-clock span as the 4h frame.
+    Each 4h bar contains 240 1-min bars with a steady drift matching the 4h
+    close (no intra-bar spikes — simplest fixture that drives the dual-timeframe
+    engine without surprising trade outcomes)."""
+    total_min = n_4h_rows * 240
+    timestamps = pd.date_range(start='2025-01-01 00:00:00', periods=total_min, freq='1min')
+    # Same drift as 4h: +5 per 4h-bar, distributed evenly across the 240 minutes.
+    closes = [20010.0 + (i // 240) * 5 + (i % 240) * (5 / 240) for i in range(total_min)]
+    df = pd.DataFrame({
+        'datetime': timestamps.strftime('%Y-%m-%d %H:%M:%S'),
+        'open':   closes,
+        'high':   [c + 1 for c in closes],
+        'low':    [c - 1 for c in closes],
+        'close':  closes,
+        'volume': [100] * total_min,
+    })
+    df.to_csv(path, index=False)
+
+
 _W_COLS = [f'W{s}' for s in ['THU','THD','TH1','TH2','RHU','RHD','IHU','IHD','ILU','ILD','RLU','RLD','TLU','TLD','TL1','TL2']]
 _M_COLS = [f'M{s}' for s in ['THU','THD','TH1','TH2','RHU','RHD','IHU','IHD','ILU','ILD','RLU','RLD','TLU','TLD','TL1','TL2']]
 
@@ -74,11 +94,12 @@ def _parse_sse_events(text: str):
     return events
 
 
-def _body(*, data_path: str, box: str, **param_overrides):
+def _body(*, data_path: str, data_path_1min: str, box: str, **param_overrides):
     """Build a complete /api/backtest/box request body."""
     return {
         'params': box_params_dict(**param_overrides),
         'data_path': data_path,
+        'data_path_1min': data_path_1min,
         'box_data_path': box,
         'start': None,
         'end': None,
@@ -87,14 +108,16 @@ def _body(*, data_path: str, box: str, **param_overrides):
 
 def test_box_backtest_streams_progress_and_complete_events(tmp_path):
     csv = tmp_path / 'synth_4h.csv'
+    csv_1m = tmp_path / 'synth_1m.csv'
     _write_synth_4h_csv(csv, n_rows=120)
+    _write_synth_1min_csv(csv_1m, n_4h_rows=120)
     box_csv = tmp_path / 'box.csv'
     # 120 bars × 4h starting 2025-01-01 spans ≈20 days; cover up to 2025-01-25.
     _write_unified_csv(str(box_csv), '2025-01-01', '2025-01-25')
 
     resp = client.post(
         '/api/backtest/box',
-        json=_body(data_path=str(csv), box=str(box_csv)),
+        json=_body(data_path=str(csv), data_path_1min=str(csv_1m), box=str(box_csv)),
     )
     assert resp.status_code == 200, resp.text
     assert resp.headers['content-type'].startswith('text/event-stream')
@@ -119,7 +142,9 @@ def test_box_backtest_streams_progress_and_complete_events(tmp_path):
 
 def test_box_backtest_accepts_custom_params(tmp_path):
     csv = tmp_path / 'synth_4h.csv'
+    csv_1m = tmp_path / 'synth_1m.csv'
     _write_synth_4h_csv(csv, n_rows=80)
+    _write_synth_1min_csv(csv_1m, n_4h_rows=80)
     box_csv = tmp_path / 'box.csv'
     _write_unified_csv(str(box_csv), '2025-01-01', '2025-01-15')
 
@@ -127,6 +152,7 @@ def test_box_backtest_accepts_custom_params(tmp_path):
         '/api/backtest/box',
         json=_body(
             data_path=str(csv),
+            data_path_1min=str(csv_1m),
             box=str(box_csv),
             tp_target_points=50.0,
             sl_soft_points=25.0,
@@ -140,11 +166,14 @@ def test_box_backtest_accepts_custom_params(tmp_path):
 def test_box_backtest_missing_data_path_returns_error_event(tmp_path):
     box_csv = tmp_path / 'box.csv'
     _write_unified_csv(str(box_csv), '2025-01-01', '2025-01-15')
+    csv_1m = tmp_path / 'synth_1m.csv'
+    _write_synth_1min_csv(csv_1m, n_4h_rows=80)
 
     resp = client.post(
         '/api/backtest/box',
         json=_body(
             data_path='/tmp/opencode/does-not-exist.csv',
+            data_path_1min=str(csv_1m),
             box=str(box_csv),
         ),
     )
@@ -161,12 +190,15 @@ def test_box_backtest_missing_data_path_returns_error_event(tmp_path):
 
 def test_box_backtest_missing_box_file_returns_error_event(tmp_path):
     csv = tmp_path / 'synth_4h.csv'
+    csv_1m = tmp_path / 'synth_1m.csv'
     _write_synth_4h_csv(csv, n_rows=80)
+    _write_synth_1min_csv(csv_1m, n_4h_rows=80)
 
     resp = client.post(
         '/api/backtest/box',
         json=_body(
             data_path=str(csv),
+            data_path_1min=str(csv_1m),
             box='/tmp/opencode/no-box.csv',
         ),
     )

@@ -148,6 +148,8 @@ class BoxBacktestRequest(BaseModel):
     """Master-strategy backtest request. Every field required."""
     params: BoxParamsModel
     data_path: str
+    data_path_1min: str         # 1-min OHLCV — required for dual-timeframe SL/TP
+                                # (HARD SL & TP target on 1-min, SOFT SL & trail on 2-min)
     box_data_path: str          # unified CSV containing all W* and M* box levels
     # Date range is optional in semantics (None = whole CSV) but the
     # field is REQUIRED — caller must send `null` explicitly.
