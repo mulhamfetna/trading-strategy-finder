@@ -40,8 +40,11 @@ def load_data(filepath: str) -> pd.DataFrame:
                 col_mapping[col] = 'IncVol'
         if col_mapping:
             df = df.rename(columns=col_mapping)
-        # If we created a 'Date' from 'datetime', parse to real timestamps.
-        if 'Date' in df.columns and df['Date'].dtype == object:
+        # Parse the Date column to real timestamps so downstream code can do
+        # date arithmetic (e.g. walk_forward.split_folds). pandas 3.0
+        # returns `str` dtype where pandas 2.x returned `object`, so check
+        # both rather than gating on `== object`.
+        if 'Date' in df.columns and not pd.api.types.is_datetime64_any_dtype(df['Date']):
             try:
                 df['Date'] = pd.to_datetime(df['Date'])
             except Exception:

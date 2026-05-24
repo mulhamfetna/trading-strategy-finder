@@ -29,12 +29,18 @@ from src.api.schemas import (
     CandlesRange,
     CandlesResponse,
     Metrics,
+    OptimizeRequest,
+    StudiesListResponse,
+    StudySummary,
 )
 from src.exceptions import ConfigurationError, MissingDataFileError
 from src.data.loader import load_data
 from src.data.splitter import filter_by_date_range
 from src.strategy.box_lookup import BoxLookup
 from src.strategy.box_strategy import BoxStrategy, BoxStrategyParams
+from src.optimization.persistence import list_studies as _list_studies_impl, load_study
+from src.optimization.sse_bridge import StudyEventBridge, make_worker
+from src.optimization.study import run_study
 
 
 app = FastAPI(
@@ -569,4 +575,108 @@ def post_box_backtest(req: BoxBacktestRequest):
             'Cache-Control': 'no-cache',
             'X-Accel-Buffering': 'no',
         },
+    )
+
+
+# ---- /api/optimize/box (NSGA-II multi-objective optimisation, SSE-streamed) ----
+
+import uuid
+
+
+def _optuna_db_path() -> str:
+    """Where the SQLite store lives. Env-overridable for tests."""
+    return os.environ.get('OPTUNA_DB_PATH', os.path.join(os.getcwd(), 'optuna_studies.db'))
+
+
+# Active studies (study_id → bridge) for stop/abrupt control.
+_ACTIVE_STUDIES: Dict[str, StudyEventBridge] = {}
+
+
+def _opt_event_stream(req: OptimizeRequest, study_name: str, resume: bool) -> Iterator[str]:
+    """SSE stream that drives an Optuna study and yields formatted SSE frames."""
+
+    if not os.path.exists(req.data_path):
+        yield _sse_format('error', MissingDataFileError(
+            req.data_path, role='4h-candles'
+        ).to_payload())
+        return
+
+    try:
+        df = load_data(req.data_path)
+    except ConfigurationError as exc:
+        yield _sse_format('error', exc.to_payload())
+        return
+    except Exception as exc:  # noqa: BLE001
+        yield _sse_format('error', {
+            'code': 'data-load-failed',
+            'message': f'failed to load {req.data_path}: {exc}',
+            'system_status': {'data_path': req.data_path, 'exception_type': type(exc).__name__},
+        })
+        return
+
+    try:
+        box_lookup = BoxLookup(
+            unified_path=req.box_data_path,
+            tick_threshold=req.baseline_params.box_tick_threshold,
+        )
+    except ConfigurationError as exc:
+        yield _sse_format('error', exc.to_payload())
+        return
+    except Exception as exc:  # noqa: BLE001
+        yield _sse_format('error', {
+            'code': 'box-data-load-failed',
+            'message': f'failed to load box data: {exc}',
+            'system_status': {
+                'box_data_path': req.box_data_path,
+                'exception_type': type(exc).__name__,
+            },
+        })
+        return
+
+    bridge = StudyEventBridge(maxsize=512)
+    _ACTIVE_STUDIES[study_name] = bridge
+
+    baseline = BoxStrategyParams(
+        **req.baseline_params.model_dump(),
+        box_data_path=req.box_data_path,
+    )
+
+    def target():
+        run_study(
+            study_name=study_name,
+            baseline_params=baseline,
+            box_lookup=box_lookup,
+            df=df,
+            search_space={
+                'sl_soft_points': tuple(req.search_space.sl_soft_points),
+                'sl_hard_delta':  tuple(req.search_space.sl_hard_delta),
+                'tp_target_points': tuple(req.search_space.tp_target_points),
+            },
+            population_size=req.budget.population_size,
+            generations=req.budget.generations,
+            fold_count=req.folds.count,
+            min_trades_per_fold=req.folds.min_trades_per_fold,
+            db_path=_optuna_db_path(),
+            on_event=bridge.on_event,
+            should_stop=bridge.should_stop,
+            resume=resume,
+            max_duration_s=req.max_duration_s,
+        )
+
+    worker = make_worker(target, bridge)
+    worker.start()
+    try:
+        for event_type, payload in bridge.drain():
+            yield _sse_format(event_type, payload)
+    finally:
+        _ACTIVE_STUDIES.pop(study_name, None)
+
+
+@app.post("/api/optimize/box")
+def optimize_box(req: OptimizeRequest):
+    """Kick off a fresh NSGA-II study. Returns an SSE stream."""
+    study_name = str(uuid.uuid4())
+    return StreamingResponse(
+        _opt_event_stream(req, study_name=study_name, resume=False),
+        media_type='text/event-stream',
     )
