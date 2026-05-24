@@ -63,7 +63,7 @@ export interface ScalingParams {
   sl_soft_points: number;
   sl_hard_points: number;
   soft_sl_confirmation_timeframe_minutes: number;
-  hard_sl_confirmation_timeframe_seconds: number;
+  hard_sl_confirmation_timeframe_minutes: number;
 
   // §5 Take profit
   tp_target_points: number;
@@ -179,7 +179,7 @@ export const DEFAULT_SCALING_PARAMS: ScalingParams = {
   sl_soft_points: 200,
   sl_hard_points: 300,
   soft_sl_confirmation_timeframe_minutes: 2,
-  hard_sl_confirmation_timeframe_seconds: 5,
+  hard_sl_confirmation_timeframe_minutes: 1,
   // §5
   tp_target_points: 150,
   tp_watch_threshold_points: 50,

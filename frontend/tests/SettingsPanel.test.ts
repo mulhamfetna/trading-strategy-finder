@@ -51,14 +51,27 @@ describe('SettingsPanel', () => {
     expect(settings.params.total_contracts).toBe(4);
   });
 
-  it('shows SL order error when hard SL < soft SL', async () => {
+  it('shows SL points-order error when hard SL <= soft SL', async () => {
     const w = mount(SettingsPanel);
     const settings = useSettingsStore();
     settings.params.sl_soft_points = 300;
     settings.params.sl_hard_points = 150;
     await w.vm.$nextTick();
     expect(w.find('[data-testid="sl-order-error"]').exists()).toBe(true);
-    expect(w.text()).toContain('Hard SL must be at least');
+    expect(w.text()).toContain('Hard SL points must be strictly greater than Soft SL points');
+  });
+
+  it('shows SL timeframe-order error when soft TF <= hard TF', async () => {
+    const w = mount(SettingsPanel);
+    const settings = useSettingsStore();
+    // Valid points pair so only the TF error fires.
+    settings.params.sl_soft_points = 200;
+    settings.params.sl_hard_points = 300;
+    settings.params.soft_sl_confirmation_timeframe_minutes = 1;
+    settings.params.hard_sl_confirmation_timeframe_minutes = 2;
+    await w.vm.$nextTick();
+    expect(w.find('[data-testid="sl-order-error"]').exists()).toBe(true);
+    expect(w.text()).toContain('Soft SL timeframe (min) must be strictly greater than Hard SL timeframe');
   });
 
   it('shows leg-pullback order error when leg3 <= leg2', async () => {

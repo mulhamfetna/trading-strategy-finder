@@ -269,9 +269,9 @@ Every numeric/boolean decision in this guide is a field on `ScalingParams` (Pyth
 | §3 | `entry1_confirmation_candles` | 3 | int ≥ 1 | Entry trigger |
 | §3 | `entry23_confirmation_candles` | 1 | int ≥ 1 | Entry trigger |
 | §4 | `sl_soft_points` | 200.0 | float ≥ 0.25 | Stop loss |
-| §4 | `sl_hard_points` | 300.0 | float ≥ `sl_soft_points` | Stop loss |
-| §4 | `soft_sl_confirmation_timeframe_minutes` | 2 | int ≥ 1 (4h-only collapses to candle close) | Stop loss |
-| §4 | `hard_sl_confirmation_timeframe_seconds` | 5 | int ≥ 1 (same) | Stop loss |
+| §4 | `sl_hard_points` | 300.0 | float > `sl_soft_points` (strict; validated at API + UI) | Stop loss |
+| §4 | `soft_sl_confirmation_timeframe_minutes` | 2 | int ≥ 1, **must be > `hard_sl_confirmation_timeframe_minutes`** (4h-only collapses to candle close) | Stop loss |
+| §4 | `hard_sl_confirmation_timeframe_minutes` | 1 | int ≥ 1 (renamed from `_seconds` on 2026-05-24 per user spec) | Stop loss |
 | §5 | `tp_target_points` | 150.0 | float ≥ 0.25 | Take profit |
 | §5 | `tp_watch_threshold_points` | 50.0 | float ≥ 0.25 | Take profit |
 | §5 | `tp_confirmation_timeframe_minutes` | 2 | int ≥ 1 | Take profit |

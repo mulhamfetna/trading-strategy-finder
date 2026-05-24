@@ -41,8 +41,12 @@ def january_trades():
     """The 7 trades the engine produces on 2025-01-01..2025-01-31 with the
     blueprint A.3 parameters."""
     params = box_params_dict()
-    params['sl_hard_points']   = 15.0     # blueprint A.3
-    params['sl_soft_points']   = 200.0
+    # Blueprint A.3: validator-compliant pair (sl_hard > sl_soft) that
+    # reproduces the user's January 2025 trades. None of those trades hit
+    # SOFT SL anyway (all are HARD / TP / TRAIL), so the exact sl_soft value
+    # only matters for the validator check, not for the engine output.
+    params['sl_soft_points']   = 10.0
+    params['sl_hard_points']   = 15.0
     params['tp_target_points'] = 150.25
     params['box_data_path']    = _BOX_CSV
 

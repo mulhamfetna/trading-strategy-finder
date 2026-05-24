@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 # ---- /api/candles ----
@@ -98,7 +98,7 @@ class ScalingParamsModel(BaseModel):
     sl_soft_points: float
     sl_hard_points: float
     soft_sl_confirmation_timeframe_minutes: int
-    hard_sl_confirmation_timeframe_seconds: int
+    hard_sl_confirmation_timeframe_minutes: int
 
     # §5 Take profit
     tp_target_points: float
@@ -111,6 +111,28 @@ class ScalingParamsModel(BaseModel):
 
     # Instrument constants
     point_value: float
+
+    @model_validator(mode='after')
+    def _sl_ordering(self):
+        """Dashboard ordering invariants (user rule 2026-05-24, MASTER_STRATEGY_GUIDE §4).
+
+        - sl_hard_points > sl_soft_points:                hard is farther out (disaster stop).
+        - soft_sl_confirmation_timeframe_minutes >
+          hard_sl_confirmation_timeframe_minutes:        soft confirms slower than hard.
+        """
+        if self.sl_hard_points <= self.sl_soft_points:
+            raise ValueError(
+                f'sl_hard_points ({self.sl_hard_points}) must be > sl_soft_points '
+                f'({self.sl_soft_points}) — hard SL is the disaster stop, farther out.'
+            )
+        if self.soft_sl_confirmation_timeframe_minutes <= self.hard_sl_confirmation_timeframe_minutes:
+            raise ValueError(
+                f'soft_sl_confirmation_timeframe_minutes '
+                f'({self.soft_sl_confirmation_timeframe_minutes}) must be > '
+                f'hard_sl_confirmation_timeframe_minutes '
+                f'({self.hard_sl_confirmation_timeframe_minutes}) — soft confirms slower.'
+            )
+        return self
 
 
 class BoxParamsModel(ScalingParamsModel):

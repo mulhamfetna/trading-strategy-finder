@@ -38,7 +38,7 @@ PLAYBOOK_SCALING_DEFAULTS: Dict[str, Any] = {
     'sl_soft_points': 200.0,
     'sl_hard_points': 300.0,
     'soft_sl_confirmation_timeframe_minutes': 2,
-    'hard_sl_confirmation_timeframe_seconds': 5,
+    'hard_sl_confirmation_timeframe_minutes': 1,
     # §5
     'tp_target_points': 150.0,
     'tp_watch_threshold_points': 50.0,

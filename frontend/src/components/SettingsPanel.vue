@@ -75,7 +75,7 @@
         <NumField label="Soft SL (pts from avg)" v-model.number="settings.params.sl_soft_points" :min="0.25" :step="10" />
         <NumField label="Hard SL (pts from avg)" v-model.number="settings.params.sl_hard_points" :min="0.25" :step="10" />
         <NumField label="Soft SL confirmation (min)" v-model.number="settings.params.soft_sl_confirmation_timeframe_minutes" :min="1" />
-        <NumField label="Hard SL confirmation (sec)" v-model.number="settings.params.hard_sl_confirmation_timeframe_seconds" :min="1" />
+        <NumField label="Hard SL confirmation (min)" v-model.number="settings.params.hard_sl_confirmation_timeframe_minutes" :min="1" />
       </div>
       <p v-if="errors.slOrder" class="mt-1 text-[11px] text-tv-red" data-testid="sl-order-error">
         {{ errors.slOrder }}
@@ -168,12 +168,19 @@ import NumField from './NumField.vue';
 const settings = useSettingsStore();
 
 const errors = computed(() => {
+  // Dashboard invariants — match the backend's BoxParamsModel._sl_ordering
+  // Pydantic validator. If either rule fails here, the backend would also
+  // 422 the request — surface the issue inline before submit.
   const p = settings.params;
+  const slPtsBad   = p.sl_hard_points <= p.sl_soft_points;
+  const slTfBad    = p.soft_sl_confirmation_timeframe_minutes
+                   <= p.hard_sl_confirmation_timeframe_minutes;
+  const slMessages = [
+    slPtsBad ? 'Hard SL points must be strictly greater than Soft SL points.' : '',
+    slTfBad  ? 'Soft SL timeframe (min) must be strictly greater than Hard SL timeframe (min).' : '',
+  ].filter(Boolean);
   return {
-    slOrder:
-      p.sl_hard_points < p.sl_soft_points
-        ? 'Hard SL must be at least as far as Soft SL.'
-        : '',
+    slOrder: slMessages.join(' '),
     legOrder:
       p.leg3_pullback_points <= p.leg2_pullback_points
         ? 'Leg 3 pullback must be deeper than Leg 2 pullback.'

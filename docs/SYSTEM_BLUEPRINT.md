@@ -117,15 +117,19 @@ entry_confirmation_timeframe_seconds:   15
 entry1_confirmation_candles:    3
 entry23_confirmation_candles:   1
 
-# Section §4 (stop-loss) — user's tight setting
-# Dashboard invariants (user rule 2026-05-24): sl_hard_points > sl_soft_points
-# (hard farther out); soft_timeframe > hard_timeframe (soft confirms slower).
-sl_soft_points:                 200.0
-sl_hard_points:                 15.0      # user's run; master-guide default is 300
+# Section §4 (stop-loss) — user's run, validator-compliant.
+# Dashboard invariants (validated both backend Pydantic + frontend computed,
+# user rule 2026-05-24):
+#   sl_hard_points > sl_soft_points                                  (strict)
+#   soft_sl_confirmation_timeframe_minutes > hard_sl_confirmation_timeframe_minutes (strict)
+# The user's CSV ran with sl_hard_points=15 (back-derived from a -15 pt
+# loss). For the Part C examples, sl_soft is set to 10 so the pair passes
+# the new validator — the actual engine output is identical to the user's
+# CSV because none of the January trades exit via SOFT SL.
+sl_soft_points:                 10.0
+sl_hard_points:                 15.0
 soft_sl_confirmation_timeframe_minutes:  2
-hard_sl_confirmation_timeframe_seconds:  5     # legacy unit; pending rename to *_minutes
-                                               # (target value 1 min) — part of the
-                                               # dual-timeframe SL/TP engine work.
+hard_sl_confirmation_timeframe_minutes:  1     # renamed from `_seconds` on 2026-05-24
 
 # Section §5 (take-profit)
 tp_target_points:               150.25

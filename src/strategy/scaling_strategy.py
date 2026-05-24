@@ -70,10 +70,14 @@ class ScalingParams:
     entry23_confirmation_candles: int
 
     # §4 Stop loss ----------------------------------------------------------
+    # Dashboard invariants (validated at the API boundary in BoxParamsModel):
+    #   - sl_hard_points  >  sl_soft_points              (hard farther out)
+    #   - soft_sl_confirmation_timeframe_minutes  >
+    #     hard_sl_confirmation_timeframe_minutes         (soft confirms slower)
     sl_soft_points: float
     sl_hard_points: float
     soft_sl_confirmation_timeframe_minutes: int
-    hard_sl_confirmation_timeframe_seconds: int
+    hard_sl_confirmation_timeframe_minutes: int
 
     # §5 Take profit --------------------------------------------------------
     tp_target_points: float
