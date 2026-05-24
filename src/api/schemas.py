@@ -131,3 +131,76 @@ class BoxBacktestRequest(BaseModel):
     # field is REQUIRED — caller must send `null` explicitly.
     start: Optional[str] = Field(...)
     end: Optional[str] = Field(...)
+
+
+# ---- /api/optimize/box (NSGA-II multi-objective optimiser, SSE-streamed) ----
+
+from pydantic import field_validator
+
+
+class OptimizeSearchSpace(BaseModel):
+    """Per-parameter [lower, upper] search bounds.
+
+    `sl_hard_delta` encodes the constraint sl_hard >= sl_soft + 50 structurally —
+    Optuna suggests `sl_hard = sl_soft + delta` where delta lies in this range.
+    """
+    sl_soft_points: List[float] = Field(..., min_length=2, max_length=2)
+    sl_hard_delta:  List[float] = Field(..., min_length=2, max_length=2)
+    tp_target_points: List[float] = Field(..., min_length=2, max_length=2)
+
+    @field_validator('sl_soft_points', 'sl_hard_delta', 'tp_target_points')
+    @classmethod
+    def _bounds_ordered(cls, v: List[float]) -> List[float]:
+        if v[0] >= v[1]:
+            raise ValueError(f'lower must be strictly less than upper, got {v}')
+        return v
+
+
+class OptimizeBudget(BaseModel):
+    population_size: int = Field(..., gt=0, description="NSGA-II population per generation.")
+    generations:     int = Field(..., gt=0, description="Number of generations.")
+
+
+class OptimizeFoldsConfig(BaseModel):
+    count: int = Field(..., ge=2, description="Walk-forward fold count.")
+    min_trades_per_fold: int = Field(..., ge=1, description="Floor below which a fold prunes the trial.")
+
+
+class OptimizeRequest(BaseModel):
+    """Request body for POST /api/optimize/box. Every field required."""
+    baseline_params: BoxParamsModel
+    search_space:    OptimizeSearchSpace
+    budget:          OptimizeBudget
+    folds:           OptimizeFoldsConfig
+    data_path:       str
+    box_data_path:   str            # unified CSV containing all W* / M* levels
+    max_duration_s:  int = Field(..., gt=0)
+
+
+class TrialResult(BaseModel):
+    """Payload of `event: trial` (and of pareto-front entries)."""
+    trial_number: int
+    params:       dict
+    values:       List[float] = Field(..., min_length=2, max_length=2)
+    state:        Literal['complete', 'pruned']
+    pruned_reason: Optional[str] = Field(...)
+
+
+class ParetoPoint(BaseModel):
+    trial_number: int
+    params:       dict
+    values:       List[float] = Field(..., min_length=2, max_length=2)
+
+
+class StudySummary(BaseModel):
+    """Payload for GET /api/optimize/studies and `event: study_started`."""
+    study_id:     str
+    trials_done:  int
+    trials_total: int
+    started_at:   str
+    is_complete:  bool
+    pareto_size:  int
+
+
+class StudiesListResponse(BaseModel):
+    studies: List[StudySummary]
