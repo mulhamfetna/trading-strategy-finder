@@ -24,7 +24,13 @@ const mocks = vi.hoisted(() => {
   const createChart = vi.fn(() => ({
     addSeries,
     remove,
-    timeScale: () => ({ fitContent, timeToCoordinate: vi.fn(() => 0) }),
+    subscribeCrosshairMove: vi.fn(),
+    timeScale: () => ({
+      fitContent,
+      timeToCoordinate: vi.fn(() => 0),
+      getVisibleLogicalRange: vi.fn(() => null),
+      setVisibleLogicalRange: vi.fn(),
+    }),
   }));
   return { setData, setMarkers, remove, fitContent, addSeries, createSeriesMarkers, createChart, createPriceLine, attachPrimitive, applyOptions };
 });

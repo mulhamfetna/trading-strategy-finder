@@ -10,6 +10,24 @@
     }"
   >
     <div ref="containerRef" class="chart-container" />
+    <div v-if="hoveredCandle" class="chart-tooltip" data-testid="candle-tooltip">
+      <div class="ct-time">
+        <span class="ct-date">{{ hoveredCandle.t.split('T')[0] }}</span>
+        {{ ' ' }}
+        <span class="ct-hr">{{ hoveredCandle.t.split('T')[1]?.substring(0, 5) }}</span>
+      </div>
+      <div class="ct-row">
+        <span class="ct-lbl">O</span>{{ hoveredCandle.o.toLocaleString() }}
+        <span class="ct-lbl">H</span><span class="ct-bull">{{ hoveredCandle.h.toLocaleString() }}</span>
+      </div>
+      <div class="ct-row">
+        <span class="ct-lbl">L</span><span class="ct-bear">{{ hoveredCandle.l.toLocaleString() }}</span>
+        <span class="ct-lbl">C</span>{{ hoveredCandle.c.toLocaleString() }}
+      </div>
+      <div class="ct-row">
+        <span class="ct-lbl">V</span>{{ hoveredCandle.v.toLocaleString() }}
+      </div>
+    </div>
     <div v-if="!candles.length" class="chart-empty">
       No candles loaded yet.
     </div>
@@ -38,6 +56,7 @@ import {
   type ISeriesMarkersPluginApi,
   type LineData,
   type HistogramData,
+  type MouseEventParams,
   type SeriesMarker,
   type Time,
 } from 'lightweight-charts';
@@ -67,6 +86,7 @@ const settings = useSettingsStore();
 const replay = useReplayStore();
 
 const containerRef = ref<HTMLDivElement | null>(null);
+const hoveredCandle = ref<Candle | null>(null);
 
 // QC-CP-4: explain to the user when an EMA goes blank because there
 // aren't enough candles loaded for its warmup period.
@@ -315,6 +335,16 @@ function initChart() {
     });
   }
 
+  chart.subscribeCrosshairMove((param: MouseEventParams<Time>) => {
+    if (!param.time || !candles.value.length) {
+      hoveredCandle.value = null;
+      return;
+    }
+    const ts = param.time as number;
+    hoveredCandle.value =
+      candles.value.find((c) => (toUTCTimestamp(c.t) as number) === ts) ?? null;
+  });
+
   applyData();
 }
 
@@ -346,6 +376,7 @@ watch(() => replay.currentIdx, applyData);
 watch(() => replay.isActive, applyData);
 
 onBeforeUnmount(() => {
+  hoveredCandle.value = null;
   markersApi = null;
   boxesPrimitive = null;
   chart?.remove();
@@ -386,6 +417,30 @@ onBeforeUnmount(() => {
   font-size: 12px;
   pointer-events: none;
 }
+
+.chart-tooltip {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(30, 34, 45, 0.92);
+  border: 1px solid #2a2e39;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-family: monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  pointer-events: none;
+  z-index: 10;
+  color: #d1d4dc;
+  min-width: 140px;
+}
+.ct-time  { margin-bottom: 2px; }
+.ct-date  { color: #787b86; }
+.ct-hr    { color: #c3c3c3; }
+.ct-lbl   { color: #787b86; margin-right: 4px; }
+.ct-bull  { color: #26a69a; }
+.ct-bear  { color: #ef5350; }
+.ct-row   { display: flex; gap: 10px; }
 
 .chart-warning {
   position: absolute;
