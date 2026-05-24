@@ -60,3 +60,7 @@ tests/__pycache__/
 
 # Generated output directory (iter 3 of finish-todo plan)
 output/
+
+# Optuna persistence
+optuna_studies.db
+optuna_studies.db-journal
