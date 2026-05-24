@@ -283,11 +283,16 @@ Every numeric/boolean decision in this guide is a field on `ScalingParams` (Pyth
 | Field | Default | Notes | UI section |
 |---|---|---|---|
 | `box_tick_threshold` | 0.75 (= 3 NQ ticks × 0.25) | Noise filter: required margin past the edge | Box-rule decisions |
-| `weekly_window_days` | 7 | How many days a weekly box covers | Box-rule decisions |
-| `monthly_window_days` | 30 | How many days a monthly box covers | Box-rule decisions |
 | `big_candle_resolution` | `'big_candle_wins'` | §5 conflict policy: `big_candle_wins` \| `box_wins` \| `skip` | Box-rule decisions |
-| `week_data_path` | `NQ_week_data_shifted.csv` | File path | Data |
-| `month_data_path` | `NQ_month_data_shifted.csv` | File path | Data |
+| `box_data_path` | `NQ_full_data.csv` | Unified W+M box CSV (v4 format) — replaces the deprecated week/month split | Data |
+
+**API-level data paths** (carried on `BoxBacktestRequest`, not on `BoxStrategyParams`):
+
+| Field | Default | Notes |
+|---|---|---|
+| `data_path` | `NQ_4h.csv` | 4h OHLCV — entry signal timeframe |
+| `data_path_1min` | `NQ_1m.csv` | 1-min OHLCV — SL/TP exit timeframe (required since 2026-05-24) |
+| `box_data_path` | `NQ_full_data.csv` | Unified box CSV |
 
 ---
 
@@ -298,8 +303,8 @@ Every numeric/boolean decision in this guide is a field on `ScalingParams` (Pyth
 | File | Purpose | Format |
 |---|---|---|
 | `NQ_4h.csv` | Primary signal data, ascending | single `datetime` column + Open/High/Low/Close/Volume |
-| `NQ_week_data_shifted.csv` | Weekly box edges (preprocessed) | `Date` + level columns |
-| `NQ_month_data_shifted.csv` | Monthly box edges (preprocessed) | `Date` + level columns |
+| `NQ_1m.csv` | 1-min OHLCV for sub-bar SL/TP timing | same column shape as `NQ_4h.csv` |
+| `NQ_full_data.csv` | Unified weekly + monthly box edges (v4 schema) | `Date` + 48 level columns (W*/M*/D*) — see `docs/Data_Shape_To_Do.md` |
 
 ### 7.2 PnL formula
 
@@ -313,22 +318,49 @@ Fees and slippage are not modelled (no `total_fees` deduction in `_box_metrics`)
 
 ```json
 {
-  "entry_idx": <bar index of the signal candle>,
-  "exit_idx":  <bar index of the exit candle>,
+  "entry_idx": <4h-bar index of the signal candle>,
+  "exit_idx":  <4h-bar index containing the exit>,
   "direction": "long" | "short",
-  "avg_entry_price": <weighted-average of filled legs>,
-  "exit_price": <SL line, TP line, or trail close>,
-  "contracts": <legs sum or big-candle size>,
-  "profit_points": <signed>,
-  "profit_dollars": <profit_points × contracts × point_value>,
-  "exit_reason": "TAKE PROFIT" | "TAKE PROFIT (TRAIL)" | "STOP LOSS (SOFT)" | "STOP LOSS (HARD)",
-  "legs": [ { "contracts": n, "price": p, "candle_idx": i }, ... ],
-  "exit_time": <ISO string, dual-timeframe only>,
-  "box_signal": { ... }   // present only in Box mode
+
+  // CANDLE-GROUNDED display prices (always in the dataset's OHLC).
+  // Bug fix 2026-05-24; used by TradeList for the Entry/Exit price columns.
+  "entry_signal_price": <legs[0].price = signal-bar close>,
+  "exit_close":         <close of the sub-bar / 4h-bar that confirmed the exit>,
+
+  // ALGORITHM-EFFECTIVE prices used for PnL math (may diverge from above).
+  "avg_entry_price": <weighted average of filled legs>,
+  "exit_price":      <SL/TP line (HARD/TP) | bar close (SOFT/TRAIL)>,
+
+  "contracts":       <legs sum or big-candle size>,
+  "profit_points":   <signed = (exit_price − avg) for long, opposite for short>,
+  "profit_dollars":  <profit_points × contracts × point_value>,
+  "exit_reason":     "TAKE PROFIT" | "TAKE PROFIT (TRAIL)" | "STOP LOSS (SOFT)" | "STOP LOSS (HARD)",
+
+  // Dual-timeframe sub-bar timestamp (ISO). Null in 4h-only legacy mode
+  // (unit tests with synthetic candles). Frontend renders Exit Time from
+  // this when present, else falls back to candleTime(exit_idx).
+  "exit_time": <"2025-01-03T15:47:00"> | null,
+
+  "legs":      [ { "contracts": n, "price": p, "candle_idx": i }, ... ],
+  "box_signal": { "signal": "long"|"short", "weekly_level": str, "weekly_signal": str,
+                  "monthly_level": str|null, "monthly_signal": str,
+                  "weekly_box_start": "YYYY-MM-DD", "monthly_box_start": "YYYY-MM-DD",
+                  "conflict": bool }
 }
 ```
 
-Both modes emit the same fields; `box_signal` is the only optional one (present only when the directional oracle was the BoxLookup).
+**Asymmetric exit-fill semantics** (user rule 2026-05-24, §4):
+
+| Exit reason | `exit_price` | `exit_close` | Equal? |
+|---|---|---|---|
+| `STOP LOSS (HARD)` | `sl_hard_line` (synthetic) | sub-bar / 4h-bar close | usually no |
+| `STOP LOSS (SOFT)` | confirming bar's close | same value | yes |
+| `TAKE PROFIT` (target) | `tp_target_line` (synthetic) | sub-bar / 4h-bar close | usually no |
+| `TAKE PROFIT (TRAIL)` | confirming bar's close | same value | yes |
+
+`box_signal` is present whenever the BoxLookup oracle drove the entry (which is the only production path). The other fields are always emitted.
+
+For the full end-to-end blueprint with real-data worked examples, see `docs/SYSTEM_BLUEPRINT.md`.
 
 ### 7.4 Metrics emitted
 
@@ -342,14 +374,14 @@ The SettingsPanel mirrors this guide's section numbering:
 
 | UI section | Maps to |
 |---|---|
-| Data | `data_path`, `week_data_path`, `month_data_path`, `start`, `end` |
+| Data | `data_path` (4h), `data_path_1min` (1-min for SL/TP), `box_data_path` (unified W+M), `start`, `end` |
 | §1 Entry distribution & sizing (1-1-2) | All §1 + §0 params |
 | §2 Big candle exception (>400 pts) | All §2 params |
-| §3 Entry trigger (15-sec confirmation) | All §3 params |
-| §4 Stop loss (dual SL system) | All §4 params |
+| §3 Entry trigger (15-sec confirmation) | All §3 params (documented; not enforced) |
+| §4 Stop loss (dual SL system) | All §4 params; dashboard enforces `sl_hard_points > sl_soft_points` and `soft_tf > hard_tf` (strict) |
 | §5 Take profit | All §5 params |
 | §5b Re-entry | All §5b params |
-| Box-rule decisions | `box_tick_threshold`, `weekly_window_days`, `monthly_window_days`, `big_candle_resolution` |
+| Box-rule decisions | `box_tick_threshold`, `big_candle_resolution` |
 | Indicators | EMA / RSI / volume display |
 
 The "Reset to playbook defaults" button at the bottom restores every field to the values in this guide.

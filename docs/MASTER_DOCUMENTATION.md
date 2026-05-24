@@ -1,138 +1,124 @@
 # Master Documentation Router
 
-Single landing page for every documentation source in the repo. Updated
-2026-05-22 as part of iter 6 (TODO item 12) of
-`docs/superpowers/specs/2026-05-22-finish-todo-sequencing-design.md`.
+Single landing page for every documentation source in the repo.
 
-> **Trust executable code first.** Where this router links to long-form
-> docs (`COMPLETE-DOCUMENTATION.md`, `PLAYBOOK.md`, `API.md`), check the
-> referenced source files if anything looks off — those long-form docs
-> haven't been kept in lock-step with the iter sequence.
+> **Trust executable code first.** Where this router links to long-form docs, check the referenced source files if anything looks off — the long-form docs aren't always in lock-step with the live engine.
 
-## 1. Start here
+---
+
+## 1. Start here (active references)
 
 | Doc | What it answers |
 |---|---|
-| `AGENTS.md` | How an automated agent should run / extend the repo. Canonical invocation paths, gotchas, branch/worktree layout. |
-| `README.md` | Human entrypoint. Quickstart commands, project structure. |
-| `docs/2026-05-21-todo-status-report.md` | Live status of every TODO item, per-iter completion notes. |
-| `TODO.md` | The user's original task list (preserve typos). |
+| `docs/SYSTEM_BLUEPRINT.md` | **Authoritative end-to-end behaviour reference.** Real-data worked examples + verification protocol. Locked by `tests/test_blueprint_examples.py`. |
+| `docs/MASTER_STRATEGY_GUIDE.md` | Single source of truth for strategy rules: 1-1-2 sizing, dual-SL, dual-TP, dual-timeframe engine, Big-Candle vs Box conflict. |
+| `docs/CODING_RULES.md` | Project-wide engineering rules. The no-fallback rule lives here. |
+| `CLAUDE.md` | Codebase conventions, run commands, critical guardrails for agents working in this repo. |
+| `AGENTS.md` | Agent-facing handoff notes (worktree layout, canonical commands, common pitfalls). |
+| `README.md` | Human entrypoint: quickstart commands, project structure. |
 
-## 2. How it runs (code routing)
+---
 
-### Entry scripts (`src/main/`)
+## 2. Architecture (what the code actually does)
 
-| File | Purpose | Run as |
-|---|---|---|
-| `src/main/main.py` | Multi-strategy comparison (scalping vs day vs intraday). | `python3 -m src.main.main` |
-| `src/main/ultimate_dashboard.py` | 15-min ML-filtered scalping dashboard. Writes HTML + JSON to `output/dashboards/`. | `python3 -m src.main.ultimate_dashboard` |
-| `src/main/fast_optimizer.py` | Parameter sweep over scalping config. Writes `output/configs/best_config.txt`. | `python3 -m src.main.fast_optimizer` |
-| `src/main/live_dashboard.py` | Live simulation with HTML preview. Writes `output/dashboards/{live,equity}_*.html`. | `python3 -m src.main.live_dashboard` |
-| `src/main/run_strategy.py` | **New (iter 5)** — date-range strategy runner. Generalises `filter_2025`. | `python3 -m src.main.run_strategy --data 1min.csv --start 2025-09-01 --end 2025-12-31 --strategy scalping` |
-| `run_dashboard_on_train.py` (root) | Train-split runner for the ultimate dashboard. | `python3 run_dashboard_on_train.py` |
+The system is a single FastAPI + Vue 3 stack.
 
-### Core modules
+### Backend modules
 
 | Module | Role |
 |---|---|
-| `src/data/loader.py` | OHLCV CSV ingestion, column normalisation. |
-| `src/data/splitter.py` | `filter_by_date_range` (iter 5), `filter_2025` (back-compat shim), `split_train_test`. |
-| `src/data/resampler.py` | 1min → 5min / 15min OHLCV resampling. |
-| `src/indicators/{scalping,day_trading,intraday}.py` | RSI / EMA / Volume / MACD / VWAP / Supertrend / ADX / Stochastic. |
-| `src/signals/base_signals.py` | Rule-based signal generation (`-1` short, `0` hold, `1` long). |
-| `src/signals/ml_filter.py` | Random Forest filter; trains on labelled candles, gates rule-based signals. |
-| `src/backtest/engine.py` | Backtest with fees, slippage, **intra-candle TP/SL resolution** (iter 4: `conservative` / `optimistic` / `direction-proxy`). |
-| `src/backtest/metrics.py` | Aggregate metrics (profit, win-rate, Sharpe, drawdown, EV, max losing streak). |
-| `src/dashboard/template_renderer.py` | **New (iter 2)** — pure-function `{{NAME}}` template renderer. |
-| `frontend/` | Vue 3 backtest dashboard (settings, progress, metrics, trades). |
-| `src/dashboard/report.py`, `src/dashboard/visualizer.py` | Console / Plotly summary helpers. |
+| `src/api/app.py` | FastAPI endpoints. `/api/backtest/box` (SSE), `/api/candles`, `/api/health`, `/api/boxes`, `/api/data-files`, `/api/upload-data-file`, plus the `/api/optimize/*` family (NSGA-II in progress). |
+| `src/api/schemas.py` | Pydantic request/response models. `BoxParamsModel` enforces the SL ordering invariants (sl_hard > sl_soft, soft_tf > hard_tf). |
+| `src/data/loader.py` | OHLCV CSV ingestion. Single `datetime` column → `Date` (pd.Timestamp). |
+| `src/data/splitter.py` | `filter_by_date_range` for trimming candle frames. |
+| `src/strategy/scaling_strategy.py` | 1-1-2 execution engine. `_check_exits_subbar` is the dual-timeframe SL/TP walker. |
+| `src/strategy/box_strategy.py` | Production engine. Subclass of `ScalingStrategy` that consults `BoxLookup` for direction. |
+| `src/strategy/box_lookup.py` | Directional oracle. Loads the unified box CSV; emits `'long'` / `'short'` / `'hold'` per 4h candle close. |
+| `src/optimization/*` | NSGA-II multi-objective optimiser (in progress — see Phase H..N of the active plan). |
+| `src/exceptions.py` | `ConfigurationError` / `MissingParameterError` / `MissingDataFileError` for the no-fallback error contract. |
 
-### Templates
+### Frontend modules
 
-| File | Role |
+| Module | Role |
 |---|---|
-| `templates/ultimate_dashboard.html.tpl` | **New (iter 2)** — extracted HTML shell with 19 named slots. Replaces the inline 700-line f-string. |
+| `frontend/src/components/SettingsPanel.vue` | The §1..§5b strategy-parameters form. Computes `errors.slOrder` and `errors.legOrder` live; blocks submit while invalid. |
+| `frontend/src/components/ChartPane.vue` | Lightweight Charts wrapper. Candles + EMA + volume + RSI panes; trade markers anchored to bars. |
+| `frontend/src/components/TradeList.vue` | The trade table. Renders `entry_signal_price` / `exit_close` (candle-grounded) by default; tooltip surfaces `avg_entry_price` / `exit_price` (algorithm-effective). |
+| `frontend/src/stores/{backtest,candles,settings,replay}.ts` | Pinia stores. |
+| `frontend/src/services/{api,sse}.ts` | REST + SSE plumbing. |
+| `frontend/src/types.ts` | TypeScript mirror of `src/api/schemas.py`. |
 
-## 3. Trading concepts (interview prep / academic notes)
+---
 
-All under `docs/Tutorials/`:
+## 3. Data files (gitignored)
 
-| Topic | File |
-|---|---|
-| OHLCV schema | `docs/Tutorials/OHLCV_schema.md` |
-| RSI | `docs/Tutorials/RSI.md` |
-| EMA / SMA | `docs/Tutorials/Moving_Avarage_SMA-EMA.md` |
-| VWAP & MACD | `docs/Tutorials/VWAP_and_MACD.md` |
-| Supertrend, ADX, Stochastic | `docs/Tutorials/Supertrend_ADX_Stochastic.md` |
-| Volume spike + max losing streak | `docs/Tutorials/Volume_Spike_and_Max_Losing_Streak.md` |
-| Random Forest filter | `docs/Tutorials/Random_Forest_Filter.md` |
-| TP / SL / Profit-Loss | `docs/Tutorials/PL_TP_SL.md` |
-| P/L vs EV per trade | `docs/Tutorials/P-L_vs_EV-Trade.md` |
-| Expected value per trade | `docs/Tutorials/Expected_Value_per_Trade-EV-Trade.md` |
-| Sharpe ratio | `docs/Tutorials/Sharpe_Ratio.md` |
-| Max drawdown | `docs/Tutorials/Maximum_Drawdown.md` |
-| Stock vs contract backtest definitions | `docs/Tutorials/Stock_Contract_Backtest_Definition.md` |
-| Parameter rationale | `docs/Tutorials/Parameter_Rationale.md` |
-| Technical spec walkthrough | `docs/Tutorials/Technical_Spec_Walkthrough.md` |
-| Interview playbook | `docs/Tutorials/Interview_Playbook.md` |
-| R | `docs/Tutorials/R.md` |
-| Curated YouTube videos | `docs/Tutorials/Youtube_videos.md` |
+| File | Role | Format |
+|---|---|---|
+| `NQ_4h.csv` | Entry-signal timeframe | `datetime,open,high,low,close,volume` |
+| `NQ_1m.csv` | SL/TP timeframe (1-min hard, 2-min soft) | same shape as `NQ_4h.csv` |
+| `NQ_full_data.csv` | Unified W+M box edges (v4 schema) | `Date,Scraped_At,` + 48 level columns (W*/M*/D*) — see `docs/Data_Shape_To_Do.md` |
 
-## 4. Design specs and plans (active work)
+Legacy `NQ_week_data_shifted.csv` + `NQ_month_data_shifted.csv` have been replaced by the single unified `NQ_full_data.csv` (v4 migration, 2026-05-23).
 
-- `docs/superpowers/specs/2026-05-22-finish-todo-sequencing-design.md` — **active**: the 9-iteration plan currently being executed.
-- `docs/superpowers/specs/2026-05-21-dashboard-template-candlestick-design.md` — completed in iters 1–2.
-- `docs/superpowers/plans/2026-05-21-live-dashboard.md` — completed in the phase3-live-dashboard worktree.
-- `docs/superpowers/plans/2026-05-21-phase1-core-engine-strategy-correctness.md` — superseded; phase1 work integrated piecemeal.
+---
 
-## 5. Revision history & lessons
+## 4. Run commands
 
-- `docs/revisions/REVISION_LOG.md` — mistakes by revision round and fixes applied.
-- `docs/revisions/LESSONS_LEARNED.md` — process / quality lessons.
-- `docs/bug-checklist-revision-history.md` — pre-iter-sequence checklist.
-- `docs/fixes-needed-report-2026-05-21.md` — snapshot list of issues identified pre-iter-1.
-- `docs/ultimate_trading_dashboard_review_v3.md` — original v1.0.0 council review.
-- `docs/reviewer-playbook-segmented.md` — review process notes.
+```bash
+# Python
+pip install -r requirements.txt
+pytest tests/ -v                                                    # full suite (from repo root)
+uvicorn src.api.app:app --reload --host 0.0.0.0 --port 8000         # backend
 
-## 6. Per-file deep docs
+# Frontend (cd frontend)
+npm install
+npm run dev                                                          # :5173, proxies /api/* → :8000
+npm run build                                                        # type-check + Vite build
+npm test                                                             # vitest run
+```
 
-`Project_Documentation/*.doc.md` — one file per source module. Updated
-in iter 6 to reflect the `src/main/` move and current invocation paths.
-These are short skeletons; for deep behavior read the source.
+> **Restart the backend after Python code changes.** `--reload` watches Python files; if you don't see your new fields in the SSE payload, that's the first thing to check.
 
-## 7. Frozen versions
+---
 
-- `docs/V1-FROZEN.md` — v1.0.0 production reference (still tagged `v1.0.0`).
-- Git tag `v1.0-working` — local snapshot of state just before iter 1.
+## 5. Design specs and plans (active work)
 
-## 8. Long-form references (kept but lagging)
+- `docs/superpowers/specs/2026-05-23-nsga2-optimization-design.md` — NSGA-II design.
+- `docs/superpowers/plans/2026-05-23-nsga2-optimization-implementation.md` — 22-task plan.
+- `docs/superpowers/plans/2026-05-23-nsga2-PROGRESS.md` — live execution state (paused at H.1 done; dashboard certification path took priority).
 
-- `docs/COMPLETE-DOCUMENTATION.md` — pre-iter consolidated tech doc.
-- `docs/PLAYBOOK.md` — strategy playbook.
-- `docs/API.md` — function reference (pre-`src/main/` move).
+---
 
-> These three were written before the iter sequence and still describe
-> the older layout in places. Trust the executable code in `src/` when
-> they conflict.
+## 6. Frozen reference (do not edit; consult `MASTER_STRATEGY_GUIDE.md` instead)
 
-## 9. Generated output (gitignored)
+- `Currunt_Strategy_Algo_for_Trading.md` — original 1-1-2 playbook (pre-Box integration).
+- `BOXES_Strategy.md` — raw brainstorming dump of the Box system.
+- `docs/BOX_STRATEGY.md` — structured/confirmed Box spec.
+- `docs/STRATEGY_INTEGRATION_ANALYSIS.md` — deep analysis of how the two playbooks integrate.
+- `docs/V1-FROZEN.md` — v1.0.0 production reference.
+- `notes.md` / `notes2.md` — user's running notes; `notes2.md` lines 95-101 carry the NQ session-cycle rule that pins the box-date mapping.
+- `docs/Data_Shape_To_Do.md` — user's narrative description of the v4 unified box CSV semantics.
 
-Everything generated goes to `output/`:
+The legacy Python pipeline (`src/main/`, `src/indicators/`, `src/dashboard/`, `src/backtest/`, `src/signals/`, plus the standalone `scalping_strategy.py` / `backtester.py`) was erased on 2026-05-23; the `Tutorials/` and `Project_Documentation/` directories under `docs/` document that vanished pipeline and are kept only as historical reading.
 
-- `output/dashboards/ultimate_trading_dashboard.html` + `dashboard_data.json` (test split).
-- `output/dashboards/ultimate_trading_dashboard_train.html` + `dashboard_data_train.json` (train split, via `run_dashboard_on_train.py`).
-- `output/dashboards/live_trading_dashboard.html`, `output/dashboards/equity_curve_dashboard.html` (live simulation).
-- `output/configs/best_config.txt` (from `src/main/fast_optimizer.py`).
+---
 
-`docs/legacy/index.html` is the one HTML file kept in `docs/` — preserved as a historical archive of the v1.0.0 dashboard.
+## 7. Bug tracking and revisions
 
-## 10. Legacy archive
+- `docs/bug-checklist-revision-history.md` — bug bounty knowledge base. Add a row per non-trivial fix.
+- `docs/revisions/REVISION_LOG.md` — round-by-round summary.
+- `docs/revisions/swarm-2026-05-23/` — most recent multi-lens audit + action plan.
+- `docs/revisions/hardcoded-scan-2026-05-23-v3/HARDCODED_VALUES_REPORT_V3.md` — latest hardcoded-values scan output.
 
-`docs/legacy/` holds:
+---
 
-- Old `AGENTS.md`, `copilot-instructions.md`, council reports.
-- Pre-`src/main/` Project_Documentation skeletons (in `docs/legacy/Project_Documentation/`).
-- Original `parameter_optimizer.py` (predecessor to `fast_optimizer.py`).
-- The original v1.0.0 dashboard `docs/legacy/index.html`.
+## 8. Recent material changes (chronological, newest first)
 
-Useful for history; do not treat as current.
+| Date | What | Reference |
+|---|---|---|
+| 2026-05-24 | Dual-timeframe SL/TP engine: 1-min hard SL & TP target, 2-min soft SL & trail. `data_path_1min` required at API. | Blueprint Part G, commits `86fb9d0` `f7ac6e3` `b36aef5` |
+| 2026-05-24 | SL ordering validators (strict `>`) + `hard_sl_confirmation_timeframe_seconds` → `_minutes` rename. | Commit `a83ef21` |
+| 2026-05-24 | Soft SL fills at confirming bar's close (not the line); hard SL keeps line fill. | Commit `6b9ba4d` |
+| 2026-05-24 | Trade dict carries candle-grounded `entry_signal_price` + `exit_close` alongside algorithm-effective fields. | Commit `8cc5afb` |
+| 2026-05-24 | `SYSTEM_BLUEPRINT.md` — end-to-end verification reference. | Commit `c838c27` |
+| 2026-05-23 | v4 unified box CSV (`NQ_full_data.csv`); legacy pipeline erased. | `docs/revisions/DATA_FORMAT_V4_UNIFIED_BOX.md` |

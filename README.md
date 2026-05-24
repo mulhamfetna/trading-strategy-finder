@@ -1,112 +1,67 @@
-# NQ Futures Trading Strategy Finder
+# NQ Master Strategy Dashboard
 
-> **v1.0.0** is frozen (`git tag v1.0.0`). Current development continues on `master`.
-> Active sequencing plan: `docs/superpowers/specs/2026-05-22-finish-todo-sequencing-design.md`.
-> Live status: `docs/2026-05-21-todo-status-report.md`.
+FastAPI + Vue 3 application that backtests the **Master Strategy** — the 1-1-2 Scaling execution framework directed by the TradingView Box oracle — on historical NQ futures data.
 
-A hybrid ML-powered trading algorithm that compares scalping, day trading,
-and intraday strategies on historical NQ Futures data.
+The Master Strategy combines two layers:
+
+- **Directional oracle** — `BoxStrategy` reads the unified weekly+monthly TradingView Box CSV and emits `long` / `short` / `hold` for each 4h candle close.
+- **Execution framework** — `ScalingStrategy` handles 1-1-2 entries, dual stop-loss tiers, dual take-profit tiers, and the trailing-watch logic. Since 2026-05-24 the SL/TP exits run on a 1-min companion frame (HARD/TP-target on 1-min, SOFT/TRAIL on 2-min aggregates).
+
+For the authoritative behaviour reference with real-data worked examples, see **`docs/SYSTEM_BLUEPRINT.md`**. For the strategy spec, see **`docs/MASTER_STRATEGY_GUIDE.md`**.
 
 ## Quick Start
 
 ```bash
-# Install dependencies
+# Backend
 pip install -r requirements.txt
+pytest tests/ -v                                                # all 96+ tests
+uvicorn src.api.app:app --reload --host 0.0.0.0 --port 8000     # serves on :8000
 
-# Restore the CSVs (gitignored, must live at repo root):
-#   1min.csv                  (~135 MB, 1-minute OHLCV)
-#   NQ_15min_processed.csv    (~8 MB,   15-minute OHLCV)
-
-# Multi-strategy comparison
-python3 -m src.main.main
-
-# Generate the 15-min ML-filtered dashboard (writes to output/dashboards/)
-python3 -m src.main.ultimate_dashboard
-
-# Parameter sweep (writes output/configs/best_config.txt)
-python3 -m src.main.fast_optimizer
-
-# Live simulation dashboard
-python3 -m src.main.live_dashboard
-
-# Date-range runner (iter 5, no hardcoded 2025 cap)
-python3 -m src.main.run_strategy \
-    --data 1min.csv \
-    --start 2025-09-01 --end 2025-12-31 \
-    --strategy scalping
-
-# Train-split dashboard variant
-python3 run_dashboard_on_train.py
-
-# Tests
-pytest tests/ -v
+# Frontend
+cd frontend && npm install
+npm run dev                                                     # dev at :5173, proxies /api/*
+npm test                                                        # vitest run
+npm run build                                                   # type-check + production build
 ```
 
-Open the generated HTML:
+Open the dashboard at **`http://localhost:5173`**. Restart `uvicorn` whenever you change Python files (the `--reload` flag picks up most changes; if you don't see a new SSE field in the trade payload, that's the first thing to check).
 
-```bash
-open output/dashboards/ultimate_trading_dashboard.html
-```
+## Required data files (gitignored)
 
-## v1.0.0 Results (Frozen)
+Place these three CSVs at the repo root before running a backtest:
 
-| Metric | Value |
-|--------|-------|
-| Net Profit | $633.65 |
-| Win Rate | 54.5% |
-| Profit Factor | 2.62 |
-| Return | 6.34% |
+| File | Role | Format |
+|---|---|---|
+| `NQ_4h.csv` | Entry-signal timeframe | `datetime,open,high,low,close,volume` |
+| `NQ_1m.csv` | SL/TP timeframe | same column shape as `NQ_4h.csv` |
+| `NQ_full_data.csv` | Unified W+M box edges (v4) | `Date,Scraped_At,` + 48 level columns |
 
-See `docs/V1-FROZEN.md` for the full v1.0.0 spec.
+All three are **required** — the API rejects requests with missing or empty paths under the no-fallback rule (`docs/CODING_RULES.md`).
 
-## Project Structure
+## Project structure
 
 ```
-├── src/
-│   ├── main/                  # Entry scripts (moved here in commit cf904c9)
-│   │   ├── main.py            #   multi-strategy comparison
-│   │   ├── ultimate_dashboard.py
-│   │   ├── fast_optimizer.py
-│   │   ├── live_dashboard.py
-│   │   └── run_strategy.py    #   date-range runner (iter 5)
-│   ├── data/                  # loader, splitter (filter_by_date_range), resampler
-│   ├── indicators/            # scalping / day_trading / intraday indicators
-│   ├── signals/               # rule-based + ML signal generation
-│   ├── backtest/              # engine (intra-candle TP/SL), metrics
-│   └── dashboard/             # template_renderer (FP), dash_app, report, visualizer
-├── templates/                 # ultimate_dashboard.html.tpl - 19 named slots
-├── docs/                      # All documentation. Start at docs/MASTER_DOCUMENTATION.md.
-├── output/                    # Generated artifacts (gitignored)
-│   ├── dashboards/            #   HTML + JSON dashboards
-│   └── configs/               #   best_config.txt from fast_optimizer
-├── tests/                     # pytest
-├── AGENTS.md                  # Instructions for automated agents
-├── 1min.csv                   # gitignored - restore before running
-└── NQ_15min_processed.csv     # gitignored - restore before running
+src/
+  api/             FastAPI app, Pydantic schemas
+  data/            CSV loader + date-range splitter
+  strategy/        BoxStrategy + ScalingStrategy + BoxLookup
+  optimization/    NSGA-II multi-objective optimiser (in progress)
+  exceptions.py    Structured error types (no-fallback rule)
+frontend/src/      Vue 3 + Pinia + Lightweight Charts dashboard
+tests/             pytest (backend + blueprint regression locks)
+docs/              Documentation — start at MASTER_DOCUMENTATION.md
 ```
 
 ## Documentation
 
-Start at **`docs/MASTER_DOCUMENTATION.md`** — it routes to every other doc
-(code, tutorials, design specs, revision logs, generated artifacts).
-
-For agents and contributors: read **`AGENTS.md`** first (run commands,
-data gotchas, conventions, branch/worktree layout).
-
-## Versioning
-
-| Version | Status | Tag |
-|---------|--------|-----|
-| v1.0.0  | **Frozen (Production Ready)** | `v1.0.0` |
-| v1.0-working | Snapshot just before iter 1 | `v1.0-working` |
-| v1.1   | 15min + ML + RSI<25 + SL 0.6% / TP 2.4% | `v1.1` |
-| master | Active development | `HEAD` |
-
-```bash
-git tag -l                    # list tags
-git checkout v1.0.0            # inspect a frozen version
-git diff v1.0.0 master         # see what's changed
-```
+| Doc | Read if you want to… |
+|---|---|
+| `docs/MASTER_DOCUMENTATION.md` | …know which doc to read for what |
+| `docs/SYSTEM_BLUEPRINT.md` | …verify the system on real data, end to end |
+| `docs/MASTER_STRATEGY_GUIDE.md` | …understand every numeric/boolean strategy decision |
+| `docs/CODING_RULES.md` | …know the no-fallback rule + project-wide conventions |
+| `CLAUDE.md` / `AGENTS.md` | …work on this repo as an agent |
+| `docs/bug-checklist-revision-history.md` | …see past bugs + their fixes |
 
 ## License
 

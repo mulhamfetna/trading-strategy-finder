@@ -1,66 +1,107 @@
-# AGENTS.md — Trading Strategy Finder
+# AGENTS.md — NQ Master Strategy Dashboard
 
-Python-only repo. No build, no lint/typecheck/formatter, no CI. Stdlib + `pandas`, `numpy`, `scikit-learn`, `plotly`, `pytest` (`requirements.txt`).
+Two-process app: a FastAPI backend (Python) serving SSE backtests and a Vue 3 frontend (Vite). Mirror of the engineering surface in `CLAUDE.md`; this file is the agent-facing handoff.
+
+> **Single source of truth for strategy rules:** `docs/MASTER_STRATEGY_GUIDE.md`.
+> **End-to-end verification reference:** `docs/SYSTEM_BLUEPRINT.md`.
+> **No-fallback rule:** `docs/CODING_RULES.md`.
 
 ## Run things
 
-Entry scripts were moved into `src/main/` (commit `cf904c9`). README and `docs/V1-FROZEN.md` still reference the old root-level paths — ignore them. There is no `src/__init__.py` (implicit namespace packages), so invocation matters:
-
 ```bash
-# From repo root only:
-python3 -m src.main.main                 # multi-strategy comparison
-python3 -m src.main.ultimate_dashboard   # writes docs/ultimate_trading_dashboard.html + docs/dashboard_data.json
-python3 -m src.main.fast_optimizer       # parameter sweep -> best_config.txt
-python3 -m src.main.live_dashboard       # live simulation
-python3 run_dashboard_on_train.py        # same dashboard but on the TRAIN split -> docs/*_train.{html,json}
+# ---- Backend ----
+pip install -r requirements.txt
+pytest tests/ -v                                                  # all tests, from repo root
+uvicorn src.api.app:app --reload --host 0.0.0.0 --port 8000       # SSE backend on :8000
 
-# Tests
-pytest tests/ -v
-pytest tests/test_ultimate_dashboard.py::test_run_backtest_15min_uses_nq_point_value_for_pnl -v
+# ---- Frontend ----
+cd frontend
+npm install
+npm run dev                                                       # :5173, proxies /api/* → :8000
+npm test -- --run                                                 # vitest single-run
+npm run build                                                     # vue-tsc --noEmit + Vite production build
 ```
 
-Do NOT use `python3 src/main/main.py` — the scripts contain `sys.path.insert(0, os.path.dirname(__file__))` that adds `src/main/`, which does not make `from src.data.loader` resolve. `-m` from repo root (or running a root-level script like `run_dashboard_on_train.py`) is what actually works.
+Dashboard URL: **`http://localhost:5173`**.
 
-Tests do `sys.path.insert(0, repo_root)` themselves and call `load_data('1min.csv')` / `load_data('NQ_15min_processed.csv')` with bare filenames — always run pytest from repo root.
-
-## Data files (critical)
-
-`1min.csv` (~135 MB) and `NQ_15min_processed.csv` (~8 MB) live at repo root and are referenced by bare relative paths everywhere. They are **gitignored** (`*.csv`) so they will be missing on a fresh clone — restore before running anything. `*.html` and `*.pdf` are also gitignored; never commit dashboard outputs.
+**Restart `uvicorn` after Python edits.** The `--reload` flag picks up most file changes, but if the SSE payload is missing a field you just added, the backend is the first thing to suspect — restart and retry. The 12:01 saved dashboard snapshot in this repo's history is exactly this scenario: frontend rebuilt against the new SettingsPanel + 1-min picker, backend still serving the pre-dual-timeframe code → trade rows rendered with `NaN` for Entry px / Exit px.
 
 ## Architecture (one-line)
 
-`src/data/loader.py` → `src/data/splitter.py` (+ `resampler.py`) → `src/indicators/{scalping,day_trading,intraday}.py` → `src/signals/base_signals.py` → `src/signals/ml_filter.py` → `src/backtest/{engine,metrics}.py` → `src/dashboard/{report,visualizer}.py`. Entry scripts in `src/main/` wire the pipeline together; `ultimate_dashboard.py` is its own near-complete pipeline that resamples 1min→15min internally.
+```
+data CSVs (NQ_4h, NQ_1m, NQ_full_data)
+   ↓
+src/data/loader.py  →  src/data/splitter.py
+   ↓
+src/strategy/box_lookup.py  →  src/strategy/box_strategy.py  →  src/strategy/scaling_strategy.py
+   ↓                                            ↓
+   directional oracle                  1-1-2 execution + dual-timeframe SL/TP walker
+   ↓
+src/api/app.py  (POST /api/backtest/box → SSE: progress, complete)
+   ↓
+frontend/src/stores/backtest.ts → ChartPane / TradeList / MetricsCards
+```
+
+`src/optimization/` is the NSGA-II multi-objective optimiser (in progress, see Phase H..N of `docs/superpowers/plans/2026-05-23-nsga2-optimization-implementation.md`).
 
 ## Conventions that bite
 
-- Canonical column names: `Open/High/Low/Close/Volume`, plus `Date`/`Time` or `timestamps`. `loader.load_data()` normalizes case — always use it instead of `pd.read_csv` for new ingestion.
-- Indicator/signal functions copy-before-mutate; they return new DataFrames.
-- Signal contract: `-1` short, `0` hold, `1` long.
-- Trade dict keys consumed by metrics/dashboard: `entry_idx, exit_idx, direction, entry_price, exit_price, profit_pct, profit_dollars, capital_after, exit_reason, fees_paid`.
-- Scope is hardcoded to 2025 data with train/test split at `2025-06-30` (`filter_2025` + `split_train_test`).
-- **1min CSV loads newest-first (descending).** Scalping path reverses it to ascending before backtest — see `src/main/main.py:42`. If you build any new pipeline off the 1min file, do the same or trades will exit before they enter.
-- **NQ point-value PnL**, not pure %: backtest multiplies points moved by `point_value=2.0` (NQ futures). Test `test_run_backtest_15min_uses_nq_point_value_for_pnl` locks this in (1 contract × 500 pts × $2 = $1000, minus $10 fee = $990).
-- ML filter: `apply_ml_filter` overwrites the active signal column; make sure the DataFrame you hand to `run_backtest` reflects the filtered signals, not the raw rule-based ones.
-- `apply_rsi_entry_filters` in `ultimate_dashboard.py` zeroes out signals where RSI is on the wrong side of the band (longs require RSI ≤ oversold, shorts require RSI ≥ overbought). Tested behavior — don't relax it without updating the test.
+- **No silent fallbacks.** Every dataclass field, Pydantic field, function arg is required. Use the helpers in `tests/_fixtures.py` (`scaling_params`, `box_strategy_params`, `box_params_dict`) for tests. `docs/CODING_RULES.md` §1 has the full contract.
+- **Trade dict shape** — backend emits all of:
+  - `entry_idx`, `exit_idx` (4h-bar indices)
+  - `entry_signal_price` (= `legs[0].price`, always in candle OHLC)
+  - `exit_close` (sub-bar / 4h-bar close at exit, always in candle OHLC)
+  - `avg_entry_price`, `exit_price` (algorithm-effective; used for PnL math)
+  - `contracts`, `profit_points`, `profit_dollars`, `exit_reason`
+  - `exit_time` (ISO sub-bar timestamp in dual-timeframe mode; `None` in 4h-only legacy mode)
+  - `legs[]`, `box_signal`
+- **Asymmetric exit fill** (user rule 2026-05-24):
+  - HARD SL & hard TP fill AT the line (loss/gain = exactly the configured points)
+  - SOFT SL & trailing TP fill AT the confirming bar's close (loss/gain depends on the actual close)
+- **Dual-timeframe SL/TP** (since 2026-05-24): hard SL & TP target scan 1-min closes; soft SL & trail scan 2-min aggregates. `BoxBacktestRequest.data_path_1min` is required at the API boundary. The engine still accepts `df_1min=None` for unit tests with synthetic candles (collapses to 4h close).
+- **Signal contract** in `box_lookup.py`: `'long'`, `'short'`, or `None`. No numeric encoding.
+- **NQ point-value PnL**: `profit_dollars = profit_points × contracts × point_value` with `point_value=2.0`.
+- **Box-date mapping** (NQ session cycle): a candle with hour ≥ 18 belongs to box_date + 1 day; hour < 18 stays on the same day. The CSV `Date` field is the box's CLOSING day (17:00). See `notes2.md:79` and `src/strategy/box_lookup.py:13-20`.
+- **Dashboard validators** (strict `>`, both ends enforced):
+  - `sl_hard_points > sl_soft_points`
+  - `soft_sl_confirmation_timeframe_minutes > hard_sl_confirmation_timeframe_minutes`
+  Backend (`BoxParamsModel._sl_ordering`) returns 422 on violation; frontend (`SettingsPanel.errors.slOrder`) blocks submit and shows inline error.
 
-## Output locations
+## Data files (gitignored, must live at repo root)
 
-Everything generated goes to `docs/`:
-- `docs/ultimate_trading_dashboard.html` + `docs/dashboard_data.json` (test split)
-- `docs/ultimate_trading_dashboard_train.html` + `docs/dashboard_data_train.json` (train split, via `run_dashboard_on_train.py`)
-- `best_config.txt` at repo root (from `fast_optimizer`).
+| File | Role | Format |
+|---|---|---|
+| `NQ_4h.csv` | Entry-signal timeframe (4h OHLCV) | `datetime,open,high,low,close,volume` |
+| `NQ_1m.csv` | SL/TP timeframe | same shape |
+| `NQ_full_data.csv` | Unified W+M box edges (v4) | `Date,Scraped_At,` + 48 level columns |
 
-## Versioning / branches
+The deprecated `NQ_week_data_shifted.csv` / `NQ_month_data_shifted.csv` pair was replaced by `NQ_full_data.csv` on 2026-05-23 (v4 migration).
 
-- `v1.0.0` and `v1.0-working` tags are frozen; production reference is documented in `docs/V1-FROZEN.md`.
-- `v1.1` tag: 15min timeframe + ML + RSI<25 + SL 0.6% / TP 2.4% (current default in `ultimate_dashboard.py`).
-- Active development happens in git worktrees under `.worktrees/` (gitignored): currently `phase1-core-engine` and `live-dashboard`. Plans for those live in `docs/superpowers/plans/`, specs in `docs/superpowers/specs/`.
-- Workspace HEAD is often detached on a documentation/review commit; check `git status` before assuming a branch.
+## Branches and worktrees
+
+- `dev` — active branch (current).
+- `master` — stable.
+- Tags: `v1.0.0`, `v1.0-working`, `v1.1` — frozen historical references (legacy Python pipeline, no longer runs).
+- Git worktrees live under `.worktrees/` (gitignored).
 
 ## Documentation map
 
-- `docs/Tutorials/` — current concept and interview-prep notes (RSI, EMA, Sharpe, Random Forest filter, OHLCV schema, etc.).
-- `docs/COMPLETE-DOCUMENTATION.md`, `docs/PLAYBOOK.md`, `docs/API.md` — long-form references; trust executable code over these where they conflict.
-- `docs/legacy/` — archived council reports, old `AGENTS.md`, old `copilot-instructions.md`. Useful for history, not for current behavior.
-- `Project_Documentation/*.doc.md` — per-file skeletons that still reference the OLD root-level entrypoint paths (`ultimate_dashboard.py`, `main.py`, `fast_optimizer.py`, `live_dashboard.py`). Treat as stale until rewritten.
-- `TODO.md` and `notes.md` are the user's running scratchpads (typos and all) — read them for intent, don't treat them as spec.
+| Doc | When to read |
+|---|---|
+| `docs/SYSTEM_BLUEPRINT.md` | Verifying engine output against real data |
+| `docs/MASTER_STRATEGY_GUIDE.md` | Looking up any strategy parameter |
+| `docs/CODING_RULES.md` | Adding/modifying a Pydantic field or dataclass |
+| `docs/MASTER_DOCUMENTATION.md` | "Which doc do I read for…?" |
+| `docs/bug-checklist-revision-history.md` | Auditing past bugs / adding a new bug row |
+| `docs/superpowers/plans/2026-05-23-nsga2-PROGRESS.md` | NSGA-II execution state |
+| `notes2.md` / `docs/Data_Shape_To_Do.md` | User's narrative spec for the v4 unified box CSV + NQ session cycle |
+
+## Frozen reference (do not edit)
+
+- `Currunt_Strategy_Algo_for_Trading.md` — original 1-1-2 playbook (pre-Box).
+- `BOXES_Strategy.md` — raw brainstorming for the Box system.
+- `docs/BOX_STRATEGY.md` — structured Box spec (superseded by §2 of the master guide).
+- `docs/V1-FROZEN.md` — v1.0.0 production reference.
+- `docs/legacy/` — archived historical material.
+
+The legacy Python pipeline (`src/main/`, `src/indicators/`, `src/dashboard/`, `src/backtest/`, `src/signals/`, plus `scalping_strategy.py` / `backtester.py`) was erased on 2026-05-23. Do not try to import or run those modules.

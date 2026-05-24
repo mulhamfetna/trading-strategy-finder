@@ -50,7 +50,7 @@ def run(params: Optional[ScalingParams] = None):
 
 # Forbidden — Pydantic field default
 class BoxParamsModel(BaseModel):
-    weekly_window_days: int = 7
+    box_tick_threshold: float = 0.75
 
 # Forbidden — dataclass field default
 @dataclass
@@ -80,7 +80,7 @@ def run(params: ScalingParams) -> ...:
 
 # Required — Pydantic Field(...)
 class BoxParamsModel(BaseModel):
-    weekly_window_days: int  # implicit Field(...) — required
+    box_tick_threshold: float  # implicit Field(...) — required
     tp_target_points: float = Field(..., description="TP in points")  # explicit
 ```
 

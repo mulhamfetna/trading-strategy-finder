@@ -86,13 +86,16 @@ The Vite dev server proxies `/api/*` to `:8000`, so the frontend uses relative U
 ## Critical conventions
 
 - **NQ point-value PnL**: scaling/box strategy emits `profit_dollars = profit_points × contracts × point_value` with `point_value=2.0`. Don't break this without updating the schema and the frontend tests.
-- **Trade dict keys** (scaling strategy emits): `entry_idx, exit_idx, direction, avg_entry_price, exit_price, contracts, profit_points, profit_dollars, exit_reason, legs, exit_time, box_signal?`.
+- **Trade dict keys** (scaling/box strategy emits): `entry_idx, exit_idx, direction, entry_signal_price, exit_close, avg_entry_price, exit_price, contracts, profit_points, profit_dollars, exit_reason, exit_time, legs, box_signal`. The `entry_signal_price` / `exit_close` pair are candle-grounded (always in the OHLC); `avg_entry_price` / `exit_price` are the algorithm-effective fills used for PnL math.
+- **Asymmetric exit fill** (user rule 2026-05-24): HARD SL and hard TP fill AT the line; SOFT SL and trailing TP fill AT the confirming bar's close. Loss for HARD = exactly `sl_hard_points`; loss for SOFT may exceed `sl_soft_points`.
+- **Dual-timeframe SL/TP** (since 2026-05-24): hard SL & TP target scan 1-min candles; soft SL & trail scan 2-min aggregates of the same frame. `BoxBacktestRequest.data_path_1min` is required. `ScalingStrategy.backtest(df, df_1min=None)` falls back to a 4h-only path for unit tests with synthetic candles.
 - **Signal contract** in `box_lookup.py`: `'long'`, `'short'`, or `None` (no numeric encoding).
 - **Data files are gitignored** (`*.csv`, `*.html`). Active datasets:
-  - `NQ_4h.csv` — single `datetime` column, ascending. Primary 4h backtest input.
-  - `NQ_1m.csv` — single `datetime` column. Used for precise intra-bar exit timestamps in dual-timeframe mode.
-  - `NQ_week_data_shifted.csv` / `NQ_month_data_shifted.csv` — box-level CSVs produced by `scripts/preprocess_boxes.py`.
+  - `NQ_4h.csv` — single `datetime` column, ascending. Entry signal timeframe.
+  - `NQ_1m.csv` — same column shape. SL/TP exit timeframe (required at the API boundary).
+  - `NQ_full_data.csv` — unified W+M box edges (v4 schema, replaces the deprecated `NQ_week_data_shifted.csv` + `NQ_month_data_shifted.csv` split). See `docs/Data_Shape_To_Do.md`.
 - Run `pytest` from repo root.
+- **End-to-end blueprint:** `docs/SYSTEM_BLUEPRINT.md` is the authoritative reference for verifying system behaviour against real data. Locked by `tests/test_blueprint_examples.py`.
 
 ## Documentation
 

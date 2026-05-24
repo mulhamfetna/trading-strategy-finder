@@ -123,34 +123,50 @@ The algorithm also has a **trailing watch mechanism**:
 
 **Exit reason shown as:** `TAKE PROFIT` or `TAKE PROFIT (TRAIL)`
 
-### 3.5 Stop Loss — The Dual SL System
+### 3.5 Stop Loss — The Dual SL System (asymmetric fills)
 
-Two stop losses protect every trade:
+Two stop losses protect every trade, with **different fill semantics** (user rule 2026-05-24):
 
-| SL Type | Distance | Trigger | Description |
-|---------|----------|---------|-------------|
-| Soft SL | 200 pts from avg | Candle CLOSE | Normal protection. A wick past it doesn't count — the candle must *close* beyond it |
-| Hard SL | 300 pts from avg | Candle CLOSE | Emergency exit for violent crashes. Farther away, but exits faster |
+| SL Type | Distance from avg | Confirmation timeframe | Where it fills | Realised loss |
+|---|---|---|---|---|
+| **Soft SL** | `sl_soft_points` (default 200) | 2-min candle CLOSE past the line | AT the confirming bar's CLOSE | ≥ `sl_soft_points` (depends on how far the close went past) |
+| **Hard SL** | `sl_hard_points` (default 300) | 1-min candle CLOSE past the line | AT the line exactly | = `sl_hard_points` exactly |
 
-**Why two SLs?**
-The soft SL avoids getting stopped out by temporary wicks. The hard SL ensures catastrophic loss is capped even if the soft SL is never triggered cleanly.
+**Why the asymmetry?** Hard SL models a stop-market order at the disaster line — the fill is the line. Soft SL is a slow-confirmation stop — by the time a 2-min candle has closed past it, the realised price is wherever that close happened, which is usually further from `avg` than the line itself.
+
+**Dashboard invariants** (validated both backend Pydantic AND frontend computed; submit blocked while violated):
+
+- `sl_hard_points > sl_soft_points` (hard farther out)
+- `soft_sl_confirmation_timeframe_minutes > hard_sl_confirmation_timeframe_minutes` (soft confirms slower)
 
 **Exit reason shown as:** `STOP LOSS (SOFT)` or `STOP LOSS (HARD)`
 
 ### 3.6 Re-Entry
 
-After a profitable exit, if price pulls back to the original entry zone, the strategy can re-enter with the same 1-1-2 logic. This is controlled by:
+After a profitable exit, if price pulls back to the original entry zone, the strategy can re-enter with the same 1-1-2 logic. Triggers ONLY when the previous exit was `TAKE PROFIT` (the hard target) — not on `TRAIL` or any `STOP LOSS`.
+
 - **Re-entry enabled:** toggle on/off
-- **Cooldown:** minimum number of candles to wait before re-entering after an exit
+- **Cooldown:** minimum number of 4h candles to wait before re-entering after an exit
 
-### 3.7 Approximations on 4-Hour Data
+### 3.7 Dual-Timeframe Engine (shipped 2026-05-24)
 
-The original strategy uses 15-second, 2-minute, and 5-second confirmation windows. Since this backtest runs on 4-hour candles, those time windows are approximated:
-- The 15-sec confirmation → resolved at candle close (4h bar)
-- The 2-min SL close → resolved at next candle close
-- The 5-sec hard SL → also resolved at candle close using candle high/low
+Entries are decided on the 4h frame; **SL/TP exits run on a 1-min companion frame**. The dashboard's Data section now requires three CSVs:
 
-This means results will differ from a real live implementation on shorter timeframes. The 4h backtest gives a structural view of the strategy's edge, not tick-precise execution.
+| File | Role |
+|---|---|
+| `NQ_4h.csv` | Entry signals (box traversals) |
+| `NQ_1m.csv` | SL/TP exits — hard tier on 1-min closes, soft tier on 2-min aggregates |
+| `NQ_full_data.csv` | Unified weekly + monthly box edges |
+
+What that means in practice:
+
+- **HARD SL / TP target** fire the moment the first 1-min close (or high/low for TP) breaches the line. Exit timestamp is the 1-min bar's time (e.g., `2025-01-03T15:47:00`).
+- **SOFT SL / Trailing TP** fire on the first 2-min close past the threshold. Exit timestamp is the end-of-window 1-min bar.
+- The first trigger in time wins. Hard before soft on the same minute.
+
+**What used to be approximated** (15-sec entry confirmations, etc.) for the entry side remains documented-but-not-enforced — params live in the form but the 4h close is treated as already confirmed. The SL/TP side is now exact at 1-min/2-min resolution.
+
+If you're comparing dashboard results to numbers from before 2026-05-24, expect dramatic shifts: 4 of the 7 January trades changed exit type (TP → TRAIL or HARD → SOFT) — see `docs/SYSTEM_BLUEPRINT.md` Part C for the side-by-side.
 
 ---
 
@@ -497,37 +513,44 @@ The trade log shows every individual trade the strategy executed, sorted chronol
 
 ### Column reference:
 
-| Column | What it means |
-|--------|--------------|
-| **#** | Trade number (1 = first trade of the backtest) |
-| **Dir** | Direction — LONG (bought expecting price rise) or SHORT (sold expecting price fall) |
-| **Entry** | Average entry price across all filled legs (weighted by contracts) |
-| **Exit** | Price at which the trade was closed |
-| **Pts** | Profit or loss in NQ points. Positive = win, negative = loss |
-| **$** | Profit or loss in dollars (points × contracts × $2 per point) |
-| **Reason** | Why the trade exited — see exit reasons below |
+| Column | What it shows | Source field |
+|--------|--------------|---|
+| **#** | Trade number (1 = first trade of the backtest) | row index |
+| **Dir** | Direction — LONG or SHORT | `direction` |
+| **Entry time** | 4h-bar timestamp where the signal fired | candle at `entry_idx` |
+| **Exit time** | Sub-bar timestamp where the SL/TP confirmed (e.g. `2025-01-03 15:47`) | `exit_time` (ISO sub-bar) |
+| **Entry px** | Close of the signal candle — always a real candle value | `entry_signal_price` |
+| **Exit px** | Close of the bar that confirmed the exit — always a real candle value | `exit_close` |
+| **Pts** | Profit/loss in NQ points (signed) — `(exit_price − avg)` for long, opposite for short | `profit_points` |
+| **$** | Dollar P/L = `pts × contracts × point_value` | `profit_dollars` |
+| **Reason** | Why the trade exited — see Exit Reasons below | `exit_reason` |
+| **Box signal** | Which weekly/monthly level fired the entry + box start date | `box_signal.*` |
+
+**Algorithm-effective prices on hover:** the displayed `Entry px` and `Exit px` are guaranteed to appear in the candle OHLC (so you can verify against the chart). The algorithm-effective prices used for PnL — `avg_entry_price` (weighted leg avg) and `exit_price` (SL/TP line for hard tiers) — surface in the cell tooltip when they differ from the displayed value. Cells with a divergence carry a dotted underline.
 
 ### Exit Reasons:
 
-| Reason | Meaning |
-|--------|---------|
-| `TAKE PROFIT` | Price reached the +150-pt target |
-| `TAKE PROFIT (TRAIL)` | A candle closed past the +50-pt watch threshold |
-| `STOP LOSS (SOFT)` | A candle closed beyond the 200-pt soft stop |
-| `STOP LOSS (HARD)` | A candle closed beyond the 300-pt hard stop |
+| Reason | Triggered by | Fill price (what `exit_price` records) |
+|--------|---|---|
+| `TAKE PROFIT` | 1-min high (long) / low (short) reached `avg + tp_target_points` | The target line (synthetic) |
+| `TAKE PROFIT (TRAIL)` | 2-min close back through `tp_watch_line` (after the watch armed) | The 2-min close |
+| `STOP LOSS (HARD)` | 1-min close past `sl_hard_line` | The hard line (synthetic) |
+| `STOP LOSS (SOFT)` | 2-min close past `sl_soft_line` | The 2-min close |
 
 ### Reading the trade table:
 
-**Example row:**
+**Example row** (real trade from January 2025, blueprint Part C Example 1):
+
 ```
-# 7  │ SHORT  │ 21,342.50  │ 21,542.50  │ -200.0  │ -$1,600  │ STOP LOSS (SOFT)
+# 1 │ LONG │ 2025-01-03 10:00 │ 2025-01-03 15:47 │ 21509.25 │ 21497.25 │ -12.0 │ -$24.00 │ STOP LOSS (SOFT) │ W-RL (W) since 2025-01-03
 ```
-- Trade #7 was a SHORT (sold NQ)
-- Entered at an average price of 21,342.50
-- Exited at 21,542.50 (price moved UP against the SHORT position)
-- Lost 200 points
-- 4 contracts × 200 pts × $2 = **-$1,600**
-- Exited because the close exceeded the soft stop loss level
+
+- LONG entered at the **2025-01-03 10:00** 4h candle's close (21509.25) — the bar where the weekly RL box traversal fired.
+- 2 minutes 47 minutes later, a 2-min close at 21497.25 confirmed below `sl_soft_line` (21499.25) ⇒ SOFT SL fired.
+- The `exit_price` (algorithm-effective) is also 21497.25 — SOFT tier fills at the bar close. No divergence ⇒ no dotted underline.
+- Net: -12 pts × 1 contract × $2 = **-$24.00**.
+
+In the pre-2026-05-24 4h-only engine, the same trade exited HARD at 21494.25 / -$30 — a check-order artifact. The dual-timeframe engine is the realistic backtest.
 
 **A profitable trade:**
 ```
