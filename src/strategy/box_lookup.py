@@ -58,7 +58,7 @@ from src.exceptions import ConfigurationError, MissingDataFileError
 # (upper_col, lower_col, label)
 _WEEKLY_LEVELS: List[Tuple[str, str, str]] = [
     ('WTHU', 'WTHD', 'W-TH'),
-    ('WTH1', 'WTH2', 'W-TH sub'),
+    ('WTH2', 'WTH1', 'W-TH sub'),
     ('WRHU', 'WRHD', 'W-RH'),
     ('WIHU', 'WIHD', 'W-IH'),
     ('WILU', 'WILD', 'W-IL'),
@@ -69,7 +69,7 @@ _WEEKLY_LEVELS: List[Tuple[str, str, str]] = [
 
 _MONTHLY_LEVELS: List[Tuple[str, str, str]] = [
     ('MTHU', 'MTHD', 'M-TH'),
-    ('MTH1', 'MTH2', 'M-TH sub'),
+    ('MTH2', 'MTH1', 'M-TH sub'),
     ('MRHU', 'MRHD', 'M-RH'),
     ('MIHU', 'MIHD', 'M-IH'),
     ('MILU', 'MILD', 'M-IL'),
