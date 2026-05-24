@@ -2,7 +2,7 @@
 
 Subclasses ScalingStrategy and replaces only the entry-signal logic.
 All 1-1-2 scaling mechanics, leg fills, SL/TP, and re-entry are inherited
-from the playbook (Currunt_Strategy_Algo_for_Trading.md).
+from ScalingStrategy.
 
 Entry signal:
   - BoxLookup checks the 4h candle close against weekly/monthly box edges.

@@ -1,6 +1,6 @@
 """Project-wide custom exceptions.
 
-Implements the no-fallback rule (see docs/CODING_RULES.md):
+Implements the no-fallback rule:
 every internal code path that would silently fall back to a default
 value must raise ConfigurationError instead, carrying a structured
 system_status payload that the SSE / HTTP layers can ship to the

@@ -1,10 +1,10 @@
 """Shared test fixtures.
 
-The no-fallback rule (docs/CODING_RULES.md) makes every strategy
-parameter required at every layer (Pydantic, dataclass, function arg).
-Tests that previously relied on dataclass defaults (`ScalingParams()`)
-must now supply every field. These helpers do that uniformly so every
-test produces a consistent baseline that mirrors the playbook defaults.
+The no-fallback rule makes every strategy parameter required at every
+layer (Pydantic, dataclass, function arg). Tests that previously
+relied on dataclass defaults (`ScalingParams()`) must now supply every
+field. These helpers do that uniformly so every test produces a
+consistent baseline that mirrors the canonical defaults.
 """
 
 from __future__ import annotations

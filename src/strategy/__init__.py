@@ -1,6 +1,5 @@
 """Strategy package — 1-1-2 scaling + Box-signal variant.
 
-Both strategies are governed by Currunt_Strategy_Algo_for_Trading.md.
 Every numeric decision is exposed via ScalingParams / BoxStrategyParams.
 """
 

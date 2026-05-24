@@ -13,8 +13,6 @@ Edge-case routing (locked by Q3.1 / Q3.2 + v3.1 update notes):
   missing-data-file          → re-raise (study-fatal)
   missing-parameter          → re-raise (study-fatal)
   any other ConfigurationError → optuna.TrialPruned
-
-See docs/superpowers/specs/2026-05-23-nsga2-optimization-design.md §4.3.
 """
 from __future__ import annotations
 

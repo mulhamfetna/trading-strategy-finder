@@ -1,7 +1,6 @@
-"""1-1-2 scaling strategy simulator (phase C1).
+"""1-1-2 scaling strategy simulator.
 
-Implements the strategy documented in
-``Currunt_Strategy_Algo_for_Trading.md``:
+Implements:
 
 * Entry distribution & position sizing (1-1-2 scaling, 4 contracts total).
 * Big-candle exception (>400 points -> enter full, reverse direction).
@@ -15,7 +14,7 @@ watching for TP, exit, cooldown, re-entry). The per-candle decisions
 delegate to small pure functions for testability.
 
 **Approximations on 4h data**
-The playbook prescribes multi-timeframe confirmations (15-second
+The strategy prescribes multi-timeframe confirmations (15-second
 entry confirmation, 2-minute SL1 close, 5-second SL2 close). With 4h
 bars these are impossible to model directly. We approximate by:
 
@@ -43,9 +42,7 @@ from src.exceptions import MissingParameterError
 class ScalingParams:
     """Every parameter the strategy exposes to the settings UI.
 
-    Every value below is a *decision* the playbook makes
-    (Currunt_Strategy_Algo_for_Trading.md). Per the no-fallback rule
-    (see docs/CODING_RULES.md) every field is REQUIRED — there are no
+    Per the no-fallback rule every field is REQUIRED — there are no
     dataclass defaults. The frontend supplies all of them at the API
     boundary; tests should use a fixture helper instead of relying on
     field defaults.

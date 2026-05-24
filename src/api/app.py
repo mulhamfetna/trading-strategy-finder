@@ -52,7 +52,7 @@ app = FastAPI(
     version="2.0.0-dev",
 )
 
-# ---- No-fallback rule: exception handlers (see docs/CODING_RULES.md) ----
+# ---- No-fallback rule: exception handlers ----
 
 @app.exception_handler(ConfigurationError)
 async def _handle_configuration_error(request: Request, exc: ConfigurationError) -> JSONResponse:
@@ -320,8 +320,7 @@ def _box_metrics(trades: List[Dict]) -> Dict[str, Any]:
 
     `profit_factor` and `sharpe_ratio` are `None` when undefined (no
     losses for PF, no variance / <2 trades for Sharpe) — the frontend
-    renders "N/A" in that case. See BUG-011 in
-    docs/bug-checklist-revision-history.md.
+    renders "N/A" in that case.
     """
     n = len(trades)
     if n == 0:
@@ -604,7 +603,7 @@ def post_box_backtest(req: BoxBacktestRequest):
     """Run the master strategy backtest as an SSE stream.
 
     Master strategy = 1-1-2 execution framework + TradingView Box
-    directional oracle (see docs/MASTER_STRATEGY_GUIDE.md).
+    directional oracle.
     """
     return StreamingResponse(
         _box_event_stream(req),

@@ -1,14 +1,14 @@
-"""Regression lock for docs/SYSTEM_BLUEPRINT.md Part C — dual-timeframe.
+"""Regression lock for the dual-timeframe master strategy.
 
-Runs the master strategy on the real NQ_4h.csv + NQ_full_data.csv + NQ_1m.csv
-datasets and asserts that the trades match the EXACT field values documented
-in the system blueprint. Any deviation = drift between code and blueprint.
+Runs the engine on the real NQ_4h.csv + NQ_full_data.csv + NQ_1m.csv
+datasets over Jan 2025 and asserts every field of four representative
+trades plus the total trade count. Any deviation = drift between the
+current engine and the locked reference values inlined below.
 
-When the blueprint or the dataset is intentionally updated, the regenerated
-numbers should be copy-pasted into both this test AND the SYSTEM_BLUEPRINT.md
-Part C tables.
+When the engine or the dataset is intentionally changed, regenerate
+the numbers in this file from the new run output.
 
-Skipped when any of the three data files aren't present (they're gitignored).
+Skipped when any of the three data files aren't present (gitignored).
 """
 from __future__ import annotations
 
@@ -34,16 +34,16 @@ _BOX_CSV      = os.path.join(_REPO_ROOT, 'NQ_full_data.csv')
 
 pytestmark = pytest.mark.skipif(
     not (os.path.exists(_CANDLES_CSV) and os.path.exists(_BOX_CSV) and os.path.exists(_CANDLES_1MIN)),
-    reason='NQ_4h.csv / NQ_full_data.csv / NQ_1m.csv not all present (gitignored); skip blueprint lock.',
+    reason='NQ_4h.csv / NQ_full_data.csv / NQ_1m.csv not all present (gitignored); skip dual-timeframe lock.',
 )
 
 
 @pytest.fixture(scope='module')
 def january_trades():
     """The 7 trades the dual-timeframe engine produces on 2025-01-01..2025-01-31
-    with the blueprint A.3 parameters."""
+    with the reference parameters (sl_soft=10, sl_hard=15, tp_target=150.25)."""
     params = box_params_dict()
-    # Blueprint A.3: validator-compliant pair (sl_hard > sl_soft).
+    # Reference params: validator-compliant pair (sl_hard > sl_soft).
     params['sl_soft_points']   = 10.0
     params['sl_hard_points']   = 15.0
     params['tp_target_points'] = 150.25
@@ -68,7 +68,7 @@ def _find_trade(trades, df, entry_idx):
 
 
 def test_blueprint_example_1_standard_long_soft_sl(january_trades):
-    """SYSTEM_BLUEPRINT.md Part C, Example 1 — SOFT SL (dual-timeframe).
+    """Example 1 — SOFT SL (dual-timeframe).
 
     In 4h-only mode this trade exited HARD (close 21493 ≤ sl_hard_line 21494.25).
     On the 1-min frame, a 2-min close at 21497.25 fires SOFT SL FIRST — the
@@ -93,7 +93,7 @@ def test_blueprint_example_1_standard_long_soft_sl(january_trades):
 
 
 def test_blueprint_example_2_short_hard_sl(january_trades):
-    """SYSTEM_BLUEPRINT.md Part C, Example 2 — HARD SL (dual-timeframe).
+    """Example 2 — HARD SL (dual-timeframe).
 
     4h-only would have shown leg-2 fill on bar 63 and a TRAIL exit on bar 66
     (+25 dollars). On 1-min, a close at 14:04 hits sl_hard_line=21305.50
@@ -119,7 +119,7 @@ def test_blueprint_example_2_short_hard_sl(january_trades):
 
 
 def test_blueprint_example_3_big_candle_long_trail(january_trades):
-    """SYSTEM_BLUEPRINT.md Part C, Example 3 — TRAIL (dual-timeframe).
+    """Example 3 — TRAIL (dual-timeframe).
 
     4h-only showed a TAKE PROFIT (high reached the +150 line within bar 102).
     On 1-min, the price stalls and a 2-min close pulls back through the
@@ -143,7 +143,7 @@ def test_blueprint_example_3_big_candle_long_trail(january_trades):
 
 
 def test_blueprint_example_4_standard_short_trail_gain(january_trades):
-    """SYSTEM_BLUEPRINT.md Part C, Example 4 — TRAIL with profit (dual-timeframe).
+    """Example 4 — TRAIL with profit (dual-timeframe).
 
     Replacement for the previous Example 4 (LONG at idx 109 → TP on bar 113).
     On 1-min that trade actually closes SOFT SL at 14:05 (loss). For a clean
@@ -167,7 +167,7 @@ def test_blueprint_example_4_standard_short_trail_gain(january_trades):
 
 def test_blueprint_total_trades_count(january_trades):
     """The full set: exactly 7 trades for 2025-01-01..2025-01-31 with the
-    blueprint A.3 params. If this drifts, either the strategy logic changed
+    reference params. If this drifts, either the strategy logic changed
     or the dataset did."""
     trades, _ = january_trades
     assert len(trades) == 7

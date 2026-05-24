@@ -1,6 +1,5 @@
-"""Tests for the 1-1-2 scaling strategy state machine (phase C1).
+"""Tests for the 1-1-2 scaling strategy state machine.
 
-The strategy is documented in Currunt_Strategy_Algo_for_Trading.md.
 These tests exercise the deterministic edge cases on tiny synthetic
 candle sequences so the simulator's behavior is locked down before
 we wire it to real 4h data.

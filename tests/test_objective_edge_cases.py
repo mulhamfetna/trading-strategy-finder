@@ -7,8 +7,6 @@ Locked decisions:
 - ConfigurationError(code='malformed-box-geometry') → optuna.TrialPruned
 - ConfigurationError(code='missing-candle-columns') → re-raises (study-fatal)
 - ConfigurationError(any other code) → optuna.TrialPruned
-
-See docs/superpowers/specs/2026-05-23-nsga2-optimization-design.md §4.3.
 """
 
 import os

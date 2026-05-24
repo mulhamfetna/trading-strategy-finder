@@ -3,8 +3,7 @@
 Single-strategy surface: only the Master Strategy (1-1-2 execution +
 Box directional oracle) is exposed.
 
-**No-fallback rule (see docs/CODING_RULES.md):** every field on every
-request model is REQUIRED. Pydantic enforces this at the API boundary
+**No-fallback rule:** every field on every request model is REQUIRED. Pydantic enforces this at the API boundary
 and raises ValidationError when a field is missing — the FastAPI
 exception handler wraps that into a 422 with structured system_status.
 

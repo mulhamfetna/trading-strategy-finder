@@ -42,8 +42,6 @@ Traversal signal rule (v3.1+, 2026-05-23):
   Aggregate signal uses weekly priority (weekly wins over monthly).
   Returns 'long', 'short', or 'hold' when at least one side is active,
   else None (no active box for either timeframe).
-
-See docs/MASTER_STRATEGY_GUIDE.md §2 and docs/BOX_STRATEGY.md "Signal Logic".
 """
 
 from __future__ import annotations

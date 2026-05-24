@@ -8,6 +8,7 @@
 import {
   DEFAULT_BOX_DATA_PATH,
   DEFAULT_DATA_PATH,
+  DEFAULT_DATA_PATH_1MIN,
 } from '../types';
 import type {
   BoxParams,
@@ -24,6 +25,7 @@ export type ScalingStreamEvent =
 interface BoxRunOptions {
   params: BoxParams;
   data_path?: string;
+  data_path_1min?: string;
   box_data_path?: string;
   start?: string;
   end?: string;
@@ -35,6 +37,7 @@ export function streamBoxBacktest(
   return _streamSse('/api/backtest/box', {
     params: opts.params,
     data_path: opts.data_path ?? DEFAULT_DATA_PATH,
+    data_path_1min: opts.data_path_1min ?? DEFAULT_DATA_PATH_1MIN,
     box_data_path: opts.box_data_path ?? DEFAULT_BOX_DATA_PATH,
     start: opts.start ?? null,
     end: opts.end ?? null,
