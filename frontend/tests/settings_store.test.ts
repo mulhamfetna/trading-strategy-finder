@@ -28,6 +28,7 @@ describe('useSettingsStore', () => {
     expect(s.params.box_tick_threshold).toBe(0.75);
     expect(s.params.big_candle_resolution).toBe('big_candle_wins');
     expect(s.dataPath).toBe('NQ_4h.csv');
+    expect(s.dataPath1min).toBe('NQ_1m.csv');
     expect(s.boxDataPath).toBe('NQ_full_data.csv');
   });
 

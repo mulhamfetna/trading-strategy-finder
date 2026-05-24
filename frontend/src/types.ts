@@ -198,4 +198,5 @@ export const DEFAULT_BOX_PARAMS: BoxParams = {
 };
 
 export const DEFAULT_DATA_PATH = 'NQ_4h.csv';
+export const DEFAULT_DATA_PATH_1MIN = 'NQ_1m.csv';
 export const DEFAULT_BOX_DATA_PATH = 'NQ_full_data.csv';

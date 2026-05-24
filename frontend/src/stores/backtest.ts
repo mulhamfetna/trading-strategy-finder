@@ -50,6 +50,7 @@ export const useBacktestStore = defineStore('backtest', () => {
     const runPayload = {
       params: settings.params,
       data_path: settings.dataPath,
+      data_path_1min: settings.dataPath1min,
       box_data_path: settings.boxDataPath,
       start: settings.startDate || undefined,
       end: settings.endDate || undefined,
@@ -88,6 +89,7 @@ export const useBacktestStore = defineStore('backtest', () => {
     const current = JSON.stringify({
       params: settings.params,
       data_path: settings.dataPath,
+      data_path_1min: settings.dataPath1min,
       box_data_path: settings.boxDataPath,
       start: settings.startDate || undefined,
       end: settings.endDate || undefined,

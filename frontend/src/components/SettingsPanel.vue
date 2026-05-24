@@ -9,6 +9,10 @@
           <FilePicker v-model="settings.dataPath" />
         </label>
         <label class="col-span-2 flex flex-col gap-1">
+          <span class="text-tv-muted">1-min data file <span class="text-tv-blue">(SL/TP timing)</span></span>
+          <FilePicker v-model="settings.dataPath1min" />
+        </label>
+        <label class="col-span-2 flex flex-col gap-1">
           <span class="text-tv-muted">Box data file <span class="text-tv-blue">(unified W+M levels)</span></span>
           <FilePicker v-model="settings.boxDataPath" />
         </label>

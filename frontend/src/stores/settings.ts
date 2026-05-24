@@ -4,6 +4,7 @@ import {
   DEFAULT_BOX_DATA_PATH,
   DEFAULT_BOX_PARAMS,
   DEFAULT_DATA_PATH,
+  DEFAULT_DATA_PATH_1MIN,
   type BoxParams,
 } from '../types';
 
@@ -39,6 +40,7 @@ function tryLoad<T extends object>(key: string, defaults: T): T {
 export const useSettingsStore = defineStore('settings', () => {
   const params = reactive<BoxParams>(tryLoad(LS_PARAMS, { ...DEFAULT_BOX_PARAMS }));
   const dataPath = ref<string>(DEFAULT_DATA_PATH);
+  const dataPath1min = ref<string>(DEFAULT_DATA_PATH_1MIN);
   const boxDataPath = ref<string>(DEFAULT_BOX_DATA_PATH);
   const startDate = ref<string>('');
   const endDate = ref<string>('');
@@ -61,6 +63,7 @@ export const useSettingsStore = defineStore('settings', () => {
     Object.assign(params, DEFAULT_BOX_PARAMS);
     Object.assign(indicators, DEFAULT_INDICATORS);
     dataPath.value = DEFAULT_DATA_PATH;
+    dataPath1min.value = DEFAULT_DATA_PATH_1MIN;
     boxDataPath.value = DEFAULT_BOX_DATA_PATH;
     startDate.value = '';
     endDate.value = '';
@@ -69,6 +72,7 @@ export const useSettingsStore = defineStore('settings', () => {
   return {
     params,
     dataPath,
+    dataPath1min,
     boxDataPath,
     startDate,
     endDate,

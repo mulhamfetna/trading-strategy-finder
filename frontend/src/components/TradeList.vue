@@ -135,6 +135,10 @@ function candleTime(idx: number): string {
 }
 
 function exitTime(t: ScalingTrade): string {
+  // Dual-timeframe engine: exit_time is the ISO sub-bar timestamp where the
+  // 1-min HARD / TP-target or 2-min SOFT / TRAIL fired. In 4h-only legacy
+  // mode (unit tests) exit_time is null and we fall back to the 4h-bar
+  // timestamp via exit_idx.
   if (t.exit_time) return t.exit_time.replace('T', ' ').slice(0, 16);
   return candleTime(t.exit_idx);
 }
