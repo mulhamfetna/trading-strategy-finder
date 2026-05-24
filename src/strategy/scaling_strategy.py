@@ -205,6 +205,10 @@ class ScalingStrategy:
             if position.is_open:
                 exit_event = self._check_exits(position, idx, high, low, close)
                 if exit_event is not None:
+                    # Record the bar's actual close on the exit event so
+                    # `_build_trade` can stamp the trade with a candle-grounded
+                    # exit price (alongside the synthetic SL/TP line).
+                    exit_event['exit_close'] = close
                     trades.append(self._build_trade(position, idx, exit_event))
                     # Decide if we should arm a re-entry watch.
                     if (
@@ -425,6 +429,13 @@ class ScalingStrategy:
             'entry_idx': position.opened_at_idx,
             'exit_idx': exit_idx,
             'direction': position.direction,
+            # `entry_signal_price` and `exit_close` are the candle-grounded
+            # prices for the dashboard / trade-log display — guaranteed to
+            # appear in the OHLC of the corresponding bar. `avg_entry_price`
+            # and `exit_price` remain the algorithm-effective fill prices
+            # used for PnL math (weighted leg avg / SL-TP threshold line).
+            'entry_signal_price': position.legs[0].price,
+            'exit_close': exit_event['exit_close'],
             'avg_entry_price': avg,
             'exit_price': exit_price,
             'contracts': contracts,

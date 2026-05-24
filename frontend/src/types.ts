@@ -94,7 +94,13 @@ export interface ScalingTrade {
   entry_idx: number;
   exit_idx: number;
   direction: string;
+  /** Signal bar's close — guaranteed to appear in the candle OHLC at entry_idx. */
+  entry_signal_price: number;
+  /** Exit bar's close — guaranteed to appear in the candle OHLC at exit_idx. */
+  exit_close: number;
+  /** Algorithm-effective avg fill across all legs (synthetic for multi-leg). */
   avg_entry_price: number;
+  /** SL/TP threshold line for non-trail exits; bar close for TRAIL exits (synthetic, not always in OHLC). */
   exit_price: number;
   contracts: number;
   profit_points: number;

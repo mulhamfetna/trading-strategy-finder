@@ -54,8 +54,16 @@
             </td>
             <td class="px-3 py-1 text-tv-muted">{{ candleTime(t.entry_idx) }}</td>
             <td class="px-3 py-1 text-tv-muted tabular-nums">{{ exitTime(t) }}</td>
-            <td class="px-3 py-1 tabular-nums">{{ priceFmt.format(t.avg_entry_price) }}</td>
-            <td class="px-3 py-1 tabular-nums">{{ priceFmt.format(t.exit_price) }}</td>
+            <td
+              class="px-3 py-1 tabular-nums"
+              :class="entryPriceClass(t)"
+              :title="entryPriceTooltip(t)"
+            >{{ priceFmt.format(t.entry_signal_price) }}</td>
+            <td
+              class="px-3 py-1 tabular-nums"
+              :class="exitPriceClass(t)"
+              :title="exitPriceTooltip(t)"
+            >{{ priceFmt.format(t.exit_close) }}</td>
             <td class="px-3 py-1 tabular-nums" :class="signColor(t.profit_points) ?? 'text-tv-muted'">
               {{ formatPoints(t.profit_points) }}
             </td>
@@ -131,6 +139,52 @@ function exitTime(t: ScalingTrade): string {
   return candleTime(t.exit_idx);
 }
 
+// The trade dict's `entry_signal_price` and `exit_close` are guaranteed to
+// appear in the candle OHLC at the corresponding bar — the user can verify
+// each trade against the chart. `avg_entry_price` and `exit_price` are the
+// algorithm-effective prices used for PnL math (weighted leg avg / SL-TP
+// line) and only matter when they DIFFER from the candle-grounded display.
+const PRICE_EPSILON = 0.001;
+
+function entryPriceTooltip(t: ScalingTrade): string {
+  const diff = Math.abs(t.avg_entry_price - t.entry_signal_price);
+  if (diff < PRICE_EPSILON) {
+    return `Entry at signal-bar close ${priceFmt.format(t.entry_signal_price)} (single-leg fill).`;
+  }
+  return [
+    `Entry display: ${priceFmt.format(t.entry_signal_price)} (signal-bar close, ${t.legs.length} legs)`,
+    `PnL math uses avg fill: ${priceFmt.format(t.avg_entry_price)}`,
+    `Legs: ${t.legs.map((l) => `${l.contracts}×${priceFmt.format(l.price)}`).join(', ')}`,
+  ].join('\n');
+}
+
+function exitPriceTooltip(t: ScalingTrade): string {
+  const diff = Math.abs(t.exit_price - t.exit_close);
+  if (diff < PRICE_EPSILON) {
+    return `Exit at bar close ${priceFmt.format(t.exit_close)} (matches algorithm fill).`;
+  }
+  return [
+    `Exit display: ${priceFmt.format(t.exit_close)} (close of the bar that confirmed ${t.exit_reason})`,
+    `PnL math uses algorithm line: ${priceFmt.format(t.exit_price)}`,
+    `Diff: ${(t.exit_price - t.exit_close).toFixed(2)} points`,
+  ].join('\n');
+}
+
+function entryPriceClass(t: ScalingTrade): string {
+  // Subtle indicator when the displayed (candle) price differs from the
+  // synthetic avg — i.e., a multi-leg trade where the avg blends real and
+  // synthetic leg prices.
+  return Math.abs(t.avg_entry_price - t.entry_signal_price) > PRICE_EPSILON
+    ? 'underline decoration-dotted decoration-tv-muted'
+    : '';
+}
+
+function exitPriceClass(t: ScalingTrade): string {
+  return Math.abs(t.exit_price - t.exit_close) > PRICE_EPSILON
+    ? 'underline decoration-dotted decoration-tv-muted'
+    : '';
+}
+
 function boxTooltip(t: ScalingTrade): string {
   if (!t.box_signal) return `Click to jump to trade in replay`;
   const b = t.box_signal;
@@ -175,12 +229,22 @@ function rowClass(i: number) {
 }
 
 function exportCsv() {
-  const headers = ['#', 'Direction', 'Entry Time', 'Exit Time', 'Entry Price', 'Exit Price', 'Contracts', 'Points', 'Dollars', 'Exit Reason', 'Weekly Box', 'Monthly Box', 'W-Box Start', 'M-Box Start'];
+  // Both candle-grounded and algorithm-effective prices are exported so
+  // analysts can verify trades against the chart AND see the PnL math.
+  const headers = [
+    '#', 'Direction', 'Entry Time', 'Exit Time',
+    'Entry Price (signal close)', 'Exit Price (bar close)',
+    'Avg Entry (algorithm)', 'Exit Line (algorithm)',
+    'Contracts', 'Points', 'Dollars', 'Exit Reason',
+    'Weekly Box', 'Monthly Box', 'W-Box Start', 'M-Box Start',
+  ];
   const rows = props.trades.map((t, i) => [
     i + 1,
     t.direction.toUpperCase(),
     candleTime(t.entry_idx),
     exitTime(t),
+    t.entry_signal_price.toFixed(2),
+    t.exit_close.toFixed(2),
     t.avg_entry_price.toFixed(2),
     t.exit_price.toFixed(2),
     t.contracts,

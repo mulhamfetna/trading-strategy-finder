@@ -396,6 +396,12 @@ def _trade_to_jsonable(trade: Dict) -> Dict:
         'entry_idx': int(trade['entry_idx']),
         'exit_idx': int(trade['exit_idx']),
         'direction': trade['direction'],
+        # Candle-grounded display prices (guaranteed to appear in the OHLC
+        # of the corresponding bar). Distinct from the algorithm-effective
+        # avg_entry_price / exit_price (SL-TP threshold line) which remain
+        # below for PnL transparency.
+        'entry_signal_price': float(trade['entry_signal_price']),
+        'exit_close': float(trade['exit_close']),
         'avg_entry_price': float(trade['avg_entry_price']),
         'exit_price': float(trade['exit_price']),
         'contracts': int(trade['contracts']),
