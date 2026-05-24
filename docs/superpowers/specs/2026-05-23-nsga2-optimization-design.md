@@ -107,8 +107,7 @@ Every locked decision behind this spec:
      "budget": {"population_size": 40, "generations": 15},
      "folds": {"count": 3, "min_trades_per_fold": 15},
      "data_path": "NQ_4h.csv",
-     "week_data_path": "NQ_week_data_shifted.csv",
-     "month_data_path": "NQ_month_data_shifted.csv",
+     "box_data_path": "NQ_full_data.csv",
      "max_duration_s": 1800
    }
    ```

@@ -163,8 +163,7 @@ def test_optimize_request_accepts_complete_payload():
         'budget': {'population_size': 40, 'generations': 15},
         'folds': {'count': 3, 'min_trades_per_fold': 15},
         'data_path': 'NQ_4h.csv',
-        'week_data_path': 'NQ_week_data_shifted.csv',
-        'month_data_path': 'NQ_month_data_shifted.csv',
+        'box_data_path': 'NQ_full_data.csv',
         'max_duration_s': 1800,
     }
     req = OptimizeRequest(**body)
@@ -179,8 +178,7 @@ def test_optimize_request_rejects_missing_budget():
         # 'budget' missing
         'folds': {'count': 3, 'min_trades_per_fold': 15},
         'data_path': 'NQ_4h.csv',
-        'week_data_path': 'NQ_week_data_shifted.csv',
-        'month_data_path': 'NQ_month_data_shifted.csv',
+        'box_data_path': 'NQ_full_data.csv',
         'max_duration_s': 1800,
     }
     with pytest.raises(ValidationError):
@@ -275,8 +273,7 @@ class OptimizeRequest(BaseModel):
     budget:          OptimizeBudget
     folds:           OptimizeFoldsConfig
     data_path:       str
-    week_data_path:  str
-    month_data_path: str
+    box_data_path:   str            # unified CSV containing all W* / M* levels
     max_duration_s:  int = Field(..., gt=0)
 
 
@@ -563,9 +560,16 @@ _M_COLS = ['MTHU', 'MTHD', 'MTH1', 'MTH2', 'MRHU', 'MRHD',
            'MTLU', 'MTLD', 'MTL1', 'MTL2']
 
 
-def _box_csv(path, cols, **levels):
-    row = {c: levels.get(c) for c in cols}
-    pd.DataFrame({'Date': ['2025-01-01'], **{c: [v] for c, v in row.items()}}).to_csv(path, index=False)
+def _unified_csv(path, dates=None, **levels):
+    """Build a unified box CSV (all W* + M* columns in a single file)."""
+    if dates is None:
+        dates = ['2025-01-01']
+    n = len(dates)
+    row_data = {}
+    for c in _W_COLS + _M_COLS:
+        val = levels.get(c)
+        row_data[c] = ([val] * n) if not isinstance(val, list) else val
+    pd.DataFrame({'Date': dates, **row_data}).to_csv(path, index=False)
 
 
 def _synth_4h(n_bars: int) -> pd.DataFrame:
@@ -584,18 +588,13 @@ def _synth_4h(n_bars: int) -> pd.DataFrame:
 
 
 def test_back_to_back_backtests_on_shared_lookup_match_fresh_instances(tmp_path):
-    week_csv = tmp_path / 'w.csv'
-    month_csv = tmp_path / 'm.csv'
-    _box_csv(week_csv, _W_COLS, WRHU=20100.0, WRHD=20000.0)
-    _box_csv(month_csv, _M_COLS)
+    unified_csv = tmp_path / 'u.csv'
+    _unified_csv(unified_csv, WRHU=20100.0, WRHD=20000.0)
 
     df = _synth_4h(120)
     folds = split_folds(df, fold_count=3)
 
-    shared_lookup = BoxLookup(
-        week_path=str(week_csv), month_path=str(month_csv),
-        tick_threshold=0.75, weekly_window_days=7, monthly_window_days=30,
-    )
+    shared_lookup = BoxLookup(unified_path=str(unified_csv), tick_threshold=0.75)
     params = box_strategy_params()
 
     shared_results = []
@@ -606,10 +605,7 @@ def test_back_to_back_backtests_on_shared_lookup_match_fresh_instances(tmp_path)
 
     fresh_results = []
     for f in folds:
-        fresh_lookup = BoxLookup(
-            week_path=str(week_csv), month_path=str(month_csv),
-            tick_threshold=0.75, weekly_window_days=7, monthly_window_days=30,
-        )
+        fresh_lookup = BoxLookup(unified_path=str(unified_csv), tick_threshold=0.75)
         strat = BoxStrategy(params=params, box_lookup=fresh_lookup)
         trades, _state = strat.backtest(f)
         fresh_results.append(len(trades))
@@ -684,21 +680,14 @@ _M_COLS = ['MTHU', 'MTHD', 'MTH1', 'MTH2', 'MRHU', 'MRHD',
            'MTLU', 'MTLD', 'MTL1', 'MTL2']
 
 
-def _box_csv(path, cols, **levels):
-    row = {c: levels.get(c) for c in cols}
-    pd.DataFrame({'Date': ['2025-01-01'], **{c: [v] for c, v in row.items()}}).to_csv(path, index=False)
+def _unified_csv(path, **levels):
+    row_data = {c: [levels.get(c)] for c in _W_COLS + _M_COLS}
+    pd.DataFrame({'Date': ['2025-01-01'], **row_data}).to_csv(path, index=False)
 
 
 def _lookup(tmp_path, **w_levels):
-    _box_csv(tmp_path / 'w.csv', _W_COLS, **w_levels)
-    _box_csv(tmp_path / 'm.csv', _M_COLS)
-    return BoxLookup(
-        week_path=str(tmp_path / 'w.csv'),
-        month_path=str(tmp_path / 'm.csv'),
-        tick_threshold=0.75,
-        weekly_window_days=7,
-        monthly_window_days=30,
-    )
+    _unified_csv(tmp_path / 'u.csv', **w_levels)
+    return BoxLookup(unified_path=str(tmp_path / 'u.csv'), tick_threshold=0.75)
 
 
 def _flat_4h(n_bars: int, close: float = 20050.0) -> pd.DataFrame:
@@ -1179,9 +1168,9 @@ _M_COLS = ['MTHU', 'MTHD', 'MTH1', 'MTH2', 'MRHU', 'MRHD',
            'MTLU', 'MTLD', 'MTL1', 'MTL2']
 
 
-def _box_csv(path, cols, **levels):
-    row = {c: levels.get(c) for c in cols}
-    pd.DataFrame({'Date': ['2025-01-01'], **{c: [v] for c, v in row.items()}}).to_csv(path, index=False)
+def _unified_csv(path, **levels):
+    row_data = {c: [levels.get(c)] for c in _W_COLS + _M_COLS}
+    pd.DataFrame({'Date': ['2025-01-01'], **row_data}).to_csv(path, index=False)
 
 
 def _synth_4h(n_bars: int) -> pd.DataFrame:
@@ -1198,15 +1187,10 @@ def _synth_4h(n_bars: int) -> pd.DataFrame:
 
 
 def test_mini_study_completes_and_persists(tmp_path):
-    week_csv = tmp_path / 'w.csv'
-    month_csv = tmp_path / 'm.csv'
-    _box_csv(week_csv, _W_COLS, WRHU=20100.0, WRHD=19900.0)
-    _box_csv(month_csv, _M_COLS)
+    unified_csv = tmp_path / 'u.csv'
+    _unified_csv(unified_csv, WRHU=20100.0, WRHD=19900.0)
 
-    lookup = BoxLookup(
-        week_path=str(week_csv), month_path=str(month_csv),
-        tick_threshold=0.75, weekly_window_days=7, monthly_window_days=30,
-    )
+    lookup = BoxLookup(unified_path=str(unified_csv), tick_threshold=0.75)
 
     db_path = tmp_path / 'studies.db'
     df = _synth_4h(240)
@@ -1611,15 +1595,17 @@ def _write_synth_4h_csv(path, n_rows=240):
     df.to_csv(path, index=False)
 
 
-def _write_box_csv(path, kind):
-    prefix = 'W' if kind == 'week' else 'M'
-    cols = [f'{prefix}{suffix}' for suffix in
-            ['THU', 'THD', 'TH1', 'TH2', 'RHU', 'RHD',
-             'IHU', 'IHD', 'ILU', 'ILD', 'RLU', 'RLD',
-             'TLU', 'TLD', 'TL1', 'TL2']]
+def _write_unified_box_csv(path):
+    """Write a unified box CSV (single file containing all W* and M* levels)."""
+    suffixes = ['THU', 'THD', 'TH1', 'TH2', 'RHU', 'RHD',
+                'IHU', 'IHD', 'ILU', 'ILD', 'RLU', 'RLD',
+                'TLU', 'TLD', 'TL1', 'TL2']
+    cols = [f'W{s}' for s in suffixes] + [f'M{s}' for s in suffixes]
     row = {c: None for c in cols}
-    row[f'{prefix}RHU'] = 20100.0
-    row[f'{prefix}RHD'] = 19900.0
+    # Active weekly RH box only — keeps the synthetic fixture's signal source
+    # narrow and deterministic.
+    row['WRHU'] = 20100.0
+    row['WRHD'] = 19900.0
     pd.DataFrame({'Date': ['2025-01-01'], **{c: [v] for c, v in row.items()}}).to_csv(path, index=False)
 
 
@@ -1644,11 +1630,9 @@ def _parse_sse_events(text):
 
 def _mini_body(tmp_path):
     csv = tmp_path / 'synth_4h.csv'
-    week_csv = tmp_path / 'week.csv'
-    month_csv = tmp_path / 'month.csv'
+    box_csv = tmp_path / 'unified_box.csv'
     _write_synth_4h_csv(csv)
-    _write_box_csv(week_csv, 'week')
-    _write_box_csv(month_csv, 'month')
+    _write_unified_box_csv(box_csv)
     return {
         'baseline_params': box_params_dict(),
         'search_space': {
@@ -1659,8 +1643,7 @@ def _mini_body(tmp_path):
         'budget': {'population_size': 4, 'generations': 2},
         'folds':  {'count': 2, 'min_trades_per_fold': 1},
         'data_path': str(csv),
-        'week_data_path': str(week_csv),
-        'month_data_path': str(month_csv),
+        'box_data_path': str(box_csv),
         'max_duration_s': 120,
     }
 
@@ -1760,11 +1743,8 @@ def _opt_event_stream(req: OptimizeRequest, study_name: str, resume: bool) -> It
 
     try:
         box_lookup = BoxLookup(
-            week_path=req.week_data_path,
-            month_path=req.month_data_path,
+            unified_path=req.box_data_path,
             tick_threshold=req.baseline_params.box_tick_threshold,
-            weekly_window_days=req.baseline_params.weekly_window_days,
-            monthly_window_days=req.baseline_params.monthly_window_days,
         )
     except ConfigurationError as exc:
         yield _sse_format('error', exc.to_payload())
@@ -1774,8 +1754,7 @@ def _opt_event_stream(req: OptimizeRequest, study_name: str, resume: bool) -> It
             'code': 'box-data-load-failed',
             'message': f'failed to load box data: {exc}',
             'system_status': {
-                'week_data_path': req.week_data_path,
-                'month_data_path': req.month_data_path,
+                'box_data_path': req.box_data_path,
                 'exception_type': type(exc).__name__,
             },
         })
@@ -1786,8 +1765,7 @@ def _opt_event_stream(req: OptimizeRequest, study_name: str, resume: bool) -> It
 
     baseline = BoxStrategyParams(
         **req.baseline_params.model_dump(),
-        week_data_path=req.week_data_path,
-        month_data_path=req.month_data_path,
+        box_data_path=req.box_data_path,
     )
 
     def target():
@@ -1949,8 +1927,7 @@ def test_resume_endpoint_streams_study_started_with_resumed_true(tmp_path, monke
             'budget':         body['budget'],
             'folds':          body['folds'],
             'data_path':      body['data_path'],
-            'week_data_path': body['week_data_path'],
-            'month_data_path': body['month_data_path'],
+            'box_data_path':  body['box_data_path'],
             'max_duration_s': body['max_duration_s'],
         },
     )
@@ -2105,8 +2082,7 @@ export interface OptimizeRequest {
   budget: OptimizeBudget;
   folds: OptimizeFoldsConfig;
   data_path: string;
-  week_data_path: string;
-  month_data_path: string;
+  box_data_path: string;
   max_duration_s: number;
 }
 
@@ -2897,8 +2873,7 @@ function buildRequest(): OptimizeRequest {
     budget: BUDGETS[budgetPreset.value],
     folds: { count: foldCount.value, min_trades_per_fold: minTradesPerFold.value },
     data_path: settings.dataPath,
-    week_data_path: settings.weekDataPath,
-    month_data_path: settings.monthDataPath,
+    box_data_path: settings.boxDataPath,
     max_duration_s: maxDurationS.value,
   };
 }
