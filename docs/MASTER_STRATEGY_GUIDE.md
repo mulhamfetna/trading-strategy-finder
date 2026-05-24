@@ -187,7 +187,7 @@ Rationale: Hard SL is the disaster stop — it represents a stop-market order pl
 - `sl_hard_points > sl_soft_points` — hard is farther out.
 - `sl_soft_timeframe_minutes > sl_hard_timeframe_minutes` — soft confirms more slowly.
 
-**Backtest-mode caveat (current):** the engine runs on 4h bars only. Both timeframes collapse to the 4h close — hard fires on the first 4h close ≤ `sl_hard_line` (long); soft fires on the first 4h close ≤ `sl_soft_line` (and exits at THAT 4h close). This is a known divergence from the spec; the dual-timeframe engine using a 1-min companion CSV is queued (see §9 "Out of scope" → `Dual-timeframe SL/TP`).
+**Dual-timeframe engine (shipped 2026-05-24):** the dashboard backtest endpoint requires a companion 1-min OHLCV CSV (`data_path_1min`). The engine walks 1-min bars within each 4h interval for hard SL & TP-target, and 2-min aggregates for soft SL & trailing TP. Trade dicts carry an `exit_time` ISO string at sub-bar resolution. Unit tests with synthetic 4h candles can still call `ScalingStrategy.backtest(df)` without a 1-min frame — the engine collapses to the 4h close in that legacy path. See `SYSTEM_BLUEPRINT.md` Part G for the full design + migration record.
 
 ### §5 — Take profit
 
@@ -365,8 +365,7 @@ These are explicit non-goals — items the playbooks mention but the engine does
 | Intersected boxes (weekly ∩ monthly producing finer zones) | BOXES_Strategy.md / docs/BOX_STRATEGY.md | Deferred; single-box only |
 | Daily (D-prefix) boxes | implied | No daily CSV provided |
 | Average retracement / break-even stop management | implied | Not implemented |
-| Multi-timeframe tick confirmation (15-sec, 2-min, 5-sec) | 1-1-2 §3 / §4 / §5 | Params exist, enforcement deferred to dual-timeframe build |
-| Dual-timeframe SL/TP (1-min hard, 2-min soft) | §4 / §5 + user spec 2026-05-24 | Awaiting 1-min CSV. SL fills + ordering invariants documented; engine still collapses to 4h. |
+| Multi-timeframe tick confirmation (15-sec, 2-min, 5-sec) | 1-1-2 §3 / §4 / §5 | Entry-side confirmation params exist but not enforced in 4h-only mode. SL/TP side is shipped (see Blueprint Part G). |
 | Live trading | — | Backtest engine only |
 | Fees / commissions / slippage modelling | — | `point_value × profit_points` only |
 | Box-aware re-entry anchoring | §5b discussion | Not implemented; uses `base_level` |

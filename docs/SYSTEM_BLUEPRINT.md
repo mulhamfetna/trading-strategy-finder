@@ -389,13 +389,15 @@ Chart markers (`ChartPane.vue:toMarkers`) use Lightweight Charts' `position: 'be
 
 ---
 
-## Part C — Worked examples (real data, expected outputs)
+## Part C — Worked examples (real data, expected outputs — DUAL-TIMEFRAME)
 
-The four examples below cover all distinct execution paths: standard single-leg / multi-leg / big-candle entries × SL-HARD / TRAIL / TP exits. All use the parameters from Part A.3.
+The four examples below are the actual output of the dual-timeframe engine on the real `NQ_4h.csv` + `NQ_1m.csv` + `NQ_full_data.csv` datasets, January 2025, with the parameters from Part A.3. They cover every dual-timeframe exit path: SOFT SL (1-min walks → 2-min close), HARD SL (1-min close), TRAIL (2-min close after arming), and another TRAIL (winning case).
 
-### Example 1 — Standard single-leg LONG, SL HARD exit
+**Note for users coming from the 4h-only blueprint (pre-2026-05-24):** the dual-timeframe engine fires exits at sub-bar resolution. Many trades that *looked* like TP wins on 4h are actually TRAIL exits or SOFT SL losses on 1-min, because the 1-min path between entry and the 4h close was noisier than the 4h close alone suggested. The new numbers below are the **realistic** backtest output.
 
-**This is the simplest path. If anything is wrong here, the foundation is wrong.**
+### Example 1 — Standard single-leg LONG, SOFT SL exit
+
+**Demonstrates: the 1-min path firing SOFT SL on a 2-min close before the 4h bar's close reaches the hard line.**
 
 #### Inputs
 
@@ -465,20 +467,22 @@ box_directional = 'long'   →  enter standard box entry
 Position(direction='long', base_level=21509.25, legs=[Leg(contracts=1, price=21509.25, candle_idx=10)])
 ```
 
-#### Exit checks (bar 11, idx=11)
+#### Exit checks — dual-timeframe walker
 
 ```
-avg            = 21509.25            (single leg)
-sl_soft_line   = 21509.25 − 200 = 21309.25
-sl_hard_line   = 21509.25 −  15 = 21494.25
+avg            = 21509.25                       (single leg)
+sl_soft_line   = 21509.25 − 10  = 21499.25
+sl_hard_line   = 21509.25 − 15  = 21494.25
 tp_target_line = 21509.25 + 150.25 = 21659.50
-tp_watch_line  = 21509.25 +  50 = 21559.25
-
-Bar 11: C = 21493.00
-  close ≤ sl_hard_line?  21493.00 ≤ 21494.25  →  YES
-  → exit_event = {'exit_reason': 'STOP LOSS (HARD)', 'exit_price': 21494.25}
-  → exit_event['exit_close'] = 21493.00          (bug-fix 2026-05-24)
+tp_watch_line  = 21509.25 + 50  = 21559.25
 ```
+
+The walker iterates 1-min bars from 2025-01-03 10:00 onwards, checking:
+
+- **per 1-min bar:** `close ≤ sl_hard_line` (HARD trigger) and `high ≥ tp_target_line` (TP trigger).
+- **per 2-min boundary:** `close ≤ sl_soft_line` (SOFT trigger) and (after the watch arms on a 2-min close ≥ avg + 50) `close < tp_watch_line` (TRAIL trigger).
+
+At **2025-01-03 15:47** (the 1-min bar ending the 2-min window 15:46–15:47), the 2-min close `21497.25` lands below `sl_soft_line = 21499.25` ⇒ **SOFT** fires. The 1-min closes from 10:00 to 15:47 never dipped past `sl_hard_line = 21494.25`, so HARD never triggers first.
 
 #### Trade dict emitted
 
@@ -489,15 +493,16 @@ Bar 11: C = 21493.00
   "direction":          "long",
 
   "entry_signal_price": 21509.25,
-  "exit_close":         21493.00,
+  "exit_close":         21497.25,
+  "exit_time":          "2025-01-03T15:47:00",
 
   "avg_entry_price":    21509.25,
-  "exit_price":         21494.25,
+  "exit_price":         21497.25,
 
   "contracts":          1,
-  "profit_points":     -15.0,
-  "profit_dollars":    -30.0,
-  "exit_reason":        "STOP LOSS (HARD)",
+  "profit_points":     -12.00,
+  "profit_dollars":    -24.00,
+  "exit_reason":        "STOP LOSS (SOFT)",
   "legs":              [{"contracts": 1, "price": 21509.25, "candle_idx": 10}],
   "box_signal":         {"signal": "long", "weekly_level": "W-RL",
                          "weekly_box_start": "2025-01-03", ...}
@@ -508,27 +513,25 @@ Bar 11: C = 21493.00
 
 | # | Dir | Entry time | Exit time | Entry px | Exit px | Pts | $ | Reason | Box signal |
 |---|---|---|---|---:|---:|---:|---:|---|---|
-| 1 | **LONG** | 2025-01-03 10:00 | 2025-01-03 14:00 | **21509.25** | **21493.00** | −15.0 | **-$30.00** | STOP LOSS (HARD) | W-RL (W) since 2025-01-03 |
+| 1 | **LONG** | 2025-01-03 10:00 | **2025-01-03 15:47** | **21509.25** | **21497.25** | −12.0 | **-$24.00** | STOP LOSS (SOFT) | W-RL (W) since 2025-01-03 |
 
-**Tooltip on Entry px:** *"Entry at signal-bar close 21509.25 (single-leg fill)."* — `avg_entry_price` matches, no diff indicator.
+Exit Time column shows the sub-bar timestamp (`trade.exit_time`). Entry/Exit price cells display `entry_signal_price` / `exit_close`; for SOFT exits the two algorithm-effective fields (`avg_entry_price`, `exit_price`) equal the displayed prices — no dotted-underline indicator on either cell.
 
-**Tooltip on Exit px:** *"Exit display: 21493.00 (close of the bar that confirmed STOP LOSS (HARD)). PnL math uses algorithm line: 21494.25. Diff: 1.25 points."* — cell is dotted-underlined.
-
-**Cross-check against user's CSV row #1:** `21509.25 / 21494.25 / −15.0 / −$30.00 / STOP LOSS (HARD) / W-RL / M-IH / 2025-01-03 / 2025-01-03`. ✓ matches.
+**Contrast with the legacy 4h-only path:** the user's pre-2026-05-24 CSV showed STOP LOSS (HARD) at 21494.25 / -15 pts / -$30. The dual-timeframe engine fires SOFT 13 minutes before the 4h bar 11 closes, at a slightly less-bad price (-12 pts / -$24). The legacy result was a check-order artifact (`if close ≤ sl_hard_line` evaluated first on the 4h close); the dual-timeframe result is what would have happened in real trading with sub-bar order routing.
 
 ---
 
-### Example 2 — Multi-leg SHORT, TRAIL exit
+### Example 2 — Standard SHORT, HARD SL exit (dual-timeframe)
 
-**Demonstrates: leg-2 pullback fill at a synthetic target price, and TRAIL exit (the only exit reason that records the actual bar close).**
+**Demonstrates: 1-min HARD SL firing before the 4h bar's pullback range can reach the leg-2 trigger price.**
 
 #### Inputs
 
-Candles for idx 62 (signal bar) and idx 66 (exit bar). From `NQ_4h.csv` filtered `2025-01-01` → `2025-01-31`:
+Candles for idx 62 (signal bar) and idx 63 (exit bar). From `NQ_4h.csv` filtered `2025-01-01..2025-01-31`:
 
 ```
 idx=62  2025-01-16 10:00   O=21377.50  H=21474.75  L=21262.25  C=21290.50
-idx=66  2025-01-17 02:00   O=21288.75  H=21356.75  L=21251.75  C=21334.25
+idx=63  2025-01-16 14:00   O=21290.00  H=21395.75  L=21172.25  C=21214.25
 ```
 
 Box row `2025-01-16` (weekly only — relevant level is W-RH):
@@ -537,76 +540,40 @@ Box row `2025-01-16` (weekly only — relevant level is W-RH):
 WRHU = 21459.194575    WRHD = 21360.785875
 ```
 
-#### Signal at idx=62
+#### Signal + entry at idx=62
 
-`box_directional = 'short'` (close 21290.50 traversed below WRH after a prior above-side observation that bar's box-date sequence). Big-candle check: `|21290.50 − 21377.50| = 87.0 ≤ 400` ⇒ not big candle ⇒ standard entry.
-
-**Position opens:** `Position(direction='short', base_level=21290.50, legs=[Leg(1, 21290.50, 62)])`.
-
-#### Leg 2 fill — next bar idx=63
-
-The signal bar (62) itself only fills leg 1. The per-bar lifecycle (Part B.2) runs `_maybe_open_position` AFTER the exit/fill checks, so the bar that opens the position cannot also fill its own pullback legs. Leg 2 fires on the NEXT bar where the pullback price is reached.
+`box_directional = 'short'` (close 21290.50 traverses below WRH from a prior above-side state). Standard entry, single leg at signal-bar close:
 
 ```
-leg2_target = base_level + leg2_pullback_points  =  21290.50 + 100 = 21390.50
-
-Bar 63 (idx=63, next bar): high  ≥  leg2_target  →  LEG 2 FILLS at 21390.50 (synthetic line, not bar's high)
+Position(direction='short', base_level=21290.50,
+         legs=[Leg(1, 21290.50, 62)])
+avg = 21290.50, contracts = 1
+sl_hard_line = 21290.50 + 15 = 21305.50
+sl_soft_line = 21290.50 + 10 = 21300.50
+leg2_target  = 21290.50 + 100 = 21390.50    ← never reached before exit
 ```
 
-Position state after leg 2:
+#### Exit checks — dual-timeframe walker
 
-```
-legs:          [Leg(1, 21290.50, 62), Leg(1, 21390.50, 63)]
-contracts:     2
-avg_price:    (1 × 21290.50 + 1 × 21390.50) / 2  =  21340.50      ← SYNTHETIC, not in OHLC
-```
+The walker iterates 1-min bars from 2025-01-16 14:00 onwards (start of bar 63). At **2025-01-16 14:04** a 1-min close at `21309.50` ≥ `sl_hard_line = 21305.50` ⇒ **HARD** fires. The fill is AT the line (`21305.50`), not the bar's close.
 
-Leg 3 not filled before exit — its trigger (`high ≥ 21440.50` for SHORT leg 3 at `base + 150`) never occurred between idx=63 and the TRAIL exit at idx=66.
-
-#### TP-watch arm
-
-On bar 62 (and subsequent bars while open), the engine checks:
-
-```
-For SHORT: arm if close ≤ avg − tp_watch_threshold_points = 21340.50 − 50 = 21290.50
-Bar 62: close = 21290.50  →  close ≤ 21290.50  →  WATCH ARMED on bar 62.
-```
-
-#### Exit check (bar 66)
-
-```
-avg = 21340.50
-sl_soft_line   = avg + 200    = 21540.50
-sl_hard_line   = avg +  15    = 21355.50
-tp_target_line = avg − 150.25 = 21190.25
-tp_watch_line  = avg −  50    = 21290.50
-
-Bar 66: C = 21334.25, H = 21356.75, L = 21251.75
-  close ≥ sl_hard_line?  21334.25 ≥ 21355.50  →  NO
-  close ≥ sl_soft_line?  21334.25 ≥ 21540.50  →  NO
-  low   ≤ tp_target?      21251.75 ≤ 21190.25  →  NO
-  watch_armed and close > tp_watch_line?   21334.25 > 21290.50  →  YES
-  → exit_event = {'exit_reason': 'TAKE PROFIT (TRAIL)', 'exit_price': 21334.25}      ← bar close
-  → exit_event['exit_close'] = 21334.25
-```
+**Leg 2 never fills** — the leg-2 trigger (`high ≥ 21390.50`) is checked only AFTER the exit walker; since the exit fires inside bar 63's 1-min window 14:04, the engine closes the position before the 4h-level `_maybe_fill_legs` step ever runs on bar 63.
 
 #### Trade dict emitted
 
 ```json
 {
-  "entry_idx": 62, "exit_idx": 66, "direction": "short",
+  "entry_idx": 62, "exit_idx": 63, "direction": "short",
   "entry_signal_price": 21290.50,
-  "exit_close":         21334.25,
-  "avg_entry_price":    21340.50,
-  "exit_price":         21334.25,
-  "contracts": 2,
-  "profit_points":   6.25,      // avg − exit  =  21340.50 − 21334.25
-  "profit_dollars":  25.00,     // 6.25 × 2 × 2.0
-  "exit_reason": "TAKE PROFIT (TRAIL)",
-  "legs": [
-    {"contracts": 1, "price": 21290.50, "candle_idx": 62},
-    {"contracts": 1, "price": 21390.50, "candle_idx": 63}
-  ]
+  "exit_close":         21309.50,             // 1-min bar's actual close
+  "exit_time":          "2025-01-16T14:04:00",
+  "avg_entry_price":    21290.50,             // single leg
+  "exit_price":         21305.50,             // HARD fills at the line
+  "contracts": 1,
+  "profit_points":  -15.00,
+  "profit_dollars": -30.00,
+  "exit_reason": "STOP LOSS (HARD)",
+  "legs": [{"contracts": 1, "price": 21290.50, "candle_idx": 62}]
 }
 ```
 
@@ -614,23 +581,17 @@ Bar 66: C = 21334.25, H = 21356.75, L = 21251.75
 
 | # | Dir | Entry time | Exit time | Entry px | Exit px | Pts | $ | Reason | Box signal |
 |---|---|---|---|---:|---:|---:|---:|---|---|
-| 2 | **SHORT** | 2025-01-16 10:00 | 2025-01-17 02:00 | **21290.50** | **21334.25** | +6.3 | **+$25.00** | TAKE PROFIT (TRAIL) | W-RH (W) since 2025-01-16 |
+| 2 | **SHORT** | 2025-01-16 10:00 | **2025-01-16 14:04** | **21290.50** | **21309.50** | −15.0 | **-$30.00** | STOP LOSS (HARD) | W-RH (W) since 2025-01-16 |
 
-**Tooltip on Entry px (dotted-underlined):**
+**Tooltip on Exit px (dotted-underlined):** *"Exit display: 21309.50 (close of the bar that confirmed STOP LOSS (HARD)). PnL math uses algorithm line: 21305.50. Diff: −4.00 points."*
 
-> *"Entry display: 21290.50 (signal-bar close, 2 legs)*
-> *PnL math uses avg fill: 21340.50*
-> *Legs: 1×21290.50, 1×21390.50"*
-
-**Tooltip on Exit px (no diff indicator):** *"Exit at bar close 21334.25 (matches algorithm fill)."* — `exit_price == exit_close` for TRAIL, no diff.
-
-**Cross-check against user's CSV row #2:** `SHORT / 21340.50 / 21334.25 / 6.3 / $25.00 / TRAIL / W-RH / M-IH`. The legacy Entry Price column showed `21340.50` (the synthetic avg); the post-fix display column shows `21290.50` (the candle-grounded signal close).
+**Contrast with the legacy 4h-only path:** the pre-2026-05-24 engine showed `leg2_price=21390.50` filling on bar 63 and a TRAIL exit on bar 66 (+$25). The dual-timeframe engine never gets that far: HARD fires 4 minutes into bar 63, before leg 2's trigger is reached. The legacy +$25 win is illusory.
 
 ---
 
-### Example 3 — Big-candle LONG, TP exit
+### Example 3 — Big-candle LONG, TRAIL exit (dual-timeframe)
 
-**Demonstrates: §2 big-candle exception, reversal rule, and the conflict policy.**
+**Demonstrates: §2 big-candle exception followed by a 2-min TRAIL that fires before the 1-min high reaches the TP target.**
 
 #### Inputs
 
@@ -641,45 +602,33 @@ idx=101  2025-01-27 02:00   O=21388.75  H=21412.00  L=20763.75  C=20886.75   (bi
 idx=102  2025-01-27 06:00   O=20887.75  H=21341.00  L=20878.00  C=21334.25
 ```
 
-#### Big-candle check (bar 101)
+#### Big-candle check + entry (bar 101)
 
 ```
-|C − O|  =  |20886.75 − 21388.75|  =  502.00       >  big_candle_threshold_points = 400
+|C − O|  =  502.00     >  big_candle_threshold_points = 400
 →  is_big_candle = TRUE
-```
+bc_dir_raw = 'short' (close < open) → reversed → LONG (playbook reads 400+ pt red as exhaustion)
+box_directional = 'long'  →  no conflict, both say LONG
 
-Big-candle direction (with `big_candle_reverses_dir = true`):
-
-```
-bc_dir_raw = 'short' (close < open, red bar)
-bc_dir     = 'long'  (reversed — playbook reads 400+ pt red as exhaustion)
-```
-
-The box signal on this bar (from user's CSV: `W-RL / M-IL`) is `long` (both timeframes traverse below box edges from a prior above-side state). With `big_candle_resolution = 'big_candle_wins'` and `box_directional == bc_dir` (both LONG), there is **no conflict**; the §5 policy is moot.
-
-**Position opens:**
-
-```
 Position(direction='long', base_level=20886.75,
          legs=[Leg(big_candle_full_contracts=4, price=20886.75, candle_idx=101)])
-avg = 20886.75   contracts = 4
+avg = 20886.75, contracts = 4
 ```
 
-#### Exit check (bar 102)
-
+Exit lines:
 ```
-sl_soft_line   = avg − 200    = 20686.75
-sl_hard_line   = avg −  15    = 20871.75
-tp_target_line = avg + 150.25 = 21037.00
-tp_watch_line  = avg +  50    = 20936.75
-
-Bar 102: C = 21334.25, H = 21341.00, L = 20878.00
-  close ≤ sl_hard_line?  21334.25 ≤ 20871.75  →  NO
-  close ≤ sl_soft_line?  21334.25 ≤ 20686.75  →  NO
-  high  ≥ tp_target?     21341.00 ≥ 21037.00  →  YES
-  → exit_event = {'exit_reason': 'TAKE PROFIT', 'exit_price': 21037.00}     ← TP line, NOT bar close
-  → exit_event['exit_close'] = 21334.25
+sl_hard_line   = 20886.75 − 15  = 20871.75
+sl_soft_line   = 20886.75 − 10  = 20876.75
+tp_target_line = 20886.75 + 150.25 = 21037.00
+tp_watch_line  = 20886.75 + 50  = 20936.75
 ```
+
+#### Exit checks — dual-timeframe walker
+
+The walker iterates 1-min bars from 2025-01-27 06:00 onwards (the bar after the signal). The price runs immediately in favour:
+
+1. Within the first few 2-min windows of bar 102, a 2-min close reaches **≥ 20936.75** ⇒ **watch arms**.
+2. At **2025-01-27 06:25**, a 2-min close at **20915.75** is below `tp_watch_line = 20936.75` ⇒ **TRAIL** fires. The 1-min high during this 25-minute hold never reached `tp_target_line = 21037.00`.
 
 #### Trade dict emitted
 
@@ -687,13 +636,14 @@ Bar 102: C = 21334.25, H = 21341.00, L = 20878.00
 {
   "entry_idx": 101, "exit_idx": 102, "direction": "long",
   "entry_signal_price": 20886.75,
-  "exit_close":         21334.25,
+  "exit_close":         20915.75,
+  "exit_time":          "2025-01-27T06:25:00",
   "avg_entry_price":    20886.75,
-  "exit_price":         21037.00,
+  "exit_price":         20915.75,             // TRAIL fills at 2-min close
   "contracts": 4,
-  "profit_points":  150.25,
-  "profit_dollars": 1202.00,   // 150.25 × 4 × 2.0
-  "exit_reason": "TAKE PROFIT",
+  "profit_points":   29.00,
+  "profit_dollars":  232.00,                  // 29.00 × 4 × 2.0
+  "exit_reason": "TAKE PROFIT (TRAIL)",
   "legs": [{"contracts": 4, "price": 20886.75, "candle_idx": 101}]
 }
 ```
@@ -702,62 +652,59 @@ Bar 102: C = 21334.25, H = 21341.00, L = 20878.00
 
 | # | Dir | Entry time | Exit time | Entry px | Exit px | Pts | $ | Reason | Box signal |
 |---|---|---|---|---:|---:|---:|---:|---|---|
-| 5 | **LONG** | 2025-01-27 02:00 | 2025-01-27 06:00 | **20886.75** | **21334.25** | +150.3 | **+$1202.00** | TAKE PROFIT | W-RL (W) since 2025-01-27 |
+| 5 | **LONG** | 2025-01-27 02:00 | **2025-01-27 06:25** | **20886.75** | **20915.75** | +29.0 | **+$232.00** | TAKE PROFIT (TRAIL) | W-RL (W) since 2025-01-27 |
 
-**Tooltip on Entry px:** single-leg fill (big-candle full size at one price) → no diff.
+No dotted-underline on either price cell (single-leg entry; TRAIL fills at the 2-min close which equals `exit_close`).
 
-**Tooltip on Exit px (dotted-underlined):**
-
-> *"Exit display: 21334.25 (close of the bar that confirmed TAKE PROFIT)*
-> *PnL math uses algorithm line: 21037.00*
-> *Diff: −297.25 points"*
-
-The 297-pt gap is by design: the bar's high pierced the TP line at 21037.00 and continued running. The algorithm models a limit order at 21037.00; the bar happened to close 297 pts higher. The CSV's Pts/$ column reflects the algorithm fill (150.25 / $1202), not the close-based gain (447 / $3576).
-
-**Cross-check against user's CSV row #5:** `LONG / 4 contracts / 20886.75 / 21037.00 / 150.3 / $1202.00 / TAKE PROFIT / W-RL / M-IL`. ✓
+**Contrast with the legacy 4h-only path:** the 4h engine showed `high ≥ tp_target_line` on bar 102 (H=21341.00) firing TAKE PROFIT at 21037.00 for +$1202. The dual-timeframe engine TRAILS out 5 minutes earlier at +$232 — a $970 swing. The TP-target hit at 06:30+ minutes was preceded by a 2-min retracement at 06:25 that the watch caught. The legacy result over-states P&L by 5×.
 
 ---
 
-### Example 4 — Standard single-leg LONG, TP exit (cross-day)
+### Example 4 — Standard SHORT, TRAIL exit with profit (dual-timeframe)
 
-**Demonstrates: re-entry NOT triggered (user's params have `reentry_enabled=true` but the next signal didn't fire within the cooldown), TP target hit on a later bar.**
+**Demonstrates: a winning TRAIL — the 2-min watch arms when price moves in favour, then a later 2-min close pulls back through the watch line for a +$93 exit.**
 
 #### Inputs
 
-Candles idx 109 (signal) → idx 113 (exit). From `NQ_4h.csv` filtered `2025-01-01..2025-01-31`:
+Candle idx 115 (signal) → idx 116 (exit). From `NQ_4h.csv` filtered `2025-01-01..2025-01-31`:
 
 ```
-idx=109  2025-01-28 10:00   ...           C=21540.25                    (signal bar — first close above W-RL box)
-idx=113  2025-01-29 02:00   O=21663.00 H=21697.00 L=21628.50 C=21665.00 (TP bar — H=21697 ≥ TP line 21690.50)
+idx=115  2025-01-29 10:00   ...   C=21467.25     (signal bar — short below W-RL)
+idx=116  2025-01-29 14:00   ...                  (exit bar)
 ```
 
-#### Signal & entry
+#### Signal + entry (bar 115)
 
-`box_directional = 'long'` (W-RL traversal from below → above through inside). Big-candle: `|C-O| ≤ 400` ⇒ standard. Single-leg fill:
+`box_directional = 'short'`. Standard entry, single leg at signal-bar close:
 
 ```
-avg = entry_signal_price = 21540.25     contracts = 1
-sl_hard_line   = 21525.25
-tp_target_line = 21690.50
+Position(direction='short', base_level=21467.25,
+         legs=[Leg(1, 21467.25, 115)])
+avg = 21467.25, contracts = 1
+sl_hard_line   = avg + 15  = 21482.25
+sl_soft_line   = avg + 10  = 21477.25
+tp_target_line = avg − 150.25 = 21317.00
+tp_watch_line  = avg − 50  = 21417.25
 ```
 
-#### Exit
+#### Exit checks — dual-timeframe walker
 
-Between bars 109 and 113, every bar's check finds neither SL nor TP triggered. On bar 113, `high = 21697.00 ≥ tp_target_line = 21690.50` ⇒ `TAKE PROFIT` at the line price.
+Inside bar 116 (2025-01-29 14:00 onwards) the price moves in favour (down for a SHORT). A 2-min close reaches **≤ 21417.25** ⇒ **watch arms**. Subsequently at **14:13**, a 2-min close at **21420.50** is ABOVE `tp_watch_line = 21417.25` (price pulled back upward) ⇒ **TRAIL** fires.
 
 #### Trade dict emitted
 
 ```json
 {
-  "entry_idx": 109, "exit_idx": 113, "direction": "long",
-  "entry_signal_price": 21540.25,
-  "exit_close":         21665.00,             // close of bar 113 (NOT the TP line)
-  "avg_entry_price":    21540.25,
-  "exit_price":         21690.50,             // TP line (synthetic)
+  "entry_idx": 115, "exit_idx": 116, "direction": "short",
+  "entry_signal_price": 21467.25,
+  "exit_close":         21420.50,
+  "exit_time":          "2025-01-29T14:13:00",
+  "avg_entry_price":    21467.25,
+  "exit_price":         21420.50,             // TRAIL fills at 2-min close
   "contracts": 1,
-  "profit_points":   150.25,
-  "profit_dollars":  300.50,
-  "exit_reason": "TAKE PROFIT"
+  "profit_points":   46.75,
+  "profit_dollars":  93.50,                   // 46.75 × 1 × 2.0
+  "exit_reason": "TAKE PROFIT (TRAIL)"
 }
 ```
 
@@ -765,11 +712,11 @@ Between bars 109 and 113, every bar's check finds neither SL nor TP triggered. O
 
 | # | Dir | Entry time | Exit time | Entry px | Exit px | Pts | $ | Reason | Box signal |
 |---|---|---|---|---:|---:|---:|---:|---|---|
-| 6 | LONG | 2025-01-28 10:00 | 2025-01-29 02:00 | **21540.25** | **21665.00** | +150.3 | **+$300.50** | TAKE PROFIT | W-RL (W) since 2025-01-28 |
+| 7 | **SHORT** | 2025-01-29 10:00 | **2025-01-29 14:13** | **21467.25** | **21420.50** | +46.8 | **+$93.50** | TAKE PROFIT (TRAIL) | W-RL (W) since 2025-01-29 |
 
-Exit cell is dotted-underlined (TP line ≠ bar close); tooltip shows the line price `21690.50` and the diff.
+No dotted-underline on either cell (single-leg + TRAIL → all four price fields agree).
 
-**Cross-check against user's CSV row #6:** `LONG / 21540.25 / 21690.50 / 150.3 / $300.50`. ✓ The legacy export still shows `21690.50` in the "Exit Price" column; the post-fix export will show two columns (`Exit Price (bar close)` = bar 86 close, `Exit Line (algorithm)` = `21690.50`).
+**Note:** the legacy 4h-only engine reported this trade as `STOP LOSS (HARD)` (`exit_price=21482.25`, -$30). The 4h bar's high almost certainly touched `21482.25` mid-bar, but on the 1-min timeline a 2-min CLOSE never actually crossed the hard line — the close-confirmation rule keeps the trade alive long enough for it to flip into profit. This is the most dramatic legacy-vs-dual-timeframe divergence in January.
 
 ---
 
@@ -816,9 +763,9 @@ Cell-level dotted-underline + tooltip in `TradeList.vue` makes every divergence 
 
 ---
 
-## Part G — Pending: dual-timeframe SL/TP engine
+## Part G — Dual-timeframe SL/TP engine (IMPLEMENTED 2026-05-24)
 
-**Status:** designed, not implemented. Awaiting the 1-min OHLCV CSV from the user (format: same as `NQ_4h.csv` — single `datetime` column + OHLCV).
+**Status:** SHIPPED. Engine code at `src/strategy/scaling_strategy.py::ScalingStrategy._check_exits_subbar`. Tests at `tests/test_subbar_exits.py` (5 cases, one per exit reason + legacy fallback). End-to-end real-data lock at `tests/test_blueprint_examples.py` (5 cases against `NQ_4h.csv` + `NQ_1m.csv` + `NQ_full_data.csv`).
 
 ### G.1 Why
 
@@ -866,13 +813,13 @@ def _sl_ordering(self):
 
 Frontend `SettingsPanel.vue` runs the same checks live and refuses to submit while either invariant is violated.
 
-### G.4 Migration plan
+### G.4 Migration record (DONE)
 
-1. Add `data_path_1min` field to `BoxBacktestRequest` (required; backend rejects payloads without it once the engine is wired).
-2. Add `hard_sl_confirmation_timeframe_minutes` to `ScalingParams` / `BoxParamsModel`; **remove** `hard_sl_confirmation_timeframe_seconds` in the same change (no shim, per CODING_RULES no-fallback).
-3. Engine: refactor `_check_exits` to optionally accept a 1-min slice for the current 4h bar; keep 4h-only path as a deprecation-warning branch until the dashboard's 1-min upload UI ships.
-4. Update `tests/test_blueprint_examples.py` — Part C examples that hit HARD SL or TP will produce different `exit_time` values (sub-4h precision). The `entry_signal_price` / `exit_close` / `avg_entry_price` / `exit_price` fields keep their semantics.
-5. Re-derive the blueprint Part C tables on the new engine and re-commit alongside the engine change.
+1. ✅ Added `data_path_1min` field to `BoxBacktestRequest` (required).
+2. ✅ Renamed `hard_sl_confirmation_timeframe_seconds` → `_minutes`, default 1 (commit `a83ef21`).
+3. ✅ Engine refactor: `ScalingStrategy.backtest(df, df_1min=None|DataFrame)` — sub-bar walker when 1-min frame supplied, 4h legacy path when None (commit `86fb9d0`).
+4. ✅ `tests/test_blueprint_examples.py` re-derived against the dual-timeframe engine.
+5. ✅ Blueprint Part C rewritten — see above; legacy 4h numbers preserved in commit history (tag `c838c27`).
 
 ### G.5 Out-of-scope expansion in the rules
 
