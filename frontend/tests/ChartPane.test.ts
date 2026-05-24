@@ -63,8 +63,8 @@ describe('ChartPane', () => {
     const wrapper = mountChart();
 
     expect(mocks.createChart).toHaveBeenCalledTimes(1);
-    // candlestick + EMA fast + EMA slow + volume + RSI = 5
-    expect(mocks.addSeries).toHaveBeenCalledTimes(5);
+    // candlestick + EMA fast + EMA slow = 3 (volume + RSI off by default)
+    expect(mocks.addSeries).toHaveBeenCalledTimes(3);
     expect(wrapper.find('[data-testid="chart-pane"]').exists()).toBe(true);
     wrapper.unmount();
   });

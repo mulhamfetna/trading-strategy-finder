@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onBeforeUnmount, watch, ref, toRefs } from 'vue';
+import { computed, onMounted, onBeforeUnmount, watch, ref, toRefs, nextTick } from 'vue';
 import {
   createChart,
   createSeriesMarkers,
@@ -199,6 +199,15 @@ function applyData() {
   }
 }
 
+async function rebuildChart() {
+  const range = chart?.timeScale().getVisibleLogicalRange() ?? null;
+  initChart();
+  if (range) {
+    await nextTick();
+    chart?.timeScale().setVisibleLogicalRange(range);
+  }
+}
+
 // ---- chart init/teardown ----
 
 function initChart() {
@@ -262,44 +271,49 @@ function initChart() {
     0,
   );
 
-  // pane 1: volume histogram
-  volSeries = chart.addSeries(
-    HistogramSeries,
-    {
-      priceFormat: { type: 'volume' },
-      priceScaleId: 'vol',
-    },
-    1,
-  );
+  // pane 1: volume histogram — only when enabled
+  if (settings.indicators.showVolume) {
+    volSeries = chart.addSeries(
+      HistogramSeries,
+      {
+        priceFormat: { type: 'volume' },
+        priceScaleId: 'vol',
+      },
+      1,
+    );
+  }
 
-  // pane 2: RSI
-  rsiSeries = chart.addSeries(
-    LineSeries,
-    {
-      color: CHART_THEME.rsi,
+  // RSI pane — only when enabled; index = 1 if no vol, 2 if vol exists
+  if (settings.indicators.showRSI) {
+    const rsiPane = settings.indicators.showVolume ? 2 : 1;
+    rsiSeries = chart.addSeries(
+      LineSeries,
+      {
+        color: CHART_THEME.rsi,
+        lineWidth: 1,
+        title: 'RSI',
+        priceLineVisible: false,
+        lastValueVisible: true,
+      },
+      rsiPane,
+    );
+    rsiSeries.createPriceLine({
+      price: 70,
+      color: CHART_THEME.bearThreshold,
       lineWidth: 1,
-      title: 'RSI',
-      priceLineVisible: false,
-      lastValueVisible: true,
-    },
-    2,
-  );
-  rsiSeries.createPriceLine({
-    price: 70,
-    color: CHART_THEME.bearThreshold,
-    lineWidth: 1,
-    lineStyle: LineStyle.Dashed,
-    axisLabelVisible: true,
-    title: '70',
-  });
-  rsiSeries.createPriceLine({
-    price: 30,
-    color: CHART_THEME.bullThreshold,
-    lineWidth: 1,
-    lineStyle: LineStyle.Dashed,
-    axisLabelVisible: true,
-    title: '30',
-  });
+      lineStyle: LineStyle.Dashed,
+      axisLabelVisible: true,
+      title: '70',
+    });
+    rsiSeries.createPriceLine({
+      price: 30,
+      color: CHART_THEME.bullThreshold,
+      lineWidth: 1,
+      lineStyle: LineStyle.Dashed,
+      axisLabelVisible: true,
+      title: '30',
+    });
+  }
 
   applyData();
 }
@@ -307,15 +321,19 @@ function initChart() {
 onMounted(initChart);
 
 watch([candles, trades, boxes], applyData, { deep: false });
-// period / visibility changes → recompute data + refresh pane titles
+// Visibility toggles → rebuild panes so they actually appear/disappear
+watch(
+  () => [settings.indicators.showVolume, settings.indicators.showRSI],
+  rebuildChart,
+);
+
+// Period changes → recompute data + refresh pane titles only (no rebuild)
 // (BUG-023: titles are baked at addSeries time and don't update on period change)
 watch(
   () => [
     settings.indicators.emaFast,
     settings.indicators.emaSlow,
     settings.indicators.rsiPeriod,
-    settings.indicators.showVolume,
-    settings.indicators.showRSI,
   ],
   () => {
     emaFastSeries?.applyOptions({ title: `EMA${settings.indicators.emaFast}` });
