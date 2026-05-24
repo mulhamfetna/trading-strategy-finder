@@ -3,11 +3,13 @@
  */
 
 import { describe, expect, it, beforeEach } from 'vitest';
+import { nextTick } from 'vue';
 import { setActivePinia, createPinia } from 'pinia';
 import { useSettingsStore } from '../src/stores/settings';
 
 describe('useSettingsStore', () => {
   beforeEach(() => {
+    localStorage.clear();
     setActivePinia(createPinia());
   });
 
@@ -49,5 +51,43 @@ describe('useSettingsStore', () => {
     expect(s.params.total_contracts).toBe(4);
     expect(s.dataPath).toBe('NQ_4h.csv');
     expect(s.startDate).toBe('');
+  });
+
+  // localStorage persistence
+  it('hydrates params from localStorage on init', () => {
+    localStorage.setItem('nq-dash:params', JSON.stringify({ total_contracts: 8 }));
+    setActivePinia(createPinia());
+    const s = useSettingsStore();
+    expect(s.params.total_contracts).toBe(8);
+    expect(s.params.leg1_contracts).toBe(1); // unrelated field intact
+  });
+
+  it('saves params to localStorage when a param changes', async () => {
+    const s = useSettingsStore();
+    s.params.total_contracts = 9;
+    await nextTick();
+    const saved = JSON.parse(localStorage.getItem('nq-dash:params')!);
+    expect(saved.total_contracts).toBe(9);
+  });
+
+  it('saves indicators to localStorage when a flag changes', async () => {
+    const s = useSettingsStore();
+    s.indicators.showVolume = true;
+    await nextTick();
+    const saved = JSON.parse(localStorage.getItem('nq-dash:indicators')!);
+    expect(saved.showVolume).toBe(true);
+  });
+
+  it('reset() clears localStorage keys and restores defaults', async () => {
+    const s = useSettingsStore();
+    s.params.total_contracts = 99;
+    await nextTick();
+    expect(localStorage.getItem('nq-dash:params')).not.toBeNull();
+
+    s.reset();
+    expect(localStorage.getItem('nq-dash:params')).toBeNull();
+    expect(localStorage.getItem('nq-dash:indicators')).toBeNull();
+    expect(s.params.total_contracts).toBe(4);
+    expect(s.indicators.showVolume).toBe(false);
   });
 });
