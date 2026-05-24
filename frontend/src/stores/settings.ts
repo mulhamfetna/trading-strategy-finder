@@ -27,11 +27,34 @@ const DEFAULT_INDICATORS: IndicatorSettings = {
 const LS_PARAMS = 'nq-dash:params';
 const LS_INDICATORS = 'nq-dash:indicators';
 
+/**
+ * Hydrate from localStorage, but discard any blob whose key-set doesn't
+ * match the current defaults. Protects against schema drift: when a
+ * backend field is renamed (e.g. hard_sl_confirmation_timeframe_seconds
+ * → _minutes on 2026-05-24), an old browser cache would otherwise hand
+ * the request builder a payload the backend 422s on. Strict
+ * symmetric-difference check: both missing and extra keys disqualify
+ * the cached blob.
+ */
 function tryLoad<T extends object>(key: string, defaults: T): T {
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return defaults;
-    return { ...defaults, ...JSON.parse(raw) };
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return defaults;
+    }
+    const defaultKeys = Object.keys(defaults).sort();
+    const parsedKeys  = Object.keys(parsed).sort();
+    if (
+      defaultKeys.length !== parsedKeys.length ||
+      defaultKeys.some((k, i) => k !== parsedKeys[i])
+    ) {
+      // Schema mismatch — fall back to defaults. The write-back watcher
+      // will overwrite the stale entry as soon as the user edits anything.
+      return defaults;
+    }
+    return { ...defaults, ...parsed };
   } catch {
     return defaults;
   }
