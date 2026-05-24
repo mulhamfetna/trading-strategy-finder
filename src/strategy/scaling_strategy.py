@@ -364,12 +364,16 @@ class ScalingStrategy:
             tp_target_line = avg + p.tp_target_points
             tp_watch_line = avg + p.tp_watch_threshold_points
 
-            # Hard SL: candle closes below the hard line.
+            # Hard SL: candle closes below the hard line. Fill AT THE LINE
+            # (loss = exactly sl_hard_points — the disaster-stop contract).
             if close <= sl_hard_line:
                 return {'exit_reason': 'STOP LOSS (HARD)', 'exit_price': sl_hard_line}
-            # Soft SL: candle closes below the soft line.
+            # Soft SL: candle closes below the soft line. Fill AT THE BAR
+            # CLOSE — the slow-confirmation stop accepts whatever close
+            # confirmed past the line, so realised loss ≥ sl_soft_points
+            # (user rule, 2026-05-24).
             if close <= sl_soft_line:
-                return {'exit_reason': 'STOP LOSS (SOFT)', 'exit_price': sl_soft_line}
+                return {'exit_reason': 'STOP LOSS (SOFT)', 'exit_price': close}
             # Hard TP: high reaches the target.
             if high >= tp_target_line:
                 return {'exit_reason': 'TAKE PROFIT', 'exit_price': tp_target_line}
@@ -388,7 +392,7 @@ class ScalingStrategy:
         if close >= sl_hard_line:
             return {'exit_reason': 'STOP LOSS (HARD)', 'exit_price': sl_hard_line}
         if close >= sl_soft_line:
-            return {'exit_reason': 'STOP LOSS (SOFT)', 'exit_price': sl_soft_line}
+            return {'exit_reason': 'STOP LOSS (SOFT)', 'exit_price': close}
         if low <= tp_target_line:
             return {'exit_reason': 'TAKE PROFIT', 'exit_price': tp_target_line}
         if position.watch_armed and close > tp_watch_line:

@@ -169,16 +169,25 @@ The playbook prescribes time-based confirmation on a 15-second chart to avoid fa
 
 ### §4 — Stop loss (dual-SL system)
 
-Two stop-loss tiers run simultaneously:
+Two stop-loss tiers run simultaneously, **with asymmetric fill semantics**:
 
-| Tier | Distance | Confirmation rule |
-|---|---|---|
-| Soft SL | `sl_soft_points = 200` from `avg_price` | A `soft_sl_confirmation_timeframe_minutes = 2`-minute candle closes beyond the line |
-| Hard SL | `sl_hard_points = 300` from `avg_price` | A `hard_sl_confirmation_timeframe_seconds = 5`-second candle closes beyond the line |
+| Tier | Distance | Confirmation timeframe | Fill price | Realised loss |
+|---|---|---|---|---|
+| Soft SL | `sl_soft_points` from `avg_price` | `soft_sl_confirmation_timeframe_minutes` (default 2 min) | **the confirming bar's close** | ≥ `sl_soft_points` (depends on how far the close went past the line) |
+| Hard SL | `sl_hard_points` from `avg_price` | `hard_sl_confirmation_timeframe_minutes` (default 1 min) | **`sl_hard_line` exactly** (= `avg ± sl_hard_points`) | exactly `sl_hard_points` |
 
-A wick that does not close beyond the line **does not** trigger the SL. In 4h-only backtest mode both confirmations collapse to the 4h close — the engine exits on whichever line is closed beyond first, calling it `'STOP LOSS (SOFT)'` or `'STOP LOSS (HARD)'`.
+A wick that does not close beyond the line **does not** trigger either SL. The asymmetric fill rule (user spec, 2026-05-24):
 
-Hard SL is placed further away than soft SL by construction; the dashboard enforces `sl_hard_points ≥ sl_soft_points` with an inline validation message.
+> *"closing at hard sl is a loss of [exactly] `sl_hard_points` … but when it hit the soft sl the loss is not the soft-sl value it is the closing price of the candle."*
+
+Rationale: Hard SL is the disaster stop — it represents a stop-market order placed at the line, so the fill is the line (idealised, no slippage). Soft SL is a slow-confirmation stop — by the time a 2-min candle has closed past it, the realised price is wherever that close happened, which is generally further from `avg` than the line itself.
+
+**Dashboard ordering invariants** (validated both frontend and backend):
+
+- `sl_hard_points > sl_soft_points` — hard is farther out.
+- `sl_soft_timeframe_minutes > sl_hard_timeframe_minutes` — soft confirms more slowly.
+
+**Backtest-mode caveat (current):** the engine runs on 4h bars only. Both timeframes collapse to the 4h close — hard fires on the first 4h close ≤ `sl_hard_line` (long); soft fires on the first 4h close ≤ `sl_soft_line` (and exits at THAT 4h close). This is a known divergence from the spec; the dual-timeframe engine using a 1-min companion CSV is queued (see §9 "Out of scope" → `Dual-timeframe SL/TP`).
 
 ### §5 — Take profit
 
@@ -357,6 +366,7 @@ These are explicit non-goals — items the playbooks mention but the engine does
 | Daily (D-prefix) boxes | implied | No daily CSV provided |
 | Average retracement / break-even stop management | implied | Not implemented |
 | Multi-timeframe tick confirmation (15-sec, 2-min, 5-sec) | 1-1-2 §3 / §4 / §5 | Params exist, enforcement deferred to dual-timeframe build |
+| Dual-timeframe SL/TP (1-min hard, 2-min soft) | §4 / §5 + user spec 2026-05-24 | Awaiting 1-min CSV. SL fills + ordering invariants documented; engine still collapses to 4h. |
 | Live trading | — | Backtest engine only |
 | Fees / commissions / slippage modelling | — | `point_value × profit_points` only |
 | Box-aware re-entry anchoring | §5b discussion | Not implemented; uses `base_level` |

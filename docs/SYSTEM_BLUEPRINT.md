@@ -118,10 +118,14 @@ entry1_confirmation_candles:    3
 entry23_confirmation_candles:   1
 
 # Section §4 (stop-loss) — user's tight setting
+# Dashboard invariants (user rule 2026-05-24): sl_hard_points > sl_soft_points
+# (hard farther out); soft_timeframe > hard_timeframe (soft confirms slower).
 sl_soft_points:                 200.0
-sl_hard_points:                 15.0      # user's params; default is 300
+sl_hard_points:                 15.0      # user's run; master-guide default is 300
 soft_sl_confirmation_timeframe_minutes:  2
-hard_sl_confirmation_timeframe_seconds:  5
+hard_sl_confirmation_timeframe_seconds:  5     # legacy unit; pending rename to *_minutes
+                                               # (target value 1 min) — part of the
+                                               # dual-timeframe SL/TP engine work.
 
 # Section §5 (take-profit)
 tp_target_points:               150.25
@@ -286,7 +290,7 @@ PnL math uses `avg_entry_price`; the dashboard displays `entry_signal_price`.
 
 Per `src/strategy/scaling_strategy.py:346-392`. On every bar with an open position:
 
-**LONG** (mirror for SHORT):
+**LONG** (mirror for SHORT). Note the **asymmetric fill** between hard and soft SL (user rule 2026-05-24, MASTER_STRATEGY_GUIDE §4):
 
 ```
 sl_soft_line   = avg − sl_soft_points
@@ -294,13 +298,18 @@ sl_hard_line   = avg − sl_hard_points
 tp_target_line = avg + tp_target_points
 tp_watch_line  = avg + tp_watch_threshold_points
 
-if close <= sl_hard_line:   return {'exit_reason': 'STOP LOSS (HARD)',   'exit_price': sl_hard_line}
-if close <= sl_soft_line:   return {'exit_reason': 'STOP LOSS (SOFT)',   'exit_price': sl_soft_line}
-if high  >= tp_target_line: return {'exit_reason': 'TAKE PROFIT',        'exit_price': tp_target_line}
+if close <= sl_hard_line:   return {'exit_reason': 'STOP LOSS (HARD)',   'exit_price': sl_hard_line}   # FILL AT LINE
+if close <= sl_soft_line:   return {'exit_reason': 'STOP LOSS (SOFT)',   'exit_price': close}          # FILL AT BAR CLOSE
+if high  >= tp_target_line: return {'exit_reason': 'TAKE PROFIT',        'exit_price': tp_target_line} # FILL AT LINE
 if watch_armed and close < tp_watch_line:
-                            return {'exit_reason': 'TAKE PROFIT (TRAIL)','exit_price': close}
+                            return {'exit_reason': 'TAKE PROFIT (TRAIL)','exit_price': close}          # FILL AT BAR CLOSE
 return None
 ```
+
+- **Hard SL & Hard TP** fill at the **line** — disaster stop and limit-target both modelled as exact-price fills.
+- **Soft SL & Trailing TP** fill at the **confirming bar's close** — slow-confirmation exits accept whatever price the bar actually closed at, which is generally further past the threshold than the line itself.
+
+Dual-timeframe note (queued, not implemented): in the target architecture, hard SL/TP scans **1-min** candles within each 4h interval, soft SL/trail scans **2-min** candles built from the 1-min stream. First trigger wins. Currently the engine collapses both to the 4h close.
 
 **Watch arming** (`_maybe_arm_watch`):
 
@@ -790,12 +799,84 @@ These are the places where the displayed numbers can deviate from "what's on the
 
 | Path | `entry_signal_price` vs `avg_entry_price` | `exit_close` vs `exit_price` |
 |---|---|---|
-| Single-leg entry, TRAIL exit | equal | equal |
-| Single-leg entry, SL HARD / SOFT / TP | equal | differ (line vs close) |
-| Multi-leg entry, any exit | differ (signal close vs synthetic avg) | depends on exit reason |
-| Big-candle entry, any exit | equal (one fill at signal close) | differ for SL/SOFT/TP, equal for TRAIL |
+| Single-leg entry, TRAIL exit | equal | equal (TRAIL fills at close) |
+| Single-leg entry, SOFT SL exit | equal | equal (SOFT fills at close, post 2026-05-24 fix) |
+| Single-leg entry, HARD SL exit | equal | differ (HARD line vs bar close — disaster-stop contract) |
+| Single-leg entry, TP exit (hard target) | equal | differ (TP line vs bar close) |
+| Multi-leg entry, any exit | differ (signal close vs synthetic avg) | follows the above rows per exit reason |
+| Big-candle entry, any exit | equal (one fill at signal close) | follows the above rows per exit reason |
 
-Cell-level dotted-underline + tooltip in TradeList.vue makes every divergence visible. The CSV export carries both columns. PnL math is always done from `avg_entry_price` / `exit_price`.
+Cell-level dotted-underline + tooltip in `TradeList.vue` makes every divergence visible. The CSV export carries both columns. PnL math is always done from `avg_entry_price` / `exit_price`.
+
+**Asymmetric fill rationale** (user rule, 2026-05-24): hard SL and hard TP model exact limit/stop orders at the threshold; soft SL and trailing TP model "we wait for a confirming close" — when that close arrives, the realised price IS that close. Hence: `exit_price = close` for SOFT and TRAIL; `exit_price = line` for HARD and TP-target.
+
+---
+
+## Part G — Pending: dual-timeframe SL/TP engine
+
+**Status:** designed, not implemented. Awaiting the 1-min OHLCV CSV from the user (format: same as `NQ_4h.csv` — single `datetime` column + OHLCV).
+
+### G.1 Why
+
+Per the original blueprint (`Currunt_Strategy_Algo_for_Trading.md` §4 + user's 2026-05-24 spec):
+
+- **Hard SL** confirms on a `hard_sl_confirmation_timeframe_minutes` (target 1 min) candle. The disaster stop reacts fast.
+- **Soft SL** confirms on a `soft_sl_confirmation_timeframe_minutes` (target 2 min) candle. The slow stop avoids wick-fakeouts.
+- **Hard TP** target hit checked on 1 min — high (long) / low (short) reaches the target line within a 1-min candle.
+- **Trailing TP** checked on 2 min — close back through the watch line on a 2-min candle.
+
+In 4h-only mode (current), all four collapse to the 4h close. This is acceptable for first-pass backtests but masks intra-bar SL/TP firing order and can over-state win rate.
+
+### G.2 Engine design (when implemented)
+
+1. **Input contract:** `BoxBacktestRequest` gains a required `data_path_1min` field. Backend validates it exists; loader returns a frame with the same OHLCV shape as the 4h frame.
+2. **Pre-index the 1-min frame** by 4h-bar boundaries so each 4h-bar maps to the 240 1-min bars it contains.
+3. **Per 4h bar with a position open:**
+   - Walk the 240 1-min candles in order.
+   - At each 1-min candle: check hard SL line and (long: `high ≥ tp_target_line`, short: `low ≤ tp_target_line`).
+   - Aggregate consecutive 1-min into rolling 2-min windows; at each 2-min boundary: check soft SL and trail.
+   - The **first event** (in 1-min time) wins. `exit_idx` is still the 4h-bar index; a new field `exit_minute_idx` (or `exit_time` ISO string) records the 1-min boundary that fired.
+4. **Trade dict gains `exit_time`** (ISO timestamp of the 1-min/2-min bar that confirmed the exit), exposed in the frontend as the Exit Time column instead of the 4h-bar timestamp.
+
+### G.3 Dashboard validation (`BoxParamsModel` + Vue form)
+
+Pydantic validator (post-init):
+
+```python
+@model_validator(mode='after')
+def _sl_ordering(self):
+    if self.sl_hard_points <= self.sl_soft_points:
+        raise ValueError(
+            f'sl_hard_points ({self.sl_hard_points}) must be > sl_soft_points '
+            f'({self.sl_soft_points}) — hard SL is the disaster stop, farther out.'
+        )
+    if self.soft_sl_confirmation_timeframe_minutes <= self.hard_sl_confirmation_timeframe_minutes:
+        raise ValueError(
+            f'soft_sl_confirmation_timeframe_minutes '
+            f'({self.soft_sl_confirmation_timeframe_minutes}) must be > '
+            f'hard_sl_confirmation_timeframe_minutes '
+            f'({self.hard_sl_confirmation_timeframe_minutes}) — soft confirms slower.'
+        )
+    return self
+```
+
+Frontend `SettingsPanel.vue` runs the same checks live and refuses to submit while either invariant is violated.
+
+### G.4 Migration plan
+
+1. Add `data_path_1min` field to `BoxBacktestRequest` (required; backend rejects payloads without it once the engine is wired).
+2. Add `hard_sl_confirmation_timeframe_minutes` to `ScalingParams` / `BoxParamsModel`; **remove** `hard_sl_confirmation_timeframe_seconds` in the same change (no shim, per CODING_RULES no-fallback).
+3. Engine: refactor `_check_exits` to optionally accept a 1-min slice for the current 4h bar; keep 4h-only path as a deprecation-warning branch until the dashboard's 1-min upload UI ships.
+4. Update `tests/test_blueprint_examples.py` — Part C examples that hit HARD SL or TP will produce different `exit_time` values (sub-4h precision). The `entry_signal_price` / `exit_close` / `avg_entry_price` / `exit_price` fields keep their semantics.
+5. Re-derive the blueprint Part C tables on the new engine and re-commit alongside the engine change.
+
+### G.5 Out-of-scope expansion in the rules
+
+The user's notes (`notes2.md:59`) read:
+
+> *"we account for stop loss and take profit in a time frame to prevent spikes; the longer the candle the smaller the range (stricter); the shorter the time frame the bigger the range so it prevents very big losses."*
+
+This already justifies the asymmetric (timeframe, distance) pairing the user wants: **slow confirmation + tight distance** for soft (the playbook's "give it room to breathe but stop close on a confirmed close"); **fast confirmation + wide distance** for hard (the playbook's disaster stop). The dual-timeframe engine simply makes this explicit at the per-candle level instead of collapsing both checks to the 4h close.
 
 ---
 

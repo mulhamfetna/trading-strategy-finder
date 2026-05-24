@@ -112,6 +112,71 @@ def test_scaling_trade_multi_leg_entry_signal_price_matches_leg1_only():
 
 # ---- box strategy ----
 
+def test_soft_sl_fills_at_bar_close_not_at_line():
+    """User-reported rule (2026-05-24): 'when it hit the soft sl the loss is
+    not the soft-sl value it is the closing price of the candle'.
+
+    Soft SL fill: exit_price = the 4h close of the bar that confirmed the
+    soft SL (in 4h-only mode). Hard SL still fills at the sl_hard_line
+    (loss = exactly sl_hard_points). The asymmetric semantic is the point:
+    soft is a slow-confirmation stop where the realised loss IS the bar close;
+    hard is the disaster stop with a guaranteed line fill.
+    """
+    # base_level under the standard scaling trigger = prev_close = 20000.
+    # avg = 20000 ⇒ sl_soft_line = 19800, sl_hard_line = 19700.
+    df = _candles([
+        ('2025-01-01 00:00', 20000, 20010, 19990, 20000),
+        ('2025-01-01 04:00', 20000, 20020, 19995, 20010),  # signal close>prev_close ⇒ LONG
+        # Bar 2 closes at 19790: below soft line (19800), above hard line (19700).
+        # Under the FIX, exit_price = 19790 (close), NOT 19800 (line).
+        ('2025-01-01 08:00', 20010, 20020, 19780, 19790),
+    ])
+    strat = ScalingStrategy(params=scaling_params())
+    trades, _ = strat.backtest(df)
+    assert len(trades) == 1
+    t = trades[0]
+    assert t['exit_reason'] == 'STOP LOSS (SOFT)'
+    # Per the rule, exit_price = the confirming bar's close, not the line.
+    assert t['exit_price'] == 19790, (
+        f"Soft SL exit must record the bar close (19790), not the sl_soft line "
+        f"(19800). Got {t['exit_price']}."
+    )
+    # Loss reflects close-based fill: avg=20000, exit=19790, loss=210 > sl_soft_points (200).
+    assert t['profit_points'] == -210
+    # `exit_close` (the candle-grounded display field) matches exit_price for
+    # soft SL trades — the fill IS the bar close.
+    assert t['exit_close'] == t['exit_price']
+
+
+def test_hard_sl_still_fills_at_line_not_at_close():
+    """Companion to the soft test: HARD SL stays line-based (loss = exactly
+    sl_hard_points). The asymmetric fill semantic is intentional per the user's
+    rule (the 'loss of 100 by the default values' contract for hard)."""
+    # base_level = prev_close = 20000 ⇒ sl_hard_line = avg - sl_hard_points = 19700.
+    df = _candles([
+        ('2025-01-01 00:00', 20000, 20010, 19990, 20000),
+        ('2025-01-01 04:00', 20000, 20020, 19995, 20010),
+        # close=19500 well below the hard line (19700).
+        # exit_price MUST be the line (19700), not the close (19500).
+        ('2025-01-01 08:00', 20010, 20020, 19490, 19500),
+    ])
+    strat = ScalingStrategy(params=scaling_params())
+    trades, _ = strat.backtest(df)
+    assert len(trades) == 1
+    t = trades[0]
+    assert t['exit_reason'] == 'STOP LOSS (HARD)'
+    assert t['exit_price'] == 19700, (
+        f"Hard SL fill MUST be the sl_hard_line (19700). Loss in points is "
+        f"the configured sl_hard_points value, never the bar close. Got {t['exit_price']}."
+    )
+    # The candle-grounded display field shows where the bar actually closed.
+    # For hard SL it WILL differ from exit_price (line vs close) — the tooltip
+    # surfaces that gap.
+    assert t['exit_close'] == 19500
+    # PnL is line-based.
+    assert t['profit_points'] == -300
+
+
 def test_box_strategy_trade_carries_entry_signal_price_and_exit_close(tmp_path):
     """Box-strategy long that exits SL HARD: entry_signal_price = signal
     bar's close (matches MASTER_STRATEGY_GUIDE.md §3.1); exit_close =
