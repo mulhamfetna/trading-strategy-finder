@@ -18,8 +18,8 @@ export interface IndicatorSettings {
 const DEFAULT_INDICATORS: IndicatorSettings = {
   emaFast: 20,
   emaSlow: 50,
-  showVolume: true,
-  showRSI: true,
+  showVolume: false,
+  showRSI: false,
   rsiPeriod: 14,
 };
 

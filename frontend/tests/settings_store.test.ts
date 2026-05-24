@@ -29,6 +29,15 @@ describe('useSettingsStore', () => {
     expect(s.boxDataPath).toBe('NQ_full_data.csv');
   });
 
+  it('default indicators: volume and RSI off', () => {
+    const s = useSettingsStore();
+    expect(s.indicators.showVolume).toBe(false);
+    expect(s.indicators.showRSI).toBe(false);
+    expect(s.indicators.emaFast).toBe(20);
+    expect(s.indicators.emaSlow).toBe(50);
+    expect(s.indicators.rsiPeriod).toBe(14);
+  });
+
   it('reset() restores defaults after edits', () => {
     const s = useSettingsStore();
     s.params.total_contracts = 99;
