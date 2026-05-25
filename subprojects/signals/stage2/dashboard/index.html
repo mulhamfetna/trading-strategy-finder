@@ -56,6 +56,56 @@
 
     let DATA = null;
 
+    function populateSelects(columns, defaultX, defaultY) {
+      for (const col of columns) {
+        const optX = document.createElement('option');
+        optX.value = col; optX.textContent = col;
+        if (col === defaultX) optX.selected = true;
+        xSel.appendChild(optX);
+
+        const optY = document.createElement('option');
+        optY.value = col; optY.textContent = col;
+        if (col === defaultY) optY.selected = true;
+        ySel.appendChild(optY);
+      }
+    }
+
+    function render() {
+      if (!DATA) return;
+      const xCol = xSel.value;
+      const yCol = ySel.value;
+      const longs  = DATA.rows.filter(r => r.first_signal === 'long');
+      const shorts = DATA.rows.filter(r => r.first_signal === 'short');
+
+      const makeTrace = (rows, name, color) => ({
+        type: 'scattergl',
+        mode: 'markers',
+        name,
+        x: rows.map(r => r[xCol]),
+        y: rows.map(r => r[yCol]),
+        marker: { color, size: 6, opacity: 0.6 },
+        text: rows.map(r =>
+          `${r.first_datetime} → ${r.last_datetime}<br>` +
+          `${r.first_signal} → ${r.last_signal}<br>` +
+          `first_box_type: ${r.first_box_type}<br>` +
+          `last_box_type:  ${r.last_box_type}`
+        ),
+        hovertemplate: `%{text}<br>${xCol}: %{x}<br>${yCol}: %{y}<extra></extra>`,
+      });
+
+      const layout = {
+        margin: { l: 60, r: 20, t: 20, b: 50 },
+        xaxis: { title: { text: xCol } },
+        yaxis: { title: { text: yCol } },
+        dragmode: 'pan',
+        legend: { orientation: 'h', y: -0.15 },
+      };
+
+      Plotly.react(plotDiv, [makeTrace(longs, 'long', 'green'), makeTrace(shorts, 'short', 'red')], layout);
+
+      statusDiv.textContent = `${longs.length} long · ${shorts.length} short · X=${xCol}, Y=${yCol}`;
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
       try {
         const resp = await fetch(CSV_PATH);
@@ -69,6 +119,8 @@
         console.log('loaded', DATA.columns.length, 'cols,', DATA.rows.length, 'rows');
         document.getElementById('title').textContent =
           `Stage 2 — reverse_signals_full.csv (${DATA.rows.length} rows)`;
+        populateSelects(DATA.columns, 'tp', 'sl');
+        render();
       } catch (e) {
         showError(`Could not load ${CSV_PATH} — serve via 'python3 -m http.server'. (${e.message})`);
       }
