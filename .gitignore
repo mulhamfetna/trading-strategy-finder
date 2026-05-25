@@ -48,6 +48,7 @@ htmlcov/
 *.html
 *.pdf
 dashboard_*.html
+!subprojects/signals/stage2/dashboard/*.html
 
 # OS
 .DS_Store
