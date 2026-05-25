@@ -121,6 +121,8 @@
           `Stage 2 — reverse_signals_full.csv (${DATA.rows.length} rows)`;
         populateSelects(DATA.columns, 'tp', 'sl');
         render();
+        xSel.addEventListener('change', render);
+        ySel.addEventListener('change', render);
       } catch (e) {
         showError(`Could not load ${CSV_PATH} — serve via 'python3 -m http.server'. (${e.message})`);
       }
