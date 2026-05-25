@@ -26,8 +26,52 @@
 
   <script>
     'use strict';
-    document.addEventListener('DOMContentLoaded', () => {
-      console.log('dashboard ready');
+
+    const CSV_PATH = '../reverse_signals_full.csv';
+    const plotDiv = document.getElementById('plot');
+    const statusDiv = document.getElementById('status');
+    const xSel = document.getElementById('x-select');
+    const ySel = document.getElementById('y-select');
+
+    function showError(msg) {
+      plotDiv.innerHTML = `<div class="error">${msg}</div>`;
+    }
+
+    function parseCsv(text) {
+      const lines = text.trim().split('\n');
+      if (lines.length < 2) return { columns: [], rows: [] };
+      const columns = lines[0].split(',');
+      const rows = lines.slice(1).map(line => {
+        const cells = line.split(',');
+        const obj = {};
+        for (let i = 0; i < columns.length; i++) {
+          const raw = cells[i];
+          const num = Number(raw);
+          obj[columns[i]] = (raw !== '' && Number.isFinite(num)) ? num : raw;
+        }
+        return obj;
+      });
+      return { columns, rows };
+    }
+
+    let DATA = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const resp = await fetch(CSV_PATH);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const text = await resp.text();
+        DATA = parseCsv(text);
+        if (DATA.rows.length === 0) {
+          showError('CSV is empty.');
+          return;
+        }
+        console.log('loaded', DATA.columns.length, 'cols,', DATA.rows.length, 'rows');
+        document.getElementById('title').textContent =
+          `Stage 2 — reverse_signals_full.csv (${DATA.rows.length} rows)`;
+      } catch (e) {
+        showError(`Could not load ${CSV_PATH} — serve via 'python3 -m http.server'. (${e.message})`);
+      }
     });
   </script>
 </body>
