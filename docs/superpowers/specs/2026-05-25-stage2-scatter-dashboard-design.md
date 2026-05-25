@@ -111,12 +111,12 @@ No other defensive code. Internal data shape is trusted — we control the produ
 ## How to run
 
 ```
-cd subprojects/signals/stage2/dashboard
+cd subprojects/signals/stage2
 python3 -m http.server 8000
-# open http://localhost:8000
+# open http://localhost:8000/dashboard/
 ```
 
-A `file://` open will fail because of browser CORS on the CSV fetch. The HTTP server is one line and needs no install.
+The server must be rooted at `subprojects/signals/stage2/` (one level above `dashboard/`) because `python3 -m http.server` refuses to serve files outside its root, and the page needs to fetch `../reverse_signals_full.csv`. A `file://` open will also fail because of browser CORS on the CSV fetch. The HTTP server is one line and needs no install.
 
 ## Out of scope (deliberate YAGNI)
 
@@ -131,7 +131,7 @@ A `file://` open will fail because of browser CORS on the CSV fetch. The HTTP se
 
 ## Verification at completion
 
-1. `python3 -m http.server 8000` from `subprojects/signals/stage2/dashboard/`
+1. `python3 -m http.server 8000` from `subprojects/signals/stage2/`, then open `http://localhost:8000/dashboard/`
 2. Open browser, confirm the default `tp` vs `sl` scatter renders with 185 green and 185 red points
 3. Change X to `holds_between`, confirm plot re-renders
 4. Change Y to `first_datetime`, confirm Plotly switches to a datetime y-axis
