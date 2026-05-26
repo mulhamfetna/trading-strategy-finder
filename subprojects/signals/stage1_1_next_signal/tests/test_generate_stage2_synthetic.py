@@ -10,7 +10,7 @@ _HERE = os.path.dirname(os.path.abspath(__file__))
 _STAGE2 = os.path.abspath(os.path.join(_HERE, '..'))
 sys.path.insert(0, os.path.dirname(_STAGE2))  # so `stage2` is importable
 
-from stage2.generate_stage2 import generate  # noqa: E402
+from stage1_1_next_signal.generate_stage2 import generate  # noqa: E402
 
 
 _STAGE1_COLS = [
@@ -92,32 +92,41 @@ def test_long_two_holds_short_holds_between_is_two():
     assert r['window_low'] == 70.0
 
 
-def test_long_repeat_discards_first_anchor():
+def test_long_to_long_emits_same_direction_window():
+    """Stage 1.1 rule: same-state transitions emit, they do not discard."""
     rows = [
         _row('2025-01-01T00:00:00', 100, 110, 95, 108, 'long'),
-        _row('2025-01-01T04:00:00', 108, 115, 100, 113, 'long'),  # discard anchor 0
+        _row('2025-01-01T04:00:00', 108, 115, 100, 113, 'long'),
         _row('2025-01-01T08:00:00', 113, 116, 100, 105, 'hold'),
-    ]
-    df = generate(_stage1(rows))
-    assert len(df) == 0  # second long is still open at EOF -> dropped
-
-
-def test_long_hold_long_hold_short_anchor_is_second_long():
-    rows = [
-        _row('2025-01-01T00:00:00', 100, 110, 95, 108, 'long'),
-        _row('2025-01-01T04:00:00', 108, 109, 100, 105, 'hold'),
-        _row('2025-01-01T08:00:00', 105, 115, 100, 112, 'long'),   # new anchor
-        _row('2025-01-01T12:00:00', 112, 118, 100, 110, 'hold'),
-        _row('2025-01-01T16:00:00', 110, 113, 70, 80,  'short'),
     ]
     df = generate(_stage1(rows))
     assert len(df) == 1
     r = df.iloc[0]
-    assert r['first_datetime'] == '2025-01-01T08:00:00'
-    assert r['holds_between'] == 1
-    # window covers candles 2,3,4 -> high = max(115,118,113)=118; low=min(100,100,70)=70
-    assert r['window_high'] == 118.0
-    assert r['window_low'] == 70.0
+    assert r['first_signal'] == 'long'
+    assert r['last_signal']  == 'long'
+    assert r['holds_between'] == 0
+
+
+def test_long_hold_long_hold_short_emits_two_windows_in_stage1_1():
+    """Stage 1.1: long→long emits, then long→short emits."""
+    rows = [
+        _row('2025-01-01T00:00:00', 100, 110, 95, 108, 'long'),
+        _row('2025-01-01T04:00:00', 108, 109, 100, 105, 'hold'),
+        _row('2025-01-01T08:00:00', 105, 115, 100, 112, 'long'),
+        _row('2025-01-01T12:00:00', 112, 118, 100, 110, 'hold'),
+        _row('2025-01-01T16:00:00', 110, 113, 70, 80,  'short'),
+    ]
+    df = generate(_stage1(rows))
+    assert len(df) == 2
+    r0 = df.iloc[0]
+    assert r0['first_signal']   == 'long'
+    assert r0['last_signal']    == 'long'
+    assert r0['holds_between']  == 1
+    r1 = df.iloc[1]
+    assert r1['first_signal']   == 'long'
+    assert r1['last_signal']    == 'short'
+    assert r1['holds_between']  == 1
+    assert r0['last_datetime']  == r1['first_datetime']
 
 
 def test_long_short_long_emits_two_windows_with_shared_short():

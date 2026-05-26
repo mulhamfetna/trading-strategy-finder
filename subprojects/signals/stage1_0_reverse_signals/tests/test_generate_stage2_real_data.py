@@ -19,7 +19,7 @@ _HERE = os.path.dirname(os.path.abspath(__file__))
 _STAGE2 = os.path.abspath(os.path.join(_HERE, '..'))
 sys.path.insert(0, os.path.dirname(_STAGE2))
 
-from stage2.generate_stage2 import generate  # noqa: E402
+from stage1_0_reverse_signals.generate_stage2 import generate  # noqa: E402
 
 _REPO_ROOT = os.path.abspath(os.path.join(_HERE, '..', '..', '..', '..'))
 _SIGNALS_FULL = os.path.join(_REPO_ROOT, 'subprojects', 'signals', 'signals_full.csv')

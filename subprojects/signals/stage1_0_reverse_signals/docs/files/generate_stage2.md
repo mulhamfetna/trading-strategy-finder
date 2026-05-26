@@ -1,6 +1,6 @@
 ---
 name: generate_stage2
-description: subprojects/signals/stage2/generate_stage2.py — Stage 2 reverse-signal generator
+description: subprojects/signals/stage1_0_reverse_signals/generate_stage2.py — Stage 2 reverse-signal generator
 type: file
 ---
 
@@ -54,12 +54,12 @@ Pure-string transform: splits a `;`-separated `box_id` value into components, ta
 ## CLI
 
 ```
-python3 subprojects/signals/stage2/generate_stage2.py --preset full
-python3 subprojects/signals/stage2/generate_stage2.py --preset 2025
-python3 subprojects/signals/stage2/generate_stage2.py --preset 2026
+python3 subprojects/signals/stage1_0_reverse_signals/generate_stage2.py --preset full
+python3 subprojects/signals/stage1_0_reverse_signals/generate_stage2.py --preset 2025
+python3 subprojects/signals/stage1_0_reverse_signals/generate_stage2.py --preset 2026
 ```
 
-Outputs are written next to the script (`subprojects/signals/stage2/`). The two split files land in `by_direction/`. Use `--out-dir` to redirect.
+Outputs are written next to the script (`subprojects/signals/stage1_0_reverse_signals/`). The two split files land in `by_direction/`. Use `--out-dir` to redirect.
 
 ## Behaviour pinned by tests
 

@@ -1,6 +1,6 @@
 ---
 name: generate_stage2_synthetic
-description: subprojects/signals/stage2/tests/test_generate_stage2_synthetic.py — branch-coverage tests for the Stage 2 rule
+description: subprojects/signals/stage1_0_reverse_signals/tests/test_generate_stage2_synthetic.py — branch-coverage tests for the Stage 2 rule
 type: file
 ---
 

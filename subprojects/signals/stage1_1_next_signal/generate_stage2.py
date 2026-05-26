@@ -1,20 +1,21 @@
-"""Stage 2 — reverse-signal window extractor.
+"""Stage 1.1 — next-signal window extractor.
 
-Reads a Stage 1 CSV (one row per (candle, level pair)), collapses per-candle
-state by the rule:
+Variant of the reverse-signal extractor (`stage1_0_reverse_signals`). Reads
+the same Stage 1 CSV (one row per (candle, level pair)) and collapses per-
+candle state by the same rule:
 
     candle_state =
         'long'  if any row for the candle has signal == 'long'
         'short' if any row for the candle has signal == 'short'
         'hold'  otherwise
 
-then linearly scans the candle stream for reverse signals (long → ... → short
-or short → ... → long, holds permitted between). For each closed window emits
-one row with anchor/reverse candle data (incl. matching box_ids as semicolon-
-joined strings), window high/low, direction-aware tp/sl, and the count of
-hold candles strictly between the endpoints.
+then linearly scans the candle stream and emits a window on EVERY transition
+from one non-hold candle to the next non-hold candle, regardless of whether
+the new state matches or opposes the anchor's state. The stage1.0 variant
+discards same-state transitions; this one keeps them.
 
-The tp/sl formula is keyed to the **anchor candle's color**:
+The tp/sl formula is keyed to the **anchor candle's color**, independent of
+the closer's signal:
 
     green anchor (close > open):  tp = window_high − first_close
                                   sl = first_close − window_low
@@ -22,13 +23,15 @@ The tp/sl formula is keyed to the **anchor candle's color**:
                                   sl = window_high − first_close
 
 A doji anchor (close == open) cannot occur — Stage 1's color rule makes any
-doji candle a 'hold', so it never becomes an anchor.
+doji candle a 'hold'. The new rule emits four direction-pair classes:
+long→long, long→short, short→long, short→short.
 
-See subproject_signals_stage2_round3_FINAL.md for the locked spec.
+See `docs/superpowers/specs/2026-05-26-stage1.1-next-signal/proposal.md`
+for the windowing truth-table and the soundness analysis.
 
 Usage:
-    python3 subprojects/signals/stage2/generate_stage2.py --preset full
-    python3 subprojects/signals/stage2/generate_stage2.py --preset 2025 --out /tmp/x.csv
+    python3 subprojects/signals/stage1_1_next_signal/generate_stage2.py --preset full
+    python3 subprojects/signals/stage1_1_next_signal/generate_stage2.py --preset 2025
 """
 from __future__ import annotations
 
@@ -149,14 +152,11 @@ def _scan_windows(candles: pd.DataFrame) -> Iterator[dict]:
             i += 1
             continue
 
-        anchor_state = rows.at[anchor_idx, 'candle_state']
-        if state == anchor_state:
-            # Same-state repeat: discard the open window, restart anchor here.
-            anchor_idx = i
-            i += 1
-            continue
-
-        # Opposite state: close window from anchor_idx through i (inclusive).
+        # Next-signal rule (stage1.1): emit on EVERY transition to a
+        # non-hold candle, regardless of whether the new state matches the
+        # anchor's state. The stage1_0_reverse_signals variant discards
+        # same-state transitions; this one keeps them.
+        # Close window from anchor_idx through i (inclusive).
         window = rows.iloc[anchor_idx : i + 1]
         anchor = window.iloc[0]
         reverse = window.iloc[-1]
@@ -230,33 +230,35 @@ def generate_from_csv(signals_csv: str) -> pd.DataFrame:
 
 
 def write_outputs(df: pd.DataFrame, stage2_dir: str, preset: str) -> List[str]:
-    """Write the unified file + the two direction-split files for one preset.
+    """Write the unified file + the four direction-pair split files.
+
+    Stage 1.1 emits four pair classes (long→long, long→short, short→long,
+    short→short), so the split fans out to four files rather than two.
 
     Returns the list of paths written.
     """
     paths = []
-    unified = os.path.join(stage2_dir, f'reverse_signals_{preset}.csv')
+    unified = os.path.join(stage2_dir, f'next_signals_{preset}.csv')
     df.to_csv(unified, index=False)
     paths.append(unified)
 
     by_dir = os.path.join(stage2_dir, 'by_direction')
     os.makedirs(by_dir, exist_ok=True)
-    l2s = df[df['first_signal'] == 'long'].reset_index(drop=True)
-    s2l = df[df['first_signal'] == 'short'].reset_index(drop=True)
-    l2s_path = os.path.join(by_dir, f'long_to_short_{preset}.csv')
-    s2l_path = os.path.join(by_dir, f'short_to_long_{preset}.csv')
-    l2s.to_csv(l2s_path, index=False)
-    s2l.to_csv(s2l_path, index=False)
-    paths.append(l2s_path)
-    paths.append(s2l_path)
+    for first, last in (('long', 'long'), ('long', 'short'),
+                       ('short', 'long'), ('short', 'short')):
+        sub = df[(df['first_signal'] == first) & (df['last_signal'] == last)]
+        sub = sub.reset_index(drop=True)
+        path = os.path.join(by_dir, f'{first}_to_{last}_{preset}.csv')
+        sub.to_csv(path, index=False)
+        paths.append(path)
     return paths
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description='Stage 2 reverse-signal extractor')
+    parser = argparse.ArgumentParser(description='Stage 1.1 next-signal extractor')
     parser.add_argument('--preset', choices=['full', '2025', '2026'], default='full')
     parser.add_argument('--signals-csv', default=None, help='Override Stage 1 CSV path.')
-    parser.add_argument('--out-dir', default=None, help='Override stage2 output directory.')
+    parser.add_argument('--out-dir', default=None, help='Override stage1_1 output directory.')
     args = parser.parse_args()
 
     signals_csv = args.signals_csv or os.path.join(
@@ -270,9 +272,9 @@ def main() -> int:
     df = generate_from_csv(signals_csv)
     paths = write_outputs(df, out_dir, args.preset)
 
-    by_dir = df['first_signal'].value_counts().to_dict()
-    print(f"wrote {len(df)} reverse windows for preset {args.preset}")
-    print(f"  by direction: {by_dir}")
+    by_dir = df.groupby(['first_signal', 'last_signal']).size().to_dict()
+    print(f"wrote {len(df)} next-signal windows for preset {args.preset}")
+    print(f"  by direction pair: {by_dir}")
     for p in paths:
         print(f"  -> {p}")
     return 0

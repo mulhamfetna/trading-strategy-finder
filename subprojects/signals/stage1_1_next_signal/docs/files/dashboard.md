@@ -1,18 +1,18 @@
 ---
 name: stage2_dashboard
-description: subprojects/signals/stage2/dashboard/index.html — interactive X/Y scatter viewer for reverse_signals_full.csv
+description: subprojects/signals/stage1_1_next_signal/dashboard/index.html — interactive X/Y scatter viewer for next_signals_full.csv
 type: file
 ---
 
 # dashboard/index.html
 
-Self-contained static HTML page that loads `reverse_signals_full.csv` and renders a Plotly scatter with user-selectable X and Y columns. Successor to the static matplotlib script at `subprojects/signals/stage2/plots/scatter_tp_vs_sl.py` (which is locked to `tp` vs `sl`).
+Self-contained static HTML page that loads `next_signals_full.csv` and renders a Plotly scatter with user-selectable X and Y columns. Successor to the static matplotlib script at `subprojects/signals/stage1_1_next_signal/plots/scatter_tp_vs_sl.py` (which is locked to `tp` vs `sl`).
 
 First component of Stage 3 (manageability inspection of the Stage 2 dataset), per `sub-projects-preprint.md`. See [[stage2_output_schema]] for the column list it operates over.
 
 ## Files
 
-- `subprojects/signals/stage2/dashboard/index.html` — the only file. Inline CSS + JS, no build step, no other assets.
+- `subprojects/signals/stage1_1_next_signal/dashboard/index.html` — the only file. Inline CSS + JS, no build step, no other assets.
 
 ## Dependencies
 
@@ -22,12 +22,12 @@ First component of Stage 3 (manageability inspection of the Stage 2 dataset), pe
 ## How to run
 
 ```
-cd subprojects/signals/stage2
+cd subprojects/signals/stage1_1_next_signal
 python3 -m http.server 8000
 # open http://localhost:8000/dashboard/
 ```
 
-The server **must root at `subprojects/signals/stage2/`**, not inside `dashboard/`. `python3 -m http.server` refuses to serve files outside its root, and the page fetches `../reverse_signals_full.csv` (one level up from itself).
+The server **must root at `subprojects/signals/stage1_1_next_signal/`**, not inside `dashboard/`. `python3 -m http.server` refuses to serve files outside its root, and the page fetches `../next_signals_full.csv` (one level up from itself).
 
 `file://` opens will not work — the CSV `fetch()` is blocked by browser CORS rules unless served over HTTP.
 
@@ -35,7 +35,7 @@ The server **must root at `subprojects/signals/stage2/`**, not inside `dashboard
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ Stage 2 — reverse_signals_full.csv (372 rows)            │
+│ Stage 1.1 — next_signals_full.csv (372 rows)            │
 │                                                          │
 │  X axis: [tp ▾]    Y axis: [sl ▾]                        │
 │                                                          │
@@ -59,7 +59,7 @@ The server **must root at `subprojects/signals/stage2/`**, not inside `dashboard
 DOMContentLoaded
   │
   ▼
-fetch('../reverse_signals_full.csv')
+fetch('../next_signals_full.csv')
   │
   ▼
 parseCsv(text) — split on '\n' and ',' ; Number(v) coercion for numeric cells
@@ -100,7 +100,7 @@ System-boundary only:
 
 | Condition | Behavior |
 |---|---|
-| `fetch` fails (non-2xx, network error, file:// open) | Plot area replaced with `Could not load ../reverse_signals_full.csv — serve via 'python3 -m http.server'. (<reason>)` |
+| `fetch` fails (non-2xx, network error, file:// open) | Plot area replaced with `Could not load ../next_signals_full.csv — serve via 'python3 -m http.server'. (<reason>)` |
 | CSV parses to 0 data rows                            | Plot area replaced with `CSV is empty.`                                                                              |
 
 No defensive code beyond this. Internal data shape is trusted — the producer is `generate_stage2.py` and the schema is locked by [[generate_stage2_real_data]].
@@ -108,11 +108,11 @@ No defensive code beyond this. Internal data shape is trusted — the producer i
 ## What this file does NOT include
 
 - Filter controls beyond X/Y choice
-- Multiple CSVs (locked to `reverse_signals_full.csv`)
+- Multiple CSVs (locked to `next_signals_full.csv`)
 - Selectable color column (locked to `first_signal`)
 - Download / export / URL state
 - Automated tests — the spec explicitly excludes them. Verification is manual against the spec's checklist.
 
 ## .gitignore note
 
-The project-wide `.gitignore` ignores `*.html` (output artifacts). The dashboard is whitelisted via `!subprojects/signals/stage2/dashboard/*.html`. Adding more HTML files to this directory is the supported extension path; HTML elsewhere remains ignored.
+The project-wide `.gitignore` ignores `*.html` (output artifacts). The dashboard is whitelisted via `!subprojects/signals/stage1_1_next_signal/dashboard/*.html`. Adding more HTML files to this directory is the supported extension path; HTML elsewhere remains ignored.

@@ -1,6 +1,6 @@
 ---
 name: generate_stage2_real_data
-description: subprojects/signals/stage2/tests/test_generate_stage2_real_data.py — regression locks against signals_full.csv
+description: subprojects/signals/stage1_1_next_signal/tests/test_generate_stage2_real_data.py — regression locks against signals_full.csv
 type: file
 ---
 
@@ -14,7 +14,7 @@ The test module is `@pytest.mark.skipif`-guarded: if `signals_full.csv` is missi
 
 | # | Test | What it pins |
 |---|---|---|
-| 1  | `test_total_window_count_locked` | `len(reverse_signals) == 372` |
+| 1  | `test_total_window_count_locked` | `len(next_signals) == 372` |
 | 2  | `test_direction_split_locked` | `first_signal.value_counts() == {long: 186, short: 186}` |
 | 3  | `test_first_window_locked` | full first-row tuple (green/long anchor `2025-01-01T22:00:00` → short `2025-01-02T10:00:00`; first_box_id=`M-IH_2025-01-02`, first_box_type=`M-IH`, last_box_id=`M-IH_…;W-RL_…`, last_box_type=`M-IH;W-RL`; tp=101.0, sl=405.75, holds_between=2) |
 | 4  | `test_last_window_locked` | full last-row tuple (red/short anchor `2026-05-15T14:00:00` → long `2026-05-18T14:00:00`; first_box_id=`M-TH_2026-05-15`, first_box_type=`M-TH`, last_box_id=`M-RH_…;W-IL_…`, last_box_type=`M-RH;W-IL`; tp=358.25, sl=313.75, holds_between=5) |
@@ -33,7 +33,7 @@ The test module is `@pytest.mark.skipif`-guarded: if `signals_full.csv` is missi
 
 ## Module-scoped fixture
 
-`reverse_signals` runs `generate(signals_df)` once per module. All 11 tests share the same DataFrame. Run time: ~1 second.
+`next_signals` runs `generate(signals_df)` once per module. All 11 tests share the same DataFrame. Run time: ~1 second.
 
 ## When this test fails
 

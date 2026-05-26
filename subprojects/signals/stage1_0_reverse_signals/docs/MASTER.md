@@ -76,7 +76,7 @@ Per-column semantics: [[output_schema]].
 ## 4. Files
 
 ```
-subprojects/signals/stage2/
+subprojects/signals/stage1_0_reverse_signals/
 ├── generate_stage2.py                 ← module + CLI
 ├── reverse_signals_full.csv           ← preset full
 ├── reverse_signals_2025.csv           ← preset 2025
@@ -130,7 +130,7 @@ The `full` figures are regression-locked in [[generate_stage2_real_data]]. The p
 Run:
 
 ```
-cd subprojects/signals/stage2
+cd subprojects/signals/stage1_0_reverse_signals
 python3 -m http.server 8000
 # open http://localhost:8000/dashboard/
 ```
