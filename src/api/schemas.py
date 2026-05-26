@@ -172,7 +172,7 @@ class SimpleBacktestRequest(BaseModel):
       * Hard SL — 1-min bar extreme touches line → fill at line.
       * TP     — 1-min bar extreme touches line → fill at line.
 
-    See `docs/superpowers/specs/2026-05-26-simple-backtest/notes.md`.
+    See `docs/strategy/references/simple_engine_truth_table.md`.
     """
     sl_soft_points: float = Field(..., gt=0, description='Soft SL distance from entry close (close-confirmed).')
     sl_hard_points: float = Field(..., gt=0, description='Hard SL distance from entry close (touch fill).')

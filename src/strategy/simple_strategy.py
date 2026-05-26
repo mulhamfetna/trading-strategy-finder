@@ -44,8 +44,8 @@ Replacement for the box/ladder/dual-anchor stack. Decision sheet:
     waiting; if long/short, we open immediately — regardless of the
     previous trade's direction or exit reason.
 
-Spec: `backtest_updates.md` + `docs/superpowers/specs/2026-05-26-simple-backtest/notes.md`.
-Plan: `docs/superpowers/plans/2026-05-26-simple-backtest.md`.
+Live reference: `docs/strategy/files/simple_strategy.md` (file overview) and
+`docs/strategy/references/simple_engine_truth_table.md` (formal decision tables).
 """
 from __future__ import annotations
 

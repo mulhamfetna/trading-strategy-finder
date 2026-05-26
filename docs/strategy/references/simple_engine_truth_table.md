@@ -1,14 +1,12 @@
 ---
 name: simple_engine_truth_table
-description: Formal truth table for the simple engine — entry decision (Stage 1) and exit decision (dual-SL + TP). Audit against backtest_updates.md and the v2 notes.md.
+description: Formal truth table for the simple engine — entry decision (Stage 1) and exit decision (dual-SL + TP).
 type: reference
 ---
 
 # Simple engine — entry & exit truth tables
 
-Audit document for `src/strategy/simple_strategy.py` against `backtest_updates.md` and the locked v2 decisions in `docs/superpowers/specs/2026-05-26-simple-backtest/notes.md`.
-
-The simple engine is **two coupled state machines**: an entry decision per closed 4h candle and an exit decision per 1-min bar of an open trade. This document writes out both as formal decision tables and flags every place where the implementation might deviate from the spec.
+Live reference for `src/strategy/simple_strategy.py`. The simple engine is **two coupled state machines**: an entry decision per closed 4h candle and an exit decision per 1-min bar of an open trade. This document is the formal decision-table specification.
 
 ---
 

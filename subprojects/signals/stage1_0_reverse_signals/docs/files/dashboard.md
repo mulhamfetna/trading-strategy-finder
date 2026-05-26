@@ -8,7 +8,7 @@ type: file
 
 Self-contained static HTML page that loads `reverse_signals_full.csv` and renders a Plotly scatter with user-selectable X and Y columns. Successor to the static matplotlib script at `subprojects/signals/stage1_0_reverse_signals/plots/scatter_tp_vs_sl.py` (which is locked to `tp` vs `sl`).
 
-First component of Stage 3 (manageability inspection of the Stage 2 dataset), per `sub-projects-preprint.md`. See [[stage2_output_schema]] for the column list it operates over.
+Manageability inspection of the windowing-layer dataset. See [[stage2_output_schema]] for the column list it operates over.
 
 ## Files
 

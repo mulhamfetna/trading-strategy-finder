@@ -135,7 +135,7 @@ python3 -m http.server 8000
 # open http://localhost:8000/dashboard/
 ```
 
-Full reference: [[stage2_dashboard]]. Design spec: `docs/superpowers/specs/2026-05-25-stage2-scatter-dashboard-design.md`.
+Full reference: [[stage2_dashboard]].
 
 ---
 
@@ -146,4 +146,4 @@ Full reference: [[stage2_dashboard]]. Design spec: `docs/superpowers/specs/2026-
 - Interpret manageability of the generated values — that is Stage 3.
 - Render charts or write graphics.
 
-See `sub-projects-preprint.md` for the overall three-stage plan.
+See [[signals-master]] for the overall Stage 1 → windowing → backtest pipeline map.

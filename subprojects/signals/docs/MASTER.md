@@ -8,13 +8,13 @@ type: master
 
 This document is the single source of truth for what the Stage 1 signal extractor does. Stage 1 is part of an offline sub-project that lives entirely under `subprojects/signals/` and shares **no code or runtime state** with the main trading engine.
 
-The full multi-stage roadmap (from `sub-projects-preprint.md`):
+The multi-stage roadmap that this subproject sits inside:
 
 | Stage | Purpose |
 |---|---|
 | **1 (this doc)** | Label each (4h candle, box) pair as `long` / `short` / `hold`. No 1-min, no SL/TP, no trading. |
-| **2 (future)** | Hunt for reverse-signal pairs and compute the max SL/TP that doesn't hit the opposite signal. |
-| **3 (future)** | Inspect the Stage 2 output; if the SL/TP distances are manageable, use them — else design a strategy that copes. |
+| **2** | Build windowing layers over the Stage 1 stream — see the sibling subprojects `stage1_0_reverse_signals/` (long↔short pairs) and `stage1_1_next_signal/` (any-to-any consecutive non-hold pairs). |
+| **3** | Inspect the windowing outputs and feed them to a downstream backtest (e.g. `src/strategy/simple_strategy.py`). |
 
 Stage 1 is **frozen** by the FINAL spec (formerly draft Round 5, now archived in this MASTER) and locked by 18 tests under `subprojects/signals/tests/`.
 
@@ -149,7 +149,7 @@ Same input CSVs + same code → byte-identical output CSV. No timestamps in the 
 | Synthetic tests (12) | passing |
 | Real-data regression locks (6) | passing |
 | Generated CSVs (full / 2025 / 2026) | written under `subprojects/signals/` |
-| Stage 2 | not started; spec in `sub-projects-preprint.md` |
+| Stage 2 windowing layers | `stage1_0_reverse_signals/` + `stage1_1_next_signal/` (both shipped) |
 
 ---
 

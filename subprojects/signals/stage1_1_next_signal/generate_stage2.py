@@ -26,8 +26,8 @@ A doji anchor (close == open) cannot occur — Stage 1's color rule makes any
 doji candle a 'hold'. The new rule emits four direction-pair classes:
 long→long, long→short, short→long, short→short.
 
-See `docs/superpowers/specs/2026-05-26-stage1.1-next-signal/proposal.md`
-for the windowing truth-table and the soundness analysis.
+See `docs/references/next_signal_rule.md` for the windowing truth-table and
+the soundness analysis.
 
 Usage:
     python3 subprojects/signals/stage1_1_next_signal/generate_stage2.py --preset full

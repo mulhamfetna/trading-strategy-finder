@@ -97,4 +97,4 @@ subprojects/signals/stage1_1_next_signal/
 
 Stage 1.1 is a strict superset: filter `first_signal != last_signal` to recover the stage 1.0 dataset exactly. Stage 1 itself (the per-candle producer) is shared.
 
-See `docs/superpowers/specs/2026-05-26-stage1.1-next-signal/proposal.md` for the soundness analysis.
+See [[next_signal_rule]] for the formal decision matrix and soundness properties.

@@ -6,7 +6,7 @@ type: file
 
 # `src/strategy/simple_strategy.py`
 
-Sibling engine to [[box_strategy]] / [[scaling_strategy]]. Same project, same data, different ruleset. Built per `backtest_updates.md` after the truth-table reconciliation resolved that **Stage 1's rule wins** for entry direction.
+Sibling engine to [[box_strategy]] / [[scaling_strategy]]. Same project, same data, different ruleset. **Stage 1's per-candle rule is the canonical entry decision**; the simple engine is a thin SL/TP exit layer on top.
 
 The two engines coexist; the old one is unchanged. Pick by hitting the right endpoint (`/api/backtest/box` vs `/api/backtest/simple`) or by passing the right strategy class into the harness.
 
@@ -182,7 +182,7 @@ Regression-pinned in `tests/test_simple_strategy.py`:
 | `OPEN` (open at EOF) | 0 |
 | Total pnl $ | **+65,555** |
 
-Pnl is positive even without parameter tuning — the no-look-ahead fix (2026-05-26 v3) eliminated the bias that was inflating hard-SL exits. Optimizer will find better params; this baseline is just to lock the rule semantics.
+Pnl is positive even without parameter tuning — the no-look-ahead timing (signal from the just-closed bar; entry at the next bar's start) keeps the exit walk on bars chronologically after the signal. The optimizer will find better params; this baseline is just to lock the rule semantics.
 
 ### R3 analysis (hard SL + TP touch in same bar)
 
@@ -207,10 +207,8 @@ Theoretical concern: a single 1-min bar can span both the TP line above and the 
 ## 10. Wired to
 
 - [[truth_table]] supplies the entry rule.
+- [[simple_engine_truth_table]] is the formal entry + exit decision-table reference.
 - [[box_lookup]] supplies box geometry (`_LEVEL_PAIRS`, `_candle_to_box_date`). The simple engine reuses these constants but does not invoke `BoxLookup.get_signal()` — the stateful state machine is intentionally bypassed.
-- Plan: `docs/superpowers/plans/2026-05-26-simple-backtest.md`.
-- Decisions wizard: `docs/superpowers/specs/2026-05-26-simple-backtest/notes.md`.
-- Original requirement: `backtest_updates.md`.
 
 ---
 
