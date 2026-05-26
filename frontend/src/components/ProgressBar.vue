@@ -89,6 +89,12 @@ const maxLegs = computed(
   () => settings.params.leg1_contracts + settings.params.leg2_contracts + settings.params.leg3_contracts,
 );
 
-const percentText = computed(() => `${store.percent.toFixed(1)}%`);
-const barWidth = computed(() => `${Math.min(100, store.percent)}%`);
+// In simple mode (no streamed progress events) the store's percent stays
+// at 0; once results land we want the bar to show "done" anyway.
+const effectivePercent = computed(() => {
+  if (store.hasResults && !store.isRunning) return 100;
+  return Math.min(100, store.percent);
+});
+const percentText = computed(() => `${effectivePercent.value.toFixed(0)}%`);
+const barWidth = computed(() => `${effectivePercent.value}%`);
 </script>

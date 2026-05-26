@@ -766,19 +766,10 @@ def post_simple_backtest(req: SimpleBacktestRequest):
         'open_at_end':     n_open,
     }
 
-    # Candles for the chart overlay — shape matches the box endpoint's
-    # `candles` array (one entry per 4h bar with ISO time + OHLCV).
-    candles_payload = [
-        {
-            'time':   row['Date'].isoformat() if hasattr(row['Date'], 'isoformat') else str(row['Date']),
-            'open':   float(row['Open']),
-            'high':   float(row['High']),
-            'low':    float(row['Low']),
-            'close':  float(row['Close']),
-            'volume': float(row['Volume']) if 'Volume' in row.index and not pd.isna(row['Volume']) else 0.0,
-        }
-        for _, row in df_4h.iterrows()
-    ]
+    # Candles for the chart overlay — shape matches the canonical Candle
+    # schema (short keys t/o/h/l/c/v; ChartPane.toUTCTimestamp expects `t`
+    # not `time` — silent failure otherwise).
+    candles_payload = [c.model_dump() for c in _candles_from_df(df_4h)]
 
     return JSONResponse({
         'summary':    summary,

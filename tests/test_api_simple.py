@@ -62,9 +62,10 @@ def test_endpoint_returns_summary_and_trades():
     m = body['metrics']
     assert m['total_trades'] == 590
     assert 'win_rate' in m and 'total_profit' in m
-    # Candles array present for chart overlay.
+    # Candles array present for chart overlay — canonical t/o/h/l/c/v keys
+    # so frontend `toUTCTimestamp(c.t)` works without translation.
     assert len(body['candles']) > 0
-    assert set(body['candles'][0]) >= {'time','open','high','low','close','volume'}
+    assert set(body['candles'][0]) == {'t','o','h','l','c','v'}
 
 
 def test_endpoint_400_on_missing_4h_path():

@@ -82,13 +82,14 @@ export const useSettingsStore = defineStore('settings', () => {
   const simpleParams = reactive<SimpleParams>(
     tryLoad(LS_SIMPLE, { ...DEFAULT_SIMPLE_PARAMS }),
   );
+  const _ls = typeof localStorage !== 'undefined' ? localStorage : null;
   const engineMode = ref<EngineMode>(
-    (localStorage.getItem(LS_ENGINE) as EngineMode) ?? 'simple',
+    ((_ls?.getItem(LS_ENGINE) as EngineMode) ?? 'simple'),
   );
-  watch(engineMode, (v) => localStorage.setItem(LS_ENGINE, v));
+  watch(engineMode, (v) => _ls?.setItem(LS_ENGINE, v));
   watch(
     () => JSON.stringify(simpleParams),
-    (s) => localStorage.setItem(LS_SIMPLE, s),
+    (s) => _ls?.setItem(LS_SIMPLE, s),
   );
   const dataPath = ref<string>(DEFAULT_DATA_PATH);
   const dataPath1min = ref<string>(DEFAULT_DATA_PATH_1MIN);
