@@ -1,4 +1,4 @@
-"""Smoke tests for POST /api/backtest/simple."""
+"""Smoke tests for POST /api/backtest/simple (dual-SL/TP model)."""
 from __future__ import annotations
 
 import os
@@ -25,7 +25,8 @@ pytestmark = pytest.mark.skipif(
 
 def _payload(**overrides):
     base = {
-        'sl_points':       100,
+        'sl_soft_points':  100,
+        'sl_hard_points':  200,
         'tp_points':       150,
         'data_path':       _4H,
         'data_path_1min':  _1M,
@@ -39,19 +40,16 @@ def _payload(**overrides):
 
 
 def test_endpoint_returns_summary_and_trades():
-    """End-to-end: run the engine through the HTTP layer; assert the same
-    locked counts the unit tests pin (604 trades / 87 TP / 516 SL / 1 OPEN)."""
     r = client.post('/api/backtest/simple', json=_payload())
     assert r.status_code == 200, r.text
     body = r.json()
     assert set(body) == {'summary', 'trades'}
     s = body['summary']
-    assert s['n_trades']      == 604
-    assert s['n_take_profit'] == 87
-    assert s['n_stop_loss']   == 516
+    assert s['n_trades']      == 590
+    assert s['n_take_profit'] == 94
+    assert s['n_stop_loss']   == 152 + 343
     assert s['n_open_at_eof'] == 1
-    assert len(body['trades']) == 604
-    # Timestamps are ISO strings, not raw Timestamps
+    assert len(body['trades']) == 590
     assert isinstance(body['trades'][0]['entry_time'], str)
 
 
@@ -65,10 +63,15 @@ def test_endpoint_long_only_filters_signal():
     assert r.status_code == 200
     trades = r.json()['trades']
     assert all(t['direction'] == 'long' for t in trades)
-    # long_only is a strict subset of the full run (no shorts ever fire).
-    assert 0 < len(trades) < 604
+    assert 0 < len(trades) < 590
 
 
-def test_endpoint_422_on_invalid_sl():
-    r = client.post('/api/backtest/simple', json=_payload(sl_points=-1))
+def test_endpoint_422_on_negative_sl():
+    r = client.post('/api/backtest/simple', json=_payload(sl_soft_points=-1))
+    assert r.status_code == 422
+
+
+def test_endpoint_422_on_hard_below_soft():
+    r = client.post('/api/backtest/simple',
+                    json=_payload(sl_soft_points=200, sl_hard_points=100))
     assert r.status_code == 422

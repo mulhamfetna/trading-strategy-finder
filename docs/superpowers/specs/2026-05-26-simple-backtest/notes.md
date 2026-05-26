@@ -258,3 +258,33 @@ The viewer at `docs/superpowers/specs/2026-05-26-nsga2-truth-table-prep/viewer/i
 6. Decide what to do with the old engine (keep behind flag / deprecate / delete).
 
 Nothing happens until you fill the `>>>` blocks above and ping me.
+
+---
+
+## Update 2026-05-26 v2 — exit model overruled
+
+The Q2/Q3/Q4 answers above are superseded by a clarification from the user:
+
+> *"the soft stop loss waits till two sequence candles to close under specific value so it exit and registers the price as the actual exit price ... for the hard stop loss it watches the up (max) (touch) value ... at the close of the end of the 1 min candle we are comparing the value of the max (UP) price of the candle with our hard stop loss ... if passed it we exit and store the hard sl value not the close value to mimic real live data stream ... the tp system is always tied to the one minute candle for touch ... it compares the value we introduced to the UP value the max value and stores it not the close value"*
+
+Locked behaviour:
+
+- **Soft SL** — 2 consecutive 1-min **closes** past the soft line → exit at the **2nd close** (worse than the line in absolute value). Single-close past, then a recovery, resets the counter.
+- **Hard SL** — 1-min bar's **extreme** (`low` for long, `high` for short) touches the hard line → exit at the **hard line price** (idealised stop fill).
+- **TP** — 1-min bar's **extreme** (`high` for long, `low` for short) touches the TP line → exit at the **TP line price** (idealised limit fill).
+- Per-bar tie-break: **hard SL > TP > soft SL** (pessimistic intra-bar ordering).
+- New params: `sl_soft_points`, `sl_hard_points`, `tp_points`. Validator: `sl_hard_points >= sl_soft_points`.
+- New exit reasons: `TAKE_PROFIT`, `STOP_LOSS_HARD`, `STOP_LOSS_SOFT`, `OPEN`.
+
+Real-data lock at `(sl_soft=100, sl_hard=200, tp=150)` on the full preset:
+
+| | count |
+|---|---|
+| Total trades | 590 |
+| STOP_LOSS_HARD | 152 |
+| STOP_LOSS_SOFT | 343 |
+| TAKE_PROFIT | 94 |
+| OPEN | 1 |
+| Total pnl $ | −1,163,360 |
+
+Engine + tests + API + docs were updated to match. The earlier single-SL close-past locks (604 trades) are obsolete.

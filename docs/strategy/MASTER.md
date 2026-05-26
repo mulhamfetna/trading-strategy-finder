@@ -15,7 +15,7 @@ After the 2026-05-26 truth-table reconciliation, **two coexisting backtest engin
 | Engine | Module | Endpoint | Entry rule | Sizing | Exit |
 |---|---|---|---|---|---|
 | **Box / 1-1-2** *(this document)* | `src/strategy/box_strategy.py` + `src/strategy/scaling_strategy.py` | `POST /api/backtest/box` (SSE) | stateful `above/inside/below` traversal machine + big-candle override + direction-flip | 1-1-2 ladder (1, 1, 2 contracts) + `anchor_mode` toggle | dual-timeframe soft+hard SL + TP, plus DIRECTION_FLIP |
-| **Simple** *(see [[simple_strategy]])* | `src/strategy/simple_strategy.py` | `POST /api/backtest/simple` (JSON) | **Stage 1's stateless truth table** (canonical after the reconciliation) | 1 contract | single SL line + TP line, both fire on a 1-min `close` past |
+| **Simple** *(see [[simple_strategy]])* | `src/strategy/simple_strategy.py` | `POST /api/backtest/simple` (JSON) | **Stage 1's stateless truth table** (canonical after the reconciliation) | 1 contract | three lines: soft SL (2 closes past, fill at close), hard SL (extreme touch, fill at line), TP (extreme touch, fill at line) |
 
 The simple engine was built per `backtest_updates.md` after the truth-table reconciliation resolved that Stage 1's rule is the source of truth for entries. Both engines are wired up in parallel; neither has been deprecated. The remainder of this document describes the **Box engine only** — see [[simple_strategy]] for the simple engine.
 

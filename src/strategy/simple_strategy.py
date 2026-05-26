@@ -1,4 +1,4 @@
-"""Simple backtest engine — Stage 1 entry + 1-min SL/TP exit.
+"""Simple backtest engine — Stage 1 entry + dual-SL/TP exit on 1-min bars.
 
 Replacement for the box/ladder/dual-anchor stack. Decision sheet:
 
@@ -8,21 +8,41 @@ Replacement for the box/ladder/dual-anchor stack. Decision sheet:
         hold  otherwise
     Collapsed to candle level: any-long → long, any-short → short, else hold.
 
-  - Position size = 1 contract. No ladder. No anchor toggle.
+  - Position size = 1 contract. No ladder.
 
-  - Exit reasons = TAKE_PROFIT or STOP_LOSS only. Both fire on a 1-min
-    `close` past the relevant line. No soft/hard split, no direction-flip,
-    no trail, no big-candle override.
+  - Exit model — three lines, two fire semantics, per-line fill price:
 
-  - Re-entry gate: after an exit at time T, the next 4h candle is eligible
-    only if its `Date` (4h start) > T. The first eligible 4h candle is
+        Line     | Fire rule                                       | Fill price
+        ---------+-------------------------------------------------+--------------
+        Soft SL  | 2 consecutive 1-min CLOSES past the soft line   | the 2nd close
+        Hard SL  | 1 single 1-min bar EXTREME touches the hard line | the hard line
+        TP       | 1 single 1-min bar EXTREME touches the TP line   | the TP line
+
+    For a long position:
+        sl_soft_line = entry - sl_soft_points     (closer to entry, smaller pts)
+        sl_hard_line = entry - sl_hard_points     (farther from entry, sl_hard >= sl_soft)
+        tp_line      = entry + tp_points
+
+      • Soft SL fires when the 1-min close ≤ sl_soft_line for two bars in a row.
+        Fill price = the second close. The pnl is worse than -sl_soft_points
+        because the close is past the line.
+      • Hard SL fires when the 1-min low ≤ sl_hard_line. Fill = sl_hard_line.
+        Pnl is exactly -sl_hard_points.
+      • TP fires when the 1-min high ≥ tp_line. Fill = tp_line.
+        Pnl is exactly +tp_points.
+
+    For a short position the mirror applies (signs flipped).
+
+  - Per-bar tie-break when multiple could fire: hard SL > TP > soft SL.
+    Reasoning: hard SL and TP are intra-bar touch events; under the
+    pessimistic ordering used here, the loss-side touch fires first.
+    Soft SL fires at bar close, which is the last temporal event in the bar.
+
+  - Re-entry gate: after an exit at time T, the next 4h candle is signal-
+    eligible only if its `Date` (4h start) > T. The first eligible 4h is
     evaluated fresh against Stage 1's rule; if it says hold, we keep
-    waiting; if it says long/short, we open immediately — regardless of
-    the previous trade's direction or exit reason.
-
-  - Tie-break: a single 1-min close cannot satisfy both fire conditions
-    under the close-past rule (SL_line < entry_price < TP_line; close
-    can only be on one side). Documented for completeness.
+    waiting; if long/short, we open immediately — regardless of the
+    previous trade's direction or exit reason.
 
 Spec: `backtest_updates.md` + `docs/superpowers/specs/2026-05-26-simple-backtest/notes.md`.
 Plan: `docs/superpowers/plans/2026-05-26-simple-backtest.md`.
@@ -42,17 +62,22 @@ _LEVEL_PAIRS = _WEEKLY_LEVELS + _MONTHLY_LEVELS
 
 DirectionScope = Literal['both', 'long_only', 'short_only']
 Signal = Literal['long', 'short', 'hold']
-ExitReason = Literal['TAKE_PROFIT', 'STOP_LOSS', 'OPEN']
+ExitReason = Literal['TAKE_PROFIT', 'STOP_LOSS_HARD', 'STOP_LOSS_SOFT', 'OPEN']
 
 
 @dataclass
 class SimpleStrategyParams:
-    """All values REQUIRED (no-fallback rule)."""
-    sl_points: float
-    tp_points: float
-    data_path_4h: str
+    """All values REQUIRED (no-fallback rule).
+
+    sl_hard_points must be >= sl_soft_points; the hard line sits at or
+    beyond the soft line for safety semantics.
+    """
+    sl_soft_points: float
+    sl_hard_points: float
+    tp_points:      float
+    data_path_4h:   str
     data_path_1min: str
-    box_data_path: str
+    box_data_path:  str
     direction_scope: DirectionScope = 'both'
 
 
@@ -99,11 +124,7 @@ def _stage1_candle_signal(
             has_long = True
         elif color == 'red' and close < b_lower:
             has_short = True
-        # Color/direction mismatch and close-on-edge both stay hold for
-        # this level pair.
 
-    # Stage 1's color rule guarantees a candle can't fire long AND short
-    # simultaneously (green can only fire long, red can only fire short).
     if has_long:
         return 'long'
     if has_short:
@@ -111,32 +132,8 @@ def _stage1_candle_signal(
     return 'hold'
 
 
-def _exit_check_close_past(
-    direction: Signal,
-    tp_line: float,
-    sl_line: float,
-    one_min_close: float,
-) -> Optional[ExitReason]:
-    """Return TAKE_PROFIT / STOP_LOSS / None for a single 1-min close.
-
-    Close-past semantics for both lines. A single close cannot fire both
-    (SL_line < entry < TP_line for long; opposite for short).
-    """
-    if direction == 'long':
-        if one_min_close >= tp_line:
-            return 'TAKE_PROFIT'
-        if one_min_close <= sl_line:
-            return 'STOP_LOSS'
-    else:
-        if one_min_close <= tp_line:
-            return 'TAKE_PROFIT'
-        if one_min_close >= sl_line:
-            return 'STOP_LOSS'
-    return None
-
-
 class SimpleStrategy:
-    """Simple backtest engine — Stage 1 entry + 1-min SL/TP exit.
+    """Simple backtest engine — Stage 1 entry + dual-SL/TP exit.
 
     Decoupled from BoxStrategy / ScalingStrategy. Does not share state.
     Reads the same box CSV the old engine reads, but uses Stage 1's
@@ -146,13 +143,20 @@ class SimpleStrategy:
     NQ_POINT_VALUE = 20.0  # NQ futures: $20 per point per contract.
 
     def __init__(self, params: SimpleStrategyParams) -> None:
-        self.params = params
-        if params.sl_points <= 0:
-            raise ValueError(f'sl_points must be > 0, got {params.sl_points}')
+        if params.sl_soft_points <= 0:
+            raise ValueError(f'sl_soft_points must be > 0, got {params.sl_soft_points}')
+        if params.sl_hard_points <= 0:
+            raise ValueError(f'sl_hard_points must be > 0, got {params.sl_hard_points}')
+        if params.sl_hard_points < params.sl_soft_points:
+            raise ValueError(
+                f'sl_hard_points ({params.sl_hard_points}) must be >= '
+                f'sl_soft_points ({params.sl_soft_points})'
+            )
         if params.tp_points <= 0:
             raise ValueError(f'tp_points must be > 0, got {params.tp_points}')
         if params.direction_scope not in ('both', 'long_only', 'short_only'):
             raise ValueError(f'direction_scope invalid: {params.direction_scope}')
+        self.params = params
 
     def backtest(
         self,
@@ -162,22 +166,11 @@ class SimpleStrategy:
     ) -> Tuple[List[Dict], Dict]:
         """Run the simple engine.
 
-        Args:
-            df_4h: 4h OHLCV with a 'Date' column (Timestamp); the bar's
-                START time, e.g. 18:00 for the 18:00-22:00 bar.
-            df_1min: 1-min OHLCV with a 'Date' column (Timestamp); also
-                bar-start times.
-            box_df_indexed: Box CSV indexed on `Date` (normalised).
-
-        Returns:
-            (trades, final_state). `trades` is a list of dicts (schema in
-            plan §5). `final_state` summarises whether a trade was open
-            at EOF.
+        Returns (trades, final_state).
         """
         if df_4h.empty:
             return [], {'open_trade': None}
 
-        # Pre-index 1-min by 4h start for O(log N) windowing.
         if not df_1min.empty:
             ts_4h_arr = df_4h['Date'].to_numpy()
             ts_1m_arr = df_1min['Date'].to_numpy()
@@ -189,58 +182,85 @@ class SimpleStrategy:
         trades: List[Dict] = []
         open_trade: Optional[Dict] = None
         blocked_until: Optional[pd.Timestamp] = None
+        soft_consec_count: int = 0   # consecutive 1-min closes past soft SL
         scope = self.params.direction_scope
 
         def _walk_exit_for_4h(idx: int) -> None:
             """Walk 1-min bars belonging to df_4h[idx] looking for an exit
-            on the currently open trade. Mutates `open_trade`, `trades`,
-            and `blocked_until` (via nonlocal)."""
-            nonlocal open_trade, blocked_until
+            on the currently open trade. Mutates the enclosing state via
+            `nonlocal`."""
+            nonlocal open_trade, blocked_until, soft_consec_count
             if open_trade is None or start_1m is None:
                 return
             lo = int(start_1m[idx])
             hi = int(start_1m[idx + 1])
             sub_bars = df_1min.iloc[lo:hi]
+            d  = open_trade['direction']
+            ss = open_trade['sl_soft_line']
+            sh = open_trade['sl_hard_line']
+            tp = open_trade['tp_line']
+            ep = open_trade['entry_price']
             for sub in sub_bars.itertuples(index=False):
                 sub_ts = pd.Timestamp(getattr(sub, 'Date'))
                 if sub_ts < open_trade['entry_time']:
                     continue
-                sub_close = float(getattr(sub, 'Close'))
-                reason = _exit_check_close_past(
-                    direction=open_trade['direction'],
-                    tp_line=open_trade['tp_line'],
-                    sl_line=open_trade['sl_line'],
-                    one_min_close=sub_close,
-                )
-                if reason is not None:
-                    open_trade['exit_time']   = sub_ts
-                    open_trade['exit_price']  = sub_close
-                    open_trade['exit_reason'] = reason
-                    if open_trade['direction'] == 'long':
-                        pnl = sub_close - open_trade['entry_price']
+                m_high  = float(getattr(sub, 'High'))
+                m_low   = float(getattr(sub, 'Low'))
+                m_close = float(getattr(sub, 'Close'))
+
+                # Priority within the bar: hard SL > TP > soft SL.
+                if d == 'long':
+                    if m_low <= sh:
+                        _finalise(open_trade, sub_ts, sh, 'STOP_LOSS_HARD', ep, d, self.NQ_POINT_VALUE)
+                        trades.append(open_trade)
+                        blocked_until = sub_ts; open_trade = None; soft_consec_count = 0
+                        return
+                    if m_high >= tp:
+                        _finalise(open_trade, sub_ts, tp, 'TAKE_PROFIT', ep, d, self.NQ_POINT_VALUE)
+                        trades.append(open_trade)
+                        blocked_until = sub_ts; open_trade = None; soft_consec_count = 0
+                        return
+                    if m_close <= ss:
+                        soft_consec_count += 1
+                        if soft_consec_count >= 2:
+                            _finalise(open_trade, sub_ts, m_close, 'STOP_LOSS_SOFT', ep, d, self.NQ_POINT_VALUE)
+                            trades.append(open_trade)
+                            blocked_until = sub_ts; open_trade = None; soft_consec_count = 0
+                            return
                     else:
-                        pnl = open_trade['entry_price'] - sub_close
-                    open_trade['pnl_points']  = pnl
-                    open_trade['pnl_dollars'] = pnl * self.NQ_POINT_VALUE
-                    trades.append(open_trade)
-                    blocked_until = sub_ts
-                    open_trade = None
-                    return
+                        soft_consec_count = 0
+                else:  # short
+                    if m_high >= sh:
+                        _finalise(open_trade, sub_ts, sh, 'STOP_LOSS_HARD', ep, d, self.NQ_POINT_VALUE)
+                        trades.append(open_trade)
+                        blocked_until = sub_ts; open_trade = None; soft_consec_count = 0
+                        return
+                    if m_low <= tp:
+                        _finalise(open_trade, sub_ts, tp, 'TAKE_PROFIT', ep, d, self.NQ_POINT_VALUE)
+                        trades.append(open_trade)
+                        blocked_until = sub_ts; open_trade = None; soft_consec_count = 0
+                        return
+                    if m_close >= ss:
+                        soft_consec_count += 1
+                        if soft_consec_count >= 2:
+                            _finalise(open_trade, sub_ts, m_close, 'STOP_LOSS_SOFT', ep, d, self.NQ_POINT_VALUE)
+                            trades.append(open_trade)
+                            blocked_until = sub_ts; open_trade = None; soft_consec_count = 0
+                            return
+                    else:
+                        soft_consec_count = 0
 
         for idx in range(len(df_4h)):
             candle = df_4h.iloc[idx]
             ts_4h = pd.Timestamp(candle['Date'])
 
-            # ---------------- Exit walk for CARRY-OVER trade ----------------
-            # Walks 1-min bars in THIS 4h window for a trade that was already
-            # open coming into this 4h.
+            # Exit walk for a carry-over trade.
             _walk_exit_for_4h(idx)
 
-            # ---------------- Entry decision (only if flat and past gate) ----
+            # Entry decision (only if flat and past the re-entry gate).
             if open_trade is None:
                 if blocked_until is not None and ts_4h <= blocked_until:
                     continue
-                # Resolve the box row for this 4h candle's mapped date.
                 box_date = BoxLookup._candle_to_box_date(ts_4h)
                 try:
                     box_row = box_df_indexed.loc[box_date]
@@ -257,34 +277,59 @@ class SimpleStrategy:
 
                 close = float(candle['Close'])
                 if signal == 'long':
-                    tp_line = close + self.params.tp_points
-                    sl_line = close - self.params.sl_points
+                    sl_soft_line = close - self.params.sl_soft_points
+                    sl_hard_line = close - self.params.sl_hard_points
+                    tp_line      = close + self.params.tp_points
                 else:
-                    tp_line = close - self.params.tp_points
-                    sl_line = close + self.params.sl_points
+                    sl_soft_line = close + self.params.sl_soft_points
+                    sl_hard_line = close + self.params.sl_hard_points
+                    tp_line      = close - self.params.tp_points
 
                 open_trade = {
-                    'entry_idx':   idx,
-                    'entry_time':  ts_4h,
-                    'entry_price': close,
-                    'direction':   signal,
-                    'tp_line':     tp_line,
-                    'sl_line':     sl_line,
-                    'exit_time':   None,
-                    'exit_price':  None,
-                    'exit_reason': None,
-                    'pnl_points':  None,
-                    'pnl_dollars': None,
+                    'entry_idx':    idx,
+                    'entry_time':   ts_4h,
+                    'entry_price':  close,
+                    'direction':    signal,
+                    'sl_soft_line': sl_soft_line,
+                    'sl_hard_line': sl_hard_line,
+                    'tp_line':      tp_line,
+                    'exit_time':    None,
+                    'exit_price':   None,
+                    'exit_reason':  None,
+                    'pnl_points':   None,
+                    'pnl_dollars':  None,
                 }
-                # ---------- Exit walk for the SAME 4h that just fired ----
-                # Walk 1-min bars in this 4h from entry_time forward; an SL
-                # or TP can fire in the same window the trade opened.
+                soft_consec_count = 0
+
+                # Exit walk for the same 4h that just fired the signal.
                 _walk_exit_for_4h(idx)
 
-        # ---------------- EOF: emit any still-open trade as OPEN ----------
         if open_trade is not None:
             open_trade['exit_reason'] = 'OPEN'
             trades.append(open_trade)
 
-        final_state = {'open_trade': None if trades and trades[-1]['exit_reason'] != 'OPEN' else open_trade}
+        final_state = {
+            'open_trade': None if trades and trades[-1]['exit_reason'] != 'OPEN' else open_trade,
+        }
         return trades, final_state
+
+
+def _finalise(
+    trade: Dict,
+    exit_ts: pd.Timestamp,
+    fill: float,
+    reason: ExitReason,
+    entry_price: float,
+    direction: Signal,
+    point_value: float,
+) -> None:
+    """Stamp the exit fields on a trade dict in place."""
+    trade['exit_time']   = exit_ts
+    trade['exit_price']  = fill
+    trade['exit_reason'] = reason
+    if direction == 'long':
+        pnl = fill - entry_price
+    else:
+        pnl = entry_price - fill
+    trade['pnl_points']  = pnl
+    trade['pnl_dollars'] = pnl * point_value

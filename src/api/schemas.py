@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 # ---- /api/candles ----
@@ -164,18 +164,33 @@ class BoxBacktestRequest(BaseModel):
 class SimpleBacktestRequest(BaseModel):
     """Simple-strategy backtest request.
 
-    Engine: Stage 1 truth table for entry direction + close-past SL/TP
+    Engine: Stage 1 truth table for entry direction + dual-SL/TP exit
     on 1-min bars + re-entry gate "next 4h that starts after exit_time".
+
+    Exit lines:
+      * Soft SL — 2 consecutive 1-min closes past line → fill at 2nd close.
+      * Hard SL — 1-min bar extreme touches line → fill at line.
+      * TP     — 1-min bar extreme touches line → fill at line.
+
     See `docs/superpowers/specs/2026-05-26-simple-backtest/notes.md`.
     """
-    sl_points: float = Field(..., gt=0, description='SL distance in points from entry close.')
-    tp_points: float = Field(..., gt=0, description='TP distance in points from entry close.')
+    sl_soft_points: float = Field(..., gt=0, description='Soft SL distance from entry close (close-confirmed).')
+    sl_hard_points: float = Field(..., gt=0, description='Hard SL distance from entry close (touch fill).')
+    tp_points:      float = Field(..., gt=0, description='TP distance from entry close (touch fill).')
     data_path:       str          # 4h candles
     data_path_1min:  str          # 1-min candles
     box_data_path:   str          # unified W*/M* level CSV
     direction_scope: Literal['both', 'long_only', 'short_only'] = 'both'
     start: Optional[str] = Field(...)
     end:   Optional[str] = Field(...)
+
+    @field_validator('sl_hard_points')
+    @classmethod
+    def _hard_ge_soft(cls, v: float, info) -> float:
+        soft = info.data.get('sl_soft_points')
+        if soft is not None and v < soft:
+            raise ValueError(f'sl_hard_points ({v}) must be >= sl_soft_points ({soft})')
+        return v
 
 
 # ---- /api/optimize/box (NSGA-II multi-objective optimiser, SSE-streamed) ----

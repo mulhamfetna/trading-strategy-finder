@@ -686,7 +686,8 @@ def post_simple_backtest(req: SimpleBacktestRequest):
     box_df = box_df.set_index('Date', drop=False)
 
     p = SimpleStrategyParams(
-        sl_points=req.sl_points,
+        sl_soft_points=req.sl_soft_points,
+        sl_hard_points=req.sl_hard_points,
         tp_points=req.tp_points,
         data_path_4h=req.data_path,
         data_path_1min=req.data_path_1min,
@@ -706,14 +707,18 @@ def post_simple_backtest(req: SimpleBacktestRequest):
         return out
 
     closed = [t for t in trades if t['exit_reason'] != 'OPEN']
+    n_hard = sum(1 for t in trades if t['exit_reason'] == 'STOP_LOSS_HARD')
+    n_soft = sum(1 for t in trades if t['exit_reason'] == 'STOP_LOSS_SOFT')
     summary = {
-        'n_trades':       len(trades),
-        'n_take_profit':  sum(1 for t in trades if t['exit_reason'] == 'TAKE_PROFIT'),
-        'n_stop_loss':    sum(1 for t in trades if t['exit_reason'] == 'STOP_LOSS'),
-        'n_open_at_eof':  sum(1 for t in trades if t['exit_reason'] == 'OPEN'),
-        'total_pnl_dollars': sum(t['pnl_dollars'] for t in closed),
-        'total_pnl_points':  sum(t['pnl_points']  for t in closed),
-        'win_rate':       (sum(1 for t in closed if (t['pnl_points'] or 0) > 0) / len(closed)) if closed else None,
+        'n_trades':           len(trades),
+        'n_take_profit':      sum(1 for t in trades if t['exit_reason'] == 'TAKE_PROFIT'),
+        'n_stop_loss':        n_hard + n_soft,        # combined for back-compat
+        'n_stop_loss_hard':   n_hard,
+        'n_stop_loss_soft':   n_soft,
+        'n_open_at_eof':      sum(1 for t in trades if t['exit_reason'] == 'OPEN'),
+        'total_pnl_dollars':  sum(t['pnl_dollars'] for t in closed),
+        'total_pnl_points':   sum(t['pnl_points']  for t in closed),
+        'win_rate':           (sum(1 for t in closed if (t['pnl_points'] or 0) > 0) / len(closed)) if closed else None,
     }
     return JSONResponse({
         'summary': summary,
