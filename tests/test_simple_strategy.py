@@ -2,7 +2,7 @@
 
 Synthetic tests pin the engine's per-rule behaviour; the real-data lock
 pins counts against `data/full_data/NQ_4h.csv` + `NQ_1m.csv` for
-sl_soft=100, sl_hard=200, tp=150. Skipped automatically if data files
+sl_soft=100, sl_hard=200, th=150. Skipped automatically if data files
 are missing.
 """
 from __future__ import annotations
@@ -37,12 +37,19 @@ def _candle(dt, o, h, l, c):
 def _box_row_one_pair(upper: float, lower: float, upper_col: str = 'WRHU', lower_col: str = 'WRHD'):
     return pd.Series({upper_col: upper, lower_col: lower})
 
-def _params(ss=100, sh=200, tp=150, scope='both'):
+def _params(ss=100, sh=200, ts=None, th=150, scope='both', flip=False):
+    # Default tp_soft equals tp_hard so the constraint tp_hard >= tp_soft
+    # holds for any value of `th` a caller passes. Tests that exercise
+    # the soft-TP branch explicitly set ts < th.
+    if ts is None:
+        ts = th
     return SimpleStrategyParams(
-        sl_soft_points=ss, sl_hard_points=sh, tp_points=tp,
+        sl_soft_points=ss, sl_hard_points=sh,
+        tp_soft_points=ts, tp_hard_points=th,
         data_path_4h='/dev/null', data_path_1min='/dev/null',
         box_data_path='/dev/null',
         direction_scope=scope,
+        flip_entry_direction=flip,
     )
 
 
@@ -50,18 +57,18 @@ def _params(ss=100, sh=200, tp=150, scope='both'):
 
 def test_params_reject_hard_below_soft():
     with pytest.raises(ValueError):
-        SimpleStrategy(_params(ss=200, sh=100, tp=150))
+        SimpleStrategy(_params(ss=200, sh=100, th=150))
 
 
 def test_params_accept_hard_equal_soft():
-    SimpleStrategy(_params(ss=100, sh=100, tp=150))
+    SimpleStrategy(_params(ss=100, sh=100, th=150))
 
 
 def test_params_reject_non_positive():
     with pytest.raises(ValueError):
-        SimpleStrategy(_params(ss=0, sh=200, tp=150))
+        SimpleStrategy(_params(ss=0, sh=200, th=150))
     with pytest.raises(ValueError):
-        SimpleStrategy(_params(ss=100, sh=200, tp=-1))
+        SimpleStrategy(_params(ss=100, sh=200, th=-1))
 
 
 # ---------- Stage 1 candle-level signal helper ---------------------------
@@ -141,7 +148,7 @@ def test_backtest_hard_sl_long_touch_fills_at_line():
         {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 106, 'Low': 95, 'Close': 100, 'Volume': 0},
     ])
     box = _box_indexed(upper=103, lower=98)
-    strat = SimpleStrategy(_params(ss=5, sh=8, tp=10))
+    strat = SimpleStrategy(_params(ss=5, sh=8, th=10))
     trades, _ = strat.backtest(df_4h, df_1m, box)
     assert len(trades) == 1
     t = trades[0]
@@ -165,11 +172,11 @@ def test_backtest_tp_long_touch_fills_at_line():
         {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 120, 'Low': 104, 'Close': 110, 'Volume': 0},
     ])
     box = _box_indexed(upper=103, lower=98)
-    strat = SimpleStrategy(_params(ss=5, sh=8, tp=10))
+    strat = SimpleStrategy(_params(ss=5, sh=8, th=10))
     trades, _ = strat.backtest(df_4h, df_1m, box)
     assert len(trades) == 1
     t = trades[0]
-    assert t['exit_reason']  == 'TAKE_PROFIT'
+    assert t['exit_reason']  == 'TAKE_PROFIT_HARD'
     assert t['exit_price']   == 115        # tp line (105 + 10)
     assert t['pnl_points']   == 10
 
@@ -184,7 +191,7 @@ def test_backtest_soft_sl_needs_two_consecutive_closes():
         {'Date': pd.Timestamp('2025-01-01 10:01:00'), 'Open': 99,  'High': 100, 'Low': 97, 'Close': 98, 'Volume': 0},
     ])
     box = _box_indexed(upper=103, lower=98)
-    strat = SimpleStrategy(_params(ss=5, sh=20, tp=50))
+    strat = SimpleStrategy(_params(ss=5, sh=20, th=50))
     trades, _ = strat.backtest(df_4h, df_1m, box)
     assert len(trades) == 1
     t = trades[0]
@@ -204,7 +211,7 @@ def test_backtest_soft_sl_counter_resets_on_recovery():
         {'Date': pd.Timestamp('2025-01-01 10:02:00'), 'Open': 101, 'High': 102, 'Low': 99, 'Close': 99,  'Volume': 0},  # counter=1
     ])
     box = _box_indexed(upper=103, lower=98)
-    strat = SimpleStrategy(_params(ss=5, sh=50, tp=100))
+    strat = SimpleStrategy(_params(ss=5, sh=50, th=100))
     trades, _ = strat.backtest(df_4h, df_1m, box)
     assert len(trades) == 1
     assert trades[0]['exit_reason'] == 'OPEN'
@@ -222,7 +229,7 @@ def test_backtest_hard_sl_beats_tp_in_same_bar():
         {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 120, 'Low': 90, 'Close': 110, 'Volume': 0},
     ])
     box = _box_indexed(upper=103, lower=98)
-    strat = SimpleStrategy(_params(ss=5, sh=8, tp=10))
+    strat = SimpleStrategy(_params(ss=5, sh=8, th=10))
     trades, _ = strat.backtest(df_4h, df_1m, box)
     assert trades[0]['exit_reason'] == 'STOP_LOSS_HARD'
     assert trades[0]['exit_price']  == 97
@@ -240,7 +247,7 @@ def test_backtest_short_hard_sl():
         {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 99, 'High': 110, 'Low': 98, 'Close': 100, 'Volume': 0},
     ])
     box = _box_indexed(upper=108, lower=100)
-    strat = SimpleStrategy(_params(ss=5, sh=8, tp=10))
+    strat = SimpleStrategy(_params(ss=5, sh=8, th=10))
     trades, _ = strat.backtest(df_4h, df_1m, box)
     assert trades[0]['direction']   == 'short'
     assert trades[0]['exit_reason'] == 'STOP_LOSS_HARD'
@@ -258,7 +265,7 @@ def test_backtest_open_at_eof_yields_open():
         {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 105.1, 'Low': 104.9, 'Close': 105, 'Volume': 0},
     ])
     box = _box_indexed(upper=103, lower=98)
-    strat = SimpleStrategy(_params(ss=100, sh=200, tp=100))
+    strat = SimpleStrategy(_params(ss=100, sh=200, th=100))
     trades, state = strat.backtest(df_4h, df_1m, box)
     assert len(trades) == 1
     assert trades[0]['exit_reason'] == 'OPEN'
@@ -286,12 +293,12 @@ def test_backtest_reentry_gate_blocks_until_next_4h_start():
         {'Date': pd.Timestamp('2025-01-01 14:00:00'), 'Open': 115, 'High': 125, 'Low': 114, 'Close': 120, 'Volume': 0},   # TP at 115+10=125
     ])
     box = _box_indexed(upper=103, lower=98)
-    strat = SimpleStrategy(_params(ss=5, sh=20, tp=10))
+    strat = SimpleStrategy(_params(ss=5, sh=20, th=10))
     trades, _ = strat.backtest(df_4h, df_1m, box)
     assert len(trades) == 2
     assert trades[0]['entry_time']  == pd.Timestamp('2025-01-01 10:00:00')
     assert trades[1]['entry_time']  == pd.Timestamp('2025-01-01 14:00:00')
-    assert trades[1]['exit_reason'] == 'TAKE_PROFIT'
+    assert trades[1]['exit_reason'] == 'TAKE_PROFIT_HARD'
 
 
 def test_backtest_direction_scope_long_only():
@@ -326,10 +333,137 @@ def real_trades():
     box['Date'] = pd.to_datetime(box['Date']).dt.normalize()
     box = box.set_index('Date', drop=False)
     p = SimpleStrategyParams(
-        sl_soft_points=100, sl_hard_points=200, tp_points=150,
+        sl_soft_points=100, sl_hard_points=200,
+        tp_soft_points=100, tp_hard_points=150,
         data_path_4h=_4H, data_path_1min=_1M, box_data_path=_BOX,
     )
     return SimpleStrategy(p).backtest(df_4h, df_1m, box)
+
+
+@pytest.fixture(scope='module')
+def real_trades_flipped():
+    from src.data.loader import load_data
+    df_4h = load_data(_4H)
+    df_1m = load_data(_1M)
+    box = pd.read_csv(_BOX)
+    box['Date'] = pd.to_datetime(box['Date']).dt.normalize()
+    box = box.set_index('Date', drop=False)
+    p = SimpleStrategyParams(
+        sl_soft_points=100, sl_hard_points=200,
+        tp_soft_points=100, tp_hard_points=150,
+        data_path_4h=_4H, data_path_1min=_1M, box_data_path=_BOX,
+        flip_entry_direction=True,
+    )
+    return SimpleStrategy(p).backtest(df_4h, df_1m, box)
+
+
+# ---------- Flip mode — synthetic ----------------------------------------
+
+def test_flip_long_signal_becomes_short_position():
+    """Original Stage 1 = LONG; with flip ON the trade opens SHORT."""
+    df_4h = pd.DataFrame([
+        {'Date': pd.Timestamp('2025-01-01 06:00:00'), 'Open': 100, 'High': 110, 'Low': 99, 'Close': 105, 'Volume': 0},
+        # ensure SHORT trade hits TP hard first (price dives below entry):
+        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 106, 'Low':  85, 'Close': 90, 'Volume': 0},
+    ])
+    df_1m = pd.DataFrame([
+        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 106, 'Low': 85, 'Close': 90, 'Volume': 0},
+    ])
+    box = _box_indexed(upper=103, lower=98)
+    # Under flip: position is SHORT at entry 105. TP hard line is BELOW (105 - 10 = 95).
+    # Bar low = 85 ≤ 95 → TAKE_PROFIT_HARD at 95.
+    strat = SimpleStrategy(_params(ss=5, sh=20, ts=5, th=10, flip=True))
+    trades, _ = strat.backtest(df_4h, df_1m, box)
+    assert len(trades) == 1
+    t = trades[0]
+    assert t['direction']    == 'short'      # flipped from original long
+    assert t['exit_reason']  == 'TAKE_PROFIT_HARD'
+    assert t['exit_price']   == 95
+    assert t['pnl_points']   == 10           # short pnl: entry - exit = 105 - 95 = 10
+
+
+def test_flip_short_signal_becomes_long_position():
+    """Original Stage 1 = SHORT; with flip ON the trade opens LONG."""
+    df_4h = pd.DataFrame([
+        # signal bar: red, touched, close < BL → SHORT
+        {'Date': pd.Timestamp('2025-01-01 06:00:00'), 'Open': 110, 'High': 112, 'Low': 95, 'Close': 99, 'Volume': 0},
+        # entry bar: 1-min stream sends price UP triggering TP hard for the (flipped) LONG.
+        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 99, 'High': 115, 'Low': 98, 'Close': 110, 'Volume': 0},
+    ])
+    df_1m = pd.DataFrame([
+        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 99, 'High': 115, 'Low': 98, 'Close': 110, 'Volume': 0},
+    ])
+    box = _box_indexed(upper=108, lower=100)
+    # Under flip: position is LONG at entry 99. TP hard line is ABOVE (99 + 10 = 109).
+    strat = SimpleStrategy(_params(ss=5, sh=20, ts=5, th=10, flip=True))
+    trades, _ = strat.backtest(df_4h, df_1m, box)
+    assert len(trades) == 1
+    t = trades[0]
+    assert t['direction']    == 'long'       # flipped from original short
+    assert t['exit_reason']  == 'TAKE_PROFIT_HARD'
+    assert t['exit_price']   == 109
+    assert t['pnl_points']   == 10
+
+
+def test_flip_hold_stays_hold():
+    """A 'hold' from Stage 1 produces no trade, regardless of flip state."""
+    df_4h = pd.DataFrame([
+        # signal bar: doji → hold
+        {'Date': pd.Timestamp('2025-01-01 06:00:00'), 'Open': 100, 'High': 110, 'Low': 99, 'Close': 100, 'Volume': 0},
+        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 100, 'High': 101, 'Low': 99, 'Close': 100, 'Volume': 0},
+    ])
+    df_1m = pd.DataFrame([
+        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 100, 'High': 101, 'Low': 99, 'Close': 100, 'Volume': 0},
+    ])
+    box = _box_indexed(upper=103, lower=98)
+    strat = SimpleStrategy(_params(ss=5, sh=20, ts=5, th=10, flip=True))
+    trades, _ = strat.backtest(df_4h, df_1m, box)
+    assert trades == []   # holds stay holds even with flip on
+
+
+def test_flip_priority_tp_hard_beats_sl_hard():
+    """Q-A symmetric flip: priority order is hard TP > hard SL > soft TP.
+    A bar that touches both hard SL and hard TP → TAKE_PROFIT_HARD wins."""
+    df_4h = pd.DataFrame([
+        # Original long signal → flipped to short. Bar spans wide (85..120) so
+        # both the (above-entry) hard SL and the (below-entry) hard TP get hit.
+        {'Date': pd.Timestamp('2025-01-01 06:00:00'), 'Open': 100, 'High': 110, 'Low': 99, 'Close': 105, 'Volume': 0},
+        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 120, 'Low': 85, 'Close': 110, 'Volume': 0},
+    ])
+    df_1m = pd.DataFrame([
+        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 120, 'Low': 85, 'Close': 110, 'Volume': 0},
+    ])
+    box = _box_indexed(upper=103, lower=98)
+    # Short at 105: hard SL = 105 + 8 = 113 (high 120 ≥ 113), hard TP = 105 - 10 = 95 (low 85 ≤ 95).
+    # Under symmetric flip priority → TAKE_PROFIT_HARD wins.
+    strat = SimpleStrategy(_params(ss=5, sh=8, ts=5, th=10, flip=True))
+    trades, _ = strat.backtest(df_4h, df_1m, box)
+    assert trades[0]['exit_reason'] == 'TAKE_PROFIT_HARD'
+    assert trades[0]['exit_price']  == 95
+
+
+def test_flip_soft_tp_needs_two_consecutive_closes():
+    """In flipped mode the close-confirmed exit is soft TP. Two consecutive
+    closes past the TP soft line → exit at 2nd close (literal mirror)."""
+    df_4h = pd.DataFrame([
+        # Original long → flipped to short at entry 105.
+        {'Date': pd.Timestamp('2025-01-01 06:00:00'), 'Open': 100, 'High': 110, 'Low': 99, 'Close': 105, 'Volume': 0},
+        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 106, 'Low':  95, 'Close': 96, 'Volume': 0},
+    ])
+    df_1m = pd.DataFrame([
+        # short tp_soft line = 105 - 5 = 100; soft TP triggers if 2 consecutive closes ≤ 100.
+        # tp_hard = 105 - 50 = 55 (out of the way). sl_hard = 105 + 50 = 155 (out of the way).
+        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 106, 'Low': 95, 'Close': 99, 'Volume': 0},   # close 99 ≤ 100 → counter=1
+        {'Date': pd.Timestamp('2025-01-01 10:01:00'), 'Open': 99,  'High': 100, 'Low': 95, 'Close': 96, 'Volume': 0},   # close 96 ≤ 100 → counter=2 → fire
+    ])
+    box = _box_indexed(upper=103, lower=98)
+    strat = SimpleStrategy(_params(ss=20, sh=50, ts=5, th=50, flip=True))
+    trades, _ = strat.backtest(df_4h, df_1m, box)
+    assert len(trades) == 1
+    t = trades[0]
+    assert t['exit_reason'] == 'TAKE_PROFIT_SOFT'
+    assert t['exit_price']  == 96            # 2nd close, past the line (better than line)
+    assert t['pnl_points']  == 9             # short pnl: 105 - 96 = 9; |pnl| ≥ tp_soft (5)
 
 
 @pytestmark_realdata
@@ -338,7 +472,7 @@ def test_real_data_lock_counts(real_trades):
     import collections
     by_reason = dict(collections.Counter(t['exit_reason'] for t in trades))
     assert len(trades) == 594
-    assert by_reason == {'TAKE_PROFIT': 271, 'STOP_LOSS_SOFT': 315, 'STOP_LOSS_HARD': 8}
+    assert by_reason == {'TAKE_PROFIT_HARD': 271, 'STOP_LOSS_SOFT': 315, 'STOP_LOSS_HARD': 8}
 
 
 @pytestmark_realdata
@@ -368,7 +502,7 @@ def test_real_data_lock_first_trade(real_trades):
     assert t['entry_time']  == pd.Timestamp('2025-01-01 22:00:00')
     assert t['direction']   == 'long'
     assert t['entry_price'] == 21322.25
-    assert t['exit_reason'] == 'TAKE_PROFIT'
+    assert t['exit_reason'] == 'TAKE_PROFIT_HARD'
     assert t['exit_price']  == pytest.approx(21472.25)
     assert t['pnl_points']  == pytest.approx(150.0)
 
@@ -396,11 +530,56 @@ def test_real_data_hard_sl_fills_at_line(real_trades):
 
 @pytestmark_realdata
 def test_real_data_tp_fills_at_line(real_trades):
-    """Every TP exit should fill exactly at the TP line."""
+    """Every hard-TP exit should fill exactly at the tp_hard_line."""
     trades, _ = real_trades
     for t in trades:
-        if t['exit_reason'] == 'TAKE_PROFIT':
-            assert t['exit_price'] == t['tp_line']
+        if t['exit_reason'] == 'TAKE_PROFIT_HARD':
+            assert t['exit_price'] == t['tp_hard_line']
+
+
+# ---------- Flipped-mode real-data lock ----------------------------------
+
+@pytestmark_realdata
+def test_real_data_lock_counts_flipped(real_trades_flipped):
+    """Full preset with flip ON, sl_soft=100, sl_hard=200, tp_soft=100,
+    tp_hard=150. Counts pinned after the symmetric-flip exit model."""
+    trades, _ = real_trades_flipped
+    import collections
+    by_reason = dict(collections.Counter(t['exit_reason'] for t in trades))
+    assert len(trades) == 539
+    assert by_reason == {'TAKE_PROFIT_SOFT': 304, 'STOP_LOSS_HARD': 203, 'TAKE_PROFIT_HARD': 32}
+
+
+@pytestmark_realdata
+def test_real_data_lock_total_pnl_flipped(real_trades_flipped):
+    trades, _ = real_trades_flipped
+    total = sum(t['pnl_dollars'] for t in trades if t['pnl_dollars'] is not None)
+    assert total == pytest.approx(-37620.0)
+
+
+@pytestmark_realdata
+def test_real_data_flipped_first_trade_is_short(real_trades_flipped):
+    """First real-data trade under flip: Stage 1 fires LONG at bar 0; flip
+    swaps it to SHORT; trade enters at bar 1's start (22:00)."""
+    trades, _ = real_trades_flipped
+    t = trades[0]
+    assert t['direction']   == 'short'
+    assert t['entry_idx']   == 1
+    assert t['signal_idx']  == 0
+    assert t['flip']        is True
+
+
+@pytestmark_realdata
+def test_real_data_flipped_soft_tp_pnl_at_least_threshold(real_trades_flipped):
+    """Under literal-mirror Q-B, soft TP fills at the 2nd close which is
+    past the line; so |pnl_points| >= tp_soft_points (= 100) for every
+    TAKE_PROFIT_SOFT exit."""
+    trades, _ = real_trades_flipped
+    for t in trades:
+        if t['exit_reason'] == 'TAKE_PROFIT_SOFT':
+            assert t['pnl_points'] >= 100 - 1e-9, (
+                f"soft TP pnl {t['pnl_points']} should be >= 100 at {t['entry_time']}"
+            )
 
 
 @pytestmark_realdata

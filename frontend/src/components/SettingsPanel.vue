@@ -79,11 +79,40 @@
       data-testid="simple-params"
     >
       <h3 class="mb-2 text-sm font-semibold text-tv-blue">Simple-engine params</h3>
+
+      <!-- The flip checkbox. When checked: every long signal becomes short
+           and vice-versa; the exit system also flips (soft TP + hard TP +
+           hard SL replaces soft SL + hard SL + hard TP). -->
+      <label class="mb-3 flex items-center gap-2 text-xs" data-testid="flip-entry">
+        <input type="checkbox" v-model="settings.simpleParams.flip_entry_direction" />
+        <span class="text-tv-text">Flip entry direction (long ↔ short)</span>
+        <span class="text-[10px] text-tv-muted">
+          — also flips the SL/TP system (soft TP + hard TP + hard SL replace soft SL + hard SL + hard TP)
+        </span>
+      </label>
+
       <div class="grid grid-cols-2 gap-2 text-xs">
-        <NumField label="Soft SL (pts from entry)" v-model.number="settings.simpleParams.sl_soft_points" :min="0.25" :step="10" />
-        <NumField label="Hard SL (pts from entry)" v-model.number="settings.simpleParams.sl_hard_points" :min="0.25" :step="10" />
-        <NumField label="TP (pts from entry)"      v-model.number="settings.simpleParams.tp_points"      :min="0.25" :step="10" />
-        <label class="flex flex-col gap-1">
+        <!-- SL lines — soft inactive when flipped -->
+        <NumField
+          label="Soft SL (pts)"
+          v-model.number="settings.simpleParams.sl_soft_points"
+          :min="0.25" :step="10"
+          :class="{'opacity-50': settings.simpleParams.flip_entry_direction}"
+          :title="settings.simpleParams.flip_entry_direction ? 'Inactive in flipped mode' : ''"
+        />
+        <NumField label="Hard SL (pts)" v-model.number="settings.simpleParams.sl_hard_points" :min="0.25" :step="10" />
+
+        <!-- TP lines — soft inactive when NOT flipped -->
+        <NumField
+          label="Soft TP (pts)"
+          v-model.number="settings.simpleParams.tp_soft_points"
+          :min="0.25" :step="10"
+          :class="{'opacity-50': !settings.simpleParams.flip_entry_direction}"
+          :title="!settings.simpleParams.flip_entry_direction ? 'Inactive in normal mode' : ''"
+        />
+        <NumField label="Hard TP (pts)" v-model.number="settings.simpleParams.tp_hard_points" :min="0.25" :step="10" />
+
+        <label class="flex flex-col gap-1 col-span-2">
           <span class="text-tv-muted">Direction scope</span>
           <select
             v-model="settings.simpleParams.direction_scope"
@@ -97,15 +126,19 @@
         </label>
       </div>
       <p
-        v-if="simpleErrors.slOrder"
+        v-if="simpleErrors.slOrder || simpleErrors.tpOrder"
         class="mt-1 text-[11px] text-tv-red"
         data-testid="simple-sl-order-error"
-      >{{ simpleErrors.slOrder }}</p>
-      <p class="mt-2 text-[10px] text-tv-muted">
-        Soft SL fires on <strong>2 consecutive 1-min closes</strong> past the line (fill at the 2nd close).
-        Hard SL fires on <strong>1 touch</strong> of the bar's extreme (fill at the line).
-        TP fires on a touch of the bar's extreme (fill at the line).
-        Per-bar priority: <strong>hard SL &gt; TP &gt; soft SL</strong>.
+      >{{ [simpleErrors.slOrder, simpleErrors.tpOrder].filter(Boolean).join(' ') }}</p>
+      <p v-if="!settings.simpleParams.flip_entry_direction" class="mt-2 text-[10px] text-tv-muted">
+        <strong>Normal mode:</strong> Soft SL fires on 2 consecutive 1-min closes past the line (fill at 2nd close).
+        Hard SL fires on a touch of the bar's extreme (fill at line). Hard TP fires on a touch (fill at line).
+        Per-bar priority: <strong>hard SL &gt; hard TP &gt; soft SL</strong>.
+      </p>
+      <p v-else class="mt-2 text-[10px] text-tv-muted">
+        <strong>Flipped mode:</strong> entry direction is swapped. Soft TP fires on 2 consecutive 1-min closes past
+        the line (fill at 2nd close). Hard TP / Hard SL fire on touches (fill at line).
+        Per-bar priority: <strong>hard TP &gt; hard SL &gt; soft TP</strong>.
       </p>
     </section>
 
@@ -312,6 +345,10 @@ const simpleErrors = computed(() => {
     slOrder:
       p.sl_hard_points < p.sl_soft_points
         ? `Hard SL points (${p.sl_hard_points}) must be ≥ Soft SL points (${p.sl_soft_points}).`
+        : '',
+    tpOrder:
+      p.tp_hard_points < p.tp_soft_points
+        ? `Hard TP points (${p.tp_hard_points}) must be ≥ Soft TP points (${p.tp_soft_points}).`
         : '',
   };
 });

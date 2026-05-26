@@ -688,11 +688,13 @@ def post_simple_backtest(req: SimpleBacktestRequest):
     p = SimpleStrategyParams(
         sl_soft_points=req.sl_soft_points,
         sl_hard_points=req.sl_hard_points,
-        tp_points=req.tp_points,
+        tp_soft_points=req.tp_soft_points,
+        tp_hard_points=req.tp_hard_points,
         data_path_4h=req.data_path,
         data_path_1min=req.data_path_1min,
         box_data_path=req.box_data_path,
         direction_scope=req.direction_scope,
+        flip_entry_direction=req.flip_entry_direction,
     )
     t_start = time.perf_counter()
     strat = SimpleStrategy(p)
@@ -733,28 +735,36 @@ def post_simple_backtest(req: SimpleBacktestRequest):
             'exit_time':          t['exit_time'].isoformat()  if t['exit_time']  is not None else None,
             'sl_soft_line':       float(t['sl_soft_line']),
             'sl_hard_line':       float(t['sl_hard_line']),
-            'tp_line':            float(t['tp_line']),
+            'tp_soft_line':       float(t['tp_soft_line']),
+            'tp_hard_line':       float(t['tp_hard_line']),
+            'flip':               bool(t.get('flip', False)),
         }
         return out
 
     closed = [t for t in trades if t['exit_reason'] != 'OPEN']
-    n_hard = sum(1 for t in trades if t['exit_reason'] == 'STOP_LOSS_HARD')
-    n_soft = sum(1 for t in trades if t['exit_reason'] == 'STOP_LOSS_SOFT')
-    n_tp   = sum(1 for t in trades if t['exit_reason'] == 'TAKE_PROFIT')
-    n_open = sum(1 for t in trades if t['exit_reason'] == 'OPEN')
+    n_hard_sl = sum(1 for t in trades if t['exit_reason'] == 'STOP_LOSS_HARD')
+    n_soft_sl = sum(1 for t in trades if t['exit_reason'] == 'STOP_LOSS_SOFT')
+    n_hard_tp = sum(1 for t in trades if t['exit_reason'] == 'TAKE_PROFIT_HARD')
+    n_soft_tp = sum(1 for t in trades if t['exit_reason'] == 'TAKE_PROFIT_SOFT')
+    n_open    = sum(1 for t in trades if t['exit_reason'] == 'OPEN')
+    n_hard = n_hard_sl   # back-compat name (legacy summary)
+    n_soft = n_soft_sl
+    n_tp   = n_hard_tp + n_soft_tp
     n_wins = sum(1 for t in closed if (t['pnl_points'] or 0) > 0)
     total_pnl_dollars = sum(t['pnl_dollars'] for t in closed)
     total_pnl_points  = sum(t['pnl_points']  for t in closed)
     summary = {
-        'n_trades':          len(trades),
-        'n_take_profit':     n_tp,
-        'n_stop_loss':       n_hard + n_soft,        # combined for back-compat
-        'n_stop_loss_hard':  n_hard,
-        'n_stop_loss_soft':  n_soft,
-        'n_open_at_eof':     n_open,
-        'total_pnl_dollars': total_pnl_dollars,
-        'total_pnl_points':  total_pnl_points,
-        'win_rate':          (n_wins / len(closed)) if closed else None,
+        'n_trades':            len(trades),
+        'n_take_profit':       n_tp,               # combined hard+soft TP
+        'n_take_profit_hard':  n_hard_tp,
+        'n_take_profit_soft':  n_soft_tp,
+        'n_stop_loss':         n_hard_sl + n_soft_sl,  # combined hard+soft SL
+        'n_stop_loss_hard':    n_hard_sl,
+        'n_stop_loss_soft':    n_soft_sl,
+        'n_open_at_eof':       n_open,
+        'total_pnl_dollars':   total_pnl_dollars,
+        'total_pnl_points':    total_pnl_points,
+        'win_rate':            (n_wins / len(closed)) if closed else None,
     }
 
     # Metrics in the canonical Metrics interface so MetricsCards renders

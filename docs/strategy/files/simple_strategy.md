@@ -18,26 +18,42 @@ At every 4h boundary, evaluate Stage 1's truth table on the **just-closed** 4h b
 
 ---
 
-## 2. Exit lines — three lines, two semantics
+## 2. Exit model — two modes selected by `flip_entry_direction`
 
-The user's "mimic real live data stream" model:
+### 2.1 Normal mode (default, `flip_entry_direction=False`)
 
 | Line | Fire rule | Fill price | Pnl shape |
 |---|---|---|---|
-| **Soft SL** (closer to entry) | 2 consecutive 1-min **closes** past the soft line | the **2nd close** (worse than the line) | `\|pnl\| ≥ sl_soft_points` always |
-| **Hard SL** (farther; `sl_hard ≥ sl_soft`) | 1-min bar **extreme** touches the hard line | **the hard line** | exactly `-sl_hard_points` |
-| **TP** | 1-min bar **extreme** touches the TP line | **the TP line** | exactly `+tp_points` |
+| **Soft SL** (closer to entry) | 2 consecutive 1-min **closes** past the soft line | the **2nd close** (worse than the line) | `\|pnl\| ≥ sl_soft_points` |
+| **Hard SL** (`sl_hard ≥ sl_soft`) | 1-min bar **extreme** touches the hard line | **the hard line** | exactly `-sl_hard_points` |
+| **Hard TP** | 1-min bar **extreme** touches the TP line | **the TP line** | exactly `+tp_hard_points` |
 
-For a long: `sl_soft_line = entry − sl_soft_points`, `sl_hard_line = entry − sl_hard_points`, `tp_line = entry + tp_points`. The "extreme" is `low` for the hard SL check and `high` for the TP check. Short is mirrored: hard SL above entry watches the bar's `high`, TP below entry watches the `low`, soft SL above entry watches the `close`.
+Active params: `sl_soft_points`, `sl_hard_points`, `tp_hard_points`. Inactive: `tp_soft_points`.
 
-### Per-bar tie-break
+For a long: `sl_soft_line = entry − sl_soft`, `sl_hard_line = entry − sl_hard`, `tp_hard_line = entry + tp_hard`.
+Short is mirrored.
 
-Priority when multiple could fire in the same 1-min bar: **hard SL > TP > soft SL**. Reasoning:
+**Per-bar tie-break: hard SL > hard TP > soft SL** (loss-first pessimism).
 
-- Hard SL and TP are intra-bar touch events; their exact intra-minute order is unknown from OHLC alone. Under pessimistic resolution, the loss-side touch fires first.
-- Soft SL fires at bar close, which is the last temporal event in the bar.
+### 2.2 Flipped mode (`flip_entry_direction=True`)
 
-In actual data (sl_soft=100, sl_hard=200, tp=150) hard-SL+TP same-bar collisions are essentially zero — see §8 R3 analysis.
+The entry direction is swapped (long↔short, holds untouched) AND the exit model flips symmetrically:
+
+| Line | Fire rule | Fill price | Pnl shape |
+|---|---|---|---|
+| **Soft TP** (closer to entry) | 2 consecutive 1-min **closes** past the soft line | the **2nd close** (better than the line) | `\|pnl\| ≥ tp_soft_points` |
+| **Hard TP** (`tp_hard ≥ tp_soft`) | 1-min bar **extreme** touches the hard line | **the hard line** | exactly `+tp_hard_points` |
+| **Hard SL** | 1-min bar **extreme** touches the SL line | **the SL line** | exactly `-sl_hard_points` |
+
+Active params: `tp_soft_points`, `tp_hard_points`, `sl_hard_points`. Inactive: `sl_soft_points`.
+
+**Per-bar tie-break: hard TP > hard SL > soft TP** (symmetric/literal flip — the whole logic flips, including priority).
+
+### 2.3 Common across both modes
+
+- All four soft/hard thresholds (`sl_soft`, `sl_hard`, `tp_soft`, `tp_hard`) are **required > 0**. Constraints: `sl_hard ≥ sl_soft`, `tp_hard ≥ tp_soft`.
+- Each trade dict carries all four line values (`sl_soft_line`, `sl_hard_line`, `tp_soft_line`, `tp_hard_line`) regardless of mode, plus a `flip: bool` flag so the consumer can tell which set was active.
+- Re-entry gate is mode-independent: next 4h whose `Date > exit_time`.
 
 ---
 
@@ -128,13 +144,17 @@ class SimpleStrategy:
     'signal_idx':   int,                  # the just-closed 4h bar that fired the signal
     'entry_time':   pd.Timestamp,         # entry_idx's Date (= signal bar's close)
     'entry_price':  float,                # = signal bar's close
-    'direction':    'long' | 'short',
-    'sl_soft_line': float,
-    'sl_hard_line': float,
-    'tp_line':      float,
+    'direction':    'long' | 'short',     # POST-flip direction (the actual position)
+    'flip':         bool,                 # was this trade opened in flipped mode?
+    'sl_soft_line': float,                # always populated; active in normal mode
+    'sl_hard_line': float,                # always active
+    'tp_soft_line': float,                # always populated; active in flipped mode
+    'tp_hard_line': float,                # always active
     'exit_time':    pd.Timestamp | None,
     'exit_price':   float | None,
-    'exit_reason':  'TAKE_PROFIT' | 'STOP_LOSS_HARD' | 'STOP_LOSS_SOFT' | 'OPEN',
+    'exit_reason':  'STOP_LOSS_HARD' | 'STOP_LOSS_SOFT'
+                  | 'TAKE_PROFIT_HARD' | 'TAKE_PROFIT_SOFT'
+                  | 'OPEN',
     'pnl_points':   float | None,
     'pnl_dollars':  float | None,
 }
@@ -169,20 +189,33 @@ Response shape:
 
 ---
 
-## 8. Locked counts (`full` preset, sl_soft=100, sl_hard=200, tp=150)
+## 8. Locked counts (`full` preset, sl_soft=100, sl_hard=200, tp_soft=100, tp_hard=150)
 
-Regression-pinned in `tests/test_simple_strategy.py`:
+Regression-pinned in `tests/test_simple_strategy.py`.
+
+### Normal mode (`flip_entry_direction=False`)
 
 | Metric | Value |
 |---|---|
 | Total trades | 594 |
 | `STOP_LOSS_HARD` | 8 |
 | `STOP_LOSS_SOFT` | 315 |
-| `TAKE_PROFIT` | 271 |
-| `OPEN` (open at EOF) | 0 |
+| `TAKE_PROFIT_HARD` | 271 |
+| `OPEN` | 0 |
 | Total pnl $ | **+65,555** |
 
-Pnl is positive even without parameter tuning — the no-look-ahead timing (signal from the just-closed bar; entry at the next bar's start) keeps the exit walk on bars chronologically after the signal. The optimizer will find better params; this baseline is just to lock the rule semantics.
+### Flipped mode (`flip_entry_direction=True`)
+
+| Metric | Value |
+|---|---|
+| Total trades | 539 |
+| `STOP_LOSS_HARD` | 203 |
+| `TAKE_PROFIT_HARD` | 32 |
+| `TAKE_PROFIT_SOFT` | 304 |
+| `OPEN` | 0 |
+| Total pnl $ | **−37,620** |
+
+The flipped engine on these untuned params is a loss-maker — confirming the original system extracts edge in the canonical direction, and the symmetric flip surrenders most of it. Optimiser tuning of the flipped param set is a separate experiment.
 
 ### R3 analysis (hard SL + TP touch in same bar)
 

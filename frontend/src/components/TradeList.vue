@@ -147,11 +147,12 @@ function exitTime(t: ScalingTrade): string {
   return candleTime(t.exit_idx);
 }
 
-// Exit-reason palette covers both engines:
-//   Box  : 'TAKE PROFIT', 'STOP LOSS (SOFT)', 'STOP LOSS (HARD)', 'DIRECTION_FLIP', 'OPEN'
-//   Simple: 'TAKE_PROFIT', 'STOP_LOSS_SOFT',  'STOP_LOSS_HARD',   (no flip),         'OPEN'
+// Exit-reason palette covers both engines + both simple-engine modes:
+//   Box     : 'TAKE PROFIT', 'STOP LOSS (SOFT)', 'STOP LOSS (HARD)', 'DIRECTION_FLIP', 'OPEN'
+//   Simple  : 'STOP_LOSS_SOFT', 'STOP_LOSS_HARD', 'TAKE_PROFIT_SOFT', 'TAKE_PROFIT_HARD', 'OPEN'
 function exitReasonClass(reason: string): string {
-  if (reason === 'TAKE PROFIT' || reason === 'TAKE_PROFIT')           return 'text-tv-green';
+  if (reason === 'TAKE PROFIT' || reason === 'TAKE_PROFIT_HARD')      return 'text-tv-green font-semibold';
+  if (reason === 'TAKE_PROFIT_SOFT')                                  return 'text-tv-green';
   if (reason === 'STOP LOSS (SOFT)' || reason === 'STOP_LOSS_SOFT')   return 'text-tv-red';
   if (reason === 'STOP LOSS (HARD)' || reason === 'STOP_LOSS_HARD')   return 'text-tv-red font-semibold';
   if (reason === 'DIRECTION_FLIP')                                    return 'text-tv-blue';

@@ -64,14 +64,18 @@ export type EngineMode = 'box' | 'simple';
 export interface SimpleParams {
   sl_soft_points: number;
   sl_hard_points: number;
-  tp_points: number;
+  tp_soft_points: number;
+  tp_hard_points: number;
   direction_scope: 'both' | 'long_only' | 'short_only';
+  flip_entry_direction: boolean;
 }
 const DEFAULT_SIMPLE_PARAMS: SimpleParams = {
-  sl_soft_points: 100,
-  sl_hard_points: 200,
-  tp_points:      150,
-  direction_scope: 'both',
+  sl_soft_points:       100,
+  sl_hard_points:       200,
+  tp_soft_points:       100,
+  tp_hard_points:       150,
+  direction_scope:      'both',
+  flip_entry_direction: false,
 };
 
 const LS_ENGINE = 'nq-dash:engine';

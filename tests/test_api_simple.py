@@ -25,15 +25,17 @@ pytestmark = pytest.mark.skipif(
 
 def _payload(**overrides):
     base = {
-        'sl_soft_points':  100,
-        'sl_hard_points':  200,
-        'tp_points':       150,
-        'data_path':       _4H,
-        'data_path_1min':  _1M,
-        'box_data_path':   _BOX,
-        'direction_scope': 'both',
-        'start':           None,
-        'end':             None,
+        'sl_soft_points':       100,
+        'sl_hard_points':       200,
+        'tp_soft_points':       100,
+        'tp_hard_points':       150,
+        'data_path':            _4H,
+        'data_path_1min':       _1M,
+        'box_data_path':        _BOX,
+        'direction_scope':      'both',
+        'flip_entry_direction': False,
+        'start':                None,
+        'end':                  None,
     }
     base.update(overrides)
     return base
@@ -56,7 +58,8 @@ def test_endpoint_returns_summary_and_trades():
     for key in ('entry_idx', 'exit_idx', 'direction', 'entry_signal_price',
                 'exit_close', 'avg_entry_price', 'exit_price', 'contracts',
                 'profit_points', 'profit_dollars', 'exit_reason', 'legs',
-                'sl_soft_line', 'sl_hard_line', 'tp_line'):
+                'sl_soft_line', 'sl_hard_line', 'tp_soft_line', 'tp_hard_line',
+                'flip'):
         assert key in t0, f'missing {key} in trade payload'
     # Metrics block matches the canonical Metrics interface (same one the
     # box endpoint produces) so the MetricsCards UI renders all panels
@@ -98,3 +101,30 @@ def test_endpoint_422_on_hard_below_soft():
     r = client.post('/api/backtest/simple',
                     json=_payload(sl_soft_points=200, sl_hard_points=100))
     assert r.status_code == 422
+
+
+def test_endpoint_422_on_tp_hard_below_soft():
+    r = client.post('/api/backtest/simple',
+                    json=_payload(tp_soft_points=200, tp_hard_points=100))
+    assert r.status_code == 422
+
+
+def test_endpoint_flip_on_flips_directions():
+    """Flip ON: the same data should produce reversed directions vs flip OFF."""
+    off = client.post('/api/backtest/simple', json=_payload(flip_entry_direction=False)).json()
+    on  = client.post('/api/backtest/simple', json=_payload(flip_entry_direction=True)).json()
+    # Same number of signal-firing bars in both runs, so totals are close but
+    # not identical (different exit paths). However, the first trade's signal
+    # comes from bar 0 — the only thing that matters is direction.
+    assert off['trades'][0]['direction'] != on['trades'][0]['direction']
+    # Flip-on summary carries the new TAKE_PROFIT_SOFT count.
+    assert 'n_take_profit_soft' in on['summary']
+    assert on['summary']['n_trades'] == 539
+    assert on['summary']['n_take_profit_hard'] == 32
+    assert on['summary']['n_take_profit_soft'] == 304
+    assert on['summary']['n_stop_loss_hard']   == 203
+    # Flipped first trade exposes the new line fields.
+    t0 = on['trades'][0]
+    assert t0['flip'] is True
+    for k in ('sl_soft_line', 'sl_hard_line', 'tp_soft_line', 'tp_hard_line'):
+        assert k in t0

@@ -75,67 +75,96 @@ After scanning all active level pairs:
 
 ## 3. Exit truth table (per 1-min bar of an open trade)
 
-**Touch detection lives here, and only here.** Hard SL and TP fire when the bar's *extreme* (`H` for shorts' SL / longs' TP, `L` for longs' SL / shorts' TP) crosses a single line. Soft SL is the one exit that is *not* touch-based — it fires on `close` past the line, twice in a row. The entry decision in §2 never uses any of this.
+**Two modes**, selected by `flip_entry_direction`. Touch detection lives only here (never in entry).
 
+### 3.0 Flip layer (between entry signal and trade open)
 
-### 3.1 The three lines
+After `_stage1_candle_signal()` produces a `long`/`short`/`hold` decision:
 
-For a position opened at `entry_price` with params `(sl_soft_points, sl_hard_points, tp_points)` where `sl_hard ≥ sl_soft`:
-
-| Line | Long position | Short position |
+| flip_entry_direction | Stage 1 signal | actual position direction |
 |---|---|---|
-| `sl_soft_line` | `entry − sl_soft_points` (below) | `entry + sl_soft_points` (above) |
-| `sl_hard_line` | `entry − sl_hard_points` (below, deeper) | `entry + sl_hard_points` (above, deeper) |
-| `tp_line` | `entry + tp_points` (above) | `entry − tp_points` (below) |
+| false (normal) | long | long |
+| false (normal) | short | short |
+| false (normal) | hold | (no trade) |
+| true (flipped) | long | **short** |
+| true (flipped) | short | **long** |
+| true (flipped) | hold | (no trade) |
 
-### 3.2 Per-bar decision for a LONG position
+`direction_scope` is applied **after** the flip (i.e., it filters the actual opened direction). Re-entry gate is independent of the flag.
 
-Given a 1-min bar with `m.high`, `m.low`, `m.close` and a running `soft_consec_count`:
 
-| # | hard touched? | TP touched? | soft close past? | action | fill price | soft counter |
-|---|---|---|---|---|---|---|
-| 1 | `m.low ≤ sl_hard_line` | (irrelevant) | (irrelevant) | exit **STOP_LOSS_HARD** | `sl_hard_line` | reset to 0 |
-| 2 | no | `m.high ≥ tp_line` | (irrelevant) | exit **TAKE_PROFIT** | `tp_line` | reset to 0 |
-| 3 | no | no | `m.close ≤ sl_soft_line` AND counter+1 ≥ 2 | exit **STOP_LOSS_SOFT** | `m.close` | reset to 0 |
-| 4 | no | no | `m.close ≤ sl_soft_line` AND counter+1 < 2 | continue (arm soft) | — | `counter += 1` |
-| 5 | no | no | `m.close > sl_soft_line` | continue | — | `counter := 0` |
+### 3.1 The four lines
 
-### 3.3 Per-bar decision for a SHORT position (mirror)
+Every trade carries **four** line values regardless of mode. Only three are active per mode:
 
-| # | hard touched? | TP touched? | soft close past? | action | fill price | soft counter |
-|---|---|---|---|---|---|---|
-| 1 | `m.high ≥ sl_hard_line` | — | — | exit **STOP_LOSS_HARD** | `sl_hard_line` | reset |
-| 2 | no | `m.low ≤ tp_line` | — | exit **TAKE_PROFIT** | `tp_line` | reset |
-| 3 | no | no | `m.close ≥ sl_soft_line` AND counter+1 ≥ 2 | exit **STOP_LOSS_SOFT** | `m.close` | reset |
-| 4 | no | no | `m.close ≥ sl_soft_line` AND counter+1 < 2 | arm soft | — | `counter += 1` |
-| 5 | no | no | `m.close < sl_soft_line` | continue | — | `counter := 0` |
+| Line | Long position | Short position | Active when |
+|---|---|---|---|
+| `sl_soft_line` | `entry − sl_soft` (below) | `entry + sl_soft` (above) | flip OFF |
+| `sl_hard_line` | `entry − sl_hard` (below, deeper) | `entry + sl_hard` (above, deeper) | both modes |
+| `tp_soft_line` | `entry + tp_soft` (above) | `entry − tp_soft` (below) | flip ON |
+| `tp_hard_line` | `entry + tp_hard` (above, deeper) | `entry − tp_hard` (below, deeper) | both modes |
 
-### 3.4 Tie-break
+Constraints: `sl_hard ≥ sl_soft`, `tp_hard ≥ tp_soft`. All four > 0.
 
-Priority **hard SL > TP > soft SL** (rows 1 > 2 > 3 above) — the row order in the table IS the implementation's check order.
+### 3.2 NORMAL mode (flip=OFF) — per-bar decision
 
-Rationale (from notes.md v2): hard SL and TP are intra-bar touch events with unknown intra-minute timing — under pessimism we resolve the loss-side touch first. Soft SL fires at bar close, which is the last temporal event in the bar, so it's the lowest priority.
+Priority **hard SL > hard TP > soft SL**. Soft confirmation lives on the SL side.
 
-### 3.5 PnL formula
+LONG position:
+
+| # | check | action | fill price | soft counter |
+|---|---|---|---|---|
+| 1 | `m.low ≤ sl_hard_line` | exit **STOP_LOSS_HARD** | `sl_hard_line` | reset |
+| 2 | else `m.high ≥ tp_hard_line` | exit **TAKE_PROFIT_HARD** | `tp_hard_line` | reset |
+| 3 | else `m.close ≤ sl_soft_line` AND counter+1 ≥ 2 | exit **STOP_LOSS_SOFT** | `m.close` | reset |
+| 4 | else `m.close ≤ sl_soft_line` AND counter+1 < 2 | continue (arm soft) | — | `counter += 1` |
+| 5 | else | continue | — | `counter := 0` |
+
+SHORT position (mirrored — high↔low and `≤`↔`≥` swap on all rows).
+
+### 3.3 FLIPPED mode (flip=ON) — per-bar decision
+
+Priority **hard TP > hard SL > soft TP** (symmetric flip — Q-A locked). Soft confirmation lives on the TP side.
+
+LONG position (this is the actual position direction; the original Stage 1 signal was short before the flip):
+
+| # | check | action | fill price | soft counter |
+|---|---|---|---|---|
+| 1 | `m.high ≥ tp_hard_line` | exit **TAKE_PROFIT_HARD** | `tp_hard_line` | reset |
+| 2 | else `m.low ≤ sl_hard_line` | exit **STOP_LOSS_HARD** | `sl_hard_line` | reset |
+| 3 | else `m.close ≥ tp_soft_line` AND counter+1 ≥ 2 | exit **TAKE_PROFIT_SOFT** | `m.close` | reset |
+| 4 | else `m.close ≥ tp_soft_line` AND counter+1 < 2 | continue (arm soft) | — | `counter += 1` |
+| 5 | else | continue | — | `counter := 0` |
+
+SHORT position (mirrored).
+
+### 3.4 PnL formula (same in both modes)
 
 - `long`:  `pnl_points = exit_price − entry_price`
 - `short`: `pnl_points = entry_price − exit_price`
 - `pnl_dollars = pnl_points × 20.0` (NQ point value)
 
+`direction` is the **actual position direction** (post-flip), so the formula works without branching on the flip flag.
+
+Soft-side fills land **past** the line in the soft direction:
+- normal: `|pnl_points| ≥ sl_soft_points` (worse than the line — loss confirmed)
+- flipped: `pnl_points ≥ tp_soft_points` (better than the line — profit confirmed; literal mirror per Q-B)
+
 OPEN trades (still open at EOF): `exit_time = None`, `exit_price = None`, `pnl_* = None`.
 
-### 3.6 Verdict vs. documentation
+### 3.5 Verdict vs. spec
 
-| Aspect | Spec (notes.md v2) | Implementation | Match |
+| Aspect | Spec | Implementation | Match |
 |---|---|---|---|
-| Soft SL fire | 2 consecutive 1-min CLOSES past line | `soft_consec_count` increments on close past, fires at `>= 2` | ✅ |
-| Soft SL fill | the 2nd close (worse than line) | `m_close` | ✅ |
-| Soft SL counter | resets on a non-past close | `else: soft_consec_count = 0` | ✅ |
-| Hard SL fire | bar EXTREME touches line | `m_low <= sh` (long) / `m_high >= sh` (short) | ✅ |
-| Hard SL fill | line itself | `sh` | ✅ |
-| TP fire | bar EXTREME touches line | `m_high >= tp` (long) / `m_low <= tp` (short) | ✅ |
-| TP fill | line itself | `tp` | ✅ |
-| Tie-break | hard SL > TP > soft SL | check order in code | ✅ |
+| Flip layer | swap long↔short, holds untouched | one-line conditional swap after `_stage1_candle_signal` | ✅ |
+| Scope filter | applied to POST-flip direction (Q-2) | scope check runs after flip in main loop | ✅ |
+| Normal SL/TP set | soft_sl + hard_sl + hard_tp | active when `flip=False` | ✅ |
+| Flipped SL/TP set | soft_tp + hard_tp + hard_sl | active when `flip=True` | ✅ |
+| Tie-break (normal) | hard SL > hard TP > soft SL | check order in code | ✅ |
+| Tie-break (flipped) | hard TP > hard SL > soft TP (symmetric, Q-A) | check order in code | ✅ |
+| Soft fill (normal) | 2nd close past line | `m_close` | ✅ |
+| Soft fill (flipped) | 2nd close past line (literal mirror, Q-B) | `m_close` | ✅ |
+| All four lines on trade | always populated regardless of mode | trade dict carries 4 lines + `flip` flag | ✅ |
 
 **No deviation in exit logic.**
 

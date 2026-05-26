@@ -167,29 +167,41 @@ class SimpleBacktestRequest(BaseModel):
     Engine: Stage 1 truth table for entry direction + dual-SL/TP exit
     on 1-min bars + re-entry gate "next 4h that starts after exit_time".
 
-    Exit lines:
-      * Soft SL — 2 consecutive 1-min closes past line → fill at 2nd close.
-      * Hard SL — 1-min bar extreme touches line → fill at line.
-      * TP     — 1-min bar extreme touches line → fill at line.
+    Two coexisting modes selected by `flip_entry_direction`:
+      - Normal (default): entry verbatim, exit lines = soft SL + hard SL + hard TP.
+      - Flipped: entry direction swapped, exit lines = soft TP + hard TP + hard SL.
+
+    All four soft/hard thresholds are REQUIRED > 0 regardless of mode; one
+    is inactive at runtime (sl_soft when flipped, tp_soft when normal).
 
     See `docs/strategy/references/simple_engine_truth_table.md`.
     """
-    sl_soft_points: float = Field(..., gt=0, description='Soft SL distance from entry close (close-confirmed).')
-    sl_hard_points: float = Field(..., gt=0, description='Hard SL distance from entry close (touch fill).')
-    tp_points:      float = Field(..., gt=0, description='TP distance from entry close (touch fill).')
+    sl_soft_points: float = Field(..., gt=0, description='Soft SL distance from entry (close-confirmed). Active in normal mode.')
+    sl_hard_points: float = Field(..., gt=0, description='Hard SL distance from entry (touch fill). Active in both modes.')
+    tp_soft_points: float = Field(..., gt=0, description='Soft TP distance from entry (close-confirmed). Active in flipped mode.')
+    tp_hard_points: float = Field(..., gt=0, description='Hard TP distance from entry (touch fill). Active in both modes.')
     data_path:       str          # 4h candles
     data_path_1min:  str          # 1-min candles
     box_data_path:   str          # unified W*/M* level CSV
-    direction_scope: Literal['both', 'long_only', 'short_only'] = 'both'
+    direction_scope:      Literal['both', 'long_only', 'short_only'] = 'both'
+    flip_entry_direction: bool = False
     start: Optional[str] = Field(...)
     end:   Optional[str] = Field(...)
 
     @field_validator('sl_hard_points')
     @classmethod
-    def _hard_ge_soft(cls, v: float, info) -> float:
+    def _sl_hard_ge_soft(cls, v: float, info) -> float:
         soft = info.data.get('sl_soft_points')
         if soft is not None and v < soft:
             raise ValueError(f'sl_hard_points ({v}) must be >= sl_soft_points ({soft})')
+        return v
+
+    @field_validator('tp_hard_points')
+    @classmethod
+    def _tp_hard_ge_soft(cls, v: float, info) -> float:
+        soft = info.data.get('tp_soft_points')
+        if soft is not None and v < soft:
+            raise ValueError(f'tp_hard_points ({v}) must be >= tp_soft_points ({soft})')
         return v
 
 
