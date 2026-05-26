@@ -156,32 +156,39 @@ After every exit: `blocked_until = exit_time`. Fresh Stage 1 evaluation per elig
 
 ---
 
-## 5. ⚠️ Audit findings — possible timing/look-ahead question
+## 5. Iteration timing — no look-ahead
 
 The 4h CSV's `Date` column is the bar's **start** time (verified: 4h@18:00 Open = 1-min@18:00 Open).
 
-The engine processes each 4h candle in the iteration loop and uses `candle.Close` to fire the entry signal. The trade's `entry_time` is set to `candle.Date` (the 4h start).
+**Locked interpretation (2026-05-26):** signal fires at the close of the *just-closed* bar; trade is executed at the *next* bar's start. At iteration `idx`:
 
-**That means:**
+- **Signal candle** = `df_4h.iloc[idx-1]` (the bar whose Close just landed).
+- **Entry moment** = `df_4h.iloc[idx].Date` (the new 4h boundary; equals the previous bar's close in continuous data).
+- **Entry price** = `signal_candle.Close` (the price at the boundary).
+- **Exit walk** = 1-min bars in `[start_1m[idx], start_1m[idx+1])` — all chronologically *after* the signal, so no look-ahead.
 
-- Signal at iteration `idx` is computed from `candle.Close`, which in real time is only available at the bar's END (e.g., 22:00 for the 18:00 bar).
-- But `entry_time` is recorded as the bar's START (18:00).
-- The exit walk for the same iteration starts at `start_1m[idx]` (1-min bars from 18:00), so the engine immediately scans the 1-min bars **within the same 4h window that produced the signal**.
+Implementation detail in the trade dict: `entry_idx = idx` (the new bar that "owns" the position), `signal_idx = idx - 1` (the bar that fired the signal).
 
-This means a trade can "exit" before the 4h candle that produced its signal would have actually closed in live trading. **It is a look-ahead bias** if `Date` is taken literally as the entry moment.
+**Warm-up:** iteration `idx = 0` has no predecessor, so no signal can fire on the very first bar. This matches the spec's "first-candle warm-up" in `docs/strategy/MASTER.md §2.3`.
 
-Two reconciliations are possible:
+### Verdict
 
-- **(a) Spec interpretation: signal fires at the close of the just-closed bar, executed at the next bar's start.** Then iteration `idx` should:
+✅ No look-ahead. Verified by `test_real_data_no_lookahead_invariant`:
+
+```python
+for t in trades:
+    assert t['entry_idx'] == t['signal_idx'] + 1
+    if t['exit_time'] is not None:
+        assert t['exit_time'] >= t['entry_time']
+```
+
+Removing the look-ahead bias on the simple engine swung total pnl from **−$1,163,360** to **+$65,555** on the same (sl_soft=100, sl_hard=200, tp=150) baseline — the look-ahead had been allowing the engine to "see" intraday volatility before the signal was actually computable, which biased exits toward hard SL hits that wouldn't have fired in live trading.
+
+> USERNOTE: fix the system to use  ```Spec interpretation: signal fires at the close of the just-closed bar, executed at the next bar's start.** Then iteration `idx` should:
   - Use `df_4h.iloc[idx-1]`'s OHLC for the signal decision.
   - Set `entry_time = df_4h.iloc[idx].Date` (the just-arrived 4h boundary = previous bar's close).
-  - Walk 1-min bars from `start_1m[idx]` onwards (the bars in the new 4h window, all of which post-date the signal).
-- **(b) Treat `Date` as a label, not chronology.** The engine pretends "at iteration `idx` I have bar `idx`'s full OHLC and 1-min bars from its start onwards." This is the **current** implementation. The legacy `BoxStrategy` does the same thing.
-
-Both engines (box and simple) use interpretation **(b)** today. If the user's intent is **(a)** (no look-ahead), both engines need the same one-iteration shift.
-
-**This question is not resolved in the docs.** `backtest_updates.md` says "for entry we are watching 4 hours candle" — which is consistent with both interpretations. The MASTER.md spec says explicitly "no look-ahead" but doesn't translate that to code timing.
-
+  - Walk 1-min bars from `start_1m[idx]` onwards (the bars in the new 4h window, all of which post-date the signal).``` 
+  
 ---
 
 ## 6. Test coverage matrix

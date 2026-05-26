@@ -714,8 +714,10 @@ def post_simple_backtest(req: SimpleBacktestRequest):
     def _ser(t: Dict[str, Any]) -> Dict[str, Any]:
         out = {
             'entry_idx':          int(t['entry_idx']),
+            'signal_idx':         int(t['signal_idx']),
             'exit_idx':           _exit_idx_for(t['exit_time']) if t['exit_time'] is not None else int(t['entry_idx']),
             'direction':          t['direction'],
+            'entry_price':        float(t['entry_price']),
             'entry_signal_price': float(t['entry_price']),
             'exit_close':         float(t['exit_price']) if t['exit_price'] is not None else float(t['entry_price']),
             'avg_entry_price':    float(t['entry_price']),
@@ -723,6 +725,8 @@ def post_simple_backtest(req: SimpleBacktestRequest):
             'contracts':          1,
             'profit_points':      float(t['pnl_points'])  if t['pnl_points']  is not None else 0.0,
             'profit_dollars':     float(t['pnl_dollars']) if t['pnl_dollars'] is not None else 0.0,
+            'pnl_points':         float(t['pnl_points'])  if t['pnl_points']  is not None else None,
+            'pnl_dollars':        float(t['pnl_dollars']) if t['pnl_dollars'] is not None else None,
             'exit_reason':        t['exit_reason'],
             'legs':               [{'contracts': 1, 'price': float(t['entry_price']), 'candle_idx': int(t['entry_idx'])}],
             'entry_time':         t['entry_time'].isoformat() if t['entry_time'] is not None else None,

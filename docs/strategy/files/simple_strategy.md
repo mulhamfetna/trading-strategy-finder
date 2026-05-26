@@ -14,7 +14,7 @@ The two engines coexist; the old one is unchanged. Pick by hitting the right end
 
 ## 1. What it does, in one sentence
 
-For each 4h candle, evaluate Stage 1's per-candle truth table; if it fires `long` or `short`, open a 1-contract trade at the candle's close; walk 1-min bars and close on **hard SL** (1-min extreme touches the hard line) / **TP** (extreme touches TP line) / **soft SL** (two consecutive 1-min closes past the soft line); re-evaluate the next 4h candle whose start is strictly after the exit time.
+At every 4h boundary, evaluate Stage 1's truth table on the **just-closed** 4h bar (no look-ahead — the bar's full OHLC is only available at its close); if it fires `long` or `short`, open a 1-contract trade at the *next* bar's start at the just-closed bar's close price; walk 1-min bars in the new window and close on **hard SL** (1-min extreme touches the hard line) / **TP** (extreme touches TP line) / **soft SL** (two consecutive 1-min closes past the soft line); re-evaluate the next 4h candle whose start is strictly after the exit time.
 
 ---
 
@@ -124,9 +124,10 @@ class SimpleStrategy:
 
 ```python
 {
-    'entry_idx':    int,
-    'entry_time':   pd.Timestamp,         # 4h close that fired the signal
-    'entry_price':  float,                # = candle.close
+    'entry_idx':    int,                  # the 4h bar the trade is OPEN in (signal_idx + 1)
+    'signal_idx':   int,                  # the just-closed 4h bar that fired the signal
+    'entry_time':   pd.Timestamp,         # entry_idx's Date (= signal bar's close)
+    'entry_price':  float,                # = signal bar's close
     'direction':    'long' | 'short',
     'sl_soft_line': float,
     'sl_hard_line': float,
@@ -174,14 +175,14 @@ Regression-pinned in `tests/test_simple_strategy.py`:
 
 | Metric | Value |
 |---|---|
-| Total trades | 590 |
-| `STOP_LOSS_HARD` | 152 |
-| `STOP_LOSS_SOFT` | 343 |
-| `TAKE_PROFIT` | 94 |
-| `OPEN` (open at EOF) | 1 |
-| Total pnl $ | −1,163,360 |
+| Total trades | 594 |
+| `STOP_LOSS_HARD` | 8 |
+| `STOP_LOSS_SOFT` | 315 |
+| `TAKE_PROFIT` | 271 |
+| `OPEN` (open at EOF) | 0 |
+| Total pnl $ | **+65,555** |
 
-Pnl is negative because the params weren't tuned — the optimizer (P4 follow-up) will find params that don't lose money.
+Pnl is positive even without parameter tuning — the no-look-ahead fix (2026-05-26 v3) eliminated the bias that was inflating hard-SL exits. Optimizer will find better params; this baseline is just to lock the rule semantics.
 
 ### R3 analysis (hard SL + TP touch in same bar)
 

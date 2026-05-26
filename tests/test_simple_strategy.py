@@ -125,12 +125,19 @@ def test_backtest_empty_returns_no_trades():
 
 
 def test_backtest_hard_sl_long_touch_fills_at_line():
-    """Long position; 1-min low touches hard SL → exit at hard SL line."""
+    """Long position; 1-min low touches hard SL → exit at hard SL line.
+
+    No-look-ahead timing: bar 0 (06:00) fires the long signal (green,
+    touched, close > BU). Bar 1 (10:00) is the entry-window — 1-min low
+    touches hard SL.
+    """
     df_4h = pd.DataFrame([
-        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 100, 'High': 110, 'Low': 99, 'Close': 105, 'Volume': 0},
+        # signal bar: green, touched, close=105 > BU=103 → fires LONG at close
+        {'Date': pd.Timestamp('2025-01-01 06:00:00'), 'Open': 100, 'High': 110, 'Low': 99, 'Close': 105, 'Volume': 0},
+        # entry bar: 1-min stream below triggers exits
+        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 106, 'Low':  95, 'Close': 100, 'Volume': 0},
     ])
     df_1m = pd.DataFrame([
-        # bar dips to 95 (touches hard SL at 105-8=97? no, hard SL at 105-8=97; low 95 <= 97 → fire)
         {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 106, 'Low': 95, 'Close': 100, 'Volume': 0},
     ])
     box = _box_indexed(upper=103, lower=98)
@@ -139,6 +146,10 @@ def test_backtest_hard_sl_long_touch_fills_at_line():
     assert len(trades) == 1
     t = trades[0]
     assert t['direction']    == 'long'
+    assert t['signal_idx']   == 0          # bar 06:00 fired the signal
+    assert t['entry_idx']    == 1          # entry at bar 10:00's start
+    assert t['entry_time']   == pd.Timestamp('2025-01-01 10:00:00')
+    assert t['entry_price']  == 105        # = bar 0 close
     assert t['exit_reason']  == 'STOP_LOSS_HARD'
     assert t['exit_price']   == 97         # hard SL line (105 - 8)
     assert t['pnl_points']   == -8
@@ -147,10 +158,10 @@ def test_backtest_hard_sl_long_touch_fills_at_line():
 def test_backtest_tp_long_touch_fills_at_line():
     """Long position; 1-min high touches TP → exit at TP line."""
     df_4h = pd.DataFrame([
-        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 100, 'High': 110, 'Low': 99, 'Close': 105, 'Volume': 0},
+        {'Date': pd.Timestamp('2025-01-01 06:00:00'), 'Open': 100, 'High': 110, 'Low': 99, 'Close': 105, 'Volume': 0},
+        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 121, 'Low': 104, 'Close': 110, 'Volume': 0},
     ])
     df_1m = pd.DataFrame([
-        # no SL dip, high reaches 120 (>= tp=115)
         {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 120, 'Low': 104, 'Close': 110, 'Volume': 0},
     ])
     box = _box_indexed(upper=103, lower=98)
@@ -164,17 +175,13 @@ def test_backtest_tp_long_touch_fills_at_line():
 
 
 def test_backtest_soft_sl_needs_two_consecutive_closes():
-    """Soft SL fires only after two consecutive closes past the line; the
-    second close is the fill price."""
     df_4h = pd.DataFrame([
-        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 100, 'High': 110, 'Low': 99, 'Close': 105, 'Volume': 0},
+        {'Date': pd.Timestamp('2025-01-01 06:00:00'), 'Open': 100, 'High': 110, 'Low': 99, 'Close': 105, 'Volume': 0},
+        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 106, 'Low':  97, 'Close': 98,  'Volume': 0},
     ])
-    # soft=5 → soft SL line = 100. hard=20 → 85 (out of the way). tp=50 → 155 (out of the way).
     df_1m = pd.DataFrame([
-        # bar 1: close 99 (past soft 100). Counter = 1. No fire yet.
         {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 106, 'Low': 98, 'Close': 99, 'Volume': 0},
-        # bar 2: close 98 (past soft 100). Counter = 2 → fire.
-        {'Date': pd.Timestamp('2025-01-01 10:01:00'), 'Open': 99, 'High': 100, 'Low': 97, 'Close': 98, 'Volume': 0},
+        {'Date': pd.Timestamp('2025-01-01 10:01:00'), 'Open': 99,  'High': 100, 'Low': 97, 'Close': 98, 'Volume': 0},
     ])
     box = _box_indexed(upper=103, lower=98)
     strat = SimpleStrategy(_params(ss=5, sh=20, tp=50))
@@ -182,25 +189,23 @@ def test_backtest_soft_sl_needs_two_consecutive_closes():
     assert len(trades) == 1
     t = trades[0]
     assert t['exit_reason']  == 'STOP_LOSS_SOFT'
-    assert t['exit_price']   == 98          # the 2nd close, NOT the line
-    assert t['pnl_points']   == -7          # 98 - 105 = -7 (worse than -soft_points=-5)
+    assert t['exit_price']   == 98          # 2nd close, not the line
+    assert t['pnl_points']   == -7          # 98 - 105
 
 
 def test_backtest_soft_sl_counter_resets_on_recovery():
-    """A single close past, then a close back above, then another close
-    past → does NOT fire (counter resets)."""
     df_4h = pd.DataFrame([
-        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 100, 'High': 110, 'Low': 99, 'Close': 105, 'Volume': 0},
+        {'Date': pd.Timestamp('2025-01-01 06:00:00'), 'Open': 100, 'High': 110, 'Low': 99, 'Close': 105, 'Volume': 0},
+        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 106, 'Low': 99, 'Close': 99,  'Volume': 0},
     ])
     df_1m = pd.DataFrame([
-        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 106, 'Low': 99, 'Close': 99, 'Volume': 0},   # past soft, counter=1
-        {'Date': pd.Timestamp('2025-01-01 10:01:00'), 'Open': 99,  'High': 105, 'Low': 99, 'Close': 101, 'Volume': 0},  # back above, counter=0
-        {'Date': pd.Timestamp('2025-01-01 10:02:00'), 'Open': 101, 'High': 102, 'Low': 99, 'Close': 99, 'Volume': 0},   # past soft, counter=1
+        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 106, 'Low': 99, 'Close': 99,  'Volume': 0},  # counter=1
+        {'Date': pd.Timestamp('2025-01-01 10:01:00'), 'Open': 99,  'High': 105, 'Low': 99, 'Close': 101, 'Volume': 0},  # counter=0
+        {'Date': pd.Timestamp('2025-01-01 10:02:00'), 'Open': 101, 'High': 102, 'Low': 99, 'Close': 99,  'Volume': 0},  # counter=1
     ])
     box = _box_indexed(upper=103, lower=98)
     strat = SimpleStrategy(_params(ss=5, sh=50, tp=100))
     trades, _ = strat.backtest(df_4h, df_1m, box)
-    # No exit fires; trade still open at EOF.
     assert len(trades) == 1
     assert trades[0]['exit_reason'] == 'OPEN'
 
@@ -209,7 +214,8 @@ def test_backtest_hard_sl_beats_tp_in_same_bar():
     """Hard SL > TP > soft SL priority. If a single bar's low touches hard
     SL AND its high touches TP, hard SL wins."""
     df_4h = pd.DataFrame([
-        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 100, 'High': 110, 'Low': 99, 'Close': 105, 'Volume': 0},
+        {'Date': pd.Timestamp('2025-01-01 06:00:00'), 'Open': 100, 'High': 110, 'Low': 99, 'Close': 105, 'Volume': 0},
+        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 120, 'Low': 90, 'Close': 110, 'Volume': 0},
     ])
     df_1m = pd.DataFrame([
         # bar spans 90..120: low touches hard SL=97; high touches TP=115. Hard SL wins.
@@ -225,10 +231,12 @@ def test_backtest_hard_sl_beats_tp_in_same_bar():
 def test_backtest_short_hard_sl():
     """Short position; 1-min high touches hard SL above entry → fire."""
     df_4h = pd.DataFrame([
-        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 110, 'High': 112, 'Low': 95, 'Close': 99, 'Volume': 0},
+        # signal bar: red, touched, close=99 < BL=100 → fires SHORT
+        {'Date': pd.Timestamp('2025-01-01 06:00:00'), 'Open': 110, 'High': 112, 'Low': 95, 'Close': 99, 'Volume': 0},
+        # entry bar: 1-min high 110 crosses hard SL line (99+8=107) → SL_HARD
+        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 99,  'High': 110, 'Low': 98, 'Close': 100, 'Volume': 0},
     ])
     df_1m = pd.DataFrame([
-        # high 110 >= hard SL = 99 + 8 = 107 → fire at 107
         {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 99, 'High': 110, 'Low': 98, 'Close': 100, 'Volume': 0},
     ])
     box = _box_indexed(upper=108, lower=100)
@@ -236,17 +244,17 @@ def test_backtest_short_hard_sl():
     trades, _ = strat.backtest(df_4h, df_1m, box)
     assert trades[0]['direction']   == 'short'
     assert trades[0]['exit_reason'] == 'STOP_LOSS_HARD'
-    assert trades[0]['exit_price']  == 107        # hard SL line (99 + 8)
+    assert trades[0]['exit_price']  == 107       # hard SL line (99 + 8)
     assert trades[0]['pnl_points']  == -8
 
 
 def test_backtest_open_at_eof_yields_open():
     """A trade still open at EOF emits with exit_reason='OPEN' and null pnl."""
     df_4h = pd.DataFrame([
-        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 100, 'High': 110, 'Low': 99, 'Close': 105, 'Volume': 0},
+        {'Date': pd.Timestamp('2025-01-01 06:00:00'), 'Open': 100, 'High': 110, 'Low': 99, 'Close': 105, 'Volume': 0},
+        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 105.1, 'Low': 104.9, 'Close': 105, 'Volume': 0},
     ])
     df_1m = pd.DataFrame([
-        # bars that never trigger anything (SL=very far, TP=very far)
         {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 105.1, 'Low': 104.9, 'Close': 105, 'Volume': 0},
     ])
     box = _box_indexed(upper=103, lower=98)
@@ -260,17 +268,22 @@ def test_backtest_open_at_eof_yields_open():
 
 
 def test_backtest_reentry_gate_blocks_until_next_4h_start():
-    """After exit at T inside 4h X, next signal-eligible 4h must have
-    Date > T."""
+    """After exit at T inside 4h window N, next signal-eligible 4h must
+    have Date > T.
+
+    No-look-ahead timing: bar 0 (06:00) is the warm-up signal that fires
+    LONG. Trade enters at bar 1 (10:00). TP hits inside the 10:00 4h
+    window. Bar 2 (14:00) also fires LONG (green, touched, close > BU)
+    — re-entry gate passes because bar 2's Date is after the exit time.
+    """
     df_4h = pd.DataFrame([
-        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 100, 'High': 110, 'Low': 99, 'Close': 105, 'Volume': 0},
-        {'Date': pd.Timestamp('2025-01-01 14:00:00'), 'Open': 110, 'High': 120, 'Low': 99, 'Close': 115, 'Volume': 0},
+        {'Date': pd.Timestamp('2025-01-01 06:00:00'), 'Open': 100, 'High': 110, 'Low':  99, 'Close': 105, 'Volume': 0},   # signal for trade 1
+        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 120, 'Low':  99, 'Close': 115, 'Volume': 0},   # entry bar for trade 1 + signal for trade 2 (green, touched 99≤103, 115>103)
+        {'Date': pd.Timestamp('2025-01-01 14:00:00'), 'Open': 115, 'High': 125, 'Low': 114, 'Close': 120, 'Volume': 0},   # entry bar for trade 2
     ])
     df_1m = pd.DataFrame([
-        # 4h X 1-min: TP at high 120 (= TP=115)
-        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 120, 'Low': 104, 'Close': 110, 'Volume': 0},
-        # 4h X+1 1-min: TP at high 125 (= TP=125)
-        {'Date': pd.Timestamp('2025-01-01 14:00:00'), 'Open': 115, 'High': 125, 'Low': 114, 'Close': 120, 'Volume': 0},
+        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 105, 'High': 120, 'Low': 104, 'Close': 110, 'Volume': 0},   # TP at 105+10=115
+        {'Date': pd.Timestamp('2025-01-01 14:00:00'), 'Open': 115, 'High': 125, 'Low': 114, 'Close': 120, 'Volume': 0},   # TP at 115+10=125
     ])
     box = _box_indexed(upper=103, lower=98)
     strat = SimpleStrategy(_params(ss=5, sh=20, tp=10))
@@ -283,7 +296,9 @@ def test_backtest_reentry_gate_blocks_until_next_4h_start():
 
 def test_backtest_direction_scope_long_only():
     df_4h = pd.DataFrame([
-        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 110, 'High': 112, 'Low': 95, 'Close': 99, 'Volume': 0},
+        # signal bar: red, touched, close < BL → would fire SHORT
+        {'Date': pd.Timestamp('2025-01-01 06:00:00'), 'Open': 110, 'High': 112, 'Low': 95, 'Close': 99, 'Volume': 0},
+        {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 99,  'High': 100, 'Low': 98, 'Close': 99.5, 'Volume': 0},
     ])
     df_1m = pd.DataFrame([
         {'Date': pd.Timestamp('2025-01-01 10:00:00'), 'Open': 99, 'High': 100, 'Low': 98, 'Close': 99.5, 'Volume': 0},
@@ -291,7 +306,7 @@ def test_backtest_direction_scope_long_only():
     box = _box_indexed(upper=108, lower=100)
     strat = SimpleStrategy(_params(scope='long_only'))
     trades, _ = strat.backtest(df_4h, df_1m, box)
-    assert trades == []
+    assert trades == []   # short signal blocked by scope
 
 
 # ---------- Real-data lock (skipped if files absent) --------------------
@@ -322,8 +337,8 @@ def test_real_data_lock_counts(real_trades):
     trades, _ = real_trades
     import collections
     by_reason = dict(collections.Counter(t['exit_reason'] for t in trades))
-    assert len(trades) == 590
-    assert by_reason == {'STOP_LOSS_HARD': 152, 'STOP_LOSS_SOFT': 343, 'TAKE_PROFIT': 94, 'OPEN': 1}
+    assert len(trades) == 594
+    assert by_reason == {'TAKE_PROFIT': 271, 'STOP_LOSS_SOFT': 315, 'STOP_LOSS_HARD': 8}
 
 
 @pytestmark_realdata
@@ -331,16 +346,43 @@ def test_real_data_lock_directions(real_trades):
     trades, _ = real_trades
     import collections
     by_dir = dict(collections.Counter(t['direction'] for t in trades))
-    # Lock the long/short split — exact values come from the engine run.
-    assert sum(by_dir.values()) == 590
-    assert set(by_dir.keys()) == {'long', 'short'}
+    assert by_dir == {'long': 309, 'short': 285}
 
 
 @pytestmark_realdata
 def test_real_data_lock_total_pnl(real_trades):
     trades, _ = real_trades
     total = sum(t['pnl_dollars'] for t in trades if t['pnl_dollars'] is not None)
-    assert total == pytest.approx(-1163360.0)
+    assert total == pytest.approx(65555.0)
+
+
+@pytestmark_realdata
+def test_real_data_lock_first_trade(real_trades):
+    """Under no-look-ahead timing: the first trade's signal comes from
+    bar 0 (Date 2025-01-01 18:00); the trade enters at bar 1's start
+    (Date 22:00 = bar 0's close) at price 21322.25 (= bar 0's close)."""
+    trades, _ = real_trades
+    t = trades[0]
+    assert t['entry_idx']   == 1
+    assert t['signal_idx']  == 0
+    assert t['entry_time']  == pd.Timestamp('2025-01-01 22:00:00')
+    assert t['direction']   == 'long'
+    assert t['entry_price'] == 21322.25
+    assert t['exit_reason'] == 'TAKE_PROFIT'
+    assert t['exit_price']  == pytest.approx(21472.25)
+    assert t['pnl_points']  == pytest.approx(150.0)
+
+
+@pytestmark_realdata
+def test_real_data_no_lookahead_invariant(real_trades):
+    """No trade's exit can happen before its entry; entry_idx and
+    signal_idx differ by exactly 1 (signal fires from the just-closed
+    predecessor bar)."""
+    trades, _ = real_trades
+    for t in trades:
+        assert t['entry_idx'] == t['signal_idx'] + 1
+        if t['exit_time'] is not None:
+            assert t['exit_time'] >= t['entry_time']
 
 
 @pytestmark_realdata

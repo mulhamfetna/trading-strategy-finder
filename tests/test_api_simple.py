@@ -45,11 +45,11 @@ def test_endpoint_returns_summary_and_trades():
     body = r.json()
     assert set(body) == {'summary', 'metrics', 'trades', 'candles', 'elapsed_ms'}
     s = body['summary']
-    assert s['n_trades']      == 590
-    assert s['n_take_profit'] == 94
-    assert s['n_stop_loss']   == 152 + 343
-    assert s['n_open_at_eof'] == 1
-    assert len(body['trades']) == 590
+    assert s['n_trades']      == 594
+    assert s['n_take_profit'] == 271
+    assert s['n_stop_loss']   == 8 + 315
+    assert s['n_open_at_eof'] == 0
+    assert len(body['trades']) == 594
     assert isinstance(body['trades'][0]['entry_time'], str)
     # Dashboard-compat fields on each trade.
     t0 = body['trades'][0]
@@ -62,7 +62,8 @@ def test_endpoint_returns_summary_and_trades():
     # box endpoint produces) so the MetricsCards UI renders all panels
     # without nulls. Closed trades = 589; the 1 OPEN trade is excluded.
     m = body['metrics']
-    assert m['total_trades'] == 589
+    # No-look-ahead engine: 0 OPEN trades; all 594 closed.
+    assert m['total_trades'] == 594
     for key in ('total_profit', 'win_rate', 'profit_factor', 'avg_profit',
                 'avg_loss', 'gross_profit', 'gross_loss', 'expected_value',
                 'max_drawdown', 'sharpe_ratio', 'wins', 'losses'):
@@ -85,7 +86,7 @@ def test_endpoint_long_only_filters_signal():
     assert r.status_code == 200
     trades = r.json()['trades']
     assert all(t['direction'] == 'long' for t in trades)
-    assert 0 < len(trades) < 590
+    assert 0 < len(trades) < 594
 
 
 def test_endpoint_422_on_negative_sl():

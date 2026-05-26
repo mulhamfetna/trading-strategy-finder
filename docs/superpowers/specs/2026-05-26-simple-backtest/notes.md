@@ -288,3 +288,38 @@ Real-data lock at `(sl_soft=100, sl_hard=200, tp=150)` on the full preset:
 | Total pnl $ | −1,163,360 |
 
 Engine + tests + API + docs were updated to match. The earlier single-SL close-past locks (604 trades) are obsolete.
+
+---
+
+## Update 2026-05-26 v3 — no look-ahead
+
+User: the engine had a timing bug. The 4h CSV's `Date` is the bar's **start**, but the engine fired entries at `Date` using the bar's close (which is only known at the bar's END). That meant the engine "saw" intraday volatility before the signal was actually computable, and the resulting exits — especially hard SL touches — were biased.
+
+Locked interpretation:
+
+- **Signal candle** = `df_4h.iloc[idx - 1]` (the just-closed bar).
+- **Entry time** = `df_4h.iloc[idx].Date` (the new 4h boundary).
+- **Entry price** = signal candle's close.
+- **Exit walk** = 1-min bars in window `idx` (chronologically after the boundary).
+- **Warm-up:** iteration `idx=0` has no predecessor → no signal can fire on the first bar (matches `MASTER.md §2.3`).
+
+The trade dict gains `signal_idx` so the chart/UI can mark both the bar that fired the signal and the bar where the trade lives.
+
+New real-data locks at `(sl_soft=100, sl_hard=200, tp=150)`:
+
+| | count |
+|---|---|
+| Total trades | 594 |
+| STOP_LOSS_HARD | 8    (was 152 with look-ahead) |
+| STOP_LOSS_SOFT | 315  (was 343) |
+| TAKE_PROFIT    | 271  (was 94) |
+| OPEN           | 0    (was 1) |
+| Total pnl $    | **+65,555** (was −1,163,360) |
+
+Hard SL count collapsed because the bulk of those came from the engine seeing the intraday low of the entry bar before the bar had actually closed. With no look-ahead, only legitimate hard SL touches fire — and there are very few at sl_hard=200 because the soft SL (at 100) confirms first in most cases.
+
+Engine, tests, API, and docs updated to match. Invariant test:
+
+```python
+assert t['entry_idx'] == t['signal_idx'] + 1
+```

@@ -250,24 +250,36 @@ class SimpleStrategy:
                     else:
                         soft_consec_count = 0
 
+        # NO-LOOK-AHEAD TIMING (spec interpretation):
+        # At iteration `idx`, the just-closed 4h bar is df_4h.iloc[idx-1].
+        # The new 4h boundary just arrived at df_4h.iloc[idx].Date — that's
+        # the entry moment. Entry price = the just-closed bar's close.
+        # Walk 1-min bars in window `idx` for exits (all of which post-date
+        # the signal). The first iteration (idx=0) has no predecessor and
+        # cannot fire a signal — matches the spec's "first-candle warm-up".
         for idx in range(len(df_4h)):
             candle = df_4h.iloc[idx]
-            ts_4h = pd.Timestamp(candle['Date'])
+            ts_new_bar_start = pd.Timestamp(candle['Date'])
 
-            # Exit walk for a carry-over trade.
+            # Exit walk for a carry-over trade (1-min bars in this new window).
             _walk_exit_for_4h(idx)
 
-            # Entry decision (only if flat and past the re-entry gate).
-            if open_trade is None:
-                if blocked_until is not None and ts_4h <= blocked_until:
+            # Entry decision: needs a just-closed predecessor bar (idx >= 1).
+            if open_trade is None and idx >= 1:
+                if blocked_until is not None and ts_new_bar_start <= blocked_until:
                     continue
-                box_date = BoxLookup._candle_to_box_date(ts_4h)
+                # Signal is computed from the JUST-CLOSED bar (idx-1), not
+                # from the current bar. Box geometry is keyed off the
+                # just-closed bar's timestamp.
+                signal_candle = df_4h.iloc[idx - 1]
+                signal_ts = pd.Timestamp(signal_candle['Date'])
+                box_date = BoxLookup._candle_to_box_date(signal_ts)
                 try:
                     box_row = box_df_indexed.loc[box_date]
                 except KeyError:
                     box_row = None
 
-                signal = _stage1_candle_signal(candle, box_row)
+                signal = _stage1_candle_signal(signal_candle, box_row)
                 if signal == 'hold':
                     continue
                 if scope == 'long_only' and signal != 'long':
@@ -275,7 +287,9 @@ class SimpleStrategy:
                 if scope == 'short_only' and signal != 'short':
                     continue
 
-                close = float(candle['Close'])
+                # Entry price = the just-closed bar's close == the new bar's
+                # open in continuous data. Trade opens at ts_new_bar_start.
+                close = float(signal_candle['Close'])
                 if signal == 'long':
                     sl_soft_line = close - self.params.sl_soft_points
                     sl_hard_line = close - self.params.sl_hard_points
@@ -286,8 +300,9 @@ class SimpleStrategy:
                     tp_line      = close - self.params.tp_points
 
                 open_trade = {
-                    'entry_idx':    idx,
-                    'entry_time':   ts_4h,
+                    'entry_idx':    idx,                       # the new bar
+                    'signal_idx':   idx - 1,                   # the just-closed bar
+                    'entry_time':   ts_new_bar_start,
                     'entry_price':  close,
                     'direction':    signal,
                     'sl_soft_line': sl_soft_line,
@@ -301,7 +316,8 @@ class SimpleStrategy:
                 }
                 soft_consec_count = 0
 
-                # Exit walk for the same 4h that just fired the signal.
+                # Exit walk for the same new 4h window (its 1-min bars are
+                # all chronologically AFTER the signal — no look-ahead).
                 _walk_exit_for_4h(idx)
 
         if open_trade is not None:
