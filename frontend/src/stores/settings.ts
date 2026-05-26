@@ -79,7 +79,11 @@ const DEFAULT_SIMPLE_PARAMS: SimpleParams = {
 };
 
 const LS_ENGINE = 'nq-dash:engine';
-const LS_SIMPLE = 'nq-dash:simple';
+// Bump the version suffix whenever SimpleParams gains/renames a field —
+// this auto-invalidates stale localStorage blobs after schema migrations.
+//   v1: sl_soft + sl_hard + tp_points + direction_scope
+//   v2: sl_soft + sl_hard + tp_soft + tp_hard + direction_scope + flip_entry_direction
+const LS_SIMPLE = 'nq-dash:simple_v2';
 
 export const useSettingsStore = defineStore('settings', () => {
   const params = reactive<BoxParams>(tryLoad(LS_PARAMS, { ...DEFAULT_BOX_PARAMS }));
@@ -87,6 +91,8 @@ export const useSettingsStore = defineStore('settings', () => {
     tryLoad(LS_SIMPLE, { ...DEFAULT_SIMPLE_PARAMS }),
   );
   const _ls = typeof localStorage !== 'undefined' ? localStorage : null;
+  // Sweep any superseded LS keys to keep the user's storage tidy.
+  _ls?.removeItem('nq-dash:simple');     // v1 (pre-flip-feature)
   const engineMode = ref<EngineMode>(
     ((_ls?.getItem(LS_ENGINE) as EngineMode) ?? 'simple'),
   );
