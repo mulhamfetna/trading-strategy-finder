@@ -70,7 +70,11 @@
             <td class="px-3 py-1 font-semibold tabular-nums" :class="signColor(t.profit_dollars) ?? 'text-tv-muted'">
               {{ formatDollar(t.profit_dollars) }}
             </td>
-            <td class="px-3 py-1 text-tv-muted truncate max-w-[180px]" :title="t.exit_reason">{{ t.exit_reason }}</td>
+            <td
+              class="px-3 py-1 truncate max-w-[180px] font-mono text-[11px]"
+              :class="exitReasonClass(t.exit_reason)"
+              :title="t.exit_reason"
+            >{{ t.exit_reason }}</td>
             <td class="px-3 py-1 max-w-[200px] truncate" :title="boxCellTooltip(t)">
               <template v-if="t.box_signal">
                 <!-- FIX-20: previous "weekly + monthly" rendering implied both
@@ -136,11 +140,23 @@ function candleTime(idx: number): string {
 
 function exitTime(t: ScalingTrade): string {
   // Dual-timeframe engine: exit_time is the ISO sub-bar timestamp where the
-  // 1-min HARD / TP-target or 2-min SOFT / TRAIL fired. In 4h-only legacy
-  // mode (unit tests) exit_time is null and we fall back to the 4h-bar
+  // 1-min HARD / TP-target or 2-min SOFT fired. In 4h-only legacy mode
+  // (unit tests) exit_time is null and we fall back to the 4h-bar
   // timestamp via exit_idx.
   if (t.exit_time) return t.exit_time.replace('T', ' ').slice(0, 16);
   return candleTime(t.exit_idx);
+}
+
+// Master strategy §4: exit_reason ∈ {TAKE PROFIT, STOP LOSS (SOFT),
+// STOP LOSS (HARD), DIRECTION_FLIP, OPEN}. Color-code so the trade log
+// is scannable at a glance.
+function exitReasonClass(reason: string): string {
+  if (reason === 'TAKE PROFIT')               return 'text-tv-green';
+  if (reason === 'STOP LOSS (SOFT)')          return 'text-tv-red';
+  if (reason === 'STOP LOSS (HARD)')          return 'text-tv-red font-semibold';
+  if (reason === 'DIRECTION_FLIP')            return 'text-tv-blue';
+  if (reason === 'OPEN')                      return 'text-tv-muted italic';
+  return 'text-tv-muted';
 }
 
 // The trade dict's `entry_signal_price` and `exit_close` are guaranteed to

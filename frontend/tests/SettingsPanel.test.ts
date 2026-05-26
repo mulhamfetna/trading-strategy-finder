@@ -31,7 +31,7 @@ describe('SettingsPanel', () => {
     const w = mount(SettingsPanel);
     const settings = useSettingsStore();
     const labels = w.findAll('label');
-    const tpLabel = labels.find((l) => l.text().includes('Target (pts from avg)'));
+    const tpLabel = labels.find((l) => l.text().includes('Target (pts from anchor)'));
     expect(tpLabel).toBeTruthy();
     const input = tpLabel!.find('input[type="number"]');
     await input.setValue('250');

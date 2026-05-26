@@ -65,10 +65,8 @@ export interface ScalingParams {
   soft_sl_confirmation_timeframe_minutes: number;
   hard_sl_confirmation_timeframe_minutes: number;
 
-  // §5 Take profit
+  // §5 Take profit (fixed; no trail per master strategy spec)
   tp_target_points: number;
-  tp_watch_threshold_points: number;
-  tp_confirmation_timeframe_minutes: number;
 
   // Re-entry
   reentry_enabled: boolean;
@@ -76,6 +74,15 @@ export interface ScalingParams {
 
   // Instrument
   point_value: number;
+
+  /**
+   * SL/TP anchoring mode (master strategy §5).
+   *  - 'base'    — SL/TP lines fixed at `base_level ± thresholds` for the
+   *                trade's lifetime. Legs 2/3 don't move the lines.
+   *  - 'average' — SL/TP lines re-anchor to the running average on every
+   *                leg fill.
+   */
+  anchor_mode: 'base' | 'average';
 }
 
 // ---- Box strategy params (extends ScalingParams with box-rule decisions) ----
@@ -100,7 +107,7 @@ export interface ScalingTrade {
   exit_close: number;
   /** Algorithm-effective avg fill across all legs (synthetic for multi-leg). */
   avg_entry_price: number;
-  /** SL/TP threshold line for non-trail exits; bar close for TRAIL exits (synthetic, not always in OHLC). */
+  /** SL/TP algorithm-effective fill line (HARD/TP fills at line, SOFT fills at 2-min close). */
   exit_price: number;
   contracts: number;
   profit_points: number;
@@ -182,13 +189,13 @@ export const DEFAULT_SCALING_PARAMS: ScalingParams = {
   hard_sl_confirmation_timeframe_minutes: 1,
   // §5
   tp_target_points: 150,
-  tp_watch_threshold_points: 50,
-  tp_confirmation_timeframe_minutes: 2,
   // Re-entry
   reentry_enabled: true,
   reentry_cooldown_candles: 1,
   // Instrument
   point_value: 2,
+  // Anchoring (master strategy §5)
+  anchor_mode: 'base',
 };
 
 export const DEFAULT_BOX_PARAMS: BoxParams = {
@@ -197,6 +204,36 @@ export const DEFAULT_BOX_PARAMS: BoxParams = {
   big_candle_resolution: 'big_candle_wins',
 };
 
-export const DEFAULT_DATA_PATH = 'NQ_4h.csv';
-export const DEFAULT_DATA_PATH_1MIN = 'NQ_1m.csv';
-export const DEFAULT_BOX_DATA_PATH = 'NQ_full_data.csv';
+// Dataset presets — three subdirs under data/ map to three (4h, 1m, boxes)
+// path triplets. The dashboard's dataset dropdown switches between them.
+export type DatasetPreset = 'full' | '2025' | '2026';
+
+export interface DatasetTriplet {
+  candles4h: string;
+  candles1m: string;
+  boxes:     string;
+}
+
+export const DATASET_PRESETS: Record<DatasetPreset, DatasetTriplet> = {
+  full: {
+    candles4h: 'data/full_data/NQ_4h.csv',
+    candles1m: 'data/full_data/NQ_1m.csv',
+    boxes:     'data/full_data/NQ_full_data.csv',
+  },
+  '2025': {
+    candles4h: 'data/2025_data/NQ_4h_2025.csv',
+    candles1m: 'data/2025_data/NQ_1m_2025.csv',
+    boxes:     'data/2025_data/NQ_full_data_2025.csv',
+  },
+  '2026': {
+    candles4h: 'data/2026_data/NQ_4h_2026.csv',
+    candles1m: 'data/2026_data/NQ_1m_2026.csv',
+    boxes:     'data/2026_data/NQ_full_data_2026.csv',
+  },
+};
+
+export const DEFAULT_DATASET_PRESET: DatasetPreset = '2026';
+
+export const DEFAULT_DATA_PATH      = DATASET_PRESETS[DEFAULT_DATASET_PRESET].candles4h;
+export const DEFAULT_DATA_PATH_1MIN = DATASET_PRESETS[DEFAULT_DATASET_PRESET].candles1m;
+export const DEFAULT_BOX_DATA_PATH  = DATASET_PRESETS[DEFAULT_DATASET_PRESET].boxes;

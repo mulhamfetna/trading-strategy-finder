@@ -99,10 +99,8 @@ class ScalingParamsModel(BaseModel):
     soft_sl_confirmation_timeframe_minutes: int
     hard_sl_confirmation_timeframe_minutes: int
 
-    # §5 Take profit
+    # §5 Take profit (fixed; no trail per master strategy spec)
     tp_target_points: float
-    tp_watch_threshold_points: float
-    tp_confirmation_timeframe_minutes: int
 
     # Re-entry
     reentry_enabled: bool
@@ -110,6 +108,11 @@ class ScalingParamsModel(BaseModel):
 
     # Instrument constants
     point_value: float
+
+    # Anchoring mode for SL/TP lines (master strategy §5).
+    # 'base'    — lines fixed at `base_level ± thresholds` for trade lifetime.
+    # 'average' — lines re-anchor on every leg fill to the running avg.
+    anchor_mode: Literal['base', 'average']
 
     @model_validator(mode='after')
     def _sl_ordering(self):

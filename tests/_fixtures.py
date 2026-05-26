@@ -41,13 +41,13 @@ PLAYBOOK_SCALING_DEFAULTS: Dict[str, Any] = {
     'hard_sl_confirmation_timeframe_minutes': 1,
     # §5
     'tp_target_points': 150.0,
-    'tp_watch_threshold_points': 50.0,
-    'tp_confirmation_timeframe_minutes': 2,
     # Re-entry
     'reentry_enabled': True,
     'reentry_cooldown_candles': 1,
     # Instrument
     'point_value': 2.0,
+    # Anchoring (master strategy §5) — 'base' (default) or 'average'
+    'anchor_mode': 'base',
 }
 
 PLAYBOOK_BOX_EXTRA: Dict[str, Any] = {

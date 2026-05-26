@@ -35,7 +35,7 @@ The server **must root at `subprojects/signals/stage2/`**, not inside `dashboard
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ Stage 2 — reverse_signals_full.csv (370 rows)            │
+│ Stage 2 — reverse_signals_full.csv (372 rows)            │
 │                                                          │
 │  X axis: [tp ▾]    Y axis: [sl ▾]                        │
 │                                                          │
@@ -44,7 +44,7 @@ The server **must root at `subprojects/signals/stage2/`**, not inside `dashboard
 │  │              green = long, red = short             │  │
 │  └────────────────────────────────────────────────────┘  │
 │                                                          │
-│  185 long · 185 short · X=tp, Y=sl                       │
+│  186 long · 186 short · X=tp, Y=sl                       │
 └──────────────────────────────────────────────────────────┘
 ```
 
@@ -65,7 +65,7 @@ fetch('../reverse_signals_full.csv')
 parseCsv(text) — split on '\n' and ',' ; Number(v) coercion for numeric cells
   │
   ▼
-{ columns: [21 names], rows: [370 objects] }   ←  stored in DATA
+{ columns: [21 names], rows: [372 objects] }   ←  stored in DATA
   │
   ▼
 populateSelects(columns, 'tp', 'sl')           ←  builds <option>s

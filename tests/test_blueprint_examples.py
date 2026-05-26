@@ -27,9 +27,9 @@ from src.strategy.box_strategy import BoxStrategy, BoxStrategyParams
 from tests._fixtures import box_params_dict
 
 _REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-_CANDLES_CSV  = os.path.join(_REPO_ROOT, 'NQ_4h.csv')
-_CANDLES_1MIN = os.path.join(_REPO_ROOT, 'NQ_1m.csv')
-_BOX_CSV      = os.path.join(_REPO_ROOT, 'NQ_full_data.csv')
+_CANDLES_CSV  = os.path.join(_REPO_ROOT, 'data', 'full_data', 'NQ_4h.csv')
+_CANDLES_1MIN = os.path.join(_REPO_ROOT, 'data', 'full_data', 'NQ_1m.csv')
+_BOX_CSV      = os.path.join(_REPO_ROOT, 'data', 'full_data', 'NQ_full_data.csv')
 
 
 pytestmark = pytest.mark.skipif(
@@ -41,7 +41,8 @@ pytestmark = pytest.mark.skipif(
 @pytest.fixture(scope='module')
 def january_trades():
     """The 7 trades the dual-timeframe engine produces on 2025-01-01..2025-01-31
-    with the reference parameters (sl_soft=10, sl_hard=15, tp_target=150.25)."""
+    with the reference parameters (sl_soft=10, sl_hard=15, tp_target=150.25,
+    anchor_mode='base', no trail)."""
     params = box_params_dict()
     # Reference params: validator-compliant pair (sl_hard > sl_soft).
     params['sl_soft_points']   = 10.0
@@ -70,9 +71,8 @@ def _find_trade(trades, df, entry_idx):
 def test_blueprint_example_1_standard_long_soft_sl(january_trades):
     """Example 1 — SOFT SL (dual-timeframe).
 
-    In 4h-only mode this trade exited HARD (close 21493 ≤ sl_hard_line 21494.25).
-    On the 1-min frame, a 2-min close at 21497.25 fires SOFT SL FIRST — the
-    1-min closes between entry (10:00) and 15:47 never break the hard line.
+    A 2-min close at 21497.25 fires SOFT SL — the 1-min closes between
+    entry (10:00) and 15:47 never break the hard line.
     """
     trades, df = january_trades
     t = _find_trade(trades, df, entry_idx=10)
@@ -95,10 +95,8 @@ def test_blueprint_example_1_standard_long_soft_sl(january_trades):
 def test_blueprint_example_2_short_hard_sl(january_trades):
     """Example 2 — HARD SL (dual-timeframe).
 
-    4h-only would have shown leg-2 fill on bar 63 and a TRAIL exit on bar 66
-    (+25 dollars). On 1-min, a close at 14:04 hits sl_hard_line=21305.50
-    FIRST — position closes with a single leg before the leg-2 trigger
-    (21390.50) is ever reached on this bar.
+    A 1-min close at 14:04 hits sl_hard_line=21305.50 — position closes
+    with a single leg before any leg-2 trigger is reached.
     """
     trades, df = january_trades
     t = _find_trade(trades, df, entry_idx=62)
@@ -118,13 +116,13 @@ def test_blueprint_example_2_short_hard_sl(january_trades):
     assert t['box_signal']['signal']       == 'short'
 
 
-def test_blueprint_example_3_big_candle_long_trail(january_trades):
-    """Example 3 — TRAIL (dual-timeframe).
+def test_blueprint_example_3_big_candle_long_tp(january_trades):
+    """Example 3 — TAKE PROFIT (dual-timeframe, big-candle).
 
-    4h-only showed a TAKE PROFIT (high reached the +150 line within bar 102).
-    On 1-min, the price stalls and a 2-min close pulls back through the
-    watch line at 06:25 — TRAIL fires after only 25 minutes of holding,
-    cutting the gain from $1202 to $232.
+    Big-candle long with 4 contracts at 20886.75; price climbs to the TP
+    line (20886.75 + 150.25 = 21037.00) at 07:00 on 2025-01-27. Without
+    the trail mechanism, the trade rides through pullbacks and exits at
+    the full TP target instead of an early trail-out.
     """
     trades, df = january_trades
     t = _find_trade(trades, df, entry_idx=101)
@@ -132,23 +130,22 @@ def test_blueprint_example_3_big_candle_long_trail(january_trades):
     assert t['direction']          == 'long'
     assert t['entry_signal_price'] == 20886.75
     assert t['avg_entry_price']    == 20886.75
-    assert t['exit_close']         == 20915.75
-    assert t['exit_price']         == 20915.75       # TRAIL fills at the 2-min close
-    assert t['exit_time']          == '2025-01-27T06:25:00'
+    assert t['exit_close']         == 21045.50       # 1-min close that swept the TP line
+    assert t['exit_price']         == 21037.00       # TP fills at the line
+    assert t['exit_time']          == '2025-01-27T07:00:00'
     assert t['contracts']          == 4              # big-candle full size
-    assert t['profit_points']      == pytest.approx(29.00)
-    assert t['profit_dollars']     == pytest.approx(232.00)
-    assert t['exit_reason']        == 'TAKE PROFIT (TRAIL)'
+    assert t['profit_points']      == pytest.approx(150.25)
+    assert t['profit_dollars']     == pytest.approx(1202.00)
+    assert t['exit_reason']        == 'TAKE PROFIT'
     assert t['legs']               == [{'contracts': 4, 'price': 20886.75, 'candle_idx': 101}]
 
 
-def test_blueprint_example_4_standard_short_trail_gain(january_trades):
-    """Example 4 — TRAIL with profit (dual-timeframe).
+def test_blueprint_example_4_standard_short_hard_sl(january_trades):
+    """Example 4 — HARD SL (dual-timeframe, single-leg short).
 
-    Replacement for the previous Example 4 (LONG at idx 109 → TP on bar 113).
-    On 1-min that trade actually closes SOFT SL at 14:05 (loss). For a clean
-    winning-TRAIL example, use trade #7: SHORT entry at idx 115 → TRAIL at
-    14:13 with +46.75 pts.
+    Short entry at 21467.25; a 1-min close past sl_hard_line=21482.25 at
+    14:39 closes the trade with one leg. Without trail this no longer
+    produces the trail-gain seen previously on the same trade.
     """
     trades, df = january_trades
     t = _find_trade(trades, df, entry_idx=115)
@@ -156,18 +153,18 @@ def test_blueprint_example_4_standard_short_trail_gain(january_trades):
     assert t['direction']          == 'short'
     assert t['entry_signal_price'] == 21467.25
     assert t['avg_entry_price']    == 21467.25
-    assert t['exit_close']         == 21420.50
-    assert t['exit_price']         == 21420.50
-    assert t['exit_time']          == '2025-01-29T14:13:00'
+    assert t['exit_close']         == 21492.25
+    assert t['exit_price']         == 21482.25       # HARD fills at the line
+    assert t['exit_time']          == '2025-01-29T14:39:00'
     assert t['contracts']          == 1
-    assert t['profit_points']      == pytest.approx(46.75)
-    assert t['profit_dollars']     == pytest.approx(93.50)
-    assert t['exit_reason']        == 'TAKE PROFIT (TRAIL)'
+    assert t['profit_points']      == pytest.approx(-15.00)
+    assert t['profit_dollars']     == pytest.approx(-30.00)
+    assert t['exit_reason']        == 'STOP LOSS (HARD)'
 
 
 def test_blueprint_total_trades_count(january_trades):
     """The full set: exactly 7 trades for 2025-01-01..2025-01-31 with the
-    reference params. If this drifts, either the strategy logic changed
-    or the dataset did."""
+    reference params (post-trail-removal). If this drifts, either the
+    strategy logic changed or the dataset did."""
     trades, _ = january_trades
     assert len(trades) == 7

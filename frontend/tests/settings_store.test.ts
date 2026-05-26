@@ -6,7 +6,12 @@ import { describe, expect, it, beforeEach } from 'vitest';
 import { nextTick } from 'vue';
 import { setActivePinia, createPinia } from 'pinia';
 import { useSettingsStore } from '../src/stores/settings';
-import { DEFAULT_BOX_PARAMS } from '../src/types';
+import {
+  DEFAULT_BOX_DATA_PATH,
+  DEFAULT_BOX_PARAMS,
+  DEFAULT_DATA_PATH,
+  DEFAULT_DATA_PATH_1MIN,
+} from '../src/types';
 
 // Helper for the "extra unknown key" test — returns a fresh copy of
 // the canonical default-params blob so the stale-schema check sees a
@@ -31,13 +36,13 @@ describe('useSettingsStore', () => {
     expect(s.params.leg3_pullback_points).toBe(150);
     expect(s.params.big_candle_threshold_points).toBe(400);
     expect(s.params.tp_target_points).toBe(150);
-    expect(s.params.tp_watch_threshold_points).toBe(50);
     expect(s.params.point_value).toBe(2);
+    expect(s.params.anchor_mode).toBe('base');
     expect(s.params.box_tick_threshold).toBe(0.75);
     expect(s.params.big_candle_resolution).toBe('big_candle_wins');
-    expect(s.dataPath).toBe('NQ_4h.csv');
-    expect(s.dataPath1min).toBe('NQ_1m.csv');
-    expect(s.boxDataPath).toBe('NQ_full_data.csv');
+    expect(s.dataPath).toBe(DEFAULT_DATA_PATH);
+    expect(s.dataPath1min).toBe(DEFAULT_DATA_PATH_1MIN);
+    expect(s.boxDataPath).toBe(DEFAULT_BOX_DATA_PATH);
   });
 
   it('default indicators: volume and RSI off', () => {
@@ -58,7 +63,7 @@ describe('useSettingsStore', () => {
     s.reset();
 
     expect(s.params.total_contracts).toBe(4);
-    expect(s.dataPath).toBe('NQ_4h.csv');
+    expect(s.dataPath).toBe(DEFAULT_DATA_PATH);
     expect(s.startDate).toBe('');
   });
 

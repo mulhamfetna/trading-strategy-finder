@@ -8,7 +8,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { streamBoxBacktest } from '../src/services/sse';
-import { DEFAULT_BOX_PARAMS } from '../src/types';
+import { DEFAULT_BOX_PARAMS, DEFAULT_DATA_PATH_1MIN } from '../src/types';
 
 describe('streamBoxBacktest wire shape', () => {
   let fetchSpy: ReturnType<typeof vi.fn>;
@@ -58,6 +58,6 @@ describe('streamBoxBacktest wire shape', () => {
     const gen = streamBoxBacktest({ params: { ...DEFAULT_BOX_PARAMS } });
     for await (const _ of gen) { /* noop */ }
     const body = capturedBody as Record<string, unknown>;
-    expect(body.data_path_1min).toBe('NQ_1m.csv');
+    expect(body.data_path_1min).toBe(DEFAULT_DATA_PATH_1MIN);
   });
 });

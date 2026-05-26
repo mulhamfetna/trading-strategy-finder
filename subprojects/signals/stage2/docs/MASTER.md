@@ -115,9 +115,9 @@ Per-file references: [[generate_stage2]], [[generate_stage2_synthetic]], [[gener
 
 | Preset | Total windows | long → short | short → long |
 |---|---|---|---|
-| `full` | 370 | 185 | 185 |
-| `2025` | 257 | 129 | 128 |
-| `2026` | 112 | 56 | 56 |
+| `full` | 372 | 186 | 186 |
+| `2025` | 253 | 127 | 126 |
+| `2026` | 118 | 59 | 59 |
 
 The `full` figures are regression-locked in [[generate_stage2_real_data]]. The per-year preset figures are derivatives and not locked.
 

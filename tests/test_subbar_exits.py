@@ -1,19 +1,18 @@
-"""Dual-timeframe sub-bar exit walker (#118b).
+"""Dual-timeframe sub-bar exit walker.
 
-Locks the asymmetric SL/TP contract per the user rule (2026-05-24):
+Locks the asymmetric SL/TP contract per the master strategy spec §4:
 
   * HARD SL fires on the first 1-min CLOSE past sl_hard_line; fill AT THE LINE.
   * TP target fires on the first 1-min HIGH (long) / LOW (short) reaching the
     line; fill AT THE LINE.
   * SOFT SL fires on the first 2-min CLOSE past sl_soft_line; fill AT THE 2-min
     CLOSE.
-  * TRAIL fires on a 2-min close back through tp_watch_line (after the watch
-    armed via a 2-min close past avg + tp_watch_threshold_points); fill AT THE
-    2-min CLOSE.
+
+(No trail mechanism — removed per master strategy spec.)
 
 Each test builds a tiny synthetic 4h-bar (the entry bar plus one or two follow
 bars) and a matching 1-min frame that's been hand-tuned to trigger exactly one
-of the four exits at a known timestamp. The trade dict's `exit_time` must
+of the three exits at a known timestamp. The trade dict's `exit_time` must
 point at the sub-bar timestamp; `exit_idx` is still the 4h-bar index containing
 that sub-bar.
 """
@@ -140,35 +139,6 @@ def test_soft_sl_fires_on_2min_close_past_line():
     assert t['exit_close']   == 19795.0
     assert t['exit_time']    == '2025-01-01T08:07:00'    # end of the 2-min window
     assert t['profit_points'] == -205.0                  # avg − close = 205
-
-
-# ---- TRAIL ----
-
-def test_trail_fires_after_watch_arms_on_2min_close():
-    """avg=20000, watch_threshold=50 ⇒ arm when 2-min close ≥ 20050; trail when
-    a later 2-min close < 20050. Sequence:
-      08:00 close=20030 (below arm), 08:01 close=20055 (window end ≥ 20050 → ARM).
-      08:02 close=20040, 08:03 close=20045 (window end 20045 < 20050 → TRAIL).
-    All values stay below tp_target_line=20150 and above sl_hard_line=19700, so
-    only the trail logic should fire."""
-    df = _df_4h_entry_then_neutral()
-    closes = [20020.0] * 240
-    closes[0] = 20030.0
-    closes[1] = 20055.0   # window 08:00-08:01 closes at 20055 → arm
-    closes[2] = 20040.0
-    closes[3] = 20045.0   # window 08:02-08:03 closes at 20045 < 20050 → trail
-    df_1min = _df_1min_for_exit_bar(closes)
-
-    strat = ScalingStrategy(params=scaling_params())
-    trades, _ = strat.backtest(df, df_1min=df_1min)
-
-    assert len(trades) == 1
-    t = trades[0]
-    assert t['exit_reason']  == 'TAKE PROFIT (TRAIL)'
-    assert t['exit_price']   == 20045.0                  # 2-min close
-    assert t['exit_close']   == 20045.0
-    assert t['exit_time']    == '2025-01-01T08:03:00'    # end of the 2-min window
-    assert t['profit_points'] == 45.0                    # close − avg = 45
 
 
 # ---- Legacy 4h path remains intact ----

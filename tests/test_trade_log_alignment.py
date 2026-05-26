@@ -199,7 +199,6 @@ def test_box_strategy_trade_carries_entry_signal_price_and_exit_close(tmp_path):
         sl_soft_points=50.0,
         sl_hard_points=100.0,
         tp_target_points=200.0,
-        tp_watch_threshold_points=100.0,
     )
     strat = BoxStrategy(params=params, box_lookup=lookup)
     trades, _ = strat.backtest(df)

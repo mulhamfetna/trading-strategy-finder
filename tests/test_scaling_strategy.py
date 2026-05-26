@@ -43,7 +43,7 @@ def test_default_params_match_playbook_values():
     assert p.big_candle_threshold_points == 400
     assert p.big_candle_full_contracts == 4
     assert p.tp_target_points == 150
-    assert p.tp_watch_threshold_points == 50
+    assert p.anchor_mode == 'base'
     assert p.sl_soft_points == 200
     assert p.sl_hard_points == 300
     assert p.reentry_enabled is True
@@ -145,7 +145,8 @@ def test_leg3_fills_at_150_point_pullback():
 
 def test_tp_exit_when_high_reaches_target_after_full_load():
     """Once fully loaded long at average ~ (20000+19900+19850+19850)/4 = 19900,
-    high reaching avg + 150 = 20050 triggers TP exit."""
+    high reaching avg + 150 = 20050 triggers TP exit. This test exercises
+    `anchor_mode='average'` — exit lines re-anchor to the running average."""
     df = _candles([
         ('2025-01-01 00:00', 20000, 20010, 19990, 20000),
         ('2025-01-01 04:00', 20001, 20050, 19995, 20030),
@@ -153,7 +154,7 @@ def test_tp_exit_when_high_reaches_target_after_full_load():
         ('2025-01-01 12:00', 19920, 19925, 19849, 19870),       # fully loaded after this candle
         ('2025-01-01 16:00', 19870, 20055, 19860, 20050),       # high 20055 >= 19900 + 150 = 20050
     ])
-    strat = ScalingStrategy(params=scaling_params())
+    strat = ScalingStrategy(params=scaling_params(anchor_mode='average'))
 
     trades, _ = strat.backtest(df)
 

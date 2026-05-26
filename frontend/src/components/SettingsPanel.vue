@@ -4,6 +4,23 @@
     <section class="rounded border border-tv-border bg-tv-surface p-3">
       <h3 class="mb-2 text-sm font-semibold text-tv-blue">Data</h3>
       <div class="grid grid-cols-2 gap-2 text-xs">
+        <!-- Dataset preset — flips the three paths in one click. -->
+        <label class="col-span-2 flex flex-col gap-1">
+          <span class="text-tv-muted">Dataset preset</span>
+          <select
+            v-model="datasetPreset"
+            class="rounded bg-tv-tile px-2 py-1 text-tv-text outline-none ring-1 ring-tv-border focus:ring-tv-blue"
+            data-testid="dataset-preset"
+          >
+            <option value="2026">2026 data (default)</option>
+            <option value="2025">2025 data</option>
+            <option value="full">Full data</option>
+          </select>
+          <span class="text-[10px] text-tv-muted">
+            Switching the preset overwrites the three paths below. Edit a path manually to override.
+          </span>
+        </label>
+
         <label class="col-span-2 flex flex-col gap-1">
           <span class="text-tv-muted">4h data file <span class="text-tv-blue">(signals)</span></span>
           <FilePicker v-model="settings.dataPath" />
@@ -43,6 +60,18 @@
       <p v-if="errors.legOrder" class="mt-1 text-[11px] text-tv-red" data-testid="leg-order-error">
         {{ errors.legOrder }}
       </p>
+      <!-- Ladder vs SL tier warning (master strategy §3.2) -->
+      <div
+        v-if="ladderTier.tier !== 'full'"
+        class="mt-2 rounded border px-2 py-1 text-[11px]"
+        :class="ladderTier.tier === 'deactivated'
+          ? 'border-tv-red/40 bg-tv-red/10 text-tv-red'
+          : 'border-yellow-500/40 bg-yellow-500/10 text-yellow-300'"
+        data-testid="ladder-tier-warning"
+      >
+        <strong class="font-semibold uppercase">{{ ladderTier.tier }}:</strong>
+        {{ ladderTier.message }}
+      </div>
     </section>
 
     <!-- §2 Big candle exception -->
@@ -86,13 +115,40 @@
       </p>
     </section>
 
-    <!-- §5 Take profit -->
+    <!-- §5 Take profit (fixed; no trail per master strategy spec) -->
     <section class="rounded border border-tv-border bg-tv-surface p-3">
       <h3 class="mb-2 text-sm font-semibold text-tv-blue">§5 Take profit</h3>
       <div class="grid grid-cols-2 gap-2 text-xs">
-        <NumField label="Target (pts from avg)" v-model.number="settings.params.tp_target_points" :min="0.25" :step="5" />
-        <NumField label="Watch threshold (pts)" v-model.number="settings.params.tp_watch_threshold_points" :min="0.25" :step="5" />
-        <NumField label="TP confirmation timeframe (min)" v-model.number="settings.params.tp_confirmation_timeframe_minutes" :min="1" />
+        <NumField label="Target (pts from anchor)" v-model.number="settings.params.tp_target_points" :min="0.25" :step="5" />
+        <div></div>
+      </div>
+      <p class="mt-1 text-[10px] text-tv-muted">
+        TP is a fixed line at <code class="text-tv-text">anchor ± target</code>. No dynamic trail.
+      </p>
+    </section>
+
+    <!-- §5c SL/TP anchoring (master strategy §5) -->
+    <section class="rounded border border-tv-border bg-tv-surface p-3">
+      <h3 class="mb-2 text-sm font-semibold text-tv-blue">SL / TP anchor mode</h3>
+      <div class="space-y-1 text-xs">
+        <label class="flex items-center gap-2">
+          <input
+            type="radio"
+            value="base"
+            v-model="settings.params.anchor_mode"
+            data-testid="anchor-mode-base"
+          />
+          <span><strong>Base</strong> — lines fixed at <code>base ± thresholds</code> for trade lifetime.</span>
+        </label>
+        <label class="flex items-center gap-2">
+          <input
+            type="radio"
+            value="average"
+            v-model="settings.params.anchor_mode"
+            data-testid="anchor-mode-average"
+          />
+          <span><strong>Average</strong> — lines re-anchor on every leg fill to the running avg entry.</span>
+        </label>
       </div>
     </section>
 
@@ -163,13 +219,27 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useSettingsStore } from '../stores/settings';
+import { DATASET_PRESETS, DEFAULT_DATASET_PRESET, type DatasetPreset } from '../types';
 import DatePicker from './DatePicker.vue';
 import FilePicker from './FilePicker.vue';
 import NumField from './NumField.vue';
 
 const settings = useSettingsStore();
+
+// Dataset preset dropdown. Changing the preset overwrites the three paths
+// in one shot; a user who then edits any path manually has diverged from
+// the preset — that's fine, the preset value here is just the last-picked
+// quick-fill source, not a stored constraint.
+const datasetPreset = ref<DatasetPreset>(DEFAULT_DATASET_PRESET);
+
+watch(datasetPreset, (next) => {
+  const triplet = DATASET_PRESETS[next];
+  settings.dataPath     = triplet.candles4h;
+  settings.dataPath1min = triplet.candles1m;
+  settings.boxDataPath  = triplet.boxes;
+});
 
 const errors = computed(() => {
   // Dashboard invariants — match the backend's BoxParamsModel._sl_ordering
@@ -190,5 +260,34 @@ const errors = computed(() => {
         ? 'Leg 3 pullback must be deeper than Leg 2 pullback.'
         : '',
   };
+});
+
+// Ladder vs soft-SL validation tier (master strategy §3.2 / R5).
+// The ladder needs two adverse moves to fully fill (leg-2 at -leg2_pullback,
+// leg-3 at -leg3_pullback). If the soft SL is tighter than those distances,
+// the SL fires before the ladder gets a chance — surface the active tier so
+// the user sees what behaviour their config produces.
+const ladderTier = computed(() => {
+  const p = settings.params;
+  const sl = p.sl_soft_points;
+  const step1 = p.leg2_pullback_points;
+  const step2 = p.leg3_pullback_points;
+  if (sl < step1) {
+    return {
+      tier: 'deactivated' as const,
+      message:
+        `Soft SL (${sl} pts) is tighter than the leg-2 trigger (${step1} pts). ` +
+        `The trade will close on SL before any follow-up leg fires — ladder deactivated, single-contract trade.`,
+    };
+  }
+  if (sl < step2) {
+    return {
+      tier: 'partial' as const,
+      message:
+        `Soft SL (${sl} pts) is between the leg-2 (${step1}) and leg-3 (${step2}) triggers. ` +
+        `Leg-2 can fire, but leg-3 cannot — partial ladder (max 2 contracts).`,
+    };
+  }
+  return { tier: 'full' as const, message: '' };
 });
 </script>

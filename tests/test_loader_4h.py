@@ -42,7 +42,7 @@ def test_load_data_normalizes_lowercase_datetime_column(tmp_path):
 def test_load_real_nq_4h_csv():
     """Smoke test the real NQ_4h.csv that ships with the repo."""
     repo_root = Path(__file__).resolve().parents[1]
-    csv = repo_root / 'NQ_4h.csv'
+    csv = repo_root / 'data' / 'full_data' / 'NQ_4h.csv'
     if not csv.exists():
         # File is gitignored; explicit skip so CI shows it as SKIP, not PASS.
         pytest.skip(f"NQ_4h.csv missing at {csv}; gitignored data file.")
