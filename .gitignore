@@ -65,3 +65,7 @@ output/
 # Optuna persistence
 optuna_studies.db
 optuna_studies.db-journal!subprojects/signals/stage1_1_next_signal/dashboard/*.html
+
+# Tooling state (Claude Code superpowers brainstorm/loop, Vite cache)
+.superpowers/
+node_modules/
