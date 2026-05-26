@@ -159,6 +159,25 @@ class BoxBacktestRequest(BaseModel):
     end: Optional[str] = Field(...)
 
 
+# ---- /api/backtest/simple (Stage 1 entry + 1-min SL/TP exit) ----
+
+class SimpleBacktestRequest(BaseModel):
+    """Simple-strategy backtest request.
+
+    Engine: Stage 1 truth table for entry direction + close-past SL/TP
+    on 1-min bars + re-entry gate "next 4h that starts after exit_time".
+    See `docs/superpowers/specs/2026-05-26-simple-backtest/notes.md`.
+    """
+    sl_points: float = Field(..., gt=0, description='SL distance in points from entry close.')
+    tp_points: float = Field(..., gt=0, description='TP distance in points from entry close.')
+    data_path:       str          # 4h candles
+    data_path_1min:  str          # 1-min candles
+    box_data_path:   str          # unified W*/M* level CSV
+    direction_scope: Literal['both', 'long_only', 'short_only'] = 'both'
+    start: Optional[str] = Field(...)
+    end:   Optional[str] = Field(...)
+
+
 # ---- /api/optimize/box (NSGA-II multi-objective optimiser, SSE-streamed) ----
 
 from pydantic import field_validator

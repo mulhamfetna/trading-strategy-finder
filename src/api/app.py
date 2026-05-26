@@ -30,6 +30,7 @@ from src.api.schemas import (
     CandlesResponse,
     Metrics,
     OptimizeRequest,
+    SimpleBacktestRequest,
     StudiesListResponse,
     StudySummary,
 )
@@ -645,6 +646,79 @@ def post_box_backtest(req: BoxBacktestRequest):
             'X-Accel-Buffering': 'no',
         },
     )
+
+
+# ---- /api/backtest/simple (Stage 1 entry + 1-min SL/TP exit, JSON response) ----
+
+from src.strategy.simple_strategy import SimpleStrategy, SimpleStrategyParams
+
+
+@app.post("/api/backtest/simple")
+def post_simple_backtest(req: SimpleBacktestRequest):
+    """Run the simple engine and return trades + summary as JSON.
+
+    Unlike `/api/backtest/box`, this is a plain synchronous JSON endpoint
+    (no SSE). The simple engine runs in ~1-2s on the full preset, so
+    streaming is unnecessary.
+    """
+    if not os.path.exists(req.data_path):
+        raise HTTPException(status_code=400, detail=MissingDataFileError(
+            req.data_path, role='4h-candles').to_payload())
+    if not os.path.exists(req.data_path_1min):
+        raise HTTPException(status_code=400, detail=MissingDataFileError(
+            req.data_path_1min, role='1min-candles').to_payload())
+    if not os.path.exists(req.box_data_path):
+        raise HTTPException(status_code=400, detail=MissingDataFileError(
+            req.box_data_path, role='box-data').to_payload())
+
+    df_4h = load_data(req.data_path)
+    df_1m = load_data(req.data_path_1min)
+    if req.start and req.end:
+        df_4h = filter_by_date_range(df_4h, start=req.start, end=req.end)
+        df_1m = filter_by_date_range(df_1m, start=req.start, end=req.end)
+    if df_4h.empty:
+        raise HTTPException(status_code=400, detail='no 4h candles in the requested range')
+
+    df_4h  = df_4h.reset_index(drop=True)
+    df_1m  = df_1m.sort_values('Date').reset_index(drop=True)
+    box_df = pd.read_csv(req.box_data_path)
+    box_df['Date'] = pd.to_datetime(box_df['Date']).dt.normalize()
+    box_df = box_df.set_index('Date', drop=False)
+
+    p = SimpleStrategyParams(
+        sl_points=req.sl_points,
+        tp_points=req.tp_points,
+        data_path_4h=req.data_path,
+        data_path_1min=req.data_path_1min,
+        box_data_path=req.box_data_path,
+        direction_scope=req.direction_scope,
+    )
+    strat = SimpleStrategy(p)
+    trades, state = strat.backtest(df_4h, df_1m, box_df)
+
+    # Serialise trades (Timestamps → ISO strings).
+    def _ser(t: Dict[str, Any]) -> Dict[str, Any]:
+        out = dict(t)
+        for k in ('entry_time', 'exit_time'):
+            v = out.get(k)
+            if v is not None and hasattr(v, 'isoformat'):
+                out[k] = v.isoformat()
+        return out
+
+    closed = [t for t in trades if t['exit_reason'] != 'OPEN']
+    summary = {
+        'n_trades':       len(trades),
+        'n_take_profit':  sum(1 for t in trades if t['exit_reason'] == 'TAKE_PROFIT'),
+        'n_stop_loss':    sum(1 for t in trades if t['exit_reason'] == 'STOP_LOSS'),
+        'n_open_at_eof':  sum(1 for t in trades if t['exit_reason'] == 'OPEN'),
+        'total_pnl_dollars': sum(t['pnl_dollars'] for t in closed),
+        'total_pnl_points':  sum(t['pnl_points']  for t in closed),
+        'win_rate':       (sum(1 for t in closed if (t['pnl_points'] or 0) > 0) / len(closed)) if closed else None,
+    }
+    return JSONResponse({
+        'summary': summary,
+        'trades':  [_ser(t) for t in trades],
+    })
 
 
 # ---- /api/optimize/box (NSGA-II multi-objective optimisation, SSE-streamed) ----
