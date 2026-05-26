@@ -58,10 +58,17 @@ def test_endpoint_returns_summary_and_trades():
                 'profit_points', 'profit_dollars', 'exit_reason', 'legs',
                 'sl_soft_line', 'sl_hard_line', 'tp_line'):
         assert key in t0, f'missing {key} in trade payload'
-    # Metrics block matches box-engine shape so frontend MetricsCards reuses.
+    # Metrics block matches the canonical Metrics interface (same one the
+    # box endpoint produces) so the MetricsCards UI renders all panels
+    # without nulls. Closed trades = 589; the 1 OPEN trade is excluded.
     m = body['metrics']
-    assert m['total_trades'] == 590
-    assert 'win_rate' in m and 'total_profit' in m
+    assert m['total_trades'] == 589
+    for key in ('total_profit', 'win_rate', 'profit_factor', 'avg_profit',
+                'avg_loss', 'gross_profit', 'gross_loss', 'expected_value',
+                'max_drawdown', 'sharpe_ratio', 'wins', 'losses'):
+        assert key in m, f'metrics missing canonical field {key}'
+    # win_rate must be a PERCENT (0-100), not a fraction (0-1).
+    assert m['win_rate'] > 1.0, 'win_rate should be a percentage (0-100), got fraction'
     # Candles array present for chart overlay — canonical t/o/h/l/c/v keys
     # so frontend `toUTCTimestamp(c.t)` works without translation.
     assert len(body['candles']) > 0

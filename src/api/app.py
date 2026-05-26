@@ -753,18 +753,13 @@ def post_simple_backtest(req: SimpleBacktestRequest):
         'win_rate':          (n_wins / len(closed)) if closed else None,
     }
 
-    # Metrics shaped to match the box-engine response so the dashboard
-    # MetricsCards / TradeList can render without conditional branches.
-    metrics = {
-        'total_trades':    len(trades),
-        'profitable':      n_wins,
-        'losers':          len(closed) - n_wins,
-        'win_rate':        (n_wins / len(closed)) if closed else 0.0,
-        'total_profit':    total_pnl_dollars,
-        'total_profit_points': total_pnl_points,
-        'avg_trade':       (total_pnl_dollars / len(closed)) if closed else 0.0,
-        'open_at_end':     n_open,
-    }
+    # Metrics in the canonical Metrics interface so MetricsCards renders
+    # all panels without nulls. `_box_metrics` expects `profit_dollars`
+    # on each trade — the serialised dicts (built via _ser below) already
+    # use that key, so serialise FIRST and then compute metrics.
+    trades_ser = [_ser(t) for t in trades]
+    closed_ser = [t for t in trades_ser if t['exit_reason'] != 'OPEN']
+    metrics = _box_metrics(closed_ser)
 
     # Candles for the chart overlay — shape matches the canonical Candle
     # schema (short keys t/o/h/l/c/v; ChartPane.toUTCTimestamp expects `t`
@@ -774,7 +769,7 @@ def post_simple_backtest(req: SimpleBacktestRequest):
     return JSONResponse({
         'summary':    summary,
         'metrics':    metrics,
-        'trades':     [_ser(t) for t in trades],
+        'trades':     trades_ser,
         'candles':    candles_payload,
         'elapsed_ms': elapsed_ms,
     })
