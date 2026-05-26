@@ -15,7 +15,7 @@ After the 2026-05-26 truth-table reconciliation, **two coexisting backtest engin
 | Engine | Module | Endpoint | Entry rule | Sizing | Exit |
 |---|---|---|---|---|---|
 | **Box / 1-1-2** *(this document)* | `src/strategy/box_strategy.py` + `src/strategy/scaling_strategy.py` | `POST /api/backtest/box` (SSE) | stateful `above/inside/below` traversal machine + big-candle override + direction-flip | 1-1-2 ladder (1, 1, 2 contracts) + `anchor_mode` toggle | dual-timeframe soft+hard SL + TP, plus DIRECTION_FLIP |
-| **Simple** *(see [[simple_strategy]])* | `src/strategy/simple_strategy.py` | `POST /api/backtest/simple` (JSON) | **Stage 1's stateless truth table** (canonical after the reconciliation) | 1 contract | three lines: soft SL (2 closes past, fill at close), hard SL (extreme touch, fill at line), TP (extreme touch, fill at line) |
+| **Simple** *(see [[simple_strategy]])* | `src/strategy/simple_strategy.py` | `POST /api/backtest/simple` (JSON) | **Stage 1's stateless truth table** (canonical after the reconciliation). Optional `flip_entry_direction` toggle swaps long↔short. | 1 contract | Normal mode: soft SL + hard SL + hard TP. Flipped mode: soft TP + hard TP + hard SL (symmetric mirror). All four soft/hard thresholds always required > 0. |
 
 Both engines are wired up in parallel; neither has been deprecated. Stage 1's per-candle rule is the canonical entry decision for the simple engine. The remainder of this document describes the **Box engine only** — see [[simple_strategy]] for the simple engine.
 
@@ -301,7 +301,7 @@ The Box engine is implemented across three source files:
 
 The Simple engine lives in a single file — [[simple_strategy]] / `src/strategy/simple_strategy.py` — and reuses `box_lookup` for box geometry but bypasses its stateful traversal machine in favor of Stage 1's stateless rule.
 
-Tests for the Box engine live in `tests/test_blueprint_examples.py` ([[blueprint_examples]]); the Simple engine has its own at `tests/test_simple_strategy.py` and `tests/test_api_simple.py`. Reference January-2025 trades for the Box engine are regenerated whenever that engine changes; the Simple engine's locks pin counts against the full preset under `(sl=100, tp=150)`.
+Tests for the Box engine live in `tests/test_blueprint_examples.py` ([[blueprint_examples]]); the Simple engine has its own at `tests/test_simple_strategy.py` and `tests/test_api_simple.py`. Reference January-2025 trades for the Box engine are regenerated whenever that engine changes; the Simple engine's locks pin counts against the full preset under `(sl_soft=100, sl_hard=200, tp_soft=100, tp_hard=150)` in both flip modes (594 trades / +$65,555 normal; 539 / −$37,620 flipped).
 
 ---
 
@@ -326,9 +326,11 @@ Tests for the Box engine live in `tests/test_blueprint_examples.py` ([[blueprint
 |---|---|
 | Truth-table reconciliation between Box engine and Stage 1 — Stage 1 wins | ✅ resolved 2026-05-26 |
 | Build `src/strategy/simple_strategy.py` (Stage 1 entry + 1-min SL/TP exit + re-entry gate) | ✅ done |
+| No-look-ahead timing (signal from just-closed bar, entry at next bar's start) | ✅ done |
+| `flip_entry_direction` toggle with symmetric mirror exit system (soft TP + hard TP + hard SL) | ✅ done |
 | Add `SimpleBacktestRequest` Pydantic model | ✅ done |
 | Add `POST /api/backtest/simple` endpoint (JSON, non-SSE) | ✅ done |
-| Synthetic + real-data tests (`tests/test_simple_strategy.py`, `tests/test_api_simple.py`) | ✅ done — 26 tests |
+| Frontend wiring (engine toggle, 4 NumFields with mode-aware grayout, flip checkbox) | ✅ done |
+| Synthetic + real-data tests (`tests/test_simple_strategy.py`, `tests/test_api_simple.py`) | ✅ 44 tests |
 | Re-target the optimiser at the simple engine (single-objective or two-objective TBD) | ⏳ follow-up |
-| Frontend wiring (engine toggle + simple panel) | ⏳ follow-up |
 | Decide Box engine deprecation | ⏳ TBD (both engines coexist) |
