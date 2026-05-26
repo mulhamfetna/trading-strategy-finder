@@ -43,7 +43,7 @@ def test_endpoint_returns_summary_and_trades():
     r = client.post('/api/backtest/simple', json=_payload())
     assert r.status_code == 200, r.text
     body = r.json()
-    assert set(body) == {'summary', 'trades'}
+    assert set(body) == {'summary', 'metrics', 'trades', 'candles', 'elapsed_ms'}
     s = body['summary']
     assert s['n_trades']      == 590
     assert s['n_take_profit'] == 94
@@ -51,6 +51,20 @@ def test_endpoint_returns_summary_and_trades():
     assert s['n_open_at_eof'] == 1
     assert len(body['trades']) == 590
     assert isinstance(body['trades'][0]['entry_time'], str)
+    # Dashboard-compat fields on each trade.
+    t0 = body['trades'][0]
+    for key in ('entry_idx', 'exit_idx', 'direction', 'entry_signal_price',
+                'exit_close', 'avg_entry_price', 'exit_price', 'contracts',
+                'profit_points', 'profit_dollars', 'exit_reason', 'legs',
+                'sl_soft_line', 'sl_hard_line', 'tp_line'):
+        assert key in t0, f'missing {key} in trade payload'
+    # Metrics block matches box-engine shape so frontend MetricsCards reuses.
+    m = body['metrics']
+    assert m['total_trades'] == 590
+    assert 'win_rate' in m and 'total_profit' in m
+    # Candles array present for chart overlay.
+    assert len(body['candles']) > 0
+    assert set(body['candles'][0]) >= {'time','open','high','low','close','volume'}
 
 
 def test_endpoint_400_on_missing_4h_path():

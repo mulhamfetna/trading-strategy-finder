@@ -8,6 +8,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { streamBoxBacktest } from '../services/sse';
+import { runSimpleBacktest } from '../services/simple';
 import type {
   BoxRect,
   Candle,
@@ -37,6 +38,14 @@ export const useBacktestStore = defineStore('backtest', () => {
   async function run() {
     if (isRunning.value) return;
     const settings = useSettingsStore();
+    if (settings.engineMode === 'simple') {
+      await _runSimple(settings);
+      return;
+    }
+    await _runBox(settings);
+  }
+
+  async function _runBox(settings: ReturnType<typeof useSettingsStore>) {
     isRunning.value = true;
     error.value = null;
     warnings.value = [];
@@ -55,7 +64,7 @@ export const useBacktestStore = defineStore('backtest', () => {
       start: settings.startDate || undefined,
       end: settings.endDate || undefined,
     };
-    lastRunSettings.value = JSON.stringify(runPayload);
+    lastRunSettings.value = JSON.stringify({ engine: 'box', ...runPayload });
 
     try {
       const stream = streamBoxBacktest(runPayload);
@@ -72,7 +81,6 @@ export const useBacktestStore = defineStore('backtest', () => {
         } else if (ev.type === 'warning') {
           warnings.value = [...warnings.value, `${ev.data.stage}: ${ev.data.message}`];
         } else if (ev.type === 'error') {
-          // Structured errors use `message`; legacy path uses `detail`.
           error.value = ev.data.detail ?? ev.data.message ?? 'Unknown error';
         }
       }
@@ -83,17 +91,68 @@ export const useBacktestStore = defineStore('backtest', () => {
     }
   }
 
+  async function _runSimple(settings: ReturnType<typeof useSettingsStore>) {
+    isRunning.value = true;
+    error.value = null;
+    warnings.value = [];
+    progress.value = null;
+    metrics.value = null;
+    elapsedMs.value = null;
+    candles.value = [];
+    trades.value = [];
+    boxes.value = [];   // simple engine has no box rects
+
+    const runPayload = {
+      sl_soft_points:  settings.simpleParams.sl_soft_points,
+      sl_hard_points:  settings.simpleParams.sl_hard_points,
+      tp_points:       settings.simpleParams.tp_points,
+      direction_scope: settings.simpleParams.direction_scope,
+      data_path:       settings.dataPath,
+      data_path_1min:  settings.dataPath1min,
+      box_data_path:   settings.boxDataPath,
+      start:           settings.startDate || null,
+      end:             settings.endDate   || null,
+    };
+    lastRunSettings.value = JSON.stringify({ engine: 'simple', ...runPayload });
+
+    try {
+      const res = await runSimpleBacktest(runPayload);
+      metrics.value   = res.metrics;
+      trades.value    = res.trades;
+      candles.value   = res.candles;
+      elapsedMs.value = res.elapsed_ms;
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : String(err);
+    } finally {
+      isRunning.value = false;
+    }
+  }
+
   const isDirty = computed(() => {
     if (!hasResults.value || lastRunSettings.value === null) return false;
     const settings = useSettingsStore();
-    const current = JSON.stringify({
-      params: settings.params,
-      data_path: settings.dataPath,
-      data_path_1min: settings.dataPath1min,
-      box_data_path: settings.boxDataPath,
-      start: settings.startDate || undefined,
-      end: settings.endDate || undefined,
-    });
+    const current = settings.engineMode === 'simple'
+      ? JSON.stringify({
+          engine: 'simple',
+          sl_soft_points:  settings.simpleParams.sl_soft_points,
+          sl_hard_points:  settings.simpleParams.sl_hard_points,
+          tp_points:       settings.simpleParams.tp_points,
+          direction_scope: settings.simpleParams.direction_scope,
+          data_path:       settings.dataPath,
+          data_path_1min:  settings.dataPath1min,
+          box_data_path:   settings.boxDataPath,
+          start:           settings.startDate || null,
+          end:             settings.endDate   || null,
+        })
+      : JSON.stringify({
+          engine: 'box',
+          params: settings.params,
+          data_path: settings.dataPath,
+          data_path_1min: settings.dataPath1min,
+          box_data_path: settings.boxDataPath,
+          start: settings.startDate || undefined,
+          end: settings.endDate || undefined,
+        });
     return current !== lastRunSettings.value;
   });
 

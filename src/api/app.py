@@ -694,35 +694,98 @@ def post_simple_backtest(req: SimpleBacktestRequest):
         box_data_path=req.box_data_path,
         direction_scope=req.direction_scope,
     )
+    t_start = time.perf_counter()
     strat = SimpleStrategy(p)
     trades, state = strat.backtest(df_4h, df_1m, box_df)
+    elapsed_ms = int((time.perf_counter() - t_start) * 1000)
 
-    # Serialise trades (Timestamps → ISO strings).
+    # Map exit_time → df_4h candle index (the bar that CONTAINS the exit).
+    ts_4h_arr = df_4h['Date'].to_numpy()
+
+    def _exit_idx_for(exit_ts) -> Optional[int]:
+        if exit_ts is None:
+            return None
+        # Find the 4h bar whose start <= exit_ts (the bar containing it).
+        import numpy as np
+        i = int(np.searchsorted(ts_4h_arr, exit_ts, side='right')) - 1
+        return max(0, i)
+
+    # Serialise trades and add chart-compatible fields.
     def _ser(t: Dict[str, Any]) -> Dict[str, Any]:
-        out = dict(t)
-        for k in ('entry_time', 'exit_time'):
-            v = out.get(k)
-            if v is not None and hasattr(v, 'isoformat'):
-                out[k] = v.isoformat()
+        out = {
+            'entry_idx':          int(t['entry_idx']),
+            'exit_idx':           _exit_idx_for(t['exit_time']) if t['exit_time'] is not None else int(t['entry_idx']),
+            'direction':          t['direction'],
+            'entry_signal_price': float(t['entry_price']),
+            'exit_close':         float(t['exit_price']) if t['exit_price'] is not None else float(t['entry_price']),
+            'avg_entry_price':    float(t['entry_price']),
+            'exit_price':         float(t['exit_price']) if t['exit_price'] is not None else float(t['entry_price']),
+            'contracts':          1,
+            'profit_points':      float(t['pnl_points'])  if t['pnl_points']  is not None else 0.0,
+            'profit_dollars':     float(t['pnl_dollars']) if t['pnl_dollars'] is not None else 0.0,
+            'exit_reason':        t['exit_reason'],
+            'legs':               [{'contracts': 1, 'price': float(t['entry_price']), 'candle_idx': int(t['entry_idx'])}],
+            'entry_time':         t['entry_time'].isoformat() if t['entry_time'] is not None else None,
+            'exit_time':          t['exit_time'].isoformat()  if t['exit_time']  is not None else None,
+            'sl_soft_line':       float(t['sl_soft_line']),
+            'sl_hard_line':       float(t['sl_hard_line']),
+            'tp_line':            float(t['tp_line']),
+        }
         return out
 
     closed = [t for t in trades if t['exit_reason'] != 'OPEN']
     n_hard = sum(1 for t in trades if t['exit_reason'] == 'STOP_LOSS_HARD')
     n_soft = sum(1 for t in trades if t['exit_reason'] == 'STOP_LOSS_SOFT')
+    n_tp   = sum(1 for t in trades if t['exit_reason'] == 'TAKE_PROFIT')
+    n_open = sum(1 for t in trades if t['exit_reason'] == 'OPEN')
+    n_wins = sum(1 for t in closed if (t['pnl_points'] or 0) > 0)
+    total_pnl_dollars = sum(t['pnl_dollars'] for t in closed)
+    total_pnl_points  = sum(t['pnl_points']  for t in closed)
     summary = {
-        'n_trades':           len(trades),
-        'n_take_profit':      sum(1 for t in trades if t['exit_reason'] == 'TAKE_PROFIT'),
-        'n_stop_loss':        n_hard + n_soft,        # combined for back-compat
-        'n_stop_loss_hard':   n_hard,
-        'n_stop_loss_soft':   n_soft,
-        'n_open_at_eof':      sum(1 for t in trades if t['exit_reason'] == 'OPEN'),
-        'total_pnl_dollars':  sum(t['pnl_dollars'] for t in closed),
-        'total_pnl_points':   sum(t['pnl_points']  for t in closed),
-        'win_rate':           (sum(1 for t in closed if (t['pnl_points'] or 0) > 0) / len(closed)) if closed else None,
+        'n_trades':          len(trades),
+        'n_take_profit':     n_tp,
+        'n_stop_loss':       n_hard + n_soft,        # combined for back-compat
+        'n_stop_loss_hard':  n_hard,
+        'n_stop_loss_soft':  n_soft,
+        'n_open_at_eof':     n_open,
+        'total_pnl_dollars': total_pnl_dollars,
+        'total_pnl_points':  total_pnl_points,
+        'win_rate':          (n_wins / len(closed)) if closed else None,
     }
+
+    # Metrics shaped to match the box-engine response so the dashboard
+    # MetricsCards / TradeList can render without conditional branches.
+    metrics = {
+        'total_trades':    len(trades),
+        'profitable':      n_wins,
+        'losers':          len(closed) - n_wins,
+        'win_rate':        (n_wins / len(closed)) if closed else 0.0,
+        'total_profit':    total_pnl_dollars,
+        'total_profit_points': total_pnl_points,
+        'avg_trade':       (total_pnl_dollars / len(closed)) if closed else 0.0,
+        'open_at_end':     n_open,
+    }
+
+    # Candles for the chart overlay — shape matches the box endpoint's
+    # `candles` array (one entry per 4h bar with ISO time + OHLCV).
+    candles_payload = [
+        {
+            'time':   row['Date'].isoformat() if hasattr(row['Date'], 'isoformat') else str(row['Date']),
+            'open':   float(row['Open']),
+            'high':   float(row['High']),
+            'low':    float(row['Low']),
+            'close':  float(row['Close']),
+            'volume': float(row['Volume']) if 'Volume' in row.index and not pd.isna(row['Volume']) else 0.0,
+        }
+        for _, row in df_4h.iterrows()
+    ]
+
     return JSONResponse({
-        'summary': summary,
-        'trades':  [_ser(t) for t in trades],
+        'summary':    summary,
+        'metrics':    metrics,
+        'trades':     [_ser(t) for t in trades],
+        'candles':    candles_payload,
+        'elapsed_ms': elapsed_ms,
     })
 
 

@@ -60,8 +60,36 @@ function tryLoad<T extends object>(key: string, defaults: T): T {
   }
 }
 
+export type EngineMode = 'box' | 'simple';
+export interface SimpleParams {
+  sl_soft_points: number;
+  sl_hard_points: number;
+  tp_points: number;
+  direction_scope: 'both' | 'long_only' | 'short_only';
+}
+const DEFAULT_SIMPLE_PARAMS: SimpleParams = {
+  sl_soft_points: 100,
+  sl_hard_points: 200,
+  tp_points:      150,
+  direction_scope: 'both',
+};
+
+const LS_ENGINE = 'nq-dash:engine';
+const LS_SIMPLE = 'nq-dash:simple';
+
 export const useSettingsStore = defineStore('settings', () => {
   const params = reactive<BoxParams>(tryLoad(LS_PARAMS, { ...DEFAULT_BOX_PARAMS }));
+  const simpleParams = reactive<SimpleParams>(
+    tryLoad(LS_SIMPLE, { ...DEFAULT_SIMPLE_PARAMS }),
+  );
+  const engineMode = ref<EngineMode>(
+    (localStorage.getItem(LS_ENGINE) as EngineMode) ?? 'simple',
+  );
+  watch(engineMode, (v) => localStorage.setItem(LS_ENGINE, v));
+  watch(
+    () => JSON.stringify(simpleParams),
+    (s) => localStorage.setItem(LS_SIMPLE, s),
+  );
   const dataPath = ref<string>(DEFAULT_DATA_PATH);
   const dataPath1min = ref<string>(DEFAULT_DATA_PATH_1MIN);
   const boxDataPath = ref<string>(DEFAULT_BOX_DATA_PATH);
@@ -83,8 +111,12 @@ export const useSettingsStore = defineStore('settings', () => {
   function reset() {
     localStorage.removeItem(LS_PARAMS);
     localStorage.removeItem(LS_INDICATORS);
+    localStorage.removeItem(LS_SIMPLE);
+    localStorage.removeItem(LS_ENGINE);
     Object.assign(params, DEFAULT_BOX_PARAMS);
+    Object.assign(simpleParams, DEFAULT_SIMPLE_PARAMS);
     Object.assign(indicators, DEFAULT_INDICATORS);
+    engineMode.value = 'simple';
     dataPath.value = DEFAULT_DATA_PATH;
     dataPath1min.value = DEFAULT_DATA_PATH_1MIN;
     boxDataPath.value = DEFAULT_BOX_DATA_PATH;
@@ -94,6 +126,8 @@ export const useSettingsStore = defineStore('settings', () => {
 
   return {
     params,
+    simpleParams,
+    engineMode,
     dataPath,
     dataPath1min,
     boxDataPath,

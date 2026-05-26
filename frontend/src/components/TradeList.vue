@@ -147,15 +147,15 @@ function exitTime(t: ScalingTrade): string {
   return candleTime(t.exit_idx);
 }
 
-// Master strategy §4: exit_reason ∈ {TAKE PROFIT, STOP LOSS (SOFT),
-// STOP LOSS (HARD), DIRECTION_FLIP, OPEN}. Color-code so the trade log
-// is scannable at a glance.
+// Exit-reason palette covers both engines:
+//   Box  : 'TAKE PROFIT', 'STOP LOSS (SOFT)', 'STOP LOSS (HARD)', 'DIRECTION_FLIP', 'OPEN'
+//   Simple: 'TAKE_PROFIT', 'STOP_LOSS_SOFT',  'STOP_LOSS_HARD',   (no flip),         'OPEN'
 function exitReasonClass(reason: string): string {
-  if (reason === 'TAKE PROFIT')               return 'text-tv-green';
-  if (reason === 'STOP LOSS (SOFT)')          return 'text-tv-red';
-  if (reason === 'STOP LOSS (HARD)')          return 'text-tv-red font-semibold';
-  if (reason === 'DIRECTION_FLIP')            return 'text-tv-blue';
-  if (reason === 'OPEN')                      return 'text-tv-muted italic';
+  if (reason === 'TAKE PROFIT' || reason === 'TAKE_PROFIT')           return 'text-tv-green';
+  if (reason === 'STOP LOSS (SOFT)' || reason === 'STOP_LOSS_SOFT')   return 'text-tv-red';
+  if (reason === 'STOP LOSS (HARD)' || reason === 'STOP_LOSS_HARD')   return 'text-tv-red font-semibold';
+  if (reason === 'DIRECTION_FLIP')                                    return 'text-tv-blue';
+  if (reason === 'OPEN')                                              return 'text-tv-muted italic';
   return 'text-tv-muted';
 }
 

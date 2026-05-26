@@ -1,5 +1,33 @@
 <template>
   <div class="space-y-4">
+    <!-- Engine toggle (Simple = new Stage-1-driven engine; Box = legacy 1-1-2) -->
+    <section class="rounded border border-tv-border bg-tv-surface p-3" data-testid="engine-toggle">
+      <h3 class="mb-2 text-sm font-semibold text-tv-blue">Engine</h3>
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <label class="flex items-center gap-2">
+          <input
+            type="radio"
+            value="simple"
+            v-model="settings.engineMode"
+            data-testid="engine-simple"
+          />
+          <span><strong>Simple</strong> — Stage 1 entry + dual-SL/TP exit. <em>(recommended)</em></span>
+        </label>
+        <label class="flex items-center gap-2">
+          <input
+            type="radio"
+            value="box"
+            v-model="settings.engineMode"
+            data-testid="engine-box"
+          />
+          <span><strong>Box</strong> — legacy 1-1-2 ladder + box state machine.</span>
+        </label>
+      </div>
+      <p class="mt-1 text-[10px] text-tv-muted">
+        Simple = `POST /api/backtest/simple` (JSON, ~1-2s). Box = `POST /api/backtest/box` (SSE, slower).
+      </p>
+    </section>
+
     <!-- Section: Data -->
     <section class="rounded border border-tv-border bg-tv-surface p-3">
       <h3 class="mb-2 text-sm font-semibold text-tv-blue">Data</h3>
@@ -44,8 +72,45 @@
       </div>
     </section>
 
+    <!-- Simple-engine params (visible only when engineMode='simple') -->
+    <section
+      v-if="settings.engineMode === 'simple'"
+      class="rounded border border-tv-border bg-tv-surface p-3"
+      data-testid="simple-params"
+    >
+      <h3 class="mb-2 text-sm font-semibold text-tv-blue">Simple-engine params</h3>
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <NumField label="Soft SL (pts from entry)" v-model.number="settings.simpleParams.sl_soft_points" :min="0.25" :step="10" />
+        <NumField label="Hard SL (pts from entry)" v-model.number="settings.simpleParams.sl_hard_points" :min="0.25" :step="10" />
+        <NumField label="TP (pts from entry)"      v-model.number="settings.simpleParams.tp_points"      :min="0.25" :step="10" />
+        <label class="flex flex-col gap-1">
+          <span class="text-tv-muted">Direction scope</span>
+          <select
+            v-model="settings.simpleParams.direction_scope"
+            class="rounded bg-tv-tile px-2 py-1 text-tv-text outline-none ring-1 ring-tv-border focus:ring-tv-blue"
+            data-testid="direction-scope"
+          >
+            <option value="both">both (long + short)</option>
+            <option value="long_only">long only</option>
+            <option value="short_only">short only</option>
+          </select>
+        </label>
+      </div>
+      <p
+        v-if="simpleErrors.slOrder"
+        class="mt-1 text-[11px] text-tv-red"
+        data-testid="simple-sl-order-error"
+      >{{ simpleErrors.slOrder }}</p>
+      <p class="mt-2 text-[10px] text-tv-muted">
+        Soft SL fires on <strong>2 consecutive 1-min closes</strong> past the line (fill at the 2nd close).
+        Hard SL fires on <strong>1 touch</strong> of the bar's extreme (fill at the line).
+        TP fires on a touch of the bar's extreme (fill at the line).
+        Per-bar priority: <strong>hard SL &gt; TP &gt; soft SL</strong>.
+      </p>
+    </section>
+
     <!-- §1 Entry distribution & sizing -->
-    <section class="rounded border border-tv-border bg-tv-surface p-3">
+    <section v-if="settings.engineMode === 'box'" class="rounded border border-tv-border bg-tv-surface p-3">
       <h3 class="mb-2 text-sm font-semibold text-tv-blue">§1 Entry distribution &amp; sizing (1-1-2)</h3>
       <div class="grid grid-cols-2 gap-2 text-xs">
         <NumField label="Total contracts" v-model.number="settings.params.total_contracts" :min="1" />
@@ -75,7 +140,7 @@
     </section>
 
     <!-- §2 Big candle exception -->
-    <section class="rounded border border-tv-border bg-tv-surface p-3">
+    <section v-if="settings.engineMode === 'box'" class="rounded border border-tv-border bg-tv-surface p-3">
       <h3 class="mb-2 text-sm font-semibold text-tv-blue">§2 Big candle exception (&gt;400 pts)</h3>
       <div class="grid grid-cols-2 gap-2 text-xs">
         <NumField label="Threshold (pts)" v-model.number="settings.params.big_candle_threshold_points" :min="0.25" :step="10" />
@@ -88,7 +153,7 @@
     </section>
 
     <!-- §3 Entry trigger confirmation -->
-    <section class="rounded border border-tv-border bg-tv-surface p-3">
+    <section v-if="settings.engineMode === 'box'" class="rounded border border-tv-border bg-tv-surface p-3">
       <h3 class="mb-2 text-sm font-semibold text-tv-blue">§3 Entry trigger (15-sec confirmation)</h3>
       <div class="grid grid-cols-2 gap-2 text-xs">
         <NumField label="Confirmation timeframe (sec)" v-model.number="settings.params.entry_confirmation_timeframe_seconds" :min="1" />
@@ -102,7 +167,7 @@
     </section>
 
     <!-- §4 Stop loss -->
-    <section class="rounded border border-tv-border bg-tv-surface p-3">
+    <section v-if="settings.engineMode === 'box'" class="rounded border border-tv-border bg-tv-surface p-3">
       <h3 class="mb-2 text-sm font-semibold text-tv-blue">§4 Stop loss (dual SL system)</h3>
       <div class="grid grid-cols-2 gap-2 text-xs">
         <NumField label="Soft SL (pts from avg)" v-model.number="settings.params.sl_soft_points" :min="0.25" :step="10" />
@@ -116,7 +181,7 @@
     </section>
 
     <!-- §5 Take profit (fixed; no trail per master strategy spec) -->
-    <section class="rounded border border-tv-border bg-tv-surface p-3">
+    <section v-if="settings.engineMode === 'box'" class="rounded border border-tv-border bg-tv-surface p-3">
       <h3 class="mb-2 text-sm font-semibold text-tv-blue">§5 Take profit</h3>
       <div class="grid grid-cols-2 gap-2 text-xs">
         <NumField label="Target (pts from anchor)" v-model.number="settings.params.tp_target_points" :min="0.25" :step="5" />
@@ -128,7 +193,7 @@
     </section>
 
     <!-- §5c SL/TP anchoring (master strategy §5) -->
-    <section class="rounded border border-tv-border bg-tv-surface p-3">
+    <section v-if="settings.engineMode === 'box'" class="rounded border border-tv-border bg-tv-surface p-3">
       <h3 class="mb-2 text-sm font-semibold text-tv-blue">SL / TP anchor mode</h3>
       <div class="space-y-1 text-xs">
         <label class="flex items-center gap-2">
@@ -153,7 +218,7 @@
     </section>
 
     <!-- §5b Re-entry -->
-    <section class="rounded border border-tv-border bg-tv-surface p-3">
+    <section v-if="settings.engineMode === 'box'" class="rounded border border-tv-border bg-tv-surface p-3">
       <h3 class="mb-2 text-sm font-semibold text-tv-blue">§5b Re-entry</h3>
       <div class="space-y-2 text-xs">
         <label class="flex items-center gap-2">
@@ -165,7 +230,7 @@
     </section>
 
     <!-- Box-rule decisions (always shown; Box is the only directional oracle) -->
-    <section class="rounded border border-tv-border bg-tv-surface p-3">
+    <section v-if="settings.engineMode === 'box'" class="rounded border border-tv-border bg-tv-surface p-3">
       <h3 class="mb-2 text-sm font-semibold text-tv-blue">Box-rule decisions</h3>
       <div class="grid grid-cols-2 gap-2 text-xs">
         <NumField label="Tick threshold (pts above edge)" v-model.number="settings.params.box_tick_threshold" :min="0" :step="0.25" />
@@ -239,6 +304,16 @@ watch(datasetPreset, (next) => {
   settings.dataPath     = triplet.candles4h;
   settings.dataPath1min = triplet.candles1m;
   settings.boxDataPath  = triplet.boxes;
+});
+
+const simpleErrors = computed(() => {
+  const p = settings.simpleParams;
+  return {
+    slOrder:
+      p.sl_hard_points < p.sl_soft_points
+        ? `Hard SL points (${p.sl_hard_points}) must be ≥ Soft SL points (${p.sl_soft_points}).`
+        : '',
+  };
 });
 
 const errors = computed(() => {

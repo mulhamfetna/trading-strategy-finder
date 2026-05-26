@@ -11,6 +11,9 @@ import { useSettingsStore } from '../src/stores/settings';
 describe('SettingsPanel', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
+    // Existing tests target the BOX-engine UI sections; flip the toggle.
+    const s = useSettingsStore();
+    s.engineMode = 'box';
   });
 
   it('renders sections for every parameter group', () => {

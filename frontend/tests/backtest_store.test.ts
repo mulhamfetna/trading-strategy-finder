@@ -30,6 +30,10 @@ describe('useBacktestStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     mocks.eventQueue.length = 0;
+    // These tests exercise the BOX-engine SSE flow; ensure the engine
+    // toggle is on 'box' (default in localStorage may be 'simple').
+    const settings = useSettingsStore();
+    settings.engineMode = 'box';
   });
 
   it('starts in an idle state', () => {
