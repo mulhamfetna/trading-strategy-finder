@@ -29,13 +29,19 @@ Per-candle inputs derived inline:
 
 ## 2. Entry truth table (Stage 1 — `_stage1_candle_signal`)
 
+**Entry uses Stage 1's logic exactly. No touch-style line-crossing logic — that is *exit-only*.** The decision is per-(candle, level-pair) and combines three things from the bar alone:
+
+1. **Range-overlap** between the candle and the box: `range_overlap = (L ≤ BU) AND (H ≥ BL)`. This is a *precondition*, not a touch event. It uses `L` and `H` only to ask "did this candle's price band intersect the box at all?" — a single yes/no per pair.
+2. **Color** of the candle: `green` (C > O), `red` (C < O), or `doji` (C == O).
+3. **Close-vs-edge**: a strict `>` for green/upper or `<` for red/lower. Pure scalar comparison of the close to a single box edge; no high/low involved, no touch.
+
+> Distinction worth nailing: an exit fires when a 1-min bar's `H` or `L` *crosses a line* (touch). The entry decision never asks that question. Entry asks "did the bar's range INTERSECT the box?" plus "did the close break a specific edge with the right color?" — neither of which is touch detection.
+
 ### 2.1 Per (candle, active level-pair) decision
 
 For each active level pair on the candle's mapped box-date row, with edges `BU` (box upper), `BL` (box lower):
 
-`touched = (L ≤ BU) AND (H ≥ BL)`
-
-| # | touched | color | C vs BU | C vs BL | per-pair result | impl line |
+| # | range overlap | color | C vs BU | C vs BL | per-pair result | impl line |
 |---|---|---|---|---|---|---|
 | 1 | false | any   | any    | any    | hold                          | `continue` (skip pair) |
 | 2 | true  | green | C > BU | —      | **long**                      | `has_long = True` |
@@ -70,6 +76,9 @@ After scanning all active level pairs:
 ---
 
 ## 3. Exit truth table (per 1-min bar of an open trade)
+
+**Touch detection lives here, and only here.** Hard SL and TP fire when the bar's *extreme* (`H` for shorts' SL / longs' TP, `L` for longs' SL / shorts' TP) crosses a single line. Soft SL is the one exit that is *not* touch-based — it fires on `close` past the line, twice in a row. The entry decision in §2 never uses any of this.
+
 
 ### 3.1 The three lines
 
