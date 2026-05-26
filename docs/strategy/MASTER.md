@@ -6,9 +6,22 @@ type: master
 
 # Master Strategy Specification
 
-This document is the single source of truth for what the trading strategy does. It supersedes the prior `Strategy1.md` + `Strategy2.md` drafts and the deleted `SYSTEM_BLUEPRINT.md` / `MASTER_STRATEGY_GUIDE.md` / `Currunt_Strategy_Algo_for_Trading.md`.
+This document is the single source of truth for what the **box-driven 1-1-2 scaling strategy** does (a.k.a. `BoxStrategy`). It supersedes the prior `Strategy1.md` + `Strategy2.md` drafts and the deleted `SYSTEM_BLUEPRINT.md` / `MASTER_STRATEGY_GUIDE.md` / `Currunt_Strategy_Algo_for_Trading.md`.
 
-The strategy has three concerns running on two timeframes:
+## Two engines now live in this repo
+
+After the 2026-05-26 truth-table reconciliation, **two coexisting backtest engines** are in scope:
+
+| Engine | Module | Endpoint | Entry rule | Sizing | Exit |
+|---|---|---|---|---|---|
+| **Box / 1-1-2** *(this document)* | `src/strategy/box_strategy.py` + `src/strategy/scaling_strategy.py` | `POST /api/backtest/box` (SSE) | stateful `above/inside/below` traversal machine + big-candle override + direction-flip | 1-1-2 ladder (1, 1, 2 contracts) + `anchor_mode` toggle | dual-timeframe soft+hard SL + TP, plus DIRECTION_FLIP |
+| **Simple** *(see [[simple_strategy]])* | `src/strategy/simple_strategy.py` | `POST /api/backtest/simple` (JSON) | **Stage 1's stateless truth table** (canonical after the reconciliation) | 1 contract | single SL line + TP line, both fire on a 1-min `close` past |
+
+The simple engine was built per `backtest_updates.md` after the truth-table reconciliation resolved that Stage 1's rule is the source of truth for entries. Both engines are wired up in parallel; neither has been deprecated. The remainder of this document describes the **Box engine only** — see [[simple_strategy]] for the simple engine.
+
+---
+
+The Box strategy has three concerns running on two timeframes:
 
 | Concern | Timeframe | Output |
 |---|---|---|
@@ -280,17 +293,21 @@ See [[dashboard_params]] for a flat parameter reference.
 
 ## 8. Implementation map
 
-The strategy is implemented across three source files:
+The Box engine is implemented across three source files:
 
 - [[scaling_strategy]] — `src/strategy/scaling_strategy.py` — owns the 1-1-2 ladder logic, fixed-SL/TP exit lines, and the `anchor_mode` toggle.
 - [[box_strategy]] — `src/strategy/box_strategy.py` — owns the 4h direction decision (truth table from §2), big-candle override (§2.4), direction-flip (§4.3), and the trade lifecycle.
 - [[box_lookup]] — `src/strategy/box_lookup.py` — owns box loading, the static 16-level model, NQ session mapping, and the nearest-unburned box selection.
 
-Tests live in `tests/test_blueprint_examples.py` ([[blueprint_examples]]). Reference January-2025 trades are regenerated whenever the engine changes.
+The Simple engine lives in a single file — [[simple_strategy]] / `src/strategy/simple_strategy.py` — and reuses `box_lookup` for box geometry but bypasses its stateful traversal machine in favor of Stage 1's stateless rule.
+
+Tests for the Box engine live in `tests/test_blueprint_examples.py` ([[blueprint_examples]]); the Simple engine has its own at `tests/test_simple_strategy.py` and `tests/test_api_simple.py`. Reference January-2025 trades for the Box engine are regenerated whenever that engine changes; the Simple engine's locks pin counts against the full preset under `(sl=100, tp=150)`.
 
 ---
 
 ## 9. Implementation status
+
+### Box engine (this document)
 
 | Item | Status |
 |---|---|
@@ -302,3 +319,16 @@ Tests live in `tests/test_blueprint_examples.py` ([[blueprint_examples]]). Refer
 | Dashboard `anchor_mode` toggle + ladder-tier warning in `SettingsPanel.vue`, `types.ts` defaults | ✅ done |
 | `TradeList.vue` colour-codes the new `exit_reason` palette (TP / SL / DIRECTION_FLIP / OPEN) | ✅ done |
 | Remove deprecated `tp_watch_threshold_points` / `tp_confirmation_timeframe_minutes` from dataclass, schema, types, and dashboard | ✅ done |
+
+### Simple engine ([[simple_strategy]])
+
+| Item | Status |
+|---|---|
+| Truth-table reconciliation between Box engine and Stage 1 — Stage 1 wins | ✅ resolved 2026-05-26 |
+| Build `src/strategy/simple_strategy.py` (Stage 1 entry + 1-min SL/TP exit + re-entry gate) | ✅ done |
+| Add `SimpleBacktestRequest` Pydantic model | ✅ done |
+| Add `POST /api/backtest/simple` endpoint (JSON, non-SSE) | ✅ done |
+| Synthetic + real-data tests (`tests/test_simple_strategy.py`, `tests/test_api_simple.py`) | ✅ done — 26 tests |
+| Re-target the optimiser at the simple engine (single-objective or two-objective TBD) | ⏳ follow-up |
+| Frontend wiring (engine toggle + simple panel) | ⏳ follow-up |
+| Decide Box engine deprecation | ⏳ TBD (both engines coexist) |
