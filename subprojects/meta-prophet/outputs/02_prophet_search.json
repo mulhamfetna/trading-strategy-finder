@@ -1,0 +1,248 @@
+{
+  "changepoint_prior_scale": 0.001,
+  "seasonality_prior_scale": 0.1,
+  "seasonality_mode": "multiplicative",
+  "_search_results": [
+    {
+      "changepoint_prior_scale": 0.001,
+      "seasonality_prior_scale": 0.01,
+      "seasonality_mode": "additive",
+      "rmse_cv": 0.004882412996516867
+    },
+    {
+      "changepoint_prior_scale": 0.001,
+      "seasonality_prior_scale": 0.01,
+      "seasonality_mode": "multiplicative",
+      "rmse_cv": 0.004884724678190756
+    },
+    {
+      "changepoint_prior_scale": 0.001,
+      "seasonality_prior_scale": 0.1,
+      "seasonality_mode": "additive",
+      "rmse_cv": 0.00487818160818693
+    },
+    {
+      "changepoint_prior_scale": 0.001,
+      "seasonality_prior_scale": 0.1,
+      "seasonality_mode": "multiplicative",
+      "rmse_cv": 0.004802181537323057
+    },
+    {
+      "changepoint_prior_scale": 0.001,
+      "seasonality_prior_scale": 1.0,
+      "seasonality_mode": "additive",
+      "rmse_cv": 0.0048933509754504586
+    },
+    {
+      "changepoint_prior_scale": 0.001,
+      "seasonality_prior_scale": 1.0,
+      "seasonality_mode": "multiplicative",
+      "rmse_cv": 0.004905745406211006
+    },
+    {
+      "changepoint_prior_scale": 0.001,
+      "seasonality_prior_scale": 10.0,
+      "seasonality_mode": "additive",
+      "rmse_cv": 0.004891178649748646
+    },
+    {
+      "changepoint_prior_scale": 0.001,
+      "seasonality_prior_scale": 10.0,
+      "seasonality_mode": "multiplicative",
+      "rmse_cv": 0.004963855748517617
+    },
+    {
+      "changepoint_prior_scale": 0.01,
+      "seasonality_prior_scale": 0.01,
+      "seasonality_mode": "additive",
+      "rmse_cv": 0.004882412996516867
+    },
+    {
+      "changepoint_prior_scale": 0.01,
+      "seasonality_prior_scale": 0.01,
+      "seasonality_mode": "multiplicative",
+      "rmse_cv": 0.004884724678190756
+    },
+    {
+      "changepoint_prior_scale": 0.01,
+      "seasonality_prior_scale": 0.1,
+      "seasonality_mode": "additive",
+      "rmse_cv": 0.00487818160818693
+    },
+    {
+      "changepoint_prior_scale": 0.01,
+      "seasonality_prior_scale": 0.1,
+      "seasonality_mode": "multiplicative",
+      "rmse_cv": 0.004802181537323057
+    },
+    {
+      "changepoint_prior_scale": 0.01,
+      "seasonality_prior_scale": 1.0,
+      "seasonality_mode": "additive",
+      "rmse_cv": 0.0048933509754504586
+    },
+    {
+      "changepoint_prior_scale": 0.01,
+      "seasonality_prior_scale": 1.0,
+      "seasonality_mode": "multiplicative",
+      "rmse_cv": 0.004905745406211006
+    },
+    {
+      "changepoint_prior_scale": 0.01,
+      "seasonality_prior_scale": 10.0,
+      "seasonality_mode": "additive",
+      "rmse_cv": 0.004891178649748646
+    },
+    {
+      "changepoint_prior_scale": 0.01,
+      "seasonality_prior_scale": 10.0,
+      "seasonality_mode": "multiplicative",
+      "rmse_cv": 0.004963855748517617
+    },
+    {
+      "changepoint_prior_scale": 0.05,
+      "seasonality_prior_scale": 0.01,
+      "seasonality_mode": "additive",
+      "rmse_cv": 0.004882412996516867
+    },
+    {
+      "changepoint_prior_scale": 0.05,
+      "seasonality_prior_scale": 0.01,
+      "seasonality_mode": "multiplicative",
+      "rmse_cv": 0.004884724678190756
+    },
+    {
+      "changepoint_prior_scale": 0.05,
+      "seasonality_prior_scale": 0.1,
+      "seasonality_mode": "additive",
+      "rmse_cv": 0.00487818160818693
+    },
+    {
+      "changepoint_prior_scale": 0.05,
+      "seasonality_prior_scale": 0.1,
+      "seasonality_mode": "multiplicative",
+      "rmse_cv": 0.004802181537323057
+    },
+    {
+      "changepoint_prior_scale": 0.05,
+      "seasonality_prior_scale": 1.0,
+      "seasonality_mode": "additive",
+      "rmse_cv": 0.0048933509754504586
+    },
+    {
+      "changepoint_prior_scale": 0.05,
+      "seasonality_prior_scale": 1.0,
+      "seasonality_mode": "multiplicative",
+      "rmse_cv": 0.004905745406211006
+    },
+    {
+      "changepoint_prior_scale": 0.05,
+      "seasonality_prior_scale": 10.0,
+      "seasonality_mode": "additive",
+      "rmse_cv": 0.004891178649748646
+    },
+    {
+      "changepoint_prior_scale": 0.05,
+      "seasonality_prior_scale": 10.0,
+      "seasonality_mode": "multiplicative",
+      "rmse_cv": 0.004963855748517617
+    },
+    {
+      "changepoint_prior_scale": 0.1,
+      "seasonality_prior_scale": 0.01,
+      "seasonality_mode": "additive",
+      "rmse_cv": 0.004882412996516867
+    },
+    {
+      "changepoint_prior_scale": 0.1,
+      "seasonality_prior_scale": 0.01,
+      "seasonality_mode": "multiplicative",
+      "rmse_cv": 0.004884724678190756
+    },
+    {
+      "changepoint_prior_scale": 0.1,
+      "seasonality_prior_scale": 0.1,
+      "seasonality_mode": "additive",
+      "rmse_cv": 0.00487818160818693
+    },
+    {
+      "changepoint_prior_scale": 0.1,
+      "seasonality_prior_scale": 0.1,
+      "seasonality_mode": "multiplicative",
+      "rmse_cv": 0.004802181537323057
+    },
+    {
+      "changepoint_prior_scale": 0.1,
+      "seasonality_prior_scale": 1.0,
+      "seasonality_mode": "additive",
+      "rmse_cv": 0.0048933509754504586
+    },
+    {
+      "changepoint_prior_scale": 0.1,
+      "seasonality_prior_scale": 1.0,
+      "seasonality_mode": "multiplicative",
+      "rmse_cv": 0.004905745406211006
+    },
+    {
+      "changepoint_prior_scale": 0.1,
+      "seasonality_prior_scale": 10.0,
+      "seasonality_mode": "additive",
+      "rmse_cv": 0.004891178649748646
+    },
+    {
+      "changepoint_prior_scale": 0.1,
+      "seasonality_prior_scale": 10.0,
+      "seasonality_mode": "multiplicative",
+      "rmse_cv": 0.004963855748517617
+    },
+    {
+      "changepoint_prior_scale": 0.5,
+      "seasonality_prior_scale": 0.01,
+      "seasonality_mode": "additive",
+      "rmse_cv": 0.004882412996516867
+    },
+    {
+      "changepoint_prior_scale": 0.5,
+      "seasonality_prior_scale": 0.01,
+      "seasonality_mode": "multiplicative",
+      "rmse_cv": 0.004884724678190756
+    },
+    {
+      "changepoint_prior_scale": 0.5,
+      "seasonality_prior_scale": 0.1,
+      "seasonality_mode": "additive",
+      "rmse_cv": 0.00487818160818693
+    },
+    {
+      "changepoint_prior_scale": 0.5,
+      "seasonality_prior_scale": 0.1,
+      "seasonality_mode": "multiplicative",
+      "rmse_cv": 0.004802181537323057
+    },
+    {
+      "changepoint_prior_scale": 0.5,
+      "seasonality_prior_scale": 1.0,
+      "seasonality_mode": "additive",
+      "rmse_cv": 0.0048933509754504586
+    },
+    {
+      "changepoint_prior_scale": 0.5,
+      "seasonality_prior_scale": 1.0,
+      "seasonality_mode": "multiplicative",
+      "rmse_cv": 0.004905745406211006
+    },
+    {
+      "changepoint_prior_scale": 0.5,
+      "seasonality_prior_scale": 10.0,
+      "seasonality_mode": "additive",
+      "rmse_cv": 0.004891178649748646
+    },
+    {
+      "changepoint_prior_scale": 0.5,
+      "seasonality_prior_scale": 10.0,
+      "seasonality_mode": "multiplicative",
+      "rmse_cv": 0.004963855748517617
+    }
+  ],
+  "_winner_rmse_cv": 0.004802181537323057
+}

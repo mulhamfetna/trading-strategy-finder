@@ -1,0 +1,8 @@
+# Python venv (huge — torch/CUDA) and caches — never commit
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+lightning_logs/
+# misc
+*.ckpt
