@@ -6,6 +6,19 @@ type: plan
 
 # Master Action Plan — next research wave
 
+> ## 📌 PINNED — current status (2026-06-03)
+> - **Current workstream: WS-G** — maximise P/L under a hard max-drawdown cap (single-contract
+>   cloned engine). Tournament + drawdown-constrained optimisation + per-combo dashboards: **DONE**.
+> - **Current WINNER (tag `v4.2-wsg-drawdown-capped-winner`):**
+>   **SL_soft/hard = 30/40, TP = 60, vol-gate @ 60th pct, drawdown breaker $2,500 / 30 trades.**
+>   → **+$24,720 P/L, maxDD $4,845 (<$5k), both years positive, PF 1.55, win 48.3%.**
+>   Full report: [[winning-system-full-report]] (`notes/44`). Robust alt: SL35/40,TP40 →
+>   +$21,100 @ $3,130 (58% win).
+> - **Caveat:** n=1, in-sample tuned — needs out-of-sample (WS-F instruments) before live trust.
+>   The strict "DD ≤ 10% of P/L" target is infeasible on this data (`notes/43`).
+> - **Workstream status:** A ✅ · C ✅ · G ✅ (+ live dashboard) | pending: B (OHLC), D (flip
+>   committee), E (Kalman), F (instruments — *blocks out-of-sample validation*), #175 (per-bar flip).
+
 This converts the raw `Response.md` ideas into a concrete, sequenced plan that fits the
 **existing meta-prophet ecosystem** (numbered `scripts/`, `notes/`, the GPU `server/`
 toolkit, and the **cloned** backtest engine + dashboards). Everything new stays inside

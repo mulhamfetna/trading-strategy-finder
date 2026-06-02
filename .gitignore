@@ -72,3 +72,4 @@ node_modules/
 
 # server credentials — never commit
 SERVER_DATA.env
+!subprojects/meta-prophet/dashboard_winner/index.html
