@@ -128,8 +128,15 @@ def main():
         mode = rule_cusum(pn)
         matched = np.array([flp_by_idx.get(int(e), np.nan) for e in eidx])
         sym_devs.append(np.nanmax(np.abs(matched - (-pn))) if np.isfinite(matched).any() else np.nan)
-        pc = np.where(mode > 0, pn, np.where(np.isfinite(matched), matched, -pn))
-        rc = metrics(pc, yr)
+        # IMPORTANT: flipping changes the TRADE SET (e.g. 772 normal vs 750 flipped trades;
+        # ~49 normal entries have no flipped counterpart). So per-trade flip is only an
+        # APPROXIMATION. Two bounds:
+        #   realizable (primary): unmatched trades stay NORMAL (uses only real engine trades).
+        #   symmetric (upper)   : unmatched trades flip to -normal (assumes broken symmetry).
+        # A TRUE dynamic flip needs per-bar flip support in the clone entry+exit (follow-up).
+        pc = np.where(mode > 0, pn, np.where(np.isfinite(matched), matched, pn))       # realizable
+        pc_sym = np.where(mode > 0, pn, np.where(np.isfinite(matched), matched, -pn))  # symmetric bound
+        rc = metrics(pc, yr); rc["pnl_sym_bound"] = float(np.sum(pc_sym * NQ_PV))
         for em, r in (("normal", rn), ("flipped", rf), ("cusum_flip", rc)):
             r["entry_mode"] = em; r["vol_lever"] = lev; r["combo"] = f"{em}+{lev}"; rows.append(r)
     sym_dev = float(np.nanmax(sym_devs))

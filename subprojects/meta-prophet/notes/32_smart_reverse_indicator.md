@@ -1,11 +1,13 @@
 # A Smart, Small-Data Reverse Indicator — CUSUM Change-Point Detection
 
-> **⚠️ CORRECTION (see notes/41).** The +$74,460 figure below assumed the engine symmetry
-> *flipped P/L ≡ −normal P/L per trade*. Workstream G measured that assumption to be **false**
-> in this engine (asymmetric SL/TP → max per-trade deviation ≈ 368 pts). Running the CUSUM flip
-> through the **actual** cloned engine (real flipped trades, not −normal) gives **+$54,910**,
-> not +$74,460. The CUSUM *mechanism* and the "flip on a change-point" idea stand; the specific
-> dollar figure here is superseded by `notes/41` and remains n=1-illustrative.
+> **⚠️ CORRECTION (see notes/41).** The +$74,460 below assumed *flipped P/L ≡ −normal P/L per
+> trade* (engine symmetry). Workstream G found this is **false**: flipping changes the **trade
+> set** itself (772 normal vs 750 flipped trades; 49 normal trades have no flipped counterpart;
+> max per-trade deviation ≈ 368 pts), so a per-trade flip can only be approximated. The true
+> figure is bracketed: **realizable ≈ +$30,130** (unmatched trades stay normal) to **symmetric
+> ≈ +$54,910** (upper bound) — the +$74,460 is superseded. The CUSUM *mechanism* and the
+> "flip on a change-point" idea stand; the exact value needs a per-bar-flip engine run, and all
+> flip figures remain n=1-illustrative. The robust, *exact* edge is the volatility gate, not the flip.
 
 > You said the existing flip rule (`stage1_pnlpts_300`) wasn't useful: it needs **300 trailing
 > signals (~6 months)** to decide — too much data, too laggy for production. You want a **smart,

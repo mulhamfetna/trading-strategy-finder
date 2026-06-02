@@ -7,3 +7,4 @@ lightning_logs/
 # misc
 *.ckpt
 server_runs/
+dashboard_combos/*/data.js

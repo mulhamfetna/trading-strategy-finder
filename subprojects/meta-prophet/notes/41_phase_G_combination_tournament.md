@@ -17,16 +17,18 @@ type: explainer
 
 | combo | total P/L | 2025 | 2026 | vs base | n | win% | maxDD |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| **cusum_flip + none** | **+54,910** | +41,740 | +13,170 | +509% | 772 | 67 | 25,500 |
-| cusum_flip + G | +30,130 | +22,780 | +7,350 | +325% | 464 | 67 | **15,610** |
-| normal + S+G | +21,396 | +31,223 | −9,826 | +259% | 482 | 67 | 27,360 |
-| cusum_flip + S+G | +19,976 | +31,223 | −11,247 | +249% | 482 | 67 | 30,908 |
-| normal + G | +3,685 | +22,780 | −19,095 | +127% | 464 | 65 | 26,650 |
+| **cusum_flip + none** (realizable) | **+30,130** | +41,740 | −11,610 | +325% | 772 | 67 | 36,940 |
+| **normal + S+G** | +21,396 | +31,223 | −9,826 | +259% | 482 | 67 | 27,360 |
+| cusum_flip + S+G | +9,097 | +31,223 | −22,125 | +168% | 482 | 66 | 35,666 |
+| cusum_flip + G | +8,700 | +22,780 | −14,080 | +165% | 464 | 66 | 25,360 |
+| normal + G | +3,685 | +22,780 | −19,095 | +127% | 464 | 65 | **26,650** |
 | normal + S | −10,778 | +53,740 | −64,518 | +20% | 754 | 65 | 68,649 |
 | **normal + none (BASELINE)** | **−13,420** | +41,740 | −55,160 | 0% | 772 | 64 | 57,160 |
 | flipped + G | −40,000 | −51,000 | +11,000 | −198% | 443 | 64 | 58,000 |
 | flipped + none | −75,000 | −88,000 | +13,000 | −459% | 750 | 63 | 101,000 |
-| flipped + S/S+G | −57k … −85k | (loses) | | | | | |
+| flipped + S / S+G | −57k … −85k | (loses) | | | | | |
+
+(Numbers use the **realizable** flip — see §2b. `cusum_flip+none` symmetric upper-bound ≈ +54,910.)
 
 **Plumbing validated:** `normal+none` = −$13,420 (2025 +41,740 / 2026 −55,160), and
 `normal+G`/`+S`/`+S+G` reproduce EXP-G's `outputs/backtest_matrix.csv` exactly. So the new
@@ -44,19 +46,29 @@ Skipping the top-20%-volatility bars (the HAR-RV gate `G`) is what consistently 
 This matches EXP-G's conclusion: *trust the risk-reduction from volatility, not a P/L oracle.*
 The adaptive SL/TP sizing (`S`) **alone hurts** (−10,778); it only helps paired with the gate.
 
-### (b) CUSUM dynamic-flip tops P/L — but it CORRECTS notes/32
-`cusum_flip+none` = **+$54,910** (holds all of 2025's +41,740, flips 2026 to +13,170). That's
-the best raw P/L. **However**, this is *lower* than notes/32's reported **+$74,460**, and the
-reason matters:
+### (b) The flip changes the TRADE SET — so per-trade flip is only an approximation
+This is the deep finding, and it corrects notes/31/32. Those notes assumed the engine symmetry
+*flipped P/L ≡ −normal P/L per trade*, i.e. that the strategy decomposes into per-trade units you
+can individually flip. **That is false.** Flipping the entry direction **changes which trades
+happen**:
 
-> **notes/32 assumed flipped P/L ≡ −normal P/L per trade (engine symmetry). That assumption is
-> FALSE in this engine.** Measured here, the max per-trade deviation between `flipped` and
-> `−normal` is **367.8 pts** — large. The asymmetric SL/TP (soft 80 / hard 100 / TP 50) means a
-> flipped short is *not* the mirror of a normal long. So flipping 2026 yields **+13,170 actual**
-> (this tournament, real flipped trades), not the +55,160 a clean sign-flip would imply.
+> normal mode = **772** trades; flipped mode = **750** trades; only **723** share an entry bar.
+> **49 normal trades have no flipped counterpart** (and 27 flipped-only). Measured max per-trade
+> deviation of `flipped` vs `−normal` = **367.8 pts**. A flipped short is *not* the mirror of a
+> normal long (asymmetric SL/TP 80/100/50, and the entry/exit interaction differs).
 
-This is an important honesty correction: the **+$74k figure was an artifact of the symmetry
-shortcut**; the rigorous, engine-true number is **+$54,910**, and even that is illustrative (§3).
+So a per-trade "flip on CUSUM signal" can only be **approximated**, and the answer depends on what
+you do with the 49 unmatched trades — bracketing the truth:
+- **realizable** (primary, used in the table): unmatched trades **stay normal** → `cusum_flip+none`
+  = **+$30,130** (2025 +41,740 held; 2026 only partly recovered, −11,610).
+- **symmetric** (optimistic upper bound): unmatched trades flip to −normal → ≈ **+$54,910**.
+- notes/32's **+$74,460** was even more optimistic (full symmetry on all trades) — **superseded**.
+
+**The only way to get the true number is to run the engine with a per-bar flip schedule** (so the
+engine produces the correct trade set under a time-varying regime). The clone's flip is currently a
+single bool *and the exit logic also branches on it*, so this is a real entry+exit change — logged
+as a follow-up (WS-D/WS-G). Until then: treat the flip P/L as a **bracket [$30k, $55k], illustrative,
+n=1** — and lean on the gate (§2a), which is exact.
 
 ---
 
@@ -69,10 +81,13 @@ to trust:** the specific flip dollar figure until more regime changes (→ Works
 instruments) are observed.
 
 ## 4. Best picks (honest)
-- **Most defensible:** `normal + G` or `normal + S+G` — positive, no flip dependency, ~half the
-  drawdown. The vol gate is the real, mechanism-backed edge.
-- **Highest P/L (illustrative):** `cusum_flip + none` (+$54.9k) — but rests on the n=1 flip.
-- **Best risk-adjusted:** `cusum_flip + G` (+$30.1k at the lowest drawdown, 15.6k).
+- **Most defensible (recommended):** `normal + S+G` (+$21,396) or `normal + G` (+$3,685) —
+  positive, **no flip dependency**, ~half the drawdown (57k → 27k / 27k). The vol gate is the
+  real, *exact*, mechanism-backed edge.
+- **Highest P/L (illustrative, n=1):** `cusum_flip + none` (+$30,130 realizable; up to ~$54.9k
+  symmetric) — rests on the single regime change and the approximate per-trade flip.
+- The flip adds little **once the gate is on** (cusum_flip+S+G +9,097 < normal+S+G +21,396) —
+  the gate already removes most of the bad-regime bars, so there's little left for the flip to fix.
 
 ## 5. Status & next
 - **WS-G tournament: DONE** (12 combos, plumbing validated, notes/32 corrected).
@@ -87,10 +102,11 @@ We tried every sensible combination of "which direction to trade" (normal / alwa
 CUSUM-flip) and "how to use the volatility forecast" (nothing / resize stops / skip the wildest
 bars / both), all at one contract on the trusted cloned engine. The dependable winner is the
 **volatility gate** — sitting out the most volatile bars cuts the 2026 losses and halves the
-drawdown, turning the strategy positive with no flipping required. The smart flip gives the
-biggest headline profit (+$54.9k), but importantly that's **less than an earlier note claimed
-(+$74k)** because that note assumed flipping just negates each trade's result — which we measured
-to be false in this engine (stops aren't symmetric). And every flip number still rests on the
-single regime change we've ever seen, so treat the dollars as illustrative and trust the
-risk-reduction and the mechanism instead. Next: build a separate dashboard for each top
-combination (never touching the main one).
+drawdown, turning the strategy positive with no flipping required. The smart flip gives a
+bigger headline profit (≈ +$30k realizable, up to +$55k optimistic), but importantly we discovered
+that **flipping changes which trades happen** (772 vs 750 trades) — so "flip each trade's result"
+is only an approximation, and an earlier note's +$74k assumed a clean negation that isn't true.
+Every flip number also rests on the single regime change we've ever seen. So trust the **gate**
+(it's exact, halves the drawdown, and needs no flipping) and treat the flip dollars as an
+illustrative bracket. Sibling dashboards (one per vol-lever, with a normal/flipped/cusum dropdown)
+are generated under `dashboard_combos/`, the main dashboard untouched.
