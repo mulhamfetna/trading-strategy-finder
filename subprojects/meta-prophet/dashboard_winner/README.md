@@ -1,33 +1,50 @@
-# Winning-Strategy Dashboard (`dashboard_winner/`)
+# Winning-Strategy Dashboard (`dashboard_winner/`) — interactive
 
-A dedicated, standalone clone dashboard wired to the **WS-G winning strategy** (tag
-`v4.2-wsg-drawdown-capped-winner`). It is a *separate* dashboard — the main dashboard
-(`../dashboard/`) and the live system are **never touched**.
+An **interactive backtest dashboard** wired to the verified single-contract **clone** engine
+(`../engine_clone/`). Edit the strategy parameters in the UI and press **Run backtest** to
+re-run the full backtest live and redraw every panel. The main dashboard (`../dashboard/`) and
+the live system are **never touched**.
 
-**Open:** double-click `index.html` (data is embedded in `data.js`; no server needed).
-
-## The strategy it visualises
-`SL_soft/hard = 30/40 · TP = 60 · vol-gate @ 60th pct · drawdown circuit-breaker $2,500 / 30 trades`
-→ **+$24,720 P/L, max drawdown $4,845 (< $5,000 cap), both years positive, PF 1.55, win 48.3%**
-(single contract, 2025–2026 NQ 4h, **n=1 in-sample** — see `../notes/44_winning_system_full_report.md`).
-
-## What it exposes (so the viewer knows what happened, when & why)
-- **Header chips:** the exact SL/TP, gate, breaker, and **max-drawdown cap** values.
-- **Price panel:** candles + entry/exit markers + **all exit lines — soft SL (amber), hard SL
-  (red), TP (green)** drawn per trade; dashed grey = 2025→2026 boundary.
-- **Volatility panel:** the HAR-RV forecast with the **gate threshold** line (bars above it are skipped).
-- **Engine-state panel:** `1 = TRADING`, `0 = LOCKED` — shows exactly when the drawdown
-  circuit-breaker halted trading.
-- **Equity** + **underwater drawdown** (with the −$2,500 breaker-trigger and −$5,000 cap lines).
-- **Event log (verbose):** every ENTRY (with gate context + the SL/TP placed), EXIT (price,
-  exit reason, P/L, running equity & drawdown), and breaker **LOCK / UNLOCK / SKIP** with the why.
-- **Trade ledger:** all 120 taken trades with soft/hard SL, TP, exit reason, P/L, equity, drawdown.
-
-## Regenerate
+## Run it (interactive — full backtests on demand)
 ```bash
-python3 subprojects/meta-prophet/scripts/49_winning_dashboard_export.py
+python3 subprojects/meta-prophet/dashboard_winner/server.py        # default port 8137
+# then open:
+http://localhost:8137/
 ```
-Edit the `# WINNING CONFIG` constants at the top of that script to point the dashboard at a
-different config (e.g. the robust alt SL35/40,TP40). Engine = verified single-contract clone
-(`../engine_clone/`); the drawdown breaker is a causal post-processing overlay (for live use it
-must become an execution-layer equity-stop).
+The server (Python stdlib only — no extra deps) loads the 4h/1m/box data + HAR-RV forecast once
+(~1 s), then each backtest runs in ~1.5 s.
+
+> Opened as a plain file (`file://…/index.html`) it still works **read-only**, showing the last
+> saved run from `data.js`. The **Run** button needs the server.
+
+## Editable parameters (control bar)
+| Field | Meaning |
+|---|---|
+| Data window | `full` / `2025` / `2026` |
+| SL soft / SL hard (pts) | stop-loss soft & hard distances (hard ≥ soft enforced) |
+| TP (pts) | take-profit distance (soft = hard) |
+| Vol gate pct | skip bars with HAR-RV above this percentile; **0 = gate off** |
+| Breaker $ | drawdown circuit-breaker trigger; **0 = breaker off** |
+| Cooldown (trades) | trades to stay locked after a breaker trip |
+| Flip dir | `normal` / `flipped` entry direction |
+
+**Winner preset** (↺ Reset to winner): SL 30/40 · TP 60 · gate 60 · breaker $2,500 / 30 →
++$24,720 P/L, $4,845 maxDD. (Verified live: winner params return exactly that; baseline
+80/100/50 with gate+breaker off returns the known −$13,420 / $57,160.)
+
+## What it shows (so the viewer knows what happened, when & why)
+Header metrics (P/L, maxDD vs cap, win%, PF, exposure, breaker locks) · price + entry/exit
+markers + **soft SL (amber) / hard SL (red) / TP (green)** lines · HAR-RV vol + gate threshold ·
+engine **TRADING/LOCKED** state · equity · underwater drawdown (with breaker + $5k-cap lines) ·
+a **verbose event log** (ENTRY/EXIT/LOCK/UNLOCK/SKIP with reasons) · a full **trade ledger**.
+
+## Files
+- `server.py` — stdlib HTTP server: serves the page + `POST /api/backtest`.
+- `winner_backtest.py` — `build_payload(...)`: runs the clone + drawdown-breaker overlay → payload.
+- `index.html` — the interactive UI (controls + charts + log + ledger).
+- `data.js` — last static export (initial / file:// fallback); regenerate with
+  `scripts/49_winning_dashboard_export.py`.
+
+Engine = verified single-contract clone; the drawdown breaker is a **causal post-processing
+overlay** (for live trading it must become an execution-layer equity-stop). P/L is **in-sample,
+n=1** — see `../notes/44_winning_system_full_report.md`.
