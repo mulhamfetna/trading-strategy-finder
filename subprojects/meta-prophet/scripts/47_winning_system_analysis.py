@@ -12,6 +12,7 @@ Re-runs it on the cloned single-contract engine, applies the causal breaker over
 """
 from __future__ import annotations
 
+import argparse
 import sys
 from pathlib import Path
 
@@ -33,7 +34,14 @@ bm = importlib.util.module_from_spec(spec); spec.loader.exec_module(bm)
 NQ_PV = 20.0
 PLOTS = ROOT / "plots" / "winning_system"; PLOTS.mkdir(parents=True, exist_ok=True)
 OUT = ROOT / "outputs"
-DD_LIMIT, COOLDOWN = 2500.0, 20
+
+_ap = argparse.ArgumentParser()
+_ap.add_argument("--ss", type=float, default=30); _ap.add_argument("--sh", type=float, default=40)
+_ap.add_argument("--tp", type=float, default=60); _ap.add_argument("--gate", type=float, default=60)
+_ap.add_argument("--dd", type=float, default=2500); _ap.add_argument("--cd", type=int, default=30)
+_A = _ap.parse_args()
+SL_SOFT_W, SL_HARD_W, TP_W, GATE_PCT = _A.ss, _A.sh, _A.tp, _A.gate
+DD_LIMIT, COOLDOWN = _A.dd, _A.cd
 plt.rcParams.update({"figure.facecolor": "white", "axes.grid": True, "grid.alpha": 0.3, "font.size": 10})
 
 
@@ -80,9 +88,9 @@ def main():
     df4, df1, box = bm.load_all()
     n2025 = int((df4["_year"] == 2025).sum())
     vf = bm.har_rv_forecast(df4)
-    gate = vf <= np.percentile(vf[:n2025], 60)
+    gate = vf <= np.percentile(vf[:n2025], GATE_PCT)
 
-    closed = run_engine(df4, df1, box, 20, 25, 40, gate=gate)
+    closed = run_engine(df4, df1, box, SL_SOFT_W, SL_HARD_W, TP_W, gate=gate)
     pnl_d = np.array([float(t["pnl_points"]) * NQ_PV for t in closed])
     keep = breaker(pnl_d, DD_LIMIT, COOLDOWN)
 
@@ -175,9 +183,9 @@ def main():
     ax.text(2.1, 2.5, "TRADING\n(take signals)", ha="center", va="center", fontsize=11, weight="bold")
     ax.text(7.9, 2.5, "LOCKED\n(skip entries)", ha="center", va="center", fontsize=11, weight="bold")
     ax.add_patch(FancyArrowPatch((3.6, 2.9), (6.4, 2.9), arrowstyle="->", mutation_scale=18, lw=2, color="#b00"))
-    ax.text(5.0, 3.25, "running DD ≥ $2,500", ha="center", fontsize=9, color="#b00")
+    ax.text(5.0, 3.25, f"running DD ≥ ${DD_LIMIT:,.0f}", ha="center", fontsize=9, color="#b00")
     ax.add_patch(FancyArrowPatch((6.4, 2.1), (3.6, 2.1), arrowstyle="->", mutation_scale=18, lw=2, color="#1f9d55"))
-    ax.text(5.0, 1.55, "after 20 skipped trades\n(peak resets to current equity)", ha="center", fontsize=9, color="#1f9d55")
+    ax.text(5.0, 1.55, f"after {COOLDOWN} skipped trades\n(peak resets to current equity)", ha="center", fontsize=9, color="#1f9d55")
     ax.add_patch(FancyArrowPatch((1.4, 3.2), (2.8, 3.2), connectionstyle="arc3,rad=-1.2",
                                  arrowstyle="->", mutation_scale=14, lw=1.4, color="#1f9d55"))
     ax.text(2.1, 4.1, "win/small loss\n(stay)", ha="center", fontsize=8, color="#1f9d55")
