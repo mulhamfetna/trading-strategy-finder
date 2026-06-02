@@ -11,6 +11,7 @@ run_darts_model(
         pl_trainer_kwargs=PL_TRAINER_KWARGS,
     ),
     use_regressors=True,
+    covariate_kind="past",   # NBEATSModel only supports past_covariates
     output_filename="12_darts_nbeats_regressors.csv",
     retrain_every=20,
 )

@@ -12,6 +12,7 @@ run_darts_model(
         pl_trainer_kwargs=PL_TRAINER_KWARGS,
     ),
     use_regressors=True,
+    covariate_kind="future",   # TFTModel supports future_covariates (bar-open-known)
     output_filename="14_darts_tft_regressors.csv",
     retrain_every=40,
 )

@@ -1,5 +1,12 @@
 # A Smart, Small-Data Reverse Indicator — CUSUM Change-Point Detection
 
+> **⚠️ CORRECTION (see notes/41).** The +$74,460 figure below assumed the engine symmetry
+> *flipped P/L ≡ −normal P/L per trade*. Workstream G measured that assumption to be **false**
+> in this engine (asymmetric SL/TP → max per-trade deviation ≈ 368 pts). Running the CUSUM flip
+> through the **actual** cloned engine (real flipped trades, not −normal) gives **+$54,910**,
+> not +$74,460. The CUSUM *mechanism* and the "flip on a change-point" idea stand; the specific
+> dollar figure here is superseded by `notes/41` and remains n=1-illustrative.
+
 > You said the existing flip rule (`stage1_pnlpts_300`) wasn't useful: it needs **300 trailing
 > signals (~6 months)** to decide — too much data, too laggy for production. You want a **smart,
 > flexible indicator that decides from a SMALL lookback.**

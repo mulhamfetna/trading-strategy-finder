@@ -69,3 +69,6 @@ optuna_studies.db-journal!subprojects/signals/stage1_1_next_signal/dashboard/*.h
 # Tooling state (Claude Code superpowers brainstorm/loop, Vite cache)
 .superpowers/
 node_modules/
+
+# server credentials — never commit
+SERVER_DATA.env

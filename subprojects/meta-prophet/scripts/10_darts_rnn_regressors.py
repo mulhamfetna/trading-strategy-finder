@@ -11,6 +11,7 @@ run_darts_model(
         pl_trainer_kwargs=PL_TRAINER_KWARGS,
     ),
     use_regressors=True,
+    covariate_kind="future",   # RNNModel only supports future_covariates
     output_filename="10_darts_rnn_regressors.csv",
     retrain_every=20,
 )

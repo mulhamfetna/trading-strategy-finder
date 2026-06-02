@@ -5,8 +5,9 @@ as NeuralProphet's uniform-grid issue — see notes/09_neuralprophet_root_cause_
 Workaround: use an integer (RangeIndex) instead of datetime. The model sees a 1-bar = 1-unit
 sequence and never has to reason about calendar gaps.
 
-We force CPU because the dev box's GPU has compute capability < 7.5 and the installed cuDNN
-doesn't support it. Walking-forward 585 bars on CPU is still ~minutes per model.
+Accelerator is selectable via the MP_ACCELERATOR env var (default "cpu" preserves the
+original local behaviour). On the ROCm server set MP_ACCELERATOR=gpu to train on the
+RX 6700 XT (also export HSA_OVERRIDE_GFX_VERSION=10.3.0 for the gfx1031 override).
 """
 from __future__ import annotations
 
@@ -16,8 +17,13 @@ from typing import Sequence
 import numpy as np
 import pandas as pd
 
-# Force CPU before any torch/Darts import.
-os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
+# Accelerator selectable via MP_ACCELERATOR (default "cpu" preserves local behaviour).
+_ACCEL = os.environ.get("MP_ACCELERATOR", "cpu").lower()
+
+# Only hide CUDA when we explicitly want CPU; otherwise leave the caller's
+# CUDA_VISIBLE_DEVICES intact so the GPU stays reachable.
+if _ACCEL == "cpu":
+    os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
 
 from darts import TimeSeries  # noqa: E402
 
@@ -26,8 +32,10 @@ PL_TRAINER_KWARGS = {
     "enable_progress_bar":   False,
     "enable_model_summary":  False,
     "logger":                False,
-    "accelerator":           "cpu",
+    "accelerator":           _ACCEL,
 }
+if _ACCEL == "gpu":
+    PL_TRAINER_KWARGS["devices"] = 1
 
 
 def to_target_series(df: pd.DataFrame) -> TimeSeries:

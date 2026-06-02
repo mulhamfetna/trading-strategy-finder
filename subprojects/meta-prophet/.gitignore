@@ -6,3 +6,4 @@ __pycache__/
 lightning_logs/
 # misc
 *.ckpt
+server_runs/
