@@ -74,3 +74,4 @@ node_modules/
 SERVER_DATA.env
 !subprojects/meta-prophet/dashboard_winner/index.html
 !subprojects/meta-prophet/winner_dashboard/index.html
+!subprojects/wsg-strategy/frontend/index.html

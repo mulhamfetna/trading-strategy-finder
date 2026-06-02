@@ -16,8 +16,13 @@ type: plan
 >   +$21,100 @ $3,130 (58% win).
 > - **Caveat:** n=1, in-sample tuned — needs out-of-sample (WS-F instruments) before live trust.
 >   The strict "DD ≤ 10% of P/L" target is infeasible on this data (`notes/43`).
-> - **Workstream status:** A ✅ · C ✅ · G ✅ (+ live dashboard) | pending: B (OHLC), D (flip
->   committee), E (Kalman), F (instruments — *blocks out-of-sample validation*), #175 (per-bar flip).
+> - **Workstream status:** A ✅ · C ✅ · G ✅ | pending: B (OHLC), D (flip committee), E (Kalman),
+>   F (instruments — *blocks out-of-sample validation*), #175 (per-bar flip).
+> - **Deliverables for the winner:** report [[winning-system-full-report]] (`notes/44`) ·
+>   playbook (`notes/45`) · engine-edits report (`notes/42`) · interactive dashboards
+>   (`dashboard_winner/` plain, `winner_dashboard/` main-styled) · **standalone self-contained
+>   app `subprojects/wsg-strategy/`** (own backend+frontend+engine+docs; reproduces the winner
+>   exactly with zero repo imports). Progress log: `subprojects/wsg-strategy/docs/`.
 
 This converts the raw `Response.md` ideas into a concrete, sequenced plan that fits the
 **existing meta-prophet ecosystem** (numbered `scripts/`, `notes/`, the GPU `server/`
