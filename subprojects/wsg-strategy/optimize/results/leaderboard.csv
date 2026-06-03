@@ -1,0 +1,8 @@
+timeframe,front_pts,maxPL_pnl,maxPL_dd,bestCapped_pnl,bestCapped_dd,bestCapped_params
+4h,18,27645.8,17255.4,4809.3,4749.1,"{'sl_soft': 107.5, 'sl_hard': 134.0, 'tp': 36.0, 'gate_pct': 35.3, 'dd_limit': 2460.0, 'cooldown': 2, 'flip': False}"
+2h,39,22140.2,11452.4,13032.2,4606.5,"{'sl_soft': 36.5, 'sl_hard': 54.0, 'tp': 41.1, 'gate_pct': 75.2, 'dd_limit': 400.0, 'cooldown': 2, 'flip': False}"
+1h,24,29214.0,24857.2,9434.8,4470.0,"{'sl_soft': 14.9, 'sl_hard': 65.8, 'tp': 89.4, 'gate_pct': 45.7, 'dd_limit': 3840.0, 'cooldown': 4, 'flip': False}"
+15m,48,23062.9,14955.0,6802.4,4522.8,"{'sl_soft': 24.6, 'sl_hard': 40.4, 'tp': 44.2, 'gate_pct': 32.8, 'dd_limit': 4877.0, 'cooldown': 7, 'flip': False}"
+5m,196,12302.4,14992.8,7245.9,4818.3,"{'sl_soft': 19.0, 'sl_hard': 43.3, 'tp': 37.4, 'gate_pct': 37.0, 'dd_limit': 4638.0, 'cooldown': 9, 'flip': False}"
+2m,38,22953.5,4056.8,22953.5,4056.8,"{'sl_soft': 6.6, 'sl_hard': 7.1, 'tp': 11.0, 'gate_pct': 98.9, 'dd_limit': 3892.0, 'cooldown': 31, 'flip': True}"
+1m,38,40926.0,3743.2,40926.0,3743.2,"{'sl_soft': 5.0, 'sl_hard': 6.5, 'tp': 9.5, 'gate_pct': 99.0, 'dd_limit': 3281.0, 'cooldown': 0, 'flip': True}"
