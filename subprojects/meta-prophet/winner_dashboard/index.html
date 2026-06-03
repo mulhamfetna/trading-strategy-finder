@@ -132,7 +132,7 @@ const stateA=stC.addAreaSeries({lineColor:TH.blue,topColor:'rgba(41,98,255,.4)',
 const eqLine=eqC.addLineSeries({color:TH.orange,lineWidth:2});
 const ddA=ddC.addAreaSeries({lineColor:TH.red,topColor:'rgba(255,82,82,.06)',bottomColor:'rgba(255,82,82,.45)',lineWidth:1});
 const ddTrig=ddC.addLineSeries({color:TH.red,lineWidth:1,lineStyle:2,lastValueVisible:false}),ddCap=ddC.addLineSeries({color:TH.muted,lineWidth:1,lineStyle:2,lastValueVisible:false});
-let sy=false; charts.forEach(s=>s.timeScale().subscribeVisibleLogicalRangeChange(r=>{if(sy||!r)return;sy=true;charts.forEach(o=>{if(o!==s)o.timeScale().setVisibleLogicalRange(r);});sy=false;}));
+let sy=false; charts.forEach(s=>s.timeScale().subscribeVisibleTimeRangeChange(r=>{if(sy||!r)return;sy=true;charts.forEach(o=>{if(o!==s){try{o.timeScale().setVisibleRange(r);}catch(e){}}});sy=false;}));
 window.addEventListener('resize',()=>charts.forEach(c=>c.applyOptions({width:c.container.clientWidth})));
 
 const dt=t=>new Date(t*1000).toISOString().slice(0,16).replace('T',' ');
@@ -162,10 +162,15 @@ function render(D){
     const w=D.candles[0].time<=D.meta.split_ts&&D.meta.split_ts<=D.candles[D.candles.length-1].time;
     bnd.setData(w?[{time:D.meta.split_ts,value:lo},{time:D.meta.split_ts,value:hi}]:[]);}
   volLine.setData(D.vol); gthrLine.setData(D.gate_thr?D.vol.map(v=>({time:v.time,value:D.gate_thr})):[]);
-  stateA.setData(D.state); eqLine.setData(D.equity); ddA.setData(D.drawdown);
-  ddTrig.setData(P.dd_limit?D.drawdown.map(d=>({time:d.time,value:-P.dd_limit})):[]);
-  ddCap.setData(D.drawdown.map(d=>({time:d.time,value:-(P.dd_cap||5000)})));
-  priceC.timeScale().fitContent();
+  // pad sparse trade-based series to the full candle time-span so EVERY chart shares one x-domain
+  const _t0=D.candles.length?D.candles[0].time:0,_t1=D.candles.length?D.candles[D.candles.length-1].time:0;
+  const _pad=(a,sv)=>{const o=a.slice();if(!o.length)return [{time:_t0,value:sv},{time:_t1,value:sv}];if(o[0].time>_t0)o.unshift({time:_t0,value:sv});if(o[o.length-1].time<_t1)o.push({time:_t1,value:o[o.length-1].value});return o;};
+  const _eq=_pad(D.equity,0),_dd=_pad(D.drawdown,0),_st=_pad(D.state,D.state.length?D.state[0].value:1);
+  stateA.setData(_st); eqLine.setData(_eq); ddA.setData(_dd);
+  ddTrig.setData(P.dd_limit?_dd.map(d=>({time:d.time,value:-P.dd_limit})):[]);
+  ddCap.setData(_dd.map(d=>({time:d.time,value:-(P.dd_cap||5000)})));
+  // align all panels to the same time window initially
+  charts.forEach(c=>{try{c.timeScale().setVisibleRange({from:_t0,to:_t1});}catch(e){c.timeScale().fitContent();}});
   document.getElementById('log').innerHTML=D.events.map(e=>`<div class="row ${e.type}"><span class="t">${dt(e.time)}</span><span class="b">${e.type}</span><span>${e.text}</span></div>`).join('');
   const cols=[['entry_time','entry','l'],['direction','dir','l'],['entry_price','in$'],['exit_price','out$'],['sl_soft_line','SLs'],['sl_hard_line','SLh'],['tp_hard_line','TP'],['exit_reason','reason','l'],['pnl','P/L'],['equity','eq'],['dd','DD']];
   let h='<thead><tr>'+cols.map(c=>`<th class="${c[2]||''}">${c[1]}</th>`).join('')+'</tr></thead><tbody>';
