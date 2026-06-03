@@ -103,12 +103,16 @@ def main(argv: list[str]) -> int:
     with lpath.open("w", newline="") as fh:
         w = csv.writer(fh)
         w.writerow(["timeframe", "front_pts", "maxPL_pnl", "maxPL_dd",
-                    "bestCapped_pnl", "bestCapped_dd", "bestCapped_params"])
+                    "bestCapped_pnl", "bestCapped_dd", "overfit_flag", "bestCapped_params"])
         for x in lb:
             bp, bc = x["best_pnl"], x["best_capped"]
+            # overfit signature: contrarian flip + sub-10pt hard stop + gate effectively off
+            flag = ""
+            if bc and bc["flip"] and bc["sl_hard"] <= 10 and bc["gate_pct"] >= 95:
+                flag = "OVERFIT?"
             w.writerow([x["timeframe"], x["n_front"],
                         bp["median_pnl"] if bp else "", bp["worst_dd"] if bp else "",
-                        bc["median_pnl"] if bc else "", bc["worst_dd"] if bc else "",
+                        bc["median_pnl"] if bc else "", bc["worst_dd"] if bc else "", flag,
                         ({k: bc[k] for k in PARAM_COLS} if bc else "")])
     print(f"\nwrote {lpath}", flush=True)
     return 0
