@@ -47,8 +47,10 @@ def split_folds(df_dec: pd.DataFrame, k: int) -> list[tuple[int, int]]:
 
 
 def score_walkforward(df_dec, df1, box, vf, params, bar_duration,
-                      k: int = 5, min_trades: int = 5) -> dict:
-    """Score one parameter set across K folds. Returns dict with the objective + per-fold detail."""
+                      k: int = 5, min_trades: int = 5, sig_int=None) -> dict:
+    """Score one parameter set across K folds. Returns dict with the objective + per-fold detail.
+    sig_int: optional precomputed per-decision-bar signal array (full length) — sliced per fold to
+    avoid recomputing the param-independent signals on every trial."""
     ranges = split_folds(df_dec, k)
     folds = []
     valid = True
@@ -61,9 +63,11 @@ def score_walkforward(df_dec, df1, box, vf, params, bar_duration,
             continue
         fdec = df_dec.iloc[lo:hi].reset_index(drop=True)
         fvf = vf[lo:hi]
+        fsig = sig_int[lo:hi] if sig_int is not None else None
         gate_ref = vf[:lo] if lo > 0 else fvf            # causal: gate frozen on prior data
         p = dict(params); p["window"] = "full"
-        m = backtest_metrics(fdec, df1, box, fvf, len(fdec), p, bar_duration, gate_ref_vf=gate_ref)
+        m = backtest_metrics(fdec, df1, box, fvf, len(fdec), p, bar_duration,
+                             gate_ref_vf=gate_ref, sig_int=fsig)
         m["fold"] = j
         folds.append(m)
         if m.get("n_taken", 0) < min_trades:

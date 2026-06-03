@@ -34,7 +34,8 @@ _PARENT = _HERE.parent
 if str(_PARENT) not in sys.path:
     sys.path.insert(0, str(_PARENT))
 
-from optimize import data as data_mod, timeframes as TF  # noqa: E402
+from optimize import data as data_mod, timeframes as TF, signals as sig_mod  # noqa: E402
+from optimize.fast_engine import signals_to_int          # noqa: E402
 from optimize.folds import score_walkforward             # noqa: E402
 
 _STUDIES = _HERE / "studies"
@@ -64,6 +65,7 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
 
     print(f"[{tf_name}] loading inputs ...", flush=True)
     df_dec, df1, box, vf, _n = data_mod.load_inputs(tf_name)
+    sig_int = signals_to_int(sig_mod.decision_signals(df_dec, box))   # precompute once (param-independent)
     print(f"[{tf_name}] {len(df_dec)} decision bars; cooldown cap {cap}; "
           f"bounds sl_soft{b['sl_soft']} sl_hard{b['sl_hard']} tp{b['tp']}", flush=True)
 
@@ -77,7 +79,8 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         flip = trial.suggest_categorical("flip", [False, True])
         params = dict(sl_soft=sl_soft, sl_hard=sl_soft + delta, tp=tp, gate_pct=gate_pct,
                       dd_limit=dd_limit, cooldown=cooldown, flip=flip, window="full")
-        r = score_walkforward(df_dec, df1, box, vf, params, tf.bar_td, k=folds, min_trades=min_trades)
+        r = score_walkforward(df_dec, df1, box, vf, params, tf.bar_td, k=folds,
+                              min_trades=min_trades, sig_int=sig_int)
         if not r["valid"]:
             raise optuna.TrialPruned()
         trial.set_user_attr("worst_dd", r["worst_dd"])

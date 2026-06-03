@@ -25,7 +25,8 @@ if str(_PARENT) not in sys.path:
     sys.path.insert(0, str(_PARENT))
 
 import config  # noqa: E402
-from engine import SimpleStrategy, SimpleStrategyParams  # noqa: E402
+from optimize.fast_engine import fast_backtest, signals_to_int  # noqa: E402
+from optimize import signals as _sig  # noqa: E402
 
 
 def backtest_metrics(
@@ -38,6 +39,7 @@ def backtest_metrics(
     bar_duration: pd.Timedelta,
     *,
     gate_ref_vf: np.ndarray | None = None,
+    sig_int: np.ndarray | None = None,
     pv: float = config.NQ_POINT_VALUE,
 ) -> dict:
     """Run one backtest on an arbitrary decision timeframe; return summary metrics + trades.
@@ -79,12 +81,14 @@ def backtest_metrics(
         gthr = float(np.percentile(ref, gate_pct))
         gate = vfw <= gthr
 
-    sp = SimpleStrategyParams(sl_soft_points=sl_soft, sl_hard_points=sl_hard, tp_soft_points=tp,
-                              tp_hard_points=tp, data_path_4h="", data_path_1min="",
-                              box_data_path="", flip_entry_direction=flip)
-    trades, _ = SimpleStrategy(sp).backtest(d, d1, box, entry_gate=gate)
-    cand = sorted([t for t in trades if t.get("exit_reason") not in (None, "OPEN")],
-                  key=lambda t: pd.Timestamp(t["entry_time"]))
+    # precomputed signals (param-independent) sliced to the window; else compute on the slice
+    si = sig_int[lo:hi] if sig_int is not None else signals_to_int(_sig.decision_signals(d, box))
+    cand = fast_backtest(
+        d["Date"].to_numpy(), d["Close"].to_numpy(float), si, gate,
+        d1["Date"].to_numpy(), d1["High"].to_numpy(float),
+        d1["Low"].to_numpy(float), d1["Close"].to_numpy(float),
+        sl_soft, sl_hard, tp, flip)
+    # fast_backtest returns completed trades already in entry order (no OPEN trades)
 
     # Global-HWM drawdown breaker overlay (identical math to strategy.build_payload).
     use_brk = dd_limit > 0
