@@ -31,8 +31,9 @@ WINNER = dict(
     sl_hard=40.0,          # hard stop distance (pts) — touch fill; caps loss ≈ $800
     tp=60.0,               # take-profit distance (pts) — touch fill; ≈ $1,200
     gate_pct=60.0,         # skip bars with HAR-RV forecast above this percentile (0 = gate off)
-    dd_limit=2500.0,       # drawdown circuit-breaker trigger ($); 0 = breaker off
-    cooldown=30,           # trades to stay locked after a breaker trip
+    dd_limit=2000.0,       # drawdown circuit-breaker trigger ($); 0 = breaker off  (re-tuned after the
+                           # global-HWM breaker fix — see notes/46; OLD buggy default was 2500)
+    cooldown=20,           # trades to stay locked after a breaker trip  (was 30)
     flip=False,            # entry direction: False = normal, True = flipped
     window="full",         # full | 2025 | 2026
 )

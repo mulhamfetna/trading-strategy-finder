@@ -3,6 +3,15 @@
 This document explains the WS-G drawdown-capped strategy from scratch for someone studying **only
 this folder**. No other part of the repo is required to understand it.
 
+> **⚠️ Corrected results (2026-06-03).** An earlier version of the drawdown breaker reset its
+> high-water mark on resume, so it did **not** actually cap drawdown — it inflated the headline to
+> +$24,720 / $4,845. The breaker is now fixed (global high-water mark) and the default re-tuned to
+> **trigger $2,000 / cooldown 20**. **Corrected result: +$7,735 P/L · true max drawdown $3,670**
+> (both years positive), and that profitable-and-capped tuning is **overfit (n=1)**. The entry/exit
+> logic is unchanged. **The §6 results table below still shows the SUPERSEDED buggy-breaker run
+> (+$24,720 / $4,845)** — use the corrected figures in this banner. The engine + parameter wiring
+> were always correct; only the breaker's bookkeeping was wrong.
+
 ---
 
 ## 1. The goal

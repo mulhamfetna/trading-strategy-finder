@@ -31,7 +31,7 @@ bm = importlib.util.module_from_spec(spec); spec.loader.exec_module(bm)
 NQ_PV = 20.0
 # ----- WINNING CONFIG -----
 SL_SOFT, SL_HARD, TP, GATE_PCT = 30.0, 40.0, 60.0, 60
-DD_LIMIT, COOLDOWN, DD_CAP = 2500.0, 30, 5000.0
+DD_LIMIT, COOLDOWN, DD_CAP = 2000.0, 20, 5000.0
 OUTDIR = ROOT / "dashboard_winner"; OUTDIR.mkdir(exist_ok=True)
 
 
@@ -63,9 +63,9 @@ def main():
             cd -= 1
             if cd <= 0:
                 # cooldown finished → unlock and TAKE this trade (matches scripts 46/47/48)
-                locked = False; peak = eq
+                locked = False  # FIX: keep GLOBAL high-water mark (no peak reset)
                 events.append({"time": et, "type": "UNLOCK", "text":
-                    f"UNLOCK — cooldown done; resume trading on this bar, drawdown peak reset to ${eq:,.0f}"})
+                    f"UNLOCK — cooldown done; resume trading on this bar, drawdown global peak ${peak:,.0f} kept"})
             else:
                 state.append({"time": et, "value": 0})
                 skipped_breaker += 1

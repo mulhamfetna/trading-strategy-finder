@@ -9,13 +9,14 @@ type: plan
 > ## 📌 PINNED — current status (2026-06-03)
 > - **Current workstream: WS-G** — maximise P/L under a hard max-drawdown cap (single-contract
 >   cloned engine). Tournament + drawdown-constrained optimisation + per-combo dashboards: **DONE**.
-> - **Current WINNER (tag `v4.2-wsg-drawdown-capped-winner`):**
->   **SL_soft/hard = 30/40, TP = 60, vol-gate @ 60th pct, drawdown breaker $2,500 / 30 trades.**
->   → **+$24,720 P/L, maxDD $4,845 (<$5k), both years positive, PF 1.55, win 48.3%.**
->   Full report: [[winning-system-full-report]] (`notes/44`). Robust alt: SL35/40,TP40 →
->   +$21,100 @ $3,130 (58% win).
-> - **Caveat:** n=1, in-sample tuned — needs out-of-sample (WS-F instruments) before live trust.
->   The strict "DD ≤ 10% of P/L" target is infeasible on this data (`notes/43`).
+> - **Current WINNER (CORRECTED — see `notes/46`):** SL 30/40 · TP 60 · vol-gate @ 60th pct ·
+>   drawdown breaker **$2,000 / 20** (global high-water mark). → **+$7,735 P/L, true maxDD $3,670
+>   (<$5k), both years +.**
+>   ⚠️ The earlier **+$24,720 / $4,845** (tag `v4.2`, breaker $2,500/30) was **inflated by a breaker
+>   bug** (it reset its peak on unlock → drawdown wasn't actually capped). Fixed to global-HWM;
+>   re-tuned. Reports `notes/44`/`45` are SUPERSEDED by `notes/46`.
+> - **Caveat (stronger now):** the corrected profitable+capped tuning is **overfit (n=1)** — the
+>   feasible surface is chaotic. Out-of-sample validation (WS-F) is essential before any trust.
 > - **Workstream status:** A ✅ · C ✅ · G ✅ | pending: B (OHLC), D (flip committee), E (Kalman),
 >   F (instruments — *blocks out-of-sample validation*), #175 (per-bar flip).
 > - **Deliverables for the winner:** report [[winning-system-full-report]] (`notes/44`) ·

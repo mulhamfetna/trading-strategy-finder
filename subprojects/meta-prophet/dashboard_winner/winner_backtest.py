@@ -25,7 +25,7 @@ bm = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(bm)
 
 NQ_PV = 20.0
 DEFAULTS = dict(sl_soft=30.0, sl_hard=40.0, tp=60.0, gate_pct=60.0,
-                dd_limit=2500.0, cooldown=30, flip=False, window="full")
+                dd_limit=2000.0, cooldown=20, flip=False, window="full")
 
 
 def _ts(dt): return int(pd.Timestamp(dt).timestamp())
@@ -80,9 +80,9 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
         if use_brk and locked:
             cd -= 1
             if cd <= 0:
-                locked = False; peak = eq
+                locked = False  # FIX: keep GLOBAL high-water mark (no peak reset)
                 events.append({"time": et, "type": "UNLOCK",
-                               "text": f"UNLOCK — cooldown done; resume; peak reset to ${eq:,.0f}"})
+                               "text": f"UNLOCK — cooldown done; resume; global peak ${peak:,.0f} kept"})
             else:
                 state.append({"time": et, "value": 0}); skipped += 1
                 events.append({"time": et, "type": "SKIP",

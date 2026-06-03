@@ -7,6 +7,15 @@ type: playbook
 # Playbook — WS-G Drawdown-Capped Strategy
 **Tag:** `v4.2-wsg-drawdown-capped-winner` · **Companion report:** `notes/44` · **Run it:** `winner_dashboard/`
 
+> ## ⚠️ CORRECTED — see `notes/46`
+> A bug investigation found the **drawdown breaker did not actually cap drawdown** (it reset its
+> high-water mark on unlock). The headline below (+$24,720 / $4,845, breaker $2,500/30) is
+> **superseded**. Corrected: global-HWM breaker, re-tuned default **$2,000 / 20 → +$7,735 P/L,
+> true maxDD $3,670** (and that tuning is **overfit, n=1**). The entry/exit rules in this playbook
+> are still valid; **only the breaker section's numbers + its "caps drawdown" promise change** —
+> the cap is real now but profitability-with-a-cap is not validated. Update `dd_limit` 2500→2000,
+> `cooldown` 30→20 in any live use. Full detail: `notes/46`.
+
 > **One-line thesis:** trade the box Stage-1 signal on NQ 4h, **only when volatility is calm**,
 > with **tight capped stops**, and **stop trading after a $2,500 bleed** — accepting smaller
 > upside in exchange for a worst-case drawdown under $5,000.

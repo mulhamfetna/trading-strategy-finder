@@ -5,7 +5,16 @@ type: report
 ---
 
 # Winning System — Full Report
-### SL 30/40 · TP 60 · vol-gate@60 · drawdown circuit-breaker ($2,500 / 30) — single contract
+### SL 30/40 · TP 60 · vol-gate@60 · drawdown circuit-breaker — single contract
+
+> ## ⚠️ SUPERSEDED — see `notes/46` (breaker bug)
+> The drawdown breaker below **did not actually cap drawdown** (it reset its high-water mark on
+> unlock, so true drawdown ratcheted to $4,845 while the breaker read $1,600). The headline
+> **+$24,720 / $4,845** was inflated by that measurement bug. **Corrected** (global-HWM breaker,
+> re-tuned to $2,000/20): **+$7,735 P/L · true maxDD $3,670** — and that profitable+capped tuning
+> is **overfit (n=1)**. The engine logic + parameter wiring are validated correct; only the
+> breaker's bookkeeping (and the "caps drawdown" claim) were wrong. Read `notes/46` for the full
+> investigation; treat the figures below as the (superseded) buggy-breaker run.
 
 > Updated after an SL/TP sweep (`scripts/48_sltp_sweep.py`, 64 engine configs × breaker grid):
 > tweaking the stop/target distances produced a **better winner** — **+$24,720 total P/L** at a

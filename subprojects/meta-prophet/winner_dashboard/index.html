@@ -200,7 +200,7 @@ async function run(){
   finally{ $('run').disabled=false; $('run').textContent='Run Backtest'; }
 }
 $('run').addEventListener('click',run);
-$('reset').addEventListener('click',()=>{setForm({window:'full',sl_soft:30,sl_hard:40,tp:60,gate_pct:60,dd_limit:2500,cooldown:30,flip:false});run();});
+$('reset').addEventListener('click',()=>{setForm({window:'full',sl_soft:30,sl_hard:40,tp:60,gate_pct:60,dd_limit:2000,cooldown:20,flip:false});run();});
 if(window.WINNER_DATA){ render(window.WINNER_DATA); status('showing last saved run · edit settings + Run Backtest for a live run'); }
 else status('start server.py and Run Backtest');
 </script>

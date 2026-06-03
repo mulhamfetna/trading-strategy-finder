@@ -72,8 +72,8 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
         if use_brk and locked:
             cd -= 1
             if cd <= 0:
-                locked = False; peak = eq
-                events.append({"time": et, "type": "UNLOCK", "text": f"UNLOCK — cooldown done; peak reset to ${eq:,.0f}"})
+                locked = False  # FIX: keep GLOBAL high-water mark (no peak reset)
+                events.append({"time": et, "type": "UNLOCK", "text": f"UNLOCK — cooldown done; global peak ${peak:,.0f} kept"})
             else:
                 state.append({"time": et, "value": 0}); skipped += 1
                 events.append({"time": et, "type": "SKIP", "text": f"LOCKED — skip {t['direction']} @ {t['entry_price']:.1f} (would-be {pnl:+,.0f}); {cd} left"})
