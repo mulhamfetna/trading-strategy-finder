@@ -1,0 +1,58 @@
+{
+  "1m": {
+    "timeframe": "1m",
+    "n_trades": 3966,
+    "median_gap_h": 0.583,
+    "mean_gap_h": 3.045,
+    "trades_per_day": 7.88,
+    "cooldown_cap": 39
+  },
+  "2m": {
+    "timeframe": "2m",
+    "n_trades": 3674,
+    "median_gap_h": 0.667,
+    "mean_gap_h": 3.287,
+    "trades_per_day": 7.3,
+    "cooldown_cap": 34
+  },
+  "5m": {
+    "timeframe": "5m",
+    "n_trades": 3205,
+    "median_gap_h": 0.833,
+    "mean_gap_h": 3.768,
+    "trades_per_day": 6.37,
+    "cooldown_cap": 27
+  },
+  "15m": {
+    "timeframe": "15m",
+    "n_trades": 2456,
+    "median_gap_h": 1.25,
+    "mean_gap_h": 4.918,
+    "trades_per_day": 4.88,
+    "cooldown_cap": 18
+  },
+  "1h": {
+    "timeframe": "1h",
+    "n_trades": 1520,
+    "median_gap_h": 3.0,
+    "mean_gap_h": 7.943,
+    "trades_per_day": 3.02,
+    "cooldown_cap": 7
+  },
+  "2h": {
+    "timeframe": "2h",
+    "n_trades": 1120,
+    "median_gap_h": 4.0,
+    "mean_gap_h": 10.783,
+    "trades_per_day": 2.23,
+    "cooldown_cap": 5
+  },
+  "4h": {
+    "timeframe": "4h",
+    "n_trades": 804,
+    "median_gap_h": 8.0,
+    "mean_gap_h": 15.024,
+    "trades_per_day": 1.6,
+    "cooldown_cap": 2
+  }
+}
