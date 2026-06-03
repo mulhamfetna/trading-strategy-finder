@@ -74,8 +74,8 @@ is hardcoded to 4h. Generalize the **decision frame only**:
 3. NSGA-II driver running all 7 timeframes (one study each), walk-forward scored.
 4. Outputs: per-TF **Pareto front CSV + plot**, full trials DB, and a **cross-timeframe leaderboard**
    (best profit-at-given-DD regions per TF).
-5. Report (meta-prophet/notes/NN) — best regions per TF, fold dispersion / overfit diagnostics, and
-   an explicit honest caveat (still in-sample on one instrument).
+5. Report (`subprojects/wsg-strategy/optimize/reports/`) — best regions per TF, fold dispersion /
+   overfit diagnostics, and an explicit honest caveat (still in-sample on one instrument).
 
 ## 9. Open sub-decisions (non-blocking; sensible defaults chosen, flag in report)
 - **a.** Cooldown-cadence reference config (gate-off/breaker-off vs a mid-range config). *Default:*
@@ -98,10 +98,12 @@ is hardcoded to 4h. Generalize the **decision frame only**:
 - [ ] **H.9** Report + overfit diagnostics (fold dispersion; optional 2025→2026 holdout check).
 
 ## 11. Home / where it lives
-Build inside the WS-G standalone (`subprojects/wsg-strategy/`) as a new `optimize/` package (reuses
-the generalized engine; keeps everything self-contained), per the standing "move further integrations
-of the current strategy into the standalone subproject" rule. The verified production engine
-(`src/strategy/simple_strategy.py`) is **not** touched; only the parity-tested clone is generalized.
+**Everything lives inside `subprojects/wsg-strategy/optimize/`** — this task doc, the per-TF
+derivation utilities, the NSGA-II driver, the SQLite studies, the Pareto outputs, and the report.
+The generalized engine reuses (and minimally extends) the standalone's own `engine.py` /
+`volatility.py` / `loader.py`. Nothing is written outside the subproject. The verified production
+engine (`src/strategy/simple_strategy.py`) is **not** touched; only this standalone's parity-tested
+clone is generalized.
 
 ## 12. Honest caveats (carried from prior workstreams)
 - Still **in-sample on one instrument** (NQ, ~2025–2026). Walk-forward folds reduce but do not
