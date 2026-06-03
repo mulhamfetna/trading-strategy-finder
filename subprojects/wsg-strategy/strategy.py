@@ -38,12 +38,54 @@ def load_inputs():
     return df4, df1, box, vf, n2025
 
 
+class ParamError(ValueError):
+    """Invalid/missing strategy parameter. Surfaced to the UI; values are NEVER silently
+    clamped or defaulted — a bad input is an error the user must see."""
+
+
+def validate_params(params):
+    """Strict validation. Raises ParamError (no silent fallback). Returns a typed dict.
+    Required strategy params must all be present; instrument constants (dd_cap, pv) are
+    exposed too and default to config only when omitted."""
+    if not params:
+        raise ParamError("no parameters supplied — the UI must send all strategy parameters")
+    required = ("sl_soft", "sl_hard", "tp", "gate_pct", "dd_limit", "cooldown", "flip", "window")
+    missing = [k for k in required if k not in params or params[k] is None or params[k] == ""]
+    if missing:
+        raise ParamError("missing parameter(s): " + ", ".join(missing))
+
+    def _num(k):
+        try:
+            return float(params[k])
+        except (TypeError, ValueError):
+            raise ParamError(f"'{k}' must be a number, got {params[k]!r}")
+
+    sl_soft, sl_hard, tp = _num("sl_soft"), _num("sl_hard"), _num("tp")
+    gate_pct, dd_limit, cooldown = _num("gate_pct"), _num("dd_limit"), _num("cooldown")
+    if sl_soft <= 0:              raise ParamError(f"sl_soft must be > 0 (got {sl_soft})")
+    if tp <= 0:                   raise ParamError(f"tp must be > 0 (got {tp})")
+    if sl_hard < sl_soft:         raise ParamError(f"sl_hard ({sl_hard}) must be ≥ sl_soft ({sl_soft})")
+    if not 0 <= gate_pct <= 100:  raise ParamError(f"gate_pct must be in [0,100] (got {gate_pct}); 0 = gate OFF")
+    if dd_limit < 0:              raise ParamError(f"dd_limit must be ≥ 0 (got {dd_limit}); 0 = breaker OFF")
+    if cooldown < 0 or cooldown != int(cooldown):
+        raise ParamError(f"cooldown must be a non-negative integer (got {params['cooldown']!r})")
+    if params["window"] not in ("full", "2025", "2026"):
+        raise ParamError(f"window must be one of full|2025|2026 (got {params['window']!r})")
+    dd_cap = float(params["dd_cap"]) if params.get("dd_cap") not in (None, "") else config.DD_CAP
+    pv = float(params["pv"]) if params.get("pv") not in (None, "") else config.NQ_POINT_VALUE
+    if dd_cap <= 0:               raise ParamError(f"dd_cap must be > 0 (got {dd_cap})")
+    if pv <= 0:                   raise ParamError(f"pv (point value) must be > 0 (got {pv})")
+    return dict(sl_soft=sl_soft, sl_hard=sl_hard, tp=tp, gate_pct=gate_pct, dd_limit=dd_limit,
+                cooldown=int(cooldown), flip=bool(params["flip"]), window=params["window"],
+                dd_cap=dd_cap, pv=pv)
+
+
 def build_payload(df4, df1, box, vf, n2025, params=None):
-    p = {**config.WINNER, **(params or {})}
-    sl_soft = max(1.0, float(p["sl_soft"])); sl_hard = max(float(p["sl_hard"]), sl_soft)
-    tp = max(1.0, float(p["tp"])); cooldown = int(p["cooldown"]); flip = bool(p["flip"])
-    gate_pct, dd_limit = p["gate_pct"], p["dd_limit"]
-    window = p["window"] if p["window"] in ("full", "2025", "2026") else "full"
+    P = validate_params(params)
+    sl_soft, sl_hard, tp = P["sl_soft"], P["sl_hard"], P["tp"]
+    cooldown, flip = P["cooldown"], P["flip"]
+    gate_pct, dd_limit, window = P["gate_pct"], P["dd_limit"], P["window"]
+    dd_cap, pv = P["dd_cap"], P["pv"]
 
     N = len(df4)
     lo, hi = {"full": (0, N), "2025": (0, n2025), "2026": (n2025, N)}[window]
@@ -53,7 +95,7 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
     vfw = vf[lo:hi]
 
     gthr = gate = None
-    if gate_pct not in (None, 0, "", "none"):
+    if gate_pct > 0:
         gthr = float(np.percentile(vf[:n2025], float(gate_pct)))
         gate = vfw <= gthr
 
@@ -64,11 +106,11 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
     cand = sorted([t for t in trades if t.get("exit_reason") not in (None, "OPEN")],
                   key=lambda t: pd.Timestamp(t["entry_time"]))
 
-    use_brk = dd_limit not in (None, 0, "", "none"); ddl = float(dd_limit) if use_brk else 0.0
+    use_brk = dd_limit > 0; ddl = dd_limit
     peak = eq = 0.0; locked = False; cd = 0; skipped = 0
     taken, events, state, eqc = [], [], [], []
     for t in cand:
-        et, xt = _ts(t["entry_time"]), _ts(t["exit_time"]); pnl = float(t["pnl_points"]) * PV
+        et, xt = _ts(t["entry_time"]), _ts(t["exit_time"]); pnl = float(t["pnl_points"]) * pv
         if use_brk and locked:
             cd -= 1
             if cd <= 0:
@@ -109,7 +151,7 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
                    max_dd=round(float(uw.max()), 0) if len(eqc) else 0.0, n_locks=sum(1 for e in events if e["type"] == "LOCK"))
     params_out = dict(sl_soft=sl_soft, sl_hard=sl_hard, tp=tp, gate_pct=(None if gthr is None else float(gate_pct)),
                       gate_thr=(None if gthr is None else round(gthr, 0)), dd_limit=(ddl if use_brk else None),
-                      cooldown=cooldown, dd_cap=config.DD_CAP, pv=PV, flip=flip, window=window)
+                      cooldown=cooldown, dd_cap=dd_cap, pv=pv, flip=flip, window=window)
     return dict(meta=dict(params=params_out, summary=summary, split_ts=_ts(df4.iloc[n2025]["Date"])),
                 candles=candles, vol=vol, gate_thr=(gthr if gthr is not None else 0), state=state,
                 trades=taken, equity=eqc, drawdown=drawdown, events=sorted(events, key=lambda e: e["time"]))

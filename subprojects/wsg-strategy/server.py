@@ -5,7 +5,9 @@ the self-contained engine. Endpoints:
   GET  /                -> frontend/index.html
   GET  /<file>          -> static files from frontend/
   GET  /api/health      -> {status, params}
-  POST /api/backtest    -> {sl_soft,sl_hard,tp,gate_pct,dd_limit,cooldown,flip,window} → full payload
+  GET  /api/config      -> {preset, dd_cap, pv, bounds, windows}  (the frontend hardcodes nothing)
+  POST /api/backtest    -> {sl_soft,sl_hard,tp,gate_pct,dd_limit,cooldown,flip,window[,dd_cap,pv]} → full payload
+                           400 {error} on any invalid/missing param (NEVER silently clamped); 500 {error} on failure
 
 Run:  python3 subprojects/wsg-strategy/server.py [--port 8200]   then open http://localhost:8200/
 """
@@ -51,6 +53,14 @@ class H(BaseHTTPRequestHandler):
         path = self.path.split("?")[0]
         if path == "/api/health":
             return self._send(200, json.dumps({"status": "ok", "bars": len(DF4), "winner": config.WINNER}))
+        if path == "/api/config":
+            # expose the preset + instrument constants so the frontend hardcodes NOTHING
+            return self._send(200, json.dumps({
+                "preset": config.WINNER, "dd_cap": config.DD_CAP, "pv": config.NQ_POINT_VALUE,
+                "bounds": {"sl_soft": [1, None], "sl_hard": [1, None], "tp": [1, None],
+                           "gate_pct": [0, 100], "dd_limit": [0, None], "cooldown": [0, None],
+                           "dd_cap": [1, None], "pv": [0.01, None]},
+                "windows": ["full", "2025", "2026"]}))
         name = "index.html" if path in ("/", "") else path.lstrip("/")
         f = FRONTEND / name
         if ".." in name or not f.is_file():
@@ -70,9 +80,13 @@ class H(BaseHTTPRequestHandler):
             s = payload["meta"]["summary"]
             print(f"backtest {params} -> P/L ${s['pnl']:,.0f} DD ${s['max_dd']:,.0f} "
                   f"n={s['n_taken']} ({payload['meta']['run_ms']}ms)", flush=True)
+        except strategy.ParamError as e:
+            # invalid/missing parameter — surfaced to the UI as a 400 (NOT silently clamped)
+            print(f"param error: {e}", flush=True)
+            self._send(400, json.dumps({"error": f"Invalid parameter: {e}"}))
         except Exception as e:
             import traceback; traceback.print_exc()
-            self._send(500, json.dumps({"error": str(e)}))
+            self._send(500, json.dumps({"error": f"Backtest failed: {e}"}))
 
 
 def main():
