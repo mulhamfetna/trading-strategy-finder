@@ -23,14 +23,17 @@ _PARENT = Path(__file__).resolve().parents[1]
 if str(_PARENT) not in sys.path:
     sys.path.insert(0, str(_PARENT))
 
+import os               # noqa: E402
 import config            # noqa: E402
 from loader import load_data  # noqa: E402
 from volatility import vol_forecast  # noqa: E402
 from optimize import timeframes as TF  # noqa: E402
 
-_REPO = Path("/mnt/data/projects/trading")
-_RAW = _REPO / TF.RAW_DIR
-_BOX_CSV = config.DATA_ROOT / "full_data" / "NQ_full_data.csv"
+# Base dir holding the raw timeframe CSVs (Full_Canldes_Data/...). Overridable for the server
+# migration via WSH_DATA_BASE; defaults to the local repo root.
+_BASE = Path(os.environ.get("WSH_DATA_BASE", "/mnt/data/projects/trading"))
+_RAW = _BASE / TF.RAW_DIR
+_BOX_CSV = config.DATA_ROOT / "full_data" / "NQ_full_data.csv"   # config.DATA_ROOT honours WSG_DATA_ROOT
 
 
 def load_box() -> pd.DataFrame:
