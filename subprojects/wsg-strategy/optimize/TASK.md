@@ -85,6 +85,14 @@ is hardcoded to 4h. Generalize the **decision frame only**:
   ~600 trials/TF, raise for fine TFs.
 - **d.** maxDD aggregation across folds. *Default:* worst-fold (conservative).
 - **e.** Include `flip`? *Default:* yes (categorical) — cheap and the project explored it.
+- **f. PERFORMANCE (surfaced in H.3).** Volatility precompute is now vectorised (O(M log N); 1m
+  loads in ~5s). But the **engine backtest loop** is still Python-per-decision-bar: ~6s (4h) →
+  ~217s (5m) → minutes (1m) per single run. NSGA-II × hundreds of trials × fine TFs is infeasible
+  as-is. *Plan for H.7:* (i) precompute the **param-independent** per-bar Stage-1 signal + box
+  lookup once per TF (entry direction doesn't depend on SL/TP/gate/breaker), reused across trials;
+  (ii) consider a vectorised exit pass; (iii) scale trial budget down for fine TFs; (iv) optionally
+  run coarse TFs (4h…15m) first. *Note for H.3:* TF=1m realized vol degenerates (bar = 1m bar, ≤1
+  intrabar return) → handled by accepting the single-bar |log-return|·close as the vol proxy.
 
 ## 10. Subtask checklist (the tracked WS-H.* items)
 - [ ] **H.1** Generalize engine decision-frame (4h → placeholder TF); keep 1m exits; **TF=4h parity test**.
