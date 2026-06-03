@@ -20,8 +20,11 @@
   button.run { border:0; border-radius:6px; background:var(--blue); color:#fff; font-size:13px; font-weight:600; padding:9px 18px; cursor:pointer; }
   button.run:disabled { opacity:.5; cursor:wait; }
   button.run.dirty-ring { box-shadow:0 0 0 2px var(--blue), 0 0 0 4px var(--surface); }
+  button.ghost { border:1px solid var(--border); border-radius:6px; background:var(--tile); color:var(--text); font-size:12px; padding:8px 12px; cursor:pointer; }
+  button.ghost:hover { border-color:var(--blue); }
   .body { display:flex; flex:1; overflow:hidden; }
   aside { width:340px; flex:none; overflow-y:auto; border-right:1px solid var(--border); background:var(--bg); padding:12px; }
+  body.no-settings aside { display:none; }
   main { flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:12px; }
   /* settings panel */
   .sgroup { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 12px; margin-bottom:10px; }
@@ -60,6 +63,7 @@
   </div>
   <div class="hdr-right">
     <span class="dirty" id="dirty"></span>
+    <button class="ghost" id="toggle" title="Show/hide the settings panel">⚙ Hide settings</button>
     <button class="run" id="run">Run Backtest</button>
   </div>
 </header>
@@ -126,9 +130,9 @@
 <script>
 const TH={bg:'#131722',text:'#d1d4dc',border:'#363a45',green:'#00c853',red:'#ff5252',blue:'#2962ff',orange:'#ff9800',muted:'#787b86'};
 const COMMON={layout:{background:{color:TH.bg},textColor:TH.text},grid:{vertLines:{color:'#20242f'},horzLines:{color:'#20242f'}},timeScale:{timeVisible:true,borderColor:TH.border},rightPriceScale:{borderColor:TH.border},crosshair:{mode:0}};
-const mk=(id,h)=>LightweightCharts.createChart(document.getElementById(id),{...COMMON,width:document.getElementById(id).clientWidth,height:h});
+const charts=[], ctns=[];
+const mk=(id,h)=>{const el=document.getElementById(id); const c=LightweightCharts.createChart(el,{...COMMON,width:el.clientWidth,height:h}); charts.push(c); ctns.push(el); return c;};
 const priceC=mk('price',430),volC=mk('vol',130),stC=mk('state',90),eqC=mk('equity',170),ddC=mk('dd',140);
-const charts=[priceC,volC,stC,eqC,ddC];
 const candle=priceC.addCandlestickSeries({upColor:TH.green,downColor:TH.red,wickUpColor:TH.green,wickDownColor:TH.red,borderVisible:false});
 const seg=(c)=>priceC.addLineSeries({color:c,lineWidth:1,lastValueVisible:false,priceLineVisible:false,crosshairMarkerVisible:false});
 const tpS=seg('rgba(0,200,83,.6)'),shS=seg('rgba(255,82,82,.6)'),ssS=seg('rgba(255,152,0,.6)');
@@ -140,7 +144,13 @@ const eqLine=eqC.addLineSeries({color:TH.orange,lineWidth:2});
 const ddA=ddC.addAreaSeries({lineColor:TH.red,topColor:'rgba(255,82,82,.06)',bottomColor:'rgba(255,82,82,.45)',lineWidth:1});
 const ddTrig=ddC.addLineSeries({color:TH.red,lineWidth:1,lineStyle:2,lastValueVisible:false}),ddCap=ddC.addLineSeries({color:TH.muted,lineWidth:1,lineStyle:2,lastValueVisible:false});
 let sy=false; charts.forEach(s=>s.timeScale().subscribeVisibleTimeRangeChange(r=>{if(sy||!r)return;sy=true;charts.forEach(o=>{if(o!==s){try{o.timeScale().setVisibleRange(r);}catch(e){}}});sy=false;}));
-window.addEventListener('resize',()=>charts.forEach(c=>c.applyOptions({width:c.container.clientWidth})));
+// resize every chart to its container's current width (lightweight-charts has no auto-resize).
+// A ResizeObserver on <main> fires on BOTH window resize and the settings-panel toggle, so the
+// whole dashboard tracks the browser width with nothing hardcoded.
+function fitCharts(){ charts.forEach((c,i)=>{ const w=ctns[i].clientWidth; if(w>0) c.applyOptions({width:w}); }); }
+window.addEventListener('resize', fitCharts);
+const _mainEl=document.querySelector('main');
+if(window.ResizeObserver){ new ResizeObserver(fitCharts).observe(_mainEl); }
 
 const dt=t=>new Date(t*1000).toISOString().slice(0,16).replace('T',' ');
 const money=n=>(n>=0?'+':'')+'$'+Math.round(n).toLocaleString();
@@ -150,7 +160,7 @@ function render(D){
   const P=D.meta.params,S=D.meta.summary;
   document.getElementById('cards').innerHTML=
     card(money(S.pnl),'total P/L',S.pnl>=0?'pos':'neg')+
-    card('$'+Math.round(S.max_dd).toLocaleString(),'max drawdown',S.max_dd<=(P.dd_cap||1e9)?'pos':'neg')+
+    card('$'+Math.round(S.max_dd).toLocaleString(),'max drawdown','neg')+
     card(S.win+'%','win rate')+card(S.pf??'—','profit factor')+
     card(S.n_taken+'/'+S.n_candidates,'trades ('+S.exposure+'%)')+
     card(S.n_locks,'breaker locks');
@@ -222,6 +232,15 @@ async function run(){
   finally{ $('run').disabled=false; $('run').textContent='Run Backtest'; }
 }
 $('run').addEventListener('click',run);
+
+// Show/hide the settings side panel. Hiding it widens <main>; the ResizeObserver above then
+// refits every chart, so the charts reclaim the freed width with no hardcoded sizes.
+$('toggle').addEventListener('click',()=>{
+  const hidden=document.body.classList.toggle('no-settings');
+  $('toggle').textContent = hidden ? '⚙ Show settings' : '⚙ Hide settings';
+  // explicit refit too, in case ResizeObserver is unavailable
+  if(typeof fitCharts==='function') requestAnimationFrame(fitCharts);
+});
 
 // Fetch the authoritative preset + instrument constants from the backend.
 // The frontend hardcodes NOTHING — the "winner" defaults live in config.py and arrive via /api/config.
