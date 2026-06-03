@@ -20,10 +20,10 @@ type: plan
 > - **Workstream status:** A ✅ · C ✅ · G ✅ | pending: B (OHLC), D (flip committee), E (Kalman),
 >   F (instruments — *blocks out-of-sample validation*), #175 (per-bar flip).
 > - **Deliverables for the winner:** report [[winning-system-full-report]] (`notes/44`) ·
->   playbook (`notes/45`) · engine-edits report (`notes/42`) · interactive dashboards
->   (`dashboard_winner/` plain, `winner_dashboard/` main-styled) · **standalone self-contained
+>   playbook (`notes/45`) · engine-edits report (`notes/42`) · **standalone self-contained
 >   app `subprojects/wsg-strategy/`** (own backend+frontend+engine+docs; reproduces the winner
->   exactly with zero repo imports). Progress log: `subprojects/wsg-strategy/docs/`.
+>   exactly with zero repo imports; the superseded `dashboard_winner/` + `winner_dashboard/`
+>   clones were removed in favour of it). Progress log: `subprojects/wsg-strategy/docs/`.
 
 This converts the raw `Response.md` ideas into a concrete, sequenced plan that fits the
 **existing meta-prophet ecosystem** (numbered `scripts/`, `notes/`, the GPU `server/`

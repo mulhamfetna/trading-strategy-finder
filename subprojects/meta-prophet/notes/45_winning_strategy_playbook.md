@@ -5,7 +5,7 @@ type: playbook
 ---
 
 # Playbook — WS-G Drawdown-Capped Strategy
-**Tag:** `v4.2-wsg-drawdown-capped-winner` · **Companion report:** `notes/44` · **Run it:** `winner_dashboard/`
+**Tag:** `v4.2-wsg-drawdown-capped-winner` · **Companion report:** `notes/44` · **Run it:** the standalone app `../../wsg-strategy/` (`python3 server.py` → http://localhost:8200/)
 
 > ## ⚠️ CORRECTED — see `notes/46`
 > A bug investigation found the **drawdown breaker did not actually cap drawdown** (it reset its
@@ -149,7 +149,7 @@ ENTER : box long/short  AND  vol ≤ 60th-pct  AND  breaker unlocked  AND  flat
 STOPS : soft SL 30 (2×1m close) · hard SL 40 (touch, −$800) · TP 60 (touch, +$1,200)
 BREAKER: DD ≥ $2,500 → lock 30 trades → resume (reset peak)
 CAP   : maxDD must stay < $5,000  (manual kill if breached)
-TUNE  : winner 30/40/60 · safer 35/40/40 · explore in winner_dashboard/
+TUNE  : winner 30/40/60 · safer 35/40/40 · explore in the standalone app (../../wsg-strategy/)
 ```
 
 ## 11. One-paragraph summary (baby)
@@ -159,4 +159,4 @@ bigger target (~$1,200), and if losses pile up to **$2,500**, **stop trading for
 cautiously restart. Done this way it made about **+$24,720** while never dropping more than
 **$4,845** — but that's measured on a single past stretch, so before real money you must test it on
 other data, wire the "stop after a bleed" rule into the broker, and paper-trade it first. Use the
-interactive `winner_dashboard/` to try parameter changes and watch exactly what happens, when and why.
+interactive standalone app (`../../wsg-strategy/`, run `python3 server.py`) to try parameter changes and watch exactly what happens, when and why.
