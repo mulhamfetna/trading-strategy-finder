@@ -188,3 +188,25 @@ def build(key: str, config=None) -> Indicator:
     if key not in REGISTRY:
         raise KeyError(f"unknown indicator key {key!r}; known: {sorted(REGISTRY)}")
     return REGISTRY[key](config)
+
+
+def from_specs(specs):
+    """Build a list of Indicator instances from dashboard/API specs (strict, no silent fallback).
+    Each spec: {key, enabled?, mode?, retrace_amount?, retrace_unit?, wait_bars?, params?{}}.
+    Raises IndicatorParamError on an unknown key or invalid config."""
+    from .base import IndicatorConfig, IndicatorParamError
+    out = []
+    for s in (specs or []):
+        key = s.get("key")
+        if key not in REGISTRY:
+            raise IndicatorParamError(f"unknown indicator key {key!r}; known: {sorted(REGISTRY)}")
+        cfg = IndicatorConfig(
+            enabled=bool(s.get("enabled", False)),
+            mode=s.get("mode", "both"),
+            retrace_amount=float(s.get("retrace_amount", 0.0)),
+            retrace_unit=s.get("retrace_unit", "atr_mult"),
+            wait_bars=int(s.get("wait_bars", 0)),
+            params=dict(s.get("params", {})),
+        )
+        out.append(REGISTRY[key](cfg))  # constructor validates the config
+    return out

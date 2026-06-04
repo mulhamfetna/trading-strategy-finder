@@ -75,9 +75,21 @@ def validate_params(params):
     pv = float(params["pv"]) if params.get("pv") not in (None, "") else config.NQ_POINT_VALUE
     if dd_cap <= 0:               raise ParamError(f"dd_cap must be > 0 (got {dd_cap})")
     if pv <= 0:                   raise ParamError(f"pv (point value) must be > 0 (got {pv})")
+    # WS-I indicator confirmation layer (optional; absent ⇒ pure box strategy = parity).
+    specs = params.get("indicators") or []
+    if not isinstance(specs, (list, tuple)):
+        raise ParamError("'indicators' must be a list of indicator specs")
+    try:
+        k = int(params["k"]) if params.get("k") not in (None, "") else 1
+    except (TypeError, ValueError):
+        raise ParamError(f"'k' must be an integer (got {params.get('k')!r})")
+    if k < 1:                     raise ParamError(f"k must be ≥ 1 (got {k})")
+    gen = params.get("gen") or {}
+    if not isinstance(gen, dict):
+        raise ParamError("'gen' must be an object of generation params")
     return dict(sl_soft=sl_soft, sl_hard=sl_hard, tp=tp, gate_pct=gate_pct, dd_limit=dd_limit,
                 cooldown=int(cooldown), flip=bool(params["flip"]), window=params["window"],
-                dd_cap=dd_cap, pv=pv)
+                dd_cap=dd_cap, pv=pv, indicators=list(specs), k=k, gen=gen)
 
 
 def build_payload(df4, df1, box, vf, n2025, params=None):
@@ -99,10 +111,32 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
         gthr = float(np.percentile(vf[:n2025], float(gate_pct)))
         gate = vfw <= gthr
 
+    # WS-I indicator confirmation layer (off by default ⇒ identical to the pure box strategy).
+    specs, k_rule, gen_params = P["indicators"], P["k"], P["gen"]
+    entry_resolver = veto_mask = gen_report = None
+    gate_used = gate
+    if specs:
+        from indicators import library, runner, generate
+        try:
+            inds = library.from_specs(specs)
+        except Exception as e:   # IndicatorParamError etc. → surface to the UI as a ParamError
+            raise ParamError(str(e))
+        n_confirm = sum(1 for i in inds
+                        if i.config.enabled and i.config.mode in ("confirm", "both"))
+        if n_confirm > 0 and k_rule > n_confirm:
+            raise ParamError(f"k={k_rule} exceeds the {n_confirm} enabled confirm-capable indicator(s)")
+        base = gate if gate is not None else np.ones(len(d4), dtype=bool)
+        gate_used, entry_resolver, veto_mask = runner.build_layer(d4, box, inds, k_rule, base)
+        if any(i.config.enabled and i.key in ("fvg", "order_block", "structure_trend") for i in inds):
+            ctx = runner.market_context(d4)
+            gen_report = generate.generate_structures(
+                ctx, int(gen_params.get("swing_l", 2)), int(gen_params.get("golf_n", 3)))["report"]
+
     sp = SimpleStrategyParams(sl_soft_points=sl_soft, sl_hard_points=sl_hard, tp_soft_points=tp,
                               tp_hard_points=tp, data_path_4h="", data_path_1min="",
                               box_data_path="", flip_entry_direction=flip)
-    trades, _ = SimpleStrategy(sp).backtest(d4, d1, box, entry_gate=gate)
+    trades, _ = SimpleStrategy(sp).backtest(d4, d1, box, entry_gate=gate_used,
+                                            entry_resolver=entry_resolver, veto_mask=veto_mask)
     cand = sorted([t for t in trades if t.get("exit_reason") not in (None, "OPEN")],
                   key=lambda t: pd.Timestamp(t["entry_time"]))
 
@@ -151,7 +185,9 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
                    max_dd=round(float(uw.max()), 0) if len(eqc) else 0.0, n_locks=sum(1 for e in events if e["type"] == "LOCK"))
     params_out = dict(sl_soft=sl_soft, sl_hard=sl_hard, tp=tp, gate_pct=(None if gthr is None else float(gate_pct)),
                       gate_thr=(None if gthr is None else round(gthr, 0)), dd_limit=(ddl if use_brk else None),
-                      cooldown=cooldown, dd_cap=dd_cap, pv=pv, flip=flip, window=window)
-    return dict(meta=dict(params=params_out, summary=summary, split_ts=_ts(df4.iloc[n2025]["Date"])),
+                      cooldown=cooldown, dd_cap=dd_cap, pv=pv, flip=flip, window=window,
+                      indicators=specs, k=k_rule, gen=gen_params)
+    return dict(meta=dict(params=params_out, summary=summary, split_ts=_ts(df4.iloc[n2025]["Date"]),
+                          gen_report=gen_report),
                 candles=candles, vol=vol, gate_thr=(gthr if gthr is not None else 0), state=state,
                 trades=taken, equity=eqc, drawdown=drawdown, events=sorted(events, key=lambda e: e["time"]))
