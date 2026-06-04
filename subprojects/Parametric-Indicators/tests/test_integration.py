@@ -57,6 +57,50 @@ def test_engine_trades_identical_when_indicators_off(inputs):
         assert a.get("pnl_points") == b.get("pnl_points")
 
 
+def _sp():
+    return SimpleStrategyParams(sl_soft_points=30, sl_hard_points=40, tp_soft_points=60,
+                                tp_hard_points=60, data_path_4h="", data_path_1min="",
+                                box_data_path="", flip_entry_direction=False)
+
+
+def test_entry_resolver_immediate_equals_baseline(inputs):
+    df4, df1, box, vf, n2025 = inputs
+    vg = _vol_gate(df4, vf, n2025)
+    base, _ = SimpleStrategy(_sp()).backtest(df4, df1, box, entry_gate=vg)
+    # resolver that fills immediately at the signal close ⇒ must reproduce baseline exactly
+    immediate = lambda idx, d, s, ts, sub: (ts, s)
+    got, _ = SimpleStrategy(_sp()).backtest(df4, df1, box, entry_gate=vg, entry_resolver=immediate)
+    assert len(base) == len(got)
+    for a, b in zip(base, got):
+        assert a["entry_time"] == b["entry_time"]
+        assert a["entry_price"] == b["entry_price"]
+        assert a["exit_reason"] == b["exit_reason"]
+        assert a.get("pnl_points") == b.get("pnl_points")
+
+
+def test_entry_resolver_none_skips_all_entries(inputs):
+    df4, df1, box, vf, n2025 = inputs
+    vg = _vol_gate(df4, vf, n2025)
+    never = lambda idx, d, s, ts, sub: None
+    got, _ = SimpleStrategy(_sp()).backtest(df4, df1, box, entry_gate=vg, entry_resolver=never)
+    assert [t for t in got if t.get("exit_reason") not in (None, "OPEN")] == []
+
+
+def test_entry_resolver_shifts_entry_price(inputs):
+    df4, df1, box, vf, n2025 = inputs
+    vg = _vol_gate(df4, vf, n2025)
+    # fill 5 pts better than signal close (long: lower) at the first 1-min bar
+    def retrace5(idx, d, s, ts, sub):
+        px = s - 5 if d == "long" else s + 5
+        return (ts, px)
+    got, _ = SimpleStrategy(_sp()).backtest(df4, df1, box, entry_gate=vg, entry_resolver=retrace5)
+    taken = [t for t in got if t.get("exit_reason") not in (None, "OPEN")]
+    assert taken, "expected some trades"
+    for t in taken:
+        off = -5 if t["direction"] == "long" else 5
+        assert abs(t["sl_hard_line"] - (t["entry_price"] + (-40 if t["direction"] == "long" else 40))) < 1e-6
+
+
 def test_enabled_indicator_gate_is_subset_of_vol_gate(inputs):
     df4, df1, box, vf, n2025 = inputs
     vg = _vol_gate(df4, vf, n2025)

@@ -183,6 +183,7 @@ class SimpleStrategy:
         box_df_indexed: pd.DataFrame,
         sl_tp_mult: Optional[np.ndarray] = None,
         entry_gate: Optional[np.ndarray] = None,
+        entry_resolver=None,
     ) -> Tuple[List[Dict], Dict]:
         """Run the simple engine.
 
@@ -358,22 +359,37 @@ class SimpleStrategy:
                 # Entry price = the just-closed bar's close == the new bar's
                 # open in continuous data. Trade opens at ts_new_bar_start.
                 close = float(signal_candle['Close'])
+
+                # ADAPTIVE-CLONE: optional entry resolver (retrace-fill). Given the signal, it may
+                # return a (fill_time, fill_price) inside this 4h window, or None to abandon the
+                # entry (armed-but-unfilled → superseded). None resolver ⇒ immediate fill at the
+                # signal close (parity).
+                entry_ts = ts_new_bar_start
+                entry_px = close
+                if entry_resolver is not None and start_1m is not None:
+                    sub_w = df_1min.iloc[int(start_1m[idx]):int(start_1m[idx + 1])]
+                    res = entry_resolver(idx, signal, close, ts_new_bar_start, sub_w)
+                    if res is None:
+                        continue
+                    entry_ts = pd.Timestamp(res[0])
+                    entry_px = float(res[1])
+
                 if signal == 'long':
-                    sl_soft_line = close - self.params.sl_soft_points * _m
-                    sl_hard_line = close - self.params.sl_hard_points * _m
-                    tp_soft_line = close + self.params.tp_soft_points * _m
-                    tp_hard_line = close + self.params.tp_hard_points * _m
+                    sl_soft_line = entry_px - self.params.sl_soft_points * _m
+                    sl_hard_line = entry_px - self.params.sl_hard_points * _m
+                    tp_soft_line = entry_px + self.params.tp_soft_points * _m
+                    tp_hard_line = entry_px + self.params.tp_hard_points * _m
                 else:
-                    sl_soft_line = close + self.params.sl_soft_points * _m
-                    sl_hard_line = close + self.params.sl_hard_points * _m
-                    tp_soft_line = close - self.params.tp_soft_points * _m
-                    tp_hard_line = close - self.params.tp_hard_points * _m
+                    sl_soft_line = entry_px + self.params.sl_soft_points * _m
+                    sl_hard_line = entry_px + self.params.sl_hard_points * _m
+                    tp_soft_line = entry_px - self.params.tp_soft_points * _m
+                    tp_hard_line = entry_px - self.params.tp_hard_points * _m
 
                 open_trade = {
                     'entry_idx':    idx,                       # the new bar
                     'signal_idx':   idx - 1,                   # the just-closed bar
-                    'entry_time':   ts_new_bar_start,
-                    'entry_price':  close,
+                    'entry_time':   entry_ts,
+                    'entry_price':  entry_px,
                     'direction':    signal,
                     'sl_soft_line': sl_soft_line,
                     'sl_hard_line': sl_hard_line,

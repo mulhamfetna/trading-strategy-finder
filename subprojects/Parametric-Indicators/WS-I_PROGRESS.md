@@ -43,15 +43,19 @@ Tests: `test_classic`(15) · `test_confirm`(11) · `test_library`(7) · `test_sm
 
 ## I.3 — remaining
 1. **`wait_bars` timing** — ✅ done (`apply_wait` confirm-debounce; veto immediate; 0 ⇒ parity).
-2. **Retrace-fill resolver** — ✅ done (`indicators/timing.py`, `test_timing` 6) — K-th-confirm's-level
-   fill, depth-ordered, `retrace=0` ⇒ immediate fill at signal close, unfilled ⇒ None.
-3. **Retrace-fill ENGINE WIRING** (#195, **active**) — plug the resolver into `engine.py`'s entry
-   (entry time/price + exit-walk start); `retrace=0` parity carve-out. Plumbing, not new logic.
-4. **FVG vote class** — retrace-into-zone confirm (builds on #3).
-5. Wire into `strategy.build_payload` (live backtest entrypoint) — overlaps I.4 dashboard.
+2. **Retrace-fill resolver** — ✅ done (`indicators/timing.py`) — K-th-confirm's-level fill,
+   depth-ordered, `retrace=0` ⇒ immediate fill at signal close, unfilled ⇒ None.
+3. **Retrace-fill ENGINE WIRING** — ✅ done — `engine.py` `entry_resolver` hook (default None ⇒
+   identity). **Verified-engine parity preserved**: `test_parity.py` (+$7,735/$3,670/66) and
+   `test_fast_parity.py` still pass; new hook tests cover immediate==baseline, None⇒no-entry, shift.
+4. **Bind resolver in `runner.py`** (#195, **active**) — build the `entry_resolver` closure from
+   indicator configs (per-bar confirm levels + K → `timing.resolve_retrace_entry`).
+5. **FVG vote class** — retrace-into-zone confirm.
+6. Wire into `strategy.build_payload` (live backtest entrypoint) — overlaps I.4 dashboard.
 
-Suite: **55 tests green** (`test_classic`15 · `test_confirm`14 · `test_library`7 · `test_smc`6 ·
-`test_integration`4 · `test_generate`3 · `test_timing`6).
+Suite: **58 tests green** + original parity locks (`test_parity`, `test_fast_parity`) pass.
+(`test_classic`15 · `test_confirm`14 · `test_library`7 · `test_smc`6 · `test_integration`7 ·
+`test_generate`3 · `test_timing`6).
 
 ## Invariants held throughout
 Off-by-default ⇒ parity · no silent fallback (`ParamError`) · causal/no-look-ahead · OOP "build each

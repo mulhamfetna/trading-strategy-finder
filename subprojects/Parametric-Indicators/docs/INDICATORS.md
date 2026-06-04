@@ -59,8 +59,9 @@ has held `wait_bars`+1 consecutive bars; vetoes act immediately; `wait_bars=0` �
 the 1-minute series: as price pulls back from the signal close, each indicator's confirm goes live
 when price reaches **its own** retrace level (long `signal_close − r`, short `+ r`). The trade fills
 at the **K-th confirm's level** — the retrace amount of the indicator whose pullback completes the
-K-rule. `retrace=0` ⇒ immediate fill at the signal close (parity). *(Engine-level change, parity-
-locked; tracked as WS-I.3-retrace.)*
+K-rule. `retrace=0` ⇒ immediate fill at the signal close (parity). *Implemented as the `engine.py`
+`entry_resolver` hook (default None ⇒ identity); verified-engine parity locks still pass. The
+resolver algorithm is `indicators/timing.resolve_retrace_entry`.*
 
 ---
 
