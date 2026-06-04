@@ -1,0 +1,4 @@
+# Optuna SQLite studies are large + regenerable — keep the extracted Pareto CSV/plots (results/) instead.
+studies/
+__pycache__/
+*.pyc
