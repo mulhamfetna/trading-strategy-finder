@@ -52,6 +52,40 @@ def composite_gate(vol_gate, df, box, indicators, k):
     return vg & aligned, votes, active
 
 
+def veto_mask(df, box, indicators):
+    """Per-decision-bar veto mask (Q5: veto lives in the gate). True where any ENABLED veto-capable
+    (mode∈{veto,both}) indicator votes VETO, read at the just-closed signal bar and aligned to the
+    entry bar (mask[idx] = veto at idx-1; idx 0 = False). No veto indicators ⇒ all False (parity)."""
+    from .base import VETO
+    n = len(df)
+    out = np.zeros(n, dtype=bool)
+    vetoers = [ind for ind in indicators
+               if ind.config.enabled and ind.config.mode in ("veto", "both")]
+    if not vetoers:
+        return out
+    ctx = market_context(df)
+    bdir = box_direction_int(df, box)
+    raw = np.zeros(n, dtype=bool)
+    for ind in vetoers:
+        raw |= (ind.vote(ctx, bdir) == VETO)
+    out[1:] = raw[:-1]                            # align to the entry bar (veto read at idx-1)
+    return out
+
+
+def build_layer(df, box, indicators, k, vol_gate):
+    """Assemble the full indicator layer for a run (Q5 split):
+      gate     = vol_gate ∧ ¬veto_mask   (eligibility)
+      resolver = build_entry_resolver(confirm-capable indicators, k)   (K-count + fill price)
+      vmask    = veto_mask(...)           (passed to the engine for live carry-abort)
+    Returns (gate, resolver, vmask). All-off ⇒ gate==vol_gate, vmask all-False, resolver immediate."""
+    from .base import VETO  # local to avoid noise
+    vg = np.asarray(vol_gate, dtype=bool)
+    vmask = veto_mask(df, box, indicators)
+    gate = vg & ~vmask
+    resolver = build_entry_resolver(df, box, indicators, k)
+    return gate, resolver, vmask
+
+
 def build_entry_resolver(df, box, indicators, k):
     """Build the engine `entry_resolver` closure implementing the live-B1 confirm + retrace fill.
 
