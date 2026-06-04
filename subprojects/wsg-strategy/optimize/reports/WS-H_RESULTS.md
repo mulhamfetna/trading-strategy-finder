@@ -8,6 +8,25 @@ created: 2026-06-03
 
 # WS-H — Multi-Timeframe Parameter Search: Results & Overfit Diagnostics
 
+## 0. Engine identity & version pin
+This report is produced by, and pins, the engine:
+
+> **`WSH-HAR_RV-Drowdown_Breaker-Cooldown_Couner-Vectorized_NASGII`**
+
+Decoding the full name (each token is a real component of the system):
+
+| Token | Component | Where |
+|---|---|---|
+| **WSH** | multi-timeframe decision-candle search (1m…4h); exits always resolve on 1-min | `optimize/` |
+| **HAR_RV** | HAR-RV realized-volatility gate (trade only when forecast vol is calm) | `volatility.py` |
+| **Drowdown_Breaker** | global high-water-mark drawdown circuit-breaker (cooldown-and-probe) | `optimize/core.py` |
+| **Cooldown_Couner** | realized-trade-gap cooldown counter / per-TF cap (D1) | `optimize/cooldown.py` |
+| **Vectorized** | numpy `fast_engine` (~200×), trade-for-trade parity-locked to the verified engine | `optimize/fast_engine.py` |
+| **NASGII** | NSGA-II multi-objective Pareto search (median P/L vs worst-fold maxDD) | `optimize/optimizer.py` |
+
+**Pinned at:** branch `wsh-engine`, tag `WSH-HAR_RV-Drowdown_Breaker-Cooldown_Couner-Vectorized_NASGII`
+(HEAD = WS-H complete). Parity locks: `test_parity.py`, `test_fast_parity.py`.
+
 ## 1. What was run
 For every decision timeframe TF ∈ {1m, 2m, 5m, 15m, 1h, 2h, 4h} we searched the single-contract box
 strategy (box signal + HAR-RV volatility gate + global-HWM drawdown breaker) with **Optuna NSGA-II**,

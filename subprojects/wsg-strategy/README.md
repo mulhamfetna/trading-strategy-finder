@@ -9,6 +9,12 @@ live in **this folder** — you do **not** need the rest of the repo to read, ru
 > **For an outsider studying only this strategy:** read `docs/STRATEGY.md` (what it does and why)
 > then `docs/ARCHITECTURE.md` (how the code fits together). This README is the 5-minute version.
 
+> **WS-H multi-timeframe engine (pinned):** the multi-timeframe parameter search built on top of
+> this strategy is the engine
+> **`WSH-HAR_RV-Drowdown_Breaker-Cooldown_Couner-Vectorized_NASGII`** — pinned at branch
+> `wsh-engine` / tag of the same name. See `optimize/reports/WS-H_RESULTS.md` §0 for the
+> component decoding and results.
+
 ---
 
 ## What the strategy is (30 seconds)
