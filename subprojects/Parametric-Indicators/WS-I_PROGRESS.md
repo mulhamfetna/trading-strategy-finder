@@ -15,7 +15,7 @@ workstream: WS-I
 | I.1 Understand (freeze rules) | ✅ done — `docs/INDICATOR_DECISIONS.md` (FROZEN) |
 | I.2 Document | ✅ done — `docs/INDICATORS.md` |
 | **I.3 Engine + manual test** | ✅ **complete** — engine/logic layer done (see WS-I.3_ENGINE_REPORT.md); 65 tests + parity locks. Only `build_payload` wiring remains, folded into I.4. |
-| **I.4 Dashboard** | 🔵 **in progress** — backend done: `runner.build_layer`/`veto_mask` (Q5 split) + `build_payload` wiring (`from_specs`, strict validation, Q1, two-phase gen_report; parity when off). **76 tests.** Next: `server.py` `/api/config` schema → `frontend`. |
+| **I.4 Dashboard** | 🔵 **in progress** — backend + server done: `build_layer`/`veto_mask`, `build_payload` wiring, `library.schema()` + `/api/config` `indicator_schema` (no hardcoding). **78 tests.** Remaining: **frontend** indicator panel + report/log rendering. |
 | I.5 Verify (team-leader sign-off) | ⬜ pending (HARD PAUSE) |
 | I.6–I.10 | ⬜ pending |
 

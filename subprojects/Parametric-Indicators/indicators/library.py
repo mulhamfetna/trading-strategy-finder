@@ -190,6 +190,68 @@ def build(key: str, config=None) -> Indicator:
     return REGISTRY[key](config)
 
 
+# Per-indicator UI schema (the dashboard hardcodes NOTHING — it renders from this).
+# Each: label, default mode, and tunable params [{name, default, min, max, step}].
+SCHEMA = {
+    "ema_trend":  {"label": "EMA trend", "mode": "confirm",
+                   "params": [{"name": "fast", "default": 20, "min": 2, "max": 400, "step": 1},
+                              {"name": "slow", "default": 50, "min": 2, "max": 400, "step": 1}]},
+    "sma_trend":  {"label": "SMA trend", "mode": "confirm",
+                   "params": [{"name": "fast", "default": 50, "min": 2, "max": 400, "step": 1},
+                              {"name": "slow", "default": 200, "min": 2, "max": 400, "step": 1}]},
+    "macd":       {"label": "MACD", "mode": "confirm",
+                   "params": [{"name": "fast", "default": 12, "min": 2, "max": 100, "step": 1},
+                              {"name": "slow", "default": 26, "min": 2, "max": 200, "step": 1},
+                              {"name": "signal", "default": 9, "min": 1, "max": 100, "step": 1}]},
+    "vwap":       {"label": "VWAP", "mode": "confirm", "params": []},
+    "keltner":    {"label": "Keltner", "mode": "confirm",
+                   "params": [{"name": "n", "default": 20, "min": 2, "max": 200, "step": 1},
+                              {"name": "m", "default": 2.0, "min": 0.5, "max": 5.0, "step": 0.1}]},
+    "obv":        {"label": "OBV", "mode": "confirm",
+                   "params": [{"name": "slope", "default": 20, "min": 2, "max": 200, "step": 1}]},
+    "cci":        {"label": "CCI breakout", "mode": "both",
+                   "params": [{"name": "n", "default": 20, "min": 2, "max": 200, "step": 1},
+                              {"name": "threshold", "default": 100, "min": 20, "max": 300, "step": 5}]},
+    "rsi":        {"label": "RSI", "mode": "both",
+                   "params": [{"name": "n", "default": 14, "min": 2, "max": 100, "step": 1},
+                              {"name": "lower", "default": 30, "min": 1, "max": 49, "step": 1},
+                              {"name": "upper", "default": 70, "min": 51, "max": 99, "step": 1}]},
+    "stochastic": {"label": "Stochastic", "mode": "both",
+                   "params": [{"name": "n", "default": 14, "min": 2, "max": 100, "step": 1},
+                              {"name": "d", "default": 3, "min": 1, "max": 50, "step": 1},
+                              {"name": "lower", "default": 20, "min": 1, "max": 49, "step": 1},
+                              {"name": "upper", "default": 80, "min": 51, "max": 99, "step": 1}]},
+    "mfi":        {"label": "MFI", "mode": "both",
+                   "params": [{"name": "n", "default": 14, "min": 2, "max": 100, "step": 1},
+                              {"name": "lower", "default": 20, "min": 1, "max": 49, "step": 1},
+                              {"name": "upper", "default": 80, "min": 51, "max": 99, "step": 1}]},
+    "bollinger":  {"label": "Bollinger (veto)", "mode": "veto",
+                   "params": [{"name": "n", "default": 20, "min": 2, "max": 200, "step": 1},
+                              {"name": "k", "default": 2.0, "min": 0.5, "max": 5.0, "step": 0.1}]},
+    "adx":        {"label": "ADX (veto)", "mode": "veto",
+                   "params": [{"name": "n", "default": 14, "min": 2, "max": 100, "step": 1},
+                              {"name": "threshold", "default": 25, "min": 5, "max": 60, "step": 1}]},
+    "structure_trend": {"label": "Structure trend (SMC)", "mode": "both",
+                        "params": [{"name": "swing_l", "default": 2, "min": 1, "max": 20, "step": 1}]},
+    "order_block": {"label": "Order block → breaker (SMC)", "mode": "both",
+                    "params": [{"name": "swing_l", "default": 2, "min": 1, "max": 20, "step": 1}]},
+    "fvg":        {"label": "Fair value gap (SMC)", "mode": "both",
+                   "params": [{"name": "lookback", "default": 3, "min": 1, "max": 50, "step": 1}]},
+}
+MODES = ("confirm", "veto", "both")
+RETRACE_UNITS = ("atr_mult", "points")
+
+
+def schema():
+    """UI schema for every registered indicator (key + label + default mode + tunable params).
+    Plus the shared enums. The frontend builds the whole indicator panel from this — no hardcoding."""
+    inds = [dict(key=k, **SCHEMA[k]) for k in REGISTRY]
+    return {"indicators": inds, "modes": list(MODES), "retrace_units": list(RETRACE_UNITS),
+            "retrace_default": {"amount": 0.0, "unit": "atr_mult"}, "wait_default": 0, "k_default": 1,
+            "gen_params": [{"name": "swing_l", "default": 2, "min": 1, "max": 20, "step": 1},
+                           {"name": "golf_n", "default": 3, "min": 1, "max": 50, "step": 1}]}
+
+
 def from_specs(specs):
     """Build a list of Indicator instances from dashboard/API specs (strict, no silent fallback).
     Each spec: {key, enabled?, mode?, retrace_amount?, retrace_unit?, wait_bars?, params?{}}.

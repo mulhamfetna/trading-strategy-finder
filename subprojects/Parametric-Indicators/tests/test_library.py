@@ -44,6 +44,28 @@ def test_build():
     assert isinstance(library.build("rsi"), library.RSIZone)
 
 
+def test_schema_covers_every_registered_indicator():
+    sch = library.schema()
+    keys = {i["key"] for i in sch["indicators"]}
+    assert keys == set(library.REGISTRY)                 # one schema entry per registered indicator
+    for ind in sch["indicators"]:
+        assert ind["mode"] in sch["modes"]               # default mode is a valid enum
+        assert "label" in ind and isinstance(ind["params"], list)
+        for p in ind["params"]:
+            assert {"name", "default", "min", "max", "step"} <= set(p)
+    assert sch["retrace_units"] == ["atr_mult", "points"]
+    assert sch["k_default"] == 1
+
+
+def test_schema_defaults_build_valid_indicators():
+    # every schema entry's defaults must construct a valid indicator (no silent fallback surprises)
+    for ind in library.schema()["indicators"]:
+        params = {p["name"]: p["default"] for p in ind["params"]}
+        spec = {"key": ind["key"], "enabled": True, "mode": ind["mode"], "params": params}
+        built = library.from_specs([spec])
+        assert len(built) == 1 and built[0].key == ind["key"]
+
+
 # ---- orchestrator ----
 def _ctx(n):
     z = np.zeros(n)

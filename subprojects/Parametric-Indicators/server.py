@@ -54,13 +54,16 @@ class H(BaseHTTPRequestHandler):
         if path == "/api/health":
             return self._send(200, json.dumps({"status": "ok", "bars": len(DF4), "winner": config.WINNER}))
         if path == "/api/config":
-            # expose the preset + instrument constants so the frontend hardcodes NOTHING
+            # expose the preset + instrument constants + indicator schema so the frontend
+            # hardcodes NOTHING (params, bounds, indicator keys/params, enums all come from here)
+            from indicators import library
             return self._send(200, json.dumps({
                 "preset": config.WINNER, "dd_cap": config.DD_CAP, "pv": config.NQ_POINT_VALUE,
                 "bounds": {"sl_soft": [1, None], "sl_hard": [1, None], "tp": [1, None],
                            "gate_pct": [0, 100], "dd_limit": [0, None], "cooldown": [0, None],
                            "dd_cap": [1, None], "pv": [0.01, None]},
-                "windows": ["full", "2025", "2026"]}))
+                "windows": ["full", "2025", "2026"],
+                "indicator_schema": library.schema()}))
         name = "index.html" if path in ("/", "") else path.lstrip("/")
         f = FRONTEND / name
         if ".." in name or not f.is_file():
