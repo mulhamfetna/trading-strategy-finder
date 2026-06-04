@@ -14,8 +14,8 @@ workstream: WS-I
 |---|---|
 | I.1 Understand (freeze rules) | ✅ done — `docs/INDICATOR_DECISIONS.md` (FROZEN) |
 | I.2 Document | ✅ done — `docs/INDICATORS.md` |
-| **I.3 Engine + manual test** | 🔵 **in progress** (see below) |
-| I.4 Dashboard | ⬜ pending |
+| **I.3 Engine + manual test** | ✅ **complete** — engine/logic layer done (see WS-I.3_ENGINE_REPORT.md); 65 tests + parity locks. Only `build_payload` wiring remains, folded into I.4. |
+| **I.4 Dashboard** | 🔵 **starting** — wire `build_payload` + expose all params + two-phase reports/logs |
 | I.5 Verify (team-leader sign-off) | ⬜ pending (HARD PAUSE) |
 | I.6–I.10 | ⬜ pending |
 
