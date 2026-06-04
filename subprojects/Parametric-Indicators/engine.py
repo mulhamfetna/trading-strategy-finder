@@ -184,6 +184,7 @@ class SimpleStrategy:
         sl_tp_mult: Optional[np.ndarray] = None,
         entry_gate: Optional[np.ndarray] = None,
         entry_resolver=None,
+        veto_mask: Optional[np.ndarray] = None,
     ) -> Tuple[List[Dict], Dict]:
         """Run the simple engine.
 
@@ -213,6 +214,7 @@ class SimpleStrategy:
         open_trade: Optional[Dict] = None
         blocked_until: Optional[pd.Timestamp] = None
         soft_consec_count: int = 0   # consecutive 1-min closes past the active soft line
+        armed: Optional[Dict] = None  # carry-mode (entry_resolver) armed-but-unfilled setup
         scope = self.params.direction_scope
         flip = self.params.flip_entry_direction
 
@@ -337,18 +339,6 @@ class SimpleStrategy:
                 if flip and signal in ('long', 'short'):
                     signal = 'short' if signal == 'long' else 'long'
 
-                if signal == 'hold':
-                    continue
-                # Scope filter applies to the POST-flip direction (Q-2: B).
-                if scope == 'long_only' and signal != 'long':
-                    continue
-                if scope == 'short_only' and signal != 'short':
-                    continue
-
-                # ADAPTIVE-CLONE: regime gate. Skip entry on gated-out bars.
-                if entry_gate is not None and 0 <= idx < len(entry_gate) and not bool(entry_gate[idx]):
-                    continue
-
                 # ADAPTIVE-CLONE: per-bar SL/TP multiplier (1.0 => original).
                 _m = 1.0
                 if sl_tp_mult is not None and 0 <= idx < len(sl_tp_mult):
@@ -356,25 +346,49 @@ class SimpleStrategy:
                     if np.isfinite(_mv) and _mv > 0:
                         _m = _mv
 
-                # Entry price = the just-closed bar's close == the new bar's
-                # open in continuous data. Trade opens at ts_new_bar_start.
-                close = float(signal_candle['Close'])
+                # gate (vol etc.) matches the original: only blocks when set, in-range, and False.
+                gated = (entry_gate is None) or not (0 <= idx < len(entry_gate)) or bool(entry_gate[idx])
+                vetoed = (veto_mask is not None) and (0 <= idx < len(veto_mask)) and bool(veto_mask[idx])
 
-                # ADAPTIVE-CLONE: optional entry resolver (retrace-fill). Given the signal, it may
-                # return a (fill_time, fill_price) inside this 4h window, or None to abandon the
-                # entry (armed-but-unfilled → superseded). None resolver ⇒ immediate fill at the
-                # signal close (parity).
-                entry_ts = ts_new_bar_start
-                entry_px = close
-                if entry_resolver is not None and start_1m is not None:
-                    sub_w = df_1min.iloc[int(start_1m[idx]):int(start_1m[idx + 1])]
-                    res = entry_resolver(idx, signal, close, ts_new_bar_start, sub_w)
-                    if res is None:
+                if entry_resolver is None:
+                    # ORIGINAL parity path (unchanged behaviour): immediate fill at the signal close.
+                    if signal == 'hold':
                         continue
+                    if scope == 'long_only' and signal != 'long':
+                        continue
+                    if scope == 'short_only' and signal != 'short':
+                        continue
+                    if not gated:
+                        continue
+                    entry_ts = ts_new_bar_start
+                    entry_px = float(signal_candle['Close'])
+                    edir, sidx = signal, idx - 1
+                else:
+                    # CARRY MODE (live B1): (re)arm on a fresh gated, non-vetoed directional signal;
+                    # carry an unfilled setup across HOLD bars; abort on a fresh veto; supersede on a
+                    # new signal. The resolver reads votes LIVE at idx-1 and anchors levels to the
+                    # ARMED signal's close.
+                    in_scope = (signal in ('long', 'short')
+                                and not (scope == 'long_only' and signal != 'long')
+                                and not (scope == 'short_only' and signal != 'short'))
+                    if in_scope and gated and not vetoed:
+                        armed = {'dir': signal, 'sidx': idx - 1,
+                                 'sclose': float(signal_candle['Close'])}
+                    if armed is not None and vetoed:
+                        armed = None                      # live veto aborts the armed entry (Q4)
+                    if armed is None or start_1m is None:
+                        continue
+                    sub_w = df_1min.iloc[int(start_1m[idx]):int(start_1m[idx + 1])]
+                    res = entry_resolver(idx, armed['dir'], armed['sclose'], armed['sidx'],
+                                         ts_new_bar_start, sub_w)
+                    if res is None:
+                        continue                          # keep armed → carry to the next bar
                     entry_ts = pd.Timestamp(res[0])
                     entry_px = float(res[1])
+                    edir, sidx = armed['dir'], armed['sidx']
+                    armed = None
 
-                if signal == 'long':
+                if edir == 'long':
                     sl_soft_line = entry_px - self.params.sl_soft_points * _m
                     sl_hard_line = entry_px - self.params.sl_hard_points * _m
                     tp_soft_line = entry_px + self.params.tp_soft_points * _m
@@ -387,10 +401,10 @@ class SimpleStrategy:
 
                 open_trade = {
                     'entry_idx':    idx,                       # the new bar
-                    'signal_idx':   idx - 1,                   # the just-closed bar
+                    'signal_idx':   sidx,                      # the (armed) signal's just-closed bar
                     'entry_time':   entry_ts,
                     'entry_price':  entry_px,
-                    'direction':    signal,
+                    'direction':    edir,
                     'sl_soft_line': sl_soft_line,
                     'sl_hard_line': sl_hard_line,
                     'tp_soft_line': tp_soft_line,

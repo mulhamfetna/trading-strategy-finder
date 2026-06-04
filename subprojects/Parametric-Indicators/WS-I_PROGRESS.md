@@ -48,14 +48,17 @@ Tests: `test_classic`(15) · `test_confirm`(11) · `test_library`(7) · `test_sm
 5. **Runner-binding semantics** — ✅ **resolved** (RUNNER_BINDING_SEMANTICS.md + INDICATOR_DECISIONS §E2):
    Q1 ParamError, Q2 waive, Q3/Q4 **LIVE per closed decision bar (B1)** + live veto-abort, Q5
    gate=eligibility/resolver=K-count, Q6 live-reading AND wait AND retrace.
-6. **Bind in `runner.py`** (#195, **active**) — build the live B1 binding: per-bar live votes/veto,
-   K-th-confirm retrace fill. **Engine scope:** B1 carries an armed setup across decision bars
-   (re-read each bar; abort on fresh veto; supersede on new signal). All-off ⇒ no arming ⇒ parity.
-7. Wire into `strategy.build_payload` (live entrypoint) — overlaps I.4 dashboard.
+6. **Bind in `runner.py` + carry engine** — ✅ done. `runner.build_entry_resolver` (live-B1 confirm +
+   K-th-confirm retrace fill). `engine.py` **carry mode** (guarded by `entry_resolver`): arms on a
+   gated/non-vetoed signal, **carries an unfilled setup across HOLD bars**, **live veto-abort**
+   (`veto_mask`), supersede on new signal. All-off ⇒ no arming ⇒ **parity locks still pass**.
+   Verified: retrace=0 immediate, retrace=pts level fill, no-confirmers==baseline, carry-on-later-bar,
+   veto aborts.
+7. Wire into `strategy.build_payload` (live entrypoint) — **next**, overlaps I.4 dashboard.
 
-Suite: **60 tests green** + original parity locks (`test_parity`, `test_fast_parity`) pass.
-(`test_classic`15 · `test_confirm`14 · `test_library`7 · `test_smc`8 · `test_integration`7 ·
-`test_generate`3 · `test_timing`6).
+**I.3 engine/logic layer is functionally complete.** Suite: **65 tests green** + original parity
+locks pass (`test_classic`15 · `test_confirm`14 · `test_library`7 · `test_smc`8 ·
+`test_integration`12 · `test_generate`3 · `test_timing`6).
 
 ## Invariants held throughout
 Off-by-default ⇒ parity · no silent fallback (`ParamError`) · causal/no-look-ahead · OOP "build each

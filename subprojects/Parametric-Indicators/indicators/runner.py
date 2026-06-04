@@ -13,8 +13,10 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from .base import MarketContext
+from . import classic
+from .base import CONFIRM, MarketContext
 from .confirm import build_gate
+from .timing import resolve_retrace_entry
 
 
 def market_context(df: pd.DataFrame) -> MarketContext:
@@ -48,3 +50,64 @@ def composite_gate(vol_gate, df, box, indicators, k):
     aligned = np.ones(n, dtype=bool)
     aligned[1:] = allow[:-1]
     return vg & aligned, votes, active
+
+
+def build_entry_resolver(df, box, indicators, k):
+    """Build the engine `entry_resolver` closure implementing the live-B1 confirm + retrace fill.
+
+    For each entry the engine attempts (decision bar idx, signal from the just-closed bar idx-1):
+      • confirming indicators = enabled, confirm-capable (mode∈{confirm,both}) indicators whose LIVE
+        wait-debounced vote at bar idx-1 is CONFIRM (B1 — read at the just-closed bar);
+      • each contributes a retrace level (signal_close ∓ r; r in points or atr_mult);
+      • effective K = min(k, #confirm-capable-enabled) (Q2 waive); k_eff==0 ⇒ immediate fill at close;
+      • the trade fills at the K-th confirm's level via resolve_retrace_entry over the window's 1-min
+        bars, or None (unfilled → engine skips, re-evaluates next bar).
+    Veto is NOT handled here — it lives in the composite gate (Q5). Returns (fill_ts, fill_price)|None.
+
+    NOTE (scope): within-window per signal bar (the dominant case). Carrying an armed setup across
+    HOLD decision bars (full B1 §C) is a documented follow-up; the per-bar re-evaluation already
+    gives live readings on every signalling bar.
+    """
+    ctx = market_context(df)
+    bdir = box_direction_int(df, box)
+    confirmers = [ind for ind in indicators
+                  if ind.config.enabled and ind.config.mode in ("confirm", "both")]
+    n_confirm = len(confirmers)
+    votes = {id(ind): ind.vote(ctx, bdir) for ind in confirmers}
+    atr = classic.atr(ctx.high, ctx.low, ctx.close, 14)
+
+    def _offset(ind, bar):
+        r = float(ind.config.retrace_amount)
+        if ind.config.retrace_unit == "atr_mult":
+            a = atr[bar]
+            r = r * (a if np.isfinite(a) else 0.0)
+        return r
+
+    def resolver(idx, direction, signal_close, signal_idx, ts, sub_bars):
+        # votes read LIVE at the CURRENT just-closed bar (idx-1) = B1; levels anchor to signal_close.
+        k_eff = min(int(k), n_confirm)
+        if k_eff <= 0:
+            return (ts, signal_close)            # Q2: no confirm requirement ⇒ immediate fill
+        sig_bar = idx - 1
+        long = direction == "long"
+        n_imm = 0                                 # retrace=0 confirms (live at bar 0, fill at close)
+        pull = []                                 # retrace>0 confirm levels (need a pullback touch)
+        for ind in confirmers:
+            if votes[id(ind)][sig_bar] == CONFIRM:
+                r = _offset(ind, sig_bar)
+                if r <= 0:
+                    n_imm += 1
+                else:
+                    pull.append(signal_close - r if long else signal_close + r)
+        if n_imm + len(pull) < k_eff:
+            return None                           # not enough confirms this signal ⇒ no entry
+        if k_eff <= n_imm:
+            return (ts, signal_close)             # K-th confirm is immediate ⇒ fill now at close
+        need = k_eff - n_imm                       # remaining confirms must come from pullbacks
+        d = 1 if long else -1
+        return resolve_retrace_entry(d, signal_close, pull,
+                                     sub_bars["Low"].to_numpy(float),
+                                     sub_bars["High"].to_numpy(float),
+                                     sub_bars["Date"].to_numpy(), need)
+
+    return resolver
