@@ -135,6 +135,25 @@ kept. Big all-TF run still gated on explicit go (I.10).
   CCI 20 · MFI 14 · VWAP daily-anchored · OBV cumulative · RMA Wilder.
 - **No silent fallbacks anywhere** — bad/missing params raise `ParamError` to the UI.
 
+## E2. Runner-binding semantics ✅ (decided 2026-06-04 — see RUNNER_BINDING_SEMANTICS.md)
+How the confirmation layer binds to the live engine run:
+- **Q1** `K > N_confirm_active` (enabled confirm/both indicators) ⇒ **raise `ParamError`** (no silent
+  dead strategy); dashboard bounds K to `[1, N_confirm_active]`.
+- **Q2** `N_confirm_active == 0` (veto-only setup) ⇒ **waive the confirm requirement** (box + vol-gate
+  + veto filters decide). Effective confirm requirement = `min(K, N_confirm_active)`.
+- **Q3/Q4** Readings **and** vetoes are evaluated **LIVE while an entry is armed**, on clock **B1 =
+  each closed decision bar** (the retrace level is tracked on 1-min within each window). A flipped
+  reading drops that confirm; a freshly-appearing veto **aborts** the armed entry. Causal (closed
+  bars only).
+- **Q5** Division of labour: **gate = vol-gate ∧ (no active veto)** = eligibility; **resolver =
+  confirm-count + retrace levels + timing** = if/when/at-what-price the K-th confirm fills. Single
+  source of truth for the K-rule (resolver).
+- **Q6** An indicator's confirm is live when **(live reading favorable)** AND **(`wait_bars`
+  satisfied)** AND **(price touched its retrace level)**; fill at the **K-th confirm's level**.
+- **Engine scope:** B1 requires the engine to **carry an armed-but-unfilled setup across decision
+  bars** (re-read votes/veto/K each bar; abandon on a new box signal). Parity-safe: all-off ⇒ no
+  arming ⇒ identity.
+
 ## F. Structural confirmations
 - Indicators compute on the **decision/entry timeframe**; **exits stay 1-minute** (WS-H rule).
 - All-off ⇒ box parity (the invariant at the top).

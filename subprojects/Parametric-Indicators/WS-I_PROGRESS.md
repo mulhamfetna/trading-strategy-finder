@@ -42,19 +42,19 @@ Tests: `test_classic`(15) · `test_confirm`(11) · `test_library`(7) · `test_sm
 `test_integration`(4) · `test_generate`(3) = **46**.
 
 ## I.3 — remaining
-1. **`wait_bars` timing** — ✅ done (`apply_wait` confirm-debounce; veto immediate; 0 ⇒ parity).
-2. **Retrace-fill resolver** — ✅ done (`indicators/timing.py`) — K-th-confirm's-level fill,
-   depth-ordered, `retrace=0` ⇒ immediate fill at signal close, unfilled ⇒ None.
-3. **Retrace-fill ENGINE WIRING** — ✅ done — `engine.py` `entry_resolver` hook (default None ⇒
-   identity). **Verified-engine parity preserved**: `test_parity.py` (+$7,735/$3,670/66) and
-   `test_fast_parity.py` still pass; new hook tests cover immediate==baseline, None⇒no-entry, shift.
-4. **Bind resolver in `runner.py`** (#195, **active**) — build the `entry_resolver` closure from
-   indicator configs (per-bar confirm levels + K → `timing.resolve_retrace_entry`).
-5. **FVG vote class** — retrace-into-zone confirm.
-6. Wire into `strategy.build_payload` (live backtest entrypoint) — overlaps I.4 dashboard.
+1. **`wait_bars` timing** — ✅ done. 2. **Retrace-fill resolver** — ✅ done (`timing.py`).
+3. **Retrace-fill ENGINE WIRING** — ✅ done (`engine.py` `entry_resolver` hook; verified-engine
+   parity preserved). 4. **FVG vote class** — ✅ done (`FVGConfirm`).
+5. **Runner-binding semantics** — ✅ **resolved** (RUNNER_BINDING_SEMANTICS.md + INDICATOR_DECISIONS §E2):
+   Q1 ParamError, Q2 waive, Q3/Q4 **LIVE per closed decision bar (B1)** + live veto-abort, Q5
+   gate=eligibility/resolver=K-count, Q6 live-reading AND wait AND retrace.
+6. **Bind in `runner.py`** (#195, **active**) — build the live B1 binding: per-bar live votes/veto,
+   K-th-confirm retrace fill. **Engine scope:** B1 carries an armed setup across decision bars
+   (re-read each bar; abort on fresh veto; supersede on new signal). All-off ⇒ no arming ⇒ parity.
+7. Wire into `strategy.build_payload` (live entrypoint) — overlaps I.4 dashboard.
 
-Suite: **58 tests green** + original parity locks (`test_parity`, `test_fast_parity`) pass.
-(`test_classic`15 · `test_confirm`14 · `test_library`7 · `test_smc`6 · `test_integration`7 ·
+Suite: **60 tests green** + original parity locks (`test_parity`, `test_fast_parity`) pass.
+(`test_classic`15 · `test_confirm`14 · `test_library`7 · `test_smc`8 · `test_integration`7 ·
 `test_generate`3 · `test_timing`6).
 
 ## Invariants held throughout

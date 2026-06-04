@@ -52,6 +52,23 @@ def test_order_block_bullish_zone_after_break():
     assert (sig == 1).any()      # at least one bullish OB reaction bar is flagged
 
 
+def test_fvg_active_direction_lookback():
+    high = np.array([10, 12, 14, 13, 15, 16], dtype=float)
+    low = np.array([9, 11, 13, 12, 14, 15], dtype=float)
+    # bullish FVG at t2 (low2=13 > high0=10) persists for lookback bars; a SECOND bullish FVG
+    # re-triggers at t5 (low5=15 > high3=13), so the bias stays +1 there.
+    out = smc.fvg_active_direction(high, low, lookback=2)
+    np.testing.assert_array_equal(out, [0, 0, 1, 1, 1, 1])
+
+
+def test_fvg_active_direction_decays_with_no_retrigger():
+    # one bullish FVG at t2, then a flat tail with no new gaps ⇒ bias decays to 0 after lookback
+    high = np.array([10, 12, 14, 13.5, 13.5, 13.5], dtype=float)
+    low = np.array([9, 11, 13, 12, 12, 12], dtype=float)  # one bull FVG at t2, no further gaps
+    out = smc.fvg_active_direction(high, low, lookback=1)
+    np.testing.assert_array_equal(out, [0, 0, 1, 1, 0, 0])
+
+
 def test_golf_candle_n2():
     open_ = np.array([10, 10, 10, 10], dtype=float)
     close = np.array([11, 12, 10.5, 15], dtype=float)  # bodies 1,2,0.5,5

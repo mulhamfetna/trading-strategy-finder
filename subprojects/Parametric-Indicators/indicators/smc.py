@@ -46,6 +46,25 @@ def market_structure(close: np.ndarray, swing_l: int = 2):
     return sh, sl
 
 
+def fvg_active_direction(high: np.ndarray, low: np.ndarray, lookback: int = 3) -> np.ndarray:
+    """Per-bar directional bias from the most recent FVG within `lookback` bars: +1 if the latest
+    FVG (within lookback) is bullish, -1 bearish, 0 if none recent. The retrace-into-zone entry is
+    handled by the indicator's retrace param + the engine resolver; this is the directional read."""
+    bull, bear, _, _ = fvg(high, low)
+    n = len(bull)
+    out = np.zeros(n, dtype=np.int8)
+    last_dir = 0
+    last_idx = -10 ** 9
+    for t in range(n):
+        if bull[t]:
+            last_dir, last_idx = 1, t
+        elif bear[t]:
+            last_dir, last_idx = -1, t
+        if last_dir != 0 and (t - last_idx) <= lookback:
+            out[t] = last_dir
+    return out
+
+
 def structure_trend(close: np.ndarray, swing_l: int = 2) -> np.ndarray:
     """Per-bar trend stance from confirmed swing structure (causal). A swing pivot at index p is
     only known swing_l bars later. stance[t] = +1 when the latest two confirmed swing highs are

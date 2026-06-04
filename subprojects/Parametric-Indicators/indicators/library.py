@@ -171,10 +171,16 @@ class OrderBlock(StanceIndicator):
                                 int(self.config.params.get("swing_l", 2)))
 
 
+class FVGConfirm(StanceIndicator):
+    key = "fvg"
+    def stance(self, ctx):
+        return smc.fvg_active_direction(ctx.high, ctx.low, int(self.config.params.get("lookback", 3)))
+
+
 REGISTRY = {c.key: c for c in (
     EMATrend, SMATrend, MACD, VWAPTrend, KeltnerTrend, OBVTrend, CCIBreakout,
     RSIZone, StochasticZone, MFIZone, BollingerVeto, ADXVeto,
-    StructureTrend, OrderBlock,
+    StructureTrend, OrderBlock, FVGConfirm,
 )}
 
 
