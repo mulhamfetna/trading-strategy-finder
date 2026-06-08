@@ -62,6 +62,11 @@ tests/__pycache__/
 # Generated output directory (iter 3 of finish-todo plan)
 output/
 
+# WS-AS per-instrument signal delivery bundles (build artifacts, multi-GB; regenerate
+# via subprojects/all-stocks-signals/). Same handling as the untracked NQ_SIGNALS_DELIVERY.
+*_SIGNALS_DELIVERY/
+*_SIGNALS_DELIVERY.zip
+
 # Optuna persistence
 optuna_studies.db
 optuna_studies.db-journal!subprojects/signals/stage1_1_next_signal/dashboard/*.html
