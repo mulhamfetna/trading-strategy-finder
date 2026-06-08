@@ -58,6 +58,26 @@ def test_bad_k_raises(inputs):
         _run(inputs, indicators=[], k=0)
 
 
+def test_entry_events_carry_vote_attribution(inputs):
+    out = _run(inputs, indicators=[{"key": "rsi", "enabled": True, "mode": "confirm"},
+                                   {"key": "adx", "enabled": False, "mode": "veto"}], k=1)
+    entries = [e for e in out["events"] if e["type"] == "ENTRY"]
+    assert entries, "expected entries"
+    e0 = entries[0]
+    assert "indicators" in e0
+    by = {r["key"]: r for r in e0["indicators"]}
+    assert "rsi" in by and "adx" in by                # ALL indicators logged (decision #1)
+    assert by["rsi"]["active"] == 1 and by["adx"]["active"] == 0   # disabled still logged, active=0
+    assert by["rsi"]["vote"] in ("confirm", "veto", "neutral")
+    assert "confirm" in e0["text"] or "veto" in e0["text"]         # attribution summary in the line
+
+
+def test_no_indicators_no_attribution(inputs):
+    base = _run(inputs)
+    entries = [e for e in base["events"] if e["type"] == "ENTRY"]
+    assert entries and all("indicators" not in e for e in entries)
+
+
 def test_smc_indicator_produces_generation_report(inputs):
     out = _run(inputs, indicators=[{"key": "fvg", "enabled": True, "mode": "confirm"}], k=1,
                gen={"swing_l": 2, "golf_n": 3})

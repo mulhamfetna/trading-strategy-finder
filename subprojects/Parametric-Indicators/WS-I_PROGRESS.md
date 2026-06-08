@@ -2,7 +2,7 @@
 name: ws-i-progress
 description: WS-I live progress tracker — phase status, what's built/verified vs remaining, test counts. Updated as increments land. Companion to WS-I_PLAN.md (the plan) and docs/INDICATOR_DECISIONS.md (frozen spec).
 type: progress
-status: I.3 in progress
+status: I.4 complete — paused at I.5 (team-leader sign-off)
 created: 2026-06-04
 workstream: WS-I
 ---
@@ -15,8 +15,8 @@ workstream: WS-I
 | I.1 Understand (freeze rules) | ✅ done — `docs/INDICATOR_DECISIONS.md` (FROZEN) |
 | I.2 Document | ✅ done — `docs/INDICATORS.md` |
 | **I.3 Engine + manual test** | ✅ **complete** — engine/logic layer done (see WS-I.3_ENGINE_REPORT.md); 65 tests + parity locks. Only `build_payload` wiring remains, folded into I.4. |
-| **I.4 Dashboard** | 🔵 **in progress** — backend + server done: `build_layer`/`veto_mask`, `build_payload` wiring, `library.schema()` + `/api/config` `indicator_schema` (no hardcoding). **78 tests.** Remaining: **frontend** indicator panel + report/log rendering. |
-| I.5 Verify (team-leader sign-off) | ⬜ pending (HARD PAUSE) |
+| **I.4 Dashboard** | ✅ **complete** — see `docs/WS-I.4_DASHBOARD_REPORT.md`. Backend (`build_layer`, `build_payload`), server (`/api/config` schema), frontend (schema-built panel: enabled/mode/params/retrace/wait + K + gen), Phase-1 gen report, **vote-attribution logging** (every indicator's opinion + active flag per entry, log + chips). No silent fallback (`ParamError` → HTTP 400). **80 tests** + parity locks. |
+| **I.5 Verify (team-leader sign-off)** | 🚦 **READY — HARD PAUSE for your review** |
 | I.6–I.10 | ⬜ pending |
 
 ## I.3 — built & verified (TDD, 41 tests green)

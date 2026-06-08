@@ -115,6 +115,7 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
     specs, k_rule, gen_params = P["indicators"], P["k"], P["gen"]
     entry_resolver = veto_mask = gen_report = None
     gate_used = gate
+    attrib = None    # per-entry indicator vote attribution (decision #1/#5)
     if specs:
         from indicators import library, runner, generate
         try:
@@ -131,6 +132,19 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
             ctx = runner.market_context(d4)
             gen_report = generate.generate_structures(
                 ctx, int(gen_params.get("swing_l", 2)), int(gen_params.get("golf_n", 3)))["report"]
+        # vote attribution: EVERY indicator's opinion at the signal bar, with an active flag.
+        _ctx = runner.market_context(d4); _bdir = runner.box_direction_int(d4, box)
+        _votes = {id(i): i.vote(_ctx, _bdir) for i in inds}
+
+        def attrib(sidx):
+            sidx = int(sidx)
+            rows = []
+            for i in inds:
+                v = int(_votes[id(i)][sidx]) if 0 <= sidx < len(_votes[id(i)]) else 0
+                rows.append({"key": i.key, "active": int(i.config.enabled), "mode": i.config.mode,
+                             "vote": ("confirm" if v == 1 else "veto" if v == -1 else "neutral"),
+                             "params": dict(i.config.params)})
+            return rows
 
     sp = SimpleStrategyParams(sl_soft_points=sl_soft, sl_hard_points=sl_hard, tp_soft_points=tp,
                               tp_hard_points=tp, data_path_4h="", data_path_1min="",
@@ -156,7 +170,19 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
                 continue
         state.append({"time": et, "value": 1})
         gtxt = "no gate" if gthr is None else f"gate OK (vol {vfw[int(t['entry_idx'])]:.0f} ≤ {gthr:.0f})"
-        events.append({"time": et, "type": "ENTRY", "text": f"{t['direction'].upper()} @ {t['entry_price']:.1f} | {gtxt} | SLsoft {t['sl_soft_line']:.1f}/SLhard {t['sl_hard_line']:.1f}/TP {t['tp_hard_line']:.1f}"})
+        ind_rows = attrib(t["signal_idx"]) if (attrib and "signal_idx" in t) else None
+        itxt = ""
+        if ind_rows:
+            act = [r for r in ind_rows if r["active"]]
+            nc = sum(1 for r in act if r["vote"] == "confirm")
+            nv = sum(1 for r in act if r["vote"] == "veto")
+            itxt = f" | K={k_rule}: {nc} confirm / {nv} veto of {len(act)} active"
+        ev = {"time": et, "type": "ENTRY",
+              "text": f"{t['direction'].upper()} @ {t['entry_price']:.1f} | {gtxt} | "
+                      f"SLsoft {t['sl_soft_line']:.1f}/SLhard {t['sl_hard_line']:.1f}/TP {t['tp_hard_line']:.1f}{itxt}"}
+        if ind_rows:
+            ev["indicators"] = ind_rows
+        events.append(ev)
         eq += pnl; peak = max(peak, eq); dd = peak - eq
         events.append({"time": xt, "type": "WIN" if pnl > 0 else "LOSS", "text": f"exit @ {t['exit_price']:.1f} via {t['exit_reason']} | P/L {pnl:+,.0f} | equity ${eq:,.0f} | DD ${dd:,.0f}"})
         eqc.append({"time": xt, "value": round(eq, 2)})
