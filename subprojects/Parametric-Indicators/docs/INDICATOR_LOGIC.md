@@ -13,21 +13,24 @@ Every indicator is a **judge** over the box's per-bar direction. It never sets d
 **confirms**, **vetoes**, or stays **neutral**. This doc gives the exact rule for each.
 
 ## 1. The vote model (shared by all)
+```mermaid
+flowchart TD
+    BOX["box direction d ∈ {LONG +1, SHORT −1, HOLD 0}<br/>(just-closed bar)"]
+    DIR["indicator.directions(ctx)  (per-bar, causal)"]
+    DIR -->|"cdir ∈ {+1,−1,0,BOTH}<br/>which side I'd confirm"| VOTE
+    DIR -->|"vdir ∈ {+1,−1,0,BOTH}<br/>which side I'd veto"| VOTE
+    BOX --> VOTE{{"vote(): map vs d &amp; MODE"}}
+    VOTE -->|"mode confirm &amp; cdir==d/BOTH"| C["CONFIRM +1"]
+    VOTE -->|"mode veto &amp; vdir==d/BOTH"| V["VETO −1"]
+    VOTE -->|"mode both"| B["CONFIRM, then VETO overrides same bar"]
+    VOTE -->|"otherwise / HOLD bar"| N["NEUTRAL 0"]
+    C --> G["K-rule gate: entry ⇔ no active veto AND #confirms ≥ K"]
+    V --> G
+    B --> G
+    N --> G
 ```
-                 box direction d ∈ {LONG +1, SHORT −1, HOLD 0}   (from the box, just-closed bar)
-                              │
- indicator.directions(ctx) ──┼──►  cdir[bar] ∈ {+1,−1,0, BOTH}   "which side I'd confirm"
-        (per-bar, causal)     └──►  vdir[bar] ∈ {+1,−1,0, BOTH}   "which side I'd veto"
-                              │
-        vote() maps them vs d and the indicator's MODE ∈ {confirm, veto, both}:
-            would_confirm = (cdir == d) or (cdir == BOTH)      ; only on a non-HOLD bar
-            would_veto    = (vdir == d) or (vdir == BOTH)
-            mode confirm → CONFIRM if would_confirm
-            mode veto    → VETO    if would_veto
-            mode both    → CONFIRM, then VETO overrides on the same bar
-                              ▼
-            vote[bar] ∈ {CONFIRM +1, VETO −1, NEUTRAL 0}    (raw per decision bar)
-```
+> 📊 **Interactive:** [`charts/votes_distribution.html`](charts/votes_distribution.html) — per-indicator
+> confirm / veto / neutral counts on the real NQ 4h signalling bars (default params).
 - `BOTH` (sentinel) = direction-agnostic: matches whatever the box direction is (e.g. ADX "no trend"
   vetoes a long *or* a short).
 - Votes are **raw per decision bar** (no smoothing). The global *wait* is a 1-min entry delay, not a

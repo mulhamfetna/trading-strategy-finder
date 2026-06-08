@@ -17,14 +17,18 @@ engine (`optimize/fast_engine.py`) reproduces the **exact same trades** with num
 indicator layer by folding confirm/veto into a **precomputed per-bar gate** — so adding indicators
 costs almost nothing in the hot loop.
 
+```mermaid
+flowchart LR
+    subgraph P["Python engine (truth)"]
+        P1["for each decision bar:<br/>if gate &amp; signal → enter"] --> P2["for each 1-min bar:<br/>check SL / TP"] --> P3["minutes"]
+    end
+    subgraph F["Vectorized engine (fast)"]
+        F1["entry bars = boolean mask"] --> F2["exits = argmax of<br/>first-touch masks on 1-min"] --> F3["milliseconds"]
+    end
+    P -->|"PARITY-LOCKED, trade-for-trade"| F
 ```
-   Python engine (truth)                         Vectorized engine (fast)
-   ─────────────────────                          ─────────────────────
-   for each decision bar:                         entry bars  = boolean mask (vectorized)
-     if gate & signal: enter                       exits       = argmax of first-touch masks on 1-min
-       for each 1-min bar: check SL/TP  ──────►     one position at a time, re-entry after exit
-   minutes                                          milliseconds   (PARITY-LOCKED, trade-for-trade)
-```
+> 📊 **Interactive:** [`charts/engine_vs_fast.html`](charts/engine_vs_fast.html) — measured wall-clock
+> for one real 4h backtest, Python engine vs vectorized (log scale).
 
 ## 1. The decision → exit pipeline (per trade)
 ```
@@ -56,9 +60,12 @@ costs almost nothing in the hot loop.
 ## 2. Where indicators plug in — the GATE (WS-I.7)
 The engine already takes a per-decision-bar boolean `gate`. The indicator layer is folded **into that
 gate** — no change to the hot exit loop:
-```
-   gate_used[idx] = vol_gate[idx]  ∧  ¬veto_mask[idx]  ∧  confirm_mask[idx]
-                    └ HAR-RV gate    └ any veto fires    └ ≥K confirms present
+```mermaid
+flowchart LR
+    VG["vol_gate<br/>(HAR-RV ≤ pctile)"] --> AND{{"∧"}}
+    VM["¬ veto_mask<br/>(no veto at idx-1)"] --> AND
+    CM["confirm_mask<br/>(≥K confirms at idx-1)"] --> AND
+    AND --> GU["gate_used[idx]"] --> FB["fast_backtest"]
 ```
 All three are per-decision-bar boolean arrays, **aligned to the entry bar** (entry at `idx` reads the
 just-closed signal bar `idx-1`):

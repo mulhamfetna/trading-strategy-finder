@@ -42,29 +42,16 @@ NSGA-III gives a well-distributed front instead of a clump.
 ```
 
 ## 2. One generation, end to end
-```
-        ┌─────────────────────────── population P_t (size N) ───────────────────────────┐
-        │ each individual = a full param vector (box + 15×{en,params} + K)               │
-        └───────────────────────────────────────────────────────────────────────────────┘
-                     │  variation: tournament select → crossover → mutation
-                     ▼
-                 offspring Q_t (size N)
-                     │  evaluate each: walk-forward fold scoring → (f1,f2,f3) + constraint
-                     ▼
-        R_t = P_t ∪ Q_t   (size 2N)
-                     │
-        ┌────────────┴───────────────────────── ENVIRONMENTAL SELECTION ──────────────────┐
-        │ 1. CONSTRAINED non-dominated sort of R_t into fronts F1, F2, …                   │
-        │      feasible ≺ infeasible; among feasible use Pareto dominance;                 │
-        │      among infeasible use least constraint violation.                            │
-        │ 2. Fill the next population by whole fronts F1,F2,… until adding Fk overflows N.  │
-        │ 3. For the splitting front Fk: NORMALISE objectives (ideal point + intercepts),  │
-        │    ASSOCIATE each candidate to its nearest reference point (perpendicular dist),  │
-        │    then NICHE-select: repeatedly pick from the reference point with the fewest    │
-        │    already-selected members → even spread across the front.                      │
-        └──────────────────────────────────────────────────────────────────────────────────┘
-                     ▼
-                 population P_{t+1} (size N)   → repeat until trial budget exhausted
+```mermaid
+flowchart TD
+    PT["population P_t (size N)<br/>each = full param vector: box + 15×{en,params} + K"]
+    PT -->|"tournament select → crossover → mutation"| QT["offspring Q_t (size N)"]
+    QT -->|"evaluate: walk-forward folds → (f1,f2,f3) + constraint"| RT["R_t = P_t ∪ Q_t  (2N)"]
+    RT --> S1["1 · CONSTRAINED non-dominated sort → fronts F1,F2,…<br/>feasible ≺ infeasible; ties by least violation"]
+    S1 --> S2["2 · fill next pop by whole fronts until Fk overflows N"]
+    S2 --> S3["3 · splitting front Fk: normalise (ideal + intercepts) →<br/>associate to nearest reference point → niche-select (fewest first)"]
+    S3 --> PN["population P_{t+1} (size N)"]
+    PN -->|"repeat until trial budget exhausted"| PT
 ```
 
 ### 2a. Constrained non-dominated sorting (how feasibility enters)
@@ -121,6 +108,12 @@ The result is the **feasible Pareto front** — many (P/L, DD, win-rate) trade-o
 config. No single winner is auto-picked: you choose the trade-off, then **re-validate that config on
 the exact dashboard engine** (where retrace/wait + carry apply). Per-TF fronts + a cross-TF
 leaderboard are written by the reporting step (I.10).
+
+> 📊 **Interactive (real I.9 smoke data):**
+> [`charts/nsga3_feasibility.html`](charts/nsga3_feasibility.html) — full-period P/L vs max DD with the
+> `DD = 25%·P/L` feasibility line; and
+> [`charts/nsga3_objectives_3d.html`](charts/nsga3_objectives_3d.html) — the three objectives in 3-D
+> (green = feasible).
 
 ## 6. Practical notes (from the 4h smoke)
 - Feasibility (full-period DD ≤ 25% P/L) is reachable — the box winner sits ≈ 20%; a 200-trial 4h
