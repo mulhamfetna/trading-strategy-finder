@@ -87,9 +87,26 @@ def validate_params(params):
     gen = params.get("gen") or {}
     if not isinstance(gen, dict):
         raise ParamError("'gen' must be an object of generation params")
+    # WS-I GLOBAL entry timing (one value each, applied to ALL indicators — notes #3/#4).
+    try:
+        retrace_amount = float(params.get("retrace_amount") or 0.0)
+    except (TypeError, ValueError):
+        raise ParamError(f"'retrace_amount' must be a number (got {params.get('retrace_amount')!r})")
+    if retrace_amount < 0:
+        raise ParamError(f"retrace_amount must be ≥ 0 (got {retrace_amount})")
+    retrace_unit = params.get("retrace_unit") or "atr_mult"
+    if retrace_unit not in ("atr_mult", "points"):
+        raise ParamError(f"retrace_unit must be one of ('atr_mult','points') (got {retrace_unit!r})")
+    try:
+        wait_bars = int(params.get("wait_bars") or 0)
+    except (TypeError, ValueError):
+        raise ParamError(f"'wait_bars' must be an integer (got {params.get('wait_bars')!r})")
+    if wait_bars < 0:
+        raise ParamError(f"wait_bars must be ≥ 0 (got {wait_bars}); counts 1-minute bars")
     return dict(sl_soft=sl_soft, sl_hard=sl_hard, tp=tp, gate_pct=gate_pct, dd_limit=dd_limit,
                 cooldown=int(cooldown), flip=bool(params["flip"]), window=params["window"],
-                dd_cap=dd_cap, pv=pv, indicators=list(specs), k=k, gen=gen)
+                dd_cap=dd_cap, pv=pv, indicators=list(specs), k=k, gen=gen,
+                retrace_amount=retrace_amount, retrace_unit=retrace_unit, wait_bars=wait_bars)
 
 
 def build_payload(df4, df1, box, vf, n2025, params=None):
@@ -113,6 +130,7 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
 
     # WS-I indicator confirmation layer (off by default ⇒ identical to the pure box strategy).
     specs, k_rule, gen_params = P["indicators"], P["k"], P["gen"]
+    g_retr, g_runit, g_wait = P["retrace_amount"], P["retrace_unit"], P["wait_bars"]
     entry_resolver = veto_mask = gen_report = None
     gate_used = gate
     attrib = None    # per-entry indicator vote attribution (decision #1/#5)
@@ -127,7 +145,9 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
         if n_confirm > 0 and k_rule > n_confirm:
             raise ParamError(f"k={k_rule} exceeds the {n_confirm} enabled confirm-capable indicator(s)")
         base = gate if gate is not None else np.ones(len(d4), dtype=bool)
-        gate_used, entry_resolver, veto_mask = runner.build_layer(d4, box, inds, k_rule, base)
+        gate_used, entry_resolver, veto_mask = runner.build_layer(
+            d4, box, inds, k_rule, base,
+            retrace_amount=g_retr, retrace_unit=g_runit, wait_bars=g_wait)
         if any(i.config.enabled and i.key in ("fvg", "order_block", "structure_trend") for i in inds):
             ctx = runner.market_context(d4)
             gen_report = generate.generate_structures(

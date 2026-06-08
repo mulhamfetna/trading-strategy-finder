@@ -35,3 +35,30 @@ def resolve_retrace_entry(direction, signal_close, levels, m_low, m_high, m_date
             if count >= k:
                 return (m_dates[b], levels[i])
     return None
+
+
+def resolve_entry_1min(direction, signal_close, r, wait_bars, m_low, m_high, m_dates):
+    """GLOBAL retrace + GLOBAL wait, both on the 1-MINUTE armed-window path (WS-I notes #3/#4).
+
+    One shared level for all indicators: long → signal_close − r ; short → signal_close + r (r ≥ 0,
+    in points; the caller converts atr_mult → points). `wait_bars` is a count of **1-minute bars**:
+    the entry is ineligible for the first `wait_bars` 1-min bars after the signal, then:
+      • r  > 0 → fill at the first eligible 1-min bar whose path touches the level
+                 (long: low ≤ level ; short: high ≥ level), at `level`;
+      • r == 0 → no pullback needed: fill at the wait-th 1-min bar at `signal_close`.
+    Returns (fill_time, fill_price) or None if the window ends unfilled (engine re-evaluates / carries).
+
+    direction: +1 long / −1 short. m_low/m_high/m_dates: the 1-min path after the signal.
+    """
+    long = direction > 0
+    start = max(0, int(wait_bars))
+    n = len(m_dates)
+    if start >= n:
+        return None                              # window too short to clear the wait → unfilled
+    if r <= 0:
+        return (m_dates[start], signal_close)    # immediate-at-close, delayed by `wait_bars` 1-min bars
+    level = signal_close - r if long else signal_close + r
+    for b in range(start, n):
+        if (m_low[b] <= level) if long else (m_high[b] >= level):
+            return (m_dates[b], level)
+    return None

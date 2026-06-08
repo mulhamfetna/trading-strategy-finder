@@ -41,42 +41,19 @@ class MarketContext:
 
 @dataclass
 class IndicatorConfig:
-    """Per-indicator controls. Defaults = disabled & immediate ⇒ parity preserved."""
+    """Per-indicator controls. Defaults = disabled ⇒ parity preserved.
+
+    NOTE: retrace + wait are GLOBAL entry-timing controls (one value each, applied to ALL
+    indicators), NOT per-indicator — see runner.build_entry_resolver / timing.resolve_entry_1min.
+    They are deliberately absent here."""
     enabled: bool = False
     mode: str = "both"
-    retrace_amount: float = 0.0
-    retrace_unit: str = "atr_mult"
-    wait_bars: int = 0
     params: dict = field(default_factory=dict)
 
     def validate(self) -> "IndicatorConfig":
         if self.mode not in _MODES:
             raise IndicatorParamError(f"mode must be one of {_MODES}, got {self.mode!r}")
-        if self.retrace_unit not in _RETRACE_UNITS:
-            raise IndicatorParamError(f"retrace_unit must be one of {_RETRACE_UNITS}, got {self.retrace_unit!r}")
-        if self.retrace_amount < 0:
-            raise IndicatorParamError(f"retrace_amount must be ≥ 0, got {self.retrace_amount}")
-        if self.wait_bars < 0 or int(self.wait_bars) != self.wait_bars:
-            raise IndicatorParamError(f"wait_bars must be a non-negative integer, got {self.wait_bars!r}")
         return self
-
-
-def apply_wait(vote: np.ndarray, wait_bars: int) -> np.ndarray:
-    """Debounce CONFIRM votes: a confirm only counts after the indicator has confirmed for
-    wait_bars+1 consecutive bars (a run reset by any non-confirm bar). VETO is immediate (safety
-    first) and untouched. wait_bars=0 ⇒ identity (parity)."""
-    if wait_bars <= 0:
-        return vote
-    out = vote.copy()
-    run = 0
-    for t in range(len(out)):
-        if vote[t] == CONFIRM:
-            run += 1
-            if run <= wait_bars:
-                out[t] = NEUTRAL
-        else:
-            run = 0
-    return out
 
 
 class Indicator(ABC):
@@ -107,4 +84,4 @@ class Indicator(ABC):
             out[would_confirm] = CONFIRM
         if self.config.mode in ("veto", "both"):
             out[would_veto] = VETO  # veto applied last ⇒ overrides confirm in 'both'
-        return apply_wait(out, self.config.wait_bars)
+        return out  # raw per-decision-bar vote; the GLOBAL wait is a 1-min entry delay (resolver)

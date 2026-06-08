@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 
 from indicators import confirm, votes
-from indicators.base import (CONFIRM, VETO, NEUTRAL, LONG, SHORT, HOLD, apply_wait,
+from indicators.base import (CONFIRM, VETO, NEUTRAL, LONG, SHORT, HOLD,
                              Indicator, IndicatorConfig, IndicatorParamError, MarketContext)
 
 
@@ -13,11 +13,8 @@ def test_config_rejects_bad_mode():
         IndicatorConfig(mode="sometimes").validate()
 
 
-def test_config_rejects_negative_wait_and_bad_unit():
-    with pytest.raises(IndicatorParamError):
-        IndicatorConfig(wait_bars=-1).validate()
-    with pytest.raises(IndicatorParamError):
-        IndicatorConfig(retrace_unit="percent").validate()
+# retrace + wait are GLOBAL now (validated in strategy.validate_params), not per-indicator —
+# IndicatorConfig no longer carries them. See tests/test_build_payload.py for global validation.
 
 
 # ---- RSI direction zones ----
@@ -77,23 +74,12 @@ def test_vote_short_direction():
     np.testing.assert_array_equal(f.vote(_ctx(2), box), [CONFIRM, VETO])
 
 
-# ---- wait_bars debounce on confirms ----
-def test_apply_wait_delays_confirm_runs():
-    v = np.array([CONFIRM, CONFIRM, CONFIRM, VETO, CONFIRM, CONFIRM], dtype=np.int8)
-    # wait_bars=2 ⇒ confirm only on the 3rd consecutive; veto immediate; run resets after veto
-    np.testing.assert_array_equal(apply_wait(v, 2), [0, 0, CONFIRM, VETO, 0, 0])
-
-
-def test_apply_wait_zero_is_identity():
-    v = np.array([CONFIRM, VETO, CONFIRM], dtype=np.int8)
-    np.testing.assert_array_equal(apply_wait(v, 0), v)
-
-
-def test_vote_applies_wait_bars():
-    # confirm long on every bar, wait_bars=1 ⇒ first confirm suppressed, then live
-    f = _Fixed(cdir=[+1, +1, +1], vdir=[0, 0, 0], config=IndicatorConfig(mode="both", wait_bars=1))
+# ---- vote is now RAW (no per-indicator wait debounce; global wait is a 1-min entry delay) ----
+def test_vote_is_raw_no_decision_bar_debounce():
+    # confirm long on every bar ⇒ confirm on EVERY bar (wait no longer suppresses on decision bars)
+    f = _Fixed(cdir=[+1, +1, +1], vdir=[0, 0, 0], config=IndicatorConfig(mode="both"))
     box = np.array([LONG, LONG, LONG])
-    np.testing.assert_array_equal(f.vote(_ctx(3), box), [NEUTRAL, CONFIRM, CONFIRM])
+    np.testing.assert_array_equal(f.vote(_ctx(3), box), [CONFIRM, CONFIRM, CONFIRM])
 
 
 # ---- aggregate() K rule ----

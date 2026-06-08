@@ -117,9 +117,10 @@ def test_binding_retrace0_fills_immediately_at_signal_close(inputs):
 def test_binding_retrace_points_shifts_fill_to_level(inputs):
     df4, df1, box, vf, n2025 = inputs
     vg = _vol_gate(df4, vf, n2025)
-    rsi = library.build("rsi", IndicatorConfig(enabled=True, mode="confirm",
-                                               retrace_unit="points", retrace_amount=10.0))
-    resolver = runner.build_entry_resolver(df4, box, [rsi], k=1)
+    rsi = library.build("rsi", IndicatorConfig(enabled=True, mode="confirm"))
+    # retrace is GLOBAL now: 10 points, applied to all indicators
+    resolver = runner.build_entry_resolver(df4, box, [rsi], k=1,
+                                           retrace_amount=10.0, retrace_unit="points", wait_bars=0)
     trades, _ = SimpleStrategy(_sp()).backtest(df4, df1, box, entry_gate=vg, entry_resolver=resolver)
     taken = [t for t in trades if t.get("exit_reason") not in (None, "OPEN")]
     assert taken, "expected some filled retrace trades"

@@ -254,7 +254,8 @@ def schema():
 
 def from_specs(specs):
     """Build a list of Indicator instances from dashboard/API specs (strict, no silent fallback).
-    Each spec: {key, enabled?, mode?, retrace_amount?, retrace_unit?, wait_bars?, params?{}}.
+    Each spec: {key, enabled?, mode?, params?{}}. retrace + wait are GLOBAL (not per-indicator) and
+    are NOT read here — see strategy.build_payload → runner.build_layer.
     Raises IndicatorParamError on an unknown key or invalid config."""
     from .base import IndicatorConfig, IndicatorParamError
     out = []
@@ -265,9 +266,6 @@ def from_specs(specs):
         cfg = IndicatorConfig(
             enabled=bool(s.get("enabled", False)),
             mode=s.get("mode", "both"),
-            retrace_amount=float(s.get("retrace_amount", 0.0)),
-            retrace_unit=s.get("retrace_unit", "atr_mult"),
-            wait_bars=int(s.get("wait_bars", 0)),
             params=dict(s.get("params", {})),
         )
         out.append(REGISTRY[key](cfg))  # constructor validates the config
