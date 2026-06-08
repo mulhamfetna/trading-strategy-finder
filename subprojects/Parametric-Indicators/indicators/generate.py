@@ -21,7 +21,7 @@ def generate_structures(ctx: MarketContext, swing_l: int = 2, golf_n: int = 3) -
     sh, sl = smc.market_structure(ctx.close, swing_l)
     trend = smc.structure_trend(ctx.close, swing_l)
     ob = smc.order_blocks(ctx.open, ctx.high, ctx.low, ctx.close, swing_l)
-    golf = smc.golf_candle(ctx.open, ctx.close, golf_n)
+    golf = smc.golf_candle(ctx.open, ctx.high, ctx.low, ctx.close, golf_n)  # +1 bull / -1 bear / 0
     structures = {
         "bull_fvg": bull, "bear_fvg": bear, "fvg_lo": fvg_lo, "fvg_hi": fvg_hi,
         "swing_high": sh, "swing_low": sl, "structure_trend": trend,
@@ -32,7 +32,8 @@ def generate_structures(ctx: MarketContext, swing_l: int = 2, golf_n: int = 3) -
         "params": {"swing_l": int(swing_l), "golf_n": int(golf_n)},
         "n_bull_fvg": int(bull.sum()), "n_bear_fvg": int(bear.sum()),
         "n_swing_high": int(sh.sum()), "n_swing_low": int(sl.sum()),
-        "n_golf": int(golf.sum()),
+        "n_golf": int((golf != 0).sum()),
+        "n_golf_bull": int((golf == 1).sum()), "n_golf_bear": int((golf == -1).sum()),
         "n_ob_bull_bars": int((ob == 1).sum()), "n_ob_bear_bars": int((ob == -1).sum()),
     }
     return {"structures": structures, "report": report}

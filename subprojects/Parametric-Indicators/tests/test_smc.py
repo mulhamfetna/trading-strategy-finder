@@ -69,9 +69,29 @@ def test_fvg_active_direction_decays_with_no_retrigger():
     np.testing.assert_array_equal(out, [0, 0, 1, 1, 0, 0])
 
 
-def test_golf_candle_n2():
-    open_ = np.array([10, 10, 10, 10], dtype=float)
-    close = np.array([11, 12, 10.5, 15], dtype=float)  # bodies 1,2,0.5,5
-    g = smc.golf_candle(open_, close, golf_n=2)
-    # t3 body 5 > max(body1=2, body2=0.5)=2 -> golf; t2 body .5 not > 2
-    np.testing.assert_array_equal(g, [False, False, False, True])
+def test_golf_engulfing_n2_bullish():
+    # N=2 engulfing. Prior 2 bars both RED; current GREEN engulfs their span with a big body.
+    #         t0(red)   t1(red)   t2(GREEN engulf)
+    open_ = np.array([105, 103, 99.0])
+    close = np.array([101,  99, 106.0])   # t0,t1 red (close<open); t2 green
+    high  = np.array([106, 104, 107.0])
+    low   = np.array([100,  98, 98.0])
+    # prior span (t0..t1): max high 106, min low 98 → span 8 ; t2 body |106-99|=7 ≥ 0.7*8=5.6 ✓
+    # engulf: t2.high 107≥106 ✓ and t2.low 98≤98 ✓ ; prior both red, t2 green → +1
+    g = smc.golf_candle(open_, high, low, close, golf_n=2)
+    np.testing.assert_array_equal(g, [0, 0, 1])
+
+
+def test_golf_engulfing_rejects_when_body_below_70pct_or_not_opposite():
+    # Bearish setup but body too small (< 70% of prior span) ⇒ rejected.
+    open_ = np.array([99, 101, 106.0])
+    close = np.array([101, 103, 105.0])   # t0,t1 GREEN ; t2 red but tiny body |105-106|=1
+    high  = np.array([102, 104, 107.0]); low = np.array([98, 100, 98.0])
+    # prior span max 104 min 98 = 6 ; need body ≥ 4.2 but body=1 ⇒ no golf
+    g = smc.golf_candle(open_, high, low, close, golf_n=2)
+    np.testing.assert_array_equal(g, [0, 0, 0])
+    # opposite-colour-to-ALL-N fails: mix one red into the prior window
+    open2 = np.array([99, 105, 99.0]); close2 = np.array([101, 101, 108.0])  # t1 red, breaks "all green"
+    high2 = np.array([102, 106, 109.0]); low2 = np.array([98, 100, 98.0])
+    g2 = smc.golf_candle(open2, high2, low2, close2, golf_n=2)
+    assert g2[2] == 0  # prior not all the same opposite colour

@@ -154,14 +154,33 @@ def order_blocks(open_, high, low, close, swing_l: int = 2):
     return out
 
 
-def golf_candle(open_: np.ndarray, close: np.ndarray, golf_n: int = 3) -> np.ndarray:
-    """A 'golf' candle has body |close-open| greater than the max body of the prior golf_n candles.
-    NaN/False for the first golf_n bars. Returns a bool array."""
-    o = np.asarray(open_, float); c = np.asarray(close, float)
-    body = np.abs(c - o)
+def golf_candle(open_: np.ndarray, high: np.ndarray, low: np.ndarray, close: np.ndarray,
+                golf_n: int = 3) -> np.ndarray:
+    """'Golf' = an N-candle ENGULFING reversal (WS-I review #2). For bar t (t ≥ N), returns
+    +1 bullish / -1 bearish / 0 none, where N = golf_n:
+
+      1. opposite colour to ALL N prior candles —
+           bullish: current green (close>open) AND every prior t-N..t-1 is red (close<open);
+           bearish: current red          AND every prior t-N..t-1 is green;
+      2. range engulf (wicks): current.high ≥ max(high[t-N:t]) AND current.low ≤ min(low[t-N:t]);
+      3. body filter: |close-open| ≥ 0.70 × prior_span, prior_span = max(high[t-N:t]) − min(low[t-N:t]).
+
+    First N bars are 0. Dojis (close==open) are neither red nor green ⇒ break the colour test.
+    """
+    o = np.asarray(open_, float); h = np.asarray(high, float)
+    lo = np.asarray(low, float); c = np.asarray(close, float)
     n = len(c)
-    out = np.zeros(n, bool)
     m = int(golf_n)
+    out = np.zeros(n, np.int8)
+    body = np.abs(c - o)
     for t in range(m, n):
-        out[t] = body[t] > body[t - m:t].max()
+        ph = h[t - m:t].max(); pl = lo[t - m:t].min(); span = ph - pl
+        if not ((h[t] >= ph) and (lo[t] <= pl) and (body[t] >= 0.70 * span)):
+            continue                                   # need wick-engulf + body ≥ 70% of prior span
+        prior_red = bool(np.all(c[t - m:t] < o[t - m:t]))
+        prior_green = bool(np.all(c[t - m:t] > o[t - m:t]))
+        if c[t] > o[t] and prior_red:                  # bullish engulfing
+            out[t] = 1
+        elif c[t] < o[t] and prior_green:              # bearish engulfing
+            out[t] = -1
     return out
