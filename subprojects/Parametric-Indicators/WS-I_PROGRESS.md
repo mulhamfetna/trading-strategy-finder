@@ -18,8 +18,8 @@ workstream: WS-I
 | **I.4 Dashboard** | ✅ **complete** — see `docs/WS-I.4_DASHBOARD_REPORT.md`. Backend (`build_layer`, `build_payload`), server (`/api/config` schema), frontend (schema-built panel: enabled/mode/params/retrace/wait + K + gen), Phase-1 gen report, **vote-attribution logging** (every indicator's opinion + active flag per entry, log + chips). No silent fallback (`ParamError` → HTTP 400). **80 tests** + parity locks. |
 | **I.5 Verify (team-leader sign-off)** | ✅ **APPROVED** (2026-06-08) after review changes #1–#4 (below). |
 | **I.6 Full docs + PLAYBOOK** | ✅ **complete** — `docs/PLAYBOOK.md` (operating reference) + review docs. |
-| I.7 Vectorize into fast_engine + parity | 🔵 next |
-| I.8 NSGA-III + win-rate + extended search | ⬜ pending |
+| **I.7 Vectorize into fast_engine + parity** | ✅ **complete** — `runner.confirm_mask` (vectorised) + veto folded into the optimiser gate (`optimize/core.py`); `optimize/test_indicator_parity.py` locks it trade-for-trade vs the verified engine (5 configs + all-off invariant). Fast path = immediate-fill GATE (retrace/wait + live-carry stay in the exact dashboard engine). |
+| I.8 NSGA-III + win-rate + extended search | 🔵 next |
 | I.9 4h smoke run · I.10 all-TF sweep | ⬜ pending |
 
 ## I.5 review changes (approved 2026-06-08)

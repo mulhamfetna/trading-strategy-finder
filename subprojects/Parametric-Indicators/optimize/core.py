@@ -81,6 +81,20 @@ def backtest_metrics(
         gthr = float(np.percentile(ref, gate_pct))
         gate = vfw <= gthr
 
+    # WS-I.7 indicator layer (optional): fold veto + confirm into the gate as a per-bar mask.
+    # gate_used = vol_gate ∧ ¬veto ∧ confirm≥K. Off/absent ⇒ gate unchanged (parity). The fast path
+    # treats confirm/veto as an immediate-fill GATE; retrace/wait + live-carry stay in the exact
+    # engine (dashboard). NSGA search over which indicators help runs on this gate.
+    specs = params.get("indicators") or []
+    if specs:
+        from indicators import library, runner
+        inds = library.from_specs(specs)
+        if any(i.config.enabled for i in inds):
+            base = gate if gate is not None else np.ones(len(d), dtype=bool)
+            vmask = runner.veto_mask(d, box, inds)
+            cmask = runner.confirm_mask(d, box, inds, int(params.get("k", 1)))
+            gate = base & ~vmask & cmask
+
     # precomputed signals (param-independent) sliced to the window; else compute on the slice
     si = sig_int[lo:hi] if sig_int is not None else signals_to_int(_sig.decision_signals(d, box))
     cand = fast_backtest(

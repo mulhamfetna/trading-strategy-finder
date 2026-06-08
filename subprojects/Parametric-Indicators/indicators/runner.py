@@ -72,6 +72,31 @@ def veto_mask(df, box, indicators):
     return out
 
 
+def confirm_mask(df, box, indicators, k):
+    """Per-decision-bar CONFIRM gate (vectorised, for the optimiser fast path — WS-I.7).
+    True where ≥ K_eff enabled confirm-capable (mode∈{confirm,both}) indicators vote CONFIRM at the
+    just-closed signal bar, aligned to the entry bar (mask[idx] = confirms at idx-1; idx 0 = True).
+    K_eff = min(k, #confirm-capable-enabled); no confirmers ⇒ all True (no requirement ⇒ parity).
+
+    This is the immediate-fill confirmation as a pure gate — it does NOT model retrace/wait fill or
+    the live-carry-across-HOLD-bars resolver (those stay in the exact engine / dashboard path)."""
+    n = len(df)
+    out = np.ones(n, dtype=bool)
+    confirmers = [ind for ind in indicators
+                  if ind.config.enabled and ind.config.mode in ("confirm", "both")]
+    k_eff = min(int(k), len(confirmers))
+    if k_eff <= 0:
+        return out                                # no confirm requirement (parity)
+    ctx = market_context(df)
+    bdir = box_direction_int(df, box)
+    cc = np.zeros(n, dtype=np.int64)
+    for ind in confirmers:
+        cc += (ind.vote(ctx, bdir) == CONFIRM).astype(np.int64)
+    ok = cc >= k_eff
+    out[1:] = ok[:-1]                             # align to the entry bar (confirms read at idx-1)
+    return out
+
+
 def build_layer(df, box, indicators, k, vol_gate,
                 retrace_amount=0.0, retrace_unit="atr_mult", wait_bars=0):
     """Assemble the full indicator layer for a run (Q5 split):
