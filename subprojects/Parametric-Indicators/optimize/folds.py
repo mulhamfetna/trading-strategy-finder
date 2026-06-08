@@ -75,13 +75,16 @@ def score_walkforward(df_dec, df1, box, vf, params, bar_duration,
 
     scored = [f for f in folds if "pnl" in f]
     if not scored:
-        return {"valid": False, "median_pnl": 0.0, "worst_dd": 0.0, "folds": folds}
+        return {"valid": False, "median_pnl": 0.0, "worst_dd": 0.0, "median_win": 0.0,
+                "total_pnl": 0.0, "folds": folds}
     pnls = np.array([f["pnl"] for f in scored])
     dds = np.array([f["max_dd"] for f in scored])
+    wins = np.array([f.get("win", 0.0) for f in scored])   # per-fold win-rate %
     return {
         "valid": valid,
         "median_pnl": float(np.median(pnls)),
         "worst_dd": float(dds.max()),
+        "median_win": float(np.median(wins)),               # WS-I.8 3rd objective (win-rate)
         "total_pnl": float(pnls.sum()),
         "n_folds_scored": len(scored),
         "folds": folds,

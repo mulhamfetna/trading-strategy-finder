@@ -37,6 +37,29 @@ if str(_PARENT) not in sys.path:
 from optimize import data as data_mod, timeframes as TF, signals as sig_mod  # noqa: E402
 from optimize.fast_engine import signals_to_int          # noqa: E402
 from optimize.folds import score_walkforward             # noqa: E402
+from indicators import library                            # noqa: E402
+
+DD_PNL_CAP = 0.25   # WS-I.8 constraint: feasible iff worst-fold maxDD ≤ 25% of total P/L
+
+
+def _suggest_param(trial, name, p):
+    """Suggest one indicator param from its schema entry (int if integer step+default, else float)."""
+    lo, hi, st = float(p["min"]), float(p["max"]), float(p.get("step", 1))
+    if st.is_integer() and float(p["default"]).is_integer():
+        return trial.suggest_int(name, int(lo), int(hi), step=max(1, int(st)))
+    return trial.suggest_float(name, lo, hi, step=st)
+
+
+def _suggest_indicators(trial):
+    """Full WS-I.8 search space: every registered indicator on/off + its params (rectangular —
+    params always suggested so NSGA crossover stays well-defined). Mode = the schema default."""
+    specs = []
+    for key in library.REGISTRY:
+        meta = library.SCHEMA[key]
+        enabled = trial.suggest_categorical(f"en_{key}", [False, True])
+        params = {p["name"]: _suggest_param(trial, f"{key}_{p['name']}", p) for p in meta["params"]}
+        specs.append({"key": key, "enabled": enabled, "mode": meta["mode"], "params": params})
+    return specs
 
 _STUDIES = _HERE / "studies"
 _STUDIES.mkdir(exist_ok=True)
@@ -77,38 +100,56 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         dd_limit = trial.suggest_float("dd_limit", 0.0, DD_LIMIT_MAX)
         cooldown = trial.suggest_int("cooldown", 0, cap)
         flip = trial.suggest_categorical("flip", [False, True])
+        specs = _suggest_indicators(trial)              # WS-I.8 full indicator search space
+        k_rule = trial.suggest_int("k", 1, 5)           # clamped to #confirmers by confirm_mask
         params = dict(sl_soft=sl_soft, sl_hard=sl_soft + delta, tp=tp, gate_pct=gate_pct,
-                      dd_limit=dd_limit, cooldown=cooldown, flip=flip, window="full")
+                      dd_limit=dd_limit, cooldown=cooldown, flip=flip, window="full",
+                      indicators=specs, k=k_rule)
         r = score_walkforward(df_dec, df1, box, vf, params, tf.bar_td, k=folds,
                               min_trades=min_trades, sig_int=sig_int)
         if not r["valid"]:
             raise optuna.TrialPruned()
-        trial.set_user_attr("worst_dd", r["worst_dd"])
+        worst_dd = r["worst_dd"]; total_pnl = r.get("total_pnl", 0.0); med_win = r["median_win"]
+        trial.set_user_attr("worst_dd", worst_dd)
         trial.set_user_attr("median_pnl", r["median_pnl"])
-        trial.set_user_attr("total_pnl", r.get("total_pnl"))
-        return r["median_pnl"], -r["worst_dd"]
+        trial.set_user_attr("total_pnl", total_pnl)
+        trial.set_user_attr("median_win", med_win)
+        # constraint: worst_dd ≤ 25% of total P/L  ⇒  (worst_dd − 0.25·total_pnl) ≤ 0 is feasible.
+        trial.set_user_attr("constraint", [float(worst_dd - DD_PNL_CAP * total_pnl)])
+        # 3 objectives, all maximised: median P/L, −worst DD, median win-rate.
+        return r["median_pnl"], -worst_dd, med_win
+
+    def _constraints(trial):
+        return trial.user_attrs.get("constraint", [1.0])   # missing ⇒ infeasible
 
     study = optuna.create_study(
-        study_name=f"wsh_{tf_name}",
+        study_name=f"wsh3_{tf_name}",
         storage=f"sqlite:///{_DB}",
-        directions=["maximize", "maximize"],
-        sampler=optuna.samplers.NSGAIISampler(seed=seed),
+        directions=["maximize", "maximize", "maximize"],
+        sampler=optuna.samplers.NSGAIIISampler(seed=seed, constraints_func=_constraints),
         load_if_exists=True,
     )
     t0 = time.time()
     study.optimize(objective, n_trials=n_trials, show_progress_bar=False)
     dur = time.time() - t0
 
-    front = sorted(study.best_trials, key=lambda t: t.values[0], reverse=True)
-    print(f"[{tf_name}] {len(study.trials)} trials in {dur:.0f}s; Pareto front {len(front)} points:",
-          flush=True)
+    def feasible(t):
+        c = t.user_attrs.get("constraint", [1.0])
+        return all(v <= 0 for v in c)
+
+    front = [t for t in study.best_trials if feasible(t)]
+    front.sort(key=lambda t: t.values[0], reverse=True)
+    n_enabled = lambda p: sum(1 for k_, v in p.items() if k_.startswith("en_") and v)
+    print(f"[{tf_name}] {len(study.trials)} trials in {dur:.0f}s; feasible Pareto front "
+          f"{len(front)}/{len(study.best_trials)} (DD≤25%·P&L):", flush=True)
     for t in front[:12]:
         p = t.params
-        print(f"   P/L(med) ${t.values[0]:>7,.0f}  maxDD ${-t.values[1]:>6,.0f}  | "
+        print(f"   P/L(med) ${t.values[0]:>7,.0f}  maxDD ${-t.values[1]:>6,.0f}  win {t.values[2]:4.1f}%  | "
               f"slS {p['sl_soft']:.0f} slH {p['sl_soft']+p['sl_hard_delta']:.0f} tp {p['tp']:.0f} "
-              f"gate {p['gate_pct']:.0f} dd {p['dd_limit']:.0f} cd {p['cooldown']} flip {p['flip']}",
-              flush=True)
-    return {"timeframe": tf_name, "n_trials": len(study.trials), "front": len(front), "dur_s": dur}
+              f"gate {p['gate_pct']:.0f} dd {p['dd_limit']:.0f} cd {p['cooldown']} flip {p['flip']} "
+              f"K{p['k']} +{n_enabled(p)}ind", flush=True)
+    return {"timeframe": tf_name, "n_trials": len(study.trials),
+            "front": len(front), "front_all": len(study.best_trials), "dur_s": dur}
 
 
 def main() -> int:
