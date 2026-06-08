@@ -99,6 +99,30 @@ python3 subprojects/all-stocks-signals/package_delivery.py --zip       # 6 bundl
   per-instrument `output/<token>/SUMMARY.csv` files (which each bundle carries correctly).
 - Determinism: same inputs + same code → byte-identical outputs regardless of worker count.
 
-## 9. Status
-**WS-AS complete.** 6 bundles generated, NQ byte-identical, all structurally validated, 32 tests
-green. Returning to the paused **WS-I.5** team-leader sign-off.
+## 9. ETF box-shift re-export (WS-AS.8 — isolated, ETFs only)
+After NQ & ES were **approved and frozen**, the 4 ETF bundles were regenerated with each instrument's
+box `Date` shifted **back one business day** (weekends are the only holidays):
+`new_Date = old_Date − 1 BDay` → Monday→Friday, Tuesday→Monday, Wednesday→Tuesday,
+Thursday→Wednesday, Friday→Thursday. Done by a **strictly isolated** script
+(`isolated_etf_box_shift.py`) that hardcodes only the 4 ETF paths, reuses the frozen Stage 1/Stage 2
+engine read-only, and **never references NQ/ES** (asserted). The shift was verified a clean bijection
+(weekday-only boxes, 0 post-shift duplicate dates); a loud assertion guards against weekend/collision
+results. Shifted boxes saved to `shifted_boxes/<TOKEN>_full_data_shifted.csv` (Date 2024-12-31 ..
+2026-05-21). All 4 re-exports pass the 5-invariant validation against the **shifted** box index
+(box_id dates now resolve in the shifted index). The 4 ETF `*_SIGNALS_DELIVERY` bundles + zips were
+replaced with the shifted versions (README carries a `BOX-SHIFTED` marker); NQ/ES bundles untouched.
+
+Effect (reverse-window totals, Σ 21 cells — unshifted → shifted):
+| ETF | rows | long | short | reverse |
+|---|--:|--:|--:|--:|
+| QQQ-RTH | 4,663,768 → 4,666,576 | 18,312 → 17,436 | 17,886 → 18,186 | 8,109 → 8,197 |
+| QQQ-ETH | 10,683,802 → 10,717,022 | 27,042 → 25,820 | 28,002 → 26,984 | 11,973 → 11,781 |
+| SQQQ-RTH | 4,623,364 → 4,629,284 | 16,036 → 16,116 | 16,074 → 16,070 | 8,525 → 8,721 |
+| SQQQ-ETH | 9,753,596 → 9,796,028 | 24,162 → 23,544 | 23,780 → 24,054 | 12,793 → 12,875 |
+
+Re-run: `python3 subprojects/all-stocks-signals/isolated_etf_box_shift.py` (the unshifted ETF output
+tree under `output/` is retained for audit; NQ/ES are never run by this script).
+
+## 10. Status
+**WS-AS complete.** NQ & ES = approved/frozen (byte-identical, untouched). The 4 ETF bundles =
+box-shifted −1 business day, validated. 32 tests green. Returning to the paused **WS-I.5** sign-off.

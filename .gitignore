@@ -80,3 +80,6 @@ SERVER_DATA.env
 !subprojects/meta-prophet/dashboard_winner/index.html
 !subprojects/meta-prophet/winner_dashboard/index.html
 !subprojects/wsg-strategy/frontend/index.html
+
+# WS-AS.8 isolated ETF box-shift re-export tree (build artifact)
+output_shifted/

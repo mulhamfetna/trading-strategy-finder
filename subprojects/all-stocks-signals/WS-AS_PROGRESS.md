@@ -21,9 +21,16 @@ workstream: WS-AS (all-stocks-signals)
 | AS.6 Parallel eval (local vs server) | ✅ done — **local, RAM-safe**; 5 instruments in ~41 min (see Timings) |
 | AS.7 Final docs + REPORT + commit | ✅ done — `docs/REPORT.md` (cross-instrument totals + parity evidence) |
 
+| AS.8 ETF box-shift (−1 BDay), ETFs only | ✅ **done** — isolated `isolated_etf_box_shift.py`; 4 ETF bundles re-exported with box shifted back 1 business day (Mon→Fri…); validated; NQ/ES untouched |
+
 ## Result
 6 bundles, **63,200,834** signal rows / **74,391** reverse windows total. NQ **105/105 byte-identical**
 to the committed delivery. All 6 × 21 cells pass 5 invariants. **32 tests green.** See `docs/REPORT.md`.
+
+**AS.8 (post-approval):** NQ & ES **approved + frozen**. The 4 ETFs (QQQ/SQQQ × RTH/ETH) re-exported
+with each box `Date` shifted back **1 business day** (clean bijection, 0 collisions) via a strictly
+isolated script that never touches NQ/ES. All 4 re-exports validated (0 errors); bundles + zips
+replaced with `BOX-SHIFTED` versions; shifted boxes saved under `shifted_boxes/`. See `docs/REPORT.md` §9.
 
 ## Decisions (user, 2026-06-08)
 - **D1** ETF/ETH session roll → **follow NQ logic uniformly** (futures hour≥18 roll for all 6).
