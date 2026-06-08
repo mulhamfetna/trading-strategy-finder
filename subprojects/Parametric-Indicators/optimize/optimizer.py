@@ -37,6 +37,7 @@ if str(_PARENT) not in sys.path:
 from optimize import data as data_mod, timeframes as TF, signals as sig_mod  # noqa: E402
 from optimize.fast_engine import signals_to_int          # noqa: E402
 from optimize.folds import score_walkforward             # noqa: E402
+from optimize.core import backtest_metrics               # noqa: E402
 from indicators import library                            # noqa: E402
 
 DD_PNL_CAP = 0.25   # WS-I.8 constraint: feasible iff worst-fold maxDD ≤ 25% of total P/L
@@ -87,7 +88,7 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
     b = bounds[tf_name]
 
     print(f"[{tf_name}] loading inputs ...", flush=True)
-    df_dec, df1, box, vf, _n = data_mod.load_inputs(tf_name)
+    df_dec, df1, box, vf, n_split = data_mod.load_inputs(tf_name)
     sig_int = signals_to_int(sig_mod.decision_signals(df_dec, box))   # precompute once (param-independent)
     print(f"[{tf_name}] {len(df_dec)} decision bars; cooldown cap {cap}; "
           f"bounds sl_soft{b['sl_soft']} sl_hard{b['sl_hard']} tp{b['tp']}", flush=True)
@@ -109,14 +110,20 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
                               min_trades=min_trades, sig_int=sig_int)
         if not r["valid"]:
             raise optuna.TrialPruned()
-        worst_dd = r["worst_dd"]; total_pnl = r.get("total_pnl", 0.0); med_win = r["median_win"]
+        worst_dd = r["worst_dd"]; med_win = r["median_win"]
+        # FULL-PERIOD feasibility (user): full-window max DD ≤ 25% of full-window P/L. One extra
+        # backtest over the whole window (gate frozen causally on vf[:n_split]).
+        full = backtest_metrics(df_dec, df1, box, vf, n_split, dict(params, window="full"),
+                                tf.bar_td, sig_int=sig_int)
+        full_pnl = float(full["pnl"]); full_dd = float(full["max_dd"])
         trial.set_user_attr("worst_dd", worst_dd)
         trial.set_user_attr("median_pnl", r["median_pnl"])
-        trial.set_user_attr("total_pnl", total_pnl)
         trial.set_user_attr("median_win", med_win)
-        # constraint: worst_dd ≤ 25% of total P/L  ⇒  (worst_dd − 0.25·total_pnl) ≤ 0 is feasible.
-        trial.set_user_attr("constraint", [float(worst_dd - DD_PNL_CAP * total_pnl)])
-        # 3 objectives, all maximised: median P/L, −worst DD, median win-rate.
+        trial.set_user_attr("full_pnl", full_pnl)
+        trial.set_user_attr("full_dd", full_dd)
+        # feasible iff full_dd ≤ 0.25·full_pnl ⇒ (full_dd − 0.25·full_pnl) ≤ 0 (P/L≤0 ⇒ infeasible).
+        trial.set_user_attr("constraint", [float(full_dd - DD_PNL_CAP * full_pnl)])
+        # 3 objectives, all maximised: median fold P/L, −worst-fold DD, median fold win-rate.
         return r["median_pnl"], -worst_dd, med_win
 
     def _constraints(trial):
@@ -143,8 +150,11 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
     print(f"[{tf_name}] {len(study.trials)} trials in {dur:.0f}s; feasible Pareto front "
           f"{len(front)}/{len(study.best_trials)} (DD≤25%·P&L):", flush=True)
     for t in front[:12]:
-        p = t.params
+        p = t.params; ua = t.user_attrs
+        fp = ua.get("full_pnl", 0.0); fd = ua.get("full_dd", 0.0)
+        ratio = (fd / fp) if fp > 0 else float("inf")
         print(f"   P/L(med) ${t.values[0]:>7,.0f}  maxDD ${-t.values[1]:>6,.0f}  win {t.values[2]:4.1f}%  | "
+              f"full P/L ${fp:>7,.0f} DD ${fd:>6,.0f} ({ratio*100:.0f}%) | "
               f"slS {p['sl_soft']:.0f} slH {p['sl_soft']+p['sl_hard_delta']:.0f} tp {p['tp']:.0f} "
               f"gate {p['gate_pct']:.0f} dd {p['dd_limit']:.0f} cd {p['cooldown']} flip {p['flip']} "
               f"K{p['k']} +{n_enabled(p)}ind", flush=True)
