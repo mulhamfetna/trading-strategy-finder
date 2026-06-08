@@ -27,9 +27,10 @@ def _save(fig, name):
     p = os.path.join(_HERE, name)
     fig.write_html(p, include_plotlyjs="cdn", full_html=True)
     print("wrote", os.path.relpath(p, _ROOT))
+    return fig
 
 
-def votes_distribution():
+def votes_distribution():  # returns the figure (also saves the standalone html)
     import strategy
     from indicators import library, runner
     from indicators.base import IndicatorConfig
@@ -53,7 +54,7 @@ def votes_distribution():
     fig.update_layout(barmode="stack", title="Per-indicator votes on signalling bars (NQ 4h, default params)",
                       xaxis_title="indicator", yaxis_title="# decision bars (box has a direction)",
                       template="plotly_white", legend_title="vote")
-    _save(fig, "votes_distribution.html")
+    return _save(fig, "votes_distribution.html")
 
 
 def engine_vs_fast():
@@ -75,7 +76,7 @@ def engine_vs_fast():
                            text=[f"{t_eng*1000:.0f} ms", f"{t_fast*1000:.1f} ms"], textposition="outside"))
     fig.update_layout(title=f"One 4h backtest: Python engine vs vectorized ({t_eng/max(t_fast,1e-9):.0f}× faster)",
                       yaxis_title="wall-clock (ms, log)", yaxis_type="log", template="plotly_white")
-    _save(fig, "engine_vs_fast.html")
+    return _save(fig, "engine_vs_fast.html")
 
 
 def _smoke_trials():
@@ -112,7 +113,7 @@ def nsga3_feasibility():
     fig.update_layout(title="I.9 smoke (4h): full-period P/L vs max DD — feasibility line",
                       xaxis_title="full-period P/L ($)", yaxis_title="full-period max DD ($)",
                       template="plotly_white")
-    _save(fig, "nsga3_feasibility.html")
+    return _save(fig, "nsga3_feasibility.html")
 
 
 def nsga3_objectives_3d():
@@ -127,7 +128,7 @@ def nsga3_objectives_3d():
     fig.update_layout(title="I.9 smoke (4h): the 3 objectives (green=feasible)",
                       scene=dict(xaxis_title="median fold P/L ($)", yaxis_title="worst-fold DD ($)",
                                  zaxis_title="median win-rate (%)"), template="plotly_white")
-    _save(fig, "nsga3_objectives_3d.html")
+    return _save(fig, "nsga3_objectives_3d.html")
 
 
 if __name__ == "__main__":
