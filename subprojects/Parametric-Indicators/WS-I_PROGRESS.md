@@ -16,8 +16,18 @@ workstream: WS-I
 | I.2 Document | ✅ done — `docs/INDICATORS.md` |
 | **I.3 Engine + manual test** | ✅ **complete** — engine/logic layer done (see WS-I.3_ENGINE_REPORT.md); 65 tests + parity locks. Only `build_payload` wiring remains, folded into I.4. |
 | **I.4 Dashboard** | ✅ **complete** — see `docs/WS-I.4_DASHBOARD_REPORT.md`. Backend (`build_layer`, `build_payload`), server (`/api/config` schema), frontend (schema-built panel: enabled/mode/params/retrace/wait + K + gen), Phase-1 gen report, **vote-attribution logging** (every indicator's opinion + active flag per entry, log + chips). No silent fallback (`ParamError` → HTTP 400). **80 tests** + parity locks. |
-| **I.5 Verify (team-leader sign-off)** | 🚦 **READY — HARD PAUSE for your review** |
-| I.6–I.10 | ⬜ pending |
+| **I.5 Verify (team-leader sign-off)** | ✅ **APPROVED** (2026-06-08) after review changes #1–#4 (below). |
+| **I.6 Full docs + PLAYBOOK** | ✅ **complete** — `docs/PLAYBOOK.md` (operating reference) + review docs. |
+| I.7 Vectorize into fast_engine + parity | 🔵 next |
+| I.8 NSGA-III + win-rate + extended search | ⬜ pending |
+| I.9 4h smoke run · I.10 all-TF sweep | ⬜ pending |
+
+## I.5 review changes (approved 2026-06-08)
+- **#1 HAR lags** — studied; **keep 1/6/30** (empirical best fit; candle-based confirmed). `docs/HAR_LAG_REVIEW.md`. No code change.
+- **#2 Golf → N-candle engulfing** — opposite-colour to all N prior + wick range-engulf + body ≥ 70% of prior span (generation-only). `docs/GOLF_ENGULFING.md`. Commit `ad3ba2a`.
+- **#3 Global retrace + wait** — one value each, all indicators (single shared level). `docs/ENTRY_TIMING_CHANGES.md`. Commit `5014017`.
+- **#4 Wait on 1-min bars** — wait counts 1-min armed-window bars; decision-bar debounce removed. Commit `5014017`.
+- Validation: **78 tests** + PARITY OK (+$7,735/$3,670/66) + FAST-PARITY OK preserved throughout.
 
 ## I.3 — built & verified (TDD, 41 tests green)
 - **`indicators/classic.py`** — 14 classic indicators (SMA/EMA/RMA/OBV/RSI/TR/ATR/MACD/Stochastic/
