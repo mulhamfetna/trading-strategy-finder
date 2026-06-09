@@ -37,6 +37,66 @@ def box_direction_int(df: pd.DataFrame, box: pd.DataFrame) -> np.ndarray:
     return signals_to_int(_sig.decision_signals(df, box))
 
 
+# --- optional 1-MINUTE indicator source -------------------------------------------------------
+# When supplied, indicators compute their direction on the 1-minute frame and each decision bar
+# reads the value of its LAST CLOSED 1-minute candle (causal). The box trigger, entry cadence and
+# exits stay on the decision timeframe; only the indicators' data source changes. Warm-up then
+# counts 1-MINUTE candles. Build one with indicator_source_1min(df_dec, df1, bar_td) and pass it as
+# `src=` to veto_mask / confirm_mask / build_entry_resolver / build_layer. src=None ⇒ decision-TF
+# behaviour (unchanged; the optimiser + parity tests never pass src).
+
+def _decbar_1min_index(dec_dates: np.ndarray, min_dates: np.ndarray, bar_td: pd.Timedelta) -> np.ndarray:
+    """For each decision bar i, the index of the LAST 1-minute bar inside its window
+    [start_i, start_i + bar_td) — the 1-minute candle that closes that decision bar. -1 if none."""
+    starts = np.asarray(dec_dates, dtype="datetime64[ns]")
+    md = np.asarray(min_dates, dtype="datetime64[ns]")
+    ends = starts + np.timedelta64(int(bar_td / pd.Timedelta(minutes=1)), "m")
+    j = np.searchsorted(md, ends, side="left") - 1          # last 1-min bar strictly before window end
+    jj = np.clip(j, 0, len(md) - 1)
+    in_win = (j >= 0) & (md[jj] >= starts)                  # must actually fall in this bar's window
+    return np.where(in_win, j, -1)
+
+
+def indicator_source_1min(df_dec: pd.DataFrame, df1: pd.DataFrame, bar_td: pd.Timedelta):
+    """Return a src tuple (ctx_1min, j_idx) for the 1-minute indicator mode (see note above)."""
+    ctx_1m = market_context(df1)
+    j_idx = _decbar_1min_index(df_dec["Date"].to_numpy(), df1["Date"].to_numpy(), bar_td)
+    return (ctx_1m, j_idx)
+
+
+def _vote_from_1min(ind, ctx_1m, j_idx, box_dir) -> np.ndarray:
+    """Per-decision-bar vote for `ind` using its direction computed on the 1-MINUTE context and
+    sampled at each decision bar's closing 1-minute candle, compared to the decision box direction.
+    Mirrors base.Indicator.vote exactly (including the warm-up, now in 1-MINUTE candles)."""
+    from .base import CONFIRM, VETO, HOLD, BOTH
+    cdir1, vdir1 = ind.directions(ctx_1m)
+    cdir1 = np.asarray(cdir1).copy(); vdir1 = np.asarray(vdir1).copy()
+    w = min(int(ind.warmup_bars()), len(cdir1))             # warm-up counts 1-minute candles here
+    if w > 0:
+        cdir1[:w] = 0; vdir1[:w] = 0
+    n = len(j_idx)
+    cdir = np.zeros(n, dtype=np.int8); vdir = np.zeros(n, dtype=np.int8)
+    ok = j_idx >= 0
+    cdir[ok] = cdir1[j_idx[ok]]; vdir[ok] = vdir1[j_idx[ok]]
+    bd = np.asarray(box_dir); has = bd != HOLD
+    would_confirm = ((cdir == bd) | (cdir == BOTH)) & has
+    would_veto = ((vdir == bd) | (vdir == BOTH)) & has
+    out = np.zeros(n, dtype=np.int8)
+    if ind.config.mode in ("confirm", "both"):
+        out[would_confirm] = CONFIRM
+    if ind.config.mode in ("veto", "both"):
+        out[would_veto] = VETO
+    return out
+
+
+def _ind_vote(ind, ctx, bdir, src=None) -> np.ndarray:
+    """Per-decision-bar vote: decision-TF (ind.vote) when src is None, else 1-minute-sourced."""
+    if src is None:
+        return ind.vote(ctx, bdir)
+    ctx_1m, j_idx = src
+    return _vote_from_1min(ind, ctx_1m, j_idx, bdir)
+
+
 def composite_gate(vol_gate, df, box, indicators, k):
     """vol_gate: per-bar bool (engine idx). indicators: list of Indicator instances (enabled+disabled).
     Returns (gate, votes, active): gate = vol_gate ∧ (indicator allow, aligned to the signal bar)."""
@@ -52,10 +112,11 @@ def composite_gate(vol_gate, df, box, indicators, k):
     return vg & aligned, votes, active
 
 
-def veto_mask(df, box, indicators):
+def veto_mask(df, box, indicators, src=None):
     """Per-decision-bar veto mask (Q5: veto lives in the gate). True where any ENABLED veto-capable
     (mode∈{veto,both}) indicator votes VETO, read at the just-closed signal bar and aligned to the
-    entry bar (mask[idx] = veto at idx-1; idx 0 = False). No veto indicators ⇒ all False (parity)."""
+    entry bar (mask[idx] = veto at idx-1; idx 0 = False). No veto indicators ⇒ all False (parity).
+    src (optional) routes the indicator reading to the 1-minute frame (see indicator_source_1min)."""
     from .base import VETO
     n = len(df)
     out = np.zeros(n, dtype=bool)
@@ -67,12 +128,12 @@ def veto_mask(df, box, indicators):
     bdir = box_direction_int(df, box)
     raw = np.zeros(n, dtype=bool)
     for ind in vetoers:
-        raw |= (ind.vote(ctx, bdir) == VETO)
+        raw |= (_ind_vote(ind, ctx, bdir, src) == VETO)
     out[1:] = raw[:-1]                            # align to the entry bar (veto read at idx-1)
     return out
 
 
-def confirm_mask(df, box, indicators, k):
+def confirm_mask(df, box, indicators, k, src=None):
     """Per-decision-bar CONFIRM gate (vectorised, for the optimiser fast path — WS-I.7).
     True where ≥ K_eff enabled confirm-capable (mode∈{confirm,both}) indicators vote CONFIRM at the
     just-closed signal bar, aligned to the entry bar (mask[idx] = confirms at idx-1; idx 0 = True).
@@ -91,14 +152,14 @@ def confirm_mask(df, box, indicators, k):
     bdir = box_direction_int(df, box)
     cc = np.zeros(n, dtype=np.int64)
     for ind in confirmers:
-        cc += (ind.vote(ctx, bdir) == CONFIRM).astype(np.int64)
+        cc += (_ind_vote(ind, ctx, bdir, src) == CONFIRM).astype(np.int64)
     ok = cc >= k_eff
     out[1:] = ok[:-1]                             # align to the entry bar (confirms read at idx-1)
     return out
 
 
 def build_layer(df, box, indicators, k, vol_gate,
-                retrace_amount=0.0, retrace_unit="atr_mult", wait_bars=0):
+                retrace_amount=0.0, retrace_unit="atr_mult", wait_bars=0, src=None):
     """Assemble the full indicator layer for a run (Q5 split):
       gate     = vol_gate ∧ ¬veto_mask   (eligibility)
       resolver = build_entry_resolver(confirm-capable indicators, k, GLOBAL retrace+wait)
@@ -106,16 +167,16 @@ def build_layer(df, box, indicators, k, vol_gate,
     retrace_amount/unit and wait_bars are GLOBAL (one value each, applied to ALL indicators).
     Returns (gate, resolver, vmask). All-off ⇒ gate==vol_gate, vmask all-False, resolver immediate."""
     vg = np.asarray(vol_gate, dtype=bool)
-    vmask = veto_mask(df, box, indicators)
+    vmask = veto_mask(df, box, indicators, src=src)
     gate = vg & ~vmask
     resolver = build_entry_resolver(df, box, indicators, k,
                                     retrace_amount=retrace_amount, retrace_unit=retrace_unit,
-                                    wait_bars=wait_bars)
+                                    wait_bars=wait_bars, src=src)
     return gate, resolver, vmask
 
 
 def build_entry_resolver(df, box, indicators, k,
-                         retrace_amount=0.0, retrace_unit="atr_mult", wait_bars=0):
+                         retrace_amount=0.0, retrace_unit="atr_mult", wait_bars=0, src=None):
     """Build the engine `entry_resolver` closure: live-B1 confirm count + GLOBAL retrace/wait fill.
 
     GLOBAL controls (one value each, applied to ALL indicators — WS-I notes #3/#4):
@@ -136,7 +197,7 @@ def build_entry_resolver(df, box, indicators, k,
     confirmers = [ind for ind in indicators
                   if ind.config.enabled and ind.config.mode in ("confirm", "both")]
     n_confirm = len(confirmers)
-    votes = {id(ind): ind.vote(ctx, bdir) for ind in confirmers}
+    votes = {id(ind): _ind_vote(ind, ctx, bdir, src) for ind in confirmers}
     atr = classic.atr(ctx.high, ctx.low, ctx.close, 14)
     g_amount = float(retrace_amount)
     g_atr = (retrace_unit == "atr_mult")

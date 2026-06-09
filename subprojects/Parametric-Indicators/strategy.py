@@ -175,16 +175,20 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
         if n_confirm > 0 and k_rule > n_confirm:
             raise ParamError(f"k={k_rule} exceeds the {n_confirm} enabled confirm-capable indicator(s)")
         base = gate if gate is not None else np.ones(len(d4), dtype=bool)
+        # INDICATORS READ THE 1-MINUTE FRAME: directions are computed on d1 and each decision bar
+        # samples its last-closed 1-minute candle (causal). Box trigger/cadence/exits unchanged;
+        # warm-up now counts 1-minute candles. (src=None would keep the decision-TF behaviour.)
+        ind_src = runner.indicator_source_1min(d4, d1, bar_td)
         gate_used, entry_resolver, veto_mask = runner.build_layer(
             d4, box, inds, k_rule, base,
-            retrace_amount=g_retr, retrace_unit=g_runit, wait_bars=g_wait)
+            retrace_amount=g_retr, retrace_unit=g_runit, wait_bars=g_wait, src=ind_src)
         if any(i.config.enabled and i.key in ("fvg", "order_block", "structure_trend") for i in inds):
             ctx = runner.market_context(d4)
             gen_report = generate.generate_structures(
                 ctx, int(gen_params.get("swing_l", 2)), int(gen_params.get("golf_n", 3)))["report"]
-        # vote attribution: EVERY indicator's opinion at the signal bar, with an active flag.
+        # vote attribution: EVERY indicator's opinion at the signal bar (1-minute-sourced), active flag.
         _ctx = runner.market_context(d4); _bdir = runner.box_direction_int(d4, box)
-        _votes = {id(i): i.vote(_ctx, _bdir) for i in inds}
+        _votes = {id(i): runner._ind_vote(i, _ctx, _bdir, ind_src) for i in inds}
 
         def attrib(sidx):
             sidx = int(sidx)
@@ -266,27 +270,28 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
         events.append(ev)
 
     # Warm-up notices (logs): each enabled indicator stays NEUTRAL for its look-back; composites
-    # wait for the parts they depend on. Log when warming starts (what it waits for) + when eligible.
+    # wait for the parts they depend on. Indicators read the 1-MINUTE frame, so warm-up counts
+    # 1-MINUTE candles (dates come from d1). Log when warming starts (what it waits for) + eligible.
     if specs:
-        nbar = len(d4); t0e = _ts(d4["Date"].iloc[0])
+        nmin = len(d1); t0e = _ts(d4["Date"].iloc[0])
         for ind in inds:
             if not ind.config.enabled:
                 continue
             w = int(ind.warmup_bars())
             if w <= 0:
                 continue
-            if w < nbar:
-                first_dt = pd.Timestamp(d4["Date"].iloc[w]).strftime("%Y-%m-%d %H:%M")
+            if w < nmin:
+                first_dt = pd.Timestamp(d1["Date"].iloc[w]).strftime("%Y-%m-%d %H:%M")
                 events.append({"time": t0e, "type": "WARMUP",
-                               "text": f"⏳ WARMING UP — {ind.key} inactive for the first {w} bars "
-                                       f"(waiting for {ind.warmup_deps()} to finish); first eligible {first_dt}"})
-                events.append({"time": _ts(d4["Date"].iloc[w]), "type": "WARMED",
+                               "text": f"⏳ WARMING UP — {ind.key} inactive for the first {w} one-minute "
+                                       f"candles (waiting for {ind.warmup_deps()} to finish); first eligible {first_dt}"})
+                events.append({"time": _ts(d1["Date"].iloc[w]), "type": "WARMED",
                                "text": f"✅ {ind.key} warmed up — now eligible to vote "
-                                       f"(waited {w} bars for {ind.warmup_deps()})"})
+                                       f"(waited {w} one-minute candles for {ind.warmup_deps()})"})
             else:
                 events.append({"time": t0e, "type": "WARMUP",
-                               "text": f"⏳ WARMING UP — {ind.key} needs {w} bars but this window has "
-                                       f"only {nbar} → it NEVER warms up here (waiting for {ind.warmup_deps()})"})
+                               "text": f"⏳ WARMING UP — {ind.key} needs {w} one-minute candles but this "
+                                       f"window has only {nmin} → it NEVER warms up here (waiting for {ind.warmup_deps()})"})
 
     candles = [{"time": _ts(d4["Date"].iloc[i]), "open": float(d4["Open"].iloc[i]), "high": float(d4["High"].iloc[i]),
                 "low": float(d4["Low"].iloc[i]), "close": float(d4["Close"].iloc[i])} for i in range(len(d4))]

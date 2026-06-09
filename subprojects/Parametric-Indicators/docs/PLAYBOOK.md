@@ -98,6 +98,15 @@ summary line; enable an SMC indicator to see the generation report.
 
 ## 8b. Dashboard additions (post-WS-I.10)
 The dashboard/backtester gained, all parity-safe (indicators-off still reproduces the box winner):
+- **Indicators read the 1-MINUTE frame** (dashboard backtester) — every indicator's direction is now
+  computed on the 1-minute candles; each decision bar reads the value of its **last-closed 1-minute
+  candle** (causal). The box trigger, entry cadence and exits stay on the decision timeframe; only
+  the indicators' data source changed. Consequence: an indicator's look-back/warm-up now counts
+  **1-minute candles** (e.g. `ema_trend slow=373` ≈ 373 minutes, not 373×4h), so any params tuned as
+  decision-TF look-backs mean something very different here. Wired as an optional `src` through
+  `runner` (`indicator_source_1min`); the optimiser + parity tests pass no `src` and stay decision-TF
+  (parity locks unaffected). Note: computing 15 indicators over the full 1-minute history is heavier
+  (~tens of seconds per full-history backtest).
 - **All-timeframe backtests** — a **Timeframe** dropdown (1m/2m/5m/15m/1h/2h/4h); `build_payload`
   takes an optional `timeframe` (default 4h) and `strategy.get_bundle(tf)` lazy-loads + caches each
   TF's `(df_dec, df1, box, vf, n_split)`. Single-year windows cold-start indicators — prefer `full`.
