@@ -164,7 +164,31 @@ def _write_md(summ):
                          f"{c['n_indicators']} | {c['indicators'] or '(none)'} |")
         else:
             lines.append(f"| {s['tf']} | {s['n_complete']} | {s['n_feasible']} | 0 | — | — | — | — | — | — | — | (no feasible) |")
-    lines += ["", "## Notes / caveats",
+    # full champion recipe per TF — box knobs + every enabled indicator's tuned internals,
+    # so each block is a complete, directly-applyable spec (not just an on/off list).
+    lines += ["", "## Full champion recipe per timeframe", "",
+              "Everything needed to reproduce each per-TF best hit: the box / risk knobs **and** every "
+              "enabled indicator's tuned internal parameters. (Disabled indicators omitted; `vwap` has no "
+              "internal params.)", ""]
+    for s in summ:
+        c = s["champion"]
+        if not c:
+            lines += [f"### {s['tf']} — (no feasible champion)", ""]; continue
+        lines += [f"### {s['tf']}  —  median fold P/L ${c['median_pnl']:,.0f}  ·  worst DD "
+                  f"${c['worst_dd']:,.0f}  ·  win {c['win']:.0f}%  ·  full P/L ${c['full_pnl']:,.0f} "
+                  f"({c['dd_pct_of_pnl']:.0f}% DD)", "",
+                  f"- **Box / risk:** softSL `{c['sl_soft']}` · hardSL `{c['sl_hard']}` · TP `{c['tp']}` · "
+                  f"vol-gate `{c['gate_pct']}%` · dd-breaker `${c['dd_limit']:,.0f}` · cooldown "
+                  f"`{c['cooldown']}` · flip `{c['flip']}` · **K=`{c['k']}`**", "",
+                  "| indicator | role | tuned internal params |", "|---|---|---|"]
+        enabled = [x for x in (c.get("indicators") or "").split(";") if x]
+        for key in enabled:
+            meta = library.SCHEMA.get(key, {})
+            pnames = [p["name"] for p in meta.get("params", [])]
+            cells = ", ".join(f"`{pn}={c.get(f'{key}_{pn}')}`" for pn in pnames) or "_(none)_"
+            lines.append(f"| **{key}** | {meta.get('mode','?')} | {cells} |")
+        lines.append("")
+    lines += ["## Notes / caveats",
               "- Per-TF feasible fronts + plots: `optimize/results/<tf>_wsi_pareto.{csv,png}`.",
               "- A champion is the max-median-P/L feasible point; the full **front** (the CSV) gives the "
               "P/L↔DD↔win trade-off — pick by preference, don't over-index on one row.",

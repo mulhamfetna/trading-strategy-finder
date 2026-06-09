@@ -112,6 +112,111 @@ Two signals appeared in almost every winning combo — they're the MVPs:
 
 A few others (`order_block`, `mfi`, `vwap`) showed up often on the slower speeds.
 
+## 6. The exact recipe for each winning robot 🧾
+
+Here is **everything** each winning robot uses — its risk knobs *and* every helper signal's own inside settings (the numbers the search dialled in). Copy these to reproduce a robot.
+
+<sub>Reading the knobs: **softSL/hardSL** = give-up levels · **TP** = profit target · **gate** = how lively the market must be · **breaker** = stop-for-the-day loss · **cooldown** = bars to wait between trades · **flip** = trade the opposite way too · **K** = how many signals must agree.</sub>
+
+### 4h 🏆 — typically makes $24,253
+
+**Risk knobs:** softSL `139.2` · hardSL `153.11` · TP `183.22` · gate `83.59%` · breaker `$1,305` · cooldown `0` · flip `False` · **needs K=`1` signal(s) to agree**
+
+| helper signal | what it watches | its tuned settings |
+|---|---|---|
+| **ema_trend** | trend up or down | `fast=244`, `slow=373` |
+| **macd** | momentum building/fading | `fast=14`, `slow=143`, `signal=81` |
+| **keltner** | price stretched from a moving band | `n=138`, `m=3.5` |
+| **rsi** | overbought / oversold | `n=53`, `lower=40`, `upper=65` |
+| **stochastic** | overbought / oversold | `n=39`, `d=35`, `lower=23`, `upper=52` |
+| **mfi** | overbought / oversold (with volume) | `n=39`, `lower=12`, `upper=57` |
+| **adx** | is there a real trend (strength) | `n=81`, `threshold=8` |
+| **order_block** | big-player zones | `swing_l=18` |
+
+### 2h 🎯 — typically makes $15,132
+
+**Risk knobs:** softSL `82.55` · hardSL `153.67` · TP `36.46` · gate `75.81%` · breaker `$4,512` · cooldown `1` · flip `True` · **needs K=`1` signal(s) to agree**
+
+| helper signal | what it watches | its tuned settings |
+|---|---|---|
+| **ema_trend** | trend up or down | `fast=92`, `slow=231` |
+| **macd** | momentum building/fading | `fast=64`, `slow=85`, `signal=93` |
+| **vwap** | price vs fair value | _(nothing to set)_ |
+| **obv** | volume pushing price | `slope=50` |
+| **mfi** | overbought / oversold (with volume) | `n=88`, `lower=22`, `upper=76` |
+| **bollinger** | price outside its normal range | `n=108`, `k=2.1` |
+| **order_block** | big-player zones | `swing_l=12` |
+
+### 1h  — typically makes $12,284
+
+**Risk knobs:** softSL `13.03` · hardSL `101.8` · TP `84.48` · gate `55.98%` · breaker `$1,071` · cooldown `1` · flip `True` · **needs K=`2` signal(s) to agree**
+
+| helper signal | what it watches | its tuned settings |
+|---|---|---|
+| **ema_trend** | trend up or down | `fast=65`, `slow=89` |
+| **macd** | momentum building/fading | `fast=49`, `slow=19`, `signal=57` |
+| **vwap** | price vs fair value | _(nothing to set)_ |
+| **obv** | volume pushing price | `slope=130` |
+| **rsi** | overbought / oversold | `n=100`, `lower=22`, `upper=65` |
+| **mfi** | overbought / oversold (with volume) | `n=93`, `lower=10`, `upper=73` |
+| **bollinger** | price outside its normal range | `n=17`, `k=1.9000000000000001` |
+| **adx** | is there a real trend (strength) | `n=9`, `threshold=8` |
+| **structure_trend** | higher-highs / lower-lows | `swing_l=11` |
+
+### 15m  — typically makes $10,538
+
+**Risk knobs:** softSL `32.17` · hardSL `36.46` · TP `31.35` · gate `84.77%` · breaker `$3,747` · cooldown `2` · flip `False` · **needs K=`1` signal(s) to agree**
+
+| helper signal | what it watches | its tuned settings |
+|---|---|---|
+| **sma_trend** | trend up or down (simple) | `fast=279`, `slow=34` |
+| **macd** | momentum building/fading | `fast=5`, `slow=26`, `signal=41` |
+| **vwap** | price vs fair value | _(nothing to set)_ |
+| **keltner** | price stretched from a moving band | `n=193`, `m=1.1` |
+| **cci** | how far price is from its average | `n=89`, `threshold=215` |
+| **stochastic** | overbought / oversold | `n=29`, `d=7`, `lower=22`, `upper=81` |
+| **structure_trend** | higher-highs / lower-lows | `swing_l=6` |
+
+### 5m ✅ — typically makes $9,943
+
+**Risk knobs:** softSL `19.45` · hardSL `37.98` · TP `21.39` · gate `91.92%` · breaker `$4,015` · cooldown `23` · flip `False` · **needs K=`3` signal(s) to agree**
+
+| helper signal | what it watches | its tuned settings |
+|---|---|---|
+| **ema_trend** | trend up or down | `fast=22`, `slow=95` |
+| **macd** | momentum building/fading | `fast=64`, `slow=169`, `signal=7` |
+| **cci** | how far price is from its average | `n=104`, `threshold=20` |
+| **mfi** | overbought / oversold (with volume) | `n=39`, `lower=29`, `upper=71` |
+| **structure_trend** | higher-highs / lower-lows | `swing_l=6` |
+| **order_block** | big-player zones | `swing_l=3` |
+
+### 2m  — typically makes $4,474
+
+**Risk knobs:** softSL `12.74` · hardSL `13.8` · TP `21.92` · gate `86.05%` · breaker `$4,316` · cooldown `18` · flip `False` · **needs K=`2` signal(s) to agree**
+
+| helper signal | what it watches | its tuned settings |
+|---|---|---|
+| **ema_trend** | trend up or down | `fast=143`, `slow=258` |
+| **obv** | volume pushing price | `slope=86` |
+| **bollinger** | price outside its normal range | `n=14`, `k=1.3` |
+| **adx** | is there a real trend (strength) | `n=61`, `threshold=11` |
+| **order_block** | big-player zones | `swing_l=14` |
+
+### 1m  — typically makes $1,876
+
+**Risk knobs:** softSL `9.94` · hardSL `23.65` · TP `5.35` · gate `52.21%` · breaker `$1,874` · cooldown `0` · flip `False` · **needs K=`1` signal(s) to agree**
+
+| helper signal | what it watches | its tuned settings |
+|---|---|---|
+| **ema_trend** | trend up or down | `fast=3`, `slow=311` |
+| **macd** | momentum building/fading | `fast=38`, `slow=59`, `signal=94` |
+| **vwap** | price vs fair value | _(nothing to set)_ |
+| **obv** | volume pushing price | `slope=84` |
+| **cci** | how far price is from its average | `n=108`, `threshold=85` |
+| **stochastic** | overbought / oversold | `n=5`, `d=29`, `lower=38`, `upper=91` |
+| **mfi** | overbought / oversold (with volume) | `n=91`, `lower=20`, `upper=97` |
+| **fvg** | price gaps to fill | `lookback=20` |
+
 ---
 
 ## ⚠️ The honest caveat (please read)
