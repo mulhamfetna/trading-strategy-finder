@@ -59,8 +59,11 @@ class H(BaseHTTPRequestHandler):
             # hardcodes NOTHING (params, bounds, indicator keys/params, enums all come from here)
             from indicators import library
             from optimize import timeframes as TF
+            import presets
             return self._send(200, json.dumps({
                 "preset": config.WINNER, "dd_cap": config.DD_CAP, "pv": config.NQ_POINT_VALUE,
+                # one-click importable winning strategies (plain winner + per-TF WS-I champions)
+                "strategies": presets.strategies(),
                 "bounds": {"sl_soft": [1, None], "sl_hard": [1, None], "tp": [1, None],
                            "gate_pct": [0, 100], "dd_limit": [0, None], "cooldown": [0, None],
                            "dd_cap": [1, None], "pv": [0.01, None]},

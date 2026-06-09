@@ -87,6 +87,7 @@
   <aside>
     <div class="sgroup">
       <h3>Data</h3>
+      <div class="fld"><label>Strategy</label><select id="strategy" title="import a winning strategy — fills every field + runs"></select></div>
       <div class="fld"><label>Timeframe</label><select id="timeframe"></select></div>
       <div class="fld"><label>Window</label><select id="window"><option value="full">full (25+26)</option><option value="2025">2025</option><option value="2026">2026</option></select></div>
       <div class="hint">decision candle = chosen TF · exits always resolve on 1-min · fine TFs (1m/2m) take longer</div>
@@ -327,6 +328,16 @@ async function run(){
 }
 $('run').addEventListener('click',run);
 
+// Strategy importer: pick a winning strategy → fill EVERY field (timeframe, box knobs, indicators
+// on/off + their tuned internals, K) from the backend preset, then run it immediately.
+$('strategy').addEventListener('change',()=>{
+  const p=window.STRATEGIES && window.STRATEGIES[$('strategy').value];
+  if(!p){return;}
+  showErr(''); setForm(p);
+  status(`imported “${$('strategy').selectedOptions[0].textContent}” — running…`);
+  run();
+});
+
 // Show/hide the settings side panel. Hiding it widens <main>; the ResizeObserver above then
 // refits every chart, so the charts reclaim the freed width with no hardcoded sizes.
 $('toggle').addEventListener('click',()=>{
@@ -348,7 +359,17 @@ async function loadConfig(){
     tfSel.innerHTML=c.timeframes.map(t=>`<option value="${t}"${t===def?' selected':''}>${t}</option>`).join('');
     tfSel.dataset.built='1';
   }
-  return Object.assign({}, c.preset, {dd_cap:c.dd_cap, pv:c.pv});
+  // populate the importable-strategy dropdown (winner + per-TF WS-I champions) — nothing hardcoded
+  const stSel=$('strategy');
+  if(c.strategies && c.strategies.length && stSel){
+    window.STRATEGIES={};
+    stSel.innerHTML=c.strategies.map(s=>{window.STRATEGIES[s.id]=s.preset; return `<option value="${s.id}">${s.label}</option>`;}).join('');
+  }
+  // the default fill = the first strategy's preset (the plain box winner, all indicators off) so a
+  // reset/boot also clears indicators; fall back to the bare preset if strategies are unavailable.
+  const winner=(window.STRATEGIES && c.strategies && c.strategies[0] && c.strategies[0].preset)
+             || Object.assign({}, c.preset, {dd_cap:c.dd_cap, pv:c.pv});
+  return winner;
 }
 $('reset').addEventListener('click',async()=>{
   showErr('');
