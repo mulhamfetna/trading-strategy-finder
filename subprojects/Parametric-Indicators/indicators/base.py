@@ -71,9 +71,22 @@ class Indicator(ABC):
         """Raw indicator value(s) per bar, for logging/plotting. Override as useful."""
         return {}
 
+    def warmup_bars(self) -> int:
+        """How many leading bars this indicator must see before its vote is trustworthy — its own
+        look-back; for COMPOSITE indicators (those built on other look-back series, e.g. Keltner =
+        EMA+ATR, MACD = EMAs) the max/stack over the components they depend on. While warming the
+        vote is forced NEUTRAL (see vote()) so a seeded EMA can't 'confirm' on 5 bars of data.
+        0 = no warm-up. Overridden per class in library.py."""
+        return 0
+
+    def warmup_deps(self) -> str:
+        """Human description of WHAT this indicator is waiting on while warming (for the log)."""
+        return f"its {self.warmup_bars()}-bar look-back"
+
     def vote(self, ctx: MarketContext, box_dir: np.ndarray) -> np.ndarray:
         """Per-bar vote ∈ {+1 confirm, -1 veto, 0 neutral} vs the box direction + this mode.
-        In 'both' mode a veto overrides a confirm on the same bar."""
+        In 'both' mode a veto overrides a confirm on the same bar. The first `warmup_bars()` bars
+        are forced NEUTRAL — the indicator (and anything it depends on) isn't warmed yet."""
         cdir, vdir = self.directions(ctx)
         bd = np.asarray(box_dir)
         has_signal = bd != HOLD
@@ -84,4 +97,7 @@ class Indicator(ABC):
             out[would_confirm] = CONFIRM
         if self.config.mode in ("veto", "both"):
             out[would_veto] = VETO  # veto applied last ⇒ overrides confirm in 'both'
+        w = min(int(self.warmup_bars()), len(out))
+        if w > 0:
+            out[:w] = NEUTRAL       # still warming up (incl. dependencies) ⇒ no vote
         return out  # raw per-decision-bar vote; the GLOBAL wait is a 1-min entry delay (resolver)

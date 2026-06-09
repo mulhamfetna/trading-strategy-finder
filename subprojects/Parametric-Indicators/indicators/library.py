@@ -43,6 +43,14 @@ class EMATrend(StanceIndicator):
         st[(ctx.close < f) & (f < s)] = -1
         return st
 
+    def warmup_bars(self):
+        p = self.config.params
+        return max(int(p.get("fast", 20)), int(p.get("slow", 50)))
+
+    def warmup_deps(self):
+        p = self.config.params
+        return f"EMA({int(p.get('fast', 20))}) & EMA({int(p.get('slow', 50))})"
+
 
 class SMATrend(StanceIndicator):
     key = "sma_trend"
@@ -55,6 +63,14 @@ class SMATrend(StanceIndicator):
         st[(ctx.close < f) & (f < s)] = -1
         return st
 
+    def warmup_bars(self):
+        p = self.config.params
+        return max(int(p.get("fast", 50)), int(p.get("slow", 200)))
+
+    def warmup_deps(self):
+        p = self.config.params
+        return f"SMA({int(p.get('fast', 50))}) & SMA({int(p.get('slow', 200))})"
+
 
 class MACD(StanceIndicator):
     key = "macd"
@@ -63,6 +79,15 @@ class MACD(StanceIndicator):
         _, _, hist = classic.macd(ctx.close, int(p.get("fast", 12)),
                                   int(p.get("slow", 26)), int(p.get("signal", 9)))
         return _sign_stance(hist)
+
+    def warmup_bars(self):
+        p = self.config.params           # slow EMA forms the line, then the signal EMA stacks on it
+        return int(p.get("slow", 26)) + int(p.get("signal", 9))
+
+    def warmup_deps(self):
+        p = self.config.params
+        return (f"EMA({int(p.get('fast', 12))})/EMA({int(p.get('slow', 26))}) line "
+                f"+ signal EMA({int(p.get('signal', 9))})")
 
 
 class VWAPTrend(StanceIndicator):
@@ -81,6 +106,13 @@ class KeltnerTrend(StanceIndicator):
                                     int(p.get("n", 20)), float(p.get("m", 2.0)))
         return _sign_stance(ctx.close - mid)
 
+    def warmup_bars(self):
+        return int(self.config.params.get("n", 20))
+
+    def warmup_deps(self):
+        n = int(self.config.params.get("n", 20))
+        return f"EMA({n}) mid + ATR({n}) band"
+
 
 class OBVTrend(StanceIndicator):
     key = "obv"
@@ -89,6 +121,12 @@ class OBVTrend(StanceIndicator):
         o = classic.obv(ctx.close, ctx.volume)
         ref = classic.sma(o, int(p.get("slope", 20)))
         return _sign_stance(o - ref)
+
+    def warmup_bars(self):
+        return int(self.config.params.get("slope", 20))
+
+    def warmup_deps(self):
+        return f"OBV vs SMA({int(self.config.params.get('slope', 20))})"
 
 
 class CCIBreakout(StanceIndicator):
@@ -102,6 +140,9 @@ class CCIBreakout(StanceIndicator):
         st[c <= -thr] = -1
         return st
 
+    def warmup_bars(self):
+        return int(self.config.params.get("n", 20))
+
 
 class RSIZone(Indicator):
     key = "rsi"
@@ -109,6 +150,9 @@ class RSIZone(Indicator):
         p = self.config.params
         r = classic.rsi(ctx.close, int(p.get("n", 14)))
         return votes.rsi_directions(r, float(p.get("lower", 30)), float(p.get("upper", 70)))
+
+    def warmup_bars(self):
+        return int(self.config.params.get("n", 14))
 
 
 class StochasticZone(Indicator):
@@ -119,6 +163,14 @@ class StochasticZone(Indicator):
                                   int(p.get("n", 14)), int(p.get("d", 3)))
         return votes.rsi_directions(k, float(p.get("lower", 20)), float(p.get("upper", 80)))
 
+    def warmup_bars(self):                # %K needs n, %D = SMA(%K, d) stacks ⇒ n + d - 1
+        p = self.config.params
+        return int(p.get("n", 14)) + int(p.get("d", 3)) - 1
+
+    def warmup_deps(self):
+        p = self.config.params
+        return f"%K({int(p.get('n', 14))}) + %D SMA({int(p.get('d', 3))})"
+
 
 class MFIZone(Indicator):
     key = "mfi"
@@ -126,6 +178,9 @@ class MFIZone(Indicator):
         p = self.config.params
         m = classic.mfi(ctx.high, ctx.low, ctx.close, ctx.volume, int(p.get("n", 14)))
         return votes.rsi_directions(m, float(p.get("lower", 20)), float(p.get("upper", 80)))
+
+    def warmup_bars(self):
+        return int(self.config.params.get("n", 14))
 
 
 class BollingerVeto(Indicator):
@@ -139,6 +194,9 @@ class BollingerVeto(Indicator):
         vdir[ctx.close >= up] = +1   # stretched at upper → veto a long
         vdir[ctx.close <= lo] = -1   # stretched at lower → veto a short
         return cdir, vdir
+
+    def warmup_bars(self):
+        return int(self.config.params.get("n", 20))
 
 
 class ADXVeto(Indicator):
@@ -157,11 +215,24 @@ class ADXVeto(Indicator):
         cdir[trending & (mdi > pdi)] = -1           # trend down → confirm short
         return cdir, vdir
 
+    def warmup_bars(self):                # ATR/DX over n, then ADX = Wilder-smoothed DX over n ⇒ ~2n
+        return 2 * int(self.config.params.get("n", 14)) - 1
+
+    def warmup_deps(self):
+        n = int(self.config.params.get("n", 14))
+        return f"ATR({n}) + DX, then ADX smoothed over {n}"
+
 
 class StructureTrend(StanceIndicator):
     key = "structure_trend"
     def stance(self, ctx):
         return smc.structure_trend(ctx.close, int(self.config.params.get("swing_l", 2)))
+
+    def warmup_bars(self):                # a swing pivot is only confirmed swing_l bars after it
+        return int(self.config.params.get("swing_l", 2))
+
+    def warmup_deps(self):
+        return f"confirmed swings (l={int(self.config.params.get('swing_l', 2))})"
 
 
 class OrderBlock(StanceIndicator):
@@ -170,11 +241,20 @@ class OrderBlock(StanceIndicator):
         return smc.order_blocks(ctx.open, ctx.high, ctx.low, ctx.close,
                                 int(self.config.params.get("swing_l", 2)))
 
+    def warmup_bars(self):
+        return int(self.config.params.get("swing_l", 2))
+
+    def warmup_deps(self):
+        return f"confirmed swings (l={int(self.config.params.get('swing_l', 2))})"
+
 
 class FVGConfirm(StanceIndicator):
     key = "fvg"
     def stance(self, ctx):
         return smc.fvg_active_direction(ctx.high, ctx.low, int(self.config.params.get("lookback", 3)))
+
+    def warmup_bars(self):
+        return int(self.config.params.get("lookback", 3))
 
 
 REGISTRY = {c.key: c for c in (

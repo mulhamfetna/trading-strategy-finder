@@ -140,3 +140,34 @@ def test_noentry_does_not_change_summary(inputs):
     out = _run(inputs)                      # default winner box, gate on
     s = out["meta"]["summary"]
     assert s["pnl"] == 7735.0 and round(s["max_dd"]) == 3670 and s["n_taken"] == 66
+
+
+# --- indicator warm-up: wait for the look-back (and its dependencies) before voting -----------
+
+def test_indicator_neutral_during_warmup():
+    """An indicator votes NEUTRAL for its first warmup_bars bars (composites = max/stack of parts),
+    then may vote. ema_trend(fast=20, slow=50) ⇒ warmup 50."""
+    import numpy as np
+    from indicators import library
+    from indicators.base import IndicatorConfig, MarketContext
+    n = 200
+    close = np.linspace(100, 200, n)              # clean uptrend ⇒ would confirm long once warmed
+    ctx = MarketContext(open=close, high=close + 1, low=close - 1, close=close,
+                        volume=np.ones(n), session_id=np.zeros(n, dtype=int))
+    box_dir = np.ones(n, dtype=np.int8)           # box says long every bar
+    ind = library.build("ema_trend", IndicatorConfig(enabled=True, mode="confirm",
+                                                     params={"fast": 20, "slow": 50}))
+    assert ind.warmup_bars() == 50
+    v = ind.vote(ctx, box_dir)
+    assert (v[:50] == 0).all(), "must be neutral through the warm-up window"
+    assert (v[50:] != 0).any(), "must vote after warming up"
+
+
+def test_warmup_events_logged(inputs):
+    out = _run(inputs, indicators=[{"key": "ema_trend", "enabled": True, "mode": "confirm",
+                                    "params": {"fast": 20, "slow": 50}}], k=1)
+    warm = [e for e in out["events"] if e["type"] == "WARMUP"]
+    done = [e for e in out["events"] if e["type"] == "WARMED"]
+    assert warm and done
+    assert "WARMING UP" in warm[0]["text"] and "ema_trend" in warm[0]["text"]
+    assert "EMA(20)" in warm[0]["text"] and "EMA(50)" in warm[0]["text"]   # names the dependency

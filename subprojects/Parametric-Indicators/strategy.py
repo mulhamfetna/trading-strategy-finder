@@ -265,6 +265,29 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
                           + ("" if gthr is None else f" (vol {vfw[int(b['entry_idx'])]:.0f} > {gthr:.0f})"))
         events.append(ev)
 
+    # Warm-up notices (logs): each enabled indicator stays NEUTRAL for its look-back; composites
+    # wait for the parts they depend on. Log when warming starts (what it waits for) + when eligible.
+    if specs:
+        nbar = len(d4); t0e = _ts(d4["Date"].iloc[0])
+        for ind in inds:
+            if not ind.config.enabled:
+                continue
+            w = int(ind.warmup_bars())
+            if w <= 0:
+                continue
+            if w < nbar:
+                first_dt = pd.Timestamp(d4["Date"].iloc[w]).strftime("%Y-%m-%d %H:%M")
+                events.append({"time": t0e, "type": "WARMUP",
+                               "text": f"⏳ WARMING UP — {ind.key} inactive for the first {w} bars "
+                                       f"(waiting for {ind.warmup_deps()} to finish); first eligible {first_dt}"})
+                events.append({"time": _ts(d4["Date"].iloc[w]), "type": "WARMED",
+                               "text": f"✅ {ind.key} warmed up — now eligible to vote "
+                                       f"(waited {w} bars for {ind.warmup_deps()})"})
+            else:
+                events.append({"time": t0e, "type": "WARMUP",
+                               "text": f"⏳ WARMING UP — {ind.key} needs {w} bars but this window has "
+                                       f"only {nbar} → it NEVER warms up here (waiting for {ind.warmup_deps()})"})
+
     candles = [{"time": _ts(d4["Date"].iloc[i]), "open": float(d4["Open"].iloc[i]), "high": float(d4["High"].iloc[i]),
                 "low": float(d4["Low"].iloc[i]), "close": float(d4["Close"].iloc[i])} for i in range(len(d4))]
     vol = [{"time": _ts(d4["Date"].iloc[i]), "value": round(float(vfw[i]), 1)} for i in range(len(d4))]
