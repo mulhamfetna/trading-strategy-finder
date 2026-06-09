@@ -185,6 +185,7 @@ class SimpleStrategy:
         entry_gate: Optional[np.ndarray] = None,
         entry_resolver=None,
         veto_mask: Optional[np.ndarray] = None,
+        blocked_log: Optional[List[Dict]] = None,
     ) -> Tuple[List[Dict], Dict]:
         """Run the simple engine.
 
@@ -349,6 +350,16 @@ class SimpleStrategy:
                 # gate (vol etc.) matches the original: only blocks when set, in-range, and False.
                 gated = (entry_gate is None) or not (0 <= idx < len(entry_gate)) or bool(entry_gate[idx])
                 vetoed = (veto_mask is not None) and (0 <= idx < len(veto_mask)) and bool(veto_mask[idx])
+
+                # DIAGNOSTIC ONLY (no effect on trades): record fresh in-scope directional signals
+                # that the composite gate dropped, so the caller can LOG them instead of silently
+                # discarding them. gate = vol ∧ ¬veto, so 'not gated' ⇒ veto (if vetoed) else vol-gate.
+                if (blocked_log is not None and signal in ('long', 'short') and not gated
+                        and not (scope == 'long_only' and signal != 'long')
+                        and not (scope == 'short_only' and signal != 'short')):
+                    blocked_log.append({'entry_idx': idx, 'signal_idx': idx - 1,
+                                        'direction': signal,
+                                        'reason': 'veto' if vetoed else 'vol_gate'})
 
                 if entry_resolver is None:
                     # ORIGINAL parity path (unchanged behaviour): immediate fill at the signal close.

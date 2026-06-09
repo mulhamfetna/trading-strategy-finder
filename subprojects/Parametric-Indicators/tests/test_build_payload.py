@@ -117,3 +117,26 @@ def test_other_timeframes_run_and_echo(tf):
     assert out["meta"]["params"]["timeframe"] == tf
     assert len(out["candles"]) == len(bundle[0])          # one candle per decision bar
     assert out["meta"]["summary"]["n_candidates"] >= 0    # ran without error
+
+
+# --- NOENTRY logging: dropped signals are logged, not silently discarded ----------------
+
+def test_noentry_events_logged_for_veto_and_gate(inputs):
+    """A veto-capable indicator + an active vol gate ⇒ some box signals are dropped and must appear
+    as NOENTRY events (reason in the text), without becoming trades or touching the summary."""
+    out = _run(inputs, gate_pct=60,
+               indicators=[{"key": "adx", "enabled": True, "mode": "veto"}], k=1)
+    ne = [e for e in out["events"] if e["type"] == "NOENTRY"]
+    assert ne, "expected some NOENTRY (dropped-signal) events"
+    assert all(e["text"].startswith("ENTRY NOT TAKEN") for e in ne)
+    assert any("veto" in e["text"] for e in ne) or any("volatility gate" in e["text"] for e in ne)
+    # NOENTRY is logs-only: never a trade, never in the ledger
+    ne_ts = {e["time"] for e in ne}
+    assert not (ne_ts & {t["entry_time"] for t in out["trades"]})
+
+
+def test_noentry_does_not_change_summary(inputs):
+    """Turning on the diagnostic log must not alter P/L, maxDD or trade count (it only adds events)."""
+    out = _run(inputs)                      # default winner box, gate on
+    s = out["meta"]["summary"]
+    assert s["pnl"] == 7735.0 and round(s["max_dd"]) == 3670 and s["n_taken"] == 66

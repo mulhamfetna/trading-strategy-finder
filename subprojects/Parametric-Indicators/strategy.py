@@ -199,8 +199,10 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
     sp = SimpleStrategyParams(sl_soft_points=sl_soft, sl_hard_points=sl_hard, tp_soft_points=tp,
                               tp_hard_points=tp, data_path_4h="", data_path_1min="",
                               box_data_path="", flip_entry_direction=flip)
+    blocked = []   # diagnostic: directional signals the gate dropped (logged, not traded)
     trades, _ = SimpleStrategy(sp).backtest(d4, d1, box, entry_gate=gate_used,
-                                            entry_resolver=entry_resolver, veto_mask=veto_mask)
+                                            entry_resolver=entry_resolver, veto_mask=veto_mask,
+                                            blocked_log=blocked)
     cand = sorted([t for t in trades if t.get("exit_reason") not in (None, "OPEN")],
                   key=lambda t: pd.Timestamp(t["entry_time"]))
 
@@ -242,6 +244,26 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
         if use_brk and dd >= ddl:
             locked = True; cd = cooldown
             events.append({"time": xt, "type": "LOCK", "text": f"🔒 LOCK — DD ${dd:,.0f} ≥ ${ddl:,.0f}; halt {cooldown} trades"})
+
+    # Directional box signals that the gate dropped → log as NOENTRY (was silently discarded).
+    # reason 'veto' (an indicator vetoed) or 'vol_gate' (HAR-RV gate skipped the bar). LOGS ONLY —
+    # these are NOT trades and do NOT touch equity/drawdown/summary.
+    for b in blocked:
+        bt = _ts(d4["Date"].iloc[int(b["entry_idx"])])
+        ev = {"time": bt, "type": "NOENTRY"}
+        if b["reason"] == "veto":
+            vetoers = ""
+            if attrib:
+                rows = attrib(b["signal_idx"])
+                vetoers = ",".join(r["key"] for r in rows if r["active"] and r["vote"] == "veto")
+            ev["text"] = (f"ENTRY NOT TAKEN — {b['direction'].upper()} vetoed"
+                          + (f" by {vetoers}" if vetoers else "") + " (indicator veto)")
+            if attrib:
+                ev["indicators"] = rows
+        else:
+            ev["text"] = (f"ENTRY NOT TAKEN — {b['direction'].upper()} skipped by volatility gate"
+                          + ("" if gthr is None else f" (vol {vfw[int(b['entry_idx'])]:.0f} > {gthr:.0f})"))
+        events.append(ev)
 
     candles = [{"time": _ts(d4["Date"].iloc[i]), "open": float(d4["Open"].iloc[i]), "high": float(d4["High"].iloc[i]),
                 "low": float(d4["Low"].iloc[i]), "close": float(d4["Close"].iloc[i])} for i in range(len(d4))]
