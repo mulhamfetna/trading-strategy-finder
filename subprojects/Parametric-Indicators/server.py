@@ -78,7 +78,25 @@ class H(BaseHTTPRequestHandler):
         self._send(200, f.read_bytes(), _CTYPE.get(f.suffix, "application/octet-stream"))
 
     def do_POST(self):
-        if self.path.split("?")[0] != "/api/backtest":
+        path = self.path.split("?")[0]
+        if path == "/api/profiles":
+            # persist a user profile server-side (shared store; same shape as the built-in presets)
+            try:
+                n = int(self.headers.get("Content-Length", 0))
+                body = json.loads(self.rfile.read(n) or b"{}")
+                name, preset = body.get("name"), body.get("preset")
+                if not (name or "").strip():
+                    return self._send(400, json.dumps({"error": "profile name is required"}))
+                strategy.validate_params(preset)          # reject garbage (no silent save)
+                import presets
+                presets.save_user_profile(name, preset)
+                print(f"saved profile '{name}' → profiles/user_profiles.json", flush=True)
+                return self._send(200, json.dumps({"ok": True, "strategies": presets.strategies()}))
+            except strategy.ParamError as e:
+                return self._send(400, json.dumps({"error": f"Invalid profile: {e}"}))
+            except Exception as e:
+                return self._send(500, json.dumps({"error": f"Save failed: {e}"}))
+        if path != "/api/backtest":
             return self._send(404, '{"error":"unknown endpoint"}')
         try:
             n = int(self.headers.get("Content-Length", 0))

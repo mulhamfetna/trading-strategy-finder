@@ -391,23 +391,36 @@ function saveProfiles(p){ try{localStorage.setItem(PROFILE_KEY, JSON.stringify(p
 function buildStrategyDropdown(){
   const sel=$('strategy'); if(!sel) return;
   window.STRATEGIES={};
-  let html=(window.SERVER_STRATEGIES||[]).map(s=>{window.STRATEGIES[s.id]=s.preset;
-    return `<option value="${s.id}">${s.label}</option>`;}).join('');
-  const prof=loadProfiles(), names=Object.keys(prof);
-  if(names.length){
-    html+=`<optgroup label="My saved profiles">`+names.map(n=>{const id='local_'+n;
-      window.STRATEGIES[id]=prof[n]; return `<option value="${id}">${n}</option>`;}).join('')+`</optgroup>`;
-  }
+  const srv=window.SERVER_STRATEGIES||[];
+  const opt=s=>{window.STRATEGIES[s.id]=s.preset; return `<option value="${s.id}">${s.label}</option>`;};
+  const builtins=srv.filter(s=>!s.id.startsWith('user_'));
+  const serverProfiles=srv.filter(s=>s.id.startsWith('user_'));     // saved server-side (shared)
+  let html=builtins.map(opt).join('');
+  if(serverProfiles.length) html+=`<optgroup label="Saved profiles (server)">`+serverProfiles.map(opt).join('')+`</optgroup>`;
+  // localStorage-only profiles (offline fallback saves not yet on the server)
+  const prof=loadProfiles(), localNames=Object.keys(prof).filter(n=>!serverProfiles.some(s=>s.id==='user_'+n));
+  if(localNames.length) html+=`<optgroup label="Local only (this browser)">`+localNames.map(n=>{
+    const id='local_'+n; window.STRATEGIES[id]=prof[n]; return `<option value="${id}">${n}</option>`;}).join('')+`</optgroup>`;
   sel.innerHTML=html;
 }
-$('saveprofile').addEventListener('click',()=>{
+$('saveprofile').addEventListener('click', async ()=>{
   const name=(prompt('Save the current settings as a profile named:','my profile')||'').trim();
   if(!name) return;
-  const prof=loadProfiles();
-  if(prof[name] && !confirm(`Overwrite the existing profile “${name}”?`)) return;
-  prof[name]=params();                                  // the full current form (box + indicators + TF…)
-  saveProfiles(prof); buildStrategyDropdown(); $('strategy').value='local_'+name;
-  status(`saved profile “${name}” — pick it any time from the Strategy dropdown (stored in this browser)`);
+  const exists=(window.SERVER_STRATEGIES||[]).some(s=>s.id==='user_'+name) || (loadProfiles()[name]!=null);
+  if(exists && !confirm(`Overwrite the existing profile “${name}”?`)) return;
+  const preset=params();                                 // the full current form (box + indicators + TF…)
+  try{                                                   // save to the SHARED server store (like the portfolios)
+    const r=await fetch('/api/profiles',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,preset})});
+    let d=null; try{ d=await r.json(); }catch(_){}
+    if(!r.ok) throw new Error((d&&d.error)||('HTTP '+r.status));
+    if(d&&d.strategies) window.SERVER_STRATEGIES=d.strategies;
+    buildStrategyDropdown(); $('strategy').value='user_'+name;
+    status(`saved profile “${name}” to the server — shared across browsers (profiles/user_profiles.json)`);
+  }catch(e){                                             // offline fallback: keep it in this browser
+    const prof=loadProfiles(); prof[name]=preset; saveProfiles(prof);
+    buildStrategyDropdown(); $('strategy').value='local_'+name;
+    showErr(`Saved “${name}” to THIS BROWSER only — server save failed (${e.message}). It'll sync when you save again with the server running.`);
+  }
 });
 
 // Show/hide the settings side panel. Hiding it widens <main>; the ResizeObserver above then

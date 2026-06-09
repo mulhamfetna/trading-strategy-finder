@@ -18,7 +18,41 @@ from indicators import library
 
 _HERE = Path(__file__).resolve().parent
 _CHAMP_JSON = _HERE / "optimize" / "results" / "wsi_champions_full.json"
+# User-saved profiles persist here (server-side, shared across browsers) — same JSON shape as the
+# built-in presets, so they're first-class entries in the Strategy dropdown.
+_PROFILES_JSON = _HERE / "profiles" / "user_profiles.json"
 _TF_ORDER = ["4h", "2h", "1h", "15m", "5m", "2m", "1m"]   # coarsest → finest (matches the report)
+
+
+def load_user_profiles() -> dict:
+    """{name: preset} of user-saved profiles, from the on-disk store (empty if none)."""
+    if not _PROFILES_JSON.exists():
+        return {}
+    try:
+        d = json.loads(_PROFILES_JSON.read_text())
+        return d if isinstance(d, dict) else {}
+    except Exception:
+        return {}
+
+
+def save_user_profile(name: str, preset: dict) -> dict:
+    """Persist one profile (name → preset) to the shared on-disk store. Returns all profiles."""
+    name = (name or "").strip()
+    if not name:
+        raise ValueError("profile name is required")
+    profs = load_user_profiles()
+    profs[name] = preset
+    _PROFILES_JSON.parent.mkdir(parents=True, exist_ok=True)
+    _PROFILES_JSON.write_text(json.dumps(profs, indent=1))
+    return profs
+
+
+def delete_user_profile(name: str) -> dict:
+    profs = load_user_profiles()
+    profs.pop((name or "").strip(), None)
+    _PROFILES_JSON.parent.mkdir(parents=True, exist_ok=True)
+    _PROFILES_JSON.write_text(json.dumps(profs, indent=1))
+    return profs
 
 
 def _champions() -> dict:
@@ -80,4 +114,7 @@ def strategies() -> list[dict]:
         out.append({"id": f"wsi_{tf}",
                     "label": f"WS-I {tf} champion — typ ${c['median_pnl']:,.0f}",
                     "preset": _preset(tf, c["box"], c.get("indicators", {}))})
+    # user-saved profiles (server-side store) — first-class entries, id prefixed 'user_'
+    for name, preset in load_user_profiles().items():
+        out.append({"id": f"user_{name}", "label": f"👤 {name}", "preset": preset})
     return out
