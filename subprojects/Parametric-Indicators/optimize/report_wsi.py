@@ -23,6 +23,13 @@ if str(_PARENT) not in sys.path:
     sys.path.insert(0, str(_PARENT))
 
 import optuna  # noqa: E402
+from indicators import library  # noqa: E402
+
+# Stable, full list of every indicator's internal param column: "<key>_<param>" across all
+# registered indicators (rectangular — present for every row, filled only when that indicator is
+# enabled, blank otherwise). Lets each Pareto row be a complete, directly-applyable spec.
+_IND_PARAM_COLS = [f"{key}_{p['name']}" for key in library.REGISTRY
+                   for p in library.SCHEMA[key].get("params", [])]
 
 _DB = _HERE / "studies" / "wsh.db"
 _RESULTS = _HERE / "results"
@@ -43,15 +50,24 @@ def _enabled_inds(p: dict) -> list[str]:
 
 def _row(t) -> dict:
     p = t.user_attrs; pr = t.params
-    return dict(
+    enabled = set(_enabled_inds(pr))
+    row = dict(
         median_pnl=round(t.values[0], 1), worst_dd=round(-t.values[1], 1), win=round(t.values[2], 1),
         full_pnl=round(p.get("full_pnl", 0.0), 1), full_dd=round(p.get("full_dd", 0.0), 1),
         dd_pct_of_pnl=round(100 * p.get("full_dd", 0.0) / p.get("full_pnl", 1e-9), 1),
         sl_soft=round(pr["sl_soft"], 1), sl_hard=round(pr["sl_soft"] + pr["sl_hard_delta"], 1),
         tp=round(pr["tp"], 1), gate_pct=round(pr["gate_pct"], 1), dd_limit=round(pr["dd_limit"], 0),
         cooldown=pr["cooldown"], flip=pr["flip"], k=pr["k"],
-        n_indicators=len(_enabled_inds(pr)), indicators=";".join(_enabled_inds(pr)),
+        n_indicators=len(enabled), indicators=";".join(sorted(enabled)),
     )
+    # full tuned internals: one column per indicator-param, filled only when that indicator is on
+    for col in _IND_PARAM_COLS:
+        ikey = next((k for k in library.REGISTRY if col.startswith(k + "_")), None)
+        if ikey in enabled and col in pr:
+            row[col] = round(pr[col], 4) if isinstance(pr[col], float) else pr[col]
+        else:
+            row[col] = ""
+    return row
 
 
 def export_tf(tf: str):
@@ -70,7 +86,7 @@ def export_tf(tf: str):
     import csv
     cols = ["median_pnl", "worst_dd", "win", "full_pnl", "full_dd", "dd_pct_of_pnl",
             "sl_soft", "sl_hard", "tp", "gate_pct", "dd_limit", "cooldown", "flip", "k",
-            "n_indicators", "indicators"]
+            "n_indicators", "indicators"] + _IND_PARAM_COLS
     with open(_RESULTS / f"{tf}_wsi_pareto.csv", "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=cols); w.writeheader(); w.writerows(rows)
     _plot(tf, complete, front)

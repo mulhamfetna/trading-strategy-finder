@@ -14,13 +14,13 @@ NSGA-III, 3 objectives (median fold P/L ↑, worst-fold maxDD ↓, median win-ra
 
 | TF | complete | feasible | front | med P/L | worst DD | win% | full P/L | DD%·P/L | K | #ind | indicators |
 |---|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|---|
-| 4h | 2292 | 1131 | 79 | $24,253 | $12,067 | 74 | $56,040 | 18% | 1 | 8 | ema_trend;macd;keltner;rsi;stochastic;mfi;adx;order_block |
-| 2h | 2294 | 1248 | 96 | $15,132 | $10,835 | 90 | $55,836 | 17% | 1 | 7 | ema_trend;macd;vwap;obv;mfi;bollinger;order_block |
-| 1h | 2048 | 942 | 65 | $12,284 | $4,418 | 71 | $33,280 | 24% | 2 | 9 | ema_trend;macd;vwap;obv;rsi;mfi;bollinger;adx;structure_trend |
-| 15m | 2604 | 1778 | 159 | $10,538 | $3,223 | 67 | $33,676 | 24% | 1 | 7 | sma_trend;macd;vwap;keltner;cci;stochastic;structure_trend |
-| 5m | 2716 | 1736 | 131 | $9,943 | $4,344 | 66 | $36,710 | 11% | 3 | 6 | ema_trend;macd;cci;mfi;structure_trend;order_block |
-| 2m | 2594 | 1482 | 250 | $4,474 | $3,848 | 46 | $18,857 | 20% | 2 | 5 | ema_trend;obv;bollinger;adx;order_block |
-| 1m | 2458 | 1684 | 343 | $1,876 | $1,167 | 80 | $7,681 | 15% | 1 | 8 | ema_trend;macd;vwap;obv;cci;stochastic;mfi;fvg |
+| 4h | 2292 | 1131 | 79 | $24,253 | $12,067 | 74 | $56,040 | 18% | 1 | 8 | adx;ema_trend;keltner;macd;mfi;order_block;rsi;stochastic |
+| 2h | 2294 | 1248 | 96 | $15,132 | $10,835 | 90 | $55,836 | 17% | 1 | 7 | bollinger;ema_trend;macd;mfi;obv;order_block;vwap |
+| 1h | 2048 | 942 | 65 | $12,284 | $4,418 | 71 | $33,280 | 24% | 2 | 9 | adx;bollinger;ema_trend;macd;mfi;obv;rsi;structure_trend;vwap |
+| 15m | 2604 | 1778 | 159 | $10,538 | $3,223 | 67 | $33,676 | 24% | 1 | 7 | cci;keltner;macd;sma_trend;stochastic;structure_trend;vwap |
+| 5m | 2716 | 1736 | 131 | $9,943 | $4,344 | 66 | $36,710 | 11% | 3 | 6 | cci;ema_trend;macd;mfi;order_block;structure_trend |
+| 2m | 2594 | 1482 | 250 | $4,474 | $3,848 | 46 | $18,857 | 20% | 2 | 5 | adx;bollinger;ema_trend;obv;order_block |
+| 1m | 2458 | 1684 | 343 | $1,876 | $1,167 | 80 | $7,681 | 15% | 1 | 8 | cci;ema_trend;fvg;macd;mfi;obv;stochastic;vwap |
 
 ## Notes / caveats
 - Per-TF feasible fronts + plots: `optimize/results/<tf>_wsi_pareto.{csv,png}`.
