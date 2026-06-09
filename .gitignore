@@ -49,6 +49,7 @@ htmlcov/
 *.pdf
 dashboard_*.html
 !subprojects/signals/stage1_0_reverse_signals/dashboard/*.html
+!subprojects/Parametric-Indicators/frontend/index.html
 
 # OS
 .DS_Store
