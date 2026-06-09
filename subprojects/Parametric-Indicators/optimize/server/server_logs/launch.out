@@ -1,0 +1,14 @@
+[I 2026-06-08 21:35:37,458] A new study created in RDB with name: wsh3_4h
+4h: 1 workers x 3000 trials
+[I 2026-06-08 21:35:37,724] A new study created in RDB with name: wsh3_2h
+2h: 1 workers x 3000 trials
+[I 2026-06-08 21:35:38,005] A new study created in RDB with name: wsh3_1h
+1h: 2 workers x 1500 trials
+[I 2026-06-08 21:35:38,369] A new study created in RDB with name: wsh3_15m
+15m: 2 workers x 1500 trials
+[I 2026-06-08 21:35:38,876] A new study created in RDB with name: wsh3_5m
+5m: 4 workers x 750 trials
+[I 2026-06-08 21:35:39,335] A new study created in RDB with name: wsh3_2m
+2m: 8 workers x 375 trials
+[I 2026-06-08 21:35:39,734] A new study created in RDB with name: wsh3_1m
+1m: 12 workers x 250 trials
