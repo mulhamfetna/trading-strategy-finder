@@ -133,6 +133,7 @@
     </div>
     <div id="err" style="display:none;background:#3a0c12;border:1px solid #ff5252;color:#ff8a8a;border-radius:6px;padding:8px 10px;font-size:12px;margin-bottom:10px"></div>
     <button class="resetlink" id="reset">↺ Reset to winning preset</button>
+    <button class="resetlink" id="saveprofile" title="save the current settings as a reusable profile (stored in this browser)">💾 Save current profile</button>
   </aside>
 
   <main>
@@ -366,6 +367,33 @@ $('dl_trades').addEventListener('click',()=>{
   _downloadCSV(`trade_ledger_${_tfTag()}.csv`, _toCSV(headers,rows));
 });
 
+// --- Save / reuse custom profiles (current settings → reusable, stored in this browser) -------
+const PROFILE_KEY='wsg_profiles_v1';
+function loadProfiles(){ try{return JSON.parse(localStorage.getItem(PROFILE_KEY))||{};}catch(_){return {};} }
+function saveProfiles(p){ try{localStorage.setItem(PROFILE_KEY, JSON.stringify(p));}catch(_){} }
+// (re)build the Strategy dropdown = backend strategies + the user's saved profiles (own optgroup)
+function buildStrategyDropdown(){
+  const sel=$('strategy'); if(!sel) return;
+  window.STRATEGIES={};
+  let html=(window.SERVER_STRATEGIES||[]).map(s=>{window.STRATEGIES[s.id]=s.preset;
+    return `<option value="${s.id}">${s.label}</option>`;}).join('');
+  const prof=loadProfiles(), names=Object.keys(prof);
+  if(names.length){
+    html+=`<optgroup label="My saved profiles">`+names.map(n=>{const id='local_'+n;
+      window.STRATEGIES[id]=prof[n]; return `<option value="${id}">${n}</option>`;}).join('')+`</optgroup>`;
+  }
+  sel.innerHTML=html;
+}
+$('saveprofile').addEventListener('click',()=>{
+  const name=(prompt('Save the current settings as a profile named:','my profile')||'').trim();
+  if(!name) return;
+  const prof=loadProfiles();
+  if(prof[name] && !confirm(`Overwrite the existing profile “${name}”?`)) return;
+  prof[name]=params();                                  // the full current form (box + indicators + TF…)
+  saveProfiles(prof); buildStrategyDropdown(); $('strategy').value='local_'+name;
+  status(`saved profile “${name}” — pick it any time from the Strategy dropdown (stored in this browser)`);
+});
+
 // Show/hide the settings side panel. Hiding it widens <main>; the ResizeObserver above then
 // refits every chart, so the charts reclaim the freed width with no hardcoded sizes.
 $('toggle').addEventListener('click',()=>{
@@ -387,15 +415,11 @@ async function loadConfig(){
     tfSel.innerHTML=c.timeframes.map(t=>`<option value="${t}"${t===def?' selected':''}>${t}</option>`).join('');
     tfSel.dataset.built='1';
   }
-  // populate the importable-strategy dropdown (winner + per-TF WS-I champions) — nothing hardcoded
-  const stSel=$('strategy');
-  if(c.strategies && c.strategies.length && stSel){
-    window.STRATEGIES={};
-    stSel.innerHTML=c.strategies.map(s=>{window.STRATEGIES[s.id]=s.preset; return `<option value="${s.id}">${s.label}</option>`;}).join('');
-  }
+  // populate the importable-strategy dropdown (winner + per-TF WS-I champions + saved profiles)
+  if(c.strategies && c.strategies.length){ window.SERVER_STRATEGIES=c.strategies; buildStrategyDropdown(); }
   // the default fill = the first strategy's preset (the plain box winner, all indicators off) so a
   // reset/boot also clears indicators; fall back to the bare preset if strategies are unavailable.
-  const winner=(window.STRATEGIES && c.strategies && c.strategies[0] && c.strategies[0].preset)
+  const winner=(window.SERVER_STRATEGIES && window.SERVER_STRATEGIES[0] && window.SERVER_STRATEGIES[0].preset)
              || Object.assign({}, c.preset, {dd_cap:c.dd_cap, pv:c.pv});
   return winner;
 }
