@@ -1,6 +1,6 @@
 ---
 name: nsga3
-description: WS-I.8 NSGA-III algorithm breakdown — reference-point-based many-objective evolutionary optimisation, with diagrams, and exactly how it is wired here (3 objectives: median P/L ↑, worst-fold DD ↓, win-rate ↑; feasibility constraint full-period DD ≤ 25% P/L; full indicator search space).
+description: WS-I.8 NSGA-III algorithm breakdown — reference-point-based many-objective evolutionary optimisation, with diagrams, and exactly how it is wired here (3 objectives median P/L ↑, worst-fold DD ↓, win-rate ↑; feasibility constraint full-period DD ≤ 25% P/L; full indicator search space).
 type: reference
 status: current
 created: 2026-06-08
