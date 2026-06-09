@@ -43,6 +43,14 @@
   .panel { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 10px 4px; }
   .panel h2 { font-size:12px; margin:0 0 4px; color:var(--muted); font-weight:600; }
   .csvbtn { float:right; font-size:10px; padding:1px 7px; cursor:pointer; }
+  /* error banner — pinned across the very top of the page */
+  #err { display:none; position:fixed; top:0; left:0; right:0; z-index:2000;
+         background:#3a0c12; border-bottom:2px solid #ff5252; color:#ff8a8a;
+         padding:10px 44px 10px 16px; font-size:13px; line-height:1.4; text-align:center;
+         box-shadow:0 2px 10px rgba(0,0,0,.45); }
+  #err #errclose { position:absolute; right:10px; top:50%; transform:translateY(-50%);
+         background:none; border:none; color:#ff8a8a; font-size:16px; cursor:pointer; padding:0 6px; }
+  #err #errclose:hover { color:#fff; }
   .legend { font-size:11px; color:var(--muted); } .sw{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin:0 3px 0 12px;}
   .chart { width:100%; }
   .twocol { display:flex; gap:12px; flex-wrap:wrap; } .twocol>.panel{flex:1 1 460px;}
@@ -72,6 +80,7 @@
 </style>
 </head>
 <body>
+<div id="err" role="alert"><span id="errmsg"></span><button id="errclose" title="dismiss" aria-label="dismiss">✕</button></div>
 <header>
   <div>
     <h1>NQ Winning Strategy Dashboard</h1>
@@ -131,7 +140,6 @@
       <h3>Indicators</h3>
       <div id="indpanel"><div class="hint">loading schema…</div></div>
     </div>
-    <div id="err" style="display:none;background:#3a0c12;border:1px solid #ff5252;color:#ff8a8a;border-radius:6px;padding:8px 10px;font-size:12px;margin-bottom:10px"></div>
     <button class="resetlink" id="reset">↺ Reset to winning preset</button>
     <button class="resetlink" id="saveprofile" title="save the current settings as a reusable profile (stored in this browser)">💾 Save current profile</button>
   </aside>
@@ -305,7 +313,9 @@ function applyIndicatorSpecs(specs){
   });
 }
 function status(t){$('status').innerHTML=t;}
-function showErr(msg){const e=$('err'); if(msg){e.textContent=msg; e.style.display='block';} else {e.textContent=''; e.style.display='none';}}
+function showErr(msg){const e=$('err'); $('errmsg').textContent=msg||''; e.style.display=msg?'block':'none';
+  if(msg){try{window.scrollTo({top:0,behavior:'smooth'});}catch(_){window.scrollTo(0,0);}}}
+$('errclose').addEventListener('click',()=>showErr(''));
 let dirty=false; function markDirty(){dirty=true;$('dirty').textContent='Settings changed — Run Backtest to apply';$('run').classList.add('dirty-ring');}
 function markClean(){dirty=false;$('dirty').textContent='';$('run').classList.remove('dirty-ring');}
 document.querySelectorAll('aside input,aside select').forEach(el=>el.addEventListener('input',markDirty));
