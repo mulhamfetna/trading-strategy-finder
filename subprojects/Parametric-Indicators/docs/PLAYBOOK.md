@@ -96,6 +96,25 @@ Dashboard flow: leave all indicators off → Run → matches the box winner (no 
 indicators, set mode/params + K + the global retrace/wait, Run → per-entry vote chips + the K
 summary line; enable an SMC indicator to see the generation report.
 
+## 8b. Dashboard additions (post-WS-I.10)
+The dashboard/backtester gained, all parity-safe (indicators-off still reproduces the box winner):
+- **All-timeframe backtests** — a **Timeframe** dropdown (1m/2m/5m/15m/1h/2h/4h); `build_payload`
+  takes an optional `timeframe` (default 4h) and `strategy.get_bundle(tf)` lazy-loads + caches each
+  TF's `(df_dec, df1, box, vf, n_split)`. Single-year windows cold-start indicators — prefer `full`.
+- **Per-indicator warm-up** — every indicator stays **NEUTRAL** for its look-back (composites wait
+  for the parts they depend on: `ema_trend`=max(fast,slow), `macd`=slow+signal, `keltner`=n,
+  `stochastic`=n+d−1, `adx`=2n−1, …). Logged as `WARMUP`/`WARMED` events. Fixes the seeded-EMA
+  cold-start "false confidence" (see `../WSI-Case_Study/CASE_STUDY_2026_maxDD.md`). Applied in
+  `base.Indicator.vote()` — the single chokepoint for veto/confirm/resolver/attribution.
+- **NOENTRY logging** — box signals dropped by a veto or the volatility gate are logged
+  (`ENTRY NOT TAKEN — … vetoed by … / skipped by volatility gate`) instead of silently discarded.
+  Diagnostic only (opt-in `engine.backtest(blocked_log=…)`); never a trade, never in the ledger.
+- **One-click strategy import + saved profiles** — `presets.strategies()` serves the winner + the 7
+  per-TF WS-I champions; user profiles persist server-side in `profiles/user_profiles.json`
+  (`POST /api/profiles`) and show as `👤 name`. Selecting one fills every field and runs.
+- **CSV export** of both logs (event log + trade ledger); a **Save current profile** button;
+  errors shown as a **pinned top-of-page banner**.
+
 ## 9. Doc map
 [[har-lag-review]] (HAR lags) · [[golf-engulfing]] (golf #2) · [[entry-timing-changes]]
 (global retrace + 1-min wait #3/#4) · `WS-I.4_DASHBOARD_REPORT.md` (dashboard) ·
