@@ -112,11 +112,22 @@ def composite_gate(vol_gate, df, box, indicators, k):
     return vg & aligned, votes, active
 
 
-def veto_mask(df, box, indicators, src=None):
+def compute_votes(df, box, indicators, src=None) -> dict:
+    """Per-decision-bar vote array for every ENABLED indicator, keyed by id(ind). Computed ONCE so
+    the veto gate, the confirm resolver and the attribution all reuse it (no 3× recompute). Disabled
+    indicators are skipped entirely (they don't trade and aren't worth computing — esp. the costly
+    SMC ones on the 1-minute frame)."""
+    ctx = market_context(df)
+    bdir = box_direction_int(df, box)
+    return {id(ind): _ind_vote(ind, ctx, bdir, src)
+            for ind in indicators if ind.config.enabled}
+
+
+def veto_mask(df, box, indicators, src=None, votes=None):
     """Per-decision-bar veto mask (Q5: veto lives in the gate). True where any ENABLED veto-capable
     (mode∈{veto,both}) indicator votes VETO, read at the just-closed signal bar and aligned to the
     entry bar (mask[idx] = veto at idx-1; idx 0 = False). No veto indicators ⇒ all False (parity).
-    src (optional) routes the indicator reading to the 1-minute frame (see indicator_source_1min)."""
+    src routes the reading to the 1-minute frame; votes (optional) reuses a precomputed vote dict."""
     from .base import VETO
     n = len(df)
     out = np.zeros(n, dtype=bool)
@@ -124,16 +135,16 @@ def veto_mask(df, box, indicators, src=None):
                if ind.config.enabled and ind.config.mode in ("veto", "both")]
     if not vetoers:
         return out
-    ctx = market_context(df)
-    bdir = box_direction_int(df, box)
+    if votes is None:
+        votes = compute_votes(df, box, vetoers, src)
     raw = np.zeros(n, dtype=bool)
     for ind in vetoers:
-        raw |= (_ind_vote(ind, ctx, bdir, src) == VETO)
+        raw |= (votes[id(ind)] == VETO)
     out[1:] = raw[:-1]                            # align to the entry bar (veto read at idx-1)
     return out
 
 
-def confirm_mask(df, box, indicators, k, src=None):
+def confirm_mask(df, box, indicators, k, src=None, votes=None):
     """Per-decision-bar CONFIRM gate (vectorised, for the optimiser fast path — WS-I.7).
     True where ≥ K_eff enabled confirm-capable (mode∈{confirm,both}) indicators vote CONFIRM at the
     just-closed signal bar, aligned to the entry bar (mask[idx] = confirms at idx-1; idx 0 = True).
@@ -148,18 +159,18 @@ def confirm_mask(df, box, indicators, k, src=None):
     k_eff = min(int(k), len(confirmers))
     if k_eff <= 0:
         return out                                # no confirm requirement (parity)
-    ctx = market_context(df)
-    bdir = box_direction_int(df, box)
+    if votes is None:
+        votes = compute_votes(df, box, confirmers, src)
     cc = np.zeros(n, dtype=np.int64)
     for ind in confirmers:
-        cc += (_ind_vote(ind, ctx, bdir, src) == CONFIRM).astype(np.int64)
+        cc += (votes[id(ind)] == CONFIRM).astype(np.int64)
     ok = cc >= k_eff
     out[1:] = ok[:-1]                             # align to the entry bar (confirms read at idx-1)
     return out
 
 
 def build_layer(df, box, indicators, k, vol_gate,
-                retrace_amount=0.0, retrace_unit="atr_mult", wait_bars=0, src=None):
+                retrace_amount=0.0, retrace_unit="atr_mult", wait_bars=0, src=None, votes=None):
     """Assemble the full indicator layer for a run (Q5 split):
       gate     = vol_gate ∧ ¬veto_mask   (eligibility)
       resolver = build_entry_resolver(confirm-capable indicators, k, GLOBAL retrace+wait)
@@ -167,16 +178,18 @@ def build_layer(df, box, indicators, k, vol_gate,
     retrace_amount/unit and wait_bars are GLOBAL (one value each, applied to ALL indicators).
     Returns (gate, resolver, vmask). All-off ⇒ gate==vol_gate, vmask all-False, resolver immediate."""
     vg = np.asarray(vol_gate, dtype=bool)
-    vmask = veto_mask(df, box, indicators, src=src)
+    if votes is None:                            # compute each enabled indicator's vote ONCE, reuse
+        votes = compute_votes(df, box, indicators, src)
+    vmask = veto_mask(df, box, indicators, src=src, votes=votes)
     gate = vg & ~vmask
     resolver = build_entry_resolver(df, box, indicators, k,
                                     retrace_amount=retrace_amount, retrace_unit=retrace_unit,
-                                    wait_bars=wait_bars, src=src)
+                                    wait_bars=wait_bars, src=src, votes=votes)
     return gate, resolver, vmask
 
 
 def build_entry_resolver(df, box, indicators, k,
-                         retrace_amount=0.0, retrace_unit="atr_mult", wait_bars=0, src=None):
+                         retrace_amount=0.0, retrace_unit="atr_mult", wait_bars=0, src=None, votes=None):
     """Build the engine `entry_resolver` closure: live-B1 confirm count + GLOBAL retrace/wait fill.
 
     GLOBAL controls (one value each, applied to ALL indicators — WS-I notes #3/#4):
@@ -197,7 +210,8 @@ def build_entry_resolver(df, box, indicators, k,
     confirmers = [ind for ind in indicators
                   if ind.config.enabled and ind.config.mode in ("confirm", "both")]
     n_confirm = len(confirmers)
-    votes = {id(ind): _ind_vote(ind, ctx, bdir, src) for ind in confirmers}
+    if votes is None:
+        votes = {id(ind): _ind_vote(ind, ctx, bdir, src) for ind in confirmers}
     atr = classic.atr(ctx.high, ctx.low, ctx.close, 14)
     g_amount = float(retrace_amount)
     g_atr = (retrace_unit == "atr_mult")

@@ -144,12 +144,12 @@ def stochastic(high, low, close, n: int, d: int):
     k = _nan_like(c)
     valid = ~np.isnan(rng) & (rng != 0)
     k[valid] = 100.0 * (c[valid] - ll[valid]) / rng[valid]
-    # %D = SMA(%K, d) over a fully-valid window (skips %K warm-up NaNs).
+    # %D = SMA(%K, d). Vectorised with a sliding window so each window's mean is computed with the
+    # SAME float ops as the old per-bar loop (mean of a window containing a NaN is NaN — matches the
+    # loop's "only when no NaN in window"). Bitwise-identical to the loop.
     dline = _nan_like(c)
-    for t in range(d - 1, len(c)):
-        win = k[t - d + 1:t + 1]
-        if not np.isnan(win).any():
-            dline[t] = win.mean()
+    if len(c) >= d:
+        dline[d - 1:] = np.lib.stride_tricks.sliding_window_view(k, d).mean(axis=1)
     return k, dline
 
 
@@ -212,10 +212,12 @@ def mfi(high, low, close, volume, n: int) -> np.ndarray:
         elif tp[t] < tp[t - 1]:
             neg[t] = flow[t]
     out = _nan_like(c)
-    for t in range(n, len(tp)):
-        p = pos[t - n + 1:t + 1].sum(); q = neg[t - n + 1:t + 1].sum()
-        ratio = np.inf if q == 0 else p / q
-        out[t] = 100.0 - 100.0 / (1.0 + ratio)
+    if len(tp) > n:                                       # rolling sums via sliding window (exact)
+        ps = np.lib.stride_tricks.sliding_window_view(pos, n).sum(axis=1)   # window-end idx n-1..
+        qs = np.lib.stride_tricks.sliding_window_view(neg, n).sum(axis=1)
+        ratio = np.where(qs == 0, np.inf, ps / np.where(qs == 0, 1.0, qs))
+        mfi_end = 100.0 - 100.0 / (1.0 + ratio)
+        out[n:] = mfi_end[1:]                             # original starts at t=n (skips t=n-1)
     return out
 
 

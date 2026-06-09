@@ -179,22 +179,24 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
         # samples its last-closed 1-minute candle (causal). Box trigger/cadence/exits unchanged;
         # warm-up now counts 1-minute candles. (src=None would keep the decision-TF behaviour.)
         ind_src = runner.indicator_source_1min(d4, d1, bar_td)
+        # compute each ENABLED indicator's per-decision-bar vote ONCE (skip disabled — they don't
+        # trade) and reuse it for the veto gate, the confirm resolver AND the attribution log.
+        _votes = runner.compute_votes(d4, box, inds, src=ind_src)
         gate_used, entry_resolver, veto_mask = runner.build_layer(
             d4, box, inds, k_rule, base,
-            retrace_amount=g_retr, retrace_unit=g_runit, wait_bars=g_wait, src=ind_src)
+            retrace_amount=g_retr, retrace_unit=g_runit, wait_bars=g_wait, src=ind_src, votes=_votes)
         if any(i.config.enabled and i.key in ("fvg", "order_block", "structure_trend") for i in inds):
             ctx = runner.market_context(d4)
             gen_report = generate.generate_structures(
                 ctx, int(gen_params.get("swing_l", 2)), int(gen_params.get("golf_n", 3)))["report"]
-        # vote attribution: EVERY indicator's opinion at the signal bar (1-minute-sourced), active flag.
-        _ctx = runner.market_context(d4); _bdir = runner.box_direction_int(d4, box)
-        _votes = {id(i): runner._ind_vote(i, _ctx, _bdir, ind_src) for i in inds}
 
         def attrib(sidx):
+            # EVERY indicator's opinion at the signal bar; disabled ⇒ neutral (not computed).
             sidx = int(sidx)
             rows = []
             for i in inds:
-                v = int(_votes[id(i)][sidx]) if 0 <= sidx < len(_votes[id(i)]) else 0
+                vv = _votes.get(id(i))
+                v = int(vv[sidx]) if (vv is not None and 0 <= sidx < len(vv)) else 0
                 rows.append({"key": i.key, "active": int(i.config.enabled), "mode": i.config.mode,
                              "vote": ("confirm" if v == 1 else "veto" if v == -1 else "neutral"),
                              "params": dict(i.config.params)})

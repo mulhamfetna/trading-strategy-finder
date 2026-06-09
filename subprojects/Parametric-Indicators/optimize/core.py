@@ -91,8 +91,13 @@ def backtest_metrics(
         inds = library.from_specs(specs)
         if any(i.config.enabled for i in inds):
             base = gate if gate is not None else np.ones(len(d), dtype=bool)
-            vmask = runner.veto_mask(d, box, inds)
-            cmask = runner.confirm_mask(d, box, inds, int(params.get("k", 1)))
+            # params["ind_1min"]=True ⇒ indicators read the 1-minute frame (sampled at each decision
+            # bar's last-closed minute); else decision-TF (default, unchanged). Votes computed ONCE
+            # and shared by the veto + confirm masks.
+            src = runner.indicator_source_1min(d, d1, bar_duration) if params.get("ind_1min") else None
+            votes = runner.compute_votes(d, box, inds, src=src)
+            vmask = runner.veto_mask(d, box, inds, src=src, votes=votes)
+            cmask = runner.confirm_mask(d, box, inds, int(params.get("k", 1)), src=src, votes=votes)
             gate = base & ~vmask & cmask
 
     # precomputed signals (param-independent) sliced to the window; else compute on the slice
