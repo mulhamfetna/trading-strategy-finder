@@ -54,13 +54,20 @@ def score_walkforward(df_dec, df1, box, vf, params, bar_duration,
     ranges = split_folds(df_dec, k)
     folds = []
     valid = True
+    # EARLY PRUNE: a trial is invalid iff ANY scored fold has < min_trades (or too few bars). The
+    # moment that happens the trial is already doomed (the caller raises TrialPruned and skips the
+    # full-period backtest), so we BREAK out of the fold loop instead of computing the remaining
+    # folds. This is result-identical — the valid/invalid verdict and every kept (valid) trial's
+    # objectives are unchanged; only wasted compute on doomed trials is saved. (Optuna's statistical
+    # median/ASHA pruners are single-objective only and don't apply to this 3-objective study, so
+    # this deterministic early-exit is the multi-objective-safe equivalent.)
     for j, (lo, hi) in enumerate(ranges):
         if j == 0:
             continue  # fold 0 = causal gate reference / warmup; not scored
         if hi - lo < _MIN_BARS_PER_FOLD:
             valid = False
             folds.append({"fold": j, "skipped": "too few bars"})
-            continue
+            break
         fdec = df_dec.iloc[lo:hi].reset_index(drop=True)
         fvf = vf[lo:hi]
         fsig = sig_int[lo:hi] if sig_int is not None else None
@@ -72,6 +79,7 @@ def score_walkforward(df_dec, df1, box, vf, params, bar_duration,
         folds.append(m)
         if m.get("n_taken", 0) < min_trades:
             valid = False
+            break                                        # doomed trial ⇒ stop scoring further folds
 
     scored = [f for f in folds if "pnl" in f]
     if not scored:

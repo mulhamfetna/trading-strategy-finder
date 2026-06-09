@@ -134,6 +134,32 @@ the cost trade-off decision. Everything is verified:
 
 ---
 
+## 4b. DECISIONS APPLIED (2026-06-10)
+Based on the deep analysis (`OPTIMIZER_DEEP_ANALYSIS.md`):
+1. **Keep NSGA-III** — no change.
+2. **Early pruning — DONE.** `folds.score_walkforward` now **breaks out of the fold loop the moment a
+   trial is invalid** (a scored fold below `min_trades`, or too few bars), instead of computing all
+   four folds. The caller already skips the full-period backtest for invalid trials, so a doomed
+   trial now costs ~1 fold instead of 4 + full. **Result-identical** (verified: a valid config still
+   scores all 4 folds with the same median; an invalid one stops after the first). NOTE: Optuna's
+   statistical median/ASHA pruners are single-objective only, so this deterministic early-exit is the
+   multi-objective-safe equivalent.
+3. **1-minute optimisation — DROPPED.** The server sweep runs **decision-timeframe indicators only**
+   (the proven, fast path). The optimiser does **not** set `ind_1min`, so Issues 1 & 3 above are moot
+   for the sweep. (The 1-minute indicator capability remains in the dashboard for manual backtests;
+   the dormant `ind_1min` hook in `core.py` is left in place but unused by the optimiser.)
+4. **Parallelism — keep multiprocessing**, no intra-trial threads. SQLite contention only revisited
+   if it bites at the worker counts used.
+5. **No sampler A/B** (was only for the 1-minute regime, now dropped).
+
+### Net readiness (decision-TF sweep)
+- Code: **ready** — early-prune in, parity locks pass, optimiser smoke-runs clean.
+- ⚠️ **The warm-up change post-dates WS-I.10.** The optimiser's indicator votes now apply the
+  per-indicator warm-up, so a fresh sweep will differ from the frozen WS-I.10 champions. To avoid
+  mixing two regimes in one study, a re-run should use a **fresh study name** (e.g. `wsh4_<tf>`) or a
+  fresh DB — not append to the existing `wsh3_<tf>` studies.
+- Remaining launch steps: `remote_wsi.sh push` (sync the new code) → `parity` → `run` → `pull`.
+
 ## 5. Recommendation
 Run the **fast first pass** (1-minute indicators, SMC excluded, ~2 h): it covers 12 of the 15
 indicators, finishes in one short session, and tells you whether 1-minute indicators help at all
