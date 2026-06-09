@@ -42,6 +42,7 @@
   /* panels */
   .panel { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 10px 4px; }
   .panel h2 { font-size:12px; margin:0 0 4px; color:var(--muted); font-weight:600; }
+  .csvbtn { float:right; font-size:10px; padding:1px 7px; cursor:pointer; }
   .legend { font-size:11px; color:var(--muted); } .sw{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin:0 3px 0 12px;}
   .chart { width:100%; }
   .twocol { display:flex; gap:12px; flex-wrap:wrap; } .twocol>.panel{flex:1 1 460px;}
@@ -151,8 +152,8 @@
     <div class="panel"><h2>Drawdown (underwater, $) — red dashed = breaker trigger · grey dashed = $5k cap</h2><div id="dd" class="chart" style="height:140px"></div></div>
 
     <div class="twocol">
-      <div class="panel"><h2>Event log — what happened, when &amp; why</h2><div class="log" id="log"></div></div>
-      <div class="panel"><h2>Trade ledger</h2><div class="tablewrap"><table id="trades"></table></div></div>
+      <div class="panel"><h2>Event log — what happened, when &amp; why <button class="ghost csvbtn" id="dl_events" title="download the event log as CSV">⬇ CSV</button></h2><div class="log" id="log"></div></div>
+      <div class="panel"><h2>Trade ledger <button class="ghost csvbtn" id="dl_trades" title="download the trade ledger as CSV">⬇ CSV</button></h2><div class="tablewrap"><table id="trades"></table></div></div>
     </div>
     <p class="note" id="status"></p>
   </main>
@@ -189,6 +190,7 @@ const money=n=>(n>=0?'+':'')+'$'+Math.round(n).toLocaleString();
 const card=(v,k,cls='')=>`<div class="card"><div class="v ${cls}">${v}</div><div class="k">${k}</div></div>`;
 
 function render(D){
+  window.LAST_DATA=D;                       // keep the last run for the CSV export buttons
   const P=D.meta.params,S=D.meta.summary;
   const gr=D.meta.gen_report;
   if(gr){ $('genpanel').style.display='';
@@ -336,6 +338,32 @@ $('strategy').addEventListener('change',()=>{
   showErr(''); setForm(p);
   status(`imported “${$('strategy').selectedOptions[0].textContent}” — running…`);
   run();
+});
+
+// --- CSV export for the two logs (event log + trade ledger) ---------------------------------
+function _csvEsc(v){ v=(v==null?'':String(v)); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+function _toCSV(headers, rows){ return [headers.join(',')].concat(rows.map(r=>r.map(_csvEsc).join(','))).join('\n'); }
+function _downloadCSV(name, text){
+  const blob=new Blob([text],{type:'text/csv;charset=utf-8'}); const u=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=u; a.download=name; document.body.appendChild(a); a.click();
+  a.remove(); URL.revokeObjectURL(u);
+}
+function _tfTag(){ const D=window.LAST_DATA; return (D&&D.meta&&D.meta.params&&D.meta.params.timeframe)||'4h'; }
+$('dl_events').addEventListener('click',()=>{
+  const D=window.LAST_DATA; if(!D||!D.events||!D.events.length){status('no event log to export — run a backtest first');return;}
+  const headers=['epoch','datetime','type','text','active_indicators'];
+  const rows=D.events.map(e=>{
+    const inds=(e.indicators||[]).filter(r=>r.active).map(r=>`${r.key}:${r.vote}`).join(';');
+    return [e.time, dt(e.time), e.type, e.text, inds];
+  });
+  _downloadCSV(`event_log_${_tfTag()}.csv`, _toCSV(headers,rows));
+});
+$('dl_trades').addEventListener('click',()=>{
+  const D=window.LAST_DATA; if(!D||!D.trades||!D.trades.length){status('no trades to export — run a backtest first');return;}
+  const keys=['entry_time','exit_time','direction','entry_price','exit_price','sl_soft_line','sl_hard_line','tp_soft_line','tp_hard_line','exit_reason','pnl','equity','dd','year'];
+  const headers=['entry_time','exit_time','direction','entry_price','exit_price','sl_soft','sl_hard','tp_soft','tp_hard','exit_reason','pnl','equity','dd','year'];
+  const rows=D.trades.map(t=>keys.map(k=>(k==='entry_time'||k==='exit_time')?dt(t[k]):t[k]));
+  _downloadCSV(`trade_ledger_${_tfTag()}.csv`, _toCSV(headers,rows));
 });
 
 // Show/hide the settings side panel. Hiding it widens <main>; the ResizeObserver above then
