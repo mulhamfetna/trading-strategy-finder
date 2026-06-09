@@ -14,6 +14,7 @@ import config
 from loader import load_data
 from engine import SimpleStrategy, SimpleStrategyParams
 from volatility import vol_forecast
+from optimize import timeframes as TF
 
 PV = config.NQ_POINT_VALUE
 
@@ -36,6 +37,28 @@ def load_inputs():
     n2025 = int((df4["_year"] == config.YEARS[0]).sum())
     vf = vol_forecast(df4, df1)
     return df4, df1, box, vf, n2025
+
+
+# Per-decision-timeframe bundle cache. 4h reuses the parity-locked per-year split files above;
+# every other timeframe is loaded from the all-history per-TF source via the optimizer's loader
+# (optimize/data.py), which produces the identical (df_dec, df1, box, vf, n_split) shape. Each TF
+# is loaded at most once, on first request, then cached for the life of the process.
+_BUNDLE_CACHE: dict = {}
+
+
+def get_bundle(tf_name: str | None):
+    """Return the cached (df_dec, df1, box, vf, n_split) bundle for a decision timeframe.
+    Raises ParamError for an unknown timeframe (no silent fallback)."""
+    tf_name = tf_name or "4h"
+    if tf_name not in TF.TIMEFRAMES:
+        raise ParamError(f"timeframe must be one of {list(TF.TIMEFRAMES)} (got {tf_name!r})")
+    if tf_name not in _BUNDLE_CACHE:
+        if tf_name == "4h":
+            _BUNDLE_CACHE[tf_name] = load_inputs()
+        else:
+            from optimize.data import load_inputs as _load_tf
+            _BUNDLE_CACHE[tf_name] = _load_tf(tf_name)
+    return _BUNDLE_CACHE[tf_name]
 
 
 class ParamError(ValueError):
@@ -71,6 +94,10 @@ def validate_params(params):
         raise ParamError(f"cooldown must be a non-negative integer (got {params['cooldown']!r})")
     if params["window"] not in ("full", "2025", "2026"):
         raise ParamError(f"window must be one of full|2025|2026 (got {params['window']!r})")
+    # decision timeframe (optional; defaults to 4h so existing callers are unchanged).
+    timeframe = params.get("timeframe") or "4h"
+    if timeframe not in TF.TIMEFRAMES:
+        raise ParamError(f"timeframe must be one of {list(TF.TIMEFRAMES)} (got {timeframe!r})")
     dd_cap = float(params["dd_cap"]) if params.get("dd_cap") not in (None, "") else config.DD_CAP
     pv = float(params["pv"]) if params.get("pv") not in (None, "") else config.NQ_POINT_VALUE
     if dd_cap <= 0:               raise ParamError(f"dd_cap must be > 0 (got {dd_cap})")
@@ -105,7 +132,7 @@ def validate_params(params):
         raise ParamError(f"wait_bars must be ≥ 0 (got {wait_bars}); counts 1-minute bars")
     return dict(sl_soft=sl_soft, sl_hard=sl_hard, tp=tp, gate_pct=gate_pct, dd_limit=dd_limit,
                 cooldown=int(cooldown), flip=bool(params["flip"]), window=params["window"],
-                dd_cap=dd_cap, pv=pv, indicators=list(specs), k=k, gen=gen,
+                timeframe=timeframe, dd_cap=dd_cap, pv=pv, indicators=list(specs), k=k, gen=gen,
                 retrace_amount=retrace_amount, retrace_unit=retrace_unit, wait_bars=wait_bars)
 
 
@@ -116,10 +143,13 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
     gate_pct, dd_limit, window = P["gate_pct"], P["dd_limit"], P["window"]
     dd_cap, pv = P["dd_cap"], P["pv"]
 
+    # decision-bar duration generalises the old hardcoded "+4h" 1-minute slice bound to any TF.
+    bar_td = TF.get(P["timeframe"]).bar_td
+
     N = len(df4)
     lo, hi = {"full": (0, N), "2025": (0, n2025), "2026": (n2025, N)}[window]
     d4 = df4.iloc[lo:hi].reset_index(drop=True)
-    t0, t1 = d4["Date"].iloc[0], d4["Date"].iloc[-1] + pd.Timedelta(hours=4)
+    t0, t1 = d4["Date"].iloc[0], d4["Date"].iloc[-1] + bar_td
     d1 = df1[(df1["Date"] >= t0) & (df1["Date"] < t1)].reset_index(drop=True)
     vfw = vf[lo:hi]
 
@@ -232,7 +262,7 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
     params_out = dict(sl_soft=sl_soft, sl_hard=sl_hard, tp=tp, gate_pct=(None if gthr is None else float(gate_pct)),
                       gate_thr=(None if gthr is None else round(gthr, 0)), dd_limit=(ddl if use_brk else None),
                       cooldown=cooldown, dd_cap=dd_cap, pv=pv, flip=flip, window=window,
-                      indicators=specs, k=k_rule, gen=gen_params)
+                      timeframe=P["timeframe"], indicators=specs, k=k_rule, gen=gen_params)
     return dict(meta=dict(params=params_out, summary=summary, split_ts=_ts(df4.iloc[n2025]["Date"]),
                           gen_report=gen_report),
                 candles=candles, vol=vol, gate_thr=(gthr if gthr is not None else 0), state=state,

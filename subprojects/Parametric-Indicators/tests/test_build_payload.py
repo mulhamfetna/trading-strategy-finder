@@ -84,3 +84,36 @@ def test_smc_indicator_produces_generation_report(inputs):
     rep = out["meta"]["gen_report"]
     assert rep is not None and rep["params"] == {"swing_l": 2, "golf_n": 3}
     assert "n_bull_fvg" in rep and rep["bars"] > 0
+
+
+# --- WS-I dashboard timeframe support ---------------------------------------------------
+
+def test_timeframe_defaults_to_4h_and_matches_legacy(inputs):
+    """Omitting timeframe ⇒ 4h ⇒ the parity-locked winner summary (back-compat)."""
+    out = _run(inputs)
+    assert out["meta"]["params"]["timeframe"] == "4h"
+    s = out["meta"]["summary"]
+    assert s["pnl"] == 7735.0 and round(s["max_dd"]) == 3670 and s["n_taken"] == 66
+
+
+def test_explicit_4h_equals_default(inputs):
+    assert _run(inputs)["meta"]["summary"] == _run(inputs, timeframe="4h")["meta"]["summary"]
+
+
+def test_bad_timeframe_rejected(inputs):
+    with pytest.raises(ParamError):
+        _run(inputs, timeframe="3m")
+
+
+@pytest.mark.parametrize("tf", ["2h", "1h", "15m"])
+def test_other_timeframes_run_and_echo(tf):
+    """Non-4h timeframes load their own decision frame and produce a coherent payload."""
+    try:
+        bundle = strategy.get_bundle(tf)
+    except Exception as e:
+        pytest.skip(f"timeframe data unavailable: {e}")
+    p = copy.deepcopy(BASE); p["timeframe"] = tf
+    out = strategy.build_payload(*bundle, params=p)
+    assert out["meta"]["params"]["timeframe"] == tf
+    assert len(out["candles"]) == len(bundle[0])          # one candle per decision bar
+    assert out["meta"]["summary"]["n_candidates"] >= 0    # ran without error

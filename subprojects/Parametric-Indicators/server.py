@@ -31,8 +31,9 @@ _CTYPE = {".html": "text/html", ".js": "application/javascript", ".css": "text/c
 
 print("loading data (4h / 1m / box) + computing HAR-RV ...", flush=True)
 _t = time.time()
-DF4, DF1, BOX, VF, N2025 = strategy.load_inputs()
-print(f"ready in {time.time()-_t:.1f}s  ({len(DF4)} 4h bars, split at index {N2025})", flush=True)
+DF4, DF1, BOX, VF, N2025 = strategy.get_bundle("4h")   # preload+cache the default TF
+print(f"ready in {time.time()-_t:.1f}s  ({len(DF4)} 4h bars, split at index {N2025}). "
+      f"other timeframes load on first use.", flush=True)
 
 
 class H(BaseHTTPRequestHandler):
@@ -57,12 +58,15 @@ class H(BaseHTTPRequestHandler):
             # expose the preset + instrument constants + indicator schema so the frontend
             # hardcodes NOTHING (params, bounds, indicator keys/params, enums all come from here)
             from indicators import library
+            from optimize import timeframes as TF
             return self._send(200, json.dumps({
                 "preset": config.WINNER, "dd_cap": config.DD_CAP, "pv": config.NQ_POINT_VALUE,
                 "bounds": {"sl_soft": [1, None], "sl_hard": [1, None], "tp": [1, None],
                            "gate_pct": [0, 100], "dd_limit": [0, None], "cooldown": [0, None],
                            "dd_cap": [1, None], "pv": [0.01, None]},
                 "windows": ["full", "2025", "2026"],
+                # coarsest→finest for the dropdown; 4h is the default (matches the winner preset)
+                "timeframes": list(reversed(list(TF.TIMEFRAMES))), "default_timeframe": "4h",
                 "indicator_schema": library.schema()}))
         name = "index.html" if path in ("/", "") else path.lstrip("/")
         f = FRONTEND / name
@@ -77,11 +81,14 @@ class H(BaseHTTPRequestHandler):
             n = int(self.headers.get("Content-Length", 0))
             params = json.loads(self.rfile.read(n) or b"{}")
             t0 = time.time()
-            payload = strategy.build_payload(DF4, DF1, BOX, VF, N2025, params)
+            # pick the decision-timeframe bundle (lazy-loaded + cached); bad TF → ParamError → 400
+            bundle = strategy.get_bundle((params or {}).get("timeframe"))
+            payload = strategy.build_payload(*bundle, params)
             payload["meta"]["run_ms"] = round((time.time() - t0) * 1000)
             self._send(200, json.dumps(payload))
             s = payload["meta"]["summary"]
-            print(f"backtest {params} -> P/L ${s['pnl']:,.0f} DD ${s['max_dd']:,.0f} "
+            print(f"backtest [{payload['meta']['params'].get('timeframe','4h')}] {params} -> "
+                  f"P/L ${s['pnl']:,.0f} DD ${s['max_dd']:,.0f} "
                   f"n={s['n_taken']} ({payload['meta']['run_ms']}ms)", flush=True)
         except strategy.ParamError as e:
             # invalid/missing parameter — surfaced to the UI as a 400 (NOT silently clamped)
