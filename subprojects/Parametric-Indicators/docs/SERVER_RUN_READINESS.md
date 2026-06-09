@@ -144,21 +144,29 @@ Based on the deep analysis (`OPTIMIZER_DEEP_ANALYSIS.md`):
    scores all 4 folds with the same median; an invalid one stops after the first). NOTE: Optuna's
    statistical median/ASHA pruners are single-objective only, so this deterministic early-exit is the
    multi-objective-safe equivalent.
-3. **1-minute optimisation — DROPPED.** The server sweep runs **decision-timeframe indicators only**
-   (the proven, fast path). The optimiser does **not** set `ind_1min`, so Issues 1 & 3 above are moot
-   for the sweep. (The 1-minute indicator capability remains in the dashboard for manual backtests;
-   the dormant `ind_1min` hook in `core.py` is left in place but unused by the optimiser.)
+3. **The 1-minute TIMEFRAME is excluded from the sweep — but the 1-minute INDICATORS are kept.**
+   (Corrected: the intent was to skip the 1m *decision timeframe*, not the 1-min-sourced indicators.)
+   The sweep runs **2m, 5m, 15m, 1h, 2h, 4h** with **`ind_1min` ON** (indicators read the 1-minute
+   frame). Wired via `optimizer.py --ind-1min`; the per-trial params now carry `ind_1min=True` so
+   `core.backtest_metrics` builds the 1-minute source. SMC indicators are **kept** in the search
+   (accepting the longer runtime — see §3.3).
 4. **Parallelism — keep multiprocessing**, no intra-trial threads. SQLite contention only revisited
    if it bites at the worker counts used.
-5. **No sampler A/B** (was only for the 1-minute regime, now dropped).
+5. **No sampler A/B** (NSGA-III kept).
 
-### Net readiness (decision-TF sweep)
-- Code: **ready** — early-prune in, parity locks pass, optimiser smoke-runs clean.
-- ⚠️ **The warm-up change post-dates WS-I.10.** The optimiser's indicator votes now apply the
-  per-indicator warm-up, so a fresh sweep will differ from the frozen WS-I.10 champions. To avoid
-  mixing two regimes in one study, a re-run should use a **fresh study name** (e.g. `wsh4_<tf>`) or a
-  fresh DB — not append to the existing `wsh3_<tf>` studies.
-- Remaining launch steps: `remote_wsi.sh push` (sync the new code) → `parity` → `run` → `pull`.
+### Net readiness (1-minute-indicators sweep, 2m–4h)
+- Code: **ready** — `--ind-1min` + early-prune in; optimiser smoke-runs clean and prints
+  "indicators on 1-MINUTE frame"; parity locks pass (the decision-TF default is unchanged).
+- **Fresh study prefix `wsh4_<tf>`** keeps this regime separate from WS-I.10's pre-warm-up
+  `wsh3_<tf>` studies (the optimiser's votes now also apply the warm-up, so results legitimately
+  differ). `report_wsi.py` honours `WSI_STUDY_PREFIX`; the server runner sets it.
+- `remote_wsi.sh` updated: `TFS=(4h 2h 1h 15m 5m 2m)`, workers re-weighted (~5/TF, sum ≈ 30),
+  worker command `--ind-1min --study-prefix wsh4`, counts/pull read `wsh4`.
+- **Runtime:** per-trial varies with how many (and which) indicators a trial enables — roughly tens of
+  seconds with SMC in the mix. A 6-TF × 3,000-trial sweep on ~30 workers is on the order of a few
+  hours (early-prune trims the invalid trials). Best run detached, overnight.
+- Remaining launch steps: `remote_wsi.sh push` (sync the new code) → `parity` → `run 3000` →
+  `status`/`counts` → `pull`.
 
 ## 5. Recommendation
 Run the **fast first pass** (1-minute indicators, SMC excluded, ~2 h): it covers 12 of the 15

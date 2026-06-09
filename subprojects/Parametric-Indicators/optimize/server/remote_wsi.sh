@@ -21,7 +21,9 @@ CODE="$WSI/Parametric-Indicators"
 LOCAL_RESULTS="$_HERE/../results"
 LOCAL_LOGS="$_HERE/server_logs"
 LOCAL_REPORTS="$_HERE/../reports"
-TFS=(4h 2h 1h 15m 5m 2m 1m)
+TFS=(4h 2h 1h 15m 5m 2m)                              # 1-minute TIMEFRAME excluded from the sweep
+PREFIX="wsh4"                                          # study prefix for the 1-min-indicators regime
+IND_ARGS="--ind-1min --study-prefix $PREFIX"          # indicators read the 1-minute frame
 
 SSH_OPTS=(-p "$SRV_PORT" -i "$SRV_KEY" -o IdentitiesOnly=yes -o BatchMode=yes \
           -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 \
@@ -50,14 +52,15 @@ cmd_parity() {
   srv "$REMOTE_ENV; cd '$CODE' && python3 optimize/test_parity.py"
 }
 
-# GIL-bound (~1 core/process); multiple workers/study share trials via SQLite. Weighted so the slow
-# fine TFs finish near the cheap ones; sum ≈ 30 (2 threads for the OS).
-declare -A WORKERS=( [1m]=12 [2m]=8 [5m]=4 [15m]=2 [1h]=2 [2h]=1 [4h]=1 )
+# GIL-bound (~1 core/process); multiple workers/study share trials via SQLite. With 1-minute
+# indicators each trial costs ~similar across TFs (the 1-min indicator compute dominates), so workers
+# are spread ~evenly over the 6 TFs with a mild tilt to the finer ones; sum ≈ 30 (2 left for the OS).
+declare -A WORKERS=( [2m]=6 [5m]=6 [15m]=5 [1h]=5 [2h]=4 [4h]=4 )
 
 cmd_run() {
   local total="${1:-3000}"; local only="${2:-}"
   local tfs=("${TFS[@]}"); [ -n "$only" ] && read -ra tfs <<< "$only"
-  log "launching NSGA-III indicator search: $total trials/TF [${tfs[*]}] (min-trades 5) ..."
+  log "launching NSGA-III search ($PREFIX, 1-minute indicators): $total trials/TF [${tfs[*]}] (min-trades 5) ..."
   local spec=""; for tf in "${tfs[@]}"; do spec+="$tf:${WORKERS[$tf]:-1} "; done
   srv "cat > '$WSI/launch.sh' <<'EOS'
 #!/usr/bin/env bash
@@ -70,9 +73,9 @@ cd '$CODE'; mkdir -p optimize/studies '$WSI/logs'
 TOTAL=$total
 for pair in $spec; do
   tf=\${pair%%:*}; w=\${pair##*:}; per=\$(( (TOTAL + w - 1) / w ))
-  python3 -c \"import optuna; optuna.create_study(study_name='wsh3_\$tf', storage='sqlite:///optimize/studies/wsh.db', directions=['maximize','maximize','maximize'], load_if_exists=True)\"
+  python3 -c \"import optuna; optuna.create_study(study_name='${PREFIX}_\$tf', storage='sqlite:///optimize/studies/wsh.db', directions=['maximize','maximize','maximize'], load_if_exists=True)\"
   for i in \$(seq 1 \$w); do
-    setsid bash -c \"python3 -u optimize/optimizer.py \$tf --trials \$per --folds 5 --min-trades 5 >> '$WSI/logs/\$tf.log' 2>&1\" < /dev/null &
+    setsid bash -c \"python3 -u optimize/optimizer.py \$tf --trials \$per --folds 5 --min-trades 5 $IND_ARGS >> '$WSI/logs/\$tf.log' 2>&1\" < /dev/null &
   done
   echo \"\$tf: \$w workers x \$per trials\"
 done
@@ -94,7 +97,7 @@ cmd_counts() {  # per-TF completed-trial counts in the shared DB
 import optuna; optuna.logging.set_verbosity(optuna.logging.WARNING)
 for tf in '${TFS[*]}'.split():
     try:
-        s=optuna.load_study(study_name=f'wsh3_{tf}', storage='sqlite:///optimize/studies/wsh.db')
+        s=optuna.load_study(study_name=f'${PREFIX}_{tf}', storage='sqlite:///optimize/studies/wsh.db')
         c=[t for t in s.trials if t.values is not None]
         feas=sum(1 for t in c if (t.user_attrs.get('full_pnl',0) or 0)>0 and t.user_attrs.get('full_dd',9e9)<=0.25*t.user_attrs.get('full_pnl',0))
         print(f'  {tf:4s} trials={len(s.trials):5d} complete={len(c):4d} feasible={feas:3d}')
@@ -105,7 +108,7 @@ PY"
 cmd_pull() {
   mkdir -p "$LOCAL_RESULTS" "$LOCAL_LOGS" "$LOCAL_REPORTS"
   log "building WS-I report on server then pulling results + logs"
-  srv "$REMOTE_ENV; cd '$CODE' && python3 optimize/report_wsi.py ${TFS[*]} || true"
+  srv "$REMOTE_ENV; export WSI_STUDY_PREFIX=$PREFIX; cd '$CODE' && python3 optimize/report_wsi.py ${TFS[*]} || true"
   rsync -az -e "$RSYNC_E" "${SRV_USER}@${SRV_HOST}:$CODE/optimize/results/" "$LOCAL_RESULTS/"
   rsync -az -e "$RSYNC_E" "${SRV_USER}@${SRV_HOST}:$CODE/optimize/reports/WS-I_RESULTS.md" "$LOCAL_REPORTS/" 2>/dev/null || true
   rsync -az -e "$RSYNC_E" "${SRV_USER}@${SRV_HOST}:$WSI/logs/" "$LOCAL_LOGS/"

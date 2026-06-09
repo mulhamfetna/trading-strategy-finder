@@ -78,7 +78,7 @@ def _load_json(p: Path) -> dict:
 
 
 def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
-        seed: int = 1) -> dict:
+        seed: int = 1, ind_1min: bool = False, study_prefix: str = "wsh3") -> dict:
     tf = TF.get(tf_name)
     caps = _load_json(_CAPS)
     bounds = _load_json(_BOUNDS)
@@ -91,7 +91,8 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
     df_dec, df1, box, vf, n_split = data_mod.load_inputs(tf_name)
     sig_int = signals_to_int(sig_mod.decision_signals(df_dec, box))   # precompute once (param-independent)
     print(f"[{tf_name}] {len(df_dec)} decision bars; cooldown cap {cap}; "
-          f"bounds sl_soft{b['sl_soft']} sl_hard{b['sl_hard']} tp{b['tp']}", flush=True)
+          f"bounds sl_soft{b['sl_soft']} sl_hard{b['sl_hard']} tp{b['tp']}; "
+          f"indicators on {'1-MINUTE frame' if ind_1min else 'decision TF'}", flush=True)
 
     def objective(trial: optuna.Trial):
         sl_soft = trial.suggest_float("sl_soft", float(b["sl_soft"][0]), float(b["sl_soft"][1]))
@@ -105,7 +106,7 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         k_rule = trial.suggest_int("k", 1, 5)           # clamped to #confirmers by confirm_mask
         params = dict(sl_soft=sl_soft, sl_hard=sl_soft + delta, tp=tp, gate_pct=gate_pct,
                       dd_limit=dd_limit, cooldown=cooldown, flip=flip, window="full",
-                      indicators=specs, k=k_rule)
+                      indicators=specs, k=k_rule, ind_1min=ind_1min)
         r = score_walkforward(df_dec, df1, box, vf, params, tf.bar_td, k=folds,
                               min_trades=min_trades, sig_int=sig_int)
         if not r["valid"]:
@@ -130,7 +131,7 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         return trial.user_attrs.get("constraint", [1.0])   # missing ⇒ infeasible
 
     study = optuna.create_study(
-        study_name=f"wsh3_{tf_name}",
+        study_name=f"{study_prefix}_{tf_name}",
         storage=f"sqlite:///{_DB}",
         directions=["maximize", "maximize", "maximize"],
         sampler=optuna.samplers.NSGAIIISampler(seed=seed, constraints_func=_constraints),
@@ -168,8 +169,15 @@ def main() -> int:
     ap.add_argument("--trials", type=int, default=200)
     ap.add_argument("--folds", type=int, default=5)
     ap.add_argument("--min-trades", type=int, default=5)
+    ap.add_argument("--ind-1min", action="store_true",
+                    help="indicators read the 1-minute frame (sampled at each decision bar's last "
+                         "closed minute) instead of the decision timeframe")
+    ap.add_argument("--study-prefix", default="wsh3",
+                    help="study name prefix (use a fresh one, e.g. wsh4, for a new regime so it "
+                         "doesn't mix with prior trials)")
     a = ap.parse_args()
-    run(a.timeframe, n_trials=a.trials, folds=a.folds, min_trades=a.min_trades)
+    run(a.timeframe, n_trials=a.trials, folds=a.folds, min_trades=a.min_trades,
+        ind_1min=a.ind_1min, study_prefix=a.study_prefix)
     return 0
 
 

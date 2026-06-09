@@ -32,6 +32,7 @@ _IND_PARAM_COLS = [f"{key}_{p['name']}" for key in library.REGISTRY
                    for p in library.SCHEMA[key].get("params", [])]
 
 _DB = _HERE / "studies" / "wsh.db"
+_PREFIX = os.environ.get("WSI_STUDY_PREFIX", "wsh3")   # study name prefix (wsh3 = WS-I.10 regime)
 _RESULTS = _HERE / "results"
 _REPORTS = _HERE / "reports"
 _RESULTS.mkdir(exist_ok=True); _REPORTS.mkdir(exist_ok=True)
@@ -72,7 +73,7 @@ def _row(t) -> dict:
 
 def export_tf(tf: str):
     try:
-        study = optuna.load_study(study_name=f"wsh3_{tf}", storage=f"sqlite:///{_DB}")
+        study = optuna.load_study(study_name=f"{_PREFIX}_{tf}", storage=f"sqlite:///{_DB}")
     except Exception as e:
         print(f"  {tf}: no study ({e})"); return None
     complete = [t for t in study.trials if t.values is not None]
