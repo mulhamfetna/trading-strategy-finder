@@ -186,6 +186,7 @@ class SimpleStrategy:
         entry_resolver=None,
         veto_mask: Optional[np.ndarray] = None,
         blocked_log: Optional[List[Dict]] = None,
+        veto_as_flip: bool = False,
     ) -> Tuple[List[Dict], Dict]:
         """Run the simple engine.
 
@@ -218,6 +219,11 @@ class SimpleStrategy:
         armed: Optional[Dict] = None  # carry-mode (entry_resolver) armed-but-unfilled setup
         scope = self.params.direction_scope
         flip = self.params.flip_entry_direction
+        # veto_as_flip: a vetoed (but otherwise eligible) signal ENTERS THE OPPOSITE direction
+        # instead of being dropped. The caller passes a vol-only entry_gate in this mode (so vetoed
+        # bars are not pre-filtered) plus the veto_mask used here to decide which entries to reverse.
+        def _opp(d):
+            return 'short' if d == 'long' else 'long'
 
         def _walk_exit_for_4h(idx: int) -> None:
             """Walk 1-min bars belonging to df_4h[idx] looking for an exit
@@ -359,7 +365,9 @@ class SimpleStrategy:
                         and not (scope == 'short_only' and signal != 'short')):
                     blocked_log.append({'entry_idx': idx, 'signal_idx': idx - 1,
                                         'direction': signal,
-                                        'reason': 'veto' if vetoed else 'vol_gate'})
+                                        # in veto_as_flip mode a veto never blocks (it reverses),
+                                        # so a dropped bar here is always the volatility gate.
+                                        'reason': 'veto' if (vetoed and not veto_as_flip) else 'vol_gate'})
 
                 if entry_resolver is None:
                     # ORIGINAL parity path (unchanged behaviour): immediate fill at the signal close.
@@ -374,6 +382,9 @@ class SimpleStrategy:
                     entry_ts = ts_new_bar_start
                     entry_px = float(signal_candle['Close'])
                     edir, sidx = signal, idx - 1
+                    vflip = bool(veto_as_flip and vetoed)
+                    if vflip:
+                        edir = _opp(edir)              # veto reverses the entry direction
                 else:
                     # CARRY MODE (live B1): (re)arm on a fresh gated, non-vetoed directional signal;
                     # carry an unfilled setup across HOLD bars; abort on a fresh veto; supersede on a
@@ -382,10 +393,15 @@ class SimpleStrategy:
                     in_scope = (signal in ('long', 'short')
                                 and not (scope == 'long_only' and signal != 'long')
                                 and not (scope == 'short_only' and signal != 'short'))
-                    if in_scope and gated and not vetoed:
-                        armed = {'dir': signal, 'sidx': idx - 1,
-                                 'sclose': float(signal_candle['Close'])}
-                    if armed is not None and vetoed:
+                    if in_scope and gated:
+                        if vetoed and veto_as_flip:
+                            # veto reverses: (re)arm the OPPOSITE direction instead of aborting.
+                            armed = {'dir': _opp(signal), 'sidx': idx - 1,
+                                     'sclose': float(signal_candle['Close']), 'vflip': True}
+                        elif not vetoed:
+                            armed = {'dir': signal, 'sidx': idx - 1,
+                                     'sclose': float(signal_candle['Close']), 'vflip': False}
+                    if armed is not None and vetoed and not veto_as_flip:
                         armed = None                      # live veto aborts the armed entry (Q4)
                     if armed is None or start_1m is None:
                         continue
@@ -397,6 +413,7 @@ class SimpleStrategy:
                     entry_ts = pd.Timestamp(res[0])
                     entry_px = float(res[1])
                     edir, sidx = armed['dir'], armed['sidx']
+                    vflip = bool(armed.get('vflip'))
                     armed = None
 
                 if edir == 'long':
@@ -416,6 +433,7 @@ class SimpleStrategy:
                     'entry_time':   entry_ts,
                     'entry_price':  entry_px,
                     'direction':    edir,
+                    'veto_flip':    bool(vflip),               # entered reversed because of a veto
                     'sl_soft_line': sl_soft_line,
                     'sl_hard_line': sl_hard_line,
                     'tp_soft_line': tp_soft_line,

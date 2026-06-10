@@ -98,7 +98,7 @@ def confirm_mask(df, box, indicators, k):
 
 
 def build_layer(df, box, indicators, k, vol_gate,
-                retrace_amount=0.0, retrace_unit="atr_mult", wait_bars=0):
+                retrace_amount=0.0, retrace_unit="atr_mult", wait_bars=0, veto_as_flip=False):
     """Assemble the full indicator layer for a run (Q5 split):
       gate     = vol_gate ∧ ¬veto_mask   (eligibility)
       resolver = build_entry_resolver(confirm-capable indicators, k, GLOBAL retrace+wait)
@@ -107,7 +107,9 @@ def build_layer(df, box, indicators, k, vol_gate,
     Returns (gate, resolver, vmask). All-off ⇒ gate==vol_gate, vmask all-False, resolver immediate."""
     vg = np.asarray(vol_gate, dtype=bool)
     vmask = veto_mask(df, box, indicators)
-    gate = vg & ~vmask
+    # default: veto removes the bar from the gate (drop). veto_as_flip: leave the gate vol-only so
+    # vetoed bars stay eligible — the engine reverses their direction instead of dropping them.
+    gate = vg if veto_as_flip else (vg & ~vmask)
     resolver = build_entry_resolver(df, box, indicators, k,
                                     retrace_amount=retrace_amount, retrace_unit=retrace_unit,
                                     wait_bars=wait_bars)
