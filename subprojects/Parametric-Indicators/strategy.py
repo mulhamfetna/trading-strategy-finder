@@ -39,6 +39,21 @@ def load_inputs():
     return df4, df1, box, vf, n2025
 
 
+def load_year_bundle(yr: int):
+    """Load a SINGLE calendar year as a self-contained (df4, df1, box, vf, n) bundle. Used for the
+    isolated 2024 window so it never touches the 2025+2026 bundle (keeps those results byte-identical
+    + parity-locked). n = len(df4) (no second segment; the whole bundle is one window)."""
+    d = config.DATA_ROOT / f"{yr}_data"
+    a = load_data(str(d / f"NQ_4h_{yr}.csv")); a["_year"] = yr
+    b = load_data(str(d / f"NQ_1m_{yr}.csv"))
+    c = pd.read_csv(d / f"NQ_full_data_{yr}.csv"); c["Date"] = pd.to_datetime(c["Date"]).dt.normalize()
+    df4 = a.sort_values("Date").reset_index(drop=True)
+    df1 = b.sort_values("Date").reset_index(drop=True)
+    box = c.drop_duplicates(subset=["Date"]).set_index("Date", drop=False)
+    vf = vol_forecast(df4, df1)
+    return df4, df1, box, vf, len(df4)
+
+
 # Per-decision-timeframe bundle cache. 4h reuses the parity-locked per-year split files above;
 # every other timeframe is loaded from the all-history per-TF source via the optimizer's loader
 # (optimize/data.py), which produces the identical (df_dec, df1, box, vf, n_split) shape. Each TF
@@ -92,8 +107,8 @@ def validate_params(params):
     if dd_limit < 0:              raise ParamError(f"dd_limit must be ≥ 0 (got {dd_limit}); 0 = breaker OFF")
     if cooldown < 0 or cooldown != int(cooldown):
         raise ParamError(f"cooldown must be a non-negative integer (got {params['cooldown']!r})")
-    if params["window"] not in ("full", "2025", "2026"):
-        raise ParamError(f"window must be one of full|2025|2026 (got {params['window']!r})")
+    if params["window"] not in ("full", "2024", "2025", "2026"):
+        raise ParamError(f"window must be one of full|2024|2025|2026 (got {params['window']!r})")
     # decision timeframe (optional; defaults to 4h so existing callers are unchanged).
     timeframe = params.get("timeframe") or "4h"
     if timeframe not in TF.TIMEFRAMES:
@@ -146,8 +161,13 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
     # decision-bar duration generalises the old hardcoded "+4h" 1-minute slice bound to any TF.
     bar_td = TF.get(P["timeframe"]).bar_td
 
+    # 2024 is an ISOLATED window: swap in its own self-contained bundle so 2025/2026/full stay
+    # byte-identical (their vol-forecast + gate are untouched). The whole 2024 bundle = one window.
+    if window == "2024":
+        df4, df1, box, vf, n2025 = load_year_bundle(2024)
+
     N = len(df4)
-    lo, hi = {"full": (0, N), "2025": (0, n2025), "2026": (n2025, N)}[window]
+    lo, hi = {"full": (0, N), "2024": (0, N), "2025": (0, n2025), "2026": (n2025, N)}[window]
     d4 = df4.iloc[lo:hi].reset_index(drop=True)
     t0, t1 = d4["Date"].iloc[0], d4["Date"].iloc[-1] + bar_td
     d1 = df1[(df1["Date"] >= t0) & (df1["Date"] < t1)].reset_index(drop=True)
@@ -308,7 +328,8 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
                       gate_thr=(None if gthr is None else round(gthr, 0)), dd_limit=(ddl if use_brk else None),
                       cooldown=cooldown, dd_cap=dd_cap, pv=pv, flip=flip, window=window,
                       timeframe=P["timeframe"], indicators=specs, k=k_rule, gen=gen_params)
-    return dict(meta=dict(params=params_out, summary=summary, split_ts=_ts(df4.iloc[n2025]["Date"]),
+    return dict(meta=dict(params=params_out, summary=summary,
+                          split_ts=_ts(df4.iloc[min(n2025, len(df4) - 1)]["Date"]),
                           gen_report=gen_report),
                 candles=candles, vol=vol, gate_thr=(gthr if gthr is not None else 0), state=state,
                 trades=taken, equity=eqc, drawdown=drawdown, events=sorted(events, key=lambda e: e["time"]))
