@@ -107,7 +107,7 @@
       <h3>Data</h3>
       <div class="fld"><label>Strategy</label><select id="strategy" title="import a winning strategy — fills every field + runs"></select></div>
       <div class="fld"><label>Timeframe</label><select id="timeframe"></select></div>
-      <div class="fld"><label>Window</label><select id="window"><option value="full">full (25+26)</option><option value="2025">2025</option><option value="2026">2026</option></select></div>
+      <div class="fld"><label>Window</label><select id="window"><option value="full">full (25+26)</option><option value="full+20d">2025+2026 +last20d</option><option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option><option value="2026+20d">2026 +last20d</option></select></div>
       <div class="hint">decision candle = chosen TF · exits always resolve on 1-min · fine TFs (1m/2m) take longer</div>
     </div>
     <div class="sgroup">
@@ -116,6 +116,7 @@
       <div class="fld"><label>SL hard</label><input id="sl_hard" type="number" step="1"></div>
       <div class="fld"><label>Take-profit</label><input id="tp" type="number" step="1"></div>
       <div class="fld"><label>Direction</label><select id="flip"><option value="false">normal</option><option value="true">flipped</option></select></div>
+      <div class="fld"><label>On veto</label><select id="veto_as_flip"><option value="false">keep veto (no entry)</option><option value="true">enter flipped direction</option></select></div>
       <div class="hint">hard ≥ soft enforced · loss capped at SL-hard × $20</div>
     </div>
     <div class="sgroup">
@@ -218,7 +219,8 @@ function render(D){
     card('$'+Math.round(S.max_dd).toLocaleString(),'max drawdown','neg')+
     card(S.win+'%','win rate')+card(S.pf??'—','profit factor')+
     card(S.n_taken+'/'+S.n_candidates,'trades ('+S.exposure+'%)')+
-    card(S.n_locks,'breaker locks');
+    card(S.n_locks,'breaker locks')+
+    card((S.noentry_streak_n??0)+' · '+(S.noentry_streak_days??0)+'d','longest no-entry streak (signals · days)'+(S.noentry_streak_start?' — from '+S.noentry_streak_start:''));
   candle.setData(D.candles);
   const tpD=[],shD=[],ssD=[],mks=[];let last=0;
   D.trades.forEach(t=>{
@@ -260,7 +262,7 @@ function render(D){
 const $=id=>document.getElementById(id);
 function setForm(P){ if(P.timeframe&&$('timeframe').querySelector(`option[value="${P.timeframe}"]`))$('timeframe').value=P.timeframe;
   $('window').value=P.window||'full'; $('sl_soft').value=P.sl_soft; $('sl_hard').value=P.sl_hard; $('tp').value=P.tp;
-  $('gate_pct').value=P.gate_pct==null?0:P.gate_pct; $('dd_limit').value=P.dd_limit==null?0:P.dd_limit; $('cooldown').value=P.cooldown; $('flip').value=String(!!P.flip);
+  $('gate_pct').value=P.gate_pct==null?0:P.gate_pct; $('dd_limit').value=P.dd_limit==null?0:P.dd_limit; $('cooldown').value=P.cooldown; $('flip').value=String(!!P.flip); $('veto_as_flip').value=String(!!P.veto_as_flip);
   if(P.dd_cap!=null)$('dd_cap').value=P.dd_cap; if(P.pv!=null)$('pv').value=P.pv;
   if(P.k!=null)$('k_rule').value=P.k;
   if(P.retrace_amount!=null)$('g_retrace').value=P.retrace_amount;
@@ -271,7 +273,7 @@ function setForm(P){ if(P.timeframe&&$('timeframe').querySelector(`option[value=
 // NOTE: every value is read straight from the form — nothing is hardcoded or silently defaulted here.
 // Validation (and any error) happens server-side and is surfaced verbatim to the #err banner.
 function params(){return {timeframe:$('timeframe').value||'4h',window:$('window').value,sl_soft:+$('sl_soft').value,sl_hard:+$('sl_hard').value,tp:+$('tp').value,
-  gate_pct:+$('gate_pct').value,dd_limit:+$('dd_limit').value,cooldown:+$('cooldown').value,flip:$('flip').value==='true',
+  gate_pct:+$('gate_pct').value,dd_limit:+$('dd_limit').value,cooldown:+$('cooldown').value,flip:$('flip').value==='true',veto_as_flip:$('veto_as_flip').value==='true',
   dd_cap:$('dd_cap').value===''?null:+$('dd_cap').value, pv:$('pv').value===''?null:+$('pv').value,
   indicators:indicatorSpecs(), k:+$('k_rule').value||1,
   retrace_amount:+$('g_retrace').value||0, retrace_unit:$('g_retrace_unit').value, wait_bars:+$('g_wait').value||0,

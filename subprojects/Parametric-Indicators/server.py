@@ -67,7 +67,7 @@ class H(BaseHTTPRequestHandler):
                 "bounds": {"sl_soft": [1, None], "sl_hard": [1, None], "tp": [1, None],
                            "gate_pct": [0, 100], "dd_limit": [0, None], "cooldown": [0, None],
                            "dd_cap": [1, None], "pv": [0.01, None]},
-                "windows": ["full", "2025", "2026"],
+                "windows": ["full", "full+20d", "2024", "2025", "2026", "2026+20d"],
                 # coarsest→finest for the dropdown; 4h is the default (matches the winner preset)
                 "timeframes": list(reversed(list(TF.TIMEFRAMES))), "default_timeframe": "4h",
                 "indicator_schema": library.schema()}))

@@ -39,6 +39,78 @@ def load_inputs():
     return df4, df1, box, vf, n2025
 
 
+def load_year_bundle(yr: int):
+    """Load a SINGLE calendar year as a self-contained (df4, df1, box, vf, n) bundle. Used for the
+    isolated 2024 window so it never touches the 2025+2026 bundle (keeps those results byte-identical
+    + parity-locked). n = len(df4) (no second segment; the whole bundle is one window)."""
+    d = config.DATA_ROOT / f"{yr}_data"
+    a = load_data(str(d / f"NQ_4h_{yr}.csv")); a["_year"] = yr
+    b = load_data(str(d / f"NQ_1m_{yr}.csv"))
+    c = pd.read_csv(d / f"NQ_full_data_{yr}.csv"); c["Date"] = pd.to_datetime(c["Date"]).dt.normalize()
+    df4 = a.sort_values("Date").reset_index(drop=True)
+    df1 = b.sort_values("Date").reset_index(drop=True)
+    box = c.drop_duplicates(subset=["Date"]).set_index("Date", drop=False)
+    vf = vol_forecast(df4, df1)
+    return df4, df1, box, vf, len(df4)
+
+
+def load_inputs_plus20d():
+    """4h bundle for the +last-20-days windows: 2025 (standard, unchanged) + 2026-with-20d.
+    Mirrors load_inputs() but swaps the 2026 files for the combined ones (build_plus20d_data.py).
+    n2025 still counts only the 2025 decision bars, so 'full+20d'/'2026+20d' slice exactly like
+    'full'/'2026' — just with the extra June-2026 tail. The 2025 prefix is byte-identical, and
+    vol_forecast is causal, so every existing window stays unaffected."""
+    f4, f1, fb = [], [], []
+    spec = [(2025, "NQ_4h_2025.csv", "NQ_1m_2025.csv", "NQ_full_data_2025.csv"),
+            (2026, "NQ_4h_2026_with20d.csv", "NQ_1m_2026_with20d.csv", "NQ_full_data_2026_with20d.csv")]
+    for yr, f4n, f1n, fbn in spec:
+        d = config.DATA_ROOT / f"{yr}_data"
+        a = load_data(str(d / f4n)); a["_year"] = yr
+        b = load_data(str(d / f1n))
+        c = pd.read_csv(d / fbn); c["Date"] = pd.to_datetime(c["Date"]).dt.normalize()
+        f4.append(a); f1.append(b); fb.append(c)
+    df4 = pd.concat(f4).sort_values("Date").reset_index(drop=True)
+    df1 = pd.concat(f1).sort_values("Date").reset_index(drop=True)
+    box = pd.concat(fb).drop_duplicates(subset=["Date"]).set_index("Date", drop=False)
+    n2025 = int((df4["_year"] == config.YEARS[0]).sum())
+    vf = vol_forecast(df4, df1)
+    return df4, df1, box, vf, n2025
+
+
+def load_inputs_plus20d_tf(tf_name: str):
+    """Non-4h +20d bundle: mirrors optimize.data.load_inputs but reads the NQ_<tf>_with20d.csv
+    all-history files + the combined shared box (build_plus20d_data.py)."""
+    import os
+    from pathlib import Path
+    base = Path(os.environ.get("WSH_DATA_BASE", "/mnt/data/projects/trading"))
+    raw = base / TF.RAW_DIR
+    tf = TF.get(tf_name)
+    df_dec = load_data(str(raw / f"NQ_{tf.name}_with20d.csv")).sort_values("Date").reset_index(drop=True)
+    df1 = load_data(str(raw / "NQ_1m_with20d.csv")).sort_values("Date").reset_index(drop=True)
+    c = pd.read_csv(config.DATA_ROOT / "full_data" / "NQ_full_data_with20d.csv")
+    c["Date"] = pd.to_datetime(c["Date"]).dt.normalize()
+    box = c.drop_duplicates(subset=["Date"]).set_index("Date", drop=False)
+    vf = vol_forecast(df_dec, df1, bar_minutes=tf.minutes)
+    n_split = int((df_dec["Date"].dt.year == config.YEARS[0]).sum())
+    return df_dec, df1, box, vf, n_split
+
+
+_BUNDLE_CACHE_20D: dict = {}
+
+
+def get_bundle_plus20d(tf_name: str | None):
+    """Cached (df_dec, df1, box, vf, n_split) bundle for a TF, INCLUDING the last-20-days tail.
+    4h uses the per-year backend; every other TF uses the all-history backend (same split as
+    get_bundle). Unknown TF → ParamError (no silent fallback)."""
+    tf_name = tf_name or "4h"
+    if tf_name not in TF.TIMEFRAMES:
+        raise ParamError(f"timeframe must be one of {list(TF.TIMEFRAMES)} (got {tf_name!r})")
+    if tf_name not in _BUNDLE_CACHE_20D:
+        _BUNDLE_CACHE_20D[tf_name] = (load_inputs_plus20d() if tf_name == "4h"
+                                      else load_inputs_plus20d_tf(tf_name))
+    return _BUNDLE_CACHE_20D[tf_name]
+
+
 # Per-decision-timeframe bundle cache. 4h reuses the parity-locked per-year split files above;
 # every other timeframe is loaded from the all-history per-TF source via the optimizer's loader
 # (optimize/data.py), which produces the identical (df_dec, df1, box, vf, n_split) shape. Each TF
@@ -92,8 +164,9 @@ def validate_params(params):
     if dd_limit < 0:              raise ParamError(f"dd_limit must be ≥ 0 (got {dd_limit}); 0 = breaker OFF")
     if cooldown < 0 or cooldown != int(cooldown):
         raise ParamError(f"cooldown must be a non-negative integer (got {params['cooldown']!r})")
-    if params["window"] not in ("full", "2025", "2026"):
-        raise ParamError(f"window must be one of full|2025|2026 (got {params['window']!r})")
+    if params["window"] not in ("full", "2024", "2025", "2026", "full+20d", "2026+20d"):
+        raise ParamError("window must be one of full|2024|2025|2026|full+20d|2026+20d "
+                         f"(got {params['window']!r})")
     # decision timeframe (optional; defaults to 4h so existing callers are unchanged).
     timeframe = params.get("timeframe") or "4h"
     if timeframe not in TF.TIMEFRAMES:
@@ -133,7 +206,8 @@ def validate_params(params):
     return dict(sl_soft=sl_soft, sl_hard=sl_hard, tp=tp, gate_pct=gate_pct, dd_limit=dd_limit,
                 cooldown=int(cooldown), flip=bool(params["flip"]), window=params["window"],
                 timeframe=timeframe, dd_cap=dd_cap, pv=pv, indicators=list(specs), k=k, gen=gen,
-                retrace_amount=retrace_amount, retrace_unit=retrace_unit, wait_bars=wait_bars)
+                retrace_amount=retrace_amount, retrace_unit=retrace_unit, wait_bars=wait_bars,
+                veto_as_flip=bool(params.get("veto_as_flip")))
 
 
 def build_payload(df4, df1, box, vf, n2025, params=None):
@@ -146,8 +220,17 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
     # decision-bar duration generalises the old hardcoded "+4h" 1-minute slice bound to any TF.
     bar_td = TF.get(P["timeframe"]).bar_td
 
+    # 2024 is an ISOLATED window: swap in its own self-contained bundle so 2025/2026/full stay
+    # byte-identical (their vol-forecast + gate are untouched). The whole 2024 bundle = one window.
+    if window == "2024":
+        df4, df1, box, vf, n2025 = load_year_bundle(2024)
+    elif window in ("full+20d", "2026+20d"):
+        # combined bundle: 2025 + 2026 + the last-20-days tail (same per-TF split as get_bundle).
+        df4, df1, box, vf, n2025 = get_bundle_plus20d(P["timeframe"])
+
     N = len(df4)
-    lo, hi = {"full": (0, N), "2025": (0, n2025), "2026": (n2025, N)}[window]
+    lo, hi = {"full": (0, N), "2024": (0, N), "2025": (0, n2025), "2026": (n2025, N),
+              "full+20d": (0, N), "2026+20d": (n2025, N)}[window]
     d4 = df4.iloc[lo:hi].reset_index(drop=True)
     t0, t1 = d4["Date"].iloc[0], d4["Date"].iloc[-1] + bar_td
     d1 = df1[(df1["Date"] >= t0) & (df1["Date"] < t1)].reset_index(drop=True)
@@ -184,7 +267,8 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
         _votes = runner.compute_votes(d4, box, inds, src=ind_src)
         gate_used, entry_resolver, veto_mask = runner.build_layer(
             d4, box, inds, k_rule, base,
-            retrace_amount=g_retr, retrace_unit=g_runit, wait_bars=g_wait, src=ind_src, votes=_votes)
+            retrace_amount=g_retr, retrace_unit=g_runit, wait_bars=g_wait,
+            src=ind_src, votes=_votes, veto_as_flip=P["veto_as_flip"])
         if any(i.config.enabled and i.key in ("fvg", "order_block", "structure_trend") for i in inds):
             ctx = runner.market_context(d4)
             gen_report = generate.generate_structures(
@@ -208,7 +292,7 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
     blocked = []   # diagnostic: directional signals the gate dropped (logged, not traded)
     trades, _ = SimpleStrategy(sp).backtest(d4, d1, box, entry_gate=gate_used,
                                             entry_resolver=entry_resolver, veto_mask=veto_mask,
-                                            blocked_log=blocked)
+                                            blocked_log=blocked, veto_as_flip=P["veto_as_flip"])
     cand = sorted([t for t in trades if t.get("exit_reason") not in (None, "OPEN")],
                   key=lambda t: pd.Timestamp(t["entry_time"]))
 
@@ -235,9 +319,10 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
             nc = sum(1 for r in act if r["vote"] == "confirm")
             nv = sum(1 for r in act if r["vote"] == "veto")
             itxt = f" | K={k_rule}: {nc} confirm / {nv} veto of {len(act)} active"
+        vftxt = " · REVERSED (veto→flip)" if t.get("veto_flip") else ""
         ev = {"time": et, "type": "ENTRY",
               "text": f"{t['direction'].upper()} @ {t['entry_price']:.1f} | {gtxt} | "
-                      f"SLsoft {t['sl_soft_line']:.1f}/SLhard {t['sl_hard_line']:.1f}/TP {t['tp_hard_line']:.1f}{itxt}"}
+                      f"SLsoft {t['sl_soft_line']:.1f}/SLhard {t['sl_hard_line']:.1f}/TP {t['tp_hard_line']:.1f}{itxt}{vftxt}"}
         if ind_rows:
             ev["indicators"] = ind_rows
         events.append(ev)
@@ -245,6 +330,7 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
         events.append({"time": xt, "type": "WIN" if pnl > 0 else "LOSS", "text": f"exit @ {t['exit_price']:.1f} via {t['exit_reason']} | P/L {pnl:+,.0f} | equity ${eq:,.0f} | DD ${dd:,.0f}"})
         eqc.append({"time": xt, "value": round(eq, 2)})
         rec = {k: t[k] for k in ("entry_price", "exit_price", "direction", "exit_reason", "sl_soft_line", "sl_hard_line", "tp_soft_line", "tp_hard_line")}
+        rec["veto_flip"] = bool(t.get("veto_flip"))
         rec.update(entry_time=et, exit_time=xt, pnl=round(pnl, 2), equity=round(eq, 2), dd=round(dd, 2), year=pd.Timestamp(t["exit_time"]).year)
         taken.append(rec)
         if use_brk and dd >= ddl:
@@ -302,6 +388,26 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
     drawdown = [{"time": eqc[i]["time"], "value": -round(float(uw[i]), 2)} for i in range(len(eqc))]
     pnl = np.array([t["pnl"] for t in taken]) if taken else np.array([]); yr = np.array([t["year"] for t in taken]) if taken else np.array([])
     wins = pnl[pnl > 0]; losses = pnl[pnl < 0]
+
+    # Longest consecutive NON-ENTRY streak: the longest run of entry opportunities that did NOT
+    # become a trade — NOENTRY (vol-gate/veto drops) or SKIP (drawdown-breaker halts) — with no
+    # taken ENTRY interrupting it. Reported two ways: number of skipped signals + the calendar
+    # span (days) from the first to the last non-entry in that run.
+    _opp = sorted((e for e in events if e["type"] in ("ENTRY", "NOENTRY", "SKIP")),
+                  key=lambda e: e["time"])
+    _best_n = _cur_n = 0; _best_t0 = _best_t1 = _cur_t0 = None
+    for e in _opp:
+        if e["type"] == "ENTRY":
+            _cur_n = 0; _cur_t0 = None
+        else:
+            if _cur_n == 0:
+                _cur_t0 = e["time"]
+            _cur_n += 1
+            if _cur_n > _best_n:
+                _best_n, _best_t0, _best_t1 = _cur_n, _cur_t0, e["time"]
+    noentry_days = round((_best_t1 - _best_t0) / 86400.0, 1) if _best_n else 0.0
+    noentry_start = (pd.Timestamp(_best_t0, unit="s").strftime("%Y-%m-%d") if _best_n else None)
+
     summary = dict(pnl=float(pnl.sum()) if len(pnl) else 0.0,
                    pnl_2025=float(pnl[yr == config.YEARS[0]].sum()) if len(pnl) else 0.0,
                    pnl_2026=float(pnl[yr == config.YEARS[1]].sum()) if len(pnl) else 0.0,
@@ -310,12 +416,15 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
                    win=round(100 * (pnl > 0).mean(), 1) if len(pnl) else 0.0,
                    pf=round(float(wins.sum() / abs(losses.sum())), 2) if len(losses) and losses.sum() != 0 else None,
                    avg_win=round(float(wins.mean()), 0) if len(wins) else 0, avg_loss=round(float(losses.mean()), 0) if len(losses) else 0,
-                   max_dd=round(float(uw.max()), 0) if len(eqc) else 0.0, n_locks=sum(1 for e in events if e["type"] == "LOCK"))
+                   max_dd=round(float(uw.max()), 0) if len(eqc) else 0.0, n_locks=sum(1 for e in events if e["type"] == "LOCK"),
+                   noentry_streak_n=_best_n, noentry_streak_days=noentry_days, noentry_streak_start=noentry_start)
     params_out = dict(sl_soft=sl_soft, sl_hard=sl_hard, tp=tp, gate_pct=(None if gthr is None else float(gate_pct)),
                       gate_thr=(None if gthr is None else round(gthr, 0)), dd_limit=(ddl if use_brk else None),
                       cooldown=cooldown, dd_cap=dd_cap, pv=pv, flip=flip, window=window,
-                      timeframe=P["timeframe"], indicators=specs, k=k_rule, gen=gen_params)
-    return dict(meta=dict(params=params_out, summary=summary, split_ts=_ts(df4.iloc[n2025]["Date"]),
+                      timeframe=P["timeframe"], indicators=specs, k=k_rule, gen=gen_params,
+                      veto_as_flip=P["veto_as_flip"])
+    return dict(meta=dict(params=params_out, summary=summary,
+                          split_ts=_ts(df4.iloc[min(n2025, len(df4) - 1)]["Date"]),
                           gen_report=gen_report),
                 candles=candles, vol=vol, gate_thr=(gthr if gthr is not None else 0), state=state,
                 trades=taken, equity=eqc, drawdown=drawdown, events=sorted(events, key=lambda e: e["time"]))
