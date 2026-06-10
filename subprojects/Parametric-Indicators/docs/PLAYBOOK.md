@@ -130,3 +130,15 @@ The dashboard/backtester gained, all parity-safe (indicators-off still reproduce
 `WS-I.3_ENGINE_REPORT.md` (engine) · `RUNNER_BINDING_SEMANTICS.md` (Q1–Q6 binding) ·
 `INDICATORS.md` (per-indicator spec). Note: `INDICATOR_DECISIONS.md` is the I.1 freeze; where it
 describes per-indicator retrace/wait or the old golf, this playbook + the review docs supersede it.
+
+**Post-WS-I.10 additions (this workstream):**
+- `ONEMIN_INDICATORS_AND_VECTORIZATION.md` — indicators on the 1-minute frame + the vectorise/memoise
+  speed work (parity-locked).
+- `OPTIMIZER_DEEP_ANALYSIS.md` — how the optimiser works, NSGA-III vs alternatives, parallelism vs
+  vectorisation, the higher-ROI levers.
+- `SERVER_RUN_READINESS.md` — readiness/blocker analysis + the current 1-minute-indicators sweep plan
+  (2m–4h, `wsh4_` studies, `remote_wsi.sh` launch steps).
+- `KNOWN_QUIRKS.md` — honest audit of non-obvious behaviours / dead params (flip-gate, `dd_cap`
+  display-only, dead `stochastic.d` & `keltner.m`, warm-up heuristics, …). **Read before trusting a
+  champion's exact knobs.**
+- `../WSI-Case_Study/CASE_STUDY_2026_maxDD.md` — the cold-start / warm-up case study.
