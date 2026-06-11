@@ -18,6 +18,10 @@ from indicators import library
 
 _HERE = Path(__file__).resolve().parent
 _CHAMP_JSON = _HERE / "optimize" / "results" / "wsi_champions_full.json"
+# wsh4 regime: champions whose indicators were tuned on the 1-MINUTE frame (--ind-1min sweep). The dev
+# dashboard already evaluates indicators on the 1-minute frame (strategy.py), so these reproduce
+# faithfully. Added ALONGSIDE the originals above — never replacing them.
+_CHAMP_1MIN_JSON = _HERE / "optimize" / "results" / "wsh4_champions_full.json"
 # User-saved profiles persist here (server-side, shared across browsers) — same JSON shape as the
 # built-in presets, so they're first-class entries in the Strategy dropdown.
 _PROFILES_JSON = _HERE / "profiles" / "user_profiles.json"
@@ -64,6 +68,16 @@ def _champions() -> dict:
         return {}
 
 
+def _champions_1min() -> dict:
+    """wsh4 per-TF champions (indicators tuned on the 1-minute frame). Empty if the file is absent."""
+    if not _CHAMP_1MIN_JSON.exists():
+        return {}
+    try:
+        return json.loads(_CHAMP_1MIN_JSON.read_text())
+    except Exception:
+        return {}
+
+
 def _all_specs(inds_on: dict | None = None):
     """Return (full 15-indicator spec list, gen_swing_l). Every registered indicator is emitted with
     enabled True/False so importing a preset RESETS indicators not in it (a previously-on indicator
@@ -100,6 +114,7 @@ def strategies() -> list[dict]:
     """List of importable strategies: the plain box winner first, then each per-TF WS-I champion.
     Each item = {id, label, preset} where preset matches the dashboard param schema 1:1."""
     champs = _champions()
+    _champs_1min = _champions_1min()          # wsh4 (1-minute-frame trained) champions, added below
     # the original box winner (all indicators off → pure box strategy), 4h
     winner_box = dict(sl_soft=config.WINNER["sl_soft"], sl_hard=config.WINNER["sl_hard"],
                       tp=config.WINNER["tp"], gate_pct=config.WINNER["gate_pct"],
@@ -114,6 +129,18 @@ def strategies() -> list[dict]:
         out.append({"id": f"wsi_{tf}",
                     "label": f"WS-I {tf} champion — typ ${c['median_pnl']:,.0f}",
                     "preset": _preset(tf, c["box"], c.get("indicators", {}))})
+    # NEW: wsh4 champions — indicators tuned on the 1-MINUTE frame. Added alongside (not replacing) the
+    # entries above; labelled "⏱1-min" so it's unmistakable which regime they came from. The dev
+    # dashboard evaluates indicators on the 1-minute frame, so these reproduce their tuned behaviour.
+    for tf in _TF_ORDER:
+        c = _champs_1min.get(tf)
+        if not c:
+            continue
+        p = _preset(tf, c["box"], c.get("indicators", {}))
+        p["trained_on"] = "1-minute frame (wsh4)"      # provenance marker (frontend ignores unknown keys)
+        out.append({"id": f"wsi1m_{tf}",
+                    "label": f"⏱ WS-I {tf} · 1-min-trained — typ ${c['median_pnl']:,.0f}",
+                    "preset": p})
     # user-saved profiles (server-side store) — first-class entries, id prefixed 'user_'
     for name, preset in load_user_profiles().items():
         out.append({"id": f"user_{name}", "label": f"👤 {name}", "preset": preset})

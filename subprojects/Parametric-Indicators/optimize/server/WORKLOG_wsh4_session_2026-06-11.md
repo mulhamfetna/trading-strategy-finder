@@ -313,3 +313,170 @@ pgrep -fc tg_bot.py                   # responder (/report_server_status) — co
 pkill  -f  tg_bot.py                  # responder — stop
 # in Telegram: send /report_server_status for an on-demand live full-server report
 ```
+
+---
+
+## 12. System updates APPLIED this session (Tier-0 + Step-3 contention fixes)
+
+After the studies were written (§6), we began applying the bottleneck-prevention roadmap from
+`REPORT_system_scaling_study.md`. **All edits are LOCAL-ONLY and committed on `dev`; nothing is pushed to
+the server.** Each step was approved individually and verified before the next.
+
+### 12.1 What changed, and why (plain + precise)
+
+| Step | Code change | Plain-language | Verified |
+|------|-------------|----------------|----------|
+| **1** | `study.optimize(..., catch=(optuna.exceptions.StorageInternalError,))` in `optimizer.py` | If the shared notebook is busy, a worker **skips one line instead of quitting forever**. | parity OK |
+| **2** | Open the store via `RDBStorage(engine_kwargs={"connect_args":{"timeout":60}})` + `PRAGMA journal_mode=WAL; synchronous=NORMAL` | Workers **wait a full minute** for their turn and can **read while one writes**. | smoke + `journal_mode=wal` |
+| **3** | Per-timeframe DB files `wsh_<tf>.db` via a prefix-aware `_db_for()` resolver in **both** `optimizer.py` and `report_wsi.py`, plus `remote_wsi.sh` (`cmd_run` create + `cmd_counts`) | **Each of the 6 groups gets its own notebook** (~5 writers each, not 30 on one). If asked for a study that only lives in the old shared `wsh.db`, it reads it and **shouts `⚠️ FALLBACK` loudly** — never silent, never lost. | resolver unit + fresh-create + reader fallback + parity + **pytest 88 passed** |
+
+Steps 1–2 do **not** change the DB layout. Step 3 introduces per-TF files but is **backward-compatible**:
+new local runs isolate per timeframe; any reader/counter asked for a study that lives only in the legacy
+shared `wsh.db` (which is exactly what the server is producing now) transparently uses it and announces
+the fallback. This was confirmed **live** — running `./remote_wsi.sh counts` against the server prints
+`⚠️ FALLBACK <tf>: per-TF file absent, reading shared wsh.db` for each timeframe and returns correct
+counts.
+
+### 12.2 Commits on `dev` (local, NOT pushed to origin or the server)
+
+| SHA | Type | Contents |
+|-----|------|----------|
+| `93a9244` | **ROLLBACK SNAPSHOT** | Steps 1–2 (layout unchanged) + all scaling docs. Known-good restore point. |
+| `813f9f5` | feat | Step 3 per-TF DB files + backward-compatible loud-fallback resolver (child of `93a9244`). |
+
+**Rollback:** `git reset --hard 93a9244` (undo Step 3, keep 1–2) — or `git revert 813f9f5`. Full
+reverse steps in `MIGRATION_per_tf_db.md` §6; verification matrix in §7.
+
+### 12.3 Files touched (all local)
+```
+optimize/optimizer.py        — Steps 1, 2, 3 (catch=, WAL/timeout, _db_for per-TF resolver)
+optimize/report_wsi.py       — Step 3 reader: _db_for with loud shared-file fallback
+optimize/server/remote_wsi.sh— Step 3 launcher: per-TF create + counts (fallback-aware); cmd_pull unchanged
+optimize/server/MIGRATION_per_tf_db.md — before/after/reverse documentation
+```
+
+---
+
+## 13. Sweep PROGRESS snapshot (at time of writing)
+
+Top-up (`run 2900 "4h 1h"`) still in flight; other 4 TFs idle since the original sweep.
+
+| TF | trials | complete | feasible | target | state |
+|----|-------:|---------:|---------:|-------:|:-----:|
+| **4h** | 4,175 | 3,700 | **2,841** | ~5,046 | 🟢 running (~870 to go) |
+| **1h** | **5,103** | 4,579 | **2,522** | ~5,553 | 🟢 running (already past 5,000) |
+| 2h | 5,000 | 4,476 | 2,810 | ✓ | idle (done) |
+| 15m | 3,507 | 3,294 | 1,718 | — | idle |
+| 5m | 5,004 | 4,565 | 2,779 | ✓ | idle |
+| 2m | 4,256 | 4,037 | 2,929 | — | idle |
+
+Feasible fronts vs the original shortfall: **4h 1,165 → 2,841**, **1h 901 → 2,522** — the top-up has
+roughly doubled (or more) the usable solution set on both. Watcher fires its completion alert when
+**both** 4h and 1h are ≥ 5,000; 4h is the last one outstanding.
+
+---
+
+## 14. Updates HELD until the optimizer finishes (do NOT start before the pull)
+
+These are intentionally deferred so they cannot interfere with the running sweep or risk results
+retrieval (priority #1 = get the report back). **Ordered.**
+
+1. **`./remote_wsi.sh pull`** — FIRST action once 4h crosses target. Runs the server's report builder
+   (single `wsh.db`) and rsyncs `results/`, `reports/WS-I_RESULTS.md`, and logs back to local. Nothing
+   below happens before this succeeds and the results are confirmed home.
+2. **Push the Tier-0/Step-3 code to the server** — only AFTER the pull. `./remote_wsi.sh push` would
+   overwrite the server's `optimizer.py`/`report_wsi.py`/`remote_wsi.sh` with the per-TF versions. Safe
+   *after* pull because: (a) results are already retrieved; (b) the new reader is backward-compatible and
+   would still read the existing single `wsh.db` (with a loud fallback) if we ever re-report on the
+   server. NOT done yet.
+3. **Step 4 — PostgreSQL backend + centralized storage URL (NOT IMPLEMENTED).** The Tier-1 durable fix:
+   add a single `WSH_STORAGE_URL` switch (sqlite ↔ postgres) read by `optimizer.py` + `report_wsi.py` +
+   `remote_wsi.sh`, and stand up a (containerized) PostgreSQL on the server. This is the ONLY roadmap item
+   that requires something **running on the server**, so it is held until after the pull and only with
+   explicit go-ahead. Local code/switch can be prepared and tested first with SQLite remaining the
+   default; the server-side Postgres service is deployed last.
+4. **(Optional) Migrate existing wsh4 studies** from the single `wsh.db` into per-TF files (or into
+   Postgres) for a clean future-run layout — only if desired; the backward-compatible reader means it is
+   not required for correctness.
+
+**Status of Step 4 as of now:** not started — no Postgres installed, no `WSH_STORAGE_URL` switch added.
+Steps 1–3 are SQLite-only improvements (a much better-behaved SQLite).
+
+### Decision gates still open
+- Pull now-vs-wait (auto-alert will signal readiness).
+- Step 4: prepare-locally-now vs defer-entirely; deploy Postgres on the server only post-pull.
+
+---
+
+## 15. 4h boost — extra workers (approved, executed)
+
+With only 4h still short of target and the box at ~9/32 cores used, we **added 8 extra 4h workers** to
+finish faster. Mechanics that kept it safe:
+- **Spawned directly** with `setsid` (same `wsh4_4h` study, same env, appending to `logs/4h.log`),
+  **never** via `remote_wsi.sh run` (whose `pkill -9` would have killed all running workers).
+- **Bounded** `--trials 150` each → self-terminating, no runaway.
+- Total writers went 9 → ~17 (12 on 4h + 5 on 1h) — well under the ~30 that caused the incident.
+
+Result: **0 new lock errors**, load 9.8 → 17.5 (still ~14 idle cores), and 4h throughput ~tripled. 4h
+crossed the 5,000 threshold in ~15 min instead of ~48. Confirmed Optuna's many-workers-one-study model
+does not disturb existing workers.
+
+---
+
+## 16. Results PULLED (the held priority — done)
+
+Once 4h crossed 5,000, ran `./remote_wsi.sh pull`:
+- Built `reports/WS-I_RESULTS.md` + `results/wsi_leaderboard.csv` on the server (reading the single
+  `wsh.db`), then rsynced `results/`, `reports/`, and `server_logs/` back to local.
+- Read-only on the DB → safe while the last 4h boost workers were still finishing.
+
+**Final feasible-Pareto champions (full-period, DD≤25%·P/L):**
+
+| TF | front | full P/L | DD ($ / %P/L) | win% | K | #ind |
+|----|------:|---------:|---------------|-----:|:-:|:----:|
+| **4h** 🏆 | 297 | **$142,229** | $14,075 / **9.9%** | **71.1%** | 1 | 8 |
+| 1h | 144 | $96,024 | $10,984 / 17.6% | 52.4% | 4 | 8 |
+| 2h | 124 | $92,057 | $12,944 / 17.7% | 50.5% | 3 | 8 |
+| 15m | 85 | $77,336 | $8,089 / 10.5% | 51.2% | 3 | 8 |
+| 2m | 156 | $29,665 | $2,275 / 11.0% | 64.4% | 1 | 7 |
+| 5m | 187 | $24,030 | $4,167 / 19.3% | 62.8% | 1 | 7 |
+
+4h is the standout. vs the original shortfall, feasible counts grew massively (4h 1,165→4,246,
+1h 901→2,856). Task **#209 (WS-I.11)** marked complete.
+
+---
+
+## 17. New "1-min-trained" portfolios imported to the dashboard
+
+The 6 wsh4 champions were added as dashboard portfolios **alongside** (never replacing) the existing
+ones, clearly labelled as 1-minute-trained.
+
+### 17.1 What was added/changed (local)
+```
+optimize/build_champions_from_pareto.py        NEW — converts <tf>_wsi_pareto.csv → champions JSON
+                                                     (schema-typed params; champion = top row)
+optimize/results/wsh4_champions_full.json      NEW — 6 TF champions (box + per-indicator params)
+presets.py                                     MOD — _champions_1min() loader + a second loop in
+                                                     strategies() emitting "⏱ WS-I <tf> · 1-min-trained"
+                                                     entries (id wsi1m_<tf>); preset tagged
+                                                     trained_on="1-minute frame (wsh4)".
+```
+The original `wsi_champions_full.json` and the `wsi_<tf>` entries are **untouched**.
+
+### 17.2 Why these reproduce faithfully
+The dev dashboard computes indicators on the **1-minute frame unconditionally**
+(`strategy.py:264 ind_src = runner.indicator_source_1min(...)`). The wsh4 champions were tuned under
+exactly that regime (`--ind-1min`), so loading a preset and backtesting reproduces its tuned behaviour.
+
+### 17.3 Verification
+- `presets.strategies()` → **15 entries**: winner + 7 original `wsi_*` (preserved) + **6 new `wsi1m_*`**
+  + 1 user profile. (assertion-checked)
+- **Live reproduction:** 5m 1-min champion backtested through the dashboard engine →
+  **P/L $23,926** vs sweep-reported **$24,030** (0.4% — rounding/edge only). 4h needs per-year CSVs not
+  in this checkout, but uses the identical builder.
+- Full **pytest: 88 passed**.
+- Dashboard **restarted** (port 8200) and `/api/config` confirmed serving all 15 strategies including
+  the 6 `⏱ 1-min-trained` entries.
+
+### 17.4 Champion typical (median-fold) P/L shown in each label
+4h $33,592 · 1h $27,776 · 2h $21,755 · 15m $21,852 · 5m $7,813 · 2m $6,287.
