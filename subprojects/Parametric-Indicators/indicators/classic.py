@@ -113,12 +113,18 @@ def macd(close: np.ndarray, fast: int, slow: int, signal: int):
 
 
 def obv(close: np.ndarray, volume: np.ndarray) -> np.ndarray:
-    """On-Balance Volume. OBV[0] = 0; then += sign(close[t]-close[t-1]) * volume[t]."""
+    """On-Balance Volume. OBV[0] = 0; then += sign(close[t]-close[t-1]) * volume[t].
+
+    Vectorized prefix-sum (task #210): OBV[1:] = cumsum(sign(diff(close)) * volume[1:]). Mathematically
+    identical to the original per-bar loop — np.sign matches (sign(0)=0) and NaN propagates the same way
+    (a NaN diff makes that term NaN, and cumsum carries it forward exactly as the loop's running add did).
+    Frozen reference: indicators/_reference.obv_ref; equivalence: tests/test_speedopt_equiv.py.
+    """
     c = np.asarray(close, dtype=float)
     vol = np.asarray(volume, dtype=float)
     out = np.zeros(len(c), dtype=float)
-    for t in range(1, len(c)):
-        out[t] = out[t - 1] + np.sign(c[t] - c[t - 1]) * vol[t]
+    if len(c) > 1:
+        out[1:] = np.cumsum(np.sign(np.diff(c)) * vol[1:])
     return out
 
 
