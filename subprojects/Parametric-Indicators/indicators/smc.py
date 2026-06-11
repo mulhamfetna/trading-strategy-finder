@@ -125,7 +125,12 @@ def order_blocks(open_, high, low, close, swing_l: int = 2, signal_at=None):
         want[idx[(idx >= 0) & (idx < n)]] = True
     swh = swl = None
     last_down = last_up = None
-    bull, bear = [], []           # active zones [lo, hi]
+    # Live zones as numpy arrays (lo, hi) instead of Python lists (task #210, Step C′). Appends (on
+    # breaks) are rare; the per-bar overlap (np.any) and pruning (boolean mask) are VECTORISED — exactly
+    # the same operations as the list version, at C speed. Output is unchanged (proven bit-identical vs
+    # _reference.order_blocks_ref). signal_at gating (Step E) is preserved.
+    bull_lo = np.empty(0, dtype=float); bull_hi = np.empty(0, dtype=float)
+    bear_lo = np.empty(0, dtype=float); bear_hi = np.empty(0, dtype=float)
     prev_above = prev_below = False
     for t in range(n):
         p = t - L
@@ -138,28 +143,34 @@ def order_blocks(open_, high, low, close, swing_l: int = 2, signal_at=None):
         if swh is not None:
             above = c[t] > swh
             if above and not prev_above and last_down is not None:
-                bull.append([min(o[last_down], c[last_down]), max(o[last_down], c[last_down])])
+                lo = min(o[last_down], c[last_down]); hi = max(o[last_down], c[last_down])
+                bull_lo = np.append(bull_lo, lo); bull_hi = np.append(bull_hi, hi)
             prev_above = above
         if swl is not None:
             below = c[t] < swl
             if below and not prev_below and last_up is not None:
-                bear.append([min(o[last_up], c[last_up]), max(o[last_up], c[last_up])])
+                lo = min(o[last_up], c[last_up]); hi = max(o[last_up], c[last_up])
+                bear_lo = np.append(bear_lo, lo); bear_hi = np.append(bear_hi, hi)
             prev_below = below
         # per-bar reaction signal: overlap with a live zone (bull preferred). Skipped where the value is
         # never read (want[t] False) — out[t] stays 0; the state updates below STILL run every bar.
         if want is None or want[t]:
             s = 0
-            for z in bull:
-                if l[t] <= z[1] and h[t] >= z[0]:
-                    s = 1; break
-            if s == 0:
-                for z in bear:
-                    if l[t] <= z[1] and h[t] >= z[0]:
-                        s = -1; break
+            if bull_lo.size and np.any((l[t] <= bull_hi) & (h[t] >= bull_lo)):
+                s = 1
+            elif bear_lo.size and np.any((l[t] <= bear_hi) & (h[t] >= bear_lo)):
+                s = -1
             out[t] = s
-        # conversion to breaker (burned into): bull OB dies on a close below it; bear on close above
-        bull = [z for z in bull if not (c[t] < z[0])]
-        bear = [z for z in bear if not (c[t] > z[1])]
+        # conversion to breaker (burned into): bull OB dies on a close BELOW it (keep lo ≤ c[t]); bear on
+        # a close ABOVE it (keep hi ≥ c[t]). Realloc only when something actually drops out.
+        if bull_lo.size:
+            keep = bull_lo <= c[t]
+            if not keep.all():
+                bull_lo = bull_lo[keep]; bull_hi = bull_hi[keep]
+        if bear_lo.size:
+            keep = bear_hi >= c[t]
+            if not keep.all():
+                bear_lo = bear_lo[keep]; bear_hi = bear_hi[keep]
         # track last opposite-close candle AFTER using prior state
         if c[t] < o[t]:
             last_down = t

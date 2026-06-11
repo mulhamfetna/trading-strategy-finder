@@ -10,32 +10,38 @@ optimization stands. Each step has its own `perf/UPDATE_step_*.md`; this pins th
 | Phase | Steps | Status |
 |-------|-------|--------|
 | **0 — Safety net** | golden baselines + harness + equivalence framework | ✅ done |
-| **1 — Vectorize + de-dup** | D obv · A1 bollinger · A2 cci · A3 stochastic/atr/keltner/mfi · B de-dup SMC | ◑ D/A1/A2 done; A3, B pending |
-| **2 — JIT + cache** | F cache 1-min sampling map · C Numba SMC loops | ⏳ pending |
-| **3 — Polish (optional)** | E sampled-overlap · G thread indicators · H Numba exit walk | ⏳ pending |
+| **1 — Vectorize + de-dup** | D obv · A1 bollinger · A2 cci · A3 stochastic/atr/keltner/mfi · ~~B de-dup SMC~~ | ◑ D/A1/A2 done; A3 pending; **B DROPPED (profiler misread — ~0.05 s, not ~9 s)** |
+| **2 — JIT + cache** | F cache 1-min sampling map · ~~C Numba SMC loops~~ → **C′ numpy rewrite** | ◑ C′ done; C(Numba) **blocked** (Py 3.14 + PEP 668); F pending |
+| **3 — Polish (optional)** | E sampled-overlap · G thread indicators · H Numba exit walk | ◑ **E done**; G/H pending |
 
 ---
 
 ## Commits (rollback points) on `dev`
 
-| SHA | Step | Result |
-|-----|------|--------|
-| `f9d6f36` | Phase 0 safety net | golden baselines (6 TFs) + check_golden + bench + equiv framework — **the rollback anchor** |
-| `e76448` | D — vectorize obv | 64×, bit-identical |
-| `1f1c29f` | A1 — vectorize bollinger | 40×, bit-identical |
-| `f178ec3` | A2 — vectorize cci | 4×, bit-identical |
+| SHA | Step | 4h time | Result |
+|-----|------|--------:|--------|
+| `f9d6f36` | Phase 0 safety net | 36.2 s | golden baselines (6 TFs) + check_golden + bench + equiv framework — **the rollback anchor** |
+| `e76448` | D — vectorize obv | — | 64×, bit-identical |
+| `1f1c29f` | A1 — vectorize bollinger | — | 40×, bit-identical |
+| `f178ec3` | A2 — vectorize cci | 25.6 s | 4×, bit-identical |
+| `08b8c77` | E — order_blocks sampled-overlap | 16.5 s | −9 s, byte-identical |
+| _(this)_ | C′ — order_blocks numpy zones | **12.1 s** | order_blocks 16.6→5.8 s (2.8×), byte-identical |
 
 Revert any step: `git revert <sha>`. Reset to pre-optimization: `git reset --hard f9d6f36`.
 
 ---
 
-## Results so far (all proven results-UNCHANGED)
+## Results so far (all proven results-UNCHANGED, golden vote-hashes byte-identical every step)
 
-- **4h backtest: 36.2 s → 25.6 s (−29%)** after D+A1+A2. Per-function micro-benchmarks: obv 540 ms→8 ms
-  (64×), bollinger 6,375 ms→159 ms (40×), cci 3,567 ms→925 ms (4×) — each **bit-identical on the real
-  486,969-bar 1-minute series**.
-- The big remaining lump is **`smc.order_blocks` ~18.5 s** (computed ~2×) — addressed by **B** (de-dup)
-  then **C** (Numba). Classic rolling indicators are mostly done.
+- **4h backtest: 36.2 s → 12.1 s (−67%)** after D+A1+A2+E+C′. **148 tests passing.**
+- Per-function micro-benchmarks (all bit-identical on the real 486,969-bar 1-minute series):
+  obv 540 ms→8 ms (64×) · bollinger 6,375 ms→159 ms (40×) · cci 3,567 ms→925 ms (4×) ·
+  order_blocks (E+C′, sampled) 16.6 s→5.8 s (2.8×).
+- **Plan corrections discovered by profiling:** (1) **B (de-dup SMC) dropped** — the "second
+  order_blocks" is the cheap ~0.05 s decision-frame call, not a ~9 s duplicate; (2) **C (Numba) blocked**
+  here (Python 3.14 has no numba wheel + PEP 668 forbids a safe install) → replaced by the dependency-free
+  **C′ numpy-zone rewrite**.
+- Remaining order_blocks cost ≈ 5.8 s is now the outer Python loop + `market_structure` (~2.2 s).
 
 ## Golden baselines (immutable reference, frozen at Phase 0)
 
