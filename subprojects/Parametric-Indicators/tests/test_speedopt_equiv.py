@@ -39,3 +39,31 @@ def test_obv_empty_and_single():
                        _reference.obv_ref(np.array([]), np.array([])))
     equiv.assert_equiv("obv n=1", classic.obv(np.array([21000.0]), np.array([5.0])),
                        _reference.obv_ref(np.array([21000.0]), np.array([5.0])))
+
+
+# ----- Step A1: bollinger (rolling population std) -------------------------------------------------
+@pytest.mark.parametrize("nbar,seed", [(50, 1), (300, 2), (2000, 3), (49000, 4)])
+@pytest.mark.parametrize("win,k", [(20, 2.0), (45, 4.3), (5, 1.0)])
+def test_bollinger_random(nbar, seed, win, k):
+    c = equiv.price_series(nbar, seed)
+    got = classic.bollinger(c, win, k)
+    ref = _reference.bollinger_ref(c, win, k)
+    for nm, g, r in zip(("mid", "upper", "lower"), got, ref):
+        equiv.assert_equiv(f"bollinger {nm} n={nbar} win={win} k={k}", g, r)
+
+
+def test_bollinger_edge_cases():
+    for name, close in equiv.edge_cases(400):
+        for win, k in ((20, 2.0), (45, 4.3)):
+            got = classic.bollinger(close, win, k)
+            ref = _reference.bollinger_ref(close, win, k)
+            for nm, g, r in zip(("mid", "upper", "lower"), got, ref):
+                equiv.assert_equiv(f"bollinger edge[{name}] {nm} win={win}", g, r)
+
+
+def test_bollinger_window_longer_than_series():
+    c = equiv.price_series(10, 5)
+    got = classic.bollinger(c, 50, 2.0)            # win > len → all-NaN std
+    ref = _reference.bollinger_ref(c, 50, 2.0)
+    for nm, g, r in zip(("mid", "upper", "lower"), got, ref):
+        equiv.assert_equiv(f"bollinger win>len {nm}", g, r)

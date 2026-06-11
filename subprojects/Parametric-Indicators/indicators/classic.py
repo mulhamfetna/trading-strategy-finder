@@ -173,12 +173,20 @@ def cci(high, low, close, n: int) -> np.ndarray:
 
 
 def bollinger(close, n: int, k: float):
-    """Returns (mid, upper, lower). mid=SMA(n); band = mid ± k*rolling_std (population, ddof=0)."""
+    """Returns (mid, upper, lower). mid=SMA(n); band = mid ± k*rolling_std (population, ddof=0).
+
+    Vectorized rolling std (task #210): a sliding window of width n, std over axis 1 (population,
+    ddof=0) — the SAME per-window reduction the loop ran, in one batched pass. Edge convention preserved
+    (std is NaN for t<n-1, and NaN for any window containing a NaN). Frozen reference:
+    indicators/_reference.bollinger_ref; equivalence: tests/test_speedopt_equiv.py (tight tolerance, and
+    the per-decision-bar vote-hash must stay byte-identical — checked by perf/check_golden.py).
+    """
     c = np.asarray(close, float)
     mid = sma(c, n)
     std = _nan_like(c)
-    for t in range(n - 1, len(c)):
-        std[t] = np.std(c[t - n + 1:t + 1])
+    if len(c) >= n:
+        win = np.lib.stride_tricks.sliding_window_view(c, n)   # shape (len-n+1, n)
+        std[n - 1:] = win.std(axis=1)                          # ddof=0 population std per window
     return mid, mid + k * std, mid - k * std
 
 
