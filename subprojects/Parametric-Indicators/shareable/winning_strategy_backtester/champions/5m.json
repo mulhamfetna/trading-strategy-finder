@@ -1,0 +1,139 @@
+{
+ "id": "wsi1m_5m",
+ "label": "\u23f1 WS-I 5m \u00b7 1-min-trained \u2014 typ $7,813",
+ "preset": {
+  "timeframe": "5m",
+  "window": "full",
+  "sl_soft": 21.9,
+  "sl_hard": 39.0,
+  "tp": 25.4,
+  "gate_pct": 75.8,
+  "dd_limit": 4260.0,
+  "cooldown": 20,
+  "flip": false,
+  "k": 1,
+  "dd_cap": 5000.0,
+  "pv": 20.0,
+  "retrace_amount": 0,
+  "retrace_unit": "atr_mult",
+  "wait_bars": 0,
+  "gen": {
+   "swing_l": 2,
+   "golf_n": 3
+  },
+  "indicators": [
+   {
+    "key": "ema_trend",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "sma_trend",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "macd",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 53,
+     "slow": 43,
+     "signal": 35
+    }
+   },
+   {
+    "key": "vwap",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "keltner",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "n": 44,
+     "m": 3.3
+    }
+   },
+   {
+    "key": "obv",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "slope": 130
+    }
+   },
+   {
+    "key": "cci",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "rsi",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "stochastic",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 6,
+     "d": 14,
+     "lower": 35,
+     "upper": 83
+    }
+   },
+   {
+    "key": "mfi",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 39,
+     "lower": 28,
+     "upper": 98
+    }
+   },
+   {
+    "key": "bollinger",
+    "enabled": false,
+    "mode": "veto",
+    "params": {}
+   },
+   {
+    "key": "adx",
+    "enabled": true,
+    "mode": "veto",
+    "params": {
+     "n": 8,
+     "threshold": 15
+    }
+   },
+   {
+    "key": "structure_trend",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "order_block",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "fvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   }
+  ],
+  "trained_on": "1-minute frame (wsh4)"
+ }
+}

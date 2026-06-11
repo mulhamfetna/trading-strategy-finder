@@ -1,0 +1,135 @@
+{
+ "id": "wsi1m_2m",
+ "label": "\u23f1 WS-I 2m \u00b7 1-min-trained \u2014 typ $6,287",
+ "preset": {
+  "timeframe": "2m",
+  "window": "full",
+  "sl_soft": 12.3,
+  "sl_hard": 30.2,
+  "tp": 19.4,
+  "gate_pct": 92.8,
+  "dd_limit": 4377.0,
+  "cooldown": 26,
+  "flip": false,
+  "k": 1,
+  "dd_cap": 5000.0,
+  "pv": 20.0,
+  "retrace_amount": 0,
+  "retrace_unit": "atr_mult",
+  "wait_bars": 0,
+  "gen": {
+   "swing_l": 19,
+   "golf_n": 3
+  },
+  "indicators": [
+   {
+    "key": "ema_trend",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 317,
+     "slow": 389
+    }
+   },
+   {
+    "key": "sma_trend",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "macd",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "vwap",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "keltner",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "obv",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "cci",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "rsi",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "stochastic",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 18,
+     "d": 31,
+     "lower": 38,
+     "upper": 55
+    }
+   },
+   {
+    "key": "mfi",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "bollinger",
+    "enabled": true,
+    "mode": "veto",
+    "params": {
+     "n": 42,
+     "k": 1.6
+    }
+   },
+   {
+    "key": "adx",
+    "enabled": false,
+    "mode": "veto",
+    "params": {}
+   },
+   {
+    "key": "structure_trend",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "swing_l": 6
+    }
+   },
+   {
+    "key": "order_block",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "swing_l": 19
+    }
+   },
+   {
+    "key": "fvg",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "lookback": 12
+    }
+   }
+  ],
+  "trained_on": "1-minute frame (wsh4)"
+ }
+}
