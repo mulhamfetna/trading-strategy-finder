@@ -29,3 +29,17 @@ def bollinger_ref(close, n: int, k: float):
     for t in range(n - 1, len(c)):
         std[t] = np.std(c[t - n + 1:t + 1])
     return mid, mid + k * std, mid - k * std
+
+
+def cci_ref(high, low, close, n: int):
+    """CCI — ORIGINAL per-bar rolling mean-abs-deviation loop. TP=(H+L+C)/3, factor 0.015; mad==0 ⇒ 0."""
+    from indicators.classic import sma, _nan_like
+    h = np.asarray(high, float); l = np.asarray(low, float); c = np.asarray(close, float)
+    tp = (h + l + c) / 3.0
+    m = sma(tp, n)
+    out = _nan_like(c)
+    for t in range(n - 1, len(c)):
+        win = tp[t - n + 1:t + 1]
+        mad = np.mean(np.abs(win - m[t]))
+        out[t] = 0.0 if mad == 0 else (tp[t] - m[t]) / (0.015 * mad)
+    return out

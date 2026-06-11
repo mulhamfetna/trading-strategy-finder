@@ -160,15 +160,24 @@ def stochastic(high, low, close, n: int, d: int):
 
 
 def cci(high, low, close, n: int) -> np.ndarray:
-    """Commodity Channel Index over typical price TP=(H+L+C)/3, factor 0.015, mean abs deviation."""
+    """Commodity Channel Index over typical price TP=(H+L+C)/3, factor 0.015, mean abs deviation.
+
+    Vectorized (task #210): rolling mean-abs-deviation via a sliding window — |win - SMA|.mean(axis=1) —
+    the SAME per-window reduction the loop ran. The mad==0 → 0 guard and edge convention (NaN for t<n-1,
+    NaN windows) are preserved exactly. Frozen reference: indicators/_reference.cci_ref; equivalence:
+    tests/test_speedopt_equiv.py (incl. a constant-price mad==0 case; vote-hash must stay byte-identical).
+    """
     h = np.asarray(high, float); l = np.asarray(low, float); c = np.asarray(close, float)
     tp = (h + l + c) / 3.0
     m = sma(tp, n)
     out = _nan_like(c)
-    for t in range(n - 1, len(c)):
-        win = tp[t - n + 1:t + 1]
-        mad = np.mean(np.abs(win - m[t]))
-        out[t] = 0.0 if mad == 0 else (tp[t] - m[t]) / (0.015 * mad)
+    if len(c) >= n:
+        win = np.lib.stride_tricks.sliding_window_view(tp, n)        # (len-n+1, n)
+        mad = np.abs(win - m[n - 1:, None]).mean(axis=1)             # mean abs deviation per window
+        num = tp[n - 1:] - m[n - 1:]
+        with np.errstate(divide="ignore", invalid="ignore"):
+            res = num / (0.015 * mad)
+        out[n - 1:] = np.where(mad == 0, 0.0, res)                  # mad==0 -> 0 (matches the loop guard)
     return out
 
 

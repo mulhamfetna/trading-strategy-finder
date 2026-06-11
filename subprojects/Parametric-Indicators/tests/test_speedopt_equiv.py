@@ -67,3 +67,26 @@ def test_bollinger_window_longer_than_series():
     ref = _reference.bollinger_ref(c, 50, 2.0)
     for nm, g, r in zip(("mid", "upper", "lower"), got, ref):
         equiv.assert_equiv(f"bollinger win>len {nm}", g, r)
+
+
+# ----- Step A2: cci (rolling mean-abs-deviation, mad==0 -> 0 guard) --------------------------------
+@pytest.mark.parametrize("nbar,seed", [(50, 1), (300, 2), (2000, 3), (49000, 4)])
+@pytest.mark.parametrize("win", [20, 122, 138, 5])
+def test_cci_random(nbar, seed, win):
+    o, h, l, c, _v = equiv.ohlcv(nbar, seed)
+    equiv.assert_equiv(f"cci n={nbar} win={win}", classic.cci(h, l, c, win),
+                       _reference.cci_ref(h, l, c, win))
+
+
+def test_cci_edge_cases():
+    # includes 'constant' → mean-abs-deviation is exactly 0 → must hit the mad==0 → 0 guard
+    for name, close in equiv.edge_cases(400):
+        h = close + 1.0; l = close - 1.0
+        for win in (20, 138):
+            equiv.assert_equiv(f"cci edge[{name}] win={win}", classic.cci(h, l, close, win),
+                               _reference.cci_ref(h, l, close, win))
+
+
+def test_cci_constant_mad_zero():
+    c = np.full(200, 21000.0); h = c + 1.0; l = c - 1.0       # constant TP within each window → mad=0
+    equiv.assert_equiv("cci constant mad=0", classic.cci(h, l, c, 20), _reference.cci_ref(h, l, c, 20))
