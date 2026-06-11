@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sqlite3
 import sys
 import time
 from pathlib import Path
@@ -130,15 +131,29 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
     def _constraints(trial):
         return trial.user_attrs.get("constraint", [1.0])   # missing ⇒ infeasible
 
+    # Harden the shared SQLite store against many-writer contention (see
+    # optimize/server/INCIDENT_wsh4_sqlite_contention.md): WAL lets readers run alongside the single
+    # writer, and a 60s busy_timeout makes a worker WAIT for the lock instead of erroring out.
+    with sqlite3.connect(_DB) as _c:
+        _c.execute("PRAGMA journal_mode=WAL;")
+        _c.execute("PRAGMA synchronous=NORMAL;")
+    storage = optuna.storages.RDBStorage(
+        url=f"sqlite:///{_DB}",
+        engine_kwargs={"connect_args": {"timeout": 60}},
+    )
     study = optuna.create_study(
         study_name=f"{study_prefix}_{tf_name}",
-        storage=f"sqlite:///{_DB}",
+        storage=storage,
         directions=["maximize", "maximize", "maximize"],
         sampler=optuna.samplers.NSGAIIISampler(seed=seed, constraints_func=_constraints),
         load_if_exists=True,
     )
     t0 = time.time()
-    study.optimize(objective, n_trials=n_trials, show_progress_bar=False)
+    # A transient store error (e.g. SQLite "database is locked" under many concurrent workers) fails
+    # only THIS trial — it must never kill the worker, or the study loses capacity for the rest of the
+    # run. See optimize/server/INCIDENT_wsh4_sqlite_contention.md.
+    study.optimize(objective, n_trials=n_trials, show_progress_bar=False,
+                   catch=(optuna.exceptions.StorageInternalError,))
     dur = time.time() - t0
 
     def feasible(t):
