@@ -69,7 +69,13 @@ def _vote_from_1min(ind, ctx_1m, j_idx, box_dir) -> np.ndarray:
     sampled at each decision bar's closing 1-minute candle, compared to the decision box direction.
     Mirrors base.Indicator.vote exactly (including the warm-up, now in 1-MINUTE candles)."""
     from .base import CONFIRM, VETO, HOLD, BOTH
-    cdir1, vdir1 = ind.directions(ctx_1m)
+    # Step E (task #210): for indicators that support it (OrderBlock), tell directions() the exact
+    # 1-minute bars whose value will be READ (the decision bars' sampled candles), so it computes its
+    # costly per-bar overlap signal only there. State still advances every bar ⇒ identical at those bars.
+    if getattr(ind, "_supports_signal_at", False):
+        cdir1, vdir1 = ind.directions(ctx_1m, signal_at=j_idx[j_idx >= 0])
+    else:
+        cdir1, vdir1 = ind.directions(ctx_1m)
     cdir1 = np.asarray(cdir1).copy(); vdir1 = np.asarray(vdir1).copy()
     w = min(int(ind.warmup_bars()), len(cdir1))             # warm-up counts 1-minute candles here
     if w > 0:

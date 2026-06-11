@@ -90,3 +90,41 @@ def test_cci_edge_cases():
 def test_cci_constant_mad_zero():
     c = np.full(200, 21000.0); h = c + 1.0; l = c - 1.0       # constant TP within each window → mad=0
     equiv.assert_equiv("cci constant mad=0", classic.cci(h, l, c, 20), _reference.cci_ref(h, l, c, 20))
+
+
+# ----- Step E: order_blocks sampled-overlap (signal_at) --------------------------------------------
+from indicators import smc  # noqa: E402
+
+
+@pytest.mark.parametrize("nbar,seed", [(60, 1), (400, 2), (3000, 3), (30000, 4)])
+@pytest.mark.parametrize("swing_l", [2, 6, 10])
+def test_order_blocks_full_equals_reference(nbar, seed, swing_l):
+    """signal_at=None must reproduce the original full computation bit-for-bit (the decision-TF path)."""
+    o, h, l, c, _v = equiv.ohlcv(nbar, seed)
+    got = smc.order_blocks(o, h, l, c, swing_l)               # signal_at=None
+    ref = _reference.order_blocks_ref(o, h, l, c, swing_l)
+    assert np.array_equal(got, ref), f"full order_blocks != ref (n={nbar}, swing_l={swing_l})"
+
+
+@pytest.mark.parametrize("nbar,seed", [(400, 11), (3000, 12), (30000, 13)])
+@pytest.mark.parametrize("swing_l", [2, 6, 10])
+def test_order_blocks_sampled_matches_reference_at_read_indices(nbar, seed, swing_l):
+    """The KEY property: order_blocks(signal_at=S)[S] == full_reference[S] for arbitrary index sets S
+    (the unsampled bars are never read). Tests several S shapes incl. empty / all / sparse / clustered."""
+    o, h, l, c, _v = equiv.ohlcv(nbar, seed)
+    ref = _reference.order_blocks_ref(o, h, l, c, swing_l)
+    g = equiv.rng(seed)
+    subsets = {
+        "empty": np.array([], dtype=int),
+        "all": np.arange(nbar),
+        "sparse": np.unique(g.integers(0, nbar, size=max(1, nbar // 50))),
+        "clustered": np.arange(nbar // 3, min(nbar, nbar // 3 + 200)),
+        "endpoints": np.array([0, nbar - 1]),
+    }
+    for name, S in subsets.items():
+        out = smc.order_blocks(o, h, l, c, swing_l, signal_at=S)
+        if len(S):
+            assert np.array_equal(out[S], ref[S]), f"sampled[{name}] != ref at read indices"
+        # bars NOT in S must be left at 0 (never read)
+        mask = np.ones(nbar, bool); mask[S] = False
+        assert np.all(out[mask] == 0), f"sampled[{name}] wrote a non-zero at an unsampled bar"

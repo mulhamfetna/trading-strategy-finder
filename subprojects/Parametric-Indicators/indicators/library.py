@@ -237,9 +237,16 @@ class StructureTrend(StanceIndicator):
 
 class OrderBlock(StanceIndicator):
     key = "order_block"
-    def stance(self, ctx):
+    _supports_signal_at = True          # task #210 Step E: can compute its signal only at sampled bars
+
+    def stance(self, ctx, signal_at=None):
         return smc.order_blocks(ctx.open, ctx.high, ctx.low, ctx.close,
-                                int(self.config.params.get("swing_l", 2)))
+                                int(self.config.params.get("swing_l", 2)), signal_at=signal_at)
+
+    def directions(self, ctx, signal_at=None):
+        # override StanceIndicator.directions so the (optional) sampled-overlap index set reaches
+        # order_blocks; default None ⇒ full computation (decision-TF path + parity unchanged).
+        return votes.stance_directions(self.stance(ctx, signal_at=signal_at))
 
     def warmup_bars(self):
         return int(self.config.params.get("swing_l", 2))

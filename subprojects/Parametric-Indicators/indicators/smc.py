@@ -96,7 +96,7 @@ def structure_trend(close: np.ndarray, swing_l: int = 2) -> np.ndarray:
     return out
 
 
-def order_blocks(open_, high, low, close, swing_l: int = 2):
+def order_blocks(open_, high, low, close, swing_l: int = 2, signal_at=None):
     """Causal order-block detection. A bullish OB = the last down-close candle before a close that
     breaks ABOVE the most recent confirmed swing high; bearish OB = last up-close candle before a
     close breaking BELOW the most recent confirmed swing low. Once price CLOSES beyond an OB it
@@ -104,6 +104,13 @@ def order_blocks(open_, high, low, close, swing_l: int = 2):
 
     Returns ob_signal: per-bar int8 ∈ {+1,-1,0} — +1 while price trades within a live BULLISH OB
     zone (a long-reaction zone), -1 within a live BEARISH OB zone, else 0.
+
+    signal_at (task #210, Step E): an optional array of bar indices whose output value will actually be
+    READ (the decision bars' sampled 1-minute candles). When given, the per-bar OVERLAP signal is
+    computed ONLY at those indices (the zone STATE — swings, breaks, pruning — still advances every bar,
+    so the value at each requested index is identical to the full computation); other bars stay 0 and
+    are never read. signal_at=None ⇒ compute every bar (the original behaviour, used by the decision-TF
+    path + parity tests). Frozen reference: indicators/_reference.order_blocks_ref.
     """
     o = np.asarray(open_, float); h = np.asarray(high, float)
     l = np.asarray(low, float); c = np.asarray(close, float)
@@ -111,6 +118,11 @@ def order_blocks(open_, high, low, close, swing_l: int = 2):
     sh, sl = market_structure(c, swing_l)
     L = int(swing_l)
     out = np.zeros(n, dtype=np.int8)
+    want = None
+    if signal_at is not None:
+        want = np.zeros(n, dtype=bool)
+        idx = np.asarray(signal_at, dtype=np.intp)
+        want[idx[(idx >= 0) & (idx < n)]] = True
     swh = swl = None
     last_down = last_up = None
     bull, bear = [], []           # active zones [lo, hi]
@@ -133,16 +145,18 @@ def order_blocks(open_, high, low, close, swing_l: int = 2):
             if below and not prev_below and last_up is not None:
                 bear.append([min(o[last_up], c[last_up]), max(o[last_up], c[last_up])])
             prev_below = below
-        # per-bar reaction signal: overlap with a live zone (bull preferred)
-        s = 0
-        for z in bull:
-            if l[t] <= z[1] and h[t] >= z[0]:
-                s = 1; break
-        if s == 0:
-            for z in bear:
+        # per-bar reaction signal: overlap with a live zone (bull preferred). Skipped where the value is
+        # never read (want[t] False) — out[t] stays 0; the state updates below STILL run every bar.
+        if want is None or want[t]:
+            s = 0
+            for z in bull:
                 if l[t] <= z[1] and h[t] >= z[0]:
-                    s = -1; break
-        out[t] = s
+                    s = 1; break
+            if s == 0:
+                for z in bear:
+                    if l[t] <= z[1] and h[t] >= z[0]:
+                        s = -1; break
+            out[t] = s
         # conversion to breaker (burned into): bull OB dies on a close below it; bear on close above
         bull = [z for z in bull if not (c[t] < z[0])]
         bear = [z for z in bear if not (c[t] > z[1])]
