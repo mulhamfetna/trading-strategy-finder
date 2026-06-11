@@ -1,0 +1,8 @@
+[
+ {
+  "label": "baseline",
+  "note": "current engine, warm single-run seconds; 2m exceeded the 600s harness budget (fine-TF decision-bar loop dominates)",
+  "seconds": { "4h": 36.19, "2h": 17.90, "1h": 36.09, "15m": 84.38, "5m": 113.38, "2m": null },
+  "total_timed": 287.94
+ }
+]

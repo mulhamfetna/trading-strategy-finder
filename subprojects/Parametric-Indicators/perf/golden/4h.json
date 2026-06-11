@@ -1,0 +1,38 @@
+{
+ "tf": "4h",
+ "summary": {
+  "pnl": 142203.0,
+  "max_dd": 14082.0,
+  "n_taken": 214,
+  "n_candidates": 214,
+  "win": 69.2,
+  "pf": 1.67,
+  "avg_win": 2404.0,
+  "avg_loss": -3236.0,
+  "n_locks": 57,
+  "noentry_streak_n": 35,
+  "noentry_streak_days": 14.2
+ },
+ "n_trades": 214,
+ "trades_sha256": "64bd6101f67410011f38ac10453af616366193ead93a279dd3e09d3cdebfea7a",
+ "vote_sha256": {
+  "bollinger": "39753ca63e894c4b019596fe5a04bc57045505cb823e3c24919220cbfd7b2c98",
+  "cci": "bb7f7ac2e550e4b8cae108565c10f53fa5f183a3e0def88905142a819fa11d5b",
+  "keltner": "ea5896c1e4c5cc9e5892639baddee5e7ae49c5a668006df805d219798b844493",
+  "mfi": "2ad372ae22217c0d328bf83a81056f0b2ccb4e4a3a3aea00e7fb745338ca9fb1",
+  "obv": "320b24b0826529e0df7a5ae54798611d211dbd6461da8415ba25445b099a780e",
+  "order_block": "855a7344727a209f9944ee057059b5e84ccada3c7912414cc0f35c154ace3223",
+  "sma_trend": "41f81d63455e01d3c2383f2e7f0a56dc78ea8170ea41f9f091617691c9b3ff13",
+  "structure_trend": "2b6c03cb7c43b9d12b35aab886c9bbfd95221cc16cc82483d871e925896f29fc"
+ },
+ "indicators_enabled": [
+  "bollinger",
+  "cci",
+  "keltner",
+  "mfi",
+  "obv",
+  "order_block",
+  "sma_trend",
+  "structure_trend"
+ ]
+}
