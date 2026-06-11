@@ -14,6 +14,7 @@ Run:  python3 optimize/report_wsi.py [tf ...]      (default: all 7)
 from __future__ import annotations
 
 import os
+import sqlite3
 import sys
 from pathlib import Path
 
@@ -31,8 +32,37 @@ from indicators import library  # noqa: E402
 _IND_PARAM_COLS = [f"{key}_{p['name']}" for key in library.REGISTRY
                    for p in library.SCHEMA[key].get("params", [])]
 
-_DB = _HERE / "studies" / "wsh.db"
+_DB = _HERE / "studies" / "wsh.db"                     # legacy SHARED store (back-compat)
 _PREFIX = os.environ.get("WSI_STUDY_PREFIX", "wsh3")   # study name prefix (wsh3 = WS-I.10 regime)
+
+
+def _study_in(db_path: Path, study_name: str) -> bool:
+    """True iff an Optuna study named `study_name` already lives in the SQLite file `db_path`."""
+    if not db_path.exists():
+        return False
+    try:
+        con = sqlite3.connect(db_path)
+        try:
+            rows = con.execute("SELECT study_name FROM studies").fetchall()
+        finally:
+            con.close()
+        return any(r[0] == study_name for r in rows)
+    except Exception:
+        return False
+
+
+def _db_for(tf: str, study_name: str) -> Path:
+    """Pick the SQLite file holding this timeframe's study: prefer the per-TF file (wsh_<tf>.db); if it
+    is absent but the legacy shared wsh.db holds the study, fall back to the shared file with a LOUD
+    warning (so the server's single-file output stays readable). See MIGRATION_per_tf_db.md."""
+    per_tf = _HERE / "studies" / f"wsh_{tf}.db"
+    if _study_in(per_tf, study_name):
+        return per_tf
+    if _study_in(_DB, study_name):
+        print(f"  ⚠️  FALLBACK: '{per_tf.name}' has no '{study_name}' — reading the legacy SHARED "
+              f"'{_DB.name}' instead.", flush=True)
+        return _DB
+    return per_tf                                       # neither has it → caller reports "no study"
 _RESULTS = _HERE / "results"
 _REPORTS = _HERE / "reports"
 _RESULTS.mkdir(exist_ok=True); _REPORTS.mkdir(exist_ok=True)
@@ -72,8 +102,10 @@ def _row(t) -> dict:
 
 
 def export_tf(tf: str):
+    study_name = f"{_PREFIX}_{tf}"
+    db_path = _db_for(tf, study_name)
     try:
-        study = optuna.load_study(study_name=f"{_PREFIX}_{tf}", storage=f"sqlite:///{_DB}")
+        study = optuna.load_study(study_name=study_name, storage=f"sqlite:///{db_path}")
     except Exception as e:
         print(f"  {tf}: no study ({e})"); return None
     complete = [t for t in study.trials if t.values is not None]

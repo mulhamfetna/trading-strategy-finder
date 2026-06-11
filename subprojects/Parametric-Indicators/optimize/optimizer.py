@@ -65,7 +65,44 @@ def _suggest_indicators(trial):
 
 _STUDIES = _HERE / "studies"
 _STUDIES.mkdir(exist_ok=True)
-_DB = _STUDIES / "wsh.db"
+_DB = _STUDIES / "wsh.db"          # legacy SHARED store (one file, all timeframes) — kept for back-compat
+
+
+def _study_in(db_path: Path, study_name: str) -> bool:
+    """True iff an Optuna study named `study_name` already lives in the SQLite file `db_path`."""
+    if not db_path.exists():
+        return False
+    try:
+        con = sqlite3.connect(db_path)
+        try:
+            rows = con.execute("SELECT study_name FROM studies").fetchall()
+        finally:
+            con.close()
+        return any(r[0] == study_name for r in rows)
+    except Exception:
+        return False
+
+
+def _db_for(tf_name: str, study_name: str) -> Path:
+    """Resolve which SQLite file to use for one timeframe's study.
+
+    New layout: each timeframe gets its OWN file (wsh_<tf>.db) so ~30 workers split across 6 locks
+    instead of contending on one (see optimize/server/INCIDENT_wsh4_sqlite_contention.md).
+
+    Backward-compatibility (prefix-aware): if no per-TF file exists yet but the legacy shared wsh.db
+    ALREADY CONTAINS this exact study, keep using the shared file so it resumes correctly (and shout a
+    loud FALLBACK warning). Otherwise use the new per-TF file. This guarantees studies created under the
+    old single-file layout — including those the server is producing right now — stay readable/resumable.
+    """
+    per_tf = _STUDIES / f"wsh_{tf_name}.db"
+    if per_tf.exists():
+        return per_tf
+    if _study_in(_DB, study_name):
+        print(f"⚠️  FALLBACK: per-TF file '{per_tf.name}' absent, but study '{study_name}' lives in the "
+              f"legacy shared '{_DB.name}' — using the SHARED file for '{tf_name}'. (New isolated per-TF "
+              f"file will NOT be created while the shared DB holds this study.)", flush=True)
+        return _DB
+    return per_tf                  # fresh study → create the isolated per-TF file
 _CAPS = _HERE / "cooldown_caps.json"
 _BOUNDS = _HERE / "sl_tp_bounds.json"
 
@@ -131,18 +168,21 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
     def _constraints(trial):
         return trial.user_attrs.get("constraint", [1.0])   # missing ⇒ infeasible
 
-    # Harden the shared SQLite store against many-writer contention (see
-    # optimize/server/INCIDENT_wsh4_sqlite_contention.md): WAL lets readers run alongside the single
-    # writer, and a 60s busy_timeout makes a worker WAIT for the lock instead of erroring out.
-    with sqlite3.connect(_DB) as _c:
+    # Per-timeframe DB file (back-compat resolver) splits the write-lock ~6× and, with the hardening
+    # below, removes the many-writer contention (see optimize/server/INCIDENT_wsh4_sqlite_contention.md +
+    # MIGRATION_per_tf_db.md). WAL lets readers run alongside the single writer; a 60s busy_timeout makes
+    # a worker WAIT for the lock instead of erroring out.
+    study_name = f"{study_prefix}_{tf_name}"
+    db_path = _db_for(tf_name, study_name)
+    with sqlite3.connect(db_path) as _c:
         _c.execute("PRAGMA journal_mode=WAL;")
         _c.execute("PRAGMA synchronous=NORMAL;")
     storage = optuna.storages.RDBStorage(
-        url=f"sqlite:///{_DB}",
+        url=f"sqlite:///{db_path}",
         engine_kwargs={"connect_args": {"timeout": 60}},
     )
     study = optuna.create_study(
-        study_name=f"{study_prefix}_{tf_name}",
+        study_name=study_name,
         storage=storage,
         directions=["maximize", "maximize", "maximize"],
         sampler=optuna.samplers.NSGAIIISampler(seed=seed, constraints_func=_constraints),

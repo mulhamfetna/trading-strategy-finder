@@ -73,7 +73,7 @@ cd '$CODE'; mkdir -p optimize/studies '$WSI/logs'
 TOTAL=$total
 for pair in $spec; do
   tf=\${pair%%:*}; w=\${pair##*:}; per=\$(( (TOTAL + w - 1) / w ))
-  python3 -c \"import optuna; optuna.create_study(study_name='${PREFIX}_\$tf', storage='sqlite:///optimize/studies/wsh.db', directions=['maximize','maximize','maximize'], load_if_exists=True)\"
+  python3 -c \"import optuna,sqlite3,os; n='${PREFIX}_\$tf'; per='optimize/studies/wsh_\$tf.db'; sh='optimize/studies/wsh.db'; h=lambda d:(os.path.exists(d) and n in [r[0] for r in sqlite3.connect(d).execute('SELECT study_name FROM studies')]); db=(sh if (not os.path.exists(per) and h(sh)) else per); optuna.create_study(study_name=n, storage='sqlite:///'+db, directions=['maximize','maximize','maximize'], load_if_exists=True); print('study',n,'->',db)\"
   for i in \$(seq 1 \$w); do
     setsid bash -c \"python3 -u optimize/optimizer.py \$tf --trials \$per --folds 5 --min-trades 5 $IND_ARGS >> '$WSI/logs/\$tf.log' 2>&1\" < /dev/null &
   done
@@ -92,12 +92,24 @@ cmd_status() {
        tail -n1 \"\$tf.log\" 2>/dev/null || echo '(no log)'; done"
 }
 
-cmd_counts() {  # per-TF completed-trial counts in the shared DB
+cmd_counts() {  # per-TF completed-trial counts; per-TF DB file, falling back to the shared wsh.db
   srv "$REMOTE_ENV; cd '$CODE'; python3 - <<'PY'
-import optuna; optuna.logging.set_verbosity(optuna.logging.WARNING)
+import optuna, sqlite3, os
+optuna.logging.set_verbosity(optuna.logging.WARNING)
+def _has(db, n):
+    if not os.path.exists(db): return False
+    try:
+        c=sqlite3.connect(db); r=[x[0] for x in c.execute('SELECT study_name FROM studies')]; c.close(); return n in r
+    except Exception: return False
+def _db(tf, n):
+    per='optimize/studies/wsh_%s.db'%tf; sh='optimize/studies/wsh.db'
+    if _has(per, n): return per
+    if _has(sh, n): print(f'  ⚠️  FALLBACK {tf}: per-TF file absent, reading shared wsh.db'); return sh
+    return per
 for tf in '${TFS[*]}'.split():
     try:
-        s=optuna.load_study(study_name=f'${PREFIX}_{tf}', storage='sqlite:///optimize/studies/wsh.db')
+        n=f'${PREFIX}_{tf}'
+        s=optuna.load_study(study_name=n, storage='sqlite:///'+_db(tf, n))
         c=[t for t in s.trials if t.values is not None]
         feas=sum(1 for t in c if (t.user_attrs.get('full_pnl',0) or 0)>0 and t.user_attrs.get('full_dd',9e9)<=0.25*t.user_attrs.get('full_pnl',0))
         print(f'  {tf:4s} trials={len(s.trials):5d} complete={len(c):4d} feasible={feas:3d}')

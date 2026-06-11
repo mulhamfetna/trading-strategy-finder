@@ -82,14 +82,15 @@ local runs create and use per-TF files.
 
 ## 6. Rollback / reverse steps
 
-A **snapshot commit** is created on `dev` *before* Step 3 (containing Steps 1–2 + these docs). It is the
-known-good state to return to.
+The **snapshot commit `93a9244`** on `dev` (Steps 1–2 + these docs, layout UNCHANGED) is the known-good
+state to return to. The **per-TF implementation commit is the one immediately following `93a9244`** on
+`dev` (its message starts `feat(parametric-indicators): per-timeframe Optuna DB files`).
 
 **To undo Step 3 only** (keep Steps 1–2):
 ```bash
 cd /mnt/data/projects/trading
-git revert --no-edit <STEP3_COMMIT_SHA>        # inverse commit, history preserved
-# or, to discard the working-tree change before committing Step 3:
+git revert --no-edit <per-TF-commit>           # inverse commit, history preserved   (= child of 93a9244)
+# or, to discard an uncommitted Step-3 working-tree change:
 git checkout -- subprojects/Parametric-Indicators/optimize/optimizer.py \
                 subprojects/Parametric-Indicators/optimize/report_wsi.py \
                 subprojects/Parametric-Indicators/optimize/server/remote_wsi.sh
@@ -97,7 +98,7 @@ git checkout -- subprojects/Parametric-Indicators/optimize/optimizer.py \
 
 **To return entirely to the pre-change snapshot:**
 ```bash
-git reset --hard <SNAPSHOT_COMMIT_SHA>         # hard reset dev to the rollback point
+git reset --hard 93a9244                        # hard reset dev to the rollback point
 ```
 
 **Data side:** per-TF `wsh_<tf>.db` files are *additive* — deleting them and relying on the shared
@@ -107,6 +108,26 @@ git reset --hard <SNAPSHOT_COMMIT_SHA>         # hard reset dev to the rollback 
 
 ---
 
-## 7. After-implementation — verification results & SHAs
+## 7. After-implementation — verification results
 
-*(populated after the edits + tests run)*
+All run **local-only**, 2026-06-11, no server contact:
+
+| Check | Result |
+|-------|--------|
+| `py_compile` optimizer.py + report_wsi.py | ✅ OK |
+| `bash -n remote_wsi.sh` | ✅ OK |
+| Embedded `create_study` one-liner compiles | ✅ OK |
+| Resolver: study only in shared `wsh.db` → returns shared **with loud ⚠️ FALLBACK** | ✅ (`wsh3_4h` → `wsh.db`) |
+| Resolver: brand-new study name → fresh per-TF path, no warning | ✅ (`→ wsh_4h.db`) |
+| Fresh-prefix 2-trial run **creates** `wsh_4h.db` and writes the study there | ✅ (`studies in wsh_4h.db: ['pertftest_4h']`) |
+| Reader (`report_wsi._db_for`) fallback for shared-only study | ✅ loud ⚠️ FALLBACK → `wsh.db` |
+| Engine parity unchanged | ✅ `$7,735 / $3,670 / n=66` |
+| Full pytest suite | ✅ **88 passed** |
+| Throwaway studies/files cleaned up | ✅ |
+
+**Behavioural summary:** new local runs isolate each timeframe into `wsh_<tf>.db`; any reader/counter
+asked for a study that lives only in the legacy shared `wsh.db` (e.g. everything the server is producing
+right now) transparently uses it and **announces the fallback loudly** — never silent, never lost.
+
+**Files changed by Step 3:** `optimize/optimizer.py`, `optimize/report_wsi.py`,
+`optimize/server/remote_wsi.sh` (+ this doc). **Not pushed to the server.**
