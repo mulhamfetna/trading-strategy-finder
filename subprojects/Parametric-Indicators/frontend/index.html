@@ -16,10 +16,15 @@
   header h1 { font-size:18px; font-weight:600; color:var(--blue); margin:0; }
   header p { font-size:11px; color:var(--muted); margin:2px 0 0; }
   .hdr-right { display:flex; align-items:center; gap:10px; }
-  .dirty { font-size:11px; color:var(--blue); }
-  button.run { border:0; border-radius:6px; background:var(--blue); color:#fff; font-size:13px; font-weight:600; padding:9px 18px; cursor:pointer; }
+  .dirty { font-size:11px; color:var(--muted); }
+  .dirty.stale { color:var(--red); font-weight:700; }
+  .dirty.ok { color:var(--green); }
+  /* Run button doubles as a freshness signal: GREEN = results match the form; RED (pulsing) = the form
+     changed since the last run, so the results below are stale and a Run is needed. */
+  button.run { border:0; border-radius:6px; background:var(--green); color:#fff; font-size:13px; font-weight:600; padding:9px 18px; cursor:pointer; transition:background .15s; }
   button.run:disabled { opacity:.5; cursor:wait; }
-  button.run.dirty-ring { box-shadow:0 0 0 2px var(--blue), 0 0 0 4px var(--surface); }
+  button.run.stale { background:var(--red); animation:stalePulse 1.4s ease-in-out infinite; }
+  @keyframes stalePulse { 0%,100%{ box-shadow:0 0 0 0 rgba(255,82,82,.55);} 50%{ box-shadow:0 0 0 6px rgba(255,82,82,0);} }
   button.ghost { border:1px solid var(--border); border-radius:6px; background:var(--tile); color:var(--text); font-size:12px; padding:8px 12px; cursor:pointer; }
   button.ghost:hover { border-color:var(--blue); }
   .body { display:flex; flex:1; overflow:hidden; }
@@ -100,7 +105,7 @@
 <div class="body">
   <aside>
     <div class="profile-actions">
-      <button class="resetlink" id="reset">↺ Reset to winning preset</button>
+      <button class="resetlink" id="reset" title="restore the selected profile's values (undo your edits); does not run">↺ Reset to selected profile</button>
       <button class="resetlink" id="saveprofile" title="save the current settings as a reusable profile (stored in this browser)">💾 Save current profile</button>
     </div>
     <div class="sgroup">
@@ -324,8 +329,9 @@ function status(t){$('status').innerHTML=t;}
 function showErr(msg){const e=$('err'); $('errmsg').textContent=msg||''; e.style.display=msg?'block':'none';
   if(msg){try{window.scrollTo({top:0,behavior:'smooth'});}catch(_){window.scrollTo(0,0);}}}
 $('errclose').addEventListener('click',()=>showErr(''));
-let dirty=false; function markDirty(){dirty=true;$('dirty').textContent='Settings changed — Run Backtest to apply';$('run').classList.add('dirty-ring');}
-function markClean(){dirty=false;$('dirty').textContent='';$('run').classList.remove('dirty-ring');}
+let dirty=false;
+function markDirty(){dirty=true;const d=$('dirty');d.textContent='⚠ not run on these values — click Run Backtest';d.classList.add('stale');d.classList.remove('ok');$('run').classList.add('stale');}
+function markClean(){dirty=false;const d=$('dirty');d.textContent='✓ results match current settings';d.classList.add('ok');d.classList.remove('stale');$('run').classList.remove('stale');}
 document.querySelectorAll('aside input,aside select').forEach(el=>el.addEventListener('input',markDirty));
 
 async function run(){
@@ -350,13 +356,13 @@ async function run(){
 $('run').addEventListener('click',run);
 
 // Strategy importer: pick a winning strategy → fill EVERY field (timeframe, box knobs, indicators
-// on/off + their tuned internals, K) from the backend preset, then run it immediately.
+// on/off + their tuned internals, K) from the backend preset. Does NOT auto-run — the Run button goes
+// red (stale) so it's clear the results below are not for these new values until you click Run Backtest.
 $('strategy').addEventListener('change',()=>{
   const p=window.STRATEGIES && window.STRATEGIES[$('strategy').value];
   if(!p){return;}
-  showErr(''); setForm(p);
-  status(`imported “${$('strategy').selectedOptions[0].textContent}” — running…`);
-  run();
+  showErr(''); setForm(p); markDirty();
+  status(`imported “${$('strategy').selectedOptions[0].textContent}” — click Run Backtest to apply (not run yet)`);
 });
 
 // --- CSV export for the two logs (event log + trade ledger) ---------------------------------
@@ -456,7 +462,13 @@ async function loadConfig(){
 }
 $('reset').addEventListener('click',async()=>{
   showErr('');
-  try{ setForm(await loadConfig()); run(); }
+  // Reset = restore the CURRENTLY SELECTED profile's values (undo any user edits). It does NOT jump to a
+  // different profile and does NOT auto-run — the Run button goes red (stale) until you click Run Backtest.
+  const id=$('strategy').value, sel=$('strategy').selectedOptions[0];
+  const p=window.STRATEGIES && window.STRATEGIES[id];
+  if(p){ setForm(p); markDirty(); status(`↺ reset to “${sel?sel.textContent:'selected profile'}” — click Run Backtest to apply`); return; }
+  // fallback (no cached preset, e.g. very first boot): pull the backend defaults
+  try{ setForm(await loadConfig()); markDirty(); status('↺ reset to defaults — click Run Backtest to apply'); }
   catch(e){ showErr(`Cannot load defaults from backend (${e.message}). Start it: python3 subprojects/wsg-strategy/server.py`); }
 });
 
@@ -465,7 +477,7 @@ $('reset').addEventListener('click',async()=>{
   try{
     setForm(await loadConfig());
     if(window.WINNER_DATA){ render(window.WINNER_DATA); status('showing last saved run · edit settings + Run Backtest for a live run'); }
-    else status('defaults loaded · Run Backtest for a live run');
+    else { markDirty(); status('defaults loaded · Run Backtest for a live run'); }
   }catch(e){
     // backend unreachable (e.g. opened as a static file): fall back ONLY to the embedded saved run's params
     if(window.WINNER_DATA){ render(window.WINNER_DATA); status('static view · start server.py for live backtests'); }
