@@ -114,18 +114,22 @@ Every optimization step carries **three** costs, not one:
 
 ## 5. Is it efficient enough already?
 
-**For what we do today: yes, on coarse TFs.**
+> **UPDATE 2026-06-12 — Axis B was implemented (B1–B3b), so the fine-TF picture below has materially
+> improved.** The per-decision loop is no longer the wall it was.
 
-- Single coarse-TF backtest (4h/2h/1h): **12–17 s** — fine for interactive iteration.
-- Single fine-TF backtest (5m/2m): **113 s / 600 s** — *not* fine, but this is **axis B**, which none of the
-  remaining axis-A steps fix.
-- Optimizer sweep (thousands of trials): cost is dominated by whichever TFs are in the sweep; for fine-TF
-  sweeps, axis B again dominates and only **F (caching)** + an axis-B rewrite would move the needle.
+**For what we do today: yes on coarse TFs, and now much better on fine TFs.**
 
-**Conclusion:** the work we've banked has made the *common development loop* (coarse-TF backtests) efficient
-enough. The remaining axis-A steps would shave seconds off something that is already fast. They do **not**
-address the only two things that still actually hurt — **fine-TF sweeps** and **the per-decision loop** —
-and those are precisely what the expansion will amplify.
+- Single coarse-TF backtest (4h/2h/1h): **11–16 s** — fine for interactive iteration.
+- Single fine-TF backtest (5m/2m): **was 113 s / 600 s → now 35 s / 89 s** after Axis B (−63 % / −67 %),
+  byte-identical. Still the slowest, but no longer prohibitive for a dashboard run.
+- Optimizer sweeps are unaffected (they already use `fast_engine`); Axis B sped up the **dashboard +
+  standalone backtester** path (`engine.SimpleStrategy` via `build_payload`).
+
+**Conclusion:** the common development loop (coarse-TF backtests) was already fast; **Axis B has now also
+halved-to-two-thirds the fine-TF single-backtest cost**, byte-identical. What remains under the fine-TF time
+is the shared Axis-A indicator compute (~flat ~15 s, already optimized) plus the per-trade event-assembly
+loop — both lower-ROI and outside the engine. The original "hold the micro-opts" guidance (§7) still stands
+for A3 / market_structure; the high-value Axis-B target the report flagged has been delivered.
 
 ---
 
