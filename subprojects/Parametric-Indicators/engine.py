@@ -213,6 +213,15 @@ class SimpleStrategy:
         if signals is not None and len(signals) != len(df_4h):
             raise ValueError(f'signals length {len(signals)} != df_4h length {len(df_4h)}')
 
+        # Axis-B (Step B3a): pre-extract the decision-frame columns used in the loop as numpy arrays
+        # ONCE, so the per-bar hot path indexes plain arrays instead of building a pandas Series via
+        # df_4h.iloc[idx] (fast_xs) every bar. Date is tz-naive datetime64 (verified) so to_numpy is a
+        # zero-copy view and pd.Timestamp(d4_dates[i]) == pd.Timestamp(df_4h['Date'].iloc[i]); Close
+        # float matches float(row['Close']) bit-for-bit. (The signals=None path still builds the row
+        # for _stage1_candle_signal — unchanged parity.)
+        d4_dates = df_4h['Date'].to_numpy()
+        d4_close = df_4h['Close'].to_numpy(dtype=float)
+
         if not df_1min.empty:
             ts_4h_arr = df_4h['Date'].to_numpy()
             ts_1m_arr = df_1min['Date'].to_numpy()
@@ -327,8 +336,7 @@ class SimpleStrategy:
         # the signal). The first iteration (idx=0) has no predecessor and
         # cannot fire a signal — matches the spec's "first-candle warm-up".
         for idx in range(len(df_4h)):
-            candle = df_4h.iloc[idx]
-            ts_new_bar_start = pd.Timestamp(candle['Date'])
+            ts_new_bar_start = pd.Timestamp(d4_dates[idx])
 
             # Exit walk for a carry-over trade (1-min bars in this new window).
             _walk_exit_for_4h(idx)
@@ -340,12 +348,13 @@ class SimpleStrategy:
                 # Signal is computed from the JUST-CLOSED bar (idx-1), not
                 # from the current bar. Box geometry is keyed off the
                 # just-closed bar's timestamp.
-                signal_candle = df_4h.iloc[idx - 1]
                 if signals is not None:
                     # Step B2: use the precomputed signal of the just-closed bar (idx-1).
                     signal = signals[idx - 1]
                 else:
-                    signal_ts = pd.Timestamp(signal_candle['Date'])
+                    # ORIGINAL parity path: build the row only here (it feeds _stage1_candle_signal).
+                    signal_candle = df_4h.iloc[idx - 1]
+                    signal_ts = pd.Timestamp(d4_dates[idx - 1])
                     box_date = BoxLookup._candle_to_box_date(signal_ts)
                     try:
                         box_row = box_df_indexed.loc[box_date]
@@ -392,7 +401,7 @@ class SimpleStrategy:
                     if not gated:
                         continue
                     entry_ts = ts_new_bar_start
-                    entry_px = float(signal_candle['Close'])
+                    entry_px = float(d4_close[idx - 1])
                     edir, sidx = signal, idx - 1
                     vflip = bool(veto_as_flip and vetoed)
                     if vflip:
@@ -409,10 +418,10 @@ class SimpleStrategy:
                         if vetoed and veto_as_flip:
                             # veto reverses: (re)arm the OPPOSITE direction instead of aborting.
                             armed = {'dir': _opp(signal), 'sidx': idx - 1,
-                                     'sclose': float(signal_candle['Close']), 'vflip': True}
+                                     'sclose': float(d4_close[idx - 1]), 'vflip': True}
                         elif not vetoed:
                             armed = {'dir': signal, 'sidx': idx - 1,
-                                     'sclose': float(signal_candle['Close']), 'vflip': False}
+                                     'sclose': float(d4_close[idx - 1]), 'vflip': False}
                     if armed is not None and vetoed and not veto_as_flip:
                         armed = None                      # live veto aborts the armed entry (Q4)
                     if armed is None or start_1m is None:
