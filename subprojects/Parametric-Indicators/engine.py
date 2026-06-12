@@ -227,8 +227,17 @@ class SimpleStrategy:
             ts_1m_arr = df_1min['Date'].to_numpy()
             start_1m = np.searchsorted(ts_1m_arr, ts_4h_arr, side='left')
             start_1m = np.append(start_1m, len(ts_1m_arr))
+            # Axis-B (Step B3b): pre-extract the 1-min columns the exit walk reads as numpy arrays ONCE,
+            # so _walk_exit_for_4h iterates by index instead of slicing df_1min.iloc[lo:hi] + itertuples
+            # every window. Date tz-naive datetime64 (zero-copy view); High/Low/Close are float64. Per-bar
+            # values are still wrapped in float()/pd.Timestamp() so trade dicts are bit-identical.
+            md_arr = ts_1m_arr
+            mh_arr = df_1min['High'].to_numpy(dtype=float)
+            ml_arr = df_1min['Low'].to_numpy(dtype=float)
+            mc_arr = df_1min['Close'].to_numpy(dtype=float)
         else:
             start_1m = None
+            md_arr = mh_arr = ml_arr = mc_arr = None
 
         trades: List[Dict] = []
         open_trade: Optional[Dict] = None
@@ -252,7 +261,6 @@ class SimpleStrategy:
                 return
             lo = int(start_1m[idx])
             hi = int(start_1m[idx + 1])
-            sub_bars = df_1min.iloc[lo:hi]
             d   = open_trade['direction']
             ss  = open_trade['sl_soft_line']
             sh  = open_trade['sl_hard_line']
@@ -260,14 +268,14 @@ class SimpleStrategy:
             th  = open_trade['tp_hard_line']
             ep  = open_trade['entry_price']
             pv  = self.NQ_POINT_VALUE
+            entry_time_np = np.datetime64(open_trade['entry_time'])   # for the no-look-ahead skip
 
-            for sub in sub_bars.itertuples(index=False):
-                sub_ts = pd.Timestamp(getattr(sub, 'Date'))
-                if sub_ts < open_trade['entry_time']:
+            for t in range(lo, hi):
+                if md_arr[t] < entry_time_np:                          # sub_ts < entry_time (skip pre-entry)
                     continue
-                m_high  = float(getattr(sub, 'High'))
-                m_low   = float(getattr(sub, 'Low'))
-                m_close = float(getattr(sub, 'Close'))
+                m_high  = float(mh_arr[t])
+                m_low   = float(ml_arr[t])
+                m_close = float(mc_arr[t])
 
                 exit_reason: Optional[ExitReason] = None
                 fill: Optional[float] = None
@@ -319,6 +327,7 @@ class SimpleStrategy:
                                 exit_reason, fill = 'TAKE_PROFIT_SOFT', m_close
 
                 if exit_reason is not None and fill is not None:
+                    sub_ts = pd.Timestamp(md_arr[t])                   # materialise the exit timestamp
                     _finalise(open_trade, sub_ts, fill, exit_reason, ep, d, pv)
                     trades.append(open_trade)
                     blocked_until = sub_ts
