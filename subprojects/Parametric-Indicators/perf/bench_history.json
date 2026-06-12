@@ -2,7 +2,37 @@
  {
   "label": "baseline",
   "note": "current engine, warm single-run seconds; 2m exceeded the 600s harness budget (fine-TF decision-bar loop dominates)",
-  "seconds": { "4h": 36.19, "2h": 17.90, "1h": 36.09, "15m": 84.38, "5m": 113.38, "2m": null },
+  "seconds": {
+   "4h": 36.19,
+   "2h": 17.9,
+   "1h": 36.09,
+   "15m": 84.38,
+   "5m": 113.38,
+   "2m": null
+  },
   "total_timed": 287.94
+ },
+ {
+  "label": "manual_bg",
+  "seconds": {
+   "4h": 13.733,
+   "2h": 10.694,
+   "1h": 21.191,
+   "15m": 43.729,
+   "5m": 96.288,
+   "2m": 269.095
+  },
+  "total": 454.73
+ },
+ {
+  "label": "B2_signal_inject",
+  "seconds": {
+   "4h": 11.515,
+   "1h": 16.687,
+   "15m": 27.857,
+   "5m": 46.327,
+   "2m": 113.029
+  },
+  "total": 215.415
  }
 ]

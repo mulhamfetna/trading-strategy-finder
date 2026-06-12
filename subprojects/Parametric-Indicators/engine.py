@@ -187,6 +187,7 @@ class SimpleStrategy:
         veto_mask: Optional[np.ndarray] = None,
         blocked_log: Optional[List[Dict]] = None,
         veto_as_flip: bool = False,
+        signals: Optional[np.ndarray] = None,
     ) -> Tuple[List[Dict], Dict]:
         """Run the simple engine.
 
@@ -203,6 +204,14 @@ class SimpleStrategy:
         """
         if df_4h.empty:
             return [], {'open_trade': None}
+
+        # Axis-B (Step B2): optional precomputed per-decision-bar Stage-1 signal array (object dtype,
+        # 'long'/'short'/'hold'), aligned 1:1 with df_4h. When supplied, the entry branch reads
+        # signals[idx-1] instead of recomputing _stage1_candle_signal + box.loc per bar — proven
+        # identical (optimize.signals.decision_signals + tests/test_axisB_signal_equiv.py).
+        # None ⇒ ORIGINAL behaviour, byte-for-byte unchanged.
+        if signals is not None and len(signals) != len(df_4h):
+            raise ValueError(f'signals length {len(signals)} != df_4h length {len(df_4h)}')
 
         if not df_1min.empty:
             ts_4h_arr = df_4h['Date'].to_numpy()
@@ -332,14 +341,17 @@ class SimpleStrategy:
                 # from the current bar. Box geometry is keyed off the
                 # just-closed bar's timestamp.
                 signal_candle = df_4h.iloc[idx - 1]
-                signal_ts = pd.Timestamp(signal_candle['Date'])
-                box_date = BoxLookup._candle_to_box_date(signal_ts)
-                try:
-                    box_row = box_df_indexed.loc[box_date]
-                except KeyError:
-                    box_row = None
-
-                signal = _stage1_candle_signal(signal_candle, box_row)
+                if signals is not None:
+                    # Step B2: use the precomputed signal of the just-closed bar (idx-1).
+                    signal = signals[idx - 1]
+                else:
+                    signal_ts = pd.Timestamp(signal_candle['Date'])
+                    box_date = BoxLookup._candle_to_box_date(signal_ts)
+                    try:
+                        box_row = box_df_indexed.loc[box_date]
+                    except KeyError:
+                        box_row = None
+                    signal = _stage1_candle_signal(signal_candle, box_row)
 
                 # Flip layer (Q-A symmetric flip): swap long↔short BEFORE
                 # scope filtering. Holds stay holds.

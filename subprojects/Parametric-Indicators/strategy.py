@@ -15,6 +15,7 @@ from loader import load_data
 from engine import SimpleStrategy, SimpleStrategyParams
 from volatility import vol_forecast
 from optimize import timeframes as TF
+from optimize.signals import decision_signals
 
 PV = config.NQ_POINT_VALUE
 
@@ -289,10 +290,15 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
     sp = SimpleStrategyParams(sl_soft_points=sl_soft, sl_hard_points=sl_hard, tp_soft_points=tp,
                               tp_hard_points=tp, data_path_4h="", data_path_1min="",
                               box_data_path="", flip_entry_direction=flip)
+    # Step B2 (Axis B): precompute the param-independent Stage-1 signal ONCE (vectorized) and feed it to
+    # the engine so it does NOT recompute _stage1_candle_signal + box.loc per decision bar. Byte-identical
+    # (optimize.signals.decision_signals ≡ engine._stage1_candle_signal — see tests/test_axisB_signal_equiv.py).
+    sig_arr = decision_signals(d4, box)
     blocked = []   # diagnostic: directional signals the gate dropped (logged, not traded)
     trades, _ = SimpleStrategy(sp).backtest(d4, d1, box, entry_gate=gate_used,
                                             entry_resolver=entry_resolver, veto_mask=veto_mask,
-                                            blocked_log=blocked, veto_as_flip=P["veto_as_flip"])
+                                            blocked_log=blocked, veto_as_flip=P["veto_as_flip"],
+                                            signals=sig_arr)
     cand = sorted([t for t in trades if t.get("exit_reason") not in (None, "OPEN")],
                   key=lambda t: pd.Timestamp(t["entry_time"]))
 
