@@ -102,6 +102,25 @@ Single train/test split; TEST n = 121–141; correlations weak-to-moderate (a te
 barely widen SL (cap 1.05) — asymmetric independent SL/TP scaling would need an engine extension and a
 stronger signal than we have.
 
+## 5b. Volatility-source consistency (4h ATR vs 1-minute) — addendum
+The strategy's confirm/veto **indicators** read the 1-minute frame (`ind_1min`), so for consistency the opt1
+multiplier should be driven by a **1-minute-based** volatility, not the 4h ATR I first used. Re-running opt1
+under three volatility sources (guarded band 0.33–1.05; `vol_source_compare.py`), OOS:
+
+| opt1 vol source | P/L | maxDD | DD/PL | ret/DD | mult median (range) |
+|-----------------|----:|------:|------:|-------:|---------------------:|
+| fixed (baseline) | $67,627 | $16,204 | 24% | 4.17 | 1.00 |
+| 4h ATR(14) *(originally used)* | $62,267 | $10,791 | 17% | **5.77** | 0.67 (0.33–1.05) |
+| **HAR-RV `vf` (1-minute — consistent)** | $50,085 | **$9,211** | 18% | 5.44 | 0.64 (0.33–1.05) |
+| 1-min ATR(240) @ decision bar | $51,823 | $15,312 | 30% | 3.38 | 0.62 (0.33–1.05) |
+
+- **The multiplier itself is ~the same (~0.62–0.67 median, 0.33–1.05) regardless of frame** — all three are
+  "scale to ~⅔" rules; the band binds identically.
+- **The 1-min-consistent driver (HAR-RV `vf`) gives the lowest drawdown ($9.2k) but less profit ($50k)** — the
+  most conservative variant. The 4h ATR was the *best-performing* driver but is not 1-min-consistent.
+- **Conclusion unchanged:** none beats fixed on profit; opt1 is a drawdown-reducer. For 1-min-architecture
+  consistency, **drive opt1 by HAR-RV `vf`** (lowest DD), not 4h ATR.
+
 ## 6. Artifacts & reproduce
 `results/subopt_table_sl40-175_tp40-250.csv` · `results/charts_sl40-175_tp40-250/*.png`. Reproduce:
 `SUBOPT_SL_MIN=40 SUBOPT_SL_MAX=175 SUBOPT_TP_MIN=40 SUBOPT_TP_MAX=250 python3 optimize/sub/suboptimizer.py --trials 400 --out optimize/sub/results/subopt_table_sl40-175_tp40-250.csv`
