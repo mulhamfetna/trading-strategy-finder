@@ -41,8 +41,10 @@ MIN_TRADES = 3        # windows with fewer taken trades are pruned/flagged
 N_TRIALS = 400
 # Optional hard constraints (env): SUBOPT_SL_MAX caps sl_soft & sl_hard; SUBOPT_TP_MIN floors tp.
 # Unset ⇒ original widened study (preserved). e.g. SUBOPT_SL_MAX=175 SUBOPT_TP_MIN=40.
+SL_MIN = float(os.environ["SUBOPT_SL_MIN"]) if os.environ.get("SUBOPT_SL_MIN") else None
 SL_MAX = float(os.environ["SUBOPT_SL_MAX"]) if os.environ.get("SUBOPT_SL_MAX") else None
 TP_MIN = float(os.environ["SUBOPT_TP_MIN"]) if os.environ.get("SUBOPT_TP_MIN") else None
+TP_MAX = float(os.environ["SUBOPT_TP_MAX"]) if os.environ.get("SUBOPT_TP_MAX") else None
 
 
 def champion():
@@ -78,13 +80,17 @@ def _eval(d_win, df1, box, vf_win, gate_win, si_win, champ, sl_soft, sl_hard, tp
 def _bounds():
     """Widened SL/TP search bounds (lower kept; upper × WIDEN), then apply optional hard constraints:
     SL_MAX caps the sl_soft upper (and sl_hard via the objective); TP_MIN raises the tp lower (floor)."""
-    sl_hi = float(_BOUNDS["sl_soft"][1]) * WIDEN
+    sl_lo, sl_hi = float(_BOUNDS["sl_soft"][0]), float(_BOUNDS["sl_soft"][1]) * WIDEN
     tp_lo, tp_hi = float(_BOUNDS["tp"][0]), float(_BOUNDS["tp"][1]) * WIDEN
+    if SL_MIN is not None:
+        sl_lo = max(sl_lo, SL_MIN)
     if SL_MAX is not None:
         sl_hi = min(sl_hi, SL_MAX)
     if TP_MIN is not None:
         tp_lo = max(tp_lo, TP_MIN)
-    return {"sl_soft": (float(_BOUNDS["sl_soft"][0]), sl_hi),
+    if TP_MAX is not None:
+        tp_hi = min(tp_hi, TP_MAX)
+    return {"sl_soft": (sl_lo, sl_hi),
             "sl_hard_delta": (0.0, float(_BOUNDS["sl_hard"][1]) * WIDEN),
             "tp": (tp_lo, tp_hi)}
 

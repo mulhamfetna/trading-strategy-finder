@@ -43,12 +43,18 @@ MULT_CLIP = (0.3, 3.0)
 # Optional hard constraints (env, shared with the Stage-1 sub-optimizer). When set, the per-bar multiplier
 # is clipped so champion·mult respects them: tp ≥ TP_MIN ⇒ mult ≥ TP_MIN/tp_c ; sl_hard ≤ SL_MAX ⇒
 # mult ≤ SL_MAX/sl_hard_c. SUBOPT_TABLE points opt3 at the matching Stage-1 table.
-SL_MAX = float(os.environ["SUBOPT_SL_MAX"]) if os.environ.get("SUBOPT_SL_MAX") else None
-TP_MIN = float(os.environ["SUBOPT_TP_MIN"]) if os.environ.get("SUBOPT_TP_MIN") else None
+_g = lambda k: float(os.environ[k]) if os.environ.get(k) else None
+SL_MIN, SL_MAX = _g("SUBOPT_SL_MIN"), _g("SUBOPT_SL_MAX")
+TP_MIN, TP_MAX = _g("SUBOPT_TP_MIN"), _g("SUBOPT_TP_MAX")
 TABLE = Path(os.environ.get("SUBOPT_TABLE", str(Path(__file__).resolve().parent / "results" / "subopt_table.csv")))
-if SL_MAX and TP_MIN:
-    _c = champion()
-    MULT_CLIP = (TP_MIN / float(_c["tp"]), SL_MAX / float(_c["sl_hard"]))
+if any(v is not None for v in (SL_MIN, SL_MAX, TP_MIN, TP_MAX)):
+    _c = champion(); ss, sh, tpc = float(_c["sl_soft"]), float(_c["sl_hard"]), float(_c["tp"])
+    lo, hi = 0.3, 3.0
+    if TP_MIN: lo = max(lo, TP_MIN / tpc)          # tp·m ≥ TP_MIN
+    if SL_MIN: lo = max(lo, SL_MIN / ss)           # sl_soft·m ≥ SL_MIN (smaller SL line binds the floor)
+    if SL_MAX: hi = min(hi, SL_MAX / sh)           # sl_hard·m ≤ SL_MAX (larger SL line binds the cap)
+    if TP_MAX: hi = min(hi, TP_MAX / tpc)          # tp·m ≤ TP_MAX
+    MULT_CLIP = (lo, hi)
 
 
 def _breaker(cand, dd_limit, cooldown, pv):
