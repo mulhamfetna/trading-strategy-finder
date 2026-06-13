@@ -36,7 +36,11 @@ log() { printf '\033[1;36m[%s]\033[0m %s\n' "$(date +%H:%M:%S)" "$*"; }
 # in your shell before invoking; empty ⇒ the per-TF sqlite files (unchanged). Forwarded to the workers
 # (launch.sh), the pre-create one-liner, and the readers (counts/pull) so all honour one source of truth.
 STORAGE_URL="${WSH_STORAGE_URL:-}"
-REMOTE_ENV="source $REMOTE_VENV/bin/activate; export WSH_DATA_BASE='$WSI' WSG_DATA_ROOT='$WSI/data' WSH_STORAGE_URL='$STORAGE_URL'"
+# Server-side store resolution: a local WSH_STORAGE_URL (forwarded as STORAGE_URL) wins; otherwise, if the
+# server has a $WSI/pg.env (written by the Postgres provisioning), source it so the secret never leaves the
+# box; otherwise empty ⇒ per-TF sqlite. Used by parity/counts/stats/pull and (mirrored) by launch.sh.
+_PG_FALLBACK="[ -z \"\$WSH_STORAGE_URL\" ] && [ -f '$WSI/pg.env' ] && { set -a; . '$WSI/pg.env'; set +a; }"
+REMOTE_ENV="source $REMOTE_VENV/bin/activate; export WSH_DATA_BASE='$WSI' WSG_DATA_ROOT='$WSI/data' WSH_STORAGE_URL='$STORAGE_URL'; $_PG_FALLBACK"
 
 cmd_push() {
   log "creating scratch + pushing code/data → $WSI"
@@ -77,6 +81,7 @@ pkill -9 -f optimize/optimizer.py >/dev/null 2>&1 || true
 sleep 2
 source $REMOTE_VENV/bin/activate
 export WSH_DATA_BASE='$WSI' WSG_DATA_ROOT='$WSI/data' WSH_STORAGE_URL='$STORAGE_URL'
+[ -z \"\$WSH_STORAGE_URL\" ] && [ -f '$WSI/pg.env' ] && { set -a; . '$WSI/pg.env'; set +a; }   # else Postgres from pg.env
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
 cd '$CODE'; mkdir -p optimize/studies '$WSI/logs'
 TARGET=$total              # Tier 2: TOTAL trials each study should REACH (idempotent — not 'add N')
