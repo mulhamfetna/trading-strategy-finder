@@ -56,9 +56,14 @@ cmd_parity() {
   srv "$REMOTE_ENV; cd '$CODE' && python3 optimize/test_parity.py"
 }
 
-# GIL-bound (~1 core/process); multiple workers/study share trials via SQLite. With 1-minute
+# GIL-bound (~1 core/process); multiple workers/study share trials via the store. With 1-minute
 # indicators each trial costs ~similar across TFs (the 1-min indicator compute dominates), so workers
 # are spread ~evenly over the 6 TFs with a mild tilt to the finer ones; sum ≈ 30 (2 left for the OS).
+#
+# CAPACITY FORMULA (Tier 4.3): total workers ≈ (cores − 2). On SQLite the *write-lock* caps useful
+# concurrency — ~5 writers/DB file is comfortable (per-TF DBs from Tier 0.3 give 6 files ⇒ ~30 total) and
+# the Tier-3 `smoke` gate must pass at the chosen count. PostgreSQL (set WSH_STORAGE_URL) removes the
+# write-lock cap via MVCC, so the only ceiling becomes cores − 2; scale this map up accordingly there.
 declare -A WORKERS=( [2m]=6 [5m]=6 [15m]=5 [1h]=5 [2h]=4 [4h]=4 )
 
 cmd_run() {

@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 from pathlib import Path
 
@@ -20,6 +21,13 @@ def load_data(filepath: str) -> pd.DataFrame:
         raise FileNotFoundError(f"File not found: {filepath}")
     
     try:
+        # Tier 4 (opt-in): if WSH_USE_PARQUET is set AND a <csv>.parquet sibling exists, load it instead.
+        # The sibling is written by optimize/to_parquet.py from the EXACT post-load CSV frame, so the result
+        # is byte-identical (Parquet preserves float64 + datetime64 losslessly) — just faster/smaller. With
+        # the env var unset (default), this branch is skipped and the CSV path below runs unchanged.
+        _parq = path.parent / (path.name + ".parquet")
+        if os.environ.get("WSH_USE_PARQUET") and _parq.exists():
+            return pd.read_parquet(_parq)
         df = pd.read_csv(filepath)
         df.columns = df.columns.str.strip()
         col_mapping = {}
