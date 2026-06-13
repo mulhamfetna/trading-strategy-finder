@@ -145,8 +145,19 @@ cmd_pull() {
 
 cmd_stop() { srv "pkill -f 'optimize/optimizer.py' || true"; log "stop signal sent."; }
 
+# Tier 3 — observability + pre-flight gate.
+cmd_stats() {  # live COMPLETE / RUNNING / FAIL / pruned per study (a contention storm = rising FAIL)
+  srv "$REMOTE_ENV; cd '$CODE' && python3 optimize/study_stats.py ${TFS[*]} --prefix $PREFIX"
+}
+cmd_smoke() {  # pre-flight contention probe BEFORE a multi-hour sweep — must report ZERO lock deaths
+  local w="${1:-30}" k="${2:-20}"
+  log "pre-flight contention smoke: $w workers × $k trials (store = ${STORAGE_URL:-per-TF sqlite})"
+  srv "$REMOTE_ENV; cd '$CODE' && python3 optimize/contention_smoke.py --workers $w --trials $k ${STORAGE_URL:+--url '$STORAGE_URL'}"
+}
+
 case "${1:-}" in
   push) cmd_push ;; parity) cmd_parity ;; run) shift; cmd_run "${1:-3000}" "${2:-}" ;;
-  status) cmd_status ;; counts) cmd_counts ;; pull) cmd_pull ;; stop) cmd_stop ;;
-  *) echo "usage: remote_wsi.sh {push|parity|run [trials]|status|counts|pull|stop}"; exit 1 ;;
+  status) cmd_status ;; counts) cmd_counts ;; stats) cmd_stats ;; smoke) shift; cmd_smoke "${1:-30}" "${2:-20}" ;;
+  pull) cmd_pull ;; stop) cmd_stop ;;
+  *) echo "usage: remote_wsi.sh {push|parity|smoke [workers] [trials]|run [target]|status|counts|stats|pull|stop}"; exit 1 ;;
 esac
