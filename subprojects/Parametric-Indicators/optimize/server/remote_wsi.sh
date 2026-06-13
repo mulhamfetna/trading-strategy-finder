@@ -64,7 +64,7 @@ declare -A WORKERS=( [2m]=6 [5m]=6 [15m]=5 [1h]=5 [2h]=4 [4h]=4 )
 cmd_run() {
   local total="${1:-3000}"; local only="${2:-}"
   local tfs=("${TFS[@]}"); [ -n "$only" ] && read -ra tfs <<< "$only"
-  log "launching NSGA-III search ($PREFIX, 1-minute indicators): $total trials/TF [${tfs[*]}] (min-trades 5) ..."
+  log "launching NSGA-III search ($PREFIX, 1-minute indicators): target $total trials/TF (idempotent, watchdog/respawn) [${tfs[*]}] (min-trades 5) ..."
   local spec=""; for tf in "${tfs[@]}"; do spec+="$tf:${WORKERS[$tf]:-1} "; done
   srv "cat > '$WSI/launch.sh' <<'EOS'
 #!/usr/bin/env bash
@@ -74,15 +74,27 @@ source $REMOTE_VENV/bin/activate
 export WSH_DATA_BASE='$WSI' WSG_DATA_ROOT='$WSI/data' WSH_STORAGE_URL='$STORAGE_URL'
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
 cd '$CODE'; mkdir -p optimize/studies '$WSI/logs'
-TOTAL=$total
-for pair in $spec; do
-  tf=\${pair%%:*}; w=\${pair##*:}; per=\$(( (TOTAL + w - 1) / w ))
-  python3 -c \"import optuna,sqlite3,os; n='${PREFIX}_\$tf'; per='optimize/studies/wsh_\$tf.db'; sh='optimize/studies/wsh.db'; h=lambda d:(os.path.exists(d) and n in [r[0] for r in sqlite3.connect(d).execute('SELECT study_name FROM studies')]); db=(sh if (not os.path.exists(per) and h(sh)) else per); url=(os.environ.get('WSH_STORAGE_URL') or 'sqlite:///'+db); optuna.create_study(study_name=n, storage=url, directions=['maximize','maximize','maximize'], load_if_exists=True); print('study',n,'->',url)\"
-  for i in \$(seq 1 \$w); do
-    setsid bash -c \"python3 -u optimize/optimizer.py \$tf --trials \$per --folds 5 --min-trades 5 $IND_ARGS >> '$WSI/logs/\$tf.log' 2>&1\" < /dev/null &
+TARGET=$total              # Tier 2: TOTAL trials each study should REACH (idempotent — not 'add N')
+# Watchdog/respawn worker: keep (re)running the optimizer until the SHARED study reaches TARGET. A crashed
+# optimizer (|| true) just loops and tops up the remaining deficit; when target is hit every worker stops.
+run_worker () {
+  local tf=\"\$1\" w=\"\$2\" log=\"$WSI/logs/\$1.log\" done rem per
+  while :; do
+    done=\$(python3 optimize/trial_count.py \"\$tf\" --prefix ${PREFIX} 2>/dev/null || echo 0)
+    rem=\$(( TARGET - done ))
+    if [ \"\$rem\" -le 0 ]; then echo \"[watchdog] \$tf reached \$done/\$TARGET — stop\" >> \"\$log\"; break; fi
+    per=\$(( (rem + w - 1) / w ))
+    python3 -u optimize/optimizer.py \"\$tf\" --trials \"\$per\" --folds 5 --min-trades 5 $IND_ARGS >> \"\$log\" 2>&1 || true
+    echo \"[watchdog] \$tf was \$done/\$TARGET; ran ~\$per; re-checking (respawn if a worker died)\" >> \"\$log\"
   done
-  echo \"\$tf: \$w workers x \$per trials\"
+}
+for pair in $spec; do
+  tf=\${pair%%:*}; w=\${pair##*:}
+  python3 -c \"import optuna,sqlite3,os; n='${PREFIX}_\$tf'; per='optimize/studies/wsh_\$tf.db'; sh='optimize/studies/wsh.db'; h=lambda d:(os.path.exists(d) and n in [r[0] for r in sqlite3.connect(d).execute('SELECT study_name FROM studies')]); db=(sh if (not os.path.exists(per) and h(sh)) else per); url=(os.environ.get('WSH_STORAGE_URL') or 'sqlite:///'+db); optuna.create_study(study_name=n, storage=url, directions=['maximize','maximize','maximize'], load_if_exists=True); print('study',n,'->',url)\"
+  for i in \$(seq 1 \$w); do run_worker \"\$tf\" \"\$w\" & done
+  echo \"\$tf: \$w workers → target \$TARGET (watchdog/respawn, idempotent)\"
 done
+wait               # keep the detached launcher (session leader) alive until every watchdog reaches target
 EOS
 chmod +x '$WSI/launch.sh'; setsid bash '$WSI/launch.sh' < /dev/null > '$WSI/launch.out' 2>&1 & echo launcher-started"
   sleep 8
