@@ -40,6 +40,7 @@ def backtest_metrics(
     *,
     gate_ref_vf: np.ndarray | None = None,
     sig_int: np.ndarray | None = None,
+    gate_used: np.ndarray | None = None,
     pv: float = config.NQ_POINT_VALUE,
 ) -> dict:
     """Run one backtest on an arbitrary decision timeframe; return summary metrics + trades.
@@ -74,31 +75,38 @@ def backtest_metrics(
     d1 = df1[(df1["Date"] >= t0) & (df1["Date"] < t1)].reset_index(drop=True)
     vfw = vf[lo:hi]
 
-    # Volatility gate threshold frozen on the reference segment (causal); 0 => no gate.
-    gate = None
-    if gate_pct > 0:
-        ref = gate_ref_vf if gate_ref_vf is not None else vf[:n_split]
-        gthr = float(np.percentile(ref, gate_pct))
-        gate = vfw <= gthr
+    # Gate. A precomputed `gate_used` (Stage-1 sub-optimizer freeze-once) bypasses the vol+indicator
+    # recompute entirely — it ALREADY encodes vol_gate ∧ ¬veto ∧ confirm≥K, computed once over the full
+    # series (so warm-up is correct) and sliced to this window. Default None ⇒ compute exactly as before
+    # (parity preserved; golden unaffected).
+    if gate_used is not None:
+        gate = np.asarray(gate_used, dtype=bool)[lo:hi]
+    else:
+        # Volatility gate threshold frozen on the reference segment (causal); 0 => no gate.
+        gate = None
+        if gate_pct > 0:
+            ref = gate_ref_vf if gate_ref_vf is not None else vf[:n_split]
+            gthr = float(np.percentile(ref, gate_pct))
+            gate = vfw <= gthr
 
-    # WS-I.7 indicator layer (optional): fold veto + confirm into the gate as a per-bar mask.
-    # gate_used = vol_gate ∧ ¬veto ∧ confirm≥K. Off/absent ⇒ gate unchanged (parity). The fast path
-    # treats confirm/veto as an immediate-fill GATE; retrace/wait + live-carry stay in the exact
-    # engine (dashboard). NSGA search over which indicators help runs on this gate.
-    specs = params.get("indicators") or []
-    if specs:
-        from indicators import library, runner
-        inds = library.from_specs(specs)
-        if any(i.config.enabled for i in inds):
-            base = gate if gate is not None else np.ones(len(d), dtype=bool)
-            # params["ind_1min"]=True ⇒ indicators read the 1-minute frame (sampled at each decision
-            # bar's last-closed minute); else decision-TF (default, unchanged). Votes computed ONCE
-            # and shared by the veto + confirm masks.
-            src = runner.indicator_source_1min(d, d1, bar_duration) if params.get("ind_1min") else None
-            votes = runner.compute_votes(d, box, inds, src=src)
-            vmask = runner.veto_mask(d, box, inds, src=src, votes=votes)
-            cmask = runner.confirm_mask(d, box, inds, int(params.get("k", 1)), src=src, votes=votes)
-            gate = base & ~vmask & cmask
+        # WS-I.7 indicator layer (optional): fold veto + confirm into the gate as a per-bar mask.
+        # gate_used = vol_gate ∧ ¬veto ∧ confirm≥K. Off/absent ⇒ gate unchanged (parity). The fast path
+        # treats confirm/veto as an immediate-fill GATE; retrace/wait + live-carry stay in the exact
+        # engine (dashboard). NSGA search over which indicators help runs on this gate.
+        specs = params.get("indicators") or []
+        if specs:
+            from indicators import library, runner
+            inds = library.from_specs(specs)
+            if any(i.config.enabled for i in inds):
+                base = gate if gate is not None else np.ones(len(d), dtype=bool)
+                # params["ind_1min"]=True ⇒ indicators read the 1-minute frame (sampled at each decision
+                # bar's last-closed minute); else decision-TF (default, unchanged). Votes computed ONCE
+                # and shared by the veto + confirm masks.
+                src = runner.indicator_source_1min(d, d1, bar_duration) if params.get("ind_1min") else None
+                votes = runner.compute_votes(d, box, inds, src=src)
+                vmask = runner.veto_mask(d, box, inds, src=src, votes=votes)
+                cmask = runner.confirm_mask(d, box, inds, int(params.get("k", 1)), src=src, votes=votes)
+                gate = base & ~vmask & cmask
 
     # precomputed signals (param-independent) sliced to the window; else compute on the slice
     si = sig_int[lo:hi] if sig_int is not None else signals_to_int(_sig.decision_signals(d, box))
