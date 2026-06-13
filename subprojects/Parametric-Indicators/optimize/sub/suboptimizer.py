@@ -12,6 +12,7 @@ Run:  python3 optimize/sub/suboptimizer.py --smoke            # 1 window, few tr
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -38,6 +39,10 @@ _BOUNDS = json.load(open(_HERE.parent / "sl_tp_bounds.json"))["4h"]
 WIDEN = 3.0           # upper-bound widen factor (price-range premise — see ACTION_PLAN §S1.5)
 MIN_TRADES = 3        # windows with fewer taken trades are pruned/flagged
 N_TRIALS = 400
+# Optional hard constraints (env): SUBOPT_SL_MAX caps sl_soft & sl_hard; SUBOPT_TP_MIN floors tp.
+# Unset ⇒ original widened study (preserved). e.g. SUBOPT_SL_MAX=175 SUBOPT_TP_MIN=40.
+SL_MAX = float(os.environ["SUBOPT_SL_MAX"]) if os.environ.get("SUBOPT_SL_MAX") else None
+TP_MIN = float(os.environ["SUBOPT_TP_MIN"]) if os.environ.get("SUBOPT_TP_MIN") else None
 
 
 def champion():
@@ -71,10 +76,17 @@ def _eval(d_win, df1, box, vf_win, gate_win, si_win, champ, sl_soft, sl_hard, tp
 
 
 def _bounds():
-    """Widened SL/TP search bounds (lower kept; upper × WIDEN so high-price windows aren't clipped)."""
-    return {"sl_soft": (float(_BOUNDS["sl_soft"][0]), float(_BOUNDS["sl_soft"][1]) * WIDEN),
+    """Widened SL/TP search bounds (lower kept; upper × WIDEN), then apply optional hard constraints:
+    SL_MAX caps the sl_soft upper (and sl_hard via the objective); TP_MIN raises the tp lower (floor)."""
+    sl_hi = float(_BOUNDS["sl_soft"][1]) * WIDEN
+    tp_lo, tp_hi = float(_BOUNDS["tp"][0]), float(_BOUNDS["tp"][1]) * WIDEN
+    if SL_MAX is not None:
+        sl_hi = min(sl_hi, SL_MAX)
+    if TP_MIN is not None:
+        tp_lo = max(tp_lo, TP_MIN)
+    return {"sl_soft": (float(_BOUNDS["sl_soft"][0]), sl_hi),
             "sl_hard_delta": (0.0, float(_BOUNDS["sl_hard"][1]) * WIDEN),
-            "tp": (float(_BOUNDS["tp"][0]), float(_BOUNDS["tp"][1]) * WIDEN)}
+            "tp": (tp_lo, tp_hi)}
 
 
 def optimize_window(w, df4, df1, box, vf, atr, si_full, gate_full, champ, n_trials, seed=42):
@@ -85,7 +97,9 @@ def optimize_window(w, df4, df1, box, vf, atr, si_full, gate_full, champ, n_tria
 
     def objective(trial):
         sl_soft = trial.suggest_float("sl_soft", *B["sl_soft"])
-        delta = trial.suggest_float("sl_hard_delta", *B["sl_hard_delta"])
+        # cap sl_hard ≤ SL_MAX (the hard stop is the real risk line); else widened delta
+        dhi = (SL_MAX - sl_soft) if SL_MAX is not None else B["sl_hard_delta"][1]
+        delta = trial.suggest_float("sl_hard_delta", 0.0, max(0.0, dhi))
         tp = trial.suggest_float("tp", *B["tp"])
         m = _eval(d_win, df1, box, vf_win, gate_win, si_win, champ, sl_soft, sl_soft + delta, tp)
         if m["n_taken"] < MIN_TRADES:

@@ -3,6 +3,7 @@ Reads results/subopt_table.csv (Stage 1) + the Stage-2 OOS numbers (recorded con
 results/charts/. Pure matplotlib (Agg)."""
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import matplotlib
@@ -12,9 +13,11 @@ import numpy as np
 import pandas as pd
 
 _HERE = Path(__file__).resolve().parent
-_CH = _HERE / "results" / "charts"
+# Env-overridable so the constrained run reuses the same script (default = original study):
+#   SUBOPT_TABLE (input csv) · SUBOPT_CHARTDIR (output) · SUBOPT_OOS_{PNL,DD,DDPL} (4 csv vals: fixed,opt1,opt2,opt3)
+_CH = Path(os.environ.get("SUBOPT_CHARTDIR", str(_HERE / "results" / "charts")))
 _CH.mkdir(parents=True, exist_ok=True)
-d = pd.read_csv(_HERE / "results" / "subopt_table.csv")
+d = pd.read_csv(os.environ.get("SUBOPT_TABLE", str(_HERE / "results" / "subopt_table.csv")))
 x = np.arange(len(d))
 SL_C, TP_C = 149.8, 120.2  # champion base
 
@@ -72,7 +75,10 @@ plt.savefig(_CH / "05_pct_of_price.png", dpi=110); plt.close()
 
 # 6 — Stage-2 OOS comparison (recorded)
 rules = ["fixed", "opt1\nATR", "opt2\nrobust", "opt3\naggregate"]
-pnl = [67627, 62001, 57514, 111464]; dd = [16204, 11057, 30975, 55748]; ddpl = [24, 18, 54, 50]
+_oos = lambda k, dflt: [float(x) for x in os.environ[k].split(",")] if os.environ.get(k) else dflt
+pnl = _oos("SUBOPT_OOS_PNL", [67627, 62001, 57514, 111464])
+dd = _oos("SUBOPT_OOS_DD", [16204, 11057, 30975, 55748])
+ddpl = _oos("SUBOPT_OOS_DDPL", [24, 18, 54, 50])
 fig, ax = plt.subplots(1, 2, figsize=(10, 3.6))
 bars = ax[0].bar(rules, pnl, color=["#607d8b", "#2962ff", "#ff9800", "#e53935"])
 ax[0].set_title("TEST P/L ($)"); ax[0].axhline(67627, ls="--", c="grey", lw=.8)

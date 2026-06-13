@@ -16,6 +16,7 @@ core.backtest_metrics). Parity-anchored: mult≡1 reproduces the fixed champion.
 """
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -39,6 +40,15 @@ from optimize.sub.suboptimizer import champion, freeze_once  # noqa: E402
 _BAR = TF.get("4h").bar_td
 TRAIN_END = "2025-06"          # train ≤ this month; test = after
 MULT_CLIP = (0.3, 3.0)
+# Optional hard constraints (env, shared with the Stage-1 sub-optimizer). When set, the per-bar multiplier
+# is clipped so champion·mult respects them: tp ≥ TP_MIN ⇒ mult ≥ TP_MIN/tp_c ; sl_hard ≤ SL_MAX ⇒
+# mult ≤ SL_MAX/sl_hard_c. SUBOPT_TABLE points opt3 at the matching Stage-1 table.
+SL_MAX = float(os.environ["SUBOPT_SL_MAX"]) if os.environ.get("SUBOPT_SL_MAX") else None
+TP_MIN = float(os.environ["SUBOPT_TP_MIN"]) if os.environ.get("SUBOPT_TP_MIN") else None
+TABLE = Path(os.environ.get("SUBOPT_TABLE", str(Path(__file__).resolve().parent / "results" / "subopt_table.csv")))
+if SL_MAX and TP_MIN:
+    _c = champion()
+    MULT_CLIP = (TP_MIN / float(_c["tp"]), SL_MAX / float(_c["sl_hard"]))
 
 
 def _breaker(cand, dd_limit, cooldown, pv):
@@ -124,7 +134,7 @@ def main() -> int:
     r1["note"] = f"a={best_a:.2f}, ATR_ref={atr_ref:.0f}"
 
     # ---- Rule 3: aggregate Stage-1 optima → rolling-median → linear scale(ATR) ----
-    tbl = pd.read_csv(_HERE / "results" / "subopt_table.csv")
+    tbl = pd.read_csv(TABLE)
     tbl["scale"] = 0.5 * (tbl.best_sl_soft / champ["sl_soft"] + tbl.best_tp / champ["tp"])
     tr_tbl = tbl[tbl.anchor <= TRAIN_END].copy()
     tr_tbl["scale_s"] = tr_tbl["scale"].rolling(3, min_periods=1, center=True).median()
