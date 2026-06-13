@@ -32,7 +32,11 @@ srv() { ssh "${SSH_OPTS[@]}" "${SRV_USER}@${SRV_HOST}" "$@"; }
 RSYNC_E="ssh -p $SRV_PORT -i $SRV_KEY -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=accept-new"
 log() { printf '\033[1;36m[%s]\033[0m %s\n' "$(date +%H:%M:%S)" "$*"; }
 
-REMOTE_ENV="source $REMOTE_VENV/bin/activate; export WSH_DATA_BASE='$WSI' WSG_DATA_ROOT='$WSI/data'"
+# Tier 1: optional centralized store URL. Set WSH_STORAGE_URL (e.g. postgresql://wsh:***@localhost/wsh)
+# in your shell before invoking; empty ⇒ the per-TF sqlite files (unchanged). Forwarded to the workers
+# (launch.sh), the pre-create one-liner, and the readers (counts/pull) so all honour one source of truth.
+STORAGE_URL="${WSH_STORAGE_URL:-}"
+REMOTE_ENV="source $REMOTE_VENV/bin/activate; export WSH_DATA_BASE='$WSI' WSG_DATA_ROOT='$WSI/data' WSH_STORAGE_URL='$STORAGE_URL'"
 
 cmd_push() {
   log "creating scratch + pushing code/data → $WSI"
@@ -67,13 +71,13 @@ cmd_run() {
 pkill -9 -f optimize/optimizer.py >/dev/null 2>&1 || true
 sleep 2
 source $REMOTE_VENV/bin/activate
-export WSH_DATA_BASE='$WSI' WSG_DATA_ROOT='$WSI/data'
+export WSH_DATA_BASE='$WSI' WSG_DATA_ROOT='$WSI/data' WSH_STORAGE_URL='$STORAGE_URL'
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
 cd '$CODE'; mkdir -p optimize/studies '$WSI/logs'
 TOTAL=$total
 for pair in $spec; do
   tf=\${pair%%:*}; w=\${pair##*:}; per=\$(( (TOTAL + w - 1) / w ))
-  python3 -c \"import optuna,sqlite3,os; n='${PREFIX}_\$tf'; per='optimize/studies/wsh_\$tf.db'; sh='optimize/studies/wsh.db'; h=lambda d:(os.path.exists(d) and n in [r[0] for r in sqlite3.connect(d).execute('SELECT study_name FROM studies')]); db=(sh if (not os.path.exists(per) and h(sh)) else per); optuna.create_study(study_name=n, storage='sqlite:///'+db, directions=['maximize','maximize','maximize'], load_if_exists=True); print('study',n,'->',db)\"
+  python3 -c \"import optuna,sqlite3,os; n='${PREFIX}_\$tf'; per='optimize/studies/wsh_\$tf.db'; sh='optimize/studies/wsh.db'; h=lambda d:(os.path.exists(d) and n in [r[0] for r in sqlite3.connect(d).execute('SELECT study_name FROM studies')]); db=(sh if (not os.path.exists(per) and h(sh)) else per); url=(os.environ.get('WSH_STORAGE_URL') or 'sqlite:///'+db); optuna.create_study(study_name=n, storage=url, directions=['maximize','maximize','maximize'], load_if_exists=True); print('study',n,'->',url)\"
   for i in \$(seq 1 \$w); do
     setsid bash -c \"python3 -u optimize/optimizer.py \$tf --trials \$per --folds 5 --min-trades 5 $IND_ARGS >> '$WSI/logs/\$tf.log' 2>&1\" < /dev/null &
   done
@@ -109,7 +113,7 @@ def _db(tf, n):
 for tf in '${TFS[*]}'.split():
     try:
         n=f'${PREFIX}_{tf}'
-        s=optuna.load_study(study_name=n, storage='sqlite:///'+_db(tf, n))
+        s=optuna.load_study(study_name=n, storage=(os.environ.get('WSH_STORAGE_URL') or 'sqlite:///'+_db(tf, n)))
         c=[t for t in s.trials if t.values is not None]
         feas=sum(1 for t in c if (t.user_attrs.get('full_pnl',0) or 0)>0 and t.user_attrs.get('full_dd',9e9)<=0.25*t.user_attrs.get('full_pnl',0))
         print(f'  {tf:4s} trials={len(s.trials):5d} complete={len(c):4d} feasible={feas:3d}')

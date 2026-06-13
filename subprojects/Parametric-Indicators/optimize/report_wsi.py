@@ -104,8 +104,9 @@ def _row(t) -> dict:
 def export_tf(tf: str):
     study_name = f"{_PREFIX}_{tf}"
     db_path = _db_for(tf, study_name)
+    from optimize import storage as study_storage   # Tier 1 — honor WSH_STORAGE_URL (else per-TF sqlite)
     try:
-        study = optuna.load_study(study_name=study_name, storage=f"sqlite:///{db_path}")
+        study = optuna.load_study(study_name=study_name, storage=study_storage.storage_url(db_path))
     except Exception as e:
         print(f"  {tf}: no study ({e})"); return None
     complete = [t for t in study.trials if t.values is not None]

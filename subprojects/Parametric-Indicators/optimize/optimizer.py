@@ -36,6 +36,7 @@ if str(_PARENT) not in sys.path:
     sys.path.insert(0, str(_PARENT))
 
 from optimize import data as data_mod, timeframes as TF, signals as sig_mod  # noqa: E402
+from optimize import storage as study_storage  # noqa: E402  (Tier 1 — centralized storage URL)
 from optimize.fast_engine import signals_to_int          # noqa: E402
 from optimize.folds import score_walkforward             # noqa: E402
 from optimize.core import backtest_metrics               # noqa: E402
@@ -174,13 +175,15 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
     # a worker WAIT for the lock instead of erroring out.
     study_name = f"{study_prefix}_{tf_name}"
     db_path = _db_for(tf_name, study_name)
-    with sqlite3.connect(db_path) as _c:
-        _c.execute("PRAGMA journal_mode=WAL;")
-        _c.execute("PRAGMA synchronous=NORMAL;")
-    storage = optuna.storages.RDBStorage(
-        url=f"sqlite:///{db_path}",
-        engine_kwargs={"connect_args": {"timeout": 60}},
-    )
+    # Tier 1: one source of truth for the store URL. WSH_STORAGE_URL (e.g. postgresql://…) overrides the
+    # per-TF sqlite path; unset ⇒ the per-TF sqlite file, byte-identical to before. WAL/busy_timeout file
+    # hardening applies only to a sqlite file; a served RDB (Postgres) uses MVCC + a connection pool.
+    _url = study_storage.storage_url(db_path)
+    if study_storage.is_sqlite(_url):
+        with sqlite3.connect(db_path) as _c:
+            _c.execute("PRAGMA journal_mode=WAL;")
+            _c.execute("PRAGMA synchronous=NORMAL;")
+    storage = optuna.storages.RDBStorage(url=_url, engine_kwargs=study_storage.engine_kwargs(_url))
     study = optuna.create_study(
         study_name=study_name,
         storage=storage,
