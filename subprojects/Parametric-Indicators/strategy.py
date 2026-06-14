@@ -204,11 +204,41 @@ def validate_params(params):
         raise ParamError(f"'wait_bars' must be an integer (got {params.get('wait_bars')!r})")
     if wait_bars < 0:
         raise ParamError(f"wait_bars must be ≥ 0 (got {wait_bars}); counts 1-minute bars")
+    # Dynamic SL/TP sizing (optional; default 'fixed' ⇒ identical to before — byte-for-byte). In 'atr' mode
+    # the per-decision-bar multiplier = clip(atr_mult · ATR / mean(ATR_window), atr_clip_lo, atr_clip_hi)
+    # scales the base SL/TP at entry (engine sl_tp_mult). ATR source = '4h' (decision frame) or '1m'
+    # (1-minute frame sampled at each decision bar's last-closed minute — matches the 1-min indicator regime).
+    sltp_mode = (params.get("sltp_mode") or "fixed").lower()
+    if sltp_mode not in ("fixed", "atr"):
+        raise ParamError(f"sltp_mode must be 'fixed' or 'atr' (got {params.get('sltp_mode')!r})")
+    atr_source = (params.get("atr_source") or "4h").lower()
+    if atr_source not in ("4h", "1m"):
+        raise ParamError(f"atr_source must be '4h' or '1m' (got {params.get('atr_source')!r})")
+    try:
+        atr_period = int(params.get("atr_period") or 14)
+    except (TypeError, ValueError):
+        raise ParamError(f"'atr_period' must be an integer (got {params.get('atr_period')!r})")
+    if atr_period < 1:
+        raise ParamError(f"atr_period must be ≥ 1 (got {atr_period})")
+    try:
+        atr_mult = float(params.get("atr_mult") or 1.0)
+        # Default band = study-sanctioned SHRINK-ONLY 0.33–1.05 (expansion >1.05 was never validated by
+        # the optimizer and mines in-sample structure — see REVIEW_atr_sizing_contradiction.md R3).
+        atr_clip_lo = float(params.get("atr_clip_lo") if params.get("atr_clip_lo") not in (None, "") else 0.33)
+        atr_clip_hi = float(params.get("atr_clip_hi") if params.get("atr_clip_hi") not in (None, "") else 1.05)
+    except (TypeError, ValueError):
+        raise ParamError("atr_mult / atr_clip_lo / atr_clip_hi must be numbers")
+    if atr_mult <= 0:
+        raise ParamError(f"atr_mult must be > 0 (got {atr_mult})")
+    if not (0 < atr_clip_lo <= atr_clip_hi):
+        raise ParamError(f"need 0 < atr_clip_lo ≤ atr_clip_hi (got {atr_clip_lo}, {atr_clip_hi})")
     return dict(sl_soft=sl_soft, sl_hard=sl_hard, tp=tp, gate_pct=gate_pct, dd_limit=dd_limit,
                 cooldown=int(cooldown), flip=bool(params["flip"]), window=params["window"],
                 timeframe=timeframe, dd_cap=dd_cap, pv=pv, indicators=list(specs), k=k, gen=gen,
                 retrace_amount=retrace_amount, retrace_unit=retrace_unit, wait_bars=wait_bars,
-                veto_as_flip=bool(params.get("veto_as_flip")))
+                veto_as_flip=bool(params.get("veto_as_flip")),
+                sltp_mode=sltp_mode, atr_source=atr_source, atr_period=atr_period, atr_mult=atr_mult,
+                atr_clip_lo=atr_clip_lo, atr_clip_hi=atr_clip_hi)
 
 
 def build_payload(df4, df1, box, vf, n2025, params=None):
@@ -294,11 +324,41 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
     # the engine so it does NOT recompute _stage1_candle_signal + box.loc per decision bar. Byte-identical
     # (optimize.signals.decision_signals ≡ engine._stage1_candle_signal — see tests/test_axisB_signal_equiv.py).
     sig_arr = decision_signals(d4, box)
+
+    # Dynamic SL/TP sizing: 'fixed' ⇒ sl_tp_mult=None (engine identical, byte-for-byte). 'atr' ⇒ a per-bar
+    # multiplier from the 4h or 1-minute ATR, scaling the base SL/TP at entry. mult series returned for charting.
+    sl_tp_mult = None
+    sltp_mult_series = []
+    if P["sltp_mode"] == "atr":
+        from indicators import classic
+        if P["atr_source"] == "1m":
+            from indicators import runner as _rn
+            atr1 = classic.atr(d1["High"].to_numpy(float), d1["Low"].to_numpy(float),
+                               d1["Close"].to_numpy(float), P["atr_period"])
+            _ctx, j_idx = _rn.indicator_source_1min(d4, d1, bar_td)   # last-closed 1-min per decision bar
+            atrv = np.where(j_idx >= 0, atr1[np.clip(j_idx, 0, len(atr1) - 1)], np.nan)
+        else:
+            atrv = classic.atr(d4["High"].to_numpy(float), d4["Low"].to_numpy(float),
+                               d4["Close"].to_numpy(float), P["atr_period"])
+        atrv = np.asarray(atrv, dtype=float)
+        # CAUSAL normalization (NO look-ahead): divide ATR_t by the EXPANDING mean of ATR up to & incl.
+        # bar t — so the multiplier at t depends only on past+present volatility, never future bars.
+        # (The old `np.nanmean(atrv)` averaged the WHOLE series incl. future → a leak; see
+        # REVIEW_atr_sizing_contradiction.md R1 / COUNCIL_RULING_atr_sizing.md.)
+        atrv = pd.Series(atrv).ffill().bfill().to_numpy(dtype=float)   # fill warmup NaNs causally
+        if not np.isfinite(atrv).any():
+            atrv = np.ones(len(atrv), dtype=float)
+        ref_series = np.cumsum(atrv) / np.arange(1, len(atrv) + 1)     # expanding (causal) mean
+        ref_series = np.where(ref_series > 0, ref_series, 1.0)
+        sl_tp_mult = np.clip(P["atr_mult"] * atrv / ref_series, P["atr_clip_lo"], P["atr_clip_hi"])
+        sltp_mult_series = [{"time": _ts(d4["Date"].iloc[i]), "value": round(float(sl_tp_mult[i]), 4)}
+                            for i in range(len(d4))]
+
     blocked = []   # diagnostic: directional signals the gate dropped (logged, not traded)
     trades, _ = SimpleStrategy(sp).backtest(d4, d1, box, entry_gate=gate_used,
                                             entry_resolver=entry_resolver, veto_mask=veto_mask,
                                             blocked_log=blocked, veto_as_flip=P["veto_as_flip"],
-                                            signals=sig_arr)
+                                            signals=sig_arr, sl_tp_mult=sl_tp_mult)
     cand = sorted([t for t in trades if t.get("exit_reason") not in (None, "OPEN")],
                   key=lambda t: pd.Timestamp(t["entry_time"]))
 
@@ -428,9 +488,12 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
                       gate_thr=(None if gthr is None else round(gthr, 0)), dd_limit=(ddl if use_brk else None),
                       cooldown=cooldown, dd_cap=dd_cap, pv=pv, flip=flip, window=window,
                       timeframe=P["timeframe"], indicators=specs, k=k_rule, gen=gen_params,
-                      veto_as_flip=P["veto_as_flip"])
+                      veto_as_flip=P["veto_as_flip"], sltp_mode=P["sltp_mode"], atr_source=P["atr_source"],
+                      atr_period=P["atr_period"], atr_mult=P["atr_mult"],
+                      atr_clip_lo=P["atr_clip_lo"], atr_clip_hi=P["atr_clip_hi"])
     return dict(meta=dict(params=params_out, summary=summary,
                           split_ts=_ts(df4.iloc[min(n2025, len(df4) - 1)]["Date"]),
                           gen_report=gen_report),
                 candles=candles, vol=vol, gate_thr=(gthr if gthr is not None else 0), state=state,
-                trades=taken, equity=eqc, drawdown=drawdown, events=sorted(events, key=lambda e: e["time"]))
+                trades=taken, equity=eqc, drawdown=drawdown, events=sorted(events, key=lambda e: e["time"]),
+                sltp_mult=sltp_mult_series)

@@ -28,15 +28,21 @@
   button.ghost { border:1px solid var(--border); border-radius:6px; background:var(--tile); color:var(--text); font-size:12px; padding:8px 12px; cursor:pointer; }
   button.ghost:hover { border-color:var(--blue); }
   .body { display:flex; flex:1; overflow:hidden; }
-  aside { width:340px; flex:none; overflow-y:auto; border-right:1px solid var(--border); background:var(--bg); padding:12px; }
+  aside { width:340px; min-width:240px; max-width:760px; flex:none; overflow-y:auto; border-right:1px solid var(--border); background:var(--bg); padding:12px; }
   body.no-settings aside { display:none; }
+  /* drag this to resize the settings panel; charts refit via the <main> ResizeObserver */
+  #gutter { flex:none; width:6px; cursor:col-resize; background:var(--border); }
+  #gutter:hover, #gutter.drag { background:var(--blue); }
+  body.no-settings #gutter { display:none; }
   main { flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:12px; }
   /* settings panel */
   .sgroup { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 12px; margin-bottom:10px; }
   .sgroup h3 { font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:0 0 8px; }
-  .fld { display:flex; align-items:center; justify-content:space-between; margin:6px 0; }
-  .fld label { font-size:12px; color:var(--text); }
-  .fld input, .fld select { background:var(--tile); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:6px 8px; font-size:13px; width:120px; text-align:right; }
+  .fld { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:6px 0; }
+  .fld label { font-size:12px; color:var(--text); flex:0 1 auto; }
+  /* inputs FILL the right side of the row and grow with the (resizable) panel, so full numbers always
+     show — no clipping/wrapping. min-width keeps ~6 digits visible even at the narrowest panel width. */
+  .fld input, .fld select { background:var(--tile); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:6px 8px; font-size:13px; flex:1 1 110px; min-width:96px; max-width:240px; width:auto; text-align:right; }
   .hint { font-size:10px; color:var(--muted); margin-top:-2px; }
   .resetlink { font-size:11px; color:var(--blue); cursor:pointer; background:none; border:0; padding:0; }
   /* metric cards */
@@ -77,8 +83,10 @@
   .ind .indhead label{display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;}
   .ind .indbody{margin-top:6px;display:none;} .ind.on{border-color:var(--blue);} .ind.on .indbody{display:block;}
   .ind select,.ind input{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:5px;padding:3px 5px;font-size:12px;}
-  .ind .fld{margin:4px 0;} .ind .fld input{width:72px;}
-  .rrow{display:flex;gap:4px;align-items:center;justify-content:flex-end;} .rrow input{width:52px;}
+  .ind .fld{margin:4px 0;} .ind .fld input{flex:1 1 64px;min-width:60px;max-width:150px;width:auto;}
+  /* paired-input rows (clip min/max, retrace+unit) also fill & split the row instead of fixed tiny boxes */
+  .rrow{display:flex;gap:4px;align-items:center;justify-content:flex-end;flex:1 1 auto;max-width:240px;}
+  .rrow input{flex:1 1 0;min-width:0;width:auto;}
   .genrep{font:11px/1.6 ui-monospace,Menlo,monospace;color:var(--muted);} .genrep b{color:var(--text);}
   /* per-entry indicator vote chips (decision #1/#5 — every indicator's opinion, active or not) */
   .ind-chips{display:flex;flex-wrap:wrap;gap:4px;padding:1px 4px 4px 72px;border-bottom:1px solid #20242f;}
@@ -125,6 +133,18 @@
       <div class="hint">hard ≥ soft enforced · loss capped at SL-hard × $20</div>
     </div>
     <div class="sgroup">
+      <h3>SL/TP sizing</h3>
+      <div class="fld"><label>Mode</label><select id="sltp_mode"><option value="fixed">fixed (points above)</option><option value="atr">ATR multiplier</option></select></div>
+      <div id="atrbox" style="display:none">
+        <div class="fld"><label>ATR source</label><select id="atr_source"><option value="4h">4h (decision frame)</option><option value="1m">1-minute frame</option></select></div>
+        <div class="fld"><label>ATR period</label><input id="atr_period" type="number" step="1" min="1" value="14"></div>
+        <div class="fld"><label>Coefficient a</label><input id="atr_mult" type="number" step="0.05" min="0.05" value="1.0"></div>
+        <div class="fld"><label>Clip min / max</label><span class="rrow"><input id="atr_clip_lo" type="number" step="0.05" value="0.33"><input id="atr_clip_hi" type="number" step="0.05" value="1.05"></span></div>
+        <div class="hint">SL/TP × clip(a·ATR ÷ <b>expanding-mean ATR</b>, min, max) at entry (causal — no look-ahead) · base = the SL/TP above · <b>period is in BARS</b>: 4h source→14 (≈56h), 1-min source→240 (≈4h) · default band 0.33–1.05 is <b>shrink-only</b> (study-sanctioned)</div>
+        <div class="hint" id="atrwarn" style="display:none;color:#c0392b">⚠ clip max &gt; 1.05 = SL/TP <b>expansion</b> beyond the optimizer-explored range — exploratory only, not OOS-validated (see COUNCIL_RULING_atr_sizing).</div>
+      </div>
+    </div>
+    <div class="sgroup">
       <h3>Volatility gate</h3>
       <div class="fld"><label>Gate percentile</label><input id="gate_pct" type="number" step="1"></div>
       <div class="hint">skip bars with HAR-RV above this pct · 0 = gate off</div>
@@ -155,6 +175,7 @@
       <div id="indpanel"><div class="hint">loading schema…</div></div>
     </div>
   </aside>
+  <div id="gutter" title="drag to resize the settings panel"></div>
 
   <main>
     <div class="cards" id="cards"></div>
@@ -171,6 +192,7 @@
     <div class="panel"><h2>Engine state — 1 = TRADING · 0 = LOCKED by drawdown breaker</h2><div id="state" class="chart" style="height:90px"></div></div>
     <div class="panel"><h2>Equity curve — cumulative P/L ($, 1 contract)</h2><div id="equity" class="chart" style="height:170px"></div></div>
     <div class="panel"><h2>Drawdown (underwater, $) — red dashed = breaker trigger · grey dashed = $5k cap</h2><div id="dd" class="chart" style="height:140px"></div></div>
+    <div class="panel" id="multpanel" style="display:none"><h2>SL/TP multiplier (ATR mode) — base SL/TP × this per bar · grey dashed = 1.0</h2><div id="sltp_mult_chart" class="chart" style="height:120px"></div></div>
 
     <div class="twocol">
       <div class="panel"><h2>Event log — what happened, when &amp; why <button class="ghost csvbtn" id="dl_events" title="download the event log as CSV">⬇ CSV</button></h2><div class="log" id="log"></div></div>
@@ -186,7 +208,7 @@ const TH={bg:'#131722',text:'#d1d4dc',border:'#363a45',green:'#00c853',red:'#ff5
 const COMMON={layout:{background:{color:TH.bg},textColor:TH.text},grid:{vertLines:{color:'#20242f'},horzLines:{color:'#20242f'}},timeScale:{timeVisible:true,borderColor:TH.border},rightPriceScale:{borderColor:TH.border},crosshair:{mode:0}};
 const charts=[], ctns=[];
 const mk=(id,h)=>{const el=document.getElementById(id); const c=LightweightCharts.createChart(el,{...COMMON,width:el.clientWidth,height:h}); charts.push(c); ctns.push(el); return c;};
-const priceC=mk('price',430),volC=mk('vol',130),stC=mk('state',90),eqC=mk('equity',170),ddC=mk('dd',140);
+const priceC=mk('price',430),volC=mk('vol',130),stC=mk('state',90),eqC=mk('equity',170),ddC=mk('dd',140),multC=mk('sltp_mult_chart',120);
 const candle=priceC.addCandlestickSeries({upColor:TH.green,downColor:TH.red,wickUpColor:TH.green,wickDownColor:TH.red,borderVisible:false});
 const seg=(c)=>priceC.addLineSeries({color:c,lineWidth:1,lastValueVisible:false,priceLineVisible:false,crosshairMarkerVisible:false});
 const tpS=seg('rgba(0,200,83,.6)'),shS=seg('rgba(255,82,82,.6)'),ssS=seg('rgba(255,152,0,.6)');
@@ -197,6 +219,7 @@ const stateA=stC.addAreaSeries({lineColor:TH.blue,topColor:'rgba(41,98,255,.4)',
 const eqLine=eqC.addLineSeries({color:TH.orange,lineWidth:2});
 const ddA=ddC.addAreaSeries({lineColor:TH.red,topColor:'rgba(255,82,82,.06)',bottomColor:'rgba(255,82,82,.45)',lineWidth:1});
 const ddTrig=ddC.addLineSeries({color:TH.red,lineWidth:1,lineStyle:2,lastValueVisible:false}),ddCap=ddC.addLineSeries({color:TH.muted,lineWidth:1,lineStyle:2,lastValueVisible:false});
+const multLine=multC.addLineSeries({color:TH.blue,lineWidth:2}),multRef=multC.addLineSeries({color:TH.muted,lineWidth:1,lineStyle:2,lastValueVisible:false});
 let sy=false; charts.forEach(s=>s.timeScale().subscribeVisibleTimeRangeChange(r=>{if(sy||!r)return;sy=true;charts.forEach(o=>{if(o!==s){try{o.timeScale().setVisibleRange(r);}catch(e){}}});sy=false;}));
 // resize every chart to its container's current width (lightweight-charts has no auto-resize).
 // A ResizeObserver on <main> fires on BOTH window resize and the settings-panel toggle, so the
@@ -205,6 +228,17 @@ function fitCharts(){ charts.forEach((c,i)=>{ const w=ctns[i].clientWidth; if(w>
 window.addEventListener('resize', fitCharts);
 const _mainEl=document.querySelector('main');
 if(window.ResizeObserver){ new ResizeObserver(fitCharts).observe(_mainEl); }
+
+// Draggable splitter: resize the settings panel by dragging the gutter. Width is clamped (240–760px,
+// matching the aside min/max), persisted to localStorage, and charts refit live via the ResizeObserver.
+(function(){ const g=document.getElementById('gutter'), a=document.querySelector('aside'); if(!g||!a) return;
+  const CLAMP=w=>Math.min(760,Math.max(240,w)); let drag=false;
+  try{ const sv=+localStorage.getItem('wsi_aside_w'); if(sv) a.style.width=CLAMP(sv)+'px'; }catch(e){}
+  g.addEventListener('mousedown', e=>{ drag=true; g.classList.add('drag'); document.body.style.userSelect='none'; e.preventDefault(); });
+  window.addEventListener('mousemove', e=>{ if(!drag) return; a.style.width=CLAMP(e.clientX - a.getBoundingClientRect().left)+'px'; fitCharts(); });
+  window.addEventListener('mouseup', ()=>{ if(!drag) return; drag=false; g.classList.remove('drag'); document.body.style.userSelect='';
+    try{ localStorage.setItem('wsi_aside_w', parseInt(a.style.width)); }catch(e){} fitCharts(); });
+})();
 
 const dt=t=>new Date(t*1000).toISOString().slice(0,16).replace('T',' ');
 const money=n=>(n>=0?'+':'')+'$'+Math.round(n).toLocaleString();
@@ -248,6 +282,9 @@ function render(D){
   stateA.setData(_st); eqLine.setData(_eq); ddA.setData(_dd);
   ddTrig.setData(P.dd_limit?_dd.map(d=>({time:d.time,value:-P.dd_limit})):[]);
   ddCap.setData(_dd.map(d=>({time:d.time,value:-(P.dd_cap||5000)})));
+  // SL/TP multiplier chart — only shown in ATR mode (empty series ⇒ panel hidden)
+  const _sm=D.sltp_mult||[]; $('multpanel').style.display=_sm.length?'':'none';
+  multLine.setData(_sm); multRef.setData(_sm.length?[{time:_sm[0].time,value:1},{time:_sm[_sm.length-1].time,value:1}]:[]);
   // align all panels to the same time window initially
   charts.forEach(c=>{try{c.timeScale().setVisibleRange({from:_t0,to:_t1});}catch(e){c.timeScale().fitContent();}});
   document.getElementById('log').innerHTML=D.events.map(e=>{
@@ -274,7 +311,24 @@ function setForm(P){ if(P.timeframe&&$('timeframe').querySelector(`option[value=
   if(P.retrace_unit)$('g_retrace_unit').value=P.retrace_unit;
   if(P.wait_bars!=null)$('g_wait').value=P.wait_bars;
   if(P.gen){ if(P.gen.swing_l!=null)$('gen_swing_l').value=P.gen.swing_l; if(P.gen.golf_n!=null)$('gen_golf_n').value=P.gen.golf_n; }
-  if(P.indicators)applyIndicatorSpecs(P.indicators); }
+  if(P.indicators)applyIndicatorSpecs(P.indicators);
+  // SL/TP sizing: profiles don't carry atr_* fields, so ALWAYS restore the clean defaults when absent
+  // (otherwise Reset/profile-switch would leave stale user-typed clip values behind → bogus submits).
+  $('sltp_mode').value=P.sltp_mode||'fixed';
+  $('atr_source').value=P.atr_source||'4h';
+  $('atr_period').value=P.atr_period!=null?P.atr_period:($('atr_source').value==='1m'?240:14);
+  $('atr_mult').value=P.atr_mult!=null?P.atr_mult:1.0;
+  $('atr_clip_lo').value=P.atr_clip_lo!=null?P.atr_clip_lo:0.33;
+  $('atr_clip_hi').value=P.atr_clip_hi!=null?P.atr_clip_hi:1.05;
+  toggleAtr(); }
+function toggleAtr(){ $('atrbox').style.display = $('sltp_mode').value==='atr' ? '' : 'none';
+  $('atrwarn').style.display = (+$('atr_clip_hi').value > 1.05) ? '' : 'none'; }  // R3: warn on expansion band
+// R2: ATR period is in BARS, so its sensible default depends on the source frame (4h→14≈56h, 1m→240≈4h).
+// When the source flips, auto-correct the period IF it's still at the other frame's canonical default
+// (don't clobber a value the user deliberately set to something else).
+function syncAtrPeriod(){ const p=+$('atr_period').value;
+  if($('atr_source').value==='1m' && p===14) $('atr_period').value=240;
+  else if($('atr_source').value==='4h' && p===240) $('atr_period').value=14; }
 // NOTE: every value is read straight from the form — nothing is hardcoded or silently defaulted here.
 // Validation (and any error) happens server-side and is surfaced verbatim to the #err banner.
 function params(){return {timeframe:$('timeframe').value||'4h',window:$('window').value,sl_soft:+$('sl_soft').value,sl_hard:+$('sl_hard').value,tp:+$('tp').value,
@@ -282,7 +336,12 @@ function params(){return {timeframe:$('timeframe').value||'4h',window:$('window'
   dd_cap:$('dd_cap').value===''?null:+$('dd_cap').value, pv:$('pv').value===''?null:+$('pv').value,
   indicators:indicatorSpecs(), k:+$('k_rule').value||1,
   retrace_amount:+$('g_retrace').value||0, retrace_unit:$('g_retrace_unit').value, wait_bars:+$('g_wait').value||0,
+  sltp_mode:$('sltp_mode').value, atr_source:$('atr_source').value, atr_period:+$('atr_period').value||14,
+  atr_mult:+$('atr_mult').value||1.0, atr_clip_lo:+$('atr_clip_lo').value||0.33, atr_clip_hi:+$('atr_clip_hi').value||1.05,
   gen:{swing_l:+$('gen_swing_l').value||2, golf_n:+$('gen_golf_n').value||3}};}
+$('sltp_mode').addEventListener('change', toggleAtr);   // show/hide the ATR controls + (markDirty fires via the input listener)
+$('atr_source').addEventListener('change', syncAtrPeriod);   // R2: 4h→14 / 1m→240 when source flips
+$('atr_clip_hi').addEventListener('input', toggleAtr);       // R3: re-evaluate the expansion warning
 
 // Build the whole indicator panel from /api/config's indicator_schema — NOTHING hardcoded here.
 let panelBuilt=false;

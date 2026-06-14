@@ -133,6 +133,39 @@ thirty writers* — not the math, data volume, or memory.
 
 ---
 
+## 4D. Workstream D — Adaptive / derived SL/TP sizing (newest, this cycle)
+
+### 4D.1 What was built
+- **ATR-multiplier SL/TP mode** in the backtester (`sltp_mode='atr'`, additive; `'fixed'` byte-identical to
+  golden). Per-decision-bar multiplier scales the base SL/TP; 4h or 1-min ATR source; multiplier chart.
+- **UX:** Reset/profile-load no longer leaves stale ATR fields; settings panel is drag-resizable; input boxes
+  grow to show full numbers.
+
+### 4D.2 The contradiction + investigation (`REVIEW_atr_sizing_contradiction.md`)
+Dashboard ATR appeared to **beat** fixed (+21% on 1-min) while the prior study said ATR **shrinks** profit.
+Root-caused as a **measurement artifact** across 6 confounds: in-sample window, 3× expansion band, a 14-*minute*
+ATR (period-14 on the 1-min frame), and a **look-ahead** normalization ref. Controlling them collapses the 1-min
+result onto fixed (172k→144k≈142k).
+
+### 4D.3 Two expert councils (multi-agent)
+- `COUNCIL_RULING_atr_sizing.md` — **6–0:** the STUDY is the valid measurement; the dashboard "+21%" is a
+  confounded in-sample artifact. Fixed is champion; ATR is a drawdown knob, not a profit engine.
+- `COUNCIL_RULING_reoptimization.md` — **6–0:** the deployed fixed champion needs **NO** re-optimization
+  (byte-identical; every change gated to the ATR path); adopting volatility sizing **IS** a new search
+  dimension requiring a fresh joint `wsh5` walk-forward.
+
+### 4D.4 Fixes applied (R1–R3, ATR-mode only; fixed mode re-verified byte-identical)
+- **R1** — normalization ref → **causal expanding mean** (no look-ahead).
+- **R2** — `atr_period` default keyed to source (4h→14, 1m→240); unit surfaced in UI.
+- **R3** — default clip band → **shrink-only 0.33–1.05**; warning when expansion (>1.05) is selected.
+
+### 4D.5 Next: derived / self-recalibrating SL/TP (`ACTION_PLAN_derived_sltp.md`, approved)
+Replace stale *absolute* SL/TP with a **ratio to a live driver** (`SL=k·D_t`) so nothing decays — Manual + Auto
+modes, Approach A (formula) spine + Approach B (fitted policy) seam, staged: **Stage 0 feasibility** →
+engine/UI → joint `wsh5` (4h pilot → all TF) → fitted policy → remove ATR mode. See `META_STAGE_adaptive_sltp.md`.
+
+---
+
 ## 5. TECHNOLOGIES RECORD — stack + every adopt/reject decision
 
 ### 5.1 Stack in play
@@ -187,6 +220,8 @@ thirty writers* — not the math, data volume, or memory.
 ---
 
 ## 8. Pending / next (user-triggered)
+- **Derived/adaptive SL/TP (Workstream D)** — approved action plan; **Stage 0 feasibility in progress**.
+  Stage 2 is the `wsh5` joint walk-forward. See `ACTION_PLAN_derived_sltp.md` / `META_STAGE_adaptive_sltp.md`.
 - **Fresh optimizer run on updated data** — new `wsh5` prefix on Postgres (sequence in §4.3). Not started by design.
 - **Optional Axis-A leftovers** (A3, `market_structure`) — held (low ROI). **Tier 5** (multi-node) — deferred.
 
@@ -202,4 +237,7 @@ thirty writers* — not the math, data volume, or memory.
   `optimize/server/EXPLAINER_tier1_postgres_and_history.md`, `optimize/server/ACTION_PLAN_scaling_tiers.md`,
   `optimize/server/UPDATE_tier{1,2,3,4}_*.md`, `optimize/server/UPDATE_phaseD_deploy_postgres.md`,
   `optimize/server/INCIDENT_ssh_connection_reset.md`.
+- **Adaptive/derived SL/TP (D):** `META_STAGE_adaptive_sltp.md` (current-stage map), `ACTION_PLAN_derived_sltp.md`,
+  `REVIEW_atr_sizing_contradiction.md`, `COUNCIL_RULING_atr_sizing.md`, `COUNCIL_RULING_reoptimization.md`,
+  `optimize/sub/STUDY_sub_optimizer_*.md`, `optimize/sub/STUDY_relative_feasibility.md` (Stage 0).
 - **This file** is the top-level index over all of them.

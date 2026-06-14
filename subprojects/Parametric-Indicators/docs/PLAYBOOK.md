@@ -29,6 +29,12 @@ Decisions on the **decision timeframe** (default 4h); exits walk the **1-minute*
 **Box / risk:** `sl_soft`, `sl_hard` (≥ sl_soft), `tp`, `gate_pct` (0 = gate OFF), `dd_limit`
 (0 = breaker OFF), `cooldown`, `flip`, `window` (full/2025/2026), `dd_cap`, `pv`.
 
+**SL/TP sizing mode** (`sltp_mode`): `fixed` (default — the `sl_soft`/`sl_hard`/`tp` point values above;
+**byte-identical to golden**) · `atr` (per-bar multiplier `clip(atr_mult·ATR/expanding-mean-ATR, lo, hi)`
+scaling the fixed values; causal ref, default band shrink-only 0.33–1.05 — **exploratory**, see
+`COUNCIL_RULING_atr_sizing.md`). A **derived/self-recalibrating** mode (`SL=k·driver`, no manual base) is
+planned per `ACTION_PLAN_derived_sltp.md` and will replace `atr` once validated. **Deployed default = fixed.**
+
 **Confirmation layer (WS-I):**
 - **K** — minimum # of active confirms required (error if `K > #enabled confirm-capable`).
 - Per indicator: **enabled** (default off), **mode** ∈ {confirm, veto, both}, and its own numeric
