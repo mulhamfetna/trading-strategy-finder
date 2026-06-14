@@ -1,6 +1,9 @@
 # Action Plan — Derived (self-recalibrating) SL/TP
 
-**Date:** 2026-06-14 · **Status:** DESIGN APPROVED, awaiting plan sign-off · **Companions:**
+**Date:** 2026-06-14 · **Status:** Stage 0 RAN → **NO-GO gate fired** (see `optimize/sub/STUDY_relative_feasibility.md`);
+awaiting operator decision before Stage 1. The vol-relative robustness premise is **not supported** on 2024–2026
+data (dividing best-SL/TP by ATR/vf/price makes it *more* dispersed, not less; absolute optima were already
+stable: sl_hard CV 0.15). Fixed champion remains deployed; no engine change, no GPU spent. · **Companions:**
 `REVIEW_atr_sizing_contradiction.md`, `COUNCIL_RULING_atr_sizing.md`, `COUNCIL_RULING_reoptimization.md`,
 `optimize/sub/STUDY_sub_optimizer_*.md`.
 
