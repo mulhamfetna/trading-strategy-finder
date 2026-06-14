@@ -51,4 +51,5 @@ and we are **starting Stage 0 (feasibility)**.
 
 ## 6. Detail lives in
 `ACTION_PLAN_derived_sltp.md` · `REVIEW_atr_sizing_contradiction.md` · `COUNCIL_RULING_atr_sizing.md` ·
-`COUNCIL_RULING_reoptimization.md` · `SYSTEM_UPDATES_MEGADOC.md` (§4D) · `optimize/sub/STUDY_sub_optimizer_*.md`.
+`COUNCIL_RULING_reoptimization.md` · `SYSTEM_UPDATES_MEGADOC.md` (§4D) · `optimize/sub/STUDY_sub_optimizer_*.md` ·
+`optimize/sub/STUDY_relative_feasibility.md` (Stage 0 NO-GO) · `DECISION_derived_sltp_options.md` (the 4 forward options in full).
