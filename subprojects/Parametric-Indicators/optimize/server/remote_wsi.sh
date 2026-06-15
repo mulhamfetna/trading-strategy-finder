@@ -21,7 +21,17 @@ CODE="$WSI/Parametric-Indicators"
 LOCAL_RESULTS="$_HERE/../results"
 LOCAL_LOGS="$_HERE/server_logs"
 LOCAL_REPORTS="$_HERE/../reports"
-TFS=(4h 2h 1h 15m 5m 2m)                              # 1-minute TIMEFRAME excluded from the sweep
+# ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
+# │  ⚠️  FULL-DATA OPTIMIZER RUNS **4h ONLY** (2026-06-15 user directive)                            │
+# │  For time-saving + study focus, the full-data NSGA-III sweep optimizes ONLY the 4h timeframe and │
+# │  CONCENTRATES ALL WORKERS on it (no spread across TFs). The other timeframes are HELD (not run). │
+# │  >>> THIS APPLIES ONLY TO THE FULL-DATA OPTIMIZER SWEEP. <<<                                     │
+# │  EVERY other process — parity tests, smoke tests, golden byte-match, and ALL engine/system       │
+# │  development — STILL considers ALL timeframes. Only this production sweep is 4h-focused for now. │
+# │  To resume the full all-TF sweep: set TFS=("${TFS_ALL[@]}") and restore the per-TF WORKERS map.  │
+# └──────────────────────────────────────────────────────────────────────────────────────────────┘
+TFS_ALL=(4h 2h 1h 15m 5m 2m)                          # full set (1-minute TF excluded) — restore to resume all-TF sweeps
+TFS=(4h)                                              # ⚠️ 4h ONLY — full-data optimizer focus (see banner above)
 PREFIX="${WSH_PREFIX:-wsh4}"                           # study prefix; override e.g. WSH_PREFIX=wsh5 for a fresh regime
 SPLIT_ARG="${WSH_SPLIT:+--split-sltp}"                 # set WSH_SPLIT=1 to search SEPARATE long/short SL/TP (Q3/E2)
 IND_ARGS="--ind-1min --study-prefix $PREFIX $SPLIT_ARG" # indicators read the 1-minute frame
@@ -69,7 +79,9 @@ cmd_parity() {
 # concurrency — ~5 writers/DB file is comfortable (per-TF DBs from Tier 0.3 give 6 files ⇒ ~30 total) and
 # the Tier-3 `smoke` gate must pass at the chosen count. PostgreSQL (set WSH_STORAGE_URL) removes the
 # write-lock cap via MVCC, so the only ceiling becomes cores − 2; scale this map up accordingly there.
-declare -A WORKERS=( [2m]=6 [5m]=6 [15m]=5 [1h]=5 [2h]=4 [4h]=4 )
+# 4h gets ALL workers (box has 32 cores; leave 2 for OS/Postgres). The other entries are kept for when the
+# full all-TF sweep is resumed (TFS=TFS_ALL); they are inert while TFS=(4h). (Was spread 6/6/5/5/4/4 across TFs.)
+declare -A WORKERS=( [4h]=30 [2h]=4 [1h]=5 [15m]=5 [5m]=6 [2m]=6 )
 
 cmd_run() {
   local total="${1:-3000}"; local only="${2:-}"

@@ -1,5 +1,15 @@
 # Notes for the NEXT full optimizer run (wsh5) — carry these forward
 
+> # ⚠️ **THE FULL-DATA OPTIMIZER RUNS 4h ONLY (2026-06-15 directive)** ⚠️
+> **Every full-data optimizer sweep — this one and all future ones — optimizes ONLY the 4h timeframe and
+> CONCENTRATES ALL workers on it. The other timeframes (2h/1h/15m/5m/2m) are HELD (not run) for time-saving
+> and study focus.** This is enforced in `optimize/server/remote_wsi.sh` (`TFS=(4h)`, `WORKERS[4h]=30`).
+> **This restriction applies ONLY to the production full-data optimizer.** Parity tests, smoke tests, golden
+> byte-match, and ALL engine/system development STILL consider ALL timeframes — nothing else is narrowed.
+> To resume the full all-TF sweep later: set `TFS=("${TFS_ALL[@]}")` in remote_wsi.sh and restore per-TF WORKERS.
+
+
+
 Post-`wsh4` edits that change what a fresh optimizer run should search. The deployed champion (`wsh4`,
 4h decision frame / 1-min indicators) is **shared-SL/TP, all-indicators-on**; these notes widen the space.
 
