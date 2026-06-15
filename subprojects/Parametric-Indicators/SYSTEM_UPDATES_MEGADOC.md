@@ -239,5 +239,7 @@ engine/UI → joint `wsh5` (4h pilot → all TF) → fitted policy → remove AT
   `optimize/server/INCIDENT_ssh_connection_reset.md`.
 - **Adaptive/derived SL/TP (D):** `META_STAGE_adaptive_sltp.md` (current-stage map), `ACTION_PLAN_derived_sltp.md`,
   `REVIEW_atr_sizing_contradiction.md`, `COUNCIL_RULING_atr_sizing.md`, `COUNCIL_RULING_reoptimization.md`,
-  `optimize/sub/STUDY_sub_optimizer_*.md`, `optimize/sub/STUDY_relative_feasibility.md` (Stage 0).
+  `optimize/sub/STUDY_sub_optimizer_*.md`, `optimize/sub/STUDY_relative_feasibility.md` (Stage 0),
+  `DECISION_derived_sltp_options.md` (+ `_BABY`), `RESEARCH_fixed_vs_dynamic_sltp.md` (verified internal+external
+  evidence; + `_BABY`).
 - **This file** is the top-level index over all of them.
