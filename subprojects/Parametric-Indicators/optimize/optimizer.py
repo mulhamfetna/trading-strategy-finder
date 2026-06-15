@@ -247,9 +247,12 @@ def main() -> int:
     ap.add_argument("--study-prefix", default="wsh3",
                     help="study name prefix (use a fresh one, e.g. wsh4, for a new regime so it "
                          "doesn't mix with prior trials)")
+    ap.add_argument("--split-sltp", action="store_true",
+                    help="search SEPARATE long vs short SL/TP (Q3/E2). Off ⇒ shared (wsh4 behaviour). "
+                         "Use for the wsh5 run to let longs/shorts get their own stops/targets.")
     a = ap.parse_args()
     run(a.timeframe, n_trials=a.trials, folds=a.folds, min_trades=a.min_trades,
-        ind_1min=a.ind_1min, study_prefix=a.study_prefix)
+        ind_1min=a.ind_1min, study_prefix=a.study_prefix, split_sltp=a.split_sltp)
     return 0
 
 

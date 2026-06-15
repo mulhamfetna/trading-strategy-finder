@@ -153,3 +153,13 @@ def test_cisd_close_through_prior_leg_open():
     c2 = np.array([9.8, 9.6, 9.4, 9.9, 10.3])
     out2 = smc.cisd(o2, c2)
     assert out2[4] == 1 and (out2[:4] == 0).all()
+
+
+def test_new_smc_indicators_registered_and_build():
+    """Q6: ifvg / breaker / cisd are wired as vote-source indicators (optimizer-searchable)."""
+    from indicators import library
+    for key in ("ifvg", "breaker", "cisd"):
+        assert key in library.REGISTRY, f"{key} not registered"
+        assert key in library.SCHEMA, f"{key} missing from SCHEMA"
+        ind = library.build(key)
+        assert ind.key == key

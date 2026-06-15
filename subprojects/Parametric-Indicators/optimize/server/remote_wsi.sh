@@ -22,8 +22,9 @@ LOCAL_RESULTS="$_HERE/../results"
 LOCAL_LOGS="$_HERE/server_logs"
 LOCAL_REPORTS="$_HERE/../reports"
 TFS=(4h 2h 1h 15m 5m 2m)                              # 1-minute TIMEFRAME excluded from the sweep
-PREFIX="wsh4"                                          # study prefix for the 1-min-indicators regime
-IND_ARGS="--ind-1min --study-prefix $PREFIX"          # indicators read the 1-minute frame
+PREFIX="${WSH_PREFIX:-wsh4}"                           # study prefix; override e.g. WSH_PREFIX=wsh5 for a fresh regime
+SPLIT_ARG="${WSH_SPLIT:+--split-sltp}"                 # set WSH_SPLIT=1 to search SEPARATE long/short SL/TP (Q3/E2)
+IND_ARGS="--ind-1min --study-prefix $PREFIX $SPLIT_ARG" # indicators read the 1-minute frame
 
 SSH_OPTS=(-p "$SRV_PORT" -i "$SRV_KEY" -o IdentitiesOnly=yes -o BatchMode=yes \
           -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 \

@@ -264,10 +264,57 @@ class FVGConfirm(StanceIndicator):
         return int(self.config.params.get("lookback", 3))
 
 
+class IFVGConfirm(StanceIndicator):
+    """Inverse FVG (Q6): an FVG that price closed through inverts to an opposing S/R zone; +1 within a live
+    bullish IFVG, -1 within a bearish one. Stateful zone detector ⇒ supports the sampled-bar (signal_at) path."""
+    key = "ifvg"
+    _supports_signal_at = True
+
+    def stance(self, ctx, signal_at=None):
+        return smc.ifvg(ctx.high, ctx.low, ctx.close, signal_at=signal_at)
+
+    def directions(self, ctx, signal_at=None):
+        return votes.stance_directions(self.stance(ctx, signal_at=signal_at))
+
+    def warmup_bars(self):
+        return 3                              # FVG needs 3 candles before it can form/invert
+
+
+class BreakerBlock(StanceIndicator):
+    """Breaker block (Q6): an order block price closed beyond flips role/direction into an entry zone; +1 within
+    a live bullish breaker, -1 within a bearish one. Stateful ⇒ supports the sampled-bar (signal_at) path."""
+    key = "breaker"
+    _supports_signal_at = True
+
+    def stance(self, ctx, signal_at=None):
+        return smc.breaker_blocks(ctx.open, ctx.high, ctx.low, ctx.close,
+                                  int(self.config.params.get("swing_l", 2)), signal_at=signal_at)
+
+    def directions(self, ctx, signal_at=None):
+        return votes.stance_directions(self.stance(ctx, signal_at=signal_at))
+
+    def warmup_bars(self):
+        return int(self.config.params.get("swing_l", 2))
+
+    def warmup_deps(self):
+        return f"confirmed swings (l={int(self.config.params.get('swing_l', 2))})"
+
+
+class CISDConfirm(StanceIndicator):
+    """CISD (Q6): standard Change-In-State-of-Delivery — +1 on a close back through the prior bearish leg's open
+    (bullish shift), -1 on a close through the prior bullish leg's open (bearish shift)."""
+    key = "cisd"
+    def stance(self, ctx):
+        return smc.cisd(ctx.open, ctx.close)
+
+    def warmup_bars(self):
+        return 1
+
+
 REGISTRY = {c.key: c for c in (
     EMATrend, SMATrend, MACD, VWAPTrend, KeltnerTrend, OBVTrend, CCIBreakout,
     RSIZone, StochasticZone, MFIZone, BollingerVeto, ADXVeto,
-    StructureTrend, OrderBlock, FVGConfirm,
+    StructureTrend, OrderBlock, FVGConfirm, IFVGConfirm, BreakerBlock, CISDConfirm,
 )}
 
 
@@ -324,6 +371,10 @@ SCHEMA = {
                     "params": [{"name": "swing_l", "default": 2, "min": 1, "max": 20, "step": 1}]},
     "fvg":        {"label": "Fair value gap (SMC)", "mode": "both",
                    "params": [{"name": "lookback", "default": 3, "min": 1, "max": 50, "step": 1}]},
+    "ifvg":       {"label": "Inverse FVG (SMC)", "mode": "both", "params": []},
+    "breaker":    {"label": "Breaker block (SMC)", "mode": "both",
+                   "params": [{"name": "swing_l", "default": 2, "min": 1, "max": 20, "step": 1}]},
+    "cisd":       {"label": "CISD — delivery shift (SMC)", "mode": "both", "params": []},
 }
 MODES = ("confirm", "veto", "both")
 RETRACE_UNITS = ("atr_mult", "points")
