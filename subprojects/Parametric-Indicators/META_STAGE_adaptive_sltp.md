@@ -37,8 +37,9 @@ and we are **starting Stage 0 (feasibility)**.
   **return/DD not raw PnL**, fresh study prefix `wsh5`, pre-registered adopt rule (must OOS-dominate fixed).
 
 ## 4. The plan & where we are on it (`ACTION_PLAN_derived_sltp.md`)
-- **Stage 0 — Feasibility (offline, cheap) ← STARTING NOW.** Does `best-SL/TP ÷ driver` stay stable across
-  the 25 months (per driver)? GO/NO-GO before any GPU.
+- **Stage 0 — Feasibility = NO-GO** (`STUDY_relative_feasibility.md`) + **fixed-window/probabilistic re-test =
+  NO-GO** (`STUDY_fixed_window_sltp_mapping.md`): the best SL/TP is not causally predictable from price/vol state
+  beyond the fixed value (the one strong signal was look-ahead; collapses when lagged). Avenue closed on evidence.
 - Stage 1 — engine `sltp_mode='relative'` + Manual/Auto UI (two sub-boxes, disable inactive).
 - Stage 2 — joint `wsh5` NSGA-III walk-forward (4h pilot → all TF); pre-registered adopt rule.
 - Stage 3 — swap constant `k` → fitted `SizingPolicy` (Approach B).

@@ -55,3 +55,9 @@ expecting a robustness win** — the premise (absolute decays, ratio is stable) 
 4. **Pivot the goal** — address staleness operationally (scheduled re-opt cadence) rather than structurally.
 
 **The fixed champion remains the deployed default. No engine change was made. No GPU was spent.**
+
+> **Follow-up (2026-06-15):** re-tested on **FIXED non-overlapping quarters** + a **probability-distribution
+> (near-best band)** framing + multi/single-feature maps + a **causal lagged** test — see
+> `STUDY_fixed_window_sltp_mapping.md`. Same conclusion: fixed windows don't reduce the noise; the one strong
+> signal (best-SL vs price-change, r −0.81) is **look-ahead** and collapses to negative OOS skill when lagged.
+> No causally-predictable, error-margin-shrinking mapping exists in this data.
