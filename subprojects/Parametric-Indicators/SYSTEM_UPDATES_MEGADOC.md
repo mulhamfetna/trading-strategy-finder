@@ -160,7 +160,14 @@ result onto fixed (172k→144k≈142k).
 - **R2** — `atr_period` default keyed to source (4h→14, 1m→240); unit surfaced in UI.
 - **R3** — default clip band → **shrink-only 0.33–1.05**; warning when expansion (>1.05) is selected.
 
-### 4D.5 Next: derived / self-recalibrating SL/TP (`ACTION_PLAN_derived_sltp.md`, approved)
+### 4D.6 REMOVED (2026-06-15): the SL/TP sizing mode (ATR multiplier)
+With the dynamic/derived avenue closed (4D.2–4D.4 + the fixed-window study), the ATR-multiplier **sizing mode**
+was removed from the dashboard UI and `strategy.py` — SL/TP are always FIXED now. Golden byte-match still MATCH
+on all 6 TFs (fixed mode provably unchanged). The engine's neutral `sl_tp_mult` hook is KEPT for the archived
+research scripts (`optimize/sub/stage2.py`), which the dashboard never triggers. Full change list:
+`REMOVAL_sltp_sizing_mode.md`.
+
+### 4D.5 Earlier plan: derived / self-recalibrating SL/TP (`ACTION_PLAN_derived_sltp.md`) — NOT adopted (closed)
 Replace stale *absolute* SL/TP with a **ratio to a live driver** (`SL=k·D_t`) so nothing decays — Manual + Auto
 modes, Approach A (formula) spine + Approach B (fitted policy) seam, staged: **Stage 0 feasibility** →
 engine/UI → joint `wsh5` (4h pilot → all TF) → fitted policy → remove ATR mode. See `META_STAGE_adaptive_sltp.md`.

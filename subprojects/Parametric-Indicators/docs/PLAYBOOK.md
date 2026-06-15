@@ -33,11 +33,11 @@ Decisions on the **decision timeframe** (default 4h); exits walk the **1-minute*
 (`+ - * / ( )`), e.g. `149.8*1.1`, `(167.1+175)/2` — evaluated on blur / Enter / before Run; invalid → red
 border (no silent change). See `FEATURE_inline_math_inputs.md`.
 
-**SL/TP sizing mode** (`sltp_mode`): `fixed` (default — the `sl_soft`/`sl_hard`/`tp` point values above;
-**byte-identical to golden**) · `atr` (per-bar multiplier `clip(atr_mult·ATR/expanding-mean-ATR, lo, hi)`
-scaling the fixed values; causal ref, default band shrink-only 0.33–1.05 — **exploratory**, see
-`COUNCIL_RULING_atr_sizing.md`). A **derived/self-recalibrating** mode (`SL=k·driver`, no manual base) is
-planned per `ACTION_PLAN_derived_sltp.md` and will replace `atr` once validated. **Deployed default = fixed.**
+**SL/TP sizing:** always **FIXED** point values (`sl_soft`/`sl_hard`/`tp`). The dynamic "sizing mode"
+(ATR-multiplier) was **removed 2026-06-15** after the derived/dynamic-SL/TP avenue was studied and closed
+(`STUDY_relative_feasibility.md`, `STUDY_fixed_window_sltp_mapping.md`, `COUNCIL_RULING_atr_sizing.md`); see
+`REMOVAL_sltp_sizing_mode.md`. (The engine keeps a neutral `sl_tp_mult` hook for archived research scripts
+only; the dashboard never sets it.)
 
 **Confirmation layer (WS-I):**
 - **K** — minimum # of active confirms required (error if `K > #enabled confirm-capable`).

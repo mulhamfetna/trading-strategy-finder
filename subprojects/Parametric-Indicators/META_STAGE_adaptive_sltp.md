@@ -5,6 +5,10 @@ exists, what was decided, what's next. Points to the detailed artifacts; does no
 
 ---
 
+> **CLOSED (2026-06-15):** the ATR-multiplier **sizing mode was removed** from the dashboard + `strategy.py`
+> (golden byte-match still MATCH; engine `sl_tp_mult` hook kept for archived research only). SL/TP are FIXED.
+> See `REMOVAL_sltp_sizing_mode.md`. This whole workstream is now an archived record.
+
 ## 1. One-paragraph state
 We added an **ATR-multiplier SL/TP mode** to the backtester, discovered it appeared to "beat" the fixed
 champion, and ran a deep investigation + two expert councils that established: the apparent gain was a
