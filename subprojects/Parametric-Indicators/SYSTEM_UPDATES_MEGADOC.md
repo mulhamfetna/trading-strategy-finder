@@ -224,6 +224,10 @@ engine/UI → joint `wsh5` (4h pilot → all TF) → fitted policy → remove AT
   Stage 2 is the `wsh5` joint walk-forward. See `ACTION_PLAN_derived_sltp.md` / `META_STAGE_adaptive_sltp.md`.
 - **Fresh optimizer run on updated data** — new `wsh5` prefix on Postgres (sequence in §4.3). Not started by design.
 - **Optional Axis-A leftovers** (A3, `market_structure`) — held (low ROI). **Tier 5** (multi-node) — deferred.
+- **Optimizer search-space enhancement (candidate):** add each indicator's **mode** (confirm/veto/both) to the
+  Optuna search (`_suggest_indicators`) — today mode is fixed to the schema default; everything else about the
+  confirmation layer (enable, own params, K) is already searched. Widens the space → mind trial-count/overfit
+  limits. See `DIAGRAM_optimizer_io.md §4d`.
 
 ---
 
@@ -242,4 +246,7 @@ engine/UI → joint `wsh5` (4h pilot → all TF) → fitted policy → remove AT
   `optimize/sub/STUDY_sub_optimizer_*.md`, `optimize/sub/STUDY_relative_feasibility.md` (Stage 0),
   `DECISION_derived_sltp_options.md` (+ `_BABY`), `RESEARCH_fixed_vs_dynamic_sltp.md` (verified internal+external
   evidence; + `_BABY`).
+- **Optimizer I/O map:** `DIAGRAM_optimizer_io.md` (neural-net-style diagram — search-space inputs, the per-bar
+  decision wheel incl. the confirm/veto layer, the 3-objective+constraint scoring, NSGA-III → champion;
+  confirms indicator OWN params ARE searched and the confirmation layer IS wired in; only indicator *mode* is not).
 - **This file** is the top-level index over all of them.
