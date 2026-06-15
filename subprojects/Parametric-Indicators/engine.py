@@ -216,6 +216,7 @@ class SimpleStrategy:
         df_1min: pd.DataFrame,
         box_df_indexed: pd.DataFrame,
         sl_tp_mult: Optional[np.ndarray] = None,
+        tp_mult: Optional[np.ndarray] = None,
         entry_gate: Optional[np.ndarray] = None,
         entry_resolver=None,
         veto_mask: Optional[np.ndarray] = None,
@@ -410,12 +411,19 @@ class SimpleStrategy:
                 if flip and signal in ('long', 'short'):
                     signal = 'short' if signal == 'long' else 'long'
 
-                # ADAPTIVE-CLONE: per-bar SL/TP multiplier (1.0 => original).
+                # ADAPTIVE-CLONE: per-bar SL/TP multiplier (1.0 => original; scales ALL four lines).
                 _m = 1.0
                 if sl_tp_mult is not None and 0 <= idx < len(sl_tp_mult):
                     _mv = float(sl_tp_mult[idx])
                     if np.isfinite(_mv) and _mv > 0:
                         _m = _mv
+                # per-bar TP-ONLY multiplier (1.0 => original; scales only the TP lines, SL untouched).
+                # Lets the regime study move TP while pinning SL (Q3b). Default None ⇒ _tm=1 ⇒ identical.
+                _tm = 1.0
+                if tp_mult is not None and 0 <= idx < len(tp_mult):
+                    _tv = float(tp_mult[idx])
+                    if np.isfinite(_tv) and _tv > 0:
+                        _tm = _tv
 
                 # gate (vol etc.) matches the original: only blocks when set, in-range, and False.
                 gated = (entry_gate is None) or not (0 <= idx < len(entry_gate)) or bool(entry_gate[idx])
@@ -485,14 +493,14 @@ class SimpleStrategy:
                     ss, sh, ts, th = self._long_pts
                     sl_soft_line = entry_px - ss * _m
                     sl_hard_line = entry_px - sh * _m
-                    tp_soft_line = entry_px + ts * _m
-                    tp_hard_line = entry_px + th * _m
+                    tp_soft_line = entry_px + ts * _m * _tm
+                    tp_hard_line = entry_px + th * _m * _tm
                 else:
                     ss, sh, ts, th = self._short_pts
                     sl_soft_line = entry_px + ss * _m
                     sl_hard_line = entry_px + sh * _m
-                    tp_soft_line = entry_px - ts * _m
-                    tp_hard_line = entry_px - th * _m
+                    tp_soft_line = entry_px - ts * _m * _tm
+                    tp_hard_line = entry_px - th * _m * _tm
 
                 open_trade = {
                     'entry_idx':    idx,                       # the new bar

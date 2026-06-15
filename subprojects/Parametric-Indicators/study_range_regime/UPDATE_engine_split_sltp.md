@@ -50,6 +50,13 @@ in `__init__`, and restore the line branch to `self.params.*_points`. No other f
 
 ---
 
+## E1b — per-bar TP-only multiplier `tp_mult` (study enabler) — DONE & GATED ✅
+`SimpleStrategy.backtest(..., tp_mult=None)`: a per-decision-bar array that scales ONLY the TP lines
+(`tp_soft_line`/`tp_hard_line`), leaving SL untouched — so the regime study can move TP while pinning SL (Q3b
+"pinned-SL"); the existing `sl_tp_mult` (scales all four) covers "both-dynamic". Default `None` ⇒ `_tm=1` ⇒
+byte-identical. Applied as `tp_line = entry ± pts · _m · _tm`. **Re-verified: golden 6/6 MATCH + all split
+tests pass.** Revert: drop the `tp_mult` param, the `_tm` block, and the two `* _tm` on the TP lines.
+
 ## E2 — PENDING (fast path + optimizer)
 - `optimize/fast_engine.py`: make the vectorized SL/TP line computation per-direction (same fall-back rule).
 - `optimize/core.backtest_metrics`: pass split params through.
