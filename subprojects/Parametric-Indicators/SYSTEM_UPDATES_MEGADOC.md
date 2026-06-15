@@ -139,7 +139,8 @@ thirty writers* — not the math, data volume, or memory.
 - **ATR-multiplier SL/TP mode** in the backtester (`sltp_mode='atr'`, additive; `'fixed'` byte-identical to
   golden). Per-decision-bar multiplier scales the base SL/TP; 4h or 1-min ATR source; multiplier chart.
 - **UX:** Reset/profile-load no longer leaves stale ATR fields; settings panel is drag-resizable; input boxes
-  grow to show full numbers.
+  grow to show full numbers; **value boxes accept inline math** (`+ - * / ( )`, evaluated on blur/Enter/Run,
+  sandboxed; invalid → red border) — see `FEATURE_inline_math_inputs.md`.
 
 ### 4D.2 The contradiction + investigation (`REVIEW_atr_sizing_contradiction.md`)
 Dashboard ATR appeared to **beat** fixed (+21% on 1-min) while the prior study said ATR **shrinks** profit.

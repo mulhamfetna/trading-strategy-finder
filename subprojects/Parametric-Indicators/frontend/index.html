@@ -44,6 +44,7 @@
      show — no clipping/wrapping. min-width keeps ~6 digits visible even at the narrowest panel width. */
   .fld input, .fld select { background:var(--tile); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:6px 8px; font-size:13px; flex:1 1 110px; min-width:96px; max-width:240px; width:auto; text-align:right; }
   .hint { font-size:10px; color:var(--muted); margin-top:-2px; }
+  input.matherr { border-color:var(--red) !important; }   /* invalid inline-math expression */
   .resetlink { font-size:11px; color:var(--blue); cursor:pointer; background:none; border:0; padding:0; }
   /* metric cards */
   .cards { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; }
@@ -302,6 +303,36 @@ function render(D){
   document.getElementById('trades').innerHTML=h+'</tbody>'; setForm(P); markClean();
 }
 const $=id=>document.getElementById(id);
+// ---- inline math in value boxes: type an expression like 149.8*1.1 or (150+20)/2 ----
+// number inputs reject operators, so value boxes are converted to text+`.mathnum`; the expression is
+// evaluated (safely — only digits . ( ) + - * /) on blur / Enter, and again before every Run.
+function evalMath(raw){
+  const s=String(raw).trim();
+  if(s==='') return {ok:true, val:''};                       // empty allowed (optional fields)
+  if(/^[0-9.eE\s()+\-*/]+$/.test(s)){
+    try{ const v=Function('"use strict";return ('+s+')')();
+      if(typeof v==='number' && isFinite(v)) return {ok:true, val:v}; }catch(e){}
+  }
+  return {ok:false};
+}
+function commitField(el){
+  const r=evalMath(el.value);
+  el.classList.toggle('matherr', !r.ok);
+  if(r.ok && r.val!=='' && String(r.val)!==el.value.trim()){
+    const n=+r.val; el.value=(Number.isInteger(n)?n:+n.toFixed(6));   // tidy float noise
+  }
+}
+function commitMath(){ document.querySelectorAll('input.mathnum').forEach(commitField); }
+function mathify(root){
+  (root||document).querySelectorAll('input[type=number]').forEach(el=>{
+    el.dataset.step=el.getAttribute('step')||''; el.dataset.min=el.getAttribute('min')||'';
+    el.dataset.max=el.getAttribute('max')||''; el.type='text';
+    el.setAttribute('inputmode','text'); el.setAttribute('autocomplete','off');
+    el.classList.add('mathnum');
+  });
+}
+document.addEventListener('focusout', e=>{ const t=e.target; if(t.classList&&t.classList.contains('mathnum')) commitField(t); });
+document.addEventListener('keydown', e=>{ const t=e.target; if(e.key==='Enter'&&t.classList&&t.classList.contains('mathnum')) commitField(t); });
 function setForm(P){ if(P.timeframe&&$('timeframe').querySelector(`option[value="${P.timeframe}"]`))$('timeframe').value=P.timeframe;
   $('window').value=P.window||'full'; $('sl_soft').value=P.sl_soft; $('sl_hard').value=P.sl_hard; $('tp').value=P.tp;
   $('gate_pct').value=P.gate_pct==null?0:P.gate_pct; $('dd_limit').value=P.dd_limit==null?0:P.dd_limit; $('cooldown').value=P.cooldown; $('flip').value=String(!!P.flip); $('veto_as_flip').value=String(!!P.veto_as_flip);
@@ -331,7 +362,7 @@ function syncAtrPeriod(){ const p=+$('atr_period').value;
   else if($('atr_source').value==='4h' && p===240) $('atr_period').value=14; }
 // NOTE: every value is read straight from the form — nothing is hardcoded or silently defaulted here.
 // Validation (and any error) happens server-side and is surfaced verbatim to the #err banner.
-function params(){return {timeframe:$('timeframe').value||'4h',window:$('window').value,sl_soft:+$('sl_soft').value,sl_hard:+$('sl_hard').value,tp:+$('tp').value,
+function params(){ commitMath(); return {timeframe:$('timeframe').value||'4h',window:$('window').value,sl_soft:+$('sl_soft').value,sl_hard:+$('sl_hard').value,tp:+$('tp').value,
   gate_pct:+$('gate_pct').value,dd_limit:+$('dd_limit').value,cooldown:+$('cooldown').value,flip:$('flip').value==='true',veto_as_flip:$('veto_as_flip').value==='true',
   dd_cap:$('dd_cap').value===''?null:+$('dd_cap').value, pv:$('pv').value===''?null:+$('pv').value,
   indicators:indicatorSpecs(), k:+$('k_rule').value||1,
@@ -364,6 +395,7 @@ function buildIndicatorPanel(sch){
   const g={}; sch.gen_params.forEach(p=>g[p.name]=p.default);
   $('gen_swing_l').value=g.swing_l; $('gen_golf_n').value=g.golf_n;
   host.querySelectorAll('input,select').forEach(el=>el.addEventListener('input',markDirty));
+  mathify(host);                       // indicator param boxes also accept inline math
   panelBuilt=true;
 }
 function indicatorSpecs(){
@@ -392,6 +424,7 @@ let dirty=false;
 function markDirty(){dirty=true;const d=$('dirty');d.textContent='⚠ not run on these values — click Run Backtest';d.classList.add('stale');d.classList.remove('ok');$('run').classList.add('stale');}
 function markClean(){dirty=false;const d=$('dirty');d.textContent='✓ results match current settings';d.classList.add('ok');d.classList.remove('stale');$('run').classList.remove('stale');}
 document.querySelectorAll('aside input,aside select').forEach(el=>el.addEventListener('input',markDirty));
+mathify(document.querySelector('aside'));   // static value boxes accept inline math (operators + - * /)
 
 async function run(){
   $('run').disabled=true; $('run').textContent='Running...'; status('running backtest…'); showErr('');
