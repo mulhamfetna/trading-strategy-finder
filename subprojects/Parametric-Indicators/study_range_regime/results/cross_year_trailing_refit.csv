@@ -1,0 +1,7 @@
+year,scale_used,source,pnl,dd
+2024,1.0,no-prior(default),117,31215
+2025,0.5,best-of-2024,58062,8091
+2026,1.0,best-of-2025,28899,14082
+TOTAL_trailing,,,87078,31215
+TOTAL_fixed_1.0,,,142320,31215
+TOTAL_oracle,,,169769,13211

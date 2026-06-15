@@ -51,6 +51,16 @@ rescues 2024 (+$18k) but **over-sizes 2026** (widens stops when it should tighte
 $14k→$31k), roughly cancelling out. The big prize ($170k / $13k DD) is only reachable by the *oracle* scale —
 which volatility does not predict.
 
+## 3b. Trailing-refit also fails (scale doesn't persist year-to-year) — `cross_year_trailing_refit.csv`
+The realistic *causal* dynamic rule is "set this period's scale = the **prior** period's best." It LOSES badly:
+| | 2024 | 2025 | 2026 | TOTAL | max-DD |
+|---|---|---|---|---:|---:|
+| trailing-refit (prior-yr best) | 1.0× → $117 | 0.5× → $58,062 | 1.0× → $28,899 | **$87,078** | $31,215 |
+| fixed 1.0× | $117 | $113,304 | $28,899 | $142,320 | $31,215 |
+The optimal scale **flips** (2024=0.5, 2025=1.0), so carrying 2024's 0.5 into 2025 craters it ($58k vs $113k).
+So neither **volatility-linkage** (§2–3) nor **recency/persistence** (§3b) causally recovers the scale — the
+$170k oracle is hindsight-only.
+
 ## 4. Conclusion (answers + the real mechanism)
 - **The 2024 finding is real and important:** SL/TP scale must adapt across eras — the gap between fixed and
   per-year-optimal is **+$27k P/L and −58% max-DD**. This is the single biggest lever found.
