@@ -5,12 +5,15 @@ no look-ahead) drive a widen/shrink-TP rule; each grid cell's (widen W, shrink S
 (≤2025-06)** then scored on **TEST (2025-07…2026-05)** vs the fixed champion, via the exact engine + the
 champion's drawdown breaker. Evaluator: `regime_eval.py` → `results/regime_eval_ranked.csv`.
 
-> **TL;DR — promising, NOT yet proven.** On this single train/test split, **5 of 28 cells beat the fixed
-> champion on out-of-sample return/DD**, and the best one **OOS-dominates** it (more profit AND less drawdown):
-> **Quarterly regime · mean-reversion · both-dynamic (W2.0/S0.6)** → ret/DD **5.67 vs 4.17**, P/L **$75.8k vs
-> $67.6k**, maxDD **$13.4k vs $16.2k**, n=119. **But** this is the best of 28 cells on ONE OOS window (n≈120,
-> a single V-shaped regime) — the textbook selection/overfit trap the prior councils + research flagged. It is
-> a **signal worth a proper multi-fold validation**, not a deploy-ready edge.
+> **TL;DR — the multi-fold gate flipped the answer.** On a single split, the apparent winner was *Quarterly ·
+> mean-reversion · both-dynamic* (ret/DD 5.67 vs 4.17). But **multi-fold walk-forward (6 folds, 2024–2026)
+> REJECTED it — it beats fixed in only 2/6 folds** (one-window luck, exactly the selection trap we feared).
+> What **survived** is a *different, robust* rule: **trend-following · pinned-SL · widen-only (W1.25, S1.0) on
+> the monthly/quarterly regime — beats fixed in 6/6 (M) and 5/6 (Q) folds** (median ret/DD 1.31 vs 1.17). i.e.
+> *"when trading WITH the regime trend, let the winner run +25%; keep SL fixed; never shrink."* This is a
+> credible, modest edge — but note 2024–26 was largely trending (which structurally favors widen-on-trend), so
+> it needs other regimes/instruments + the `wsh5` joint test before deployment. **Fixed champion stays deployed.**
+> *(See §Multi-fold validation; this supersedes the single-split ranking below.)*
 
 ## Fixed baseline (parity-anchored; matches the prior sub-optimizer study exactly)
 TEST: P/L **$67,627**, maxDD **$16,204**, ret/DD **4.17**, n=122.
@@ -49,6 +52,25 @@ TEST: P/L **$67,627**, maxDD **$16,204**, ret/DD **4.17**, n=122.
 This is **materially better than the ATR study** (which collapsed to fixed-parity under honest conditions —
 here the top cell beats on BOTH P/L and DD OOS with causal features and frozen magnitudes), but one split is not
 proof.
+
+## Multi-fold validation (the gate) — `regime_validate.py` → `results/regime_validate_folds.csv`
+Each top-3 cell's FIXED config scored vs the fixed champion across **6 contiguous folds** spanning 2024-01…
+2026-05 (causal labels; a fold = a realistic live sub-period). "Beats" = higher fold ret/DD than fixed.
+
+| cell | folds beaten | median ret/DD (cell vs fixed) | verdict |
+|------|:---:|:---:|---|
+| Q · mean_rev · both · W2.0/S0.6 *(S3 single-split #1)* | **2 / 6** | 0.98 vs 1.17 | ❌ overfit — single-window luck |
+| **M · trend_follow · pinned · W1.25/S1.0** | **6 / 6** | **1.31 vs 1.17** | ✅ robust |
+| **Q · trend_follow · pinned · W1.25/S1.0** | **5 / 6** | 1.31 vs 1.17 | ✅ robust |
+
+Per-fold: the trend-following widen-only cells beat fixed in every fold except (Q) the early 2024 down-leg;
+they add P/L mostly while holding DD ≈ fixed (pinned SL). The mean-reversion/both-dynamic cell only wins in the
+two folds that resemble the original test window — confirming its single-split dominance was selection bias.
+
+**Revised answers:** **Q3a — for THIS data the robust direction is TREND-FOLLOWING, not mean-reversion**
+(the opposite of the initial hypothesis). **Q3b — pinned-SL (widen-only) is the robust, DD-safe mode.**
+**Q2b — month & quarter (not year).** **Caveat:** 2024–26 was largely trending; widen-TP-with-trend is
+structurally favored in trends, so the edge may be partly era-driven — needs more regimes/instruments.
 
 ## Recommended next step (the gate before adoption / wsh5)
 **Multi-fold walk-forward validation of the top ~3 cells** (rolling-origin OOS folds, not one slice), with a
