@@ -209,11 +209,24 @@ def validate_params(params):
     # / COUNCIL_RULING_atr_sizing.md). SL/TP are always FIXED point values now. The engine retains a neutral
     # `sl_tp_mult` hook (default None) ONLY for the archived research script optimize/sub/stage2.py; the
     # dashboard/backtester never sets it. See REMOVAL_sltp_sizing_mode.md.
+    # Optional SPLIT long/short SL/TP (Q3 / E2): a side's 3 values, each None ⇒ falls back to the shared
+    # sl_soft/sl_hard/tp ⇒ byte-identical (golden presets never set them). hard ≥ soft validated per side.
+    split = {}
+    for side in ("long", "short"):
+        ss = params.get(f"{side}_sl_soft"); sh = params.get(f"{side}_sl_hard"); st = params.get(f"{side}_tp")
+        for nm, v in ((f"{side}_sl_soft", ss), (f"{side}_sl_hard", sh), (f"{side}_tp", st)):
+            if v is not None and (not isinstance(v, (int, float)) or v <= 0):
+                raise ParamError(f"'{nm}' must be a number > 0 when set (got {v!r})")
+        if ss is not None and sh is not None and float(sh) < float(ss):
+            raise ParamError(f"{side}_sl_hard ({sh}) must be ≥ {side}_sl_soft ({ss})")
+        split[f"{side}_sl_soft"] = None if ss is None else float(ss)
+        split[f"{side}_sl_hard"] = None if sh is None else float(sh)
+        split[f"{side}_tp"] = None if st is None else float(st)
     return dict(sl_soft=sl_soft, sl_hard=sl_hard, tp=tp, gate_pct=gate_pct, dd_limit=dd_limit,
                 cooldown=int(cooldown), flip=bool(params["flip"]), window=params["window"],
                 timeframe=timeframe, dd_cap=dd_cap, pv=pv, indicators=list(specs), k=k, gen=gen,
                 retrace_amount=retrace_amount, retrace_unit=retrace_unit, wait_bars=wait_bars,
-                veto_as_flip=bool(params.get("veto_as_flip")))
+                veto_as_flip=bool(params.get("veto_as_flip")), **split)
 
 
 def build_payload(df4, df1, box, vf, n2025, params=None):
@@ -292,9 +305,18 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
                              "params": dict(i.config.params)})
             return rows
 
+    # Optional split long/short SL/TP (Q3/E2). Each None ⇒ engine falls back to the shared points ⇒
+    # byte-identical. Per-side tp maps to BOTH tp_soft and tp_hard (the fast path / champion use a single tp).
+    _sp_split = {}
+    for side in ("long", "short"):
+        if P[f"{side}_sl_soft"] is not None: _sp_split[f"{side}_sl_soft_points"] = P[f"{side}_sl_soft"]
+        if P[f"{side}_sl_hard"] is not None: _sp_split[f"{side}_sl_hard_points"] = P[f"{side}_sl_hard"]
+        if P[f"{side}_tp"] is not None:
+            _sp_split[f"{side}_tp_soft_points"] = P[f"{side}_tp"]
+            _sp_split[f"{side}_tp_hard_points"] = P[f"{side}_tp"]
     sp = SimpleStrategyParams(sl_soft_points=sl_soft, sl_hard_points=sl_hard, tp_soft_points=tp,
                               tp_hard_points=tp, data_path_4h="", data_path_1min="",
-                              box_data_path="", flip_entry_direction=flip)
+                              box_data_path="", flip_entry_direction=flip, **_sp_split)
     # Step B2 (Axis B): precompute the param-independent Stage-1 signal ONCE (vectorized) and feed it to
     # the engine so it does NOT recompute _stage1_candle_signal + box.loc per decision bar. Byte-identical
     # (optimize.signals.decision_signals ≡ engine._stage1_candle_signal — see tests/test_axisB_signal_equiv.py).

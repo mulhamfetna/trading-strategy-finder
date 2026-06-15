@@ -117,7 +117,12 @@ def _load_json(p: Path) -> dict:
 
 
 def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
-        seed: int = 1, ind_1min: bool = False, study_prefix: str = "wsh3") -> dict:
+        seed: int = 1, ind_1min: bool = False, study_prefix: str = "wsh3",
+        split_sltp: bool = False) -> dict:
+    # split_sltp (Q3 / E2): when True the optimizer searches SEPARATE long vs short SL/TP (long_*/short_*),
+    # widening the space per the user's point-5 goal. Default False ⇒ shared SL/TP ⇒ identical to prior runs.
+    # NOTE FOR THE NEXT FULL RUN (wsh5): launch with split_sltp=True to let longs and shorts get their own
+    # stops/targets; the deployed wsh4 champion used shared values (long==short).
     tf = TF.get(tf_name)
     caps = _load_json(_CAPS)
     bounds = _load_json(_BOUNDS)
@@ -146,6 +151,15 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         params = dict(sl_soft=sl_soft, sl_hard=sl_soft + delta, tp=tp, gate_pct=gate_pct,
                       dd_limit=dd_limit, cooldown=cooldown, flip=flip, window="full",
                       indicators=specs, k=k_rule, ind_1min=ind_1min)
+        if split_sltp:                                   # separate long vs short SL/TP (point 5)
+            l_ss = trial.suggest_float("long_sl_soft", float(b["sl_soft"][0]), float(b["sl_soft"][1]))
+            l_d = trial.suggest_float("long_sl_hard_delta", 0.0, float(b["sl_hard"][1]))
+            l_tp = trial.suggest_float("long_tp", float(b["tp"][0]), float(b["tp"][1]))
+            s_ss = trial.suggest_float("short_sl_soft", float(b["sl_soft"][0]), float(b["sl_soft"][1]))
+            s_d = trial.suggest_float("short_sl_hard_delta", 0.0, float(b["sl_hard"][1]))
+            s_tp = trial.suggest_float("short_tp", float(b["tp"][0]), float(b["tp"][1]))
+            params.update(long_sl_soft=l_ss, long_sl_hard=l_ss + l_d, long_tp=l_tp,
+                          short_sl_soft=s_ss, short_sl_hard=s_ss + s_d, short_tp=s_tp)
         r = score_walkforward(df_dec, df1, box, vf, params, tf.bar_td, k=folds,
                               min_trades=min_trades, sig_int=sig_int)
         if not r["valid"]:

@@ -95,3 +95,61 @@ def test_golf_engulfing_rejects_when_body_below_70pct_or_not_opposite():
     high2 = np.array([102, 106, 109.0]); low2 = np.array([98, 100, 98.0])
     g2 = smc.golf_candle(open2, high2, low2, close2, golf_n=2)
     assert g2[2] == 0  # prior not all the same opposite colour
+
+
+# ---------------------------------------------------------------------------
+# New structure detectors (LL/HL/HH/LH labels, IFVG, breaker, CISD) — task B.
+# ---------------------------------------------------------------------------
+
+def test_swing_labels_hh_hl_lh_ll():
+    # rising HH/HL then falling LH/LL (same series as structure_trend test), swing_l=1
+    close = np.array([10, 12, 11, 14, 13, 16, 15, 12, 13, 9, 10, 6], dtype=float)
+    kind, label, conf = smc.swing_labels(close, swing_l=1)
+    assert set(np.unique(kind)).issubset({-1, 0, 1})
+    # confirmed swing highs at 3,5 are higher than prior highs -> HH; 8,10 lower -> LH
+    assert label[3] == "HH" and label[5] == "HH"
+    assert label[8] == "LH" and label[10] == "LH"
+    # swing lows: 4 higher than prior low -> HL; 7,9 lower -> LL
+    assert label[4] == "HL" and label[7] == "LL" and label[9] == "LL"
+    # the first high (idx1) and first low (idx2) have no prior -> unlabeled
+    assert label[1] == "" and label[2] == ""
+    # confirmation is swing_l bars after the pivot
+    assert conf[3] == 3 + 1
+
+
+def test_ifvg_bullish_fvg_inverts_to_bearish_on_close_below():
+    # t2: low2=13 > high0=10 -> bullish FVG [10,13]; t4 closes 8.5 < 10 -> inverts to bearish IFVG;
+    # t5 trades back into [10,13] -> signal -1.
+    high = np.array([10, 12, 14, 13, 9, 11.0])
+    low = np.array([9, 11, 13, 12, 8, 10.0])
+    close = np.array([9.5, 11.5, 13.5, 12.5, 8.5, 10.5])
+    out = smc.ifvg(high, low, close)
+    assert set(np.unique(out)).issubset({-1, 0, 1})
+    assert out[5] == -1
+    assert (out[:5] == 0).all()
+
+
+def test_breaker_bearish_ob_flips_to_bullish_breaker_on_close_above():
+    # bearish OB (t3 body [11.0,12.4]) is broken UP at t7 (close 12.8 > 12.4) -> bullish breaker;
+    # t7/t8 overlap the zone -> +1.
+    o = np.array([12, 11.6, 11.2, 11.0, 11.8, 10.5, 11.4, 11.5, 12.0], dtype=float)
+    h = np.array([12.2, 11.8, 11.4, 12.6, 12.0, 11.0, 11.6, 12.9, 12.1], dtype=float)
+    l = np.array([11.4, 11.0, 10.8, 10.9, 10.0, 10.2, 11.0, 11.4, 11.2], dtype=float)
+    c = np.array([11.6, 11.2, 11.3, 12.4, 10.2, 10.8, 11.5, 12.8, 11.5], dtype=float)
+    br = smc.breaker_blocks(o, h, l, c, swing_l=1)
+    assert set(np.unique(br)).issubset({-1, 0, 1})
+    assert br[7] == 1 and br[8] == 1
+    assert (br[:7] == 0).all()
+
+
+def test_cisd_close_through_prior_leg_open():
+    # bullish leg opens at 10 (t0), runs green; t4 closes 9.8 < 10 -> bearish CISD (-1)
+    o = np.array([10, 10.2, 10.4, 10.6, 10.3])
+    c = np.array([10.2, 10.4, 10.6, 10.3, 9.8])
+    out = smc.cisd(o, c)
+    assert out[4] == -1 and (out[:4] == 0).all()
+    # mirror: bearish leg opens at 10 (t0); t4 closes 10.3 > 10 -> bullish CISD (+1)
+    o2 = np.array([10, 9.8, 9.6, 9.4, 9.9])
+    c2 = np.array([9.8, 9.6, 9.4, 9.9, 10.3])
+    out2 = smc.cisd(o2, c2)
+    assert out2[4] == 1 and (out2[:4] == 0).all()

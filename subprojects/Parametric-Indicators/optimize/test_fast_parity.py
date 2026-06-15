@@ -59,6 +59,32 @@ def main(tf: str = "4h") -> int:
         ok_all &= ok
         print(f"{name:24} engine={len(E):4} fast={len(F):4} mismatch={diffs:3}  {'OK' if ok else 'FAIL'}")
 
+    # T4 — split long/short SL/TP parity: deliberately DIFFERENT long vs short points must match the
+    # exact engine trade-for-trade (Q3 / E2). longs 30/40/60, shorts 50/70/90, gate 60, no flip.
+    for name, L, S, gp, flip in [("split L30/40/60 S50/70/90 g60", (30, 40, 60), (50, 70, 90), 60, False),
+                                 ("split flip L20/28/50 S40/55/80 g0", (20, 28, 50), (40, 55, 80), 0, True)]:
+        l_ss, l_sh, l_tp = L; s_ss, s_sh, s_tp = S
+        sp = SimpleStrategyParams(
+            sl_soft_points=l_ss, sl_hard_points=l_sh, tp_soft_points=l_tp, tp_hard_points=l_tp,
+            long_sl_soft_points=l_ss, long_sl_hard_points=l_sh, long_tp_soft_points=l_tp, long_tp_hard_points=l_tp,
+            short_sl_soft_points=s_ss, short_sl_hard_points=s_sh, short_tp_soft_points=s_tp, short_tp_hard_points=s_tp,
+            data_path_4h="", data_path_1min="", box_data_path="", flip_entry_direction=flip)
+        E0, _ = SimpleStrategy(sp).backtest(df, df1, box, entry_gate=gate(gp))
+        E = [t for t in E0 if t.get("exit_reason") not in (None, "OPEN")]
+        F = fast_backtest(DD, DC, sig_int, gate(gp), MD, MH, ML, MC, l_ss, l_sh, l_tp, flip,
+                          long_sl_soft=l_ss, long_sl_hard=l_sh, long_tp=l_tp,
+                          short_sl_soft=s_ss, short_sl_hard=s_sh, short_tp=s_tp)
+        diffs = sum(
+            1 for e, f in zip(E, F)
+            if pd.Timestamp(e["entry_time"]) != pd.Timestamp(f["entry_time"])
+            or e["direction"] != f["direction"] or e["exit_reason"] != f["exit_reason"]
+            or pd.Timestamp(e["exit_time"]) != pd.Timestamp(f["exit_time"])
+            or abs(e["pnl_points"] - f["pnl_points"]) > 1e-6
+        )
+        ok = len(E) == len(F) and diffs == 0
+        ok_all &= ok
+        print(f"{name:24} engine={len(E):4} fast={len(F):4} mismatch={diffs:3}  {'OK' if ok else 'FAIL'}")
+
     print("FAST-PARITY OK ✓" if ok_all else "FAST-PARITY FAILED ✗")
     return 0 if ok_all else 1
 

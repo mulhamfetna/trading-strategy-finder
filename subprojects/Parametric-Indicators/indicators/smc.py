@@ -179,6 +179,190 @@ def order_blocks(open_, high, low, close, swing_l: int = 2, signal_at=None):
     return out
 
 
+def swing_labels(close: np.ndarray, swing_l: int = 2):
+    """Label every confirmed close-based swing pivot as HH / LH (highs) or HL / LL (lows).
+
+    Built on `market_structure` (a pivot at index p is only knowable swing_l bars later). Each swing HIGH
+    is compared to the PRIOR swing high → 'HH' if higher else 'LH'; each swing LOW to the prior swing low →
+    'HL' if higher else 'LL'. The first high/low has no prior → '' (the study marks it FIRST). Causal: the
+    comparison at pivot p uses only earlier pivots.
+
+    Returns (kind, label, confirmed_at):
+      kind        int8  +1 at a swing-high bar, -1 at a swing-low bar, 0 otherwise
+      label       object  'HH'|'LH'|'HL'|'LL'|'' (non-empty only at pivot bars)
+      confirmed_at int   p + swing_l (the bar at which the pivot becomes knowable), -1 off-pivot
+    """
+    c = np.asarray(close, float)
+    n = len(c)
+    sh, sl = market_structure(c, swing_l)
+    L = int(swing_l)
+    kind = np.zeros(n, np.int8)
+    label = np.full(n, "", dtype=object)
+    confirmed_at = np.full(n, -1, dtype=int)
+    last_high = last_low = None
+    for p in range(n):                                   # pivots in chronological (index) order
+        if sh[p]:
+            kind[p] = 1
+            label[p] = ("HH" if c[p] > last_high else "LH") if last_high is not None else ""
+            last_high = c[p]; confirmed_at[p] = p + L
+        elif sl[p]:
+            kind[p] = -1
+            label[p] = ("HL" if c[p] > last_low else "LL") if last_low is not None else ""
+            last_low = c[p]; confirmed_at[p] = p + L
+    return kind, label, confirmed_at
+
+
+def ifvg(high: np.ndarray, low: np.ndarray, close: np.ndarray, signal_at=None) -> np.ndarray:
+    """Inverse Fair Value Gap (causal). An FVG that price CLOSES through inverts and becomes an opposing
+    S/R zone (the 'burned-into' flip):
+      • bullish FVG [zlo,zhi] (support) → bearish IFVG (resistance) once a close < zlo;
+      • bearish FVG [zlo,zhi] (resistance) → bullish IFVG (support) once a close > zhi.
+    Per-bar signal int8: +1 while the current bar overlaps a live BULLISH IFVG (support), -1 a live BEARISH
+    IFVG (resistance), else 0. A live IFVG dies when price closes back through it (bull IFVG: close < zlo;
+    bear IFVG: close > zhi). Trigger = a CLOSE (locked decision A4). signal_at as in `order_blocks`."""
+    h = np.asarray(high, float); l = np.asarray(low, float); c = np.asarray(close, float)
+    n = len(c)
+    out = np.zeros(n, np.int8)
+    want = None
+    if signal_at is not None:
+        want = np.zeros(n, bool); idx = np.asarray(signal_at, dtype=np.intp)
+        want[idx[(idx >= 0) & (idx < n)]] = True
+    fvgs = []                                            # live, un-inverted FVGs: [zlo, zhi, dir]
+    ifvgs = []                                           # live inverse zones: [zlo, zhi, dir(flipped)]
+    for t in range(n):
+        # 1) form a new FVG at the 3rd candle (uses t, t-2 only)
+        if t >= 2:
+            if l[t] > h[t - 2]:
+                fvgs.append([h[t - 2], l[t], 1])
+            elif h[t] < l[t - 2]:
+                fvgs.append([h[t], l[t - 2], -1])
+        # 2) invert FVGs that this close burned through; drop them from the live-FVG list
+        keep = []
+        for zlo, zhi, d in fvgs:
+            if d == 1 and c[t] < zlo:
+                ifvgs.append([zlo, zhi, -1])             # bullish FVG failed → bearish IFVG
+            elif d == -1 and c[t] > zhi:
+                ifvgs.append([zlo, zhi, 1])              # bearish FVG failed → bullish IFVG
+            else:
+                keep.append([zlo, zhi, d])
+        fvgs = keep
+        # 3) per-bar signal from live IFVGs (overlap with current bar); bull preferred
+        if want is None or want[t]:
+            s = 0
+            for zlo, zhi, d in ifvgs:
+                if l[t] <= zhi and h[t] >= zlo:
+                    s = d;
+                    if d == 1:
+                        break
+            out[t] = s
+        # 4) IFVG death: price closes back through it
+        ifvgs = [[zlo, zhi, d] for zlo, zhi, d in ifvgs
+                 if not ((d == 1 and c[t] < zlo) or (d == -1 and c[t] > zhi))]
+    return out
+
+
+def breaker_blocks(open_, high, low, close, swing_l: int = 2, signal_at=None) -> np.ndarray:
+    """Tradeable BREAKER blocks (causal). An order block that price CLOSES beyond is retired as an OB and
+    flips role/colour into a breaker, then acts as an ENTRY zone in the FLIPPED direction (locked A9):
+      • bullish OB (support) broken by a close BELOW it → BEARISH breaker (resistance / short zone);
+      • bearish OB (resistance) broken by a close ABOVE it → BULLISH breaker (support / long zone).
+    (Matches the user's colour-flip: top OB red→top breaker green is the bearish-OB→bullish-breaker case.)
+    Per-bar signal int8: +1 within a live bullish breaker, -1 within a live bearish breaker, else 0. A
+    breaker dies when price closes back through it. OB geometry = body (open,close), as in `order_blocks`."""
+    o = np.asarray(open_, float); h = np.asarray(high, float)
+    l = np.asarray(low, float); c = np.asarray(close, float)
+    n = len(c)
+    sh, sl = market_structure(c, swing_l)
+    L = int(swing_l)
+    out = np.zeros(n, np.int8)
+    want = None
+    if signal_at is not None:
+        want = np.zeros(n, bool); idx = np.asarray(signal_at, dtype=np.intp)
+        want[idx[(idx >= 0) & (idx < n)]] = True
+    swh = swl = None
+    last_down = last_up = None
+    bull_ob = []                                         # live bullish OBs: [lo, hi]
+    bear_ob = []                                         # live bearish OBs: [lo, hi]
+    breakers = []                                        # live breakers: [lo, hi, dir]
+    prev_above = prev_below = False
+    for t in range(n):
+        p = t - L
+        if p >= 0:
+            if sh[p]:
+                swh = c[p]
+            if sl[p]:
+                swl = c[p]
+        if swh is not None:
+            above = c[t] > swh
+            if above and not prev_above and last_down is not None:
+                bull_ob.append([min(o[last_down], c[last_down]), max(o[last_down], c[last_down])])
+            prev_above = above
+        if swl is not None:
+            below = c[t] < swl
+            if below and not prev_below and last_up is not None:
+                bear_ob.append([min(o[last_up], c[last_up]), max(o[last_up], c[last_up])])
+            prev_below = below
+        # OB → breaker conversion on a close beyond the OB (role + direction flip)
+        keep_bull = []
+        for lo, hi in bull_ob:
+            if c[t] < lo:
+                breakers.append([lo, hi, -1])            # bullish OB broken down → bearish breaker
+            else:
+                keep_bull.append([lo, hi])
+        bull_ob = keep_bull
+        keep_bear = []
+        for lo, hi in bear_ob:
+            if c[t] > hi:
+                breakers.append([lo, hi, 1])             # bearish OB broken up → bullish breaker
+            else:
+                keep_bear.append([lo, hi])
+        bear_ob = keep_bear
+        # per-bar breaker reaction signal (overlap), bull preferred
+        if want is None or want[t]:
+            s = 0
+            for lo, hi, d in breakers:
+                if l[t] <= hi and h[t] >= lo:
+                    s = d
+                    if d == 1:
+                        break
+            out[t] = s
+        # breaker death: price closes back through it
+        breakers = [[lo, hi, d] for lo, hi, d in breakers
+                    if not ((d == 1 and c[t] < lo) or (d == -1 and c[t] > hi))]
+        if c[t] < o[t]:
+            last_down = t
+        elif c[t] > o[t]:
+            last_up = t
+    return out
+
+
+def cisd(open_: np.ndarray, close: np.ndarray) -> np.ndarray:
+    """CISD — Change In State of Delivery (STANDARD definition, locked A10). A 'delivery leg' is a run of
+    consecutive same-colour candles; its reference level is the OPEN of the FIRST candle in the run. When a
+    later candle CLOSES back through that open in the opposite direction, the state of delivery has changed:
+      • bearish CISD (-1): a close BELOW the open of the most recent BULLISH (green) leg;
+      • bullish CISD (+1): a close ABOVE the open of the most recent BEARISH (red) leg.
+    Per-bar signal int8 ∈ {+1,-1,0}; fires on the bar that closes through. Causal (≤ t data only)."""
+    o = np.asarray(open_, float); c = np.asarray(close, float)
+    n = len(c)
+    out = np.zeros(n, np.int8)
+    bull_open = bear_open = None                          # open of the start of the latest green / red run
+    prev_color = 0
+    for t in range(n):
+        color = 1 if c[t] > o[t] else (-1 if c[t] < o[t] else 0)
+        if color == 1 and prev_color != 1:
+            bull_open = o[t]                              # new green run starts here
+        elif color == -1 and prev_color != -1:
+            bear_open = o[t]                              # new red run starts here
+        if bull_open is not None and c[t] < bull_open:
+            out[t] = -1                                   # closed through the bullish leg's open → bearish
+        elif bear_open is not None and c[t] > bear_open:
+            out[t] = 1                                    # closed through the bearish leg's open → bullish
+        if color != 0:
+            prev_color = color
+    return out
+
+
 def golf_candle(open_: np.ndarray, high: np.ndarray, low: np.ndarray, close: np.ndarray,
                 golf_n: int = 3) -> np.ndarray:
     """'Golf' = an N-candle ENGULFING reversal (WS-I review #2). For bar t (t ≥ N), returns

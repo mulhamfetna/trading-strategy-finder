@@ -50,13 +50,28 @@ def _first_true(mask: np.ndarray) -> int:
 def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
                   gate: np.ndarray | None,
                   m_dates: np.ndarray, m_high: np.ndarray, m_low: np.ndarray, m_close: np.ndarray,
-                  sl_soft: float, sl_hard: float, tp: float, flip: bool) -> list[dict]:
+                  sl_soft: float, sl_hard: float, tp: float, flip: bool,
+                  long_sl_soft: float | None = None, long_sl_hard: float | None = None,
+                  long_tp: float | None = None,
+                  short_sl_soft: float | None = None, short_sl_hard: float | None = None,
+                  short_tp: float | None = None) -> list[dict]:
     """Return the list of completed trades (dicts with entry/exit/dir/reason/pnl_points), in order.
-    Mirrors engine.SimpleStrategy(...).backtest(...) candidate stream (exit_reason != OPEN)."""
+    Mirrors engine.SimpleStrategy(...).backtest(...) candidate stream (exit_reason != OPEN).
+
+    Split SL/TP (Q3 / E2): the optional long_*/short_* args give the FINAL post-flip direction its own
+    sl_soft/sl_hard/tp. Any that is None falls back to the shared sl_soft/sl_hard/tp ⇒ when none are set,
+    long==short==shared ⇒ byte-identical to the pre-split path (locked by test_fast_parity)."""
     n = len(d_dates)
     M = len(m_dates)
     trades: list[dict] = []
     blocked_until = None  # np.datetime64 of last exit; next entry needs date > this
+    # resolve per-side points ONCE (shared fallback ⇒ identical when no split given)
+    L_sls = sl_soft if long_sl_soft is None else float(long_sl_soft)
+    L_slh = sl_hard if long_sl_hard is None else float(long_sl_hard)
+    L_tp = tp if long_tp is None else float(long_tp)
+    S_sls = sl_soft if short_sl_soft is None else float(short_sl_soft)
+    S_slh = sl_hard if short_sl_hard is None else float(short_sl_hard)
+    S_tp = tp if short_tp is None else float(short_tp)
 
     idx = 1
     while idx < n:
@@ -72,13 +87,15 @@ def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
             idx += 1; continue
         ep = float(d_close[idx - 1])
 
-        # lines (absolute point distances)
+        # lines (absolute point distances); per-FINAL-direction split points (shared when no split set)
         if d == LONG:
-            slh_line, tph_line = ep - sl_hard, ep + tp
-            sls_line, tps_line = ep - sl_soft, ep + tp        # soft on SL side (normal) / TP side (flip)
+            sls, slh, tpv = L_sls, L_slh, L_tp
+            slh_line, tph_line = ep - slh, ep + tpv
+            sls_line, tps_line = ep - sls, ep + tpv           # soft on SL side (normal) / TP side (flip)
         else:
-            slh_line, tph_line = ep + sl_hard, ep - tp
-            sls_line, tps_line = ep + sl_soft, ep - tp
+            sls, slh, tpv = S_sls, S_slh, S_tp
+            slh_line, tph_line = ep + slh, ep - tpv
+            sls_line, tps_line = ep + sls, ep - tpv
 
         e = int(np.searchsorted(m_dates, et, side="left"))    # first 1m bar with Date ≥ entry time
         if e >= M:
