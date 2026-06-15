@@ -257,4 +257,15 @@ engine/UI → joint `wsh5` (4h pilot → all TF) → fitted policy → remove AT
 - **Optimizer I/O map:** `DIAGRAM_optimizer_io.md` (neural-net-style diagram — search-space inputs, the per-bar
   decision wheel incl. the confirm/veto layer, the 3-objective+constraint scoring, NSGA-III → champion;
   confirms indicator OWN params ARE searched and the confirmation layer IS wired in; only indicator *mode* is not).
+- **Market structure + split SL/TP (E, 2026-06-15):** `study_range_regime/REPORT_STREAM_2026-06-15.md` (the
+  stream report), `study_range_regime/DEFINITION_BOOK.md` (ICT concept definitions: LL/HL/HH/LH, FVG/IFVG, order
+  block, breaker, CISD, golf=engulfing — user-def vs standard vs project-impl), `study_range_regime/range_registry.py`
+  (per-M/Q/Y high/low + new/repeat band machine; trend = relative HH/LL per `REPORT_Q5_trend_rule.md`),
+  `study_range_regime/structure_tables.py` (LL/HL/HH/LH swing tables + IFVG/breaker/CISD events),
+  `study_range_regime/regime_charts.py` (ribbon/structure/band charts). **Engine:** 4 new causal detectors in
+  `indicators/smc.py` (`swing_labels`, `ifvg`, `breaker_blocks`, `cisd`); **split long/short SL/TP threaded**
+  through `fast_engine`/`core`/`optimizer` (`split_sltp` flag) / `build_payload` — defaults = shared champion ⇒
+  golden 6/6 + fast-parity (T4) preserved (`study_range_regime/UPDATE_E2_split_threading.md`,
+  `NEXT_OPTIMIZER_NOTES.md`). Q1 split sweep (`split_sltp_sweep.py`, `REPORT_Q1_split_sltp.md`): no asymmetric
+  edge — symmetric champion wins; wsh5 free search pinned. Entry-rule plan: `PLAN_entry_rules.md`.
 - **This file** is the top-level index over all of them.
