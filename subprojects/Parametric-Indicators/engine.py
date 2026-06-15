@@ -92,6 +92,18 @@ class SimpleStrategyParams:
     box_data_path:  str
     direction_scope:       DirectionScope = 'both'
     flip_entry_direction:  bool = False
+    # Per-direction (split) SL/TP — OPTIONAL. Each None field falls back to the shared *_points above, so a
+    # params object that sets none of these is byte-identical to before (golden-locked). When set, the value
+    # applies to that FINAL (post-flip) entry direction. Added at the END so positional construction is
+    # unaffected. See study_range_regime/ACTION_PLAN_range_regime_sltp.md (Phase E) + UPDATE_engine_split_sltp.md.
+    long_sl_soft_points:  Optional[float] = None
+    long_sl_hard_points:  Optional[float] = None
+    long_tp_soft_points:  Optional[float] = None
+    long_tp_hard_points:  Optional[float] = None
+    short_sl_soft_points: Optional[float] = None
+    short_sl_hard_points: Optional[float] = None
+    short_tp_soft_points: Optional[float] = None
+    short_tp_hard_points: Optional[float] = None
 
 
 def _stage1_candle_signal(
@@ -175,6 +187,28 @@ class SimpleStrategy:
         if not isinstance(params.flip_entry_direction, bool):
             raise ValueError(f'flip_entry_direction must be bool, got {type(params.flip_entry_direction)}')
         self.params = params
+        # Resolve per-direction (split) SL/TP once. Each side's 4 points = its split field if set, else the
+        # shared *_points (⇒ when NO split field is set, _long == _short == shared ⇒ byte-identical). Validate
+        # ordering/positivity per side so a split can't sneak in a bad line.
+        def _side(side: str):
+            ss = getattr(params, f'{side}_sl_soft_points')
+            sh = getattr(params, f'{side}_sl_hard_points')
+            ts = getattr(params, f'{side}_tp_soft_points')
+            th = getattr(params, f'{side}_tp_hard_points')
+            ss = params.sl_soft_points if ss is None else float(ss)
+            sh = params.sl_hard_points if sh is None else float(sh)
+            ts = params.tp_soft_points if ts is None else float(ts)
+            th = params.tp_hard_points if th is None else float(th)
+            for nm, v in (('sl_soft', ss), ('sl_hard', sh), ('tp_soft', ts), ('tp_hard', th)):
+                if v <= 0:
+                    raise ValueError(f'{side}_{nm}_points must be > 0, got {v}')
+            if sh < ss:
+                raise ValueError(f'{side}_sl_hard_points ({sh}) must be >= {side}_sl_soft_points ({ss})')
+            if th < ts:
+                raise ValueError(f'{side}_tp_hard_points ({th}) must be >= {side}_tp_soft_points ({ts})')
+            return (ss, sh, ts, th)
+        self._long_pts = _side('long')    # (sl_soft, sl_hard, tp_soft, tp_hard) for FINAL dir == 'long'
+        self._short_pts = _side('short')  # …for FINAL dir == 'short'
 
     def backtest(
         self,
@@ -446,16 +480,19 @@ class SimpleStrategy:
                     vflip = bool(armed.get('vflip'))
                     armed = None
 
+                # per-direction (split) points; _long_pts/_short_pts == shared when no split set ⇒ identical
                 if edir == 'long':
-                    sl_soft_line = entry_px - self.params.sl_soft_points * _m
-                    sl_hard_line = entry_px - self.params.sl_hard_points * _m
-                    tp_soft_line = entry_px + self.params.tp_soft_points * _m
-                    tp_hard_line = entry_px + self.params.tp_hard_points * _m
+                    ss, sh, ts, th = self._long_pts
+                    sl_soft_line = entry_px - ss * _m
+                    sl_hard_line = entry_px - sh * _m
+                    tp_soft_line = entry_px + ts * _m
+                    tp_hard_line = entry_px + th * _m
                 else:
-                    sl_soft_line = entry_px + self.params.sl_soft_points * _m
-                    sl_hard_line = entry_px + self.params.sl_hard_points * _m
-                    tp_soft_line = entry_px - self.params.tp_soft_points * _m
-                    tp_hard_line = entry_px - self.params.tp_hard_points * _m
+                    ss, sh, ts, th = self._short_pts
+                    sl_soft_line = entry_px + ss * _m
+                    sl_hard_line = entry_px + sh * _m
+                    tp_soft_line = entry_px - ts * _m
+                    tp_hard_line = entry_px - th * _m
 
                 open_trade = {
                     'entry_idx':    idx,                       # the new bar
