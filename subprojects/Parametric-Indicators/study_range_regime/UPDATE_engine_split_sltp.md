@@ -5,9 +5,13 @@ split field set, behavior is **byte-identical** to before (golden-locked). Split
 (post-flip) entry direction.
 
 ## Status
-- **E1 — exact engine (`engine.py`): DONE & GATED ✅**
-- E2 — fast path (`optimize/fast_engine.py`) + `optimize/core.py` + optimizer search space: PENDING
-- E3 — this doc + post-`wsh4` edit registry note: in progress
+- **E1 — exact engine (`engine.py`): DONE & GATED ✅** (commit `fab7d72`)
+- **E2 — fast path + optimizer search space: DEFERRED to adjoin Phase O (`wsh5`).** Rationale: the STUDY
+  (Phase S) scores via the EXACT engine (`stage2.eval_dynamic` → `SimpleStrategy.backtest`), which E1 already
+  covers. The fast path is only exercised by the optimizer, so E2 is built right before the `wsh5` run (its own
+  focused turn, with a fast-vs-exact-WITH-split parity test). This does not block the study.
+- **E3 — this doc + post-`wsh4` registry note: DONE for E1.**
+- **Next: Phase S** (causal regime feature builder → rule-grid evaluation), using the E1 exact-engine split.
 
 ---
 
