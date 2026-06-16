@@ -99,6 +99,24 @@ class H(BaseHTTPRequestHandler):
                 return self._send(400, json.dumps({"error": f"Invalid profile: {e}"}))
             except Exception as e:
                 return self._send(500, json.dumps({"error": f"Save failed: {e}"}))
+        if path == "/api/warmup":
+            # Live warmup/data-footprint for the CURRENT indicator config (interactive boxes). Single source
+            # of truth = indicators/library.warmup_bars() — the frontend never duplicates the formulas.
+            try:
+                n = int(self.headers.get("Content-Length", 0))
+                body = json.loads(self.rfile.read(n) or b"{}")
+                from indicators import library
+                on = [s for s in (body.get("indicators") or []) if s.get("enabled")]
+                inds = library.from_specs(on)                      # validates params; raises on bad config
+                per = sorted(({"key": ind.key, "label": library.SCHEMA[ind.key]["label"],
+                               "bars": int(ind.warmup_bars())} for ind in inds),
+                             key=lambda d: d["bars"], reverse=True)
+                mx = per[0] if per else None
+                return self._send(200, json.dumps({
+                    "per": per, "n_enabled": len(per), "frame": "1min",
+                    "max_bars": (mx["bars"] if mx else 0), "driver": mx}))
+            except Exception as e:
+                return self._send(400, json.dumps({"error": f"warmup calc: {e}"}))
         if path != "/api/backtest":
             return self._send(404, '{"error":"unknown endpoint"}')
         try:

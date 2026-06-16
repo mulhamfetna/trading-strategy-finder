@@ -47,7 +47,9 @@
   input.matherr { border-color:var(--red) !important; }   /* invalid inline-math expression */
   .resetlink { font-size:11px; color:var(--blue); cursor:pointer; background:none; border:0; padding:0; }
   /* metric cards */
-  .cards { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; }
+  /* responsive: cards keep a consistent min width and WRAP into as many rows as the window allows
+     (6-across on a wide screen → 4/3/2-per-row as it narrows) instead of overflowing with a horizontal scroll */
+  .cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; }
   .card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 12px; }
   .card .v { font-size:20px; font-weight:600; } .card .k { font-size:10px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
   .pos { color:var(--green); } .neg { color:var(--red); }
@@ -266,7 +268,10 @@ function render(D){
     card(S.win+'%','win rate')+card(S.pf??'—','profit factor')+
     card(S.n_taken+'/'+S.n_candidates,'trades ('+S.exposure+'%)')+
     card(S.n_locks,'breaker locks')+
-    card((S.noentry_streak_n??0)+' · '+(S.noentry_streak_days??0)+'d','longest no-entry streak (signals · days)'+(S.noentry_streak_start?' — from '+S.noentry_streak_start:''));
+    card((S.noentry_streak_n??0)+' · '+(S.noentry_streak_days??0)+'d','longest no-entry streak (signals · days)'+(S.noentry_streak_start?' — from '+S.noentry_streak_start:''))+
+    // warmup-period + heaviest-indicator boxes (live from /api/warmup; filled by recomputeWarmup() below)
+    `<div class="card"><div class="v" id="fp_warm" style="font-size:15px">—</div><div class="k">warmup period</div></div>`+
+    `<div class="card"><div class="v" id="fp_heavy" style="font-size:12px;line-height:1.25">—</div><div class="k">longest indicator candles requirement</div></div>`;
   candle.setData(D.candles);
   const tpD=[],shD=[],ssD=[],mks=[];let last=0;
   D.trades.forEach(t=>{
@@ -353,7 +358,8 @@ function setForm(P){ if(P.timeframe&&$('timeframe').querySelector(`option[value=
   $('sltp_mode').value=_anySplit?'split':'shared';
   $('sharedbox').style.display=_anySplit?'none':''; $('splitbox').style.display=_anySplit?'':'none';
   _SPL.forEach(k=>{ $(k).value=(P[k]!=null)?P[k]:''; });
-  if(P.indicators)applyIndicatorSpecs(P.indicators); }
+  if(P.indicators)applyIndicatorSpecs(P.indicators);
+  recomputeWarmup(); }                 // refresh warmup/footprint boxes after a preset/profile import
 // NOTE: every value is read straight from the form — nothing is hardcoded or silently defaulted here.
 // Validation (and any error) happens server-side and is surfaced verbatim to the #err banner.
 function params(){ commitMath();
@@ -391,8 +397,34 @@ function buildIndicatorPanel(sch){
   const g={}; sch.gen_params.forEach(p=>g[p.name]=p.default);
   $('gen_swing_l').value=g.swing_l; $('gen_golf_n').value=g.golf_n;
   host.querySelectorAll('input,select').forEach(el=>el.addEventListener('input',markDirty));
+  // interactive warmup/footprint: recompute on any committed indicator change (change fires on blur/toggle)
+  host.querySelectorAll('input,select').forEach(el=>el.addEventListener('change',recomputeWarmup));
   mathify(host);                       // indicator param boxes also accept inline math
   panelBuilt=true;
+  recomputeWarmup();                   // initial values
+}
+
+// ── Interactive warmup / data-footprint boxes (single source of truth = backend /api/warmup) ──
+let _warmTimer=null;
+function fmtDur(candles){              // dashboard indicators run on the 1-min frame ⇒ 1 candle = 1 minute
+  const m=Math.round(candles), h=Math.floor(m/60), mm=m%60;
+  return h ? `${h}h ${mm}m` : `${mm}m`;
+}
+function recomputeWarmup(){
+  clearTimeout(_warmTimer);
+  _warmTimer=setTimeout(async()=>{
+    if(!$('fp_warm')||!$('fp_heavy')) return;   // the boxes live in the main #cards row → only after a render
+    try{
+      const r=await fetch('/api/warmup',{method:'POST',headers:{'Content-Type':'application/json'},
+                                         body:JSON.stringify({indicators:indicatorSpecs()})});
+      const d=await r.json();
+      if(d.error){ $('fp_warm').textContent='—'; $('fp_heavy').textContent='(check params)'; return; }
+      $('fp_warm').textContent = d.max_bars ? `${d.max_bars.toLocaleString()} candles · ${fmtDur(d.max_bars)}`
+                                            : 'no indicators on';
+      $('fp_heavy').textContent = d.driver ? `${d.driver.label} — ${d.driver.bars.toLocaleString()} candles · ${fmtDur(d.driver.bars)}`
+                                           : '—';
+    }catch(e){ $('fp_heavy').textContent='warmup calc failed'; }
+  },250);
 }
 function indicatorSpecs(){
   const specs=[];

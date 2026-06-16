@@ -327,4 +327,10 @@ engine/UI → joint `wsh5` (4h pilot → all TF) → fitted policy → remove AT
   <3d ⇒ needs α); and keeping just **cci+order_block+structure_trend** (drop 5) gives **+5.5% P/L
   ($149,989) at half the data footprint (346→138)** — caveat: full-period only, re-check on folds/OOS before
   deploying. Tests: `test_no_entry_metric.py` (4) + `test_ablate.py` (4). α (#227) held + now well-motivated.
+- **Backtester dashboard — warmup/footprint cards + responsive metric row (2026-06-16):** new
+  `POST /api/warmup` (single source of truth = `library.warmup_bars()`) drives two LIVE cards in the main
+  metric row beside "longest no-entry streak" — **warmup period** + **longest indicator candles requirement**
+  (champion → 346 candles / SMA trend) — recomputing on any indicator change/preset import. `.cards` switched
+  to `repeat(auto-fit, minmax(150px,1fr))` so the metric row wraps into rows instead of overflowing. Golden
+  6/6 untouched. Doc `study_range_regime/UPDATE_dashboard_warmup_boxes_and_responsive_cards.md`.
 - **This file** is the top-level index over all of them.
