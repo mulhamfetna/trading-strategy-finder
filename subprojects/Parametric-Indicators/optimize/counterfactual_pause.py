@@ -179,3 +179,88 @@ def build_ledger(C):
             "box_silence": silence_displacement(C, horizon),
             "champion_avg_pnl": float(champ_pnl.mean()) if len(champ_pnl) else 0.0,
             "champion_n": int(len(champ_pnl)), "horizon_bars": int(horizon)}
+
+
+def _verdict(b, champ_avg):
+    """Over-filtering iff the bucket's avg P/L is positive AND a meaningful fraction of the champion's own
+    edge (>=50% of champion avg trade). Else correctly filtering."""
+    if b["n"] == 0:
+        return "n/a (no blocked signals)"
+    if b["avg_pnl"] > 0 and champ_avg > 0 and b["avg_pnl"] >= 0.5 * champ_avg:
+        return "OVER-FILTERING (relaxing is justified)"
+    return "correctly filtering (accept the pause)"
+
+
+def write_csv(led, path: str):
+    import csv
+    rows = [t for b in led["buckets"].values() for t in b["trades"]]
+    cols = ["cause", "entry_time", "exit_time", "direction", "entry_price", "exit_price", "exit_reason", "pnl"]
+    with open(path, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=cols)
+        w.writeheader()
+        for r in sorted(rows, key=lambda r: r["entry_time"]):
+            w.writerow(r)
+    return len(rows)
+
+
+def write_report(led, tf: str, path: str):
+    ca = led["champion_avg_pnl"]
+    lines = [f"# Counterfactual pause attribution — {tf} champion", "",
+             f"Read-only. Each blocked box signal simulated as an ISOLATED trade with the champion's exact "
+             f"SL/TP exit (reused `fast_backtest`). Benchmark = champion avg trade **${ca:,.0f}** over "
+             f"{led['champion_n']} trades. Displacement horizon = **{led['horizon_bars']} bars** "
+             f"(median real-trade hold).", "",
+             "## Per-filter ledger", "",
+             "| filter | blocked n | win% | avg P/L | total P/L | verdict |",
+             "|---|--:|--:|--:|--:|---|"]
+    for k in ("vol_gated", "vetoed", "confirm<K"):
+        b = led["buckets"][k]
+        lines.append(f"| {k} | {b['n']} | {100*b['win_rate']:.1f}% | ${b['avg_pnl']:,.0f} | "
+                     f"${b['total_pnl']:,.0f} | {_verdict(b, ca)} |")
+    s = led["box_silence"]
+    lines += ["", "## Box-silence (no signal — cannot simulate a trade)", "",
+              f"- silent entry bars: **{s['n']}** · median MFE {s['med_mfe']:.0f} pts · median MAE "
+              f"{s['med_mae']:.0f} pts", f"- fraction whose max move exceeded the champion TP "
+              f"({s['tp']:.0f} pts): **{100*s['frac_exceeds_tp']:.1f}%** (a real directional move was "
+              f"available there).", "",
+              "## Verdict ledger", "",
+              "```mermaid", "flowchart TD", '  P["no-entry pause"] --> V["vol_gated"]',
+              '  P --> VE["vetoed"]', '  P --> C["confirm&lt;K"]', '  P --> B["box_silence (~71%)"]']
+    for k, nm in (("vol_gated", "V"), ("vetoed", "VE"), ("confirm<K", "C")):
+        b = led["buckets"][k]
+        tag = "OVER-FILTER" if "OVER" in _verdict(b, ca) else "correct"
+        lines.append(f'  {nm} --> {nm}R["{tag}: ${b["total_pnl"]:,.0f} over {b["n"]}"]')
+    lines += ['  B --> BR["' + f"{100*s['frac_exceeds_tp']:.0f}% windows had a >TP move" + '"]', "```", "",
+              "## Conclusion", "",
+              "_Filled from the numbers above: which filter (if any) is over-filtering, and whether the "
+              "box-silence windows held real moves — i.e. which lever (confirmation relax vs box-trigger "
+              "change) the evidence supports, or whether to ACCEPT the pause._", ""]
+    Path(path).write_text("\n".join(lines) + "\n")
+
+
+def main() -> int:
+    import warnings; warnings.filterwarnings("ignore")
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--tf", default="4h")
+    ap.add_argument("--out", default=str(_HERE / "results" / "counterfactual_pause_4h.csv"))
+    ap.add_argument("--report", default=str(_PI / "study_range_regime" / "REPORT_counterfactual_pause.md"))
+    a = ap.parse_args()
+    C = load_champion(a.tf)
+    led = build_ledger(C)
+    nrows = write_csv(led, a.out)
+    write_report(led, a.tf, a.report)
+    print(f"champion avg trade ${led['champion_avg_pnl']:,.0f} (n={led['champion_n']}); horizon "
+          f"{led['horizon_bars']} bars")
+    for k in ("vol_gated", "vetoed", "confirm<K"):
+        b = led["buckets"][k]
+        print(f"  {k:11} n={b['n']:4} win={100*b['win_rate']:5.1f}% avg=${b['avg_pnl']:>8,.0f} "
+              f"total=${b['total_pnl']:>10,.0f}  {_verdict(b, led['champion_avg_pnl'])}")
+    s = led["box_silence"]
+    print(f"  box_silence n={s['n']} medMFE={s['med_mfe']:.0f} medMAE={s['med_mae']:.0f} "
+          f">TP={100*s['frac_exceeds_tp']:.1f}%")
+    print(f"wrote {nrows} counterfactual trades -> {a.out}; report -> {a.report}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
