@@ -266,6 +266,54 @@ engine/UI → joint `wsh5` (4h pilot → all TF) → fitted policy → remove AT
   `indicators/smc.py` (`swing_labels`, `ifvg`, `breaker_blocks`, `cisd`); **split long/short SL/TP threaded**
   through `fast_engine`/`core`/`optimizer` (`split_sltp` flag) / `build_payload` — defaults = shared champion ⇒
   golden 6/6 + fast-parity (T4) preserved (`study_range_regime/UPDATE_E2_split_threading.md`,
-  `NEXT_OPTIMIZER_NOTES.md`). Q1 split sweep (`split_sltp_sweep.py`, `REPORT_Q1_split_sltp.md`): no asymmetric
-  edge — symmetric champion wins; wsh5 free search pinned. Entry-rule plan: `PLAN_entry_rules.md`.
+  `NEXT_OPTIMIZER_NOTES.md`). **Dashboard (E3, `study_range_regime/UPDATE_E3_dashboard_split_sltp.md`):** the
+  backtester dashboard now exposes split SL/TP via an "SL/TP mode" dropdown (shared | split long/short) atop the
+  value-box container + 6 per-side boxes in `frontend/index.html` (split mode hides the shared boxes; shared mode ⇒
+  all `null` ⇒ byte-identical to a normal run; blank per-side box ⇒ falls back to shared),
+  with split bounds added to `server.py` `/api/config`. The 3 new vote indicators (`ifvg`/`breaker`/`cisd`) were
+  already three-way synced via the schema-driven indicator panel. Engine⇄optimizer⇄dashboard now share one input
+  set (verified: golden 6/6, split-OFF≡plain, split-ON diverges). Q1 split sweep (`split_sltp_sweep.py`,
+  `REPORT_Q1_split_sltp.md`): no asymmetric edge — symmetric champion wins; wsh5 free search pinned. Entry-rule
+  plan: `PLAN_entry_rules.md`.
+- **Optimizer superset paradox + FULL system breakdown (2026-06-15):**
+  `study_range_regime/REPORT_optimizer_superset_paradox_and_system_breakdown.md` — answers "how can a LARGER
+  search space (wsh5 split SL/TP) return a WORSE champion than wsh4?". Proven empirically on the live studies:
+  wsh4's champion is a point inside wsh5's space scoring the SAME $33,592 (re-evaluated), but wsh5's best-ever
+  sample over all 5028 trials was only $28,228 — NSGA-III is a finite-budget *stochastic* search, +6 dims
+  enlarged the volume with fewer trials (5028<5483), and only 0.2 % of trials stayed near-symmetric. Includes a
+  block-by-block system breakdown (data→HAR-RV→box→indicators→engine→metrics→walk-forward→NSGA-III→champion→
+  dashboard) with inputs/inner-layers/outputs + file:line, the two champions' exact values, and the warm-start
+  fix (enqueue the known champion ⇒ guaranteed equal-or-better next run).
+- **Optimizer hardening — warm-start + dimension-proportional budget + acceptance gate (2026-06-15):**
+  `optimize/optimizer.py` now warm-starts known champions as the first trials (`warm_start_seeds` →
+  `study.enqueue_trial`, default ON) so the returned front is provably ≥ the prior champion (verified: the seed
+  reproduces $142,203 full P/L); `search_dims`/`recommended_trials` + CLI `--auto-trials`/`--trials-per-dim`/`--plan`
+  scale trials ∝ dimensions; `optimize/server/remote_wsi.sh` `run` reports the plan and requires acceptance
+  (`WSH_CONFIRM=1` to skip), with a new `plan` subcommand. Algorithm-alternatives research (two-stage decomposition,
+  CMA-ES/GP-BO, MAP-Elites): `study_range_regime/REPORT_optimizer_algorithm_alternatives.md`. **All report visuals
+  are Mermaid (never ASCII art)** per standing instruction.
+- **Optimizer ALGORITHM workstream P2→P4 (2026-06-16, IN-PROGRESS):** applying the algorithm-alternatives report
+  one-by-one. **LIVE tracker:** `study_range_regime/WORKSTREAM_optimizer_algorithm_hardening_TRACKER.md` (read first
+  when resuming; has the P3-proof RESUME PROTOCOL).
+  - **P2 — selectable sampler ✅:** `optimize/optimizer.py` `make_sampler()` + `--sampler {nsga3*|nsga2|tpe|motpe|gp|cmaes}`;
+    default `nsga3` ⇒ byte-identical; GP uses native `GPSampler` (no BoTorch); `cmaes` guarded to single-obj.
+    Lock `optimize/test_sampler_factory.py` (6/6). Doc `study_range_regime/UPDATE_P2_selectable_sampler.md`.
+  - **P3 — two-stage decomposition 🟡 (code+doc done, full 4h proof running):** `optimize/two_stage.py` —
+    Stage A (discrete indicator-set pick, NSGA-III) → Stage B (continuous knob tuning per subset, `--stage-b
+    {cmaes|gp}`); warm-start guarantees ≥ wsh4. New dep `cmaes==0.13.0`. Doc
+    `study_range_regime/UPDATE_P3_two_stage_decomposition.md`.
+  - **P4 — MAP-Elites quality-diversity archive ✅:** `optimize/map_elites.py` — keeps the best solution PER
+    NICHE (worst-DD × #indicators), so it cannot collapse into one basin and yields a PORTFOLIO (safe /
+    high-return / few-indicator). Champion-seeded ⇒ archive provably ≥ wsh4. 4h proof: 16 niches filled,
+    portfolio confirmed (best-return median $36k @ higher DD; safest $5.4k-DD; simplest 5-ind). Lock
+    `optimize/test_map_elites.py` (5/5). Doc `study_range_regime/UPDATE_P4_map_elites_archive.md`.
+    **Algorithm-hardening workstream COMPLETE (P0/P2/P3/P4); P1=wsh6 launch is the user's operational call.**
+- **Optimizer Control & Visualization Dashboard (2026-06-16, BUILT local; deploy-time steps remain):**
+  `optimize/dashboard/` — hybrid: **optuna-dashboard** (prebuilt, reads `wsh-pg`) for live Pareto/trials +
+  a **FastAPI control plane** (`app.py`: config/plan/run/stop/resume/status/SSE-log/bundle) + a **Telegram
+  bot** (`bot.py`: notify+control, chat-id allowlist), all sharing one **`control.py`** seam that wraps
+  `remote_wsi.sh` + reads Postgres. VPN-served (bind private IP only; full-tunnel `kw-full.ovpn`). Pause=stop;
+  data-pull = server-built `.tar.gz` (full pg_dump | lite) download. Spec/Plan/Tracker/UPDATE docs under
+  `optimize/dashboard/`. **26 tests green (control 10 + app 9 + bot 7); golden 6/6 unchanged.** Remaining:
+  deploy on the AMD server (confirm VPN bind IP) + server smoke + (later) docker-compose.
 - **This file** is the top-level index over all of them.

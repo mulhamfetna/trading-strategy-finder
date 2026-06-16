@@ -109,6 +109,154 @@ _BOUNDS = _HERE / "sl_tp_bounds.json"
 
 DD_LIMIT_MAX = 5000.0
 
+# ─────────────────────────────────────────────────────────────────────────────────────────────────
+# Search-space sizing + dimension-proportional trial budget (anti "bigger space, fewer samples" trap).
+# See study_range_regime/REPORT_optimizer_superset_paradox_and_system_breakdown.md: NSGA-III is a finite
+# stochastic search, so when dimensions grow the trial budget MUST grow with them or sampling thins out
+# and the best-found point can regress. We scale trials ∝ dimensions and report the plan for acceptance.
+# ─────────────────────────────────────────────────────────────────────────────────────────────────
+TRIALS_PER_DIM = 100   # empirical norm: wsh4 ran ~5483 trials over 52 dims ≈ 105/dim (wsh5 ≈ 87/dim)
+
+
+def search_dims(split_sltp: bool) -> dict:
+    """Breakdown of the tunable search dimensions for the current REGISTRY/SCHEMA.
+    base continuous (sl_soft, sl_hard_delta, tp, gate_pct, dd_limit)=5; categorical (flip)=1;
+    integer (cooldown, k)=2; one on/off flag per indicator; every indicator param; +6 if split_sltp."""
+    en_flags = len(library.REGISTRY)
+    ind_params = sum(len(library.SCHEMA[k].get("params", [])) for k in library.REGISTRY)
+    split = 6 if split_sltp else 0
+    d = dict(base_cont=5, base_cat=1, base_int=2, en_flags=en_flags, ind_params=ind_params, split=split)
+    d["total"] = sum(d.values())
+    return d
+
+
+def recommended_trials(split_sltp: bool, per_dim: int = TRIALS_PER_DIM) -> int:
+    """Dimension-proportional trial budget: total search dimensions × per_dim. Grows automatically when
+    indicators or split SL/TP add dimensions, so sampling density stays roughly constant across regimes."""
+    return search_dims(split_sltp)["total"] * int(per_dim)
+
+
+def print_plan(tf_name: str, split_sltp: bool, per_dim: int = TRIALS_PER_DIM, n_trials: int | None = None,
+               sampler: str = "nsga3"):
+    """Print the search-space size + recommended (dimension-proportional) trial budget. Used by the
+    `--plan` dry-run and before every real launch so the budget is reported and can be accepted."""
+    d = search_dims(split_sltp)
+    rec = recommended_trials(split_sltp, per_dim)
+    print(f"── OPTIMIZER PLAN [{tf_name}] {'SPLIT long/short SL/TP' if split_sltp else 'shared SL/TP'} "
+          f"· sampler={sampler} ──", flush=True)
+    print(f"   dimensions: base {d['base_cont']}c+{d['base_cat']}cat+{d['base_int']}i = "
+          f"{d['base_cont']+d['base_cat']+d['base_int']}  |  indicators {d['en_flags']} on/off + "
+          f"{d['ind_params']} params  |  split {d['split']}  →  TOTAL {d['total']} dims", flush=True)
+    print(f"   trials/dim {per_dim}  →  RECOMMENDED {rec:,} trials  (∝ dimensions; grows if you add more)", flush=True)
+    if n_trials is not None and n_trials != rec:
+        print(f"   (requested --trials {n_trials:,} ⇒ {n_trials/d['total']:.0f}/dim)", flush=True)
+    return rec
+
+
+_RESULTS_DIR = _HERE / "results"
+
+# ─────────────────────────────────────────────────────────────────────────────────────────────────
+# Selectable sampler (P2 — REPORT_optimizer_algorithm_alternatives.md).
+# Optuna decouples the OBJECTIVE (what we score — the walk-forward backtest) from the SAMPLER (the
+# "brain" that, given all past trials, proposes the next params to try). NSGA-III is the historical
+# hard-coded default but it is a genetic search that COLLAPSES toward one basin in high dimensions —
+# the root of the superset paradox. Making the brain a choice lets us pilot more sample-efficient
+# Bayesian samplers (TPE/MOTPE, GP-BO) at zero code cost, and exposes CMA-ES as the Stage-B engine for
+# the two-stage decomposition (P3). DEFAULT is nsga3 ⇒ byte-identical to every prior run.
+# ─────────────────────────────────────────────────────────────────────────────────────────────────
+SAMPLER_CHOICES = ("nsga3", "nsga2", "tpe", "motpe", "gp", "cmaes")
+
+
+def make_sampler(name: str, seed: int, constraints_func, n_objectives: int):
+    """Build an Optuna sampler by short name.
+
+    Multi-objective-capable (drop-in for the full 3-objective study): nsga3 (default), nsga2, tpe/motpe, gp.
+    Single-objective + CONTINUOUS-only: cmaes — raises here if asked to drive the >1-objective study; it is
+    the Stage-B engine of the two-stage decomposition (P3), not a drop-in for the full mixed search.
+    All multi-objective samplers receive the SAME feasibility constraint (DD≤25%·P&L) as NSGA-III, so
+    swapping the brain never changes which trials are 'feasible'."""
+    nm = (name or "nsga3").lower()
+    if nm in ("nsga3", "nsga", "nsgaiii"):
+        return optuna.samplers.NSGAIIISampler(seed=seed, constraints_func=constraints_func)
+    if nm in ("nsga2", "nsgaii"):
+        return optuna.samplers.NSGAIISampler(seed=seed, constraints_func=constraints_func)
+    if nm in ("tpe", "motpe"):
+        # multivariate+group model parameter interactions (this is MOTPE when directions>1). constraints_func
+        # keeps the feasibility constraint honoured exactly as NSGA-III does.
+        return optuna.samplers.TPESampler(seed=seed, multivariate=True, group=True,
+                                          constraints_func=constraints_func)
+    if nm in ("gp", "gpbo", "botorch"):
+        # Native Gaussian-process Bayesian optimisation (no BoTorch dependency in this Optuna build).
+        # Most sample-efficient once dimensions are small — the intended Stage-B brain for GP-BO in P3.
+        return optuna.samplers.GPSampler(seed=seed, constraints_func=constraints_func)
+    if nm in ("cmaes", "cma"):
+        if n_objectives > 1:
+            raise ValueError(
+                "cmaes is SINGLE-objective + CONTINUOUS-only — it cannot drive the 3-objective / "
+                "categorical-indicator study. Use it via the two-stage decomposition (P3, Stage B) on the "
+                "continuous sub-problem, or scalarize to one objective first.")
+        return optuna.samplers.CmaEsSampler(seed=seed)
+    raise ValueError(f"unknown sampler '{name}' (choices: {', '.join(SAMPLER_CHOICES)})")
+
+
+def _native_seed(box: dict, inds: dict, split_sltp: bool, b: dict) -> dict:
+    """Convert a champion (dashboard schema: box + indicators) into the optimizer's NATIVE param space
+    (sl_hard_delta not sl_hard; en_<key> + every <key>_<param>; long/short deltas when split). Clamped to
+    the search bounds so Optuna.enqueue_trial accepts it. A fully-specified point ⇒ a deterministic seed."""
+    clamp = lambda v, lo, hi: max(lo, min(hi, v))
+    seed = dict(
+        sl_soft=clamp(float(box["sl_soft"]), float(b["sl_soft"][0]), float(b["sl_soft"][1])),
+        sl_hard_delta=clamp(float(box["sl_hard"]) - float(box["sl_soft"]), 0.0, float(b["sl_hard"][1])),
+        tp=clamp(float(box["tp"]), float(b["tp"][0]), float(b["tp"][1])),
+        gate_pct=clamp(float(box["gate_pct"]), 0.0, 100.0),
+        dd_limit=clamp(float(box["dd_limit"]), 0.0, DD_LIMIT_MAX),
+        cooldown=int(box["cooldown"]), flip=bool(box["flip"]), k=int(box["k"]),
+    )
+    for key in library.REGISTRY:
+        on = key in inds
+        seed[f"en_{key}"] = bool(on)
+        for p in library.SCHEMA[key].get("params", []):
+            nm, st = p["name"], float(p.get("step", 1))
+            val = inds.get(key, {}).get(nm, p["default"]) if on else p["default"]
+            val = clamp(float(val), float(p["min"]), float(p["max"]))
+            seed[f"{key}_{nm}"] = int(round(val)) if (st.is_integer() and float(p["default"]).is_integer()) else float(val)
+    if split_sltp:
+        g = lambda k, dflt: (float(box[k]) if box.get(k) is not None else float(dflt))
+        seed.update(
+            long_sl_soft=clamp(g("long_sl_soft", box["sl_soft"]), float(b["sl_soft"][0]), float(b["sl_soft"][1])),
+            long_sl_hard_delta=clamp(g("long_sl_hard", box["sl_hard"]) - g("long_sl_soft", box["sl_soft"]), 0.0, float(b["sl_hard"][1])),
+            long_tp=clamp(g("long_tp", box["tp"]), float(b["tp"][0]), float(b["tp"][1])),
+            short_sl_soft=clamp(g("short_sl_soft", box["sl_soft"]), float(b["sl_soft"][0]), float(b["sl_soft"][1])),
+            short_sl_hard_delta=clamp(g("short_sl_hard", box["sl_hard"]) - g("short_sl_soft", box["sl_soft"]), 0.0, float(b["sl_hard"][1])),
+            short_tp=clamp(g("short_tp", box["tp"]), float(b["tp"][0]), float(b["tp"][1])),
+        )
+    return seed
+
+
+def warm_start_seeds(tf_name: str, split_sltp: bool, b: dict) -> list[dict]:
+    """Known champions to enqueue as the optimizer's FIRST trials so the returned front is provably ≥ their
+    score (defeats the 'larger space sampled worse' trap). Reads the per-TF wsh4 champion + (4h) the wsh5
+    split champion from optimize/results/*.json. Missing files ⇒ fewer/no seeds (safe)."""
+    seeds = []
+    for fn in ("wsh4_champions_full.json", "wsi_champions_full.json"):
+        f = _RESULTS_DIR / fn
+        if f.exists():
+            try:
+                c = json.loads(f.read_text()).get(tf_name)
+                if c:
+                    seeds.append(_native_seed(c["box"], c.get("indicators", {}), split_sltp, b)); break
+            except Exception:
+                pass
+    split_f = _RESULTS_DIR / f"wsh5_{tf_name}_split_champion.json"
+    if split_sltp and split_f.exists():
+        try:
+            c = json.loads(split_f.read_text()).get(tf_name)
+            if c:
+                seeds.append(_native_seed(c["box"], c.get("indicators", {}), split_sltp, b))
+        except Exception:
+            pass
+    return seeds
+
 
 def _load_json(p: Path) -> dict:
     if not p.exists():
@@ -118,7 +266,7 @@ def _load_json(p: Path) -> dict:
 
 def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         seed: int = 1, ind_1min: bool = False, study_prefix: str = "wsh3",
-        split_sltp: bool = False) -> dict:
+        split_sltp: bool = False, warm_start: bool = True, sampler: str = "nsga3") -> dict:
     # split_sltp (Q3 / E2): when True the optimizer searches SEPARATE long vs short SL/TP (long_*/short_*),
     # widening the space per the user's point-5 goal. Default False ⇒ shared SL/TP ⇒ identical to prior runs.
     # NOTE FOR THE NEXT FULL RUN (wsh5): launch with split_sltp=True to let longs and shorts get their own
@@ -198,13 +346,32 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
             _c.execute("PRAGMA journal_mode=WAL;")
             _c.execute("PRAGMA synchronous=NORMAL;")
     storage = optuna.storages.RDBStorage(url=_url, engine_kwargs=study_storage.engine_kwargs(_url))
+    # Sampler is selectable (P2); default nsga3 reproduces every prior run exactly. The feasibility
+    # constraint is passed identically to whichever brain we pick, so swapping it cannot change which
+    # trials count as feasible — only WHICH points get sampled.
+    _sampler = make_sampler(sampler, seed, _constraints, n_objectives=3)
+    print(f"[{tf_name}] sampler = {sampler} → {type(_sampler).__name__}", flush=True)
     study = optuna.create_study(
         study_name=study_name,
         storage=storage,
         directions=["maximize", "maximize", "maximize"],
-        sampler=optuna.samplers.NSGAIIISampler(seed=seed, constraints_func=_constraints),
+        sampler=_sampler,
         load_if_exists=True,
     )
+    # Warm-start: enqueue known champions as the FIRST trials so the returned front is provably ≥ their
+    # score (the wsh5 "bigger space, worse result" trap cannot recur). skip_if_exists keeps resumes idempotent.
+    if warm_start:
+        seeds = warm_start_seeds(tf_name, split_sltp, b)
+        n_seeded = 0
+        for s in seeds:
+            try:
+                study.enqueue_trial(s, skip_if_exists=True); n_seeded += 1
+            except Exception as e:
+                print(f"[{tf_name}] warm-start seed skipped ({type(e).__name__}: {e})", flush=True)
+        if n_seeded:
+            print(f"[{tf_name}] warm-started {n_seeded} known-champion seed trial(s) — "
+                  f"the front is guaranteed ≥ their score", flush=True)
+
     t0 = time.time()
     # A transient store error (e.g. SQLite "database is locked" under many concurrent workers) fails
     # only THIS trial — it must never kill the worker, or the study loses capacity for the rest of the
@@ -250,9 +417,34 @@ def main() -> int:
     ap.add_argument("--split-sltp", action="store_true",
                     help="search SEPARATE long vs short SL/TP (Q3/E2). Off ⇒ shared (wsh4 behaviour). "
                          "Use for the wsh5 run to let longs/shorts get their own stops/targets.")
+    ap.add_argument("--auto-trials", action="store_true",
+                    help="set trials = (search dimensions × --trials-per-dim) so the budget scales with the "
+                         "space automatically; overrides --trials. Prints the plan.")
+    ap.add_argument("--trials-per-dim", type=int, default=TRIALS_PER_DIM,
+                    help=f"trials per search dimension for --auto-trials (default {TRIALS_PER_DIM}; "
+                         f"wsh4 ran ~105/dim)")
+    ap.add_argument("--plan", action="store_true",
+                    help="DRY RUN: print the search-space size + dimension-proportional trial budget, then "
+                         "exit WITHOUT running. Use this to review/accept the budget before launching.")
+    ap.add_argument("--no-warm-start", action="store_true",
+                    help="do NOT enqueue known champions as seed trials (warm-start is ON by default and "
+                         "guarantees the front is ≥ the prior champion's score)")
+    ap.add_argument("--sampler", default="nsga3", choices=SAMPLER_CHOICES,
+                    help="optimizer 'brain' (default nsga3 = unchanged baseline). nsga2/tpe/motpe/gp are "
+                         "drop-in multi-objective alternatives; cmaes is single-objective/continuous-only "
+                         "(Stage-B of the two-stage decomposition, refused on the full study).")
     a = ap.parse_args()
-    run(a.timeframe, n_trials=a.trials, folds=a.folds, min_trades=a.min_trades,
-        ind_1min=a.ind_1min, study_prefix=a.study_prefix, split_sltp=a.split_sltp)
+    # report the plan (search size + recommended trials) — always, so the budget is visible
+    rec = print_plan(a.timeframe, a.split_sltp, a.trials_per_dim,
+                     n_trials=(None if a.auto_trials else a.trials), sampler=a.sampler)
+    if a.plan:
+        print("   [--plan] dry run — not launching. Re-run without --plan (optionally --auto-trials) to start.",
+              flush=True)
+        return 0
+    n_trials = rec if a.auto_trials else a.trials
+    run(a.timeframe, n_trials=n_trials, folds=a.folds, min_trades=a.min_trades,
+        ind_1min=a.ind_1min, study_prefix=a.study_prefix, split_sltp=a.split_sltp,
+        warm_start=not a.no_warm_start, sampler=a.sampler)
     return 0
 
 

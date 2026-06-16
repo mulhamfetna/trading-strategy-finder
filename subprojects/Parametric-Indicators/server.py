@@ -65,6 +65,9 @@ class H(BaseHTTPRequestHandler):
                 # one-click importable winning strategies (plain winner + per-TF WS-I champions)
                 "strategies": presets.strategies(),
                 "bounds": {"sl_soft": [1, None], "sl_hard": [1, None], "tp": [1, None],
+                           # split long/short SL/TP (optional; blank ⇒ falls back to the shared value)
+                           "long_sl_soft": [1, None], "long_sl_hard": [1, None], "long_tp": [1, None],
+                           "short_sl_soft": [1, None], "short_sl_hard": [1, None], "short_tp": [1, None],
                            "gate_pct": [0, 100], "dd_limit": [0, None], "cooldown": [0, None],
                            "dd_cap": [1, None], "pv": [0.01, None]},
                 "windows": ["full", "full+20d", "2024", "2025", "2026", "2026+20d"],

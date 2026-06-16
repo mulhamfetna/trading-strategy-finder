@@ -459,7 +459,12 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
                       gate_thr=(None if gthr is None else round(gthr, 0)), dd_limit=(ddl if use_brk else None),
                       cooldown=cooldown, dd_cap=dd_cap, pv=pv, flip=flip, window=window,
                       timeframe=P["timeframe"], indicators=specs, k=k_rule, gen=gen_params,
-                      veto_as_flip=P["veto_as_flip"])
+                      veto_as_flip=P["veto_as_flip"],
+                      # echo the global entry-timing + split long/short SL/TP back so the dashboard form
+                      # round-trips faithfully (without these the UI reverts retrace/wait + drops split mode).
+                      retrace_amount=P["retrace_amount"], retrace_unit=P["retrace_unit"], wait_bars=P["wait_bars"],
+                      long_sl_soft=P["long_sl_soft"], long_sl_hard=P["long_sl_hard"], long_tp=P["long_tp"],
+                      short_sl_soft=P["short_sl_soft"], short_sl_hard=P["short_sl_hard"], short_tp=P["short_tp"])
     return dict(meta=dict(params=params_out, summary=summary,
                           split_ts=_ts(df4.iloc[min(n2025, len(df4) - 1)]["Date"]),
                           gen_report=gen_report),

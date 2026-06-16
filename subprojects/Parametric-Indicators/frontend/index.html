@@ -88,6 +88,10 @@
   /* paired-input rows (clip min/max, retrace+unit) also fill & split the row instead of fixed tiny boxes */
   .rrow{display:flex;gap:4px;align-items:center;justify-content:flex-end;flex:1 1 auto;max-width:240px;}
   .rrow input{flex:1 1 0;min-width:0;width:auto;}
+  /* split long/short SL/TP — per-side sub-section heading (mode chosen via the SL/TP-mode dropdown) */
+  .subhead{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:8px 0 2px;border-top:1px dashed var(--border);padding-top:6px;}
+  /* separator between the SL/TP value boxes and the direction / on-veto controls */
+  hr.sep{border:0;border-top:1px solid var(--border);margin:10px 0 8px;}
   .genrep{font:11px/1.6 ui-monospace,Menlo,monospace;color:var(--muted);} .genrep b{color:var(--text);}
   /* per-entry indicator vote chips (decision #1/#5 — every indicator's opinion, active or not) */
   .ind-chips{display:flex;flex-wrap:wrap;gap:4px;padding:1px 4px 4px 72px;border-bottom:1px solid #20242f;}
@@ -126,12 +130,28 @@
     </div>
     <div class="sgroup">
       <h3>Entry / exit (points)</h3>
-      <div class="fld"><label>SL soft</label><input id="sl_soft" type="number" step="1"></div>
-      <div class="fld"><label>SL hard</label><input id="sl_hard" type="number" step="1"></div>
-      <div class="fld"><label>Take-profit</label><input id="tp" type="number" step="1"></div>
+      <div class="fld"><label>SL/TP mode</label><select id="sltp_mode" title="Shared = one SL/TP for both directions. Split long/short = buys and sells each get their own SL/TP boxes (shared boxes are hidden).">
+        <option value="shared">shared (one SL/TP)</option>
+        <option value="split">split long/short</option></select></div>
+      <div id="sharedbox">
+        <div class="fld"><label>SL soft</label><input id="sl_soft" type="number" step="1"></div>
+        <div class="fld"><label>SL hard</label><input id="sl_hard" type="number" step="1"></div>
+        <div class="fld"><label>Take-profit</label><input id="tp" type="number" step="1"></div>
+      </div>
+      <div id="splitbox" style="display:none">
+        <div class="subhead">Long (buy) side</div>
+        <div class="fld"><label>SL soft</label><input id="long_sl_soft" type="number" step="1"></div>
+        <div class="fld"><label>SL hard</label><input id="long_sl_hard" type="number" step="1"></div>
+        <div class="fld"><label>Take-profit</label><input id="long_tp" type="number" step="1"></div>
+        <div class="subhead">Short (sell) side</div>
+        <div class="fld"><label>SL soft</label><input id="short_sl_soft" type="number" step="1"></div>
+        <div class="fld"><label>SL hard</label><input id="short_sl_hard" type="number" step="1"></div>
+        <div class="fld"><label>Take-profit</label><input id="short_tp" type="number" step="1"></div>
+      </div>
+      <hr class="sep">
       <div class="fld"><label>Direction</label><select id="flip"><option value="false">normal</option><option value="true">flipped</option></select></div>
       <div class="fld"><label>On veto</label><select id="veto_as_flip"><option value="false">keep veto (no entry)</option><option value="true">enter flipped direction</option></select></div>
-      <div class="hint">hard ≥ soft enforced · loss capped at SL-hard × $20</div>
+      <div class="hint">hard ≥ soft enforced · loss capped at SL-hard × $20 · split ⇒ each side uses its own boxes (shared boxes hidden; a blank per-side box still falls back to the shared value)</div>
     </div>
     <div class="sgroup">
       <h3>Volatility gate</h3>
@@ -326,12 +346,26 @@ function setForm(P){ if(P.timeframe&&$('timeframe').querySelector(`option[value=
   if(P.retrace_unit)$('g_retrace_unit').value=P.retrace_unit;
   if(P.wait_bars!=null)$('g_wait').value=P.wait_bars;
   if(P.gen){ if(P.gen.swing_l!=null)$('gen_swing_l').value=P.gen.swing_l; if(P.gen.golf_n!=null)$('gen_golf_n').value=P.gen.golf_n; }
+  // split long/short SL/TP: a preset/profile that carries any per-side value selects 'split' mode (which
+  // hides the shared boxes); otherwise 'shared'. The shared boxes keep their values either way.
+  const _SPL=['long_sl_soft','long_sl_hard','long_tp','short_sl_soft','short_sl_hard','short_tp'];
+  const _anySplit=_SPL.some(k=>P[k]!=null);
+  $('sltp_mode').value=_anySplit?'split':'shared';
+  $('sharedbox').style.display=_anySplit?'none':''; $('splitbox').style.display=_anySplit?'':'none';
+  _SPL.forEach(k=>{ $(k).value=(P[k]!=null)?P[k]:''; });
   if(P.indicators)applyIndicatorSpecs(P.indicators); }
 // NOTE: every value is read straight from the form — nothing is hardcoded or silently defaulted here.
 // Validation (and any error) happens server-side and is surfaced verbatim to the #err banner.
-function params(){ commitMath(); return {timeframe:$('timeframe').value||'4h',window:$('window').value,sl_soft:+$('sl_soft').value,sl_hard:+$('sl_hard').value,tp:+$('tp').value,
+function params(){ commitMath();
+  // split long/short SL/TP — only sent in 'split' mode; a blank per-side box ⇒ null ⇒ server falls back to
+  // the (hidden) shared value. 'shared' mode ⇒ all six are null ⇒ byte-identical to a normal run. The shared
+  // sl_soft/sl_hard/tp are ALWAYS sent (the engine requires them); in split mode they're hidden but retained.
+  const sp=$('sltp_mode').value==='split', spv=id=>(sp&&$(id).value!=='')?+$(id).value:null;
+  return {timeframe:$('timeframe').value||'4h',window:$('window').value,sl_soft:+$('sl_soft').value,sl_hard:+$('sl_hard').value,tp:+$('tp').value,
   gate_pct:+$('gate_pct').value,dd_limit:+$('dd_limit').value,cooldown:+$('cooldown').value,flip:$('flip').value==='true',veto_as_flip:$('veto_as_flip').value==='true',
   dd_cap:$('dd_cap').value===''?null:+$('dd_cap').value, pv:$('pv').value===''?null:+$('pv').value,
+  long_sl_soft:spv('long_sl_soft'), long_sl_hard:spv('long_sl_hard'), long_tp:spv('long_tp'),
+  short_sl_soft:spv('short_sl_soft'), short_sl_hard:spv('short_sl_hard'), short_tp:spv('short_tp'),
   indicators:indicatorSpecs(), k:+$('k_rule').value||1,
   retrace_amount:+$('g_retrace').value||0, retrace_unit:$('g_retrace_unit').value, wait_bars:+$('g_wait').value||0,
   gen:{swing_l:+$('gen_swing_l').value||2, golf_n:+$('gen_golf_n').value||3}};}
@@ -386,6 +420,17 @@ let dirty=false;
 function markDirty(){dirty=true;const d=$('dirty');d.textContent='⚠ not run on these values — click Run Backtest';d.classList.add('stale');d.classList.remove('ok');$('run').classList.add('stale');}
 function markClean(){dirty=false;const d=$('dirty');d.textContent='✓ results match current settings';d.classList.add('ok');d.classList.remove('stale');$('run').classList.remove('stale');}
 document.querySelectorAll('aside input,aside select').forEach(el=>el.addEventListener('input',markDirty));
+// split long/short SL/TP: the mode dropdown swaps the shared boxes for the per-side boxes (and back).
+// Switching to 'split' prefills blank per-side boxes from the shared values, so you start from the
+// current strategy and tweak one side.
+$('sltp_mode').addEventListener('change',()=>{
+  const on=$('sltp_mode').value==='split';
+  $('sharedbox').style.display=on?'none':''; $('splitbox').style.display=on?'':'none';
+  if(on)[['long_sl_soft','sl_soft'],['long_sl_hard','sl_hard'],['long_tp','tp'],
+         ['short_sl_soft','sl_soft'],['short_sl_hard','sl_hard'],['short_tp','tp']]
+        .forEach(([d,s])=>{ if($(d).value==='')$(d).value=$(s).value; });
+  markDirty();
+});
 mathify(document.querySelector('aside'));   // static value boxes accept inline math (operators + - * /)
 
 async function run(){

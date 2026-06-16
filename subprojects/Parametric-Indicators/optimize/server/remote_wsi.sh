@@ -34,7 +34,8 @@ TFS_ALL=(4h 2h 1h 15m 5m 2m)                          # full set (1-minute TF ex
 TFS=(4h)                                              # ⚠️ 4h ONLY — full-data optimizer focus (see banner above)
 PREFIX="${WSH_PREFIX:-wsh4}"                           # study prefix; override e.g. WSH_PREFIX=wsh5 for a fresh regime
 SPLIT_ARG="${WSH_SPLIT:+--split-sltp}"                 # set WSH_SPLIT=1 to search SEPARATE long/short SL/TP (Q3/E2)
-IND_ARGS="--ind-1min --study-prefix $PREFIX $SPLIT_ARG" # indicators read the 1-minute frame
+SAMPLER_ARG="${WSH_SAMPLER:+--sampler $WSH_SAMPLER}"   # optimizer brain (P2): nsga3*(default)|nsga2|tpe|motpe|gp; unset ⇒ nsga3 (unchanged)
+IND_ARGS="--ind-1min --study-prefix $PREFIX $SPLIT_ARG $SAMPLER_ARG" # indicators read the 1-minute frame
 
 SSH_OPTS=(-p "$SRV_PORT" -i "$SRV_KEY" -o IdentitiesOnly=yes -o BatchMode=yes \
           -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 \
@@ -83,10 +84,31 @@ cmd_parity() {
 # full all-TF sweep is resumed (TFS=TFS_ALL); they are inert while TFS=(4h). (Was spread 6/6/5/5/4/4 across TFs.)
 declare -A WORKERS=( [4h]=30 [2h]=4 [1h]=5 [15m]=5 [5m]=6 [2m]=6 )
 
+# Print the dimension-proportional trial plan for the current TFs (dry run — never launches).
+cmd_plan() {
+  local tfs=("${TFS[@]}")
+  log "search-space plan ($PREFIX, split=${WSH_SPLIT:+on}${WSH_SPLIT:-off}) — trials scale ∝ dimensions:"
+  for tf in "${tfs[@]}"; do
+    srv "$REMOTE_ENV; cd '$CODE' && python3 optimize/optimizer.py '$tf' --plan $SPLIT_ARG" || true
+  done
+}
+
 cmd_run() {
-  local total="${1:-3000}"; local only="${2:-}"
-  local tfs=("${TFS[@]}"); [ -n "$only" ] && read -ra tfs <<< "$only"
-  log "launching NSGA-III search ($PREFIX, 1-minute indicators): target $total trials/TF (idempotent, watchdog/respawn) [${tfs[*]}] (min-trades 5) ..."
+  local tfs=("${TFS[@]}"); [ -n "${2:-}" ] && read -ra tfs <<< "$2"
+  # Dimension-proportional budget (anti 'bigger space, fewer samples' trap — see the superset-paradox report):
+  # default TARGET = recommended_trials(dims) for the current split mode; pass an explicit number to override.
+  local split_py="False"; [ -n "${WSH_SPLIT:-}" ] && split_py="True"
+  local rec; rec=$(srv "$REMOTE_ENV; cd '$CODE' && python3 -c \"from optimize import optimizer as O; print(O.recommended_trials($split_py))\"" 2>/dev/null | tr -dc '0-9')
+  local total="${1:-auto}"; { [ "$total" = "auto" ] || [ -z "$total" ]; } && total="${rec:-5000}"
+  log "PLAN: prefix=$PREFIX  TFs=[${tfs[*]}]  split=${WSH_SPLIT:+on}${WSH_SPLIT:-off}  warm-start=ON"
+  log "      recommended ${rec:-?} trials/TF (∝ dimensions)  →  TARGET ${total} trials/TF"
+  cmd_plan
+  # Acceptance gate: report the budget and require a yes (or WSH_CONFIRM=1 to skip in automation).
+  if [ -z "${WSH_CONFIRM:-}" ]; then
+    read -rp "Launch this run with TARGET ${total} trials/TF? [y/N] " _ans </dev/tty 2>/dev/null || _ans=""
+    case "$_ans" in [yY]*) ;; *) log "aborted — not launched (set WSH_CONFIRM=1 to skip this prompt)"; return 1 ;; esac
+  fi
+  log "launching NSGA-III search ($PREFIX, 1-minute indicators): target $total trials/TF (idempotent, watchdog/respawn, warm-started) [${tfs[*]}] (min-trades 5) ..."
   local spec=""; for tf in "${tfs[@]}"; do spec+="$tf:${WORKERS[$tf]:-1} "; done
   srv "cat > '$WSI/launch.sh' <<'EOS'
 #!/usr/bin/env bash
@@ -181,6 +203,6 @@ cmd_smoke() {  # pre-flight contention probe BEFORE a multi-hour sweep — must 
 case "${1:-}" in
   push) cmd_push ;; parity) cmd_parity ;; run) shift; cmd_run "${1:-3000}" "${2:-}" ;;
   status) cmd_status ;; counts) cmd_counts ;; stats) cmd_stats ;; smoke) shift; cmd_smoke "${1:-30}" "${2:-20}" ;;
-  pull) cmd_pull ;; stop) cmd_stop ;;
-  *) echo "usage: remote_wsi.sh {push|parity|smoke [workers] [trials]|run [target]|status|counts|stats|pull|stop}"; exit 1 ;;
+  pull) cmd_pull ;; stop) cmd_stop ;; plan) cmd_plan ;;
+  *) echo "usage: remote_wsi.sh {push|parity|smoke [workers] [trials]|plan|run [target|auto]|status|counts|stats|pull|stop}"; exit 1 ;;
 esac

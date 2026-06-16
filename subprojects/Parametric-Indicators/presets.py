@@ -78,6 +78,22 @@ def _champions_1min() -> dict:
         return {}
 
 
+_CHAMP_WSH5_SPLIT_JSON = _HERE / "optimize" / "results" / "wsh5_4h_split_champion.json"
+# wsh5 regime: a SINGLE 4h champion from the SPLIT long/short SL/TP sweep (Q3/E2; --split-sltp). The
+# full-data optimizer ran 4h-ONLY (2026-06-15 directive). This is imported as an ALTERNATIVE profile —
+# the deployed shared champion ([[project_wsg_winner]] / wsh4 4h) is NOT replaced: per the adoption gate
+# the split champion did NOT OOS-dominate (lower return, much lower drawdown, higher win-rate). See
+# study_range_regime/REPORT_wsh5_4h_split_champion.md. NOTE: this run predates the ifvg/breaker/cisd votes
+# being wired, so its search space did NOT include them (a subsequent run will).
+def _champions_wsh5_split() -> dict:
+    if not _CHAMP_WSH5_SPLIT_JSON.exists():
+        return {}
+    try:
+        return json.loads(_CHAMP_WSH5_SPLIT_JSON.read_text())
+    except Exception:
+        return {}
+
+
 def _all_specs(inds_on: dict | None = None):
     """Return (full 15-indicator spec list, gen_swing_l). Every registered indicator is emitted with
     enabled True/False so importing a preset RESETS indicators not in it (a previously-on indicator
@@ -98,7 +114,7 @@ def _all_specs(inds_on: dict | None = None):
 
 def _preset(timeframe: str, box: dict, inds_on: dict) -> dict:
     specs, gen_swing = _all_specs(inds_on)
-    return dict(
+    p = dict(
         timeframe=timeframe, window="full",
         sl_soft=box["sl_soft"], sl_hard=box["sl_hard"], tp=box["tp"],
         gate_pct=box["gate_pct"], dd_limit=box["dd_limit"], cooldown=box["cooldown"],
@@ -108,6 +124,14 @@ def _preset(timeframe: str, box: dict, inds_on: dict) -> dict:
         gen={"swing_l": gen_swing, "golf_n": 3},
         indicators=specs,
     )
+    # Optional SPLIT long/short SL/TP (Q3/E2): when a champion box carries any per-side value, pass all six
+    # through so the dashboard imports it in 'split' mode. Absent ⇒ shared SL/TP (the common case) ⇒ omitted
+    # ⇒ the form stays in 'shared' mode. A blank/None per side still falls back to the shared boxes server-side.
+    _SPLIT = ("long_sl_soft", "long_sl_hard", "long_tp", "short_sl_soft", "short_sl_hard", "short_tp")
+    if any(box.get(k) is not None for k in _SPLIT):
+        for k in _SPLIT:
+            p[k] = box.get(k)
+    return p
 
 
 def strategies() -> list[dict]:
@@ -140,6 +164,15 @@ def strategies() -> list[dict]:
         p["trained_on"] = "1-minute frame (wsh4)"      # provenance marker (frontend ignores unknown keys)
         out.append({"id": f"wsi1m_{tf}",
                     "label": f"⏱ WS-I {tf} · 1-min-trained — typ ${c['median_pnl']:,.0f}",
+                    "preset": p})
+    # NEW: wsh5 4h SPLIT long/short SL/TP champion (Q3/E2 sweep, 4h-only full-data run). Imported as an
+    # ALTERNATIVE (lower-return / much-lower-drawdown / higher-win-rate) — NOT a champion swap (adoption gate:
+    # it did not OOS-dominate the shared champion). Importing it puts the dashboard in 'split' mode.
+    for tf, c in _champions_wsh5_split().items():
+        p = _preset(tf, c["box"], c.get("indicators", {}))
+        p["trained_on"] = "1-minute frame · split long/short SL/TP (wsh5, 4h-only)"
+        out.append({"id": f"wsh5split_{tf}",
+                    "label": f"⚖ WS split {tf} · long/short SL/TP — typ ${c['median_pnl']:,.0f} (DD ${c['worst_dd']:,.0f})",
                     "preset": p})
     # user-saved profiles (server-side store) — first-class entries, id prefixed 'user_'
     for name, preset in load_user_profiles().items():

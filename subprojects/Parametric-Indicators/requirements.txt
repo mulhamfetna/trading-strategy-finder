@@ -1,0 +1,5 @@
+cmaes  # P3 two-stage: Optuna CmaEsSampler backend (Stage-B continuous tuning)
+fastapi  # optimizer dashboard (P-A)
+uvicorn[standard]  # optimizer dashboard (P-A)
+python-telegram-bot>=21  # optimizer dashboard (P-A)
+optuna-dashboard  # optimizer dashboard (P-A)
