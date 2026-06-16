@@ -24,3 +24,15 @@ def test_attribute_every_bar_one_label():
     cause = CP.attribute(sig, vg, ve, cf)
     assert set(cause[1:]) <= {"box_silence", "vol_gated", "vetoed", "confirm<K", "would_enter"}
     assert all(c is not None for c in cause[1:])
+
+
+def test_isolated_sim_matches_real_taken_trade():
+    """The isolated simulator must reproduce a really-taken trade's P/L exactly (isolated exit == engine exit)."""
+    C = CP.load_champion("4h")
+    taken = CP.champion_taken_trades(C)        # real fast_backtest run with the champion gate
+    assert taken, "champion produced no trades"
+    t0 = taken[len(taken) // 2]                # a mid-sample real trade
+    sim = CP.simulate_one(C, int(t0["entry_idx"]))
+    assert sim is not None
+    assert abs(float(sim["pnl_points"]) - float(t0["pnl_points"])) < 1e-6
+    assert sim["exit_reason"] == t0["exit_reason"]

@@ -76,3 +76,33 @@ def load_champion(tf: str = "4h"):
     return dict(ctx=ctx, d=d, d1=d1, box=box, n=n, sig=sig, vol_gate=vol_gate, veto=veto,
                 confirm=confirm, params=params, pv=float(config.NQ_POINT_VALUE),
                 bar_td=bar_td, gate_pct=gate_pct, K=K)
+
+
+def _engine_gate(C):
+    """The champion's effective per-bar gate: vol_gate ∧ ¬veto ∧ confirm (engine convention)."""
+    return C["vol_gate"] & ~C["veto"] & C["confirm"]
+
+
+def _bt_args(C):
+    d, d1 = C["d"], C["d1"]
+    p = C["params"]
+    return (d["Date"].to_numpy(), d["Close"].to_numpy(float), C["sig"],
+            d1["Date"].to_numpy(), d1["High"].to_numpy(float),
+            d1["Low"].to_numpy(float), d1["Close"].to_numpy(float),
+            float(p["sl_soft"]), float(p["sl_hard"]), float(p["tp"]), bool(p["flip"]))
+
+
+def champion_taken_trades(C):
+    """Full champion run via fast_backtest with the real gate (matches core.backtest_metrics' candidate stream)."""
+    dd, cl, si, md, mh, ml, mc, sls, slh, tp, flip = _bt_args(C)
+    return fast_backtest(dd, cl, si, _engine_gate(C), md, mh, ml, mc, sls, slh, tp, flip)
+
+
+def simulate_one(C, entry_idx: int):
+    """Simulate the box signal that would enter at `entry_idx`, in ISOLATION: real signals, but a gate that is
+    True at exactly that entry bar. Returns the single completed trade dict, or None if it never closes."""
+    dd, cl, si, md, mh, ml, mc, sls, slh, tp, flip = _bt_args(C)
+    gate_one = np.zeros(C["n"], dtype=bool)
+    gate_one[int(entry_idx)] = True
+    trades = fast_backtest(dd, cl, si, gate_one, md, mh, ml, mc, sls, slh, tp, flip)
+    return trades[0] if trades else None
