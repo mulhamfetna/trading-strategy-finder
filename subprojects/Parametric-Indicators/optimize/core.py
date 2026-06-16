@@ -13,6 +13,7 @@ Exits are unchanged — always resolved on the 1-minute frame inside the engine.
 """
 from __future__ import annotations
 
+import math
 import sys
 from pathlib import Path
 
@@ -142,7 +143,7 @@ def backtest_metrics(
         peak = max(peak, eq)
         dd = peak - eq
         taken.append({"pnl": pnl, "eq": eq, "dd": dd,
-                      "year": pd.Timestamp(t["exit_time"]).year})
+                      "year": pd.Timestamp(t["exit_time"]).year, "entry_idx": int(t["entry_idx"])})
         if use_brk and dd >= dd_limit:
             locked = True
             cd = cooldown
@@ -157,6 +158,21 @@ def backtest_metrics(
     eq_arr = np.array([t["eq"] for t in taken])
     uw = np.maximum.accumulate(eq_arr) - eq_arr
     wins = pnl_arr[pnl_arr > 0]; losses = pnl_arr[pnl_arr < 0]
+    # S0: warmup-attributed no-entry-streak (additive — never changes existing values).
+    from optimize.no_entry import no_entry_metrics
+    from indicators import library as _lib
+    _specs = [s for s in params.get("indicators", []) if s.get("enabled")]
+    try:
+        _warm_native = max((i.warmup_bars() for i in _lib.from_specs(_specs)), default=0)
+    except Exception:
+        _warm_native = 0
+    _bar_min = bar_duration.total_seconds() / 60.0
+    # ind_1min => warmup is in 1-MIN candles -> convert to decision bars; else already decision bars.
+    _warm_dec = math.ceil(_warm_native / _bar_min) if params.get("ind_1min") else int(_warm_native)
+    _ne = no_entry_metrics([t["entry_idx"] for t in taken], n_bars=len(df_dec),
+                           warmup_decision_bars=_warm_dec, bar_hours=bar_duration.total_seconds() / 3600.0)
+    _ne["data_footprint_candles"] = int(_warm_native)        # issue 3: live-trader history buffer
+    _ne["warmup_frame"] = "1min" if params.get("ind_1min") else "decision"
     return dict(
         pnl=float(pnl_arr.sum()),
         pnl_2025=float(pnl_arr[yr == config.YEARS[0]].sum()),
@@ -169,6 +185,7 @@ def backtest_metrics(
             if len(losses) and losses.sum() != 0 else None),
         n_locks=n_locks,
         trades=taken,
+        **_ne,
     )
 
 

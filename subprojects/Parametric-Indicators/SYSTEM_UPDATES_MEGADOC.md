@@ -319,4 +319,12 @@ engine/UI → joint `wsh5` (4h pilot → all TF) → fitted policy → remove AT
 - **STAGE REPORT (2026-06-16) — optimizer hardening + dashboard:** `STAGE_REPORT_optimizer_hardening_and_dashboard.md`
   consolidates this whole stage (algorithm P2→P4 + the dashboard) with evidence, status board, and the held
   next actions (#3 two-stage launch wiring → #2 deploy). First committed at `25942eb`.
+- **Strategy refinement — S0 no-entry metric + β indicator ablation (2026-06-16):** `optimize/no_entry.py`
+  (warmup-vs-decision-attributed no-entry-streak; additive `backtest_metrics` keys, golden 6/6 unchanged) +
+  `optimize/ablate_indicators.py` (exhaustive 256-subset ablation of the wsh4 1-min 4h champion, parallel,
+  full-period). **Findings** (`study_range_regime/UPDATE_S0_beta_no_entry_and_ablation.md` +
+  `REPORT_indicator_ablation_wsi1m_4h.md`): the worst pause is **11.5d, decision-sourced** (0/256 subsets get
+  <3d ⇒ needs α); and keeping just **cci+order_block+structure_trend** (drop 5) gives **+5.5% P/L
+  ($149,989) at half the data footprint (346→138)** — caveat: full-period only, re-check on folds/OOS before
+  deploying. Tests: `test_no_entry_metric.py` (4) + `test_ablate.py` (4). α (#227) held + now well-motivated.
 - **This file** is the top-level index over all of them.

@@ -94,6 +94,21 @@ def _champions_wsh5_split() -> dict:
         return {}
 
 
+# β-ablation LEAN champion: the wsh4 1-min 4h champion with 5 of its 8 indicators dropped (keep
+# cci/order_block/structure_trend). Full-period P/L $149,989 (+5.5% vs the 8-ind champion) at HALF the data
+# footprint (346->138 candles). Source/run: study_range_regime/UPDATE_S0_beta_no_entry_and_ablation.md +
+# REPORT_indicator_ablation_wsi1m_4h.md. CAVEAT: ablation is FULL-PERIOD only; re-check folds/OOS before deploy.
+_CHAMP_LEAN_JSON = _HERE / "optimize" / "results" / "wsh_lean_4h_champion.json"
+
+def _champions_lean() -> dict:
+    if not _CHAMP_LEAN_JSON.exists():
+        return {}
+    try:
+        return json.loads(_CHAMP_LEAN_JSON.read_text())
+    except Exception:
+        return {}
+
+
 def _all_specs(inds_on: dict | None = None):
     """Return (full 15-indicator spec list, gen_swing_l). Every registered indicator is emitted with
     enabled True/False so importing a preset RESETS indicators not in it (a previously-on indicator
@@ -173,6 +188,18 @@ def strategies() -> list[dict]:
         p["trained_on"] = "1-minute frame · split long/short SL/TP (wsh5, 4h-only)"
         out.append({"id": f"wsh5split_{tf}",
                     "label": f"⚖ WS split {tf} · long/short SL/TP — typ ${c['median_pnl']:,.0f} (DD ${c['worst_dd']:,.0f})",
+                    "preset": p})
+    # NEW: β-ablation LEAN champion — the wsh4 1-min 4h champion stripped to its 3 high-value indicators
+    # (cci/order_block/structure_trend; drop bollinger/keltner/mfi/obv/sma_trend). Full-period $149,989
+    # (+5.5% vs the 8-ind champion) at HALF the data footprint (346->138). Imported as an ALTERNATIVE for the
+    # fewer-indicators / lighter-live-data goal — NOT a champion swap (ablation is full-period; verify folds/OOS).
+    for tf, c in _champions_lean().items():
+        p = _preset(tf, c["box"], c.get("indicators", {}))
+        p["trained_on"] = ("β ablation of the wsh4 1-min champion — lean 3-indicator subset "
+                           "(full-period +5.5%; footprint 346->138 candles; verify on folds before deploy)")
+        out.append({"id": f"wshlean_{tf}",
+                    "label": (f"🍃 WS lean {tf} · 3-ind cci/OB/structure — ${c['full_pnl']:,.0f} "
+                              f"(+5.5% vs champ · footprint {c.get('data_footprint_candles','?')})"),
                     "preset": p})
     # user-saved profiles (server-side store) — first-class entries, id prefixed 'user_'
     for name, preset in load_user_profiles().items():
