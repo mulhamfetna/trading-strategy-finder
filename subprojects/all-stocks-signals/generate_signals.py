@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import json
 import os
 import sys
 from typing import List
@@ -50,6 +51,44 @@ def _load_module(name: str, path: str):
 g1 = _load_module('stage1_gen', os.path.join(_SIGNALS_ROOT, 'generate_stage1.py'))
 g2 = _load_module('stage2_gen',
                   os.path.join(_SIGNALS_ROOT, 'stage1_0_reverse_signals', 'generate_stage2.py'))
+
+
+# decision-bar minutes per timeframe — used to turn box-pause bar counts into wall-clock time.
+_TF_MIN = {'1m': 1, '2m': 2, '5m': 5, '15m': 15, '1h': 60, '2h': 120, '4h': 240}
+
+
+def holds_dropped_col(s1: pd.DataFrame) -> List[int]:
+    """For each kept long/short row (in 1_all_signals order), the count of consecutive 'hold'
+    rows immediately preceding it — i.e. how many holds were DROPPED before this signal. Aligns
+    1:1 with the no_holds frame (one value appended per long/short row)."""
+    out: List[int] = []
+    run = 0
+    for sig in s1['signal'].to_numpy():
+        if sig in ('long', 'short'):
+            out.append(run); run = 0
+        else:
+            run += 1
+    return out
+
+
+def longest_hold_run(s1: pd.DataFrame) -> int:
+    """Longest consecutive run of 'hold' rows in 1_all_signals (incl. a trailing run with no
+    signal after it) — the longest box-only pause (no long/short produced)."""
+    best = run = 0
+    for sig in s1['signal'].to_numpy():
+        if sig in ('long', 'short'):
+            run = 0
+        else:
+            run += 1
+            if run > best:
+                best = run
+    return best
+
+
+def _bars_time(bars: int, tf: str) -> dict:
+    mins = bars * _TF_MIN.get(tf, 0)
+    return {'bars': int(bars), 'minutes': int(mins), 'hours': round(mins / 60.0, 2),
+            'days': round(mins / 1440.0, 2)}
 
 
 def load_boxes(box_csv: str) -> pd.DataFrame:
@@ -85,6 +124,7 @@ def run_instrument(inst: Instrument, timeframes: List[str], presets: List[str],
                    out_root: str) -> List[dict]:
     box_df = load_boxes(inst.box_csv)
     summary = []
+    pause = []        # per (tf, preset) box-pause sidecar entries
     for tf in timeframes:
         candles_csv = inst.candle_csv(tf)
         if not os.path.exists(candles_csv):
@@ -97,21 +137,57 @@ def run_instrument(inst: Instrument, timeframes: List[str], presets: List[str],
             s1 = stage1_for_preset(candles_csv, box_df, preset)
             s1.to_csv(os.path.join(tf_dir, f'signals_{inst.token}_{tf}_{preset}.csv'), index=False)
             nh = s1[s1['signal'].isin(['long', 'short'])].reset_index(drop=True)
+            # holds_dropped: how many consecutive 'hold' rows were removed right before each signal
+            # (the box-silence run that preceded it). Aligns 1:1 with the no_holds rows.
+            nh['holds_dropped'] = holds_dropped_col(s1)
             nh.to_csv(os.path.join(nh_dir, f'signals_{inst.token}_{tf}_{preset}_no_holds.csv'),
                       index=False)
             rev = g2.generate(s1)
             write_reverse(rev, tf_dir, inst.token, tf, preset)
 
+            # box-pause sidecar: longest box-only pause (max hold run in 1_all_signals) and the
+            # longest reverse-window pause (max holds_between in 3_reverse_signals).
+            box_pause = longest_hold_run(s1)
+            rev_pause = int(rev['holds_between'].max()) if len(rev) and 'holds_between' in rev else 0
+            pause.append(dict(instrument=inst.token, tf=tf, preset=preset,
+                              holds_dropped_total=int(nh['holds_dropped'].sum()),
+                              longest_box_pause=_bars_time(box_pause, tf),
+                              reverse={'longest_pause': _bars_time(rev_pause, tf)}))
+
             dist = s1['signal'].value_counts().to_dict()
             row = dict(instrument=inst.token, timeframe=f'{inst.token}_{tf}', preset=preset,
                        signal_rows=len(s1), long=int(dist.get('long', 0)),
                        short=int(dist.get('short', 0)), hold=int(dist.get('hold', 0)),
-                       no_hold_rows=len(nh), reverse_windows=len(rev))
+                       no_hold_rows=len(nh), reverse_windows=len(rev),
+                       holds_dropped_total=int(nh['holds_dropped'].sum()),
+                       longest_box_pause_bars=box_pause, reverse_longest_pause_bars=rev_pause)
             summary.append(row)
             print(f"  {inst.token:9s} {tf:4s} {preset:5s}: signals={len(s1):>8,}  "
                   f"L/S/H={row['long']}/{row['short']}/{row['hold']}  "
                   f"no_holds={len(nh):>6,}  reverse={len(rev):>4,}")
+    if pause:
+        _write_pause_summary(inst.token, pause, os.path.join(out_root, inst.token))
     return summary
+
+
+def _write_pause_summary(token: str, pause: List[dict], dst_dir: str) -> None:
+    """Write the per-instrument box-pause sidecar (PAUSE_SUMMARY.json + readable .md)."""
+    os.makedirs(dst_dir, exist_ok=True)
+    with open(os.path.join(dst_dir, 'PAUSE_SUMMARY.json'), 'w') as f:
+        json.dump({'instrument': token, 'cells': pause}, f, indent=2)
+    lines = [f'# {token} — box-pause summary', '',
+             'Longest **box-only** pause per (timeframe, preset): the max consecutive run of '
+             '`hold` rows in `1_all_signals` (no `long`/`short` produced), plus the longest '
+             'reverse-window pause (`holds_between`). `holds_dropped_total` = total `hold` rows '
+             'removed to build `2_holds_dropped`.', '',
+             '| TF | preset | holds dropped | longest box pause | reverse longest pause |',
+             '|---|---|---|---|---|']
+    for c in pause:
+        bp, rp = c['longest_box_pause'], c['reverse']['longest_pause']
+        lines.append(f"| {c['tf']} | {c['preset']} | {c['holds_dropped_total']:,} | "
+                     f"{bp['bars']} bars · {bp['days']}d | {rp['bars']} bars · {rp['days']}d |")
+    with open(os.path.join(dst_dir, 'PAUSE_SUMMARY.md'), 'w') as f:
+        f.write('\n'.join(lines) + '\n')
 
 
 def main() -> int:

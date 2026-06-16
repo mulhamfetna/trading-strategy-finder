@@ -269,6 +269,11 @@ function render(D){
     card(S.n_taken+'/'+S.n_candidates,'trades ('+S.exposure+'%)')+
     card(S.n_locks,'breaker locks')+
     card((S.noentry_streak_n??0)+' · '+(S.noentry_streak_days??0)+'d','longest no-entry streak (signals · days)'+(S.noentry_streak_start?' — from '+S.noentry_streak_start:''))+
+    // entry-pause decomposition (additive summary fields from strategy.build_payload → pause_streaks)
+    card(S.box_silence?(S.box_silence.bars+'c · '+S.box_silence.days+'d'):'—','longest box-silence (no box signal)')+
+    card(S.position_hold?(S.position_hold.bars+'c · '+S.position_hold.days+'d'):'—','longest position hold (trade open)')+
+    card(S.gate_noentry?(S.gate_noentry.bars+'c · '+S.gate_noentry.days+'d'):'—','longest gate non-entry (vol-gate blocked)')+
+    card(S.indicator_noentry?(S.indicator_noentry.bars+'c · '+S.indicator_noentry.days+'d'):'—','longest indicator non-entry (gate-approved, indicators blocked)')+
     // warmup-period + heaviest-indicator boxes (live from /api/warmup; filled by recomputeWarmup() below)
     `<div class="card"><div class="v" id="fp_warm" style="font-size:15px">—</div><div class="k">warmup period</div></div>`+
     `<div class="card"><div class="v" id="fp_heavy" style="font-size:12px;line-height:1.25">—</div><div class="k">longest indicator candles requirement</div></div>`;

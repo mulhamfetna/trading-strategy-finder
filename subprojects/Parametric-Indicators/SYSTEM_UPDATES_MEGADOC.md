@@ -345,4 +345,15 @@ engine/UI → joint `wsh5` (4h pilot → all TF) → fitted policy → remove AT
   >50%-of-P/L drawdown. **The 11.5-day pause is a STRUCTURAL floor of this strategy family on 4h** (gate +
   box cadence) → a materially shorter pause needs a **gate redesign** (next), not re-optimisation. Docs:
   `study_range_regime/{SPEC,PLAN,UPDATE}_alpha_*` + `REPORT_alpha_tier1_decision_pause.md`.
+- **Entry-pause visibility — dashboard + all-stocks (2026-06-16):** a visibility-only change surfacing *why*
+  the system isn't entering. New pure helper `optimize/pause_streaks.py` decomposes every decision bar by cause
+  (box-silence → vol-gate → indicator) and reports the longest consecutive run of each. `strategy.build_payload`
+  adds 4 additive `summary` metrics (`box_silence`/`position_hold`/`gate_noentry`/`indicator_noentry`), emits the
+  previously-**silent** `confirm<K` NOENTRY events (369 surfaced on the wsh4 4h champion), and tags every NOENTRY
+  event with a `reason`; the frontend renders 4 new responsive cards + reason-styled log rows. The all-stocks
+  delivery gains a `holds_dropped` column on `2_holds_dropped` + a per-instrument `PAUSE_SUMMARY.json`/`.md`
+  sidecar (longest box-only pause per tf/preset). **Golden 6/6 + NQ byte-parity 12/12 intact** (parity covers
+  only stage1/stage2 outputs — the new column is on the derived file, so the anchor is unaffected; spec's D5
+  re-anchor was moot). Tests: `optimize/test_pause_streaks.py` (4). Doc
+  `study_range_regime/UPDATE_entry_pause_visibility.md`. Feeds the PAUSED gate-redesign brainstorm.
 - **This file** is the top-level index over all of them.

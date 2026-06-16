@@ -379,7 +379,7 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
     # these are NOT trades and do NOT touch equity/drawdown/summary.
     for b in blocked:
         bt = _ts(d4["Date"].iloc[int(b["entry_idx"])])
-        ev = {"time": bt, "type": "NOENTRY"}
+        ev = {"time": bt, "type": "NOENTRY", "reason": ("vetoed" if b["reason"] == "veto" else "vol_gated")}
         if b["reason"] == "veto":
             vetoers = ""
             if attrib:
@@ -445,6 +445,36 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
     noentry_days = round((_best_t1 - _best_t0) / 86400.0, 1) if _best_n else 0.0
     noentry_start = (pd.Timestamp(_best_t0, unit="s").strftime("%Y-%m-%d") if _best_n else None)
 
+    # --- entry-pause visibility (additive; does NOT touch trades/equity/PnL/DD) ---
+    # Decompose, per decision bar, WHY no entry happened — box-silence vs vol-gate vs indicator block —
+    # and the longest consecutive run of each (+ the longest open-position hold). Pure post-trade summary.
+    from optimize import pause_streaks
+    _n = len(d4)
+    _sig = np.array([1 if s == "long" else -1 if s == "short" else 0 for s in sig_arr[:_n]], dtype=int)
+    _volg = np.asarray(gate, dtype=bool)[:_n] if gate is not None else np.ones(_n, dtype=bool)
+    _veto = np.asarray(veto_mask, dtype=bool)[:_n] if veto_mask is not None else np.zeros(_n, dtype=bool)
+    _cmask = None
+    if specs and any(i.config.enabled for i in inds):
+        from indicators import runner as _runner
+        _cmask = np.asarray(_runner.confirm_mask(d4, box, inds, k_rule, src=ind_src, votes=_votes),
+                            dtype=bool)[:_n]
+    _conf = _cmask if _cmask is not None else np.ones(_n, dtype=bool)
+    _bar_secs = int(bar_td.total_seconds())
+    _spans = [(0, max(1, round((_ts(t["exit_time"]) - _ts(t["entry_time"])) / _bar_secs)))
+              for t in cand if t.get("exit_time") is not None]
+    _pm = pause_streaks.pause_metrics(_sig, _volg, _veto, _conf, _bar_secs, trade_spans=_spans)
+
+    # The missing confirm<K NOENTRY events: the engine's blocked_log only carries veto/vol_gate, so a box
+    # signal that passed the vol gate + had no veto but failed the K-confirmer test was silently dropped.
+    # Surface it (logs only — not a trade).
+    if _cmask is not None:
+        _cand = _sig != 0
+        for i in np.flatnonzero(_cand & _volg & ~_veto & ~_conf):
+            i = int(i)
+            events.append({"time": _ts(d4["Date"].iloc[i]), "type": "NOENTRY", "reason": "confirm<K",
+                           "text": f"ENTRY NOT TAKEN — {'LONG' if _sig[i] > 0 else 'SHORT'} blocked: "
+                                   f"fewer than K={k_rule} confirmers"})
+
     summary = dict(pnl=float(pnl.sum()) if len(pnl) else 0.0,
                    pnl_2025=float(pnl[yr == config.YEARS[0]].sum()) if len(pnl) else 0.0,
                    pnl_2026=float(pnl[yr == config.YEARS[1]].sum()) if len(pnl) else 0.0,
@@ -454,7 +484,9 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
                    pf=round(float(wins.sum() / abs(losses.sum())), 2) if len(losses) and losses.sum() != 0 else None,
                    avg_win=round(float(wins.mean()), 0) if len(wins) else 0, avg_loss=round(float(losses.mean()), 0) if len(losses) else 0,
                    max_dd=round(float(uw.max()), 0) if len(eqc) else 0.0, n_locks=sum(1 for e in events if e["type"] == "LOCK"),
-                   noentry_streak_n=_best_n, noentry_streak_days=noentry_days, noentry_streak_start=noentry_start)
+                   noentry_streak_n=_best_n, noentry_streak_days=noentry_days, noentry_streak_start=noentry_start,
+                   box_silence=_pm["box_silence"], position_hold=_pm["position_hold"],
+                   gate_noentry=_pm["gate_noentry"], indicator_noentry=_pm["indicator_noentry"])
     params_out = dict(sl_soft=sl_soft, sl_hard=sl_hard, tp=tp, gate_pct=(None if gthr is None else float(gate_pct)),
                       gate_thr=(None if gthr is None else round(gthr, 0)), dd_limit=(ddl if use_brk else None),
                       cooldown=cooldown, dd_cap=dd_cap, pv=pv, flip=flip, window=window,

@@ -48,16 +48,20 @@ Presets:    `full`, `2025`, `2026`
 | Folder | Contents |
 |---|---|
 | `1_all_signals/`          | Every (candle × box) pair labelled `long`/`short`/`hold`. The complete signal stream. |
-| `2_holds_dropped/`        | The same rows with all `hold`s removed — only `long`/`short` signals. |
+| `2_holds_dropped/`        | The same rows with all `hold`s removed — only `long`/`short` signals, plus a `holds_dropped` column = how many `hold` rows were removed right before each signal. |
 | `3_reverse_signals/`      | Reverse windows (long→…→short or short→…→long). Each row carries `window_high` (**max high**), `window_low` (**min low**), direction-aware `tp`/`sl`, and `holds_between`. |
 | `4_reverse_by_direction/long_to_short/` | Reverse windows that opened `long`. |
 | `4_reverse_by_direction/short_to_long/` | Reverse windows that opened `short`. |
 | `SUMMARY.csv`             | Row/window counts for every (timeframe, preset). |
+| `PAUSE_SUMMARY.json`/`.md`| Longest **box-only** pause per (timeframe, preset): max consecutive `hold` run in `1_all_signals`, the longest reverse-window pause, and `holds_dropped_total`. |
 
 ## Column schemas
 
-**`1_all_signals` & `2_holds_dropped`** (10 cols):
+**`1_all_signals`** (10 cols):
 `datetime, open, high, low, close, volume, signal, box_id, box_upper, box_lower`
+
+**`2_holds_dropped`** (11 cols): the above + `holds_dropped` (consecutive `hold` rows removed
+immediately before each kept signal).
 
 **`3_reverse_signals` & `4_reverse_by_direction`** (21 cols):
 `first_datetime, first_open, first_high, first_low, first_close, first_signal,
@@ -103,6 +107,9 @@ def build_one(inst: Instrument, make_zip: bool) -> int:
                   os.path.join(dst, '4_reverse_by_direction', 'short_to_long', name), n)
 
     _copy(os.path.join(src_root, 'SUMMARY.csv'), os.path.join(dst, 'SUMMARY.csv'), n)
+    # box-pause sidecar (entry-pause visibility): longest box-only pause per (tf, preset)
+    _copy(os.path.join(src_root, 'PAUSE_SUMMARY.json'), os.path.join(dst, 'PAUSE_SUMMARY.json'), n)
+    _copy(os.path.join(src_root, 'PAUSE_SUMMARY.md'), os.path.join(dst, 'PAUSE_SUMMARY.md'), n)
     with open(os.path.join(dst, 'README.md'), 'w') as f:
         f.write(_readme(inst))
     print(f"  {token}: copied {n[0]} CSVs -> {dst}")
