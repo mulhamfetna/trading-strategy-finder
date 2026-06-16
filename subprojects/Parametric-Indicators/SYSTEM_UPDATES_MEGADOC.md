@@ -356,4 +356,17 @@ engine/UI → joint `wsh5` (4h pilot → all TF) → fitted policy → remove AT
   only stage1/stage2 outputs — the new column is on the derived file, so the anchor is unaffected; spec's D5
   re-anchor was moot). Tests: `optimize/test_pause_streaks.py` (4). Doc
   `study_range_regime/UPDATE_entry_pause_visibility.md`. Feeds the PAUSED gate-redesign brainstorm.
+- **Counterfactual pause attribution — does the no-entry pause cost money? (2026-06-16):** evidence-first
+  resolution of the gate-redesign question. `optimize/counterfactual_pause.py` (read-only) simulates every
+  gate-/veto-blocked box signal of the 4h champion as an ISOLATED trade with the champion's exact exit
+  (reusing `fast_backtest`; a parity test locks isolated-exit ≡ engine-exit), and tallies per-filter
+  expectancy. **Verdict: ACCEPT the pause.** The vol gate blocked 206 would-be trades netting **−$28,040** and
+  the veto blocked 359 netting **−$73,117** → both are *correctly filtering* (~$101k of losers avoided;
+  relaxing destroys P/L). `confirm<K` collapses to **0** under the engine-faithful signal/gate pairing (the old
+  `diagnose_pause` 22% was an off-by-one artifact) — confirmation-blocking is 100% veto-driven. Box-silence
+  (71%) windows are roughly symmetric (median MAE 88 ≥ MFE 75 pts; TP 120) → no free directional edge. The
+  pause is the strategy correctly NOT trading, not a defect; the only remaining lever (a new box-entry trigger)
+  is unsupported by the data. Tests: `optimize/test_counterfactual_pause.py` (4); golden 6/6 untouched (study
+  is read-only). Docs: `study_range_regime/REPORT_counterfactual_pause.md` +
+  `{SPEC,PLAN}_counterfactual_pause_attribution.md`; closes `PAUSED_gate_redesign_brainstorm.md`.
 - **This file** is the top-level index over all of them.

@@ -4,7 +4,7 @@ description: "PAUSED gate-redesign brainstorm — the pause diagnosis (vol gate 
 metadata:
   type: project
   workstream: gate-redesign
-  status: PAUSED — resume after the visibility side task
+  status: RESOLVED (2026-06-16) — counterfactual study → ACCEPT the pause (see REPORT_counterfactual_pause.md)
   date: 2026-06-16
 ---
 
@@ -23,7 +23,22 @@ questions here to resume after the entry-pause-visibility side task.
 ⇒ **The volatility gate is NOT the bottleneck (~4%).** The pause is **box-signal sparsity (~71%)** +
 **confirmation blocking (~22%, K=1 ⇒ zero confirmers fired)**. A *vol-gate* redesign would barely move it.
 
-## OPEN QUESTIONS to resume (answer after the side task)
+## RESOLVED (2026-06-16) — counterfactual study says ACCEPT the pause
+The evidence-first investigation is done — see `REPORT_counterfactual_pause.md` (`optimize/counterfactual_pause.py`).
+Each gate-/veto-blocked box signal was simulated as an isolated trade with the champion's exact exit:
+- **vol gate** blocked 206 trades netting **−$28,040** · **veto** blocked 359 netting **−$73,117** → both are
+  **correctly filtering** (they avoid ~$101k of losers; relaxing them destroys P/L).
+- **confirm<K = 0** under the engine-faithful pairing (the old diagnose_pause 22% was an off-by-one artifact);
+  confirmation-blocking is 100% veto-driven.
+- **box-silence (71%)**: silent windows are roughly **symmetric** (median MAE 88 ≥ MFE 75 pts; TP 120) → no
+  free directional edge to harvest.
+
+**Verdict: ACCEPT the pause.** It is the strategy correctly NOT trading, not a defect. The only remaining
+lever (a new box-entry trigger for silent windows) is unsupported by the displacement data and would be a
+speculative research bet, gated on finding a *directional* predictor — not a fix. Lever questions below are
+therefore closed unless a directional silent-window signal is found.
+
+## OPEN QUESTIONS (CLOSED by the counterfactual study above — kept for history)
 **Q (redesign lever):** given the diagnosis, where should the redesign focus?
 1. **Box entry triggers** (biggest lever, ~71%) — broaden what creates an entry candidate (the SMC box
    generator). Most impact, highest risk (core logic).
