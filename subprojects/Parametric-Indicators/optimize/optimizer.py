@@ -284,7 +284,8 @@ def _load_json(p: Path) -> dict:
 def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         seed: int = 1, ind_1min: bool = False, study_prefix: str = "wsh3",
         split_sltp: bool = False, warm_start: bool = True, sampler: str = "nsga3",
-        objective: str = "winrate", exclude_inds: tuple = (), only_inds: tuple = ()) -> dict:
+        objective: str = "winrate", exclude_inds: tuple = (), only_inds: tuple = (),
+        dd_pnl_cap: float = DD_PNL_CAP) -> dict:
     # split_sltp (Q3 / E2): when True the optimizer searches SEPARATE long vs short SL/TP (long_*/short_*),
     # widening the space per the user's point-5 goal. Default False ⇒ shared SL/TP ⇒ identical to prior runs.
     # NOTE FOR THE NEXT FULL RUN (wsh5): launch with split_sltp=True to let longs and shorts get their own
@@ -344,8 +345,10 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         trial.set_user_attr("full_pnl", full_pnl)
         trial.set_user_attr("full_dd", full_dd)
         trial.set_user_attr("decision_pause_days", dec_pause)
-        # feasible iff full_dd ≤ 0.25·full_pnl ⇒ (full_dd − 0.25·full_pnl) ≤ 0 (P/L≤0 ⇒ infeasible).
-        trial.set_user_attr("constraint", [float(full_dd - DD_PNL_CAP * full_pnl)])
+        # feasible iff full_dd ≤ cap·full_pnl ⇒ (full_dd − cap·full_pnl) ≤ 0 (P/L≤0 ⇒ infeasible). The cap
+        # defaults to 0.25 but is RELAXABLE (--dd-pnl-cap / WSH_DD_CAP) — e.g. for the decision-pause search,
+        # where shorter pauses trade more and need a looser DD allowance to stay feasible.
+        trial.set_user_attr("constraint", [float(full_dd - dd_pnl_cap * full_pnl)])
         # 3 objectives, all maximised: median fold P/L, −worst-fold DD, and the 3rd is either median win-rate
         # (default) or −decision_pause (objective='decision_pause' ⇒ MINIMISE the recurring no-entry pause).
         third = (-dec_pause) if objective == "decision_pause" else med_win
@@ -373,7 +376,9 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
     # constraint is passed identically to whichever brain we pick, so swapping it cannot change which
     # trials count as feasible — only WHICH points get sampled.
     _sampler = make_sampler(sampler, seed, _constraints, n_objectives=3)
-    print(f"[{tf_name}] sampler = {sampler} → {type(_sampler).__name__}", flush=True)
+    print(f"[{tf_name}] sampler = {sampler} → {type(_sampler).__name__}  objective={objective}  "
+          f"dd_pnl_cap={dd_pnl_cap:.2f}" + ("  (RELAXED from 0.25)" if abs(dd_pnl_cap - DD_PNL_CAP) > 1e-9 else ""),
+          flush=True)
     study = optuna.create_study(
         study_name=study_name,
         storage=storage,
@@ -464,6 +469,9 @@ def main() -> int:
                     help="comma-separated keys forced OFF (α: ifvg,breaker,cisd reverts to the wsh4-era 15)")
     ap.add_argument("--only-indicators", default="",
                     help="comma-separated keys; ONLY these are searched, all others forced off (α: lean subset)")
+    ap.add_argument("--dd-pnl-cap", type=float, default=DD_PNL_CAP,
+                    help=f"feasibility cap: max full-window DD as a fraction of full-window P/L (default "
+                         f"{DD_PNL_CAP}; RELAX e.g. 0.5 to let shorter-pause/higher-DD strategies qualify)")
     a = ap.parse_args()
     # report the plan (search size + recommended trials) — always, so the budget is visible
     rec = print_plan(a.timeframe, a.split_sltp, a.trials_per_dim,
@@ -478,7 +486,7 @@ def main() -> int:
     run(a.timeframe, n_trials=n_trials, folds=a.folds, min_trades=a.min_trades,
         ind_1min=a.ind_1min, study_prefix=a.study_prefix, split_sltp=a.split_sltp,
         warm_start=not a.no_warm_start, sampler=a.sampler,
-        objective=a.objective, exclude_inds=_excl, only_inds=_only)
+        objective=a.objective, exclude_inds=_excl, only_inds=_only, dd_pnl_cap=a.dd_pnl_cap)
     return 0
 
 

@@ -338,7 +338,11 @@ engine/UI → joint `wsh5` (4h pilot → all TF) → fitted policy → remove AT
   (issue 1: the champion's 11.5d pause); `--exclude-indicators`/`--only-indicators` revert to the wsh4-era 15
   / restrict to a lean subset; lean warm-start seed; `WSH_OBJECTIVE`/`WSH_EXCLUDE` env in `remote_wsi.sh`
   (all default-off, golden 6/6 unchanged; `test_alpha_objective.py` + locks = 18 green). Run as a user-gated
-  fastest→slowest ladder (`optimize/run_alpha_ladder.py`): **Tier 1 wsh7a LOCAL** (lean-3) + **Tier 2 wsh7b
-  SERVER** (wsh4-era, 30 workers, target 3000) launched in parallel; Tier 3 held. Soft objective (shortest
-  possible; −5% P/L band highlights, not filters). Docs: `study_range_regime/{SPEC,PLAN,UPDATE}_alpha_*`.
+  fastest→slowest ladder (`optimize/run_alpha_ladder.py`). Added a **relaxable DD-feasibility cap**
+  (`--dd-pnl-cap`/`WSH_DD_CAP`, default 0.25). **VERDICT (α complete):** across T1 (local lean, 0.25), T2
+  (server wsh4-era, 0.25) and T3 (server wsh4-era, warm, **0.5**), the shortest pause at ≥95% champion P/L is
+  **still 11.5 d** — the champion. No feasible re-optimisation beats it; shorter pauses collapse P/L or need
+  >50%-of-P/L drawdown. **The 11.5-day pause is a STRUCTURAL floor of this strategy family on 4h** (gate +
+  box cadence) → a materially shorter pause needs a **gate redesign** (next), not re-optimisation. Docs:
+  `study_range_regime/{SPEC,PLAN,UPDATE}_alpha_*` + `REPORT_alpha_tier1_decision_pause.md`.
 - **This file** is the top-level index over all of them.
