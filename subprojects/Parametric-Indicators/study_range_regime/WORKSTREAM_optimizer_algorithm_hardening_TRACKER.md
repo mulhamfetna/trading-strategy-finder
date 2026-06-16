@@ -34,6 +34,7 @@ in its own document … proceed to the next."* After P4 the user assigns a **sep
 
 > **🎉 WORKSTREAM COMPLETE (P0✅ P2✅ P3✅ P4✅).** P1 (wsh6 launch) is the user's operational call. The
 > dashboard workstream (`optimize/dashboard/`) now exposes P2 (sampler) + P3 (engine) and can surface P4 archives.
+> **Committed `25942eb` (2026-06-16).** Full stage report: `../STAGE_REPORT_optimizer_hardening_and_dashboard.md`.
 
 Task IDs: **#221 P2 (completed)**, **#222 P3 (in_progress)**, **#223 P4 (pending)**. (#220 P0 docs completed.)
 

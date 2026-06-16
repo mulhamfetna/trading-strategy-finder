@@ -316,4 +316,7 @@ engine/UI → joint `wsh5` (4h pilot → all TF) → fitted policy → remove AT
   data-pull = server-built `.tar.gz` (full pg_dump | lite) download. Spec/Plan/Tracker/UPDATE docs under
   `optimize/dashboard/`. **26 tests green (control 10 + app 9 + bot 7); golden 6/6 unchanged.** Remaining:
   deploy on the AMD server (confirm VPN bind IP) + server smoke + (later) docker-compose.
+- **STAGE REPORT (2026-06-16) — optimizer hardening + dashboard:** `STAGE_REPORT_optimizer_hardening_and_dashboard.md`
+  consolidates this whole stage (algorithm P2→P4 + the dashboard) with evidence, status board, and the held
+  next actions (#3 two-stage launch wiring → #2 deploy). First committed at `25942eb`.
 - **This file** is the top-level index over all of them.

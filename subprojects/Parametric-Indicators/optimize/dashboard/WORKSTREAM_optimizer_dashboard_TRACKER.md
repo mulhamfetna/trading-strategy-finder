@@ -28,6 +28,9 @@ trials + Pareto (optuna-dashboard), pull full data as a download, control/notify
 Task: **#224 DASH** (pending). Decisions locked: hybrid · VPN-served · stop-as-pause · full Telegram bot ·
 containerize-later · FastAPI · bundle both-modes. Access = full-tunnel VPN (verified, §3.0 of spec).
 
+**Committed `25942eb` (2026-06-16).** Full stage report: `../../STAGE_REPORT_optimizer_hardening_and_dashboard.md`.
+**HELD next actions (user-ordered): do #3 (two-stage launch wiring) FIRST, then #2 (deploy on AMD server).**
+
 ## ▶️ WHEN IMPLEMENTATION IS UNHELD — resume protocol
 1. Decide execution mode (writing-plans handoff): **subagent-driven** (recommended) or **inline executing-plans**.
 2. Execute the plan phase-by-phase: **P-A** (optuna-dashboard live + confirm bind IP) → **P-B** (control.py +
