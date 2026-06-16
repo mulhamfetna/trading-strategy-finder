@@ -53,15 +53,22 @@ def _suggest_param(trial, name, p):
     return trial.suggest_float(name, lo, hi, step=st)
 
 
-def _suggest_indicators(trial):
-    """Full WS-I.8 search space: every registered indicator on/off + its params (rectangular —
-    params always suggested so NSGA crossover stays well-defined). Mode = the schema default."""
+def _suggest_indicators(trial, exclude=(), only=()):
+    """WS-I.8 search space: each registered indicator on/off + its params (rectangular — params always
+    suggested so NSGA crossover stays well-defined). Mode = the schema default. Keys in `exclude`, or (when
+    `only` is non-empty) keys NOT in `only`, are forced OFF with default params and NOT suggested (α: revert
+    to wsh4-era / restrict to a subset ⇒ fewer dimensions). `_searched` flags which keys entered the search."""
     specs = []
     for key in library.REGISTRY:
         meta = library.SCHEMA[key]
+        searched = (key not in exclude) and (not only or key in only)
+        if not searched:
+            params = {p["name"]: p["default"] for p in meta["params"]}
+            specs.append({"key": key, "enabled": False, "mode": meta["mode"], "params": params, "_searched": False})
+            continue
         enabled = trial.suggest_categorical(f"en_{key}", [False, True])
         params = {p["name"]: _suggest_param(trial, f"{key}_{p['name']}", p) for p in meta["params"]}
-        specs.append({"key": key, "enabled": enabled, "mode": meta["mode"], "params": params})
+        specs.append({"key": key, "enabled": enabled, "mode": meta["mode"], "params": params, "_searched": True})
     return specs
 
 _STUDIES = _HERE / "studies"
@@ -255,6 +262,16 @@ def warm_start_seeds(tf_name: str, split_sltp: bool, b: dict) -> list[dict]:
                 seeds.append(_native_seed(c["box"], c.get("indicators", {}), split_sltp, b))
         except Exception:
             pass
+    # α: also seed the β lean champion (cci/order_block/structure_trend) when present, so a decision-pause
+    # search starts from the known lean point too (front guaranteed ≥ it).
+    lean_f = _RESULTS_DIR / "wsh_lean_4h_champion.json"
+    if lean_f.exists():
+        try:
+            c = json.loads(lean_f.read_text()).get(tf_name)
+            if c:
+                seeds.append(_native_seed(c["box"], c.get("indicators", {}), split_sltp, b))
+        except Exception:
+            pass
     return seeds
 
 
@@ -266,7 +283,8 @@ def _load_json(p: Path) -> dict:
 
 def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         seed: int = 1, ind_1min: bool = False, study_prefix: str = "wsh3",
-        split_sltp: bool = False, warm_start: bool = True, sampler: str = "nsga3") -> dict:
+        split_sltp: bool = False, warm_start: bool = True, sampler: str = "nsga3",
+        objective: str = "winrate", exclude_inds: tuple = (), only_inds: tuple = ()) -> dict:
     # split_sltp (Q3 / E2): when True the optimizer searches SEPARATE long vs short SL/TP (long_*/short_*),
     # widening the space per the user's point-5 goal. Default False ⇒ shared SL/TP ⇒ identical to prior runs.
     # NOTE FOR THE NEXT FULL RUN (wsh5): launch with split_sltp=True to let longs and shorts get their own
@@ -294,7 +312,8 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         dd_limit = trial.suggest_float("dd_limit", 0.0, DD_LIMIT_MAX)
         cooldown = trial.suggest_int("cooldown", 0, cap)
         flip = trial.suggest_categorical("flip", [False, True])
-        specs = _suggest_indicators(trial)              # WS-I.8 full indicator search space
+        specs = [{k: v for k, v in s.items() if k != "_searched"}      # strip the test-hook key before engine use
+                 for s in _suggest_indicators(trial, exclude_inds, only_inds)]   # α: scoped search space
         k_rule = trial.suggest_int("k", 1, 5)           # clamped to #confirmers by confirm_mask
         params = dict(sl_soft=sl_soft, sl_hard=sl_soft + delta, tp=tp, gate_pct=gate_pct,
                       dd_limit=dd_limit, cooldown=cooldown, flip=flip, window="full",
@@ -318,15 +337,19 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         full = backtest_metrics(df_dec, df1, box, vf, n_split, dict(params, window="full"),
                                 tf.bar_td, sig_int=sig_int)
         full_pnl = float(full["pnl"]); full_dd = float(full["max_dd"])
+        dec_pause = float(full.get("max_no_entry_days_decision", full.get("max_no_entry_days", 0.0)))
         trial.set_user_attr("worst_dd", worst_dd)
         trial.set_user_attr("median_pnl", r["median_pnl"])
         trial.set_user_attr("median_win", med_win)
         trial.set_user_attr("full_pnl", full_pnl)
         trial.set_user_attr("full_dd", full_dd)
+        trial.set_user_attr("decision_pause_days", dec_pause)
         # feasible iff full_dd ≤ 0.25·full_pnl ⇒ (full_dd − 0.25·full_pnl) ≤ 0 (P/L≤0 ⇒ infeasible).
         trial.set_user_attr("constraint", [float(full_dd - DD_PNL_CAP * full_pnl)])
-        # 3 objectives, all maximised: median fold P/L, −worst-fold DD, median fold win-rate.
-        return r["median_pnl"], -worst_dd, med_win
+        # 3 objectives, all maximised: median fold P/L, −worst-fold DD, and the 3rd is either median win-rate
+        # (default) or −decision_pause (objective='decision_pause' ⇒ MINIMISE the recurring no-entry pause).
+        third = (-dec_pause) if objective == "decision_pause" else med_win
+        return r["median_pnl"], -worst_dd, third
 
     def _constraints(trial):
         return trial.user_attrs.get("constraint", [1.0])   # missing ⇒ infeasible
@@ -393,7 +416,8 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         p = t.params; ua = t.user_attrs
         fp = ua.get("full_pnl", 0.0); fd = ua.get("full_dd", 0.0)
         ratio = (fd / fp) if fp > 0 else float("inf")
-        print(f"   P/L(med) ${t.values[0]:>7,.0f}  maxDD ${-t.values[1]:>6,.0f}  win {t.values[2]:4.1f}%  | "
+        print(f"   P/L(med) ${t.values[0]:>7,.0f}  maxDD ${-t.values[1]:>6,.0f}  "
+              f"win {ua.get('median_win',0):4.1f}%  pause {ua.get('decision_pause_days',0):4.1f}d  | "
               f"full P/L ${fp:>7,.0f} DD ${fd:>6,.0f} ({ratio*100:.0f}%) | "
               f"slS {p['sl_soft']:.0f} slH {p['sl_soft']+p['sl_hard_delta']:.0f} tp {p['tp']:.0f} "
               f"gate {p['gate_pct']:.0f} dd {p['dd_limit']:.0f} cd {p['cooldown']} flip {p['flip']} "
@@ -433,6 +457,13 @@ def main() -> int:
                     help="optimizer 'brain' (default nsga3 = unchanged baseline). nsga2/tpe/motpe/gp are "
                          "drop-in multi-objective alternatives; cmaes is single-objective/continuous-only "
                          "(Stage-B of the two-stage decomposition, refused on the full study).")
+    ap.add_argument("--objective", default="winrate", choices=["winrate", "decision_pause"],
+                    help="3rd objective: winrate* (unchanged) or decision_pause (α: MINIMISE the recurring "
+                         "no-entry pause, S0 max_no_entry_days_decision)")
+    ap.add_argument("--exclude-indicators", default="",
+                    help="comma-separated keys forced OFF (α: ifvg,breaker,cisd reverts to the wsh4-era 15)")
+    ap.add_argument("--only-indicators", default="",
+                    help="comma-separated keys; ONLY these are searched, all others forced off (α: lean subset)")
     a = ap.parse_args()
     # report the plan (search size + recommended trials) — always, so the budget is visible
     rec = print_plan(a.timeframe, a.split_sltp, a.trials_per_dim,
@@ -442,9 +473,12 @@ def main() -> int:
               flush=True)
         return 0
     n_trials = rec if a.auto_trials else a.trials
+    _excl = tuple(x for x in a.exclude_indicators.split(",") if x)
+    _only = tuple(x for x in a.only_indicators.split(",") if x)
     run(a.timeframe, n_trials=n_trials, folds=a.folds, min_trades=a.min_trades,
         ind_1min=a.ind_1min, study_prefix=a.study_prefix, split_sltp=a.split_sltp,
-        warm_start=not a.no_warm_start, sampler=a.sampler)
+        warm_start=not a.no_warm_start, sampler=a.sampler,
+        objective=a.objective, exclude_inds=_excl, only_inds=_only)
     return 0
 
 

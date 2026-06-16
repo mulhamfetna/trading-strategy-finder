@@ -333,4 +333,12 @@ engine/UI → joint `wsh5` (4h pilot → all TF) → fitted policy → remove AT
   (champion → 346 candles / SMA trend) — recomputing on any indicator change/preset import. `.cards` switched
   to `repeat(auto-fit, minmax(150px,1fr))` so the metric row wraps into rows instead of overflowing. Golden
   6/6 untouched. Doc `study_range_regime/UPDATE_dashboard_warmup_boxes_and_responsive_cards.md`.
+- **α — optimizer decision-pause objective + escalating ladder (2026-06-16):** `optimize/optimizer.py`
+  `--objective {winrate*|decision_pause}` swaps the 3rd objective to MINIMISE `max_no_entry_days_decision`
+  (issue 1: the champion's 11.5d pause); `--exclude-indicators`/`--only-indicators` revert to the wsh4-era 15
+  / restrict to a lean subset; lean warm-start seed; `WSH_OBJECTIVE`/`WSH_EXCLUDE` env in `remote_wsi.sh`
+  (all default-off, golden 6/6 unchanged; `test_alpha_objective.py` + locks = 18 green). Run as a user-gated
+  fastest→slowest ladder (`optimize/run_alpha_ladder.py`): **Tier 1 wsh7a LOCAL** (lean-3) + **Tier 2 wsh7b
+  SERVER** (wsh4-era, 30 workers, target 3000) launched in parallel; Tier 3 held. Soft objective (shortest
+  possible; −5% P/L band highlights, not filters). Docs: `study_range_regime/{SPEC,PLAN,UPDATE}_alpha_*`.
 - **This file** is the top-level index over all of them.

@@ -35,7 +35,9 @@ TFS=(4h)                                              # ⚠️ 4h ONLY — full-
 PREFIX="${WSH_PREFIX:-wsh4}"                           # study prefix; override e.g. WSH_PREFIX=wsh5 for a fresh regime
 SPLIT_ARG="${WSH_SPLIT:+--split-sltp}"                 # set WSH_SPLIT=1 to search SEPARATE long/short SL/TP (Q3/E2)
 SAMPLER_ARG="${WSH_SAMPLER:+--sampler $WSH_SAMPLER}"   # optimizer brain (P2): nsga3*(default)|nsga2|tpe|motpe|gp; unset ⇒ nsga3 (unchanged)
-IND_ARGS="--ind-1min --study-prefix $PREFIX $SPLIT_ARG $SAMPLER_ARG" # indicators read the 1-minute frame
+OBJ_ARG="${WSH_OBJECTIVE:+--objective $WSH_OBJECTIVE}" # α: winrate*(default)|decision_pause; unset ⇒ winrate (unchanged)
+EXCL_ARG="${WSH_EXCLUDE:+--exclude-indicators $WSH_EXCLUDE}"  # α: e.g. ifvg,breaker,cisd reverts to wsh4-era 15
+IND_ARGS="--ind-1min --study-prefix $PREFIX $SPLIT_ARG $SAMPLER_ARG $OBJ_ARG $EXCL_ARG" # indicators read the 1-minute frame
 
 SSH_OPTS=(-p "$SRV_PORT" -i "$SRV_KEY" -o IdentitiesOnly=yes -o BatchMode=yes \
           -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 \
