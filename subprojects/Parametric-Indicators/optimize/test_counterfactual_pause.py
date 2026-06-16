@@ -36,3 +36,18 @@ def test_isolated_sim_matches_real_taken_trade():
     assert sim is not None
     assert abs(float(sim["pnl_points"]) - float(t0["pnl_points"])) < 1e-6
     assert sim["exit_reason"] == t0["exit_reason"]
+
+
+def test_ledger_buckets_and_displacement():
+    C = CP.load_champion("4h")
+    led = CP.build_ledger(C)
+    for k in ("vol_gated", "vetoed", "confirm<K"):
+        assert k in led["buckets"]
+        b = led["buckets"][k]
+        assert b["n"] >= 0
+        if b["n"]:
+            assert 0.0 <= b["win_rate"] <= 1.0
+            assert b["n"] == len(b["trades"])
+    s = led["box_silence"]
+    assert s["n"] >= 0 and "frac_exceeds_tp" in s and 0.0 <= s["frac_exceeds_tp"] <= 1.0
+    assert "champion_avg_pnl" in led and led["horizon_bars"] >= 1

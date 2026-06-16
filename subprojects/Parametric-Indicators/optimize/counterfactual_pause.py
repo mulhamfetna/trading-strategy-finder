@@ -106,3 +106,76 @@ def simulate_one(C, entry_idx: int):
     gate_one[int(entry_idx)] = True
     trades = fast_backtest(dd, cl, si, gate_one, md, mh, ml, mc, sls, slh, tp, flip)
     return trades[0] if trades else None
+
+
+def _median_trade_duration_bars(C, taken) -> int:
+    """Median real-trade hold in decision bars (horizon for box-silence displacement). >=1."""
+    secs = C["bar_td"].total_seconds()
+    durs = []
+    for t in taken:
+        dt = (np.datetime64(t["exit_time"]) - np.datetime64(t["entry_time"])) / np.timedelta64(1, "s")
+        durs.append(max(1, round(float(dt) / secs)))
+    return int(np.median(durs)) if durs else 1
+
+
+def _bucket(trades_pnl_pts, pv):
+    pnl = np.array([p * pv for p in trades_pnl_pts], dtype=float)
+    n = len(pnl)
+    return {"n": n,
+            "win_rate": float((pnl > 0).mean()) if n else 0.0,
+            "avg_pnl": float(pnl.mean()) if n else 0.0,
+            "total_pnl": float(pnl.sum()) if n else 0.0,
+            "med_pnl": float(np.median(pnl)) if n else 0.0}
+
+
+def silence_displacement(C, horizon: int):
+    """For every box-silent ENTRY bar (sig[idx-1]==0), MFE/MAE over the next `horizon` decision bars from the
+    bar's close (points). Reports the fraction whose max |move| exceeded the champion tp (a real missed move)."""
+    d = C["d"]
+    close = d["Close"].to_numpy(float); high = d["High"].to_numpy(float); low = d["Low"].to_numpy(float)
+    n = C["n"]; sig = C["sig"]; tp = float(C["params"]["tp"])
+    mfe, mae = [], []
+    for idx in range(1, n):
+        if sig[idx - 1] != 0:
+            continue
+        j = min(idx + horizon, n)
+        if j <= idx:
+            continue
+        c0 = close[idx]
+        mfe.append(float(high[idx:j].max() - c0))
+        mae.append(float(c0 - low[idx:j].min()))
+    mfe = np.array(mfe); mae = np.array(mae)
+    nn = len(mfe)
+    exceed = float((np.maximum(mfe, mae) >= tp).mean()) if nn else 0.0
+    return {"n": int(nn), "med_mfe": float(np.median(mfe)) if nn else 0.0,
+            "med_mae": float(np.median(mae)) if nn else 0.0,
+            "frac_exceeds_tp": exceed, "tp": tp}
+
+
+def build_ledger(C):
+    """Full counterfactual ledger: per-filter isolated-trade buckets + box-silence displacement + benchmark."""
+    taken = champion_taken_trades(C)
+    champ_pnl = np.array([t["pnl_points"] * C["pv"] for t in taken], dtype=float)
+    cause = attribute(C["sig"], C["vol_gate"], C["veto"], C["confirm"])
+    horizon = _median_trade_duration_bars(C, taken)
+
+    buckets = {}
+    for label in ("vol_gated", "vetoed", "confirm<K"):
+        idxs = [i for i in range(1, C["n"]) if cause[i] == label]
+        trades = []
+        for i in idxs:
+            t = simulate_one(C, i)
+            if t is not None:
+                trades.append(t)
+        b = _bucket([t["pnl_points"] for t in trades], C["pv"])
+        b["n_unresolved"] = len(idxs) - len(trades)
+        b["trades"] = [dict(cause=label, entry_time=str(t["entry_time"]), exit_time=str(t["exit_time"]),
+                            direction=t["direction"], entry_price=float(t["entry_price"]),
+                            exit_price=float(t["exit_price"]), exit_reason=t["exit_reason"],
+                            pnl=round(float(t["pnl_points"]) * C["pv"], 2)) for t in trades]
+        buckets[label] = b
+
+    return {"buckets": buckets,
+            "box_silence": silence_displacement(C, horizon),
+            "champion_avg_pnl": float(champ_pnl.mean()) if len(champ_pnl) else 0.0,
+            "champion_n": int(len(champ_pnl)), "horizon_bars": int(horizon)}
