@@ -159,6 +159,7 @@
       <h3>Volatility gate</h3>
       <div class="fld"><label>Gate percentile</label><input id="gate_pct" type="number" step="1"></div>
       <div class="hint">skip bars with HAR-RV above this pct · 0 = gate off</div>
+      <button class="ghost" id="gate_toggle" title="turn the volatility gate off (gate_pct→0) and back on">⊘ Disable gate</button>
     </div>
     <div class="sgroup">
       <h3>Drawdown circuit-breaker</h3>
@@ -350,6 +351,7 @@ document.addEventListener('keydown', e=>{ const t=e.target; if(e.key==='Enter'&&
 function setForm(P){ if(P.timeframe&&$('timeframe').querySelector(`option[value="${P.timeframe}"]`))$('timeframe').value=P.timeframe;
   $('window').value=P.window||'full'; $('sl_soft').value=P.sl_soft; $('sl_hard').value=P.sl_hard; $('tp').value=P.tp;
   $('gate_pct').value=P.gate_pct==null?0:P.gate_pct; $('dd_limit').value=P.dd_limit==null?0:P.dd_limit; $('cooldown').value=P.cooldown; $('flip').value=String(!!P.flip); $('veto_as_flip').value=String(!!P.veto_as_flip);
+  if(P.gate_pct!=null&&+P.gate_pct>0)lastGatePct=+P.gate_pct; syncGateBtn();
   if(P.dd_cap!=null)$('dd_cap').value=P.dd_cap; if(P.pv!=null)$('pv').value=P.pv;
   if(P.k!=null)$('k_rule').value=P.k;
   if(P.retrace_amount!=null)$('g_retrace').value=P.retrace_amount;
@@ -457,6 +459,16 @@ let dirty=false;
 function markDirty(){dirty=true;const d=$('dirty');d.textContent='⚠ not run on these values — click Run Backtest';d.classList.add('stale');d.classList.remove('ok');$('run').classList.add('stale');}
 function markClean(){dirty=false;const d=$('dirty');d.textContent='✓ results match current settings';d.classList.add('ok');d.classList.remove('stale');$('run').classList.remove('stale');}
 document.querySelectorAll('aside input,aside select').forEach(el=>el.addEventListener('input',markDirty));
+// Disable-gate toggle: zero gate_pct (vol gate off) and remember the prior value to restore. The engine
+// already treats gate_pct==0 as "no vol gate", so this is purely a convenience on the existing field.
+let lastGatePct=87;
+function syncGateBtn(){ const off=(+$('gate_pct').value||0)===0; const b=$('gate_toggle');
+  b.textContent=off?'✓ Enable gate':'⊘ Disable gate';
+  b.title=off?`turn the volatility gate back on (gate_pct→${lastGatePct})`:'turn the volatility gate off (gate_pct→0) and back on'; }
+$('gate_toggle').addEventListener('click',()=>{ const cur=+$('gate_pct').value||0;
+  if(cur>0){ lastGatePct=cur; $('gate_pct').value=0; } else { $('gate_pct').value=lastGatePct||87; }
+  $('gate_pct').dispatchEvent(new Event('input',{bubbles:true})); syncGateBtn(); });
+$('gate_pct').addEventListener('input',syncGateBtn);
 // split long/short SL/TP: the mode dropdown swaps the shared boxes for the per-side boxes (and back).
 // Switching to 'split' prefills blank per-side boxes from the shared values, so you start from the
 // current strategy and tweak one side.
