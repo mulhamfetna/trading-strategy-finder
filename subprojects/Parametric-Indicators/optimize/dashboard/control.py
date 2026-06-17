@@ -77,14 +77,26 @@ def _apply_env(cfg: dict) -> None:
 
 
 def start(cfg: dict) -> dict:
-    """Launch a run via remote_wsi.sh (single-study path; sampler/prefix/split from cfg). Idempotent
-    relaunch is safe — the watchdog continues from target − completed."""
+    """Launch a run via remote_wsi.sh. Two paths:
+      • engine=two_stage → `two-stage <tfs>` (P3 decomposition: finite in-memory studies, run directly,
+        NOT through the watchdog — it has no trial-count target so the respawn loop would never stop).
+      • engine=single (default) → `run [trials]` (NSGA-III watchdog path; idempotent relaunch continues
+        from target − completed)."""
     _apply_env(cfg)
+    if str(cfg.get("engine", "single")) == "two_stage":
+        args = ["two-stage"]
+        tfs = cfg.get("timeframes") or ([cfg["timeframe"]] if cfg.get("timeframe") else [])
+        if tfs:
+            args.append(" ".join(str(t) for t in tfs))   # remote_wsi.sh `two-stage` reads a space-list TF arg
+        r = _run_remote(args)
+        return {"ok": r["ok"], "launched": "launcher-started" in r["stdout"],
+                "engine": "two_stage", "detail": r["stdout"][-400:]}
     args = ["run"]
     if cfg.get("trials") and not cfg.get("auto_trials"):
         args.append(str(int(cfg["trials"])))
     r = _run_remote(args)
-    return {"ok": r["ok"], "launched": "launcher-started" in r["stdout"], "detail": r["stdout"][-400:]}
+    return {"ok": r["ok"], "launched": "launcher-started" in r["stdout"],
+            "engine": "single", "detail": r["stdout"][-400:]}
 
 
 def stop() -> dict:

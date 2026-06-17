@@ -149,6 +149,45 @@ chmod +x '$WSI/launch.sh'; setsid bash '$WSI/launch.sh' < /dev/null > '$WSI/laun
   log "workers now running:"; srv "pgrep -fc optimize/optimizer.py || echo 0; cat '$WSI/launch.out' 2>/dev/null"
 }
 
+# P3 two-stage decomposition launch (dashboard engine=two_stage). Unlike cmd_run's watchdog/respawn loop
+# (which tops up a SHARED store study until it reaches a TARGET trial-count), two_stage runs FINITE
+# in-memory Optuna studies with no countable target — so it is launched ONCE, detached, with NO respawn
+# (a respawn would loop forever). Per-TF stages: A (discrete indicator pick) → top-K → B (continuous tune).
+# Tunables via env: WSH_STAGE_B(cmaes|gp) WSH_STAGE_A_TRIALS WSH_STAGE_B_TRIALS WSH_TOP_K; WSH_SPLIT honoured.
+cmd_two_stage() {
+  local tfs=("${TFS[@]}"); [ -n "${1:-}" ] && read -ra tfs <<< "$1"
+  local stage_b="${WSH_STAGE_B:-cmaes}"
+  local sa="${WSH_STAGE_A_TRIALS:-200}" sb="${WSH_STAGE_B_TRIALS:-100}" tk="${WSH_TOP_K:-3}"
+  local ts_args="--stage-b $stage_b --stage-a-trials $sa --stage-b-trials $sb --top-k $tk --ind-1min $SPLIT_ARG"
+  log "TWO-STAGE (P3) launch: TFs=[${tfs[*]}]  stage-B=$stage_b  A=$sa B=$sb topK=$tk  split=${WSH_SPLIT:+on}${WSH_SPLIT:-off}"
+  # Acceptance gate (mirrors cmd_run): require a yes, or WSH_CONFIRM=1 to skip in automation/the dashboard.
+  if [ -z "${WSH_CONFIRM:-}" ]; then
+    read -rp "Launch TWO-STAGE on [${tfs[*]}]? [y/N] " _ans </dev/tty 2>/dev/null || _ans=""
+    case "$_ans" in [yY]*) ;; *) log "aborted — not launched (set WSH_CONFIRM=1 to skip this prompt)"; return 1 ;; esac
+  fi
+  local tflist="${tfs[*]}"
+  srv "cat > '$WSI/two_stage.sh' <<'EOS'
+#!/usr/bin/env bash
+pkill -9 -f 'optimize.two_stage' >/dev/null 2>&1 || true
+sleep 2
+source $REMOTE_VENV/bin/activate
+export WSH_DATA_BASE='$WSI' WSG_DATA_ROOT='$WSI/data' WSH_STORAGE_URL='$STORAGE_URL'
+[ -z \"\$WSH_STORAGE_URL\" ] && [ -f '$WSI/pg.env' ] && { set -a; . '$WSI/pg.env'; set +a; }   # else Postgres from pg.env
+export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
+cd '$CODE'; mkdir -p '$WSI/logs'
+# Each TF is a single FINITE run (no watchdog) appended to the same per-TF log the dashboard SSE tails.
+for tf in $tflist; do
+  ( echo \"[\$(date +%H:%M:%S)] [two-stage] \$tf START ($ts_args)\"; \
+    python3 -u -m optimize.two_stage \"\$tf\" $ts_args; \
+    echo \"[\$(date +%H:%M:%S)] [two-stage] \$tf DONE\" ) >> \"$WSI/logs/\$tf.log\" 2>&1 &
+done
+wait
+EOS
+chmod +x '$WSI/two_stage.sh'; setsid bash '$WSI/two_stage.sh' < /dev/null > '$WSI/two_stage.out' 2>&1 & echo launcher-started"
+  sleep 6
+  log "two-stage workers now running:"; srv "pgrep -fc 'optimize.two_stage' || echo 0; cat '$WSI/two_stage.out' 2>/dev/null"
+}
+
 cmd_status() {
   srv "echo '== load =='; uptime; echo; cd '$WSI/logs' 2>/dev/null && for tf in ${TFS[*]}; do \
        n=\$(pgrep -fc \"optimizer.py \$tf \" || true); \
@@ -191,7 +230,7 @@ cmd_pull() {
   log "pulled → $LOCAL_RESULTS, $LOCAL_REPORTS, $LOCAL_LOGS"
 }
 
-cmd_stop() { srv "pkill -f 'optimize/optimizer.py' || true"; log "stop signal sent."; }
+cmd_stop() { srv "pkill -f 'optimize/optimizer.py' || true; pkill -f 'optimize.two_stage' || true"; log "stop signal sent (single + two-stage)."; }
 
 # Tier 3 — observability + pre-flight gate.
 cmd_stats() {  # live COMPLETE / RUNNING / FAIL / pruned per study (a contention storm = rising FAIL)
@@ -205,7 +244,8 @@ cmd_smoke() {  # pre-flight contention probe BEFORE a multi-hour sweep — must 
 
 case "${1:-}" in
   push) cmd_push ;; parity) cmd_parity ;; run) shift; cmd_run "${1:-3000}" "${2:-}" ;;
+  two-stage) shift; cmd_two_stage "${1:-}" ;;
   status) cmd_status ;; counts) cmd_counts ;; stats) cmd_stats ;; smoke) shift; cmd_smoke "${1:-30}" "${2:-20}" ;;
   pull) cmd_pull ;; stop) cmd_stop ;; plan) cmd_plan ;;
-  *) echo "usage: remote_wsi.sh {push|parity|smoke [workers] [trials]|plan|run [target|auto]|status|counts|stats|pull|stop}"; exit 1 ;;
+  *) echo "usage: remote_wsi.sh {push|parity|smoke [workers] [trials]|plan|run [target|auto]|two-stage [tfs]|status|counts|stats|pull|stop}"; exit 1 ;;
 esac

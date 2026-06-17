@@ -22,14 +22,16 @@ trials + Pareto (optuna-dashboard), pull full data as a download, control/notify
 | Brainstorm (deep analysis + prebuilt-tool research) | ✅ done | findings in chat; optuna-dashboard chosen for viz |
 | **Spec** | ✅ done | `optimize/dashboard/SPEC_optimizer_dashboard.md` |
 | **Implementation plan** | ✅ done | `optimize/dashboard/PLAN_optimizer_dashboard.md` |
-| **Implementation (P-A…P-E, local)** | ✅ BUILT & tested (26 tests green; golden 6/6) | `control.py`/`app.py`/`bot.py`/`static/index.html`/`run_dashboard.sh`; doc `UPDATE_optimizer_dashboard.md` |
-| **Deploy (P-A.3 + server smoke) + P-F compose** | ⬜ deploy-time (needs AMD server over SSH) | see UPDATE doc §4 |
+| **Implementation (P-A…P-E, local)** | ✅ BUILT & tested (27 tests green; golden 6/6) | `control.py`/`app.py`/`bot.py`/`static/index.html`/`run_dashboard.sh`; doc `UPDATE_optimizer_dashboard.md` |
+| **#3 Two-stage launch wiring** | ✅ DONE (2026-06-17) | `remote_wsi.sh two-stage <tfs>` (detached, non-watchdog) + `control.start` engine branch + new test; UPDATE §3 resolved |
+| **#2 Deploy (P-A.3 + server smoke) + P-F compose** | ⬜ deploy-time (needs AMD server over SSH) | see UPDATE doc §4 |
 
-Task: **#224 DASH** (pending). Decisions locked: hybrid · VPN-served · stop-as-pause · full Telegram bot ·
+Task: **#224 DASH** (in progress). Decisions locked: hybrid · VPN-served · stop-as-pause · full Telegram bot ·
 containerize-later · FastAPI · bundle both-modes. Access = full-tunnel VPN (verified, §3.0 of spec).
 
 **Committed `25942eb` (2026-06-16).** Full stage report: `../../STAGE_REPORT_optimizer_hardening_and_dashboard.md`.
-**HELD next actions (user-ordered): do #3 (two-stage launch wiring) FIRST, then #2 (deploy on AMD server).**
+**NEXT: #2 — deploy on AMD server (P-A.3 confirm VPN bind IP + server smoke), then P-F compose.** (#3 two-stage
+wiring DONE — uncommitted on `dev`, awaiting the user's commit go-ahead.)
 
 ## ▶️ WHEN IMPLEMENTATION IS UNHELD — resume protocol
 1. Decide execution mode (writing-plans handoff): **subagent-driven** (recommended) or **inline executing-plans**.

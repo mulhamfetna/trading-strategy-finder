@@ -56,6 +56,10 @@ flowchart TB
   start/stop/resume/status/tail_logs/follow_logs/build_bundle) is pure + mockable. The API and bot are thin.
 - **Pause = stop** (`/api/stop` → `remote_wsi.sh stop`); **Resume** relaunches (watchdog continues target−completed).
 - **Sampler picker (P2)** flows via `WSH_SAMPLER` → `remote_wsi.sh --sampler` (default unset ⇒ nsga3 unchanged).
+- **Engine picker**: `engine=single` → `remote_wsi.sh run` (NSGA-III watchdog path); **`engine=two_stage`
+  (P3) → `remote_wsi.sh two-stage <tfs>`** — a separate detached, **non-watchdog** launch (two-stage runs
+  finite in-memory studies with no trial-count target, so it is launched once with no respawn; stage-B/
+  trials/top-K tunable via `WSH_STAGE_B`/`WSH_STAGE_A_TRIALS`/`WSH_STAGE_B_TRIALS`/`WSH_TOP_K`).
 - **Plan preview** gates the Start button (must POST `/api/plan` first → dims → recommended trials).
 - **Live log** via SSE (`/api/progress?tf=`); **status cards** poll `/api/status` (`stats --json`).
 - **Data bundle**: server builds `.tar.gz` (full = +`pg_dump`; lite = results+logs+Pareto), browser downloads.
@@ -63,11 +67,14 @@ flowchart TB
 - **VPN-only**: `run_dashboard.sh` binds every service to `DASH_BIND_IP` (private), never `0.0.0.0`.
 
 ## 3. Deviations from the plan (and why)
-- **Two-stage engine NOT routed through `remote_wsi.sh`**: the watchdog `run_worker` loop re-spawns based on
-  study trial-count, but `two_stage` uses in-memory studies (no count) ⇒ it would loop forever and not appear
-  in optuna-dashboard. So the `remote_wsi.sh` change was scoped to the clean, watchdog/dashboard-compatible
-  **`--sampler` injection only**. The UI still offers the `two_stage` engine (recorded in `WSH_ENGINE`); wiring
-  its launch is a small follow-up (run `optimize.two_stage` directly, outside the watchdog).
+- ~~**Two-stage engine NOT routed through `remote_wsi.sh`**~~ — **RESOLVED (2026-06-17, follow-up #3).** Added a
+  dedicated `remote_wsi.sh two-stage <tfs>` command: a detached, **non-watchdog** launch of
+  `python3 -m optimize.two_stage` per TF (one finite run, no respawn — the watchdog's trial-count target
+  doesn't apply to two-stage's in-memory studies). `control.start()` now branches on `engine`: `single` →
+  `run`, `two_stage` → `two-stage`. `cmd_stop` kills both. New test
+  `test_start_two_stage_routes_to_two_stage_cmd` (27 dashboard tests total); golden 6/6 unchanged (additive).
+  Note: two-stage still does NOT surface in optuna-dashboard (in-memory studies) — progress is the per-TF log
+  the SSE already tails; the final champion prints at the end of that log.
 - **Per-task commits skipped**: per the standing "commit only when asked" rule — all work is uncommitted on `dev`.
 
 ## 4. Remaining (deploy-time — needs the AMD server over SSH)

@@ -26,17 +26,34 @@ def test_plan_scales_with_split():
     assert split["recommended_trials"] == split["dims"] * base["trials_per_dim"]
 
 
-def test_start_builds_env_and_calls_run(monkeypatch):
+def test_start_single_builds_env_and_calls_run(monkeypatch):
     seen = {}
     monkeypatch.setattr(C, "_run_remote", lambda args, timeout=120: seen.update({"args": args}) or
                         {"ok": True, "stdout": "launcher-started", "stderr": "", "code": 0})
-    out = C.start({"sampler": "gp", "engine": "two_stage", "stage_b": "cmaes",
+    out = C.start({"sampler": "gp", "engine": "single",
                    "prefix": "wsh6", "split_sltp": True, "trials": 5600})
     assert out["ok"] and out["launched"]
     assert seen["args"][0] == "run"
     assert os.environ["WSH_SAMPLER"] == "gp"
-    assert os.environ["WSH_ENGINE"] == "two_stage"
+    assert os.environ["WSH_ENGINE"] == "single"
     assert os.environ["WSH_PREFIX"] == "wsh6"
+    assert os.environ["WSH_SPLIT"] == "1"
+    assert os.environ["WSH_CONFIRM"] == "1"
+
+
+def test_start_two_stage_routes_to_two_stage_cmd(monkeypatch):
+    """engine=two_stage must NOT use the watchdog `run` path (in-memory studies have no trial-count
+    target ⇒ the watchdog would loop forever). It launches `remote_wsi.sh two-stage <tfs>` directly."""
+    seen = {}
+    monkeypatch.setattr(C, "_run_remote", lambda args, timeout=120: seen.update({"args": args}) or
+                        {"ok": True, "stdout": "launcher-started", "stderr": "", "code": 0})
+    out = C.start({"engine": "two_stage", "stage_b": "gp", "prefix": "wsh6",
+                   "split_sltp": True, "timeframes": ["4h", "2h"]})
+    assert out["ok"] and out["launched"] and out["engine"] == "two_stage"
+    assert seen["args"][0] == "two-stage"
+    assert seen["args"][1] == "4h 2h"                     # selected TFs forwarded as one space-list arg
+    assert os.environ["WSH_ENGINE"] == "two_stage"
+    assert os.environ["WSH_STAGE_B"] == "gp"
     assert os.environ["WSH_SPLIT"] == "1"
     assert os.environ["WSH_CONFIRM"] == "1"
 
