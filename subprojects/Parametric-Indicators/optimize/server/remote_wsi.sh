@@ -13,7 +13,17 @@ set -euo pipefail
 
 _HERE="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 _SRVDIR="$_HERE/../../../meta-prophet/server"
-source "$_SRVDIR/server.env"
+# LOCAL MODE (WSH_LOCAL=1): the control dashboard runs ON the server, so commands execute locally (no SSH
+# hop back to ourselves) and server.env (a laptop-side file) is optional. REMOTE_VENV must then come from the
+# environment (dashboard.env). Default the SSH vars to harmless values so `set -u` doesn't trip on the unused
+# SSH code path. Default (unset WSH_LOCAL): unchanged — source server.env and SSH to the server as before.
+if [ -n "${WSH_LOCAL:-}" ]; then
+  [ -f "$_SRVDIR/server.env" ] && source "$_SRVDIR/server.env" || true
+  : "${SRV_HOST:=localhost}" "${SRV_PORT:=22}" "${SRV_USER:=${USER:-dev}}" "${SRV_KEY:=/dev/null}"
+  : "${REMOTE_VENV:?WSH_LOCAL set but REMOTE_VENV unset — set REMOTE_VENV in dashboard.env}"
+else
+  source "$_SRVDIR/server.env"
+fi
 
 REPO="/mnt/data/projects/trading"
 WSI="/home/dev/Mulham/wsg-i"                          # isolated WS-I scratch
@@ -43,7 +53,7 @@ IND_ARGS="--ind-1min --study-prefix $PREFIX $SPLIT_ARG $SAMPLER_ARG $OBJ_ARG $EX
 SSH_OPTS=(-p "$SRV_PORT" -i "$SRV_KEY" -o IdentitiesOnly=yes -o BatchMode=yes \
           -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 \
           -o ServerAliveInterval=30 -o ServerAliveCountMax=4)
-srv() { ssh "${SSH_OPTS[@]}" "${SRV_USER}@${SRV_HOST}" "$@"; }
+srv() { if [ -n "${WSH_LOCAL:-}" ]; then bash -c "$*"; else ssh "${SSH_OPTS[@]}" "${SRV_USER}@${SRV_HOST}" "$@"; fi; }
 RSYNC_E="ssh -p $SRV_PORT -i $SRV_KEY -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=accept-new"
 log() { printf '\033[1;36m[%s]\033[0m %s\n' "$(date +%H:%M:%S)" "$*"; }
 
@@ -230,11 +240,14 @@ cmd_pull() {
   log "pulled → $LOCAL_RESULTS, $LOCAL_REPORTS, $LOCAL_LOGS"
 }
 
-cmd_stop() { srv "pkill -f 'optimize/optimizer.py' || true; pkill -f 'optimize.two_stage' || true"; log "stop signal sent (single + two-stage)."; }
+# Bracket the first char so the pattern never matches pkill's OWN command line (in local mode srv runs the
+# string via `bash -c`, whose argv would otherwise contain the literal pattern and self-terminate).
+cmd_stop() { srv "pkill -f '[o]ptimize/optimizer.py' || true; pkill -f '[o]ptimize.two_stage' || true"; log "stop signal sent (single + two-stage)."; }
 
 # Tier 3 — observability + pre-flight gate.
 cmd_stats() {  # live COMPLETE / RUNNING / FAIL / pruned per study (a contention storm = rising FAIL)
-  srv "$REMOTE_ENV; cd '$CODE' && python3 optimize/study_stats.py ${TFS[*]} --prefix $PREFIX"
+  # Forward extra args (e.g. --json, which the dashboard's control.status() needs to parse the output).
+  srv "$REMOTE_ENV; cd '$CODE' && python3 optimize/study_stats.py ${TFS[*]} --prefix $PREFIX $*"
 }
 cmd_smoke() {  # pre-flight contention probe BEFORE a multi-hour sweep — must report ZERO lock deaths
   local w="${1:-30}" k="${2:-20}"
@@ -245,7 +258,7 @@ cmd_smoke() {  # pre-flight contention probe BEFORE a multi-hour sweep — must 
 case "${1:-}" in
   push) cmd_push ;; parity) cmd_parity ;; run) shift; cmd_run "${1:-3000}" "${2:-}" ;;
   two-stage) shift; cmd_two_stage "${1:-}" ;;
-  status) cmd_status ;; counts) cmd_counts ;; stats) cmd_stats ;; smoke) shift; cmd_smoke "${1:-30}" "${2:-20}" ;;
+  status) cmd_status ;; counts) cmd_counts ;; stats) shift; cmd_stats "$@" ;; smoke) shift; cmd_smoke "${1:-30}" "${2:-20}" ;;
   pull) cmd_pull ;; stop) cmd_stop ;; plan) cmd_plan ;;
   *) echo "usage: remote_wsi.sh {push|parity|smoke [workers] [trials]|plan|run [target|auto]|two-stage [tfs]|status|counts|stats|pull|stop}"; exit 1 ;;
 esac

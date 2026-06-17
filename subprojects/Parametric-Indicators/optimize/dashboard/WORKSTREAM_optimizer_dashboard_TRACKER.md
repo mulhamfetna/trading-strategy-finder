@@ -24,7 +24,8 @@ trials + Pareto (optuna-dashboard), pull full data as a download, control/notify
 | **Implementation plan** | ✅ done | `optimize/dashboard/PLAN_optimizer_dashboard.md` |
 | **Implementation (P-A…P-E, local)** | ✅ BUILT & tested (27 tests green; golden 6/6) | `control.py`/`app.py`/`bot.py`/`static/index.html`/`run_dashboard.sh`; doc `UPDATE_optimizer_dashboard.md` |
 | **#3 Two-stage launch wiring** | ✅ DONE (2026-06-17) | `remote_wsi.sh two-stage <tfs>` (detached, non-watchdog) + `control.start` engine branch + new test; UPDATE §3 resolved |
-| **#2 Deploy (P-A.3 + server smoke) + P-F compose** | ⬜ deploy-time (needs AMD server over SSH) | see UPDATE doc §4 |
+| **#2 Deploy on AMD server (P-A.3)** | ✅ LIVE (2026-06-17) on `192.168.50.62` — control:8350 optuna:8082 + bot; local-mode `remote_wsi.sh` | UPDATE doc §4 |
+| **#2b final smoke (real run) + P-F compose** | ⬜ deferred (needs operator go-ahead + fresh prefix) | UPDATE doc §5 |
 
 Task: **#224 DASH** (in progress). Decisions locked: hybrid · VPN-served · stop-as-pause · full Telegram bot ·
 containerize-later · FastAPI · bundle both-modes. Access = full-tunnel VPN (verified, §3.0 of spec).

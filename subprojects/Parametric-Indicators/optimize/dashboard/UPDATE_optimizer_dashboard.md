@@ -77,15 +77,40 @@ flowchart TB
   the SSE already tails; the final champion prints at the end of that log.
 - **Per-task commits skipped**: per the standing "commit only when asked" rule — all work is uncommitted on `dev`.
 
-## 4. Remaining (deploy-time — needs the AMD server over SSH)
-- **P-A.3:** `pip install` deps into `REMOTE_VENV`; create `dashboard.env` (real `WSH_STORAGE_URL` from
-  `$WSI/pg.env`, `DASH_BIND_IP`); launch optuna-dashboard and **confirm the bind IP reachable from the phone
-  over VPN** (LAN `private_ip` vs OpenVPN tun IP).
-- **Server smoke:** `run_dashboard.sh` → start a tiny run from the UI → trials show in optuna-dashboard → Pause/
-  Resume → both bundles download + `pg_restore` the full one locally → bot `/status` replies + champion alert.
-- **P-F (later):** docker-compose for one-command redeploy (spec D5).
+## 4. DEPLOYED on the AMD server (2026-06-17) — P-A.3 done
 
-## 5. How to launch (on the server)
+> **Current operational state:** deploy verified, then **all three instances STOPPED** (no idle processes
+> left on the box). Relaunch on demand with `bash optimize/dashboard/run_dashboard.sh` (§6). `dashboard.env`
+> persists server-side (gitignored) so relaunch needs no reconfiguration.
+
+Live on the AMD box (`192.168.50.62`, VPN-reachable; the public IP forwards only SSH):
+- **Deps** installed into `REMOTE_VENV`: `fastapi uvicorn python-telegram-bot optuna-dashboard cmaes`.
+- **`dashboard.env`** (gitignored, server-side): `DASH_BIND_IP=192.168.50.62`, `WSH_STORAGE_URL` from `pg.env`,
+  `WSH_LOGS_DIR=$WSI/logs`, token from `SERVER_DATA.env`, allowlist = the operator's chat id, **`WSH_LOCAL=1`**.
+- **Ports:** control **8350**, optuna **8082** (NOT spec's 8081 — taken by the `searxng` container). Both bind
+  the **private IP only**, never `0.0.0.0`.
+- **Processes:** `run_dashboard.sh` launches all three `setsid`-detached (survive SSH disconnect). Verified:
+  `/api/config`, `/api/status` (real JSON: `wsh4_4h` 5483 complete), `/api/stop` ok; bot replies to
+  `/status /stop /resume /pull` (allowlist enforced; `/pull` built a lite bundle).
+
+**Deploy-time fixes (found during the server smoke, all golden-6/6-safe — `remote_wsi.sh` only):**
+1. **Local mode (`WSH_LOCAL=1`)**: the control plane runs ON the server, so `remote_wsi.sh` must run commands
+   locally instead of SSHing back to itself (the laptop's `server.env` + key aren't on the box). Added a
+   `WSH_LOCAL` branch to `srv()` (runs `bash -c` locally) + tolerant `server.env` sourcing (REMOTE_VENV then
+   comes from `dashboard.env`).
+2. **`stats --json` not forwarded**: `control.status()` parses JSON but the `stats)` dispatch dropped the
+   `--json` flag → human table → "no studies". Fixed: `stats) shift; cmd_stats "$@"` + `cmd_stats` forwards `$*`.
+3. **`pkill` self-match**: `cmd_stop`'s pattern matched its own `bash -c` argv in local mode and SIGTERM'd
+   itself → `/api/stop` "Terminated". Fixed with the `[o]` bracket trick (safe in both local + SSH modes).
+
+## 5. Remaining
+- **Server smoke (final leg):** start a *real* tiny run from the UI (NEW prefix per the rule) → watch trials in
+  optuna-dashboard → Pause/Resume → download the full bundle + `pg_restore` locally → confirm a champion alert.
+  Deferred — starting a run is heavy + needs the operator's go-ahead and a fresh study prefix.
+- **Persistence across reboot / P-F:** processes are `setsid`-detached (survive disconnect) but not a service;
+  docker-compose or a systemd unit for one-command redeploy is the remaining P-F item (spec D5).
+
+## 6. How to launch (on the server)
 ```bash
 cp optimize/dashboard/dashboard.env.example optimize/dashboard/dashboard.env   # fill bind IP, storage URL, bot token
 bash optimize/dashboard/run_dashboard.sh        # optuna-dashboard :8081 + control :8350 + bot
