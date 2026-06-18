@@ -74,6 +74,9 @@ class H(BaseHTTPRequestHandler):
                 # coarsest→finest for the dropdown; 4h is the default (matches the winner preset)
                 "timeframes": list(reversed(list(TF.TIMEFRAMES))), "default_timeframe": "4h",
                 "indicator_schema": library.schema()}))
+        if path == "/api/l2_config":
+            from optimize.l2 import payload as l2p
+            return self._send(200, json.dumps(l2p.l2_config()))
         name = "index.html" if path in ("/", "") else path.lstrip("/")
         f = FRONTEND / name
         if ".." in name or not f.is_file():
@@ -99,6 +102,33 @@ class H(BaseHTTPRequestHandler):
                 return self._send(400, json.dumps({"error": f"Invalid profile: {e}"}))
             except Exception as e:
                 return self._send(500, json.dumps({"error": f"Save failed: {e}"}))
+        if path == "/api/l2_profiles":
+            try:
+                n = int(self.headers.get("Content-Length", 0))
+                body = json.loads(self.rfile.read(n) or b"{}")
+                from optimize.l2 import payload as l2p
+                profs = l2p.save_l2_profile(body.get("name"), body.get("preset") or {})
+                print(f"saved L2 profile '{body.get('name')}' -> profiles/l2_profiles.json", flush=True)
+                return self._send(200, json.dumps({"ok": True, "profiles": profs}))
+            except ValueError as e:
+                return self._send(400, json.dumps({"error": str(e)}))
+            except Exception as e:
+                return self._send(500, json.dumps({"error": f"Save failed: {e}"}))
+        if path == "/api/l2_backtest":
+            try:
+                n = int(self.headers.get("Content-Length", 0))
+                l2_params = json.loads(self.rfile.read(n) or b"{}")
+                from optimize.l2 import payload as l2p
+                payload_out = l2p.build_l2_payload(l2_params, "4h")
+                self._send(200, json.dumps(payload_out))
+                s = payload_out["meta"]["summary"]
+                print(f"l2_backtest {l2_params} -> L2 P/L ${s['l2']['pnl']:,.0f} "
+                      f"n={s['l2']['n']} combined DD ${s['combined']['max_dd']:,.0f} "
+                      f"({payload_out['meta']['run_ms']}ms)", flush=True)
+                return
+            except Exception as e:
+                import traceback; traceback.print_exc()
+                return self._send(500, json.dumps({"error": f"L2 backtest failed: {e}"}))
         if path == "/api/warmup":
             # Live warmup/data-footprint for the CURRENT indicator config (interactive boxes). Single source
             # of truth = indicators/library.warmup_bars() — the frontend never duplicates the formulas.
