@@ -92,3 +92,101 @@ def save_l2_profile(name: str, preset: dict) -> dict:
     _PROFILES.parent.mkdir(parents=True, exist_ok=True)
     _PROFILES.write_text(json.dumps(profs, indent=1))
     return profs
+
+
+def _epoch(ts) -> int:
+    return int(pd.Timestamp(ts).timestamp())
+
+
+def _dedupe(series: list) -> list:
+    """lightweight-charts needs unique, sorted times; keep the last value per timestamp."""
+    last = {}
+    for pt in series:
+        last[pt["time"]] = pt["value"]
+    return [{"time": t, "value": last[t]} for t in sorted(last)]
+
+
+def _spans_from_timeline(state_timeline, dec_dates) -> list:
+    """Contiguous [from,to] epoch spans where L1 is in-position (for chart shading)."""
+    spans = []
+    n = len(state_timeline)
+    i = 0
+    while i < n:
+        if state_timeline[i]:
+            j = i
+            while j < n and state_timeline[j]:
+                j += 1
+            spans.append({"from": _epoch(dec_dates[i]), "to": _epoch(dec_dates[min(j, n - 1)])})
+            i = j
+        else:
+            i += 1
+    return spans
+
+
+def _derive_lines(t: dict, p: dict) -> dict:
+    """SL/TP line levels for display only (entry_price ± points; engine fill convention)."""
+    ep = float(t["entry_price"])
+    sl_hard = float(p["sl_hard"]); sl_soft = float(p["sl_soft"]); tp = float(p["tp"])
+    if t["direction"] == "long":
+        return {"sl_hard_line": ep - sl_hard, "sl_soft_line": ep - sl_soft, "tp_hard_line": ep + tp}
+    return {"sl_hard_line": ep + sl_hard, "sl_soft_line": ep + sl_soft, "tp_hard_line": ep - tp}
+
+
+def _equity_series(ledger: list) -> list:
+    rows = sorted(ledger, key=lambda t: pd.Timestamp(t["exit_time"]))
+    out = []
+    eq = 0.0
+    for t in rows:
+        eq += float(t["pnl"])
+        out.append({"time": _epoch(t["exit_time"]), "value": round(eq, 2)})
+    return _dedupe(out)
+
+
+def _combined_equity_series(l1_ledger: list, l2_ledger: list) -> list:
+    merged = [(pd.Timestamp(t["exit_time"]), float(t["pnl"])) for t in l1_ledger] \
+        + [(pd.Timestamp(t["exit_time"]), float(t["pnl"])) for t in l2_ledger]
+    merged.sort(key=lambda x: x[0])
+    out = []
+    eq = 0.0
+    for ts, pnl in merged:
+        eq += pnl
+        out.append({"time": int(ts.timestamp()), "value": round(eq, 2)})
+    return _dedupe(out)
+
+
+def build_l2_payload(l2_params: dict, tf: str = "4h") -> dict:
+    p = validate_l2_params(l2_params)
+    l1 = run_l1_cached(tf)
+    res = engine.run_l2(l1, p)
+    ds = dataset.build_dataset(l1)
+    dec_dates = l1.df_dec["Date"].to_numpy()
+
+    candles = [{"time": _epoch(d), "open": float(o), "high": float(h), "low": float(lo), "close": float(c)}
+               for d, o, h, lo, c in zip(l1.df_dec["Date"], l1.df_dec["Open"], l1.df_dec["High"],
+                                         l1.df_dec["Low"], l1.df_dec["Close"])]
+    dropped = [{"time": _epoch(d["ts"]), "reason": d["reason"], "box_dir": d["box_dir"],
+                "l1_flat": (not bool(l1.state_timeline[d["idx"]]))} for d in l1.dropped_signals]
+    l2_trades = []
+    for t in res.ledger:
+        row = {"entry_time": _epoch(t["entry_time"]), "exit_time": _epoch(t["exit_time"]),
+               "direction": t["direction"], "entry_price": float(t["entry_price"]),
+               "exit_price": float(t["exit_price"]), "exit_reason": t["exit_reason"],
+               "pnl": round(float(t["pnl"]), 2), "l2_dir_vs_box": t.get("l2_dir_vs_box", "agree")}
+        row.update(_derive_lines(t, p))
+        l2_trades.append(row)
+
+    return {
+        "meta": {
+            "l1": {"n_trades": len(l1.ledger), "pnl": round(sum(t["pnl"] for t in l1.ledger), 2)},
+            "summary": {"l2": metrics.score(res), "combined": metrics.combined(l1, res)},
+            "dropped_counts": {"veto": ds.n_veto, "vol_gate": ds.n_vol_gate,
+                               "total": len(ds), "flat_candidates": len(ds.flat_candidates())},
+        },
+        "candles": candles,
+        "l1_spans": _spans_from_timeline(l1.state_timeline, dec_dates),
+        "dropped": dropped,
+        "l2_trades": l2_trades,
+        "l2_equity": _equity_series(res.ledger),
+        "l1_equity": _equity_series(l1.ledger),
+        "combined_equity": _combined_equity_series(l1.ledger, res.ledger),
+    }
