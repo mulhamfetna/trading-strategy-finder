@@ -108,3 +108,37 @@ def build_l2_payload(l2_params: dict, tf: str = "4h") -> dict:
             "l2_equity": _equity(res.ledger),
             "combined_equity": _equity(list(l1.ledger) + list(res.ledger)),
             "l1_equity": _equity(l1.ledger)}
+
+
+# --- L2-profile store (mirrors presets.load_user_profiles/save_user_profile) ------------------------
+def load_l2_profiles() -> dict:
+    if not _L2_PROFILES.exists():
+        return {}
+    try:
+        d = json.loads(_L2_PROFILES.read_text())
+        return d if isinstance(d, dict) else {}
+    except Exception:
+        return {}
+
+
+def save_l2_profile(name: str, preset: dict) -> dict:
+    name = (name or "").strip()
+    if not name:
+        raise ValueError("L2 profile name is required")
+    profs = load_l2_profiles()
+    profs[name] = preset
+    _L2_PROFILES.parent.mkdir(parents=True, exist_ok=True)
+    _L2_PROFILES.write_text(json.dumps(profs, indent=1))
+    return profs
+
+
+def l2_config(tf: str = "4h") -> dict:
+    """Drives the L2 form: indicator schema, the fixed-L1 summary, and saved L2 profiles."""
+    from indicators import library
+    l1 = get_l1(tf)
+    ds = dataset.build_dataset(l1)
+    return {"indicator_schema": library.schema(),
+            "l1": {"label": "lean 4h champion (frozen)", "n_trades": len(l1.ledger),
+                   "dropped": len(ds), "veto": ds.n_veto, "vol_gate": ds.n_vol_gate,
+                   "flat_candidates": len(ds.flat_candidates())},
+            "profiles": load_l2_profiles()}
