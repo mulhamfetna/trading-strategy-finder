@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>L2 — second decision layer</title>
+<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+<style>
+  :root { --bg:#0e0e12; --surface:#16161d; --border:#26262f; --text:#d6d6e0; --muted:#8a8a9a;
+          --blue:#42a5f5; --green:#26a69a; --red:#ef5350; --orange:#ffa726; --purple:#ab47bc; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text);
+         font:13px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; display:flex; flex-direction:column; }
+  header { display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border);
+           background:var(--surface); padding:12px 16px; }
+  header h1 { font-size:18px; font-weight:600; color:var(--blue); margin:0; }
+  header a { color:var(--muted); font-size:12px; text-decoration:none; }
+  header a:hover { color:var(--blue); }
+  main { display:flex; gap:0; }
+  #side { width:320px; min-width:320px; border-right:1px solid var(--border); background:var(--surface);
+          padding:12px; overflow:auto; height:calc(100vh - 50px); }
+  #content { flex:1; padding:12px; overflow:auto; height:calc(100vh - 50px); }
+  .fld { display:flex; align-items:center; justify-content:space-between; margin:4px 0; }
+  .fld label { color:var(--muted); }
+  input, select, button { background:#1d1d27; color:var(--text); border:1px solid var(--border); border-radius:4px; padding:4px 6px; }
+  input[type=number] { width:90px; }
+  button { cursor:pointer; }
+  button.primary { background:var(--blue); color:#04121f; border:0; font-weight:600; padding:6px 14px; }
+  h3 { font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); border-bottom:1px solid var(--border); padding-bottom:4px; margin:16px 0 8px; }
+  .ind { border:1px solid var(--border); border-radius:5px; margin:5px 0; padding:5px 7px; opacity:.55; }
+  .ind.on { opacity:1; border-color:var(--blue); }
+  .indhead { display:flex; align-items:center; justify-content:space-between; }
+  .indbody { display:flex; flex-wrap:wrap; gap:6px; margin-top:5px; }
+  .indbody .fld { flex-direction:column; align-items:flex-start; margin:0; }
+  .indbody input { width:70px; }
+  #status { font-size:11px; color:var(--muted); margin:8px 0; min-height:30px; }
+  #cards { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:8px 12px; min-width:120px; }
+  .card .k { font-size:10px; color:var(--muted); text-transform:uppercase; }
+  .card .v { font-size:16px; font-weight:600; }
+  .chart { width:100%; margin-bottom:10px; border:1px solid var(--border); border-radius:6px; }
+  table { width:100%; border-collapse:collapse; font-size:11px; margin-bottom:14px; }
+  th, td { text-align:left; padding:3px 6px; border-bottom:1px solid var(--border); }
+  th { color:var(--muted); position:sticky; top:0; background:var(--surface); }
+  .tablewrap { max-height:260px; overflow:auto; border:1px solid var(--border); border-radius:6px; }
+</style>
+</head>
+<body>
+<header>
+  <div><h1>L2 — second decision layer</h1><div id="l1info" style="font-size:11px;color:var(--muted)"></div></div>
+  <a href="/">← main dashboard</a>
+</header>
+<main>
+  <div id="side">
+    <h3>L2 indicators</h3>
+    <div id="indpanel"><div class="fld"><label>loading schema…</label></div></div>
+    <h3>L2 levers</h3>
+    <div class="fld"><label>K (confirmers)</label><input id="k" type="number" min="1" max="8" value="1"></div>
+    <div class="fld"><label>gate_pct</label><input id="gate_pct" type="number" min="0" max="100" value="0"></div>
+    <div class="fld"><label>sl_soft</label><input id="sl_soft" type="number" step="0.1" value="149.8"></div>
+    <div class="fld"><label>sl_hard</label><input id="sl_hard" type="number" step="0.1" value="167.1"></div>
+    <div class="fld"><label>tp</label><input id="tp" type="number" step="0.1" value="120.2"></div>
+    <div class="fld"><label>dd_limit</label><input id="dd_limit" type="number" step="1" value="0"></div>
+    <div class="fld"><label>cooldown</label><input id="cooldown" type="number" min="0" value="0"></div>
+    <div class="fld"><label>flip</label><select id="flip"><option value="false">false</option><option value="true">true</option></select></div>
+    <div class="fld"><label>ind_1min</label><input id="ind_1min" type="checkbox"></div>
+    <h3>profiles</h3>
+    <div class="fld"><label>saved L2</label><select id="l2profile"><option value="">—</option></select></div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button id="runbtn" class="primary">Run L2</button>
+      <button id="savebtn">Save L2 profile</button>
+    </div>
+    <div id="status"></div>
+  </div>
+  <div id="content">
+    <div id="cards"></div>
+    <div id="price" class="chart"></div>
+    <div id="equity" class="chart"></div>
+    <h3>L2 trades</h3>
+    <div class="tablewrap"><table id="l2trades"></table></div>
+    <h3>L1 dropped signals (veto + vol-gate)</h3>
+    <div class="tablewrap"><table id="dropped"></table></div>
+  </div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+function status(t) { $('status').textContent = t; }
+
+// ── indicator panel (trimmed copy of index.html buildIndicatorPanel — indicators only, no retrace/gen) ──
+function buildIndicatorPanel(sch) {
+  const host = $('indpanel'); host.innerHTML = '';
+  const modeOpts = sel => sch.modes.map(m => `<option ${m === sel ? 'selected' : ''}>${m}</option>`).join('');
+  sch.indicators.forEach(ind => {
+    const div = document.createElement('div'); div.className = 'ind'; div.dataset.key = ind.key;
+    const pflds = ind.params.map(p => `<div class="fld"><label>${p.name}</label>`
+      + `<input class="ind-p" data-p="${p.name}" type="number" step="${p.step}" min="${p.min}" max="${p.max}" value="${p.default}"></div>`).join('');
+    div.innerHTML = `<div class="indhead"><label><input type="checkbox" class="ind-en"> ${ind.label}</label>`
+      + `<select class="ind-mode">${modeOpts(ind.mode)}</select></div><div class="indbody">${pflds}</div>`;
+    host.appendChild(div);
+    const en = div.querySelector('.ind-en');
+    en.addEventListener('change', () => div.classList.toggle('on', en.checked));
+  });
+}
+function indicatorSpecs() {
+  const specs = [];
+  document.querySelectorAll('#indpanel .ind').forEach(el => {
+    const p = {}; el.querySelectorAll('.ind-p').forEach(i => p[i.dataset.p] = +i.value);
+    specs.push({key: el.dataset.key, enabled: el.querySelector('.ind-en').checked,
+                mode: el.querySelector('.ind-mode').value, params: p});
+  });
+  return specs;
+}
+function applyIndicatorSpecs(specs) {
+  if (!specs || !specs.length) return;
+  const by = {}; specs.forEach(s => by[s.key] = s);
+  document.querySelectorAll('#indpanel .ind').forEach(el => {
+    const s = by[el.dataset.key]; if (!s) return;
+    const en = el.querySelector('.ind-en'); en.checked = !!s.enabled; el.classList.toggle('on', !!s.enabled);
+    if (s.mode) el.querySelector('.ind-mode').value = s.mode;
+    el.querySelectorAll('.ind-p').forEach(i => { if (s.params && s.params[i.dataset.p] != null) i.value = s.params[i.dataset.p]; });
+  });
+}
+
+// ── config + form ──
+async function loadConfig() {
+  const c = await (await fetch('/api/l2_config')).json();
+  buildIndicatorPanel(c.indicator_schema);
+  $('l1info').textContent = `L1 = ${c.l1.label}: ${c.l1.n_trades} trades, ${c.l1.dropped} dropped `
+    + `(${c.l1.veto} veto + ${c.l1.vol_gate} vol-gate), ${c.l1.flat_candidates} flat candidates`;
+  const sel = $('l2profile');
+  sel.innerHTML = '<option value="">— pick a saved L2 profile —</option>'
+    + Object.keys(c.profiles).map(n => `<option value="${n}">${n}</option>`).join('');
+  sel.onchange = () => { const p = c.profiles[sel.value]; if (p) setForm(p); };
+  status('ready — tune an L2 profile and click Run L2 (first run computes L1, ~40s)');
+}
+function l2params() {
+  return {
+    indicators: indicatorSpecs(),
+    k: +$('k').value || 1, gate_pct: +$('gate_pct').value,
+    sl_soft: +$('sl_soft').value, sl_hard: +$('sl_hard').value, tp: +$('tp').value,
+    dd_limit: +$('dd_limit').value, cooldown: +$('cooldown').value,
+    flip: $('flip').value === 'true', ind_1min: $('ind_1min').checked,
+  };
+}
+function setForm(p) {
+  ['k', 'gate_pct', 'sl_soft', 'sl_hard', 'tp', 'dd_limit', 'cooldown'].forEach(id => {
+    if (p[id] != null) $(id).value = p[id]; });
+  $('flip').value = String(!!p.flip);
+  $('ind_1min').checked = !!p.ind_1min;
+  if (p.indicators) applyIndicatorSpecs(p.indicators);
+}
+
+// ── charts ──
+let priceC, candle, mkrS, ssS, shS, tpS, l1band, eqC, combLine, l1Line;
+function initCharts() {
+  const COMMON = {layout: {background: {color: '#0e0e12'}, textColor: '#ccc'},
+                  grid: {vertLines: {color: '#1c1c24'}, horzLines: {color: '#1c1c24'}},
+                  timeScale: {timeVisible: true}};
+  priceC = LightweightCharts.createChart($('price'), {...COMMON, height: 420, width: $('price').clientWidth});
+  l1band = priceC.addAreaSeries({topColor: 'rgba(120,120,140,.16)', bottomColor: 'rgba(120,120,140,.03)',
+                                 lineColor: 'rgba(120,120,140,.30)', priceLineVisible: false, lastValueVisible: false});
+  candle = priceC.addCandlestickSeries({upColor: '#26a69a', downColor: '#ef5350', wickUpColor: '#26a69a',
+                                        wickDownColor: '#ef5350', borderVisible: false});
+  const seg = c => priceC.addLineSeries({color: c, lineWidth: 1, lastValueVisible: false,
+                                         priceLineVisible: false, crosshairMarkerVisible: false});
+  tpS = seg('#26a69a'); shS = seg('#ef5350'); ssS = seg('#ef9a9a');
+  mkrS = candle;
+  eqC = LightweightCharts.createChart($('equity'), {...COMMON, height: 200, width: $('equity').clientWidth});
+  combLine = eqC.addLineSeries({color: '#42a5f5', lineWidth: 2, title: 'L1+L2'});
+  l1Line = eqC.addLineSeries({color: '#9e9e9e', lineWidth: 1, title: 'L1 only'});
+  addEventListener('resize', () => {
+    priceC.resize($('price').clientWidth, 420); eqC.resize($('equity').clientWidth, 200); });
+}
+function render(D) {
+  const S = D.meta.summary, L = S.l2, C = S.combined;
+  const card = (t, v, color) => `<div class="card"><div class="k">${t}</div>`
+    + `<div class="v"${color ? ` style="color:${color}"` : ''}>${v}</div></div>`;
+  const ddColor = C.dd_not_worse ? '#26a69a' : '#ef5350';
+  $('cards').innerHTML =
+      card('L2 P/L', `$${L.pnl.toLocaleString()}`, L.pnl >= 0 ? '#26a69a' : '#ef5350')
+    + card('L2 maxDD', `$${L.max_dd.toLocaleString()}`)
+    + card('L2 trades', L.n) + card('L2 win%', L.win) + card('L1-entry exits', L.n_l1_entry_exits)
+    + card('Combined P/L', `$${C.pnl.toLocaleString()}`)
+    + card(`Combined maxDD (L1-only $${C.l1_only_dd.toLocaleString()})`,
+           `$${C.max_dd.toLocaleString()} ${C.dd_not_worse ? 'OK' : 'WORSE'}`, ddColor);
+
+  candle.setData(D.candles);
+  const hi = Math.max(...D.candles.map(c => c.high));
+  l1band.setData(D.candles.map(c =>
+    ({time: c.time, value: D.l1_spans.some(s => c.time >= s.from && c.time <= s.to) ? hi : 0})));
+
+  const mks = [];
+  D.dropped.forEach(d => mks.push({time: d.time, position: 'aboveBar',
+    color: d.reason === 'veto' ? '#ffa726' : '#42a5f5', shape: 'circle',
+    text: d.reason === 'veto' ? 'v' : 'g'}));
+  D.l2_trades.forEach(t => {
+    const opp = t.l2_dir_vs_box === 'oppose';
+    mks.push({time: t.entry_time, position: 'belowBar',
+      color: t.direction === 'long' ? '#26a69a' : '#ef5350',
+      shape: opp ? 'arrowDown' : 'arrowUp', text: opp ? 'L2!' : 'L2'});
+    mks.push({time: t.exit_time, position: 'inBar',
+      color: t.exit_reason === 'L1-entry' ? '#ab47bc' : (t.pnl > 0 ? '#26a69a' : '#ef5350'),
+      shape: 'circle', text: t.exit_reason === 'L1-entry' ? 'X' : ''});
+  });
+  mks.sort((a, b) => a.time - b.time);
+  mkrS.setMarkers(mks);
+
+  const tpD = [], shD = [], ssD = [];
+  D.l2_trades.forEach(t => {
+    tpD.push({time: t.entry_time, value: t.tp_hard_line}, {time: t.exit_time, value: t.tp_hard_line});
+    shD.push({time: t.entry_time, value: t.sl_hard_line}, {time: t.exit_time, value: t.sl_hard_line});
+    ssD.push({time: t.entry_time, value: t.sl_soft_line}, {time: t.exit_time, value: t.sl_soft_line});
+  });
+  const dedup = a => { const m = new Map(); a.forEach(p => m.set(p.time, p)); return [...m.values()].sort((x, y) => x.time - y.time); };
+  tpS.setData(dedup(tpD)); shS.setData(dedup(shD)); ssS.setData(dedup(ssD));
+
+  combLine.setData(D.combined_equity);
+  l1Line.setData(D.l1_equity);
+
+  const iso = ts => new Date(ts * 1000).toISOString().slice(0, 16).replace('T', ' ');
+  $('l2trades').innerHTML =
+    '<thead><tr><th>entry</th><th>exit</th><th>dir</th><th>vs box</th><th>reason</th><th>P/L</th></tr></thead><tbody>'
+    + D.l2_trades.map(t => `<tr><td>${iso(t.entry_time)}</td><td>${iso(t.exit_time)}</td>`
+      + `<td>${t.direction}</td><td>${t.l2_dir_vs_box}</td><td>${t.exit_reason}</td>`
+      + `<td style="color:${t.pnl > 0 ? '#26a69a' : '#ef5350'}">$${t.pnl.toLocaleString()}</td></tr>`).join('')
+    + '</tbody>';
+  $('dropped').innerHTML =
+    '<thead><tr><th>time</th><th>reason</th><th>box dir</th></tr></thead><tbody>'
+    + D.dropped.map(d => `<tr><td>${iso(d.time)}</td><td>${d.reason}</td><td>${d.box_dir}</td></tr>`).join('')
+    + '</tbody>';
+}
+
+async function run() {
+  status('computing L1 (first run, ~40s)… then applying L2…');
+  try {
+    const r = await fetch('/api/l2_backtest', {method: 'POST',
+      headers: {'Content-Type': 'application/json'}, body: JSON.stringify(l2params())});
+    const D = await r.json();
+    if (D.error) { status('error: ' + D.error); return; }
+    render(D);
+    status(`done in ${D.meta.run_ms}ms — L2 n=${D.meta.summary.l2.n}`);
+  } catch (e) { status('request failed: ' + e); }
+}
+async function saveProfile() {
+  const name = prompt('Save L2 profile as:');
+  if (!name) return;
+  const r = await fetch('/api/l2_profiles', {method: 'POST',
+    headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name, preset: l2params()})});
+  const d = await r.json();
+  if (d.error) { status('save error: ' + d.error); return; }
+  const sel = $('l2profile');
+  sel.innerHTML = '<option value="">— pick a saved L2 profile —</option>'
+    + Object.keys(d.profiles).map(n => `<option value="${n}">${n}</option>`).join('');
+  status(`saved L2 profile "${name}"`);
+}
+$('runbtn').onclick = run;
+$('savebtn').onclick = saveProfile;
+initCharts();
+loadConfig();
+</script>
+</body>
+</html>
