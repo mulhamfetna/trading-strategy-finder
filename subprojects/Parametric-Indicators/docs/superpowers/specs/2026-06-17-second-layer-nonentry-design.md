@@ -4,7 +4,7 @@ description: "Design spec — L2, a second decision layer that manages the prima
 metadata:
   type: project
   workstream: second-layer-nonentry
-  status: DESIGN APPROVED (2026-06-17) — §12 decisions confirmed; next = writing-plans
+  status: BACKTESTER BUILT (round 1, 2026-06-18) — next = dashboard-inside-dashboard
   date: 2026-06-17
 ---
 
