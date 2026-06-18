@@ -1,0 +1,151 @@
+"""L2 Pass 1 — run the FROZEN lean 3-indicator champion (L1) and emit everything L2 needs:
+the taken-trade ledger (with the same drawdown breaker as core.backtest_metrics), the per-bar
+no-entry attribution, the isolated dropped-signal log (veto + vol-gate only), and the L1 flat/
+in-position state timeline. L1's engine bytes are never touched (golden stays green)."""
+from __future__ import annotations
+
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+_PI = Path(__file__).resolve().parents[2]
+if str(_PI) not in sys.path:
+    sys.path.insert(0, str(_PI))
+
+import config                                                       # noqa: E402
+import presets                                                      # noqa: E402
+from optimize import data as data_mod, timeframes as TF, signals as sig_mod   # noqa: E402
+from optimize.fast_engine import fast_backtest, signals_to_int     # noqa: E402
+from optimize.counterfactual_pause import attribute                # noqa: E402
+from indicators import library, runner                             # noqa: E402
+
+
+def _lean_params(tf: str = "4h") -> dict:
+    """Build the L1 engine-param dict from optimize/results/wsh_lean_4h_champion.json via presets._all_specs."""
+    c = presets._champions_lean().get(tf)
+    if not c:
+        raise SystemExit("missing optimize/results/wsh_lean_4h_champion.json (the L1 source of truth)")
+    box = c["box"]
+    specs, _gen = presets._all_specs(c.get("indicators", {}))
+    return dict(sl_soft=float(box["sl_soft"]), sl_hard=float(box["sl_hard"]), tp=float(box["tp"]),
+                gate_pct=float(box["gate_pct"]), dd_limit=float(box["dd_limit"]),
+                cooldown=int(box["cooldown"]), flip=bool(box["flip"]), window="full",
+                k=int(box["k"]), ind_1min=True, indicators=specs)
+
+
+LEAN_4H_PARAMS: dict = _lean_params("4h")
+
+
+def apply_breaker(cand: list[dict], pv: float, dd_limit: float, cooldown: int):
+    """Global-HWM drawdown-breaker overlay — identical math to optimize.core.backtest_metrics
+    (lines 125-150). Returns (taken, n_skipped, n_locks); each taken dict = the fast_backtest trade
+    dict + 'pnl' (dollars), 'eq', 'dd'."""
+    use_brk = dd_limit > 0
+    peak = eq = 0.0
+    locked = False
+    cd = 0
+    skipped = 0
+    n_locks = 0
+    taken: list[dict] = []
+    for t in cand:
+        pnl = float(t["pnl_points"]) * pv
+        if use_brk and locked:
+            cd -= 1
+            if cd <= 0:
+                locked = False
+            else:
+                skipped += 1
+                continue
+        eq += pnl
+        peak = max(peak, eq)
+        dd = peak - eq
+        tt = dict(t)
+        tt["pnl"] = pnl
+        tt["eq"] = eq
+        tt["dd"] = dd
+        taken.append(tt)
+        if use_brk and dd >= dd_limit:
+            locked = True
+            cd = cooldown
+            n_locks += 1
+    return taken, skipped, n_locks
+
+
+def build_state_timeline(taken: list[dict], dec_dates: np.ndarray, n: int) -> np.ndarray:
+    """Per-decision-bar L1 position state. A trade occupies [entry_idx, exit_bar), where exit_bar is the
+    first decision bar at/after exit_time (and at least entry_idx+1, so the entry bar is always occupied)."""
+    in_pos = np.zeros(n, dtype=bool)
+    for t in taken:
+        e = int(t["entry_idx"])
+        xb = int(np.searchsorted(dec_dates, np.datetime64(t["exit_time"]), side="left"))
+        xb = max(xb, e + 1)
+        in_pos[e:min(xb, n)] = True
+    return in_pos
+
+
+@dataclass
+class L1Result:
+    tf: str
+    params: dict
+    df_dec: pd.DataFrame
+    df1: pd.DataFrame
+    box: pd.DataFrame
+    vf: np.ndarray
+    n_split: int
+    bar_td: pd.Timedelta
+    sig_int: np.ndarray
+    vol_gate: np.ndarray
+    veto: np.ndarray
+    confirm: np.ndarray
+    ledger: list           # taken trade dicts (post-breaker, full fields + pnl/eq/dd)
+    cause: np.ndarray      # per-bar attribution (object array; cause[0] is None)
+    dropped_signals: list  # [{idx, ts, box_dir, reason}] for veto + vol_gate only
+    state_timeline: np.ndarray  # bool, True = L1 in-position
+
+
+def run_l1(tf: str = "4h") -> L1Result:
+    params = _lean_params(tf)
+    df_dec, df1, box, vf, n_split = data_mod.load_inputs(tf)
+    bar_td = TF.get(tf).bar_td
+    n = len(df_dec)
+    sig_int = np.asarray(signals_to_int(sig_mod.decision_signals(df_dec, box)))[:n]
+
+    # vol gate (frozen on the reference segment, causal) — mirrors core.backtest_metrics / load_champion.
+    vol_gate = np.ones(n, dtype=bool)
+    if params["gate_pct"] > 0:
+        gthr = float(np.percentile(vf[:n_split], params["gate_pct"]))
+        vol_gate = vf[:n] <= gthr
+
+    inds = library.from_specs([s for s in params["indicators"] if s.get("enabled")])
+    src = runner.indicator_source_1min(df_dec, df1, bar_td) if params["ind_1min"] else None
+    votes = runner.compute_votes(df_dec, box, inds, src=src)
+    veto = np.asarray(runner.veto_mask(df_dec, box, inds, src=src, votes=votes), dtype=bool)[:n]
+    confirm = np.asarray(runner.confirm_mask(df_dec, box, inds, int(params["k"]), src=src, votes=votes),
+                         dtype=bool)[:n]
+
+    engine_gate = vol_gate & ~veto & confirm
+    dec_dates = df_dec["Date"].to_numpy()
+    cand = fast_backtest(
+        dec_dates, df_dec["Close"].to_numpy(float), sig_int, engine_gate,
+        df1["Date"].to_numpy(), df1["High"].to_numpy(float),
+        df1["Low"].to_numpy(float), df1["Close"].to_numpy(float),
+        params["sl_soft"], params["sl_hard"], params["tp"], params["flip"])
+    pv = float(config.NQ_POINT_VALUE)
+    taken, _skipped, _locks = apply_breaker(cand, pv, params["dd_limit"], params["cooldown"])
+
+    cause = attribute(sig_int, vol_gate, veto, confirm)
+    dropped = []
+    for idx in range(1, n):
+        if cause[idx] in ("vetoed", "vol_gated"):
+            dropped.append({"idx": idx,
+                            "ts": pd.Timestamp(dec_dates[idx]),
+                            "box_dir": "long" if sig_int[idx - 1] == 1 else "short",
+                            "reason": "veto" if cause[idx] == "vetoed" else "vol_gate"})
+    state_timeline = build_state_timeline(taken, dec_dates, n)
+
+    return L1Result(tf=tf, params=params, df_dec=df_dec, df1=df1, box=box, vf=vf, n_split=n_split,
+                    bar_td=bar_td, sig_int=sig_int, vol_gate=vol_gate, veto=veto, confirm=confirm,
+                    ledger=taken, cause=cause, dropped_signals=dropped, state_timeline=state_timeline)
