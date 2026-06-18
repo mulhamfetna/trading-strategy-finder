@@ -4,7 +4,7 @@ description: "Design spec — L2 dashboard-inside-dashboard: a self-contained fr
 metadata:
   type: project
   workstream: second-layer-nonentry
-  status: DESIGN APPROVED (2026-06-18) — next = writing-plans
+  status: BUILT (2026-06-18) — 18 L2 tests + live HTTP smoke green, golden 6/6; next = optimizer #237
   date: 2026-06-18
 ---
 
