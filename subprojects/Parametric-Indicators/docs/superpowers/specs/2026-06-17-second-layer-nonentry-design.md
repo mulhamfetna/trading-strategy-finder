@@ -4,7 +4,7 @@ description: "Design spec — L2, a second decision layer that manages the prima
 metadata:
   type: project
   workstream: second-layer-nonentry
-  status: DESIGN (awaiting spec review) — 2026-06-17
+  status: DESIGN APPROVED (2026-06-17) — §12 decisions confirmed; next = writing-plans
   date: 2026-06-17
 ---
 
@@ -159,10 +159,14 @@ L2 **reuses L1's exit engine verbatim** (soft/hard SL, TP, sub-bar 1-min resolut
 - **No-look-ahead:** synthetic series where any peek would change the trade.
 - **Metrics:** standalone vs combined guardrail on a hand-built mini-ledger.
 
-## 12. Open design decisions to confirm in review
+## 12. Design decisions — CONFIRMED (2026-06-17)
 
-1. **L1 source of truth:** the exact champion param JSON to freeze as L1 (the lean 3-ind 4h champion). Confirm
-   the canonical file/preset so `run_l1` loads the right one.
-2. **Module location:** new `optimize/l2/` package (proposed) vs folding into `optimize/`. Proposed: `optimize/l2/`.
-3. **Study prefix name:** `l2v1` (proposed).
-4. **min_trades floor** value for the sparse dataset (proposed: reuse L1's `min_trades=5`, revisit in analysis).
+1. **L1 source of truth:** the **`wshlean_4h`** champion — the latest 3-indicator + gate portfolio. Canonical
+   params: `shareable/lean_3indicator_backtester/champions/lean_4h.json` (`preset` block; also preset id
+   `wshlean_4h` in `presets.py`). Frozen config: enabled indicators **cci** (n=138, threshold=35, mode `both`),
+   **structure_trend** (swing_l=6, `both`), **order_block** (swing_l=10, `both`) — all others off;
+   `gate_pct=86.9`, `sl_soft=149.8`, `sl_hard=167.1`, `tp=120.2`, `dd_limit=4747`, `cooldown=0`, `flip=false`,
+   `k=1`, `dd_cap=5000`, `pv=20`, gen `swing_l=10`/`golf_n=3`. `run_l1` loads exactly this.
+2. **Module location:** new **`optimize/l2/`** package (isolated from the frozen engine). ✅
+3. **Study prefix:** **`l2v1`**. ✅
+4. **min_trades floor:** reuse L1's **`min_trades=5`**, revisit in the analysis stage. ✅
