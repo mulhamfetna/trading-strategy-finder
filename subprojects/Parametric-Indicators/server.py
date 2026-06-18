@@ -24,6 +24,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import config
 import strategy
+from optimize.l2 import payload as l2payload
 
 FRONTEND = HERE / "frontend"
 _CTYPE = {".html": "text/html", ".js": "application/javascript", ".css": "text/css",
@@ -75,8 +76,14 @@ class H(BaseHTTPRequestHandler):
                 "timeframes": list(reversed(list(TF.TIMEFRAMES))), "default_timeframe": "4h",
                 "indicator_schema": library.schema()}))
         if path == "/api/l2_config":
-            from optimize.l2 import payload as l2p
-            return self._send(200, json.dumps(l2p.l2_config()))
+            from indicators import library
+            l1 = l2payload.run_l1_cached("4h")
+            return self._send(200, json.dumps({
+                "indicator_schema": library.schema(),
+                "l2_profiles": l2payload.load_l2_profiles(),
+                "l1": {"n_trades": len(l1.ledger),
+                       "pnl": round(sum(t["pnl"] for t in l1.ledger), 2)},
+                "l1_label": "🍃 WS lean 4h · 3-ind cci/OB/structure"}))
         name = "index.html" if path in ("/", "") else path.lstrip("/")
         f = FRONTEND / name
         if ".." in name or not f.is_file():
@@ -102,33 +109,6 @@ class H(BaseHTTPRequestHandler):
                 return self._send(400, json.dumps({"error": f"Invalid profile: {e}"}))
             except Exception as e:
                 return self._send(500, json.dumps({"error": f"Save failed: {e}"}))
-        if path == "/api/l2_profiles":
-            try:
-                n = int(self.headers.get("Content-Length", 0))
-                body = json.loads(self.rfile.read(n) or b"{}")
-                from optimize.l2 import payload as l2p
-                profs = l2p.save_l2_profile(body.get("name"), body.get("preset") or {})
-                print(f"saved L2 profile '{body.get('name')}' -> profiles/l2_profiles.json", flush=True)
-                return self._send(200, json.dumps({"ok": True, "profiles": profs}))
-            except ValueError as e:
-                return self._send(400, json.dumps({"error": str(e)}))
-            except Exception as e:
-                return self._send(500, json.dumps({"error": f"Save failed: {e}"}))
-        if path == "/api/l2_backtest":
-            try:
-                n = int(self.headers.get("Content-Length", 0))
-                l2_params = json.loads(self.rfile.read(n) or b"{}")
-                from optimize.l2 import payload as l2p
-                payload_out = l2p.build_l2_payload(l2_params, "4h")
-                self._send(200, json.dumps(payload_out))
-                s = payload_out["meta"]["summary"]
-                print(f"l2_backtest {l2_params} -> L2 P/L ${s['l2']['pnl']:,.0f} "
-                      f"n={s['l2']['n']} combined DD ${s['combined']['max_dd']:,.0f} "
-                      f"({payload_out['meta']['run_ms']}ms)", flush=True)
-                return
-            except Exception as e:
-                import traceback; traceback.print_exc()
-                return self._send(500, json.dumps({"error": f"L2 backtest failed: {e}"}))
         if path == "/api/warmup":
             # Live warmup/data-footprint for the CURRENT indicator config (interactive boxes). Single source
             # of truth = indicators/library.warmup_bars() — the frontend never duplicates the formulas.
@@ -147,6 +127,30 @@ class H(BaseHTTPRequestHandler):
                     "max_bars": (mx["bars"] if mx else 0), "driver": mx}))
             except Exception as e:
                 return self._send(400, json.dumps({"error": f"warmup calc: {e}"}))
+        if path == "/api/l2_backtest":
+            try:
+                n = int(self.headers.get("Content-Length", 0))
+                body = json.loads(self.rfile.read(n) or b"{}")
+                t0 = time.time()
+                out = l2payload.build_l2_payload(body)
+                out["meta"]["run_ms"] = round((time.time() - t0) * 1000)
+                return self._send(200, json.dumps(out))
+            except l2payload.L2ParamError as e:
+                return self._send(400, json.dumps({"error": f"Invalid L2 parameter: {e}"}))
+            except Exception as e:
+                import traceback; traceback.print_exc()
+                return self._send(500, json.dumps({"error": f"L2 backtest failed: {e}"}))
+        if path == "/api/l2_profiles":
+            try:
+                n = int(self.headers.get("Content-Length", 0))
+                body = json.loads(self.rfile.read(n) or b"{}")
+                profs = l2payload.save_l2_profile(body.get("name"), body.get("preset") or {})
+                print(f"saved L2 profile '{body.get('name')}' → profiles/l2_profiles.json", flush=True)
+                return self._send(200, json.dumps({"ok": True, "profiles": profs}))
+            except l2payload.L2ParamError as e:
+                return self._send(400, json.dumps({"error": f"Invalid L2 profile: {e}"}))
+            except Exception as e:
+                return self._send(500, json.dumps({"error": f"Save failed: {e}"}))
         if path != "/api/backtest":
             return self._send(404, '{"error":"unknown endpoint"}')
         try:
