@@ -86,4 +86,4 @@ between its truncated and natural exit — **conservative** (under-counts), neve
 violation. Round 2 may revisit (A/B "keep L2 open, discard L1").
 
 ## Next (out of this plan)
-Dashboard-inside-dashboard (#236) -> optimizer with prefix `l2v1` (#237) -> speed.
+Dashboard-inside-dashboard (#236) ✅ BUILT (`UPDATE_l2_dashboard.md`) -> optimizer with prefix `l2v1` (#237) -> speed.
