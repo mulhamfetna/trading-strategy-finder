@@ -76,5 +76,12 @@ count). Decision: **keep these serial runs local**; reserve the server for paral
 optimizer already runs there). The `WSG_DATA_ROOT` override is documented for future offload if ever
 needed (e.g. to spare the laptop).
 
+## Full-replica upgrade (2026-06-19)
+`l2.html` was upgraded from the minimal focused page to a **full-featured replica** of the main
+dashboard via a **shared module** (`frontend/dashboard_common.{css,js}` — `DB.initDashboard(cfg)`). Both
+dashboards share all styling (and l2 the engine); edit `dashboard_common.*` to update both. See
+`frontend/README.md`. (index.html shares the CSS; its JS-onto-framework migration is the one open
+follow-up.) Plan: `docs/superpowers/plans/2026-06-19-dashboards-shared-module.md`.
+
 ## Next (out of this plan)
 Optimizer with prefix `l2v1` (#237) -> speed.
