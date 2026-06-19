@@ -118,436 +118,155 @@
 </div>
 
 <script src="data.js"></script>
+<script src="dashboard_common.js"></script>
 <script>
-const TH={bg:'#131722',text:'#d1d4dc',border:'#363a45',green:'#00c853',red:'#ff5252',blue:'#2962ff',orange:'#ff9800',muted:'#787b86'};
-const COMMON={layout:{background:{color:TH.bg},textColor:TH.text},grid:{vertLines:{color:'#20242f'},horzLines:{color:'#20242f'}},timeScale:{timeVisible:true,borderColor:TH.border},rightPriceScale:{borderColor:TH.border},crosshair:{mode:0}};
-const charts=[], ctns=[];
-const mk=(id,h)=>{const el=document.getElementById(id); const c=LightweightCharts.createChart(el,{...COMMON,width:el.clientWidth,height:h}); charts.push(c); ctns.push(el); return c;};
-const priceC=mk('price',430),volC=mk('vol',130),stC=mk('state',90),eqC=mk('equity',170),ddC=mk('dd',140);
-const candle=priceC.addCandlestickSeries({upColor:TH.green,downColor:TH.red,wickUpColor:TH.green,wickDownColor:TH.red,borderVisible:false});
-const seg=(c)=>priceC.addLineSeries({color:c,lineWidth:1,lastValueVisible:false,priceLineVisible:false,crosshairMarkerVisible:false});
-const tpS=seg('rgba(0,200,83,.6)'),shS=seg('rgba(255,82,82,.6)'),ssS=seg('rgba(255,152,0,.6)');
-const mkrS=priceC.addLineSeries({color:'rgba(0,0,0,0)',lastValueVisible:false,priceLineVisible:false});
-const bnd=priceC.addLineSeries({color:TH.muted,lineWidth:1,lineStyle:2,lastValueVisible:false,priceLineVisible:false});
-const volLine=volC.addLineSeries({color:TH.blue,lineWidth:1}),gthrLine=volC.addLineSeries({color:TH.orange,lineWidth:1,lineStyle:2,lastValueVisible:false});
-const stateA=stC.addAreaSeries({lineColor:TH.blue,topColor:'rgba(41,98,255,.4)',bottomColor:'rgba(41,98,255,.03)',lineWidth:1});
-const eqLine=eqC.addLineSeries({color:TH.orange,lineWidth:2});
-const ddA=ddC.addAreaSeries({lineColor:TH.red,topColor:'rgba(255,82,82,.06)',bottomColor:'rgba(255,82,82,.45)',lineWidth:1});
-const ddTrig=ddC.addLineSeries({color:TH.red,lineWidth:1,lineStyle:2,lastValueVisible:false}),ddCap=ddC.addLineSeries({color:TH.muted,lineWidth:1,lineStyle:2,lastValueVisible:false});
-let sy=false; charts.forEach(s=>s.timeScale().subscribeVisibleTimeRangeChange(r=>{if(sy||!r)return;sy=true;charts.forEach(o=>{if(o!==s){try{o.timeScale().setVisibleRange(r);}catch(e){}}});sy=false;}));
-// resize every chart to its container's current width (lightweight-charts has no auto-resize).
-// A ResizeObserver on <main> fires on BOTH window resize and the settings-panel toggle, so the
-// whole dashboard tracks the browser width with nothing hardcoded.
-function fitCharts(){ charts.forEach((c,i)=>{ const w=ctns[i].clientWidth; if(w>0) c.applyOptions({width:w}); }); }
-window.addEventListener('resize', fitCharts);
-const _mainEl=document.querySelector('main');
-if(window.ResizeObserver){ new ResizeObserver(fitCharts).observe(_mainEl); }
-
-// Draggable splitter: resize the settings panel by dragging the gutter. Width is clamped (240–760px,
-// matching the aside min/max), persisted to localStorage, and charts refit live via the ResizeObserver.
-(function(){ const g=document.getElementById('gutter'), a=document.querySelector('aside'); if(!g||!a) return;
-  const CLAMP=w=>Math.min(760,Math.max(240,w)); let drag=false;
-  try{ const sv=+localStorage.getItem('wsi_aside_w'); if(sv) a.style.width=CLAMP(sv)+'px'; }catch(e){}
-  g.addEventListener('mousedown', e=>{ drag=true; g.classList.add('drag'); document.body.style.userSelect='none'; e.preventDefault(); });
-  window.addEventListener('mousemove', e=>{ if(!drag) return; a.style.width=CLAMP(e.clientX - a.getBoundingClientRect().left)+'px'; fitCharts(); });
-  window.addEventListener('mouseup', ()=>{ if(!drag) return; drag=false; g.classList.remove('drag'); document.body.style.userSelect='';
-    try{ localStorage.setItem('wsi_aside_w', parseInt(a.style.width)); }catch(e){} fitCharts(); });
-})();
-
-const dt=t=>new Date(t*1000).toISOString().slice(0,16).replace('T',' ');
-const money=n=>(n>=0?'+':'')+'$'+Math.round(n).toLocaleString();
-const card=(v,k,cls='')=>`<div class="card"><div class="v ${cls}">${v}</div><div class="k">${k}</div></div>`;
-
-function render(D){
-  window.LAST_DATA=D;                       // keep the last run for the CSV export buttons
-  const P=D.meta.params,S=D.meta.summary;
-  const gr=D.meta.gen_report;
-  if(gr){ $('genpanel').style.display='';
-    $('genrep').innerHTML=`bars <b>${gr.bars}</b> · swing_l <b>${gr.params.swing_l}</b> golf_n <b>${gr.params.golf_n}</b> · `
-      +`bull FVG <b>${gr.n_bull_fvg}</b> · bear FVG <b>${gr.n_bear_fvg}</b> · swing H/L <b>${gr.n_swing_high}/${gr.n_swing_low}</b> · `
-      +`golf <b>${gr.n_golf}</b> · OB bars +/- <b>${gr.n_ob_bull_bars}/${gr.n_ob_bear_bars}</b>`;
-  } else { $('genpanel').style.display='none'; }
-  document.getElementById('cards').innerHTML=
-    // ── group 1: financials ──
-    `<div class="cardgrp">financials</div>`+
-    card(money(S.pnl),'total P/L',S.pnl>=0?'pos':'neg')+
-    card('$'+Math.round(S.max_dd).toLocaleString(),'max drawdown','neg')+
-    card(S.win+'%','win rate')+card(S.pf??'—','profit factor')+
-    // ── group 2: streaks (longest consecutive run) ──
-    `<div class="cardgrp">streaks · longest consecutive run</div>`+
-    card((S.noentry_streak_n??0)+' · '+(S.noentry_streak_days??0)+'d','longest no-entry streak (signals · days)'+(S.noentry_streak_start?' — from '+S.noentry_streak_start:''))+
-    card(S.box_silence?(S.box_silence.bars+'c · '+S.box_silence.days+'d'):'—','longest box-silence (no box signal)')+
-    card(S.position_hold?(S.position_hold.bars+'c · '+S.position_hold.days+'d'):'—','longest position hold (trade open)')+
-    card(S.gate_noentry?(S.gate_noentry.bars+'c · '+S.gate_noentry.days+'d'):'—','longest gate non-entry (vol-gate blocked)')+
-    card(S.indicator_noentry?(S.indicator_noentry.bars+'c · '+S.indicator_noentry.days+'d'):'—','longest indicator non-entry (gate-approved, indicators blocked)')+
-    // ── group 3: totals (cumulative candle counts — same characters as the streaks) ──
-    `<div class="cardgrp">totals · cumulative candles</div>`+
-    card(S.noentry_total?(S.noentry_total.bars+'c · '+S.noentry_total.days+'d'):'—','total no-entry candles (box+gate+indicator)')+
-    card(S.box_silence_total?(S.box_silence_total.bars+'c · '+S.box_silence_total.days+'d'):'—','total box-silence candles (no box signal)')+
-    card(S.position_hold_total?(S.position_hold_total.bars+'c · '+S.position_hold_total.days+'d'):'—','total position-hold candles (trade open)')+
-    card(S.gate_noentry_total?(S.gate_noentry_total.bars+'c · '+S.gate_noentry_total.days+'d'):'—','total gate non-entry candles (vol-gate blocked)')+
-    card(S.indicator_noentry_total?(S.indicator_noentry_total.bars+'c · '+S.indicator_noentry_total.days+'d'):'—','total indicator non-entry candles (gate-approved, indicators blocked)')+
-    // ── group 4: counts ──
-    `<div class="cardgrp">counts</div>`+
-    card(S.n_taken+'/'+S.n_candidates,'trades ('+S.exposure+'%)')+
-    card(S.n_locks,'breaker locks')+
-    // warmup-period + heaviest-indicator boxes (live from /api/warmup; filled by recomputeWarmup() below)
-    `<div class="card"><div class="v" id="fp_warm" style="font-size:15px">—</div><div class="k">warmup period</div></div>`+
-    `<div class="card"><div class="v" id="fp_heavy" style="font-size:12px;line-height:1.25">—</div><div class="k">longest indicator candles requirement</div></div>`;
-  candle.setData(D.candles);
-  const tpD=[],shD=[],ssD=[],mks=[];let last=0;
-  D.trades.forEach(t=>{
-    mks.push({time:t.entry_time,position:t.direction==='long'?'belowBar':'aboveBar',color:t.direction==='long'?TH.green:TH.red,shape:t.direction==='long'?'arrowUp':'arrowDown',text:t.direction[0].toUpperCase()});
-    mks.push({time:t.exit_time,position:'inBar',color:t.pnl>0?TH.green:TH.red,shape:'circle'});
-    let e=t.entry_time<=last?last+1:t.entry_time,x=t.exit_time<=e?e+1:t.exit_time;
-    tpD.push({time:e,value:t.tp_hard_line},{time:x,value:t.tp_hard_line},{time:x+1});
-    shD.push({time:e,value:t.sl_hard_line},{time:x,value:t.sl_hard_line},{time:x+1});
-    ssD.push({time:e,value:t.sl_soft_line},{time:x,value:t.sl_soft_line},{time:x+1}); last=x+1;});
-  mks.sort((a,b)=>a.time-b.time); tpS.setData(tpD);shS.setData(shD);ssS.setData(ssD);
-  mkrS.setData(D.candles.map(c=>({time:c.time,value:c.close}))); mkrS.setMarkers(mks);
-  if(D.meta.split_ts&&D.candles.length){const lo=Math.min(...D.candles.map(c=>c.low)),hi=Math.max(...D.candles.map(c=>c.high));
-    const w=D.candles[0].time<=D.meta.split_ts&&D.meta.split_ts<=D.candles[D.candles.length-1].time;
-    bnd.setData(w?[{time:D.meta.split_ts,value:lo},{time:D.meta.split_ts,value:hi}]:[]);}
-  volLine.setData(D.vol); gthrLine.setData(D.gate_thr?D.vol.map(v=>({time:v.time,value:D.gate_thr})):[]);
-  // pad sparse trade-based series to the full candle time-span so EVERY chart shares one x-domain
-  const _t0=D.candles.length?D.candles[0].time:0,_t1=D.candles.length?D.candles[D.candles.length-1].time:0;
-  const _pad=(a,sv)=>{const o=a.slice();if(!o.length)return [{time:_t0,value:sv},{time:_t1,value:sv}];if(o[0].time>_t0)o.unshift({time:_t0,value:sv});if(o[o.length-1].time<_t1)o.push({time:_t1,value:o[o.length-1].value});return o;};
-  const _eq=_pad(D.equity,0),_dd=_pad(D.drawdown,0),_st=_pad(D.state,D.state.length?D.state[0].value:1);
-  stateA.setData(_st); eqLine.setData(_eq); ddA.setData(_dd);
-  ddTrig.setData(P.dd_limit?_dd.map(d=>({time:d.time,value:-P.dd_limit})):[]);
-  ddCap.setData(_dd.map(d=>({time:d.time,value:-(P.dd_cap||5000)})));
-  // SL/TP multiplier chart — only shown in ATR mode (empty series ⇒ panel hidden)
-  // align all panels to the same time window initially
-  charts.forEach(c=>{try{c.timeScale().setVisibleRange({from:_t0,to:_t1});}catch(e){c.timeScale().fitContent();}});
-  document.getElementById('log').innerHTML=D.events.map(e=>{
-    let row=`<div class="row ${e.type}"><span class="t">${dt(e.time)}</span><span class="b">${e.type}</span><span>${e.text}</span></div>`;
-    if(e.indicators&&e.indicators.length){ row+=`<div class="ind-chips">`+e.indicators.map(r=>
-      `<span class="chip ${r.vote} ${r.active?'':'off'}" title="${r.key} · mode ${r.mode}${r.active?'':' · INACTIVE'} · ${JSON.stringify(r.params)}">${r.key}:${r.vote[0]}</span>`).join('')+`</div>`; }
-    return row;
-  }).join('');
-  const cols=[['entry_time','entry','l'],['direction','dir','l'],['entry_price','in$'],['exit_price','out$'],['sl_soft_line','SLs'],['sl_hard_line','SLh'],['tp_hard_line','TP'],['exit_reason','reason','l'],['pnl','P/L'],['equity','eq'],['dd','DD']];
-  let h='<thead><tr>'+cols.map(c=>`<th class="${c[2]||''}">${c[1]}</th>`).join('')+'</tr></thead><tbody>';
-  D.trades.forEach(t=>{h+='<tr>'+cols.map(c=>{let v=t[c[0]];
-    if(c[0]==='entry_time')v=dt(v); else if(['entry_price','exit_price','sl_soft_line','sl_hard_line','tp_hard_line'].includes(c[0]))v=(+v).toFixed(1);
-    else if(['pnl','equity','dd'].includes(c[0])){const col=c[0]==='pnl'?(t.pnl>0?'pos':'neg'):'';return `<td class="${col}">${Math.round(v).toLocaleString()}</td>`;}
-    return `<td class="${c[2]||''}">${v}</td>`;}).join('')+'</tr>';});
-  document.getElementById('trades').innerHTML=h+'</tbody>'; setForm(P); markClean();
-}
-const $=id=>document.getElementById(id);
-// ---- inline math in value boxes: type an expression like 149.8*1.1 or (150+20)/2 ----
-// number inputs reject operators, so value boxes are converted to text+`.mathnum`; the expression is
-// evaluated (safely — only digits . ( ) + - * /) on blur / Enter, and again before every Run.
-function evalMath(raw){
-  const s=String(raw).trim();
-  if(s==='') return {ok:true, val:''};                       // empty allowed (optional fields)
-  if(/^[0-9.eE\s()+\-*/]+$/.test(s)){
-    try{ const v=Function('"use strict";return ('+s+')')();
-      if(typeof v==='number' && isFinite(v)) return {ok:true, val:v}; }catch(e){}
-  }
-  return {ok:false};
-}
-function commitField(el){
-  const r=evalMath(el.value);
-  el.classList.toggle('matherr', !r.ok);
-  if(r.ok && r.val!=='' && String(r.val)!==el.value.trim()){
-    const n=+r.val; el.value=(Number.isInteger(n)?n:+n.toFixed(6));   // tidy float noise
-  }
-}
-function commitMath(){ document.querySelectorAll('input.mathnum').forEach(commitField); }
-function mathify(root){
-  (root||document).querySelectorAll('input[type=number]').forEach(el=>{
-    el.dataset.step=el.getAttribute('step')||''; el.dataset.min=el.getAttribute('min')||'';
-    el.dataset.max=el.getAttribute('max')||''; el.type='text';
-    el.setAttribute('inputmode','text'); el.setAttribute('autocomplete','off');
-    el.classList.add('mathnum');
-  });
-}
-document.addEventListener('focusout', e=>{ const t=e.target; if(t.classList&&t.classList.contains('mathnum')) commitField(t); });
-document.addEventListener('keydown', e=>{ const t=e.target; if(e.key==='Enter'&&t.classList&&t.classList.contains('mathnum')) commitField(t); });
-function setForm(P){ if(P.timeframe&&$('timeframe').querySelector(`option[value="${P.timeframe}"]`))$('timeframe').value=P.timeframe;
-  $('window').value=P.window||'full'; $('sl_soft').value=P.sl_soft; $('sl_hard').value=P.sl_hard; $('tp').value=P.tp;
-  $('gate_pct').value=P.gate_pct==null?0:P.gate_pct; $('dd_limit').value=P.dd_limit==null?0:P.dd_limit; $('cooldown').value=P.cooldown; $('flip').value=String(!!P.flip); $('veto_as_flip').value=String(!!P.veto_as_flip);
-  if(P.gate_pct!=null&&+P.gate_pct>0)lastGatePct=+P.gate_pct; syncGateBtn();
-  if(P.dd_cap!=null)$('dd_cap').value=P.dd_cap; if(P.pv!=null)$('pv').value=P.pv;
-  if(P.k!=null)$('k_rule').value=P.k;
-  if(P.retrace_amount!=null)$('g_retrace').value=P.retrace_amount;
-  if(P.retrace_unit)$('g_retrace_unit').value=P.retrace_unit;
-  if(P.wait_bars!=null)$('g_wait').value=P.wait_bars;
-  if(P.gen){ if(P.gen.swing_l!=null)$('gen_swing_l').value=P.gen.swing_l; if(P.gen.golf_n!=null)$('gen_golf_n').value=P.gen.golf_n; }
-  // split long/short SL/TP: a preset/profile that carries any per-side value selects 'split' mode (which
-  // hides the shared boxes); otherwise 'shared'. The shared boxes keep their values either way.
-  const _SPL=['long_sl_soft','long_sl_hard','long_tp','short_sl_soft','short_sl_hard','short_tp'];
-  const _anySplit=_SPL.some(k=>P[k]!=null);
-  $('sltp_mode').value=_anySplit?'split':'shared';
-  $('sharedbox').style.display=_anySplit?'none':''; $('splitbox').style.display=_anySplit?'':'none';
-  _SPL.forEach(k=>{ $(k).value=(P[k]!=null)?P[k]:''; });
-  if(P.indicators)applyIndicatorSpecs(P.indicators);
-  recomputeWarmup(); }                 // refresh warmup/footprint boxes after a preset/profile import
-// NOTE: every value is read straight from the form — nothing is hardcoded or silently defaulted here.
-// Validation (and any error) happens server-side and is surfaced verbatim to the #err banner.
-function params(){ commitMath();
-  // split long/short SL/TP — only sent in 'split' mode; a blank per-side box ⇒ null ⇒ server falls back to
-  // the (hidden) shared value. 'shared' mode ⇒ all six are null ⇒ byte-identical to a normal run. The shared
-  // sl_soft/sl_hard/tp are ALWAYS sent (the engine requires them); in split mode they're hidden but retained.
-  const sp=$('sltp_mode').value==='split', spv=id=>(sp&&$(id).value!=='')?+$(id).value:null;
-  return {timeframe:$('timeframe').value||'4h',window:$('window').value,sl_soft:+$('sl_soft').value,sl_hard:+$('sl_hard').value,tp:+$('tp').value,
-  gate_pct:+$('gate_pct').value,dd_limit:+$('dd_limit').value,cooldown:+$('cooldown').value,flip:$('flip').value==='true',veto_as_flip:$('veto_as_flip').value==='true',
-  dd_cap:$('dd_cap').value===''?null:+$('dd_cap').value, pv:$('pv').value===''?null:+$('pv').value,
-  long_sl_soft:spv('long_sl_soft'), long_sl_hard:spv('long_sl_hard'), long_tp:spv('long_tp'),
-  short_sl_soft:spv('short_sl_soft'), short_sl_hard:spv('short_sl_hard'), short_tp:spv('short_tp'),
-  indicators:indicatorSpecs(), k:+$('k_rule').value||1,
-  retrace_amount:+$('g_retrace').value||0, retrace_unit:$('g_retrace_unit').value, wait_bars:+$('g_wait').value||0,
-  gen:{swing_l:+$('gen_swing_l').value||2, golf_n:+$('gen_golf_n').value||3}};}
-
-// Build the whole indicator panel from /api/config's indicator_schema — NOTHING hardcoded here.
-let panelBuilt=false;
-function buildIndicatorPanel(sch){
-  const host=$('indpanel'); host.innerHTML='';
-  const modeOpts=(sel)=>sch.modes.map(m=>`<option ${m===sel?'selected':''}>${m}</option>`).join('');
-  sch.indicators.forEach(ind=>{
-    const div=document.createElement('div'); div.className='ind'; div.dataset.key=ind.key;
-    const pflds=ind.params.map(p=>`<div class="fld"><label>${p.name}</label><input class="ind-p" data-p="${p.name}" type="number" step="${p.step}" min="${p.min}" max="${p.max}" value="${p.default}"></div>`).join('');
-    div.innerHTML=`<div class="indhead"><label><input type="checkbox" class="ind-en"> ${ind.label}</label>`
-      +`<select class="ind-mode" title="confirm / veto / both">${modeOpts(ind.mode)}</select></div>`
-      +`<div class="indbody">${pflds}</div>`;   // retrace + wait are GLOBAL now (one box each, above)
-    host.appendChild(div);
-    const en=div.querySelector('.ind-en'); en.addEventListener('change',()=>div.classList.toggle('on',en.checked));
-  });
-  // populate the GLOBAL retrace/wait boxes from the schema defaults (nothing hardcoded)
-  $('g_retrace_unit').innerHTML=sch.retrace_units.map(u=>`<option ${u===sch.retrace_default.unit?'selected':''}>${u}</option>`).join('');
-  $('g_retrace').value=sch.retrace_default.amount; $('g_wait').value=sch.wait_default;
-  $('k_rule').value=sch.k_default;
-  const g={}; sch.gen_params.forEach(p=>g[p.name]=p.default);
-  $('gen_swing_l').value=g.swing_l; $('gen_golf_n').value=g.golf_n;
-  host.querySelectorAll('input,select').forEach(el=>el.addEventListener('input',markDirty));
-  // interactive warmup/footprint: recompute on any committed indicator change (change fires on blur/toggle)
-  host.querySelectorAll('input,select').forEach(el=>el.addEventListener('change',recomputeWarmup));
-  mathify(host);                       // indicator param boxes also accept inline math
-  panelBuilt=true;
-  recomputeWarmup();                   // initial values
-}
-
-// ── Interactive warmup / data-footprint boxes (single source of truth = backend /api/warmup) ──
-let _warmTimer=null;
-function fmtDur(candles){              // dashboard indicators run on the 1-min frame ⇒ 1 candle = 1 minute
-  const m=Math.round(candles), h=Math.floor(m/60), mm=m%60;
-  return h ? `${h}h ${mm}m` : `${mm}m`;
-}
-function recomputeWarmup(){
-  clearTimeout(_warmTimer);
-  _warmTimer=setTimeout(async()=>{
-    if(!$('fp_warm')||!$('fp_heavy')) return;   // the boxes live in the main #cards row → only after a render
-    try{
-      const r=await fetch('/api/warmup',{method:'POST',headers:{'Content-Type':'application/json'},
-                                         body:JSON.stringify({indicators:indicatorSpecs()})});
-      const d=await r.json();
-      if(d.error){ $('fp_warm').textContent='—'; $('fp_heavy').textContent='(check params)'; return; }
-      $('fp_warm').textContent = d.max_bars ? `${d.max_bars.toLocaleString()} candles · ${fmtDur(d.max_bars)}`
-                                            : 'no indicators on';
-      $('fp_heavy').textContent = d.driver ? `${d.driver.label} — ${d.driver.bars.toLocaleString()} candles · ${fmtDur(d.driver.bars)}`
-                                           : '—';
-    }catch(e){ $('fp_heavy').textContent='warmup calc failed'; }
-  },250);
-}
-function indicatorSpecs(){
-  const specs=[];
-  document.querySelectorAll('#indpanel .ind').forEach(el=>{
-    const p={}; el.querySelectorAll('.ind-p').forEach(i=>p[i.dataset.p]=+i.value);
-    specs.push({key:el.dataset.key, enabled:el.querySelector('.ind-en').checked,
-      mode:el.querySelector('.ind-mode').value, params:p});  // retrace/wait are GLOBAL (see params())
-  });
-  return specs;
-}
-function applyIndicatorSpecs(specs){
-  if(!specs||!specs.length)return; const by={}; specs.forEach(s=>by[s.key]=s);
-  document.querySelectorAll('#indpanel .ind').forEach(el=>{
-    const s=by[el.dataset.key]; if(!s)return;
-    const en=el.querySelector('.ind-en'); en.checked=!!s.enabled; el.classList.toggle('on',!!s.enabled);
-    if(s.mode)el.querySelector('.ind-mode').value=s.mode;
-    el.querySelectorAll('.ind-p').forEach(i=>{ if(s.params&&s.params[i.dataset.p]!=null)i.value=s.params[i.dataset.p]; });
-  });
-}
-function status(t){$('status').innerHTML=t;}
-function showErr(msg){const e=$('err'); $('errmsg').textContent=msg||''; e.style.display=msg?'block':'none';
-  if(msg){try{window.scrollTo({top:0,behavior:'smooth'});}catch(_){window.scrollTo(0,0);}}}
-$('errclose').addEventListener('click',()=>showErr(''));
-let dirty=false;
-function markDirty(){dirty=true;const d=$('dirty');d.textContent='⚠ not run on these values — click Run Backtest';d.classList.add('stale');d.classList.remove('ok');$('run').classList.add('stale');}
-function markClean(){dirty=false;const d=$('dirty');d.textContent='✓ results match current settings';d.classList.add('ok');d.classList.remove('stale');$('run').classList.remove('stale');}
-document.querySelectorAll('aside input,aside select').forEach(el=>el.addEventListener('input',markDirty));
-// Disable-gate toggle: zero gate_pct (vol gate off) and remember the prior value to restore. The engine
-// already treats gate_pct==0 as "no vol gate", so this is purely a convenience on the existing field.
+const TH=DB.TH, $=window.$;
+function seg(c,col){return c.addLineSeries({color:col,lineWidth:1,lastValueVisible:false,priceLineVisible:false,crosshairMarkerVisible:false});}
 let lastGatePct=87;
-function syncGateBtn(){ const off=(+$('gate_pct').value||0)===0; const b=$('gate_toggle');
+function syncGateBtn(){ const off=(+$('gate_pct').value||0)===0; const b=$('gate_toggle'); if(!b)return;
   b.textContent=off?'✓ Enable gate':'⊘ Disable gate';
   b.title=off?`turn the volatility gate back on (gate_pct→${lastGatePct})`:'turn the volatility gate off (gate_pct→0) and back on'; }
-$('gate_toggle').addEventListener('click',()=>{ const cur=+$('gate_pct').value||0;
+
+const cfg={
+  endpoints:{config:'/api/config', backtest:'/api/backtest', profiles:'/api/profiles'},
+  runLabel:'Run Backtest', warmupEndpoint:'/api/warmup', profileKey:'wsg_profiles_v1',
+  panels:[
+    {id:'price',height:430,build:c=>({
+      candle:c.addCandlestickSeries({upColor:TH.green,downColor:TH.red,wickUpColor:TH.green,wickDownColor:TH.red,borderVisible:false}),
+      tp:seg(c,'rgba(0,200,83,.6)'),sh:seg(c,'rgba(255,82,82,.6)'),ss:seg(c,'rgba(255,152,0,.6)'),
+      mkr:c.addLineSeries({color:'rgba(0,0,0,0)',lastValueVisible:false,priceLineVisible:false}),
+      bnd:c.addLineSeries({color:TH.muted,lineWidth:1,lineStyle:2,lastValueVisible:false,priceLineVisible:false})})},
+    {id:'vol',height:130,build:c=>({line:c.addLineSeries({color:TH.blue,lineWidth:1}),gthr:c.addLineSeries({color:TH.orange,lineWidth:1,lineStyle:2,lastValueVisible:false})})},
+    {id:'state',height:90,build:c=>({area:c.addAreaSeries({lineColor:TH.blue,topColor:'rgba(41,98,255,.4)',bottomColor:'rgba(41,98,255,.03)',lineWidth:1})})},
+    {id:'equity',height:170,build:c=>({line:c.addLineSeries({color:TH.orange,lineWidth:2})})},
+    {id:'dd',height:140,build:c=>({area:c.addAreaSeries({lineColor:TH.red,topColor:'rgba(255,82,82,.06)',bottomColor:'rgba(255,82,82,.45)',lineWidth:1}),trig:c.addLineSeries({color:TH.red,lineWidth:1,lineStyle:2,lastValueVisible:false}),cap:c.addLineSeries({color:TH.muted,lineWidth:1,lineStyle:2,lastValueVisible:false})})},
+  ],
+  params(){ DB.commitMath();
+    const sp=$('sltp_mode').value==='split', spv=id=>(sp&&$(id).value!=='')?+$(id).value:null;
+    return {timeframe:$('timeframe').value||'4h',window:$('window').value,sl_soft:+$('sl_soft').value,sl_hard:+$('sl_hard').value,tp:+$('tp').value,
+    gate_pct:+$('gate_pct').value,dd_limit:+$('dd_limit').value,cooldown:+$('cooldown').value,flip:$('flip').value==='true',veto_as_flip:$('veto_as_flip').value==='true',
+    dd_cap:$('dd_cap').value===''?null:+$('dd_cap').value, pv:$('pv').value===''?null:+$('pv').value,
+    long_sl_soft:spv('long_sl_soft'), long_sl_hard:spv('long_sl_hard'), long_tp:spv('long_tp'),
+    short_sl_soft:spv('short_sl_soft'), short_sl_hard:spv('short_sl_hard'), short_tp:spv('short_tp'),
+    indicators:DB.indicatorSpecs(), k:+$('k_rule').value||1,
+    retrace_amount:+$('g_retrace').value||0, retrace_unit:$('g_retrace_unit').value, wait_bars:+$('g_wait').value||0,
+    gen:{swing_l:+$('gen_swing_l').value||2, golf_n:+$('gen_golf_n').value||3}}; },
+  setForm(P){ if(P.timeframe&&$('timeframe').querySelector(`option[value="${P.timeframe}"]`))$('timeframe').value=P.timeframe;
+    $('window').value=P.window||'full'; $('sl_soft').value=P.sl_soft; $('sl_hard').value=P.sl_hard; $('tp').value=P.tp;
+    $('gate_pct').value=P.gate_pct==null?0:P.gate_pct; $('dd_limit').value=P.dd_limit==null?0:P.dd_limit; $('cooldown').value=P.cooldown; $('flip').value=String(!!P.flip); $('veto_as_flip').value=String(!!P.veto_as_flip);
+    if(P.gate_pct!=null&&+P.gate_pct>0)lastGatePct=+P.gate_pct; syncGateBtn();
+    if(P.dd_cap!=null)$('dd_cap').value=P.dd_cap; if(P.pv!=null)$('pv').value=P.pv;
+    if(P.k!=null)$('k_rule').value=P.k;
+    if(P.retrace_amount!=null)$('g_retrace').value=P.retrace_amount;
+    if(P.retrace_unit)$('g_retrace_unit').value=P.retrace_unit;
+    if(P.wait_bars!=null)$('g_wait').value=P.wait_bars;
+    if(P.gen){ if(P.gen.swing_l!=null)$('gen_swing_l').value=P.gen.swing_l; if(P.gen.golf_n!=null)$('gen_golf_n').value=P.gen.golf_n; }
+    const _SPL=['long_sl_soft','long_sl_hard','long_tp','short_sl_soft','short_sl_hard','short_tp'];
+    const _anySplit=_SPL.some(k=>P[k]!=null);
+    $('sltp_mode').value=_anySplit?'split':'shared';
+    $('sharedbox').style.display=_anySplit?'none':''; $('splitbox').style.display=_anySplit?'':'none';
+    _SPL.forEach(k=>{ $(k).value=(P[k]!=null)?P[k]:''; });
+    if(P.indicators)DB.applyIndicatorSpecs(P.indicators);
+    DB.recomputeWarmup(); },
+  onConfig(c){
+    const tfSel=$('timeframe');
+    if(c.timeframes && tfSel && !tfSel.dataset.built){ const def=c.default_timeframe||'4h';
+      tfSel.innerHTML=c.timeframes.map(t=>`<option value="${t}"${t===def?' selected':''}>${t}</option>`).join(''); tfSel.dataset.built='1'; }
+    const winner=(window.SERVER_STRATEGIES && window.SERVER_STRATEGIES[0] && window.SERVER_STRATEGIES[0].preset)
+               || Object.assign({}, c.preset, {dd_cap:c.dd_cap, pv:c.pv});
+    return winner;
+  },
+  render(D,H){
+    const P=D.meta.params,S=D.meta.summary, ps=H.price.series, vs=H.vol.series, ss=H.state.series, eqs=H.equity.series, dds=H.dd.series;
+    const gr=D.meta.gen_report;
+    if(gr){ $('genpanel').style.display='';
+      $('genrep').innerHTML=`bars <b>${gr.bars}</b> · swing_l <b>${gr.params.swing_l}</b> golf_n <b>${gr.params.golf_n}</b> · `
+        +`bull FVG <b>${gr.n_bull_fvg}</b> · bear FVG <b>${gr.n_bear_fvg}</b> · swing H/L <b>${gr.n_swing_high}/${gr.n_swing_low}</b> · `
+        +`golf <b>${gr.n_golf}</b> · OB bars +/- <b>${gr.n_ob_bull_bars}/${gr.n_ob_bear_bars}</b>`;
+    } else { $('genpanel').style.display='none'; }
+    $('cards').innerHTML=
+      `<div class="cardgrp">financials</div>`+
+      DB.card(DB.money(S.pnl),'total P/L',S.pnl>=0?'pos':'neg')+
+      DB.card('$'+Math.round(S.max_dd).toLocaleString(),'max drawdown','neg')+
+      DB.card(S.win+'%','win rate')+DB.card(S.pf??'—','profit factor')+
+      `<div class="cardgrp">streaks · longest consecutive run</div>`+
+      DB.card((S.noentry_streak_n??0)+' · '+(S.noentry_streak_days??0)+'d','longest no-entry streak (signals · days)'+(S.noentry_streak_start?' — from '+S.noentry_streak_start:''))+
+      DB.card(S.box_silence?(S.box_silence.bars+'c · '+S.box_silence.days+'d'):'—','longest box-silence (no box signal)')+
+      DB.card(S.position_hold?(S.position_hold.bars+'c · '+S.position_hold.days+'d'):'—','longest position hold (trade open)')+
+      DB.card(S.gate_noentry?(S.gate_noentry.bars+'c · '+S.gate_noentry.days+'d'):'—','longest gate non-entry (vol-gate blocked)')+
+      DB.card(S.indicator_noentry?(S.indicator_noentry.bars+'c · '+S.indicator_noentry.days+'d'):'—','longest indicator non-entry (gate-approved, indicators blocked)')+
+      `<div class="cardgrp">totals · cumulative candles</div>`+
+      DB.card(S.noentry_total?(S.noentry_total.bars+'c · '+S.noentry_total.days+'d'):'—','total no-entry candles (box+gate+indicator)')+
+      DB.card(S.box_silence_total?(S.box_silence_total.bars+'c · '+S.box_silence_total.days+'d'):'—','total box-silence candles (no box signal)')+
+      DB.card(S.position_hold_total?(S.position_hold_total.bars+'c · '+S.position_hold_total.days+'d'):'—','total position-hold candles (trade open)')+
+      DB.card(S.gate_noentry_total?(S.gate_noentry_total.bars+'c · '+S.gate_noentry_total.days+'d'):'—','total gate non-entry candles (vol-gate blocked)')+
+      DB.card(S.indicator_noentry_total?(S.indicator_noentry_total.bars+'c · '+S.indicator_noentry_total.days+'d'):'—','total indicator non-entry candles (gate-approved, indicators blocked)')+
+      `<div class="cardgrp">counts</div>`+
+      DB.card(S.n_taken+'/'+S.n_candidates,'trades ('+S.exposure+'%)')+
+      DB.card(S.n_locks,'breaker locks')+
+      `<div class="card"><div class="v" id="fp_warm" style="font-size:15px">—</div><div class="k">warmup period</div></div>`+
+      `<div class="card"><div class="v" id="fp_heavy" style="font-size:12px;line-height:1.25">—</div><div class="k">longest indicator candles requirement</div></div>`;
+    ps.candle.setData(D.candles);
+    const tpD=[],shD=[],ssD=[],mks=[];let last=0;
+    D.trades.forEach(t=>{
+      mks.push({time:t.entry_time,position:t.direction==='long'?'belowBar':'aboveBar',color:t.direction==='long'?TH.green:TH.red,shape:t.direction==='long'?'arrowUp':'arrowDown',text:t.direction[0].toUpperCase()});
+      mks.push({time:t.exit_time,position:'inBar',color:t.pnl>0?TH.green:TH.red,shape:'circle'});
+      let e=t.entry_time<=last?last+1:t.entry_time,x=t.exit_time<=e?e+1:t.exit_time;
+      tpD.push({time:e,value:t.tp_hard_line},{time:x,value:t.tp_hard_line},{time:x+1});
+      shD.push({time:e,value:t.sl_hard_line},{time:x,value:t.sl_hard_line},{time:x+1});
+      ssD.push({time:e,value:t.sl_soft_line},{time:x,value:t.sl_soft_line},{time:x+1}); last=x+1;});
+    mks.sort((a,b)=>a.time-b.time); ps.tp.setData(tpD);ps.sh.setData(shD);ps.ss.setData(ssD);
+    ps.mkr.setData(D.candles.map(c=>({time:c.time,value:c.close}))); ps.mkr.setMarkers(mks);
+    if(D.meta.split_ts&&D.candles.length){const lo=Math.min(...D.candles.map(c=>c.low)),hi=Math.max(...D.candles.map(c=>c.high));
+      const w=D.candles[0].time<=D.meta.split_ts&&D.meta.split_ts<=D.candles[D.candles.length-1].time;
+      ps.bnd.setData(w?[{time:D.meta.split_ts,value:lo},{time:D.meta.split_ts,value:hi}]:[]);}
+    vs.line.setData(D.vol); vs.gthr.setData(D.gate_thr?D.vol.map(v=>({time:v.time,value:D.gate_thr})):[]);
+    const _t0=D.candles.length?D.candles[0].time:0,_t1=D.candles.length?D.candles[D.candles.length-1].time:0;
+    const _pad=(a,sv)=>{const o=a.slice();if(!o.length)return [{time:_t0,value:sv},{time:_t1,value:sv}];if(o[0].time>_t0)o.unshift({time:_t0,value:sv});if(o[o.length-1].time<_t1)o.push({time:_t1,value:o[o.length-1].value});return o;};
+    const _eq=_pad(D.equity,0),_dd=_pad(D.drawdown,0),_st=_pad(D.state,D.state.length?D.state[0].value:1);
+    ss.area.setData(_st); eqs.line.setData(_eq); dds.area.setData(_dd);
+    dds.trig.setData(P.dd_limit?_dd.map(d=>({time:d.time,value:-P.dd_limit})):[]);
+    dds.cap.setData(_dd.map(d=>({time:d.time,value:-(P.dd_cap||5000)})));
+    Object.values(H).forEach(h=>{try{h.chart.timeScale().setVisibleRange({from:_t0,to:_t1});}catch(e){h.chart.timeScale().fitContent();}});
+    $('log').innerHTML=D.events.map(e=>{
+      let row=`<div class="row ${e.type}"><span class="t">${DB.dt(e.time)}</span><span class="b">${e.type}</span><span>${e.text}</span></div>`;
+      if(e.indicators&&e.indicators.length){ row+=`<div class="ind-chips">`+e.indicators.map(r=>
+        `<span class="chip ${r.vote} ${r.active?'':'off'}" title="${r.key} · mode ${r.mode}${r.active?'':' · INACTIVE'} · ${JSON.stringify(r.params)}">${r.key}:${r.vote[0]}</span>`).join('')+`</div>`; }
+      return row;
+    }).join('');
+    const cols=[['entry_time','entry','l'],['direction','dir','l'],['entry_price','in$'],['exit_price','out$'],['sl_soft_line','SLs'],['sl_hard_line','SLh'],['tp_hard_line','TP'],['exit_reason','reason','l'],['pnl','P/L'],['equity','eq'],['dd','DD']];
+    let h='<thead><tr>'+cols.map(c=>`<th class="${c[2]||''}">${c[1]}</th>`).join('')+'</tr></thead><tbody>';
+    D.trades.forEach(t=>{h+='<tr>'+cols.map(c=>{let v=t[c[0]];
+      if(c[0]==='entry_time')v=DB.dt(v); else if(['entry_price','exit_price','sl_soft_line','sl_hard_line','tp_hard_line'].includes(c[0]))v=(+v).toFixed(1);
+      else if(['pnl','equity','dd'].includes(c[0])){const col=c[0]==='pnl'?(t.pnl>0?'pos':'neg'):'';return `<td class="${col}">${Math.round(v).toLocaleString()}</td>`;}
+      return `<td class="${c[2]||''}">${v}</td>`;}).join('')+'</tr>';});
+    $('trades').innerHTML=h+'</tbody>';
+    DB.fitCharts();
+  },
+};
+DB.initDashboard(cfg);
+
+// page extras (L1-specific, after init) -------------------------------------------------------
+if($('gate_toggle'))$('gate_toggle').addEventListener('click',()=>{ const cur=+$('gate_pct').value||0;
   if(cur>0){ lastGatePct=cur; $('gate_pct').value=0; } else { $('gate_pct').value=lastGatePct||87; }
   $('gate_pct').dispatchEvent(new Event('input',{bubbles:true})); syncGateBtn(); });
-$('gate_pct').addEventListener('input',syncGateBtn);
-// split long/short SL/TP: the mode dropdown swaps the shared boxes for the per-side boxes (and back).
-// Switching to 'split' prefills blank per-side boxes from the shared values, so you start from the
-// current strategy and tweak one side.
-$('sltp_mode').addEventListener('change',()=>{
+if($('gate_pct'))$('gate_pct').addEventListener('input',syncGateBtn);
+if($('sltp_mode'))$('sltp_mode').addEventListener('change',()=>{
   const on=$('sltp_mode').value==='split';
   $('sharedbox').style.display=on?'none':''; $('splitbox').style.display=on?'':'none';
-  if(on)[['long_sl_soft','sl_soft'],['long_sl_hard','sl_hard'],['long_tp','tp'],
-         ['short_sl_soft','sl_soft'],['short_sl_hard','sl_hard'],['short_tp','tp']]
+  if(on)[['long_sl_soft','sl_soft'],['long_sl_hard','sl_hard'],['long_tp','tp'],['short_sl_soft','sl_soft'],['short_sl_hard','sl_hard'],['short_tp','tp']]
         .forEach(([d,s])=>{ if($(d).value==='')$(d).value=$(s).value; });
-  markDirty();
+  DB.markDirty();
 });
-mathify(document.querySelector('aside'));   // static value boxes accept inline math (operators + - * /)
-
-async function run(){
-  $('run').disabled=true; $('run').textContent='Running...'; status('running backtest…'); showErr('');
-  try{
-    const r=await fetch('/api/backtest',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(params())});
-    let D=null; try{ D=await r.json(); }catch(_){ /* non-JSON body */ }
-    if(!r.ok){
-      // surface the server's exact message (400 = bad/missing param, 500 = backtest failure) — no silent fallback
-      throw new Error((D&&D.error)?D.error:('HTTP '+r.status));
-    }
-    if(D.error) throw new Error(D.error);
-    render(D); status(`✓ done in ${D.meta.run_ms} ms`);
-  }catch(e){
-    const conn=/Failed to fetch|NetworkError|fetch/i.test(e.message);
-    showErr(conn ? `Cannot reach backend — start it: python3 subprojects/wsg-strategy/server.py then open http://localhost:8200/`
-                 : `Backtest rejected: ${e.message}`);
-    status('⚠ see error above');
-  }
-  finally{ $('run').disabled=false; $('run').textContent='Run Backtest'; }
-}
-$('run').addEventListener('click',run);
-
-// Strategy importer: pick a winning strategy → fill EVERY field (timeframe, box knobs, indicators
-// on/off + their tuned internals, K) from the backend preset. Does NOT auto-run — the Run button goes
-// red (stale) so it's clear the results below are not for these new values until you click Run Backtest.
-$('strategy').addEventListener('change',()=>{
-  const p=window.STRATEGIES && window.STRATEGIES[$('strategy').value];
-  if(!p){return;}
-  showErr(''); setForm(p); markDirty();
-  status(`imported “${$('strategy').selectedOptions[0].textContent}” — click Run Backtest to apply (not run yet)`);
-});
-
-// --- CSV export for the two logs (event log + trade ledger) ---------------------------------
-function _csvEsc(v){ v=(v==null?'':String(v)); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
-function _toCSV(headers, rows){ return [headers.join(',')].concat(rows.map(r=>r.map(_csvEsc).join(','))).join('\n'); }
-function _downloadCSV(name, text){
-  const blob=new Blob([text],{type:'text/csv;charset=utf-8'}); const u=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=u; a.download=name; document.body.appendChild(a); a.click();
-  a.remove(); URL.revokeObjectURL(u);
-}
 function _tfTag(){ const D=window.LAST_DATA; return (D&&D.meta&&D.meta.params&&D.meta.params.timeframe)||'4h'; }
-$('dl_events').addEventListener('click',()=>{
-  const D=window.LAST_DATA; if(!D||!D.events||!D.events.length){status('no event log to export — run a backtest first');return;}
-  const headers=['epoch','datetime','type','text','active_indicators'];
-  const rows=D.events.map(e=>{
-    const inds=(e.indicators||[]).filter(r=>r.active).map(r=>`${r.key}:${r.vote}`).join(';');
-    return [e.time, dt(e.time), e.type, e.text, inds];
-  });
-  _downloadCSV(`event_log_${_tfTag()}.csv`, _toCSV(headers,rows));
-});
-$('dl_trades').addEventListener('click',()=>{
-  const D=window.LAST_DATA; if(!D||!D.trades||!D.trades.length){status('no trades to export — run a backtest first');return;}
+if($('dl_events'))$('dl_events').addEventListener('click',()=>{ const D=window.LAST_DATA; if(!D||!D.events||!D.events.length){DB.status('no event log — run a backtest first');return;}
+  const rows=D.events.map(e=>[e.time,DB.dt(e.time),e.type,e.text,(e.indicators||[]).filter(r=>r.active).map(r=>`${r.key}:${r.vote}`).join(';')]);
+  DB.downloadCSV(`event_log_${_tfTag()}.csv`, DB.toCSV(['epoch','datetime','type','text','active_indicators'],rows)); });
+if($('dl_trades'))$('dl_trades').addEventListener('click',()=>{ const D=window.LAST_DATA; if(!D||!D.trades||!D.trades.length){DB.status('no trades — run a backtest first');return;}
   const keys=['entry_time','exit_time','direction','entry_price','exit_price','sl_soft_line','sl_hard_line','tp_soft_line','tp_hard_line','exit_reason','pnl','equity','dd','year'];
-  const headers=['entry_time','exit_time','direction','entry_price','exit_price','sl_soft','sl_hard','tp_soft','tp_hard','exit_reason','pnl','equity','dd','year'];
-  const rows=D.trades.map(t=>keys.map(k=>(k==='entry_time'||k==='exit_time')?dt(t[k]):t[k]));
-  _downloadCSV(`trade_ledger_${_tfTag()}.csv`, _toCSV(headers,rows));
-});
+  const rows=D.trades.map(t=>keys.map(k=>(k==='entry_time'||k==='exit_time')?DB.dt(t[k]):t[k]));
+  DB.downloadCSV(`trade_ledger_${_tfTag()}.csv`, DB.toCSV(keys,rows)); });
 
-// --- Save / reuse custom profiles (current settings → reusable, stored in this browser) -------
-const PROFILE_KEY='wsg_profiles_v1';
-function loadProfiles(){ try{return JSON.parse(localStorage.getItem(PROFILE_KEY))||{};}catch(_){return {};} }
-function saveProfiles(p){ try{localStorage.setItem(PROFILE_KEY, JSON.stringify(p));}catch(_){} }
-// (re)build the Strategy dropdown = backend strategies + the user's saved profiles (own optgroup)
-function buildStrategyDropdown(){
-  const sel=$('strategy'); if(!sel) return;
-  window.STRATEGIES={};
-  const srv=window.SERVER_STRATEGIES||[];
-  const opt=s=>{window.STRATEGIES[s.id]=s.preset; return `<option value="${s.id}">${s.label}</option>`;};
-  const builtins=srv.filter(s=>!s.id.startsWith('user_'));
-  const serverProfiles=srv.filter(s=>s.id.startsWith('user_'));     // saved server-side (shared)
-  let html=builtins.map(opt).join('');
-  if(serverProfiles.length) html+=`<optgroup label="Saved profiles (server)">`+serverProfiles.map(opt).join('')+`</optgroup>`;
-  // localStorage-only profiles (offline fallback saves not yet on the server)
-  const prof=loadProfiles(), localNames=Object.keys(prof).filter(n=>!serverProfiles.some(s=>s.id==='user_'+n));
-  if(localNames.length) html+=`<optgroup label="Local only (this browser)">`+localNames.map(n=>{
-    const id='local_'+n; window.STRATEGIES[id]=prof[n]; return `<option value="${id}">${n}</option>`;}).join('')+`</optgroup>`;
-  sel.innerHTML=html;
-}
-$('saveprofile').addEventListener('click', async ()=>{
-  const name=(prompt('Save the current settings as a profile named:','my profile')||'').trim();
-  if(!name) return;
-  const exists=(window.SERVER_STRATEGIES||[]).some(s=>s.id==='user_'+name) || (loadProfiles()[name]!=null);
-  if(exists && !confirm(`Overwrite the existing profile “${name}”?`)) return;
-  const preset=params();                                 // the full current form (box + indicators + TF…)
-  try{                                                   // save to the SHARED server store (like the portfolios)
-    const r=await fetch('/api/profiles',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,preset})});
-    let d=null; try{ d=await r.json(); }catch(_){}
-    if(!r.ok) throw new Error((d&&d.error)||('HTTP '+r.status));
-    if(d&&d.strategies) window.SERVER_STRATEGIES=d.strategies;
-    buildStrategyDropdown(); $('strategy').value='user_'+name;
-    status(`saved profile “${name}” to the server — shared across browsers (profiles/user_profiles.json)`);
-  }catch(e){                                             // offline fallback: keep it in this browser
-    const prof=loadProfiles(); prof[name]=preset; saveProfiles(prof);
-    buildStrategyDropdown(); $('strategy').value='local_'+name;
-    showErr(`Saved “${name}” to THIS BROWSER only — server save failed (${e.message}). It'll sync when you save again with the server running.`);
-  }
-});
-
-// Show/hide the settings side panel. Hiding it widens <main>; the ResizeObserver above then
-// refits every chart, so the charts reclaim the freed width with no hardcoded sizes.
-$('toggle').addEventListener('click',()=>{
-  const hidden=document.body.classList.toggle('no-settings');
-  $('toggle').textContent = hidden ? '⚙ Show settings' : '⚙ Hide settings';
-  // explicit refit too, in case ResizeObserver is unavailable
-  if(typeof fitCharts==='function') requestAnimationFrame(fitCharts);
-});
-
-// Fetch the authoritative preset + instrument constants from the backend.
-// The frontend hardcodes NOTHING — the "winner" defaults live in config.py and arrive via /api/config.
-async function loadConfig(){
-  const r=await fetch('/api/config'); if(!r.ok) throw new Error('config HTTP '+r.status);
-  const c=await r.json();   // {preset, dd_cap, pv, bounds, windows, timeframes, indicator_schema}
-  if(c.indicator_schema && !panelBuilt) buildIndicatorPanel(c.indicator_schema);  // build panel once
-  const tfSel=$('timeframe');                              // populate the TF dropdown once (nothing hardcoded)
-  if(c.timeframes && tfSel && !tfSel.dataset.built){
-    const def=c.default_timeframe||'4h';
-    tfSel.innerHTML=c.timeframes.map(t=>`<option value="${t}"${t===def?' selected':''}>${t}</option>`).join('');
-    tfSel.dataset.built='1';
-  }
-  // populate the importable-strategy dropdown (winner + per-TF WS-I champions + saved profiles)
-  if(c.strategies && c.strategies.length){ window.SERVER_STRATEGIES=c.strategies; buildStrategyDropdown(); }
-  // the default fill = the first strategy's preset (the plain box winner, all indicators off) so a
-  // reset/boot also clears indicators; fall back to the bare preset if strategies are unavailable.
-  const winner=(window.SERVER_STRATEGIES && window.SERVER_STRATEGIES[0] && window.SERVER_STRATEGIES[0].preset)
-             || Object.assign({}, c.preset, {dd_cap:c.dd_cap, pv:c.pv});
-  return winner;
-}
-$('reset').addEventListener('click',async()=>{
-  showErr('');
-  // Reset = restore the CURRENTLY SELECTED profile's values (undo any user edits). It does NOT jump to a
-  // different profile and does NOT auto-run — the Run button goes red (stale) until you click Run Backtest.
-  const id=$('strategy').value, sel=$('strategy').selectedOptions[0];
-  const p=window.STRATEGIES && window.STRATEGIES[id];
-  if(p){ setForm(p); markDirty(); status(`↺ reset to “${sel?sel.textContent:'selected profile'}” — click Run Backtest to apply`); return; }
-  // fallback (no cached preset, e.g. very first boot): pull the backend defaults
-  try{ setForm(await loadConfig()); markDirty(); status('↺ reset to defaults — click Run Backtest to apply'); }
-  catch(e){ showErr(`Cannot load defaults from backend (${e.message}). Start it: python3 subprojects/wsg-strategy/server.py`); }
-});
-
-// Boot: populate the form from the backend config, then either restore the embedded run or run live.
-(async()=>{
-  try{
-    setForm(await loadConfig());
-    if(window.WINNER_DATA){ render(window.WINNER_DATA); status('showing last saved run · edit settings + Run Backtest for a live run'); }
-    else { markDirty(); status('defaults loaded · Run Backtest for a live run'); }
-  }catch(e){
-    // backend unreachable (e.g. opened as a static file): fall back ONLY to the embedded saved run's params
-    if(window.WINNER_DATA){ render(window.WINNER_DATA); status('static view · start server.py for live backtests'); }
-    else showErr(`Cannot reach backend — start it: python3 subprojects/wsg-strategy/server.py then open http://localhost:8200/`);
-  }
-})();
 </script>
 </body>
 </html>
