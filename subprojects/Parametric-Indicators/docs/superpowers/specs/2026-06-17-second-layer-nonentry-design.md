@@ -4,7 +4,7 @@ description: "Design spec — L2, a second decision layer that manages the prima
 metadata:
   type: project
   workstream: second-layer-nonentry
-  status: ROUND-1 BUILT (2026-06-19) — backtester + dashboard + optimizer (option-3 validation, prefix l2v1) all built & tested; golden 6/6. Next = heavy l2v1 server run (gated) + analysis.
+  status: ROUND-1 COMPLETE (2026-06-19) — backtester + dashboard + optimizer built & tested (golden 6/6); l2v1 server run DONE (1687 trials, 637 feasible). Champion: in-sample +$48,830 (n=35) -> OOS +$6,260 (n=16), positive both but OOS degrades (DD ~3x) -> mild overfit; adoption gate pending. Next = analysis (combined-DD guardrail) + round-2 / extend.
   date: 2026-06-17
 ---
 
