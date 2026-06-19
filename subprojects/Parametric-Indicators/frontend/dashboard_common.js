@@ -204,7 +204,8 @@
       const r = await fetch(cfg.endpoints.profiles, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, preset }) });
       let d = null; try { d = await r.json(); } catch (_) {}
       if (!r.ok) throw new Error((d && d.error) || ('HTTP ' + r.status));
-      if (d && d.strategies) window.SERVER_STRATEGIES = d.strategies; else if (d && d.profiles) { /* l2 returns profiles map */ }
+      if (d && d.strategies) window.SERVER_STRATEGIES = d.strategies;
+      else if (d && d.profiles) window.SERVER_STRATEGIES = Object.entries(d.profiles).map(([n, p]) => ({ id: 'user_' + n, label: '👤 ' + n, preset: p }));
       buildStrategyDropdown(cfg); status(`saved “${name}”`);
     } catch (e) {
       const key = cfg.profileKey || 'wsg_profiles_v1'; let prof = {}; try { prof = JSON.parse(localStorage.getItem(key)) || {}; } catch (_) {}

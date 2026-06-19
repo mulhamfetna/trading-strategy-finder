@@ -1,181 +1,185 @@
-<!doctype html><html><head><meta charset="utf-8"><title>L2 second-layer dashboard</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>L2 Second-Layer Dashboard</title>
 <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
-<style>
-*{box-sizing:border-box} body{margin:0;font:13px/1.4 system-ui,Segoe UI,Roboto,sans-serif;background:#0e1117;color:#d1d4dc}
-header{padding:8px 14px;background:#131722;border-bottom:1px solid #363a45;display:flex;align-items:center;gap:14px}
-header b{font-size:15px} header a{color:#2962ff;text-decoration:none;font-size:13px}
-.wrap{display:flex;height:calc(100vh - 41px)}
-aside{width:320px;min-width:240px;max-width:760px;overflow:auto;padding:12px;border-right:1px solid #363a45}
-main{flex:1;overflow:auto;padding:10px}
-.row{display:flex;gap:8px;margin:6px 0;align-items:center}
-.row label{flex:1;color:#9aa0aa} .row input,.row select{width:120px;background:#1c2230;color:#d1d4dc;border:1px solid #363a45;border-radius:4px;padding:4px}
-button{background:#2962ff;color:#fff;border:0;border-radius:5px;padding:8px 12px;cursor:pointer;font-size:13px}
-button.sec{background:#2a2f3a}
-.panel{background:#131722;border:1px solid #363a45;border-radius:6px;padding:8px;margin-bottom:10px}
-.cards{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
-.card{background:#131722;border:1px solid #363a45;border-radius:6px;padding:8px 10px;min-width:120px}
-.card .v{font-size:18px;font-weight:600}.card .k{color:#787b86;font-size:11px}
-.v.good{color:#00c853}.v.bad{color:#ff5252}
-table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:3px 6px;border-bottom:1px solid #20242f;text-align:right}th:first-child,td:first-child{text-align:left}
-#err{color:#ff5252;margin:6px 0;min-height:16px}
-#ind .ind{border-top:1px solid #20242f;padding:6px 0}
-</style></head>
+<link rel="stylesheet" href="dashboard_common.css">
+</head>
 <body>
+<div id="err" role="alert"><span id="errmsg"></span><button id="errclose" title="dismiss" aria-label="dismiss">✕</button></div>
 <header>
-  <b>🍃→🔁 L2 second-layer</b>
-  <span id="l1info" style="color:#787b86"></span>
-  <a href="index.html">← L1 backtest</a>
-</header>
-<div class="wrap">
-<aside>
-  <div class="panel">
-    <div class="row"><label>Saved L2 profile</label>
-      <select id="profile"><option value="">— none —</option></select></div>
-    <div class="row"><label>gate_pct (vol)</label><input id="gate_pct" type="number" value="0" min="0" max="100"></div>
-    <div class="row"><label>K (confirmers)</label><input id="k" type="number" value="1" min="1"></div>
-    <div class="row"><label>sl_soft</label><input id="sl_soft" type="number" value="149.8"></div>
-    <div class="row"><label>sl_hard</label><input id="sl_hard" type="number" value="167.1"></div>
-    <div class="row"><label>tp</label><input id="tp" type="number" value="120.2"></div>
-    <div class="row"><label>dd_limit</label><input id="dd_limit" type="number" value="0"></div>
-    <div class="row"><label>cooldown</label><input id="cooldown" type="number" value="0"></div>
-    <div class="row"><label>flip</label><select id="flip"><option value="false">false</option><option value="true">true</option></select></div>
-    <div class="row"><label>indicators on 1-min</label><select id="ind_1min"><option value="false">false</option><option value="true">true</option></select></div>
-    <div class="row"><button id="run">Run L2</button>
-      <button id="save" class="sec">Save profile</button></div>
-    <div id="err"></div>
+  <div>
+    <h1>🍃→🔁 L2 Second-Layer Dashboard <a href="index.html" style="font-size:13px;color:#2962ff;text-decoration:none;margin-left:10px">← L1 backtest</a></h1>
+    <p>manages L1's dropped (veto + vol-gate) signals · <span id="l1info" style="color:#9aa0aa"></span></p>
   </div>
-  <div class="panel"><div style="color:#9aa0aa;margin-bottom:4px">Indicators (L2)</div><div id="ind"></div></div>
-</aside>
-<main>
-  <div class="cards" id="cards"></div>
-  <div class="panel"><div id="price" style="height:430px"></div></div>
-  <div class="panel"><div id="equity" style="height:200px"></div></div>
-  <div class="panel"><b>L2 trades</b><div id="trades"></div></div>
-  <div class="panel"><b>Dropped signals</b> <span id="dropinfo" style="color:#787b86"></span>
-    <div id="droptbl" style="max-height:260px;overflow:auto"></div></div>
-</main>
+  <div class="hdr-right">
+    <span class="dirty" id="dirty"></span>
+    <button class="ghost" id="toggle" title="Show/hide the settings panel">⚙ Hide settings</button>
+    <button class="run" id="run">Run L2</button>
+  </div>
+</header>
+
+<div class="body">
+  <aside>
+    <div class="profile-actions">
+      <button class="resetlink" id="reset" title="restore the selected L2 profile's values">↺ Reset to selected</button>
+      <button class="resetlink" id="saveprofile" title="save the current L2 settings as a reusable profile">💾 Save L2 profile</button>
+    </div>
+    <div class="sgroup">
+      <h3>L2 base</h3>
+      <div class="fld"><label>Saved L2 profile</label><select id="strategy" title="load a saved L2 profile"></select></div>
+      <div class="hint" id="l1base">L1 base = frozen lean 4h champion (fixed for round 1) — L2 acts only on the signals it dropped</div>
+      <div class="fld"><label>Indicators on 1-min</label><select id="ind_1min"><option value="true">true (match L1 regime)</option><option value="false">false (decision TF)</option></select></div>
+    </div>
+    <div class="sgroup">
+      <h3>Entry / exit (points)</h3>
+      <div class="fld"><label>SL soft</label><input id="sl_soft" type="number" step="1" value="149.8"></div>
+      <div class="fld"><label>SL hard</label><input id="sl_hard" type="number" step="1" value="167.1"></div>
+      <div class="fld"><label>Take-profit</label><input id="tp" type="number" step="1" value="120.2"></div>
+      <hr class="sep">
+      <div class="fld"><label>Direction</label><select id="flip"><option value="false">normal (box dir)</option><option value="true">flipped (reverse box)</option></select></div>
+      <div class="hint">L2 direction = box direction, optionally reversed by flip ("reverse is implicit") · exits reuse L1's engine; L1 entering force-closes L2</div>
+    </div>
+    <div class="sgroup">
+      <h3>Volatility gate</h3>
+      <div class="fld"><label>Gate percentile</label><input id="gate_pct" type="number" step="1" value="0"></div>
+      <div class="hint">L2's own low-vol gate · 0 = off (admit all dropped bars)</div>
+    </div>
+    <div class="sgroup">
+      <h3>Drawdown circuit-breaker</h3>
+      <div class="fld"><label>Trigger ($)</label><input id="dd_limit" type="number" step="100" value="0"></div>
+      <div class="fld"><label>Cooldown (trades)</label><input id="cooldown" type="number" step="1" value="0"></div>
+      <div class="hint">L2's own breaker · 0 = off</div>
+    </div>
+    <div class="sgroup">
+      <h3>Confirmation layer</h3>
+      <div class="fld"><label>K (min confirms)</label><input id="k_rule" type="number" step="1" min="1" value="1"></div>
+      <div class="hint">≥K enabled indicators must confirm a dropped bar for L2 to act</div>
+    </div>
+    <div class="sgroup">
+      <h3>Indicators (L2's own)</h3>
+      <div id="indpanel"><div class="hint">loading schema…</div></div>
+    </div>
+  </aside>
+  <div id="gutter" title="drag to resize the settings panel"></div>
+
+  <main>
+    <div class="cards" id="cards"></div>
+    <div class="panel">
+      <h2>Price · L1-flat shading · dropped signals · L2 trades · exit lines
+        <span class="legend"><span class="sw" style="background:var(--orange)"></span>veto drop
+        <span class="sw" style="background:var(--blue)"></span>vol-gate drop · solid=agree / hollow=oppose · L1=force-close</span></h2>
+      <div id="price" class="chart" style="height:430px"></div>
+    </div>
+    <div class="panel">
+      <h2>Equity — <span style="color:var(--orange)">combined (L1+L2)</span> · <span style="color:var(--muted)">L1-only</span> · <span style="color:var(--blue)">L2 standalone</span> ($, 1 contract)</h2>
+      <div id="equity" class="chart" style="height:200px"></div>
+    </div>
+    <div class="twocol">
+      <div class="panel"><h2>L2 trade ledger <button class="ghost csvbtn" id="dl_trades" title="download L2 trades CSV">⬇ CSV</button></h2><div class="tablewrap"><table id="trades"></table></div></div>
+      <div class="panel"><h2>Dropped signals <span id="dropinfo" class="legend"></span></h2><div class="tablewrap"><table id="dropped"></table></div></div>
+    </div>
+    <p class="note" id="status"></p>
+  </main>
 </div>
+
+<script src="dashboard_common.js"></script>
 <script>
-const TH={bg:'#131722',text:'#d1d4dc',border:'#363a45',green:'#00c853',red:'#ff5252',blue:'#2962ff',orange:'#ff9800',muted:'#787b86'};
-const COMMON={layout:{background:{color:TH.bg},textColor:TH.text},grid:{vertLines:{color:'#20242f'},horzLines:{color:'#20242f'}},timeScale:{timeVisible:true,borderColor:TH.border},rightPriceScale:{borderColor:TH.border},crosshair:{mode:0}};
-const $=id=>document.getElementById(id);
-const dt=t=>new Date(t*1000).toISOString().slice(0,16).replace('T',' ');
-const money=n=>(n>=0?'+':'')+'$'+Math.round(n).toLocaleString();
-const card=(v,k,cls='')=>`<div class="card"><div class="v ${cls}">${v}</div><div class="k">${k}</div></div>`;
-const charts=[],ctns=[];
-const mk=(id,h)=>{const el=$(id);const c=LightweightCharts.createChart(el,{...COMMON,width:el.clientWidth,height:h});charts.push(c);ctns.push(el);return c;};
-const priceC=mk('price',430), eqC=mk('equity',200);
-const candle=priceC.addCandlestickSeries({upColor:TH.green,downColor:TH.red,wickUpColor:TH.green,wickDownColor:TH.red,borderVisible:false});
-const seg=c=>priceC.addLineSeries({color:c,lineWidth:1,lastValueVisible:false,priceLineVisible:false,crosshairMarkerVisible:false});
-const tpS=seg('rgba(0,200,83,.6)'),shS=seg('rgba(255,82,82,.6)'),ssS=seg('rgba(255,152,0,.6)');
-const shadeS=priceC.addLineSeries({color:'rgba(120,123,134,.0)',lastValueVisible:false,priceLineVisible:false});
-const mkrS=priceC.addLineSeries({color:'rgba(0,0,0,0)',lastValueVisible:false,priceLineVisible:false});
-const l1EqS=eqC.addLineSeries({color:TH.muted,lineWidth:1}),combEqS=eqC.addLineSeries({color:TH.orange,lineWidth:2}),l2EqS=eqC.addLineSeries({color:TH.blue,lineWidth:1});
-let sy=false;charts.forEach(s=>s.timeScale().subscribeVisibleTimeRangeChange(r=>{if(sy||!r)return;sy=true;charts.forEach(o=>{if(o!==s){try{o.timeScale().setVisibleRange(r)}catch(e){}}});sy=false;}));
-function fit(){charts.forEach((c,i)=>{const w=ctns[i].clientWidth;if(w>0)c.applyOptions({width:w})})}
-window.addEventListener('resize',fit);
-
-let SCHEMA=null;
-function buildIndicators(schema){
-  SCHEMA=schema; const host=$('ind'); host.innerHTML='';
-  Object.entries(schema).forEach(([key,meta])=>{
-    const wrap=document.createElement('div'); wrap.className='ind';
-    let h=`<div class="row"><label><input type="checkbox" data-en="${key}"> ${meta.label||key}</label>
-      <select data-mode="${key}">${(meta.modes||['both']).map(m=>`<option ${m===(meta.mode||'both')?'selected':''}>${m}</option>`).join('')}</select></div>`;
-    (meta.params||[]).forEach(p=>{ h+=`<div class="row"><label>${p.name}</label><input data-p="${key}.${p.name}" type="number" value="${p.default}"></div>`; });
-    wrap.innerHTML=h; host.appendChild(wrap);
-  });
-}
-function indicatorSpecs(){
-  if(!SCHEMA) return [];
-  return Object.entries(SCHEMA).map(([key,meta])=>{
-    const en=document.querySelector(`[data-en="${key}"]`).checked;
-    const mode=document.querySelector(`[data-mode="${key}"]`).value;
-    const params={}; (meta.params||[]).forEach(p=>{ params[p.name]=+document.querySelector(`[data-p="${key}.${p.name}"]`).value; });
-    return {key,enabled:en,mode,params};
-  });
-}
-function params(){
-  return {indicators:indicatorSpecs(), k:+$('k').value||1, gate_pct:+$('gate_pct').value,
-    sl_soft:+$('sl_soft').value, sl_hard:+$('sl_hard').value, tp:+$('tp').value,
-    dd_limit:+$('dd_limit').value, cooldown:+$('cooldown').value,
-    flip:$('flip').value==='true', ind_1min:$('ind_1min').value==='true'};
-}
-function setForm(p){
-  ['gate_pct','k','sl_soft','sl_hard','tp','dd_limit','cooldown'].forEach(k=>{ if(p[k]!=null)$(k).value=p[k]; });
-  $('flip').value=String(!!p.flip); $('ind_1min').value=String(!!p.ind_1min);
-  if(SCHEMA && p.indicators){ p.indicators.forEach(s=>{ const en=document.querySelector(`[data-en="${s.key}"]`);
-    if(en){ en.checked=!!s.enabled; const md=document.querySelector(`[data-mode="${s.key}"]`); if(md&&s.mode)md.value=s.mode;
-      Object.entries(s.params||{}).forEach(([n,v])=>{const el=document.querySelector(`[data-p="${s.key}.${n}"]`);if(el)el.value=v;}); } }); }
-}
-function showErr(m){ $('err').textContent=m||''; }
-
-async function loadConfig(){
-  const c=await (await fetch('/api/l2_config')).json();
-  buildIndicators(c.indicator_schema);
-  $('l1info').textContent=`${c.l1_label} — L1 ${c.l1.n_trades} trades / ${money(c.l1.pnl)}`;
-  window.L2PROFILES=c.l2_profiles||{};
-  const sel=$('profile'); sel.innerHTML='<option value="">— none —</option>'+Object.keys(window.L2PROFILES).map(n=>`<option>${n}</option>`).join('');
-}
-$('profile').addEventListener('change',()=>{ const p=window.L2PROFILES[$('profile').value]; if(p) setForm(p); });
-
+const TH=DB.TH, $=window.$;
 function dedupe(a){const m={};a.forEach(p=>{if(p.value!=null)m[p.time]=p.value;});return Object.keys(m).map(Number).sort((x,y)=>x-y).map(t=>({time:t,value:m[t]}));}
 
-function render(D){
-  const m=D.meta, s=m.summary.l2, g=m.summary.combined;
-  $('cards').innerHTML=[
-    card(s.n,'L2 trades'), card(money(s.pnl),'L2 P/L',s.pnl>=0?'good':'bad'),
-    card('$'+Math.round(s.max_dd).toLocaleString(),'L2 maxDD'), card(s.win+'%','L2 win'),
-    card(s.n_l1_entry_exits,'L1-entry exits'),
-    card(money(g.pnl),'combined P/L',g.pnl>=0?'good':'bad'),
-    card('$'+Math.round(g.max_dd).toLocaleString(),'combined maxDD'),
-    card(g.dd_not_worse?'OK':'WORSE','DD guardrail',g.dd_not_worse?'good':'bad'),
-  ].join('');
-  candle.setData(D.candles);
-  const hi=Math.max(...D.candles.map(c=>c.high));
-  const shade=[]; D.l1_spans.forEach(sp=>{ shade.push({time:sp.from,value:hi},{time:sp.to,value:hi},{time:sp.to+1}); });
-  shadeS.applyOptions({color:'rgba(120,123,134,.25)',lineWidth:6}); try{shadeS.setData(dedupe(shade));}catch(e){}
-  const tp=[],sh=[],ss=[],mks=[];
-  D.l2_trades.forEach(t=>{ const e=t.entry_time,x=t.exit_time;
-    tp.push({time:e,value:t.tp_hard_line},{time:x,value:t.tp_hard_line},{time:x+1});
-    sh.push({time:e,value:t.sl_hard_line},{time:x,value:t.sl_hard_line},{time:x+1});
-    ss.push({time:e,value:t.sl_soft_line},{time:x,value:t.sl_soft_line},{time:x+1});
-    const opp=t.l2_dir_vs_box==='oppose';
-    mks.push({time:e,position:t.direction==='long'?'belowBar':'aboveBar',color:opp?TH.orange:TH.blue,
-      shape:t.direction==='long'?'arrowUp':'arrowDown',text:opp?'opp':''});
-    mks.push({time:x,position:'inBar',color:t.exit_reason==='L1-entry'?TH.muted:(t.pnl>0?TH.green:TH.red),
-      shape:'circle',text:t.exit_reason==='L1-entry'?'L1':''});
-  });
-  D.dropped.forEach(d=>{ mks.push({time:d.time,position:'aboveBar',
-    color:(d.reason==='veto'?'rgba(255,152,0,':'rgba(41,98,255,')+(d.l1_flat?'.9)':'.3)'),
-    shape:'square'}); });
-  try{tpS.setData(dedupe(tp));shS.setData(dedupe(sh));ssS.setData(dedupe(ss));}catch(e){}
-  mkrS.setData(D.candles.map(c=>({time:c.time,value:c.close}))); mks.sort((a,b)=>a.time-b.time); mkrS.setMarkers(mks);
-  l1EqS.setData(D.l1_equity); combEqS.setData(D.combined_equity); l2EqS.setData(D.l2_equity);
-  $('trades').innerHTML='<table><thead><tr><th>entry</th><th>exit</th><th>dir</th><th>vs box</th><th>reason</th><th>P/L</th></tr></thead><tbody>'+
-    D.l2_trades.map(t=>`<tr><td>${dt(t.entry_time)}</td><td>${dt(t.exit_time)}</td><td>${t.direction}</td><td>${t.l2_dir_vs_box}</td><td>${t.exit_reason}</td><td style="color:${t.pnl>=0?TH.green:TH.red}">${money(t.pnl)}</td></tr>`).join('')+'</tbody></table>';
-  const dc=m.dropped_counts; $('dropinfo').textContent=`${dc.total} total · ${dc.veto} veto · ${dc.vol_gate} vol-gate · ${dc.flat_candidates} flat`;
-  $('droptbl').innerHTML='<table><thead><tr><th>time</th><th>reason</th><th>box dir</th><th>L1 flat</th></tr></thead><tbody>'+
-    D.dropped.map(d=>`<tr><td>${dt(d.time)}</td><td>${d.reason}</td><td>${d.box_dir}</td><td>${d.l1_flat?'yes':'no'}</td></tr>`).join('')+'</tbody></table>';
-  fit();
-}
-
-async function run(){
-  showErr('Running L2 (first run computes L1 — up to ~40s)…');
-  try{ const r=await fetch('/api/l2_backtest',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(params())});
-    const D=await r.json(); if(!r.ok){ showErr(D.error||'error'); return; }
-    showErr(D.l2_trades.length?'':'L2 took 0 trades for this profile.'); render(D);
-  }catch(e){ showErr(String(e)); }
-}
-async function save(){
-  const name=prompt('Save L2 profile as:'); if(!name) return;
-  const r=await fetch('/api/l2_profiles',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,preset:params()})});
-  const D=await r.json(); if(!r.ok){ showErr(D.error||'save failed'); return; }
-  window.L2PROFILES=D.profiles; $('profile').innerHTML='<option value="">— none —</option>'+Object.keys(D.profiles).map(n=>`<option ${n===name?'selected':''}>${n}</option>`).join('');
-  showErr(`saved "${name}"`);
-}
-$('run').addEventListener('click',run);
-$('save').addEventListener('click',save);
-loadConfig();
+const cfg={
+  endpoints:{config:'/api/l2_config', backtest:'/api/l2_backtest', profiles:'/api/l2_profiles'},
+  runLabel:'Run L2', warmupEndpoint:'/api/warmup', profileKey:'wsg_l2_profiles_v1',
+  panels:[
+    {id:'price', height:430, build:c=>({
+      candle:c.addCandlestickSeries({upColor:TH.green,downColor:TH.red,wickUpColor:TH.green,wickDownColor:TH.red,borderVisible:false}),
+      shade:c.addLineSeries({color:'rgba(120,123,134,.25)',lineWidth:6,lastValueVisible:false,priceLineVisible:false,crosshairMarkerVisible:false}),
+      tp:c.addLineSeries({color:'rgba(0,200,83,.6)',lineWidth:1,lastValueVisible:false,priceLineVisible:false,crosshairMarkerVisible:false}),
+      sh:c.addLineSeries({color:'rgba(255,82,82,.6)',lineWidth:1,lastValueVisible:false,priceLineVisible:false,crosshairMarkerVisible:false}),
+      ss:c.addLineSeries({color:'rgba(255,152,0,.6)',lineWidth:1,lastValueVisible:false,priceLineVisible:false,crosshairMarkerVisible:false}),
+      mkr:c.addLineSeries({color:'rgba(0,0,0,0)',lastValueVisible:false,priceLineVisible:false}),
+    })},
+    {id:'equity', height:200, build:c=>({
+      l1:c.addLineSeries({color:TH.muted,lineWidth:1}),
+      comb:c.addLineSeries({color:TH.orange,lineWidth:2}),
+      l2:c.addLineSeries({color:TH.blue,lineWidth:1}),
+    })},
+  ],
+  params(){ return {indicators:DB.indicatorSpecs(), k:+$('k_rule').value||1, gate_pct:+$('gate_pct').value,
+    sl_soft:+$('sl_soft').value, sl_hard:+$('sl_hard').value, tp:+$('tp').value,
+    dd_limit:+$('dd_limit').value, cooldown:+$('cooldown').value,
+    flip:$('flip').value==='true', ind_1min:$('ind_1min').value==='true'}; },
+  setForm(P){ ['k','gate_pct','sl_soft','sl_hard','tp','dd_limit','cooldown'].forEach(k=>{ const id=k==='k'?'k_rule':k; if(P[k]!=null&&$(id))$(id).value=P[k]; });
+    if($('flip'))$('flip').value=String(!!P.flip); if($('ind_1min'))$('ind_1min').value=String(P.ind_1min!==false);
+    if(P.indicators)DB.applyIndicatorSpecs(P.indicators); DB.recomputeWarmup(); },
+  onConfig(c){
+    if(c.l1)$('l1info').textContent=`${c.l1_label||'L1'} — L1 ${c.l1.n_trades} trades / ${DB.money(c.l1.pnl)}`;
+    // saved L2 profiles populate the dropdown (l2_config returns {name:preset})
+    window.SERVER_STRATEGIES=Object.entries(c.l2_profiles||{}).map(([n,p])=>({id:'user_'+n,label:'👤 '+n,preset:p}));
+    DB.buildStrategyDropdown(cfg);
+    return null;   // form HTML defaults stand (lean SL/TP prefilled)
+  },
+  render(D,H){
+    const m=D.meta, s=m.summary.l2, g=m.summary.combined, ps=H.price.series, es=H.equity.series;
+    $('cards').innerHTML=
+      `<div class="cardgrp">L2 standalone</div>`+
+      DB.card(s.n,'L2 trades')+DB.card(DB.money(s.pnl),'L2 P/L',s.pnl>=0?'pos':'neg')+
+      DB.card('$'+Math.round(s.max_dd).toLocaleString(),'L2 max drawdown','neg')+
+      DB.card(s.win+'%','L2 win rate')+DB.card(s.pf??'—','profit factor')+DB.card(s.n_l1_entry_exits,'L1-entry force-closes')+
+      `<div class="cardgrp">combined book (L1 + L2) · guardrail</div>`+
+      DB.card(DB.money(g.pnl),'combined P/L',g.pnl>=0?'pos':'neg')+
+      DB.card('$'+Math.round(g.max_dd).toLocaleString(),'combined max DD')+
+      DB.card('$'+Math.round(g.l1_only_dd).toLocaleString(),'L1-only DD')+
+      DB.card(g.dd_not_worse?'OK':'WORSE','DD guardrail',g.dd_not_worse?'pos':'neg')+
+      `<div class="cardgrp">L1 base + dropped signals</div>`+
+      DB.card(m.l1.n_trades,'L1 trades')+DB.card(DB.money(m.l1.pnl),'L1 P/L','pos')+
+      DB.card(m.dropped_counts.total,'dropped (veto+gate)')+DB.card(m.dropped_counts.flat_candidates,'flat candidates')+
+      `<div class="card"><div class="v" id="fp_warm" style="font-size:15px">—</div><div class="k">warmup period</div></div>`+
+      `<div class="card"><div class="v" id="fp_heavy" style="font-size:12px;line-height:1.25">—</div><div class="k">longest indicator candles requirement</div></div>`;
+    ps.candle.setData(D.candles);
+    const hi=D.candles.length?Math.max(...D.candles.map(c=>c.high)):0;
+    const shade=[]; (D.l1_spans||[]).forEach(sp=>{shade.push({time:sp.from,value:hi},{time:sp.to,value:hi},{time:sp.to+1});});
+    try{ps.shade.setData(dedupe(shade));}catch(e){}
+    const tp=[],sh=[],ss=[],mks=[];
+    (D.l2_trades||[]).forEach(t=>{const e=t.entry_time,x=t.exit_time;
+      tp.push({time:e,value:t.tp_hard_line},{time:x,value:t.tp_hard_line},{time:x+1});
+      sh.push({time:e,value:t.sl_hard_line},{time:x,value:t.sl_hard_line},{time:x+1});
+      ss.push({time:e,value:t.sl_soft_line},{time:x,value:t.sl_soft_line},{time:x+1});
+      const opp=t.l2_dir_vs_box==='oppose';
+      mks.push({time:e,position:t.direction==='long'?'belowBar':'aboveBar',color:opp?TH.orange:TH.blue,shape:t.direction==='long'?'arrowUp':'arrowDown',text:opp?'opp':''});
+      mks.push({time:x,position:'inBar',color:t.exit_reason==='L1-entry'?TH.muted:(t.pnl>0?TH.green:TH.red),shape:'circle',text:t.exit_reason==='L1-entry'?'L1':''});
+    });
+    (D.dropped||[]).forEach(d=>{mks.push({time:d.time,position:'aboveBar',shape:'square',
+      color:(d.reason==='veto'?'rgba(255,152,0,':'rgba(41,98,255,')+(d.l1_flat?'.9)':'.3)')});});
+    try{ps.tp.setData(dedupe(tp));ps.sh.setData(dedupe(sh));ps.ss.setData(dedupe(ss));}catch(e){}
+    ps.mkr.setData(D.candles.map(c=>({time:c.time,value:c.close}))); mks.sort((a,b)=>a.time-b.time); ps.mkr.setMarkers(mks);
+    es.l1.setData(D.l1_equity||[]); es.comb.setData(D.combined_equity||[]); es.l2.setData(D.l2_equity||[]);
+    DB.fitCharts();
+    // L2 ledger
+    const cols=[['entry_time','entry','l'],['exit_time','exit','l'],['direction','dir','l'],['l2_dir_vs_box','vs box','l'],['exit_reason','reason','l'],['pnl','P/L']];
+    let h='<thead><tr>'+cols.map(c=>`<th class="${c[2]||''}">${c[1]}</th>`).join('')+'</tr></thead><tbody>';
+    (D.l2_trades||[]).forEach(t=>{h+='<tr>'+cols.map(c=>{let v=t[c[0]];
+      if(c[0]==='entry_time'||c[0]==='exit_time')v=DB.dt(v);
+      else if(c[0]==='pnl')return `<td class="${t.pnl>0?'pos':'neg'}">${Math.round(v).toLocaleString()}</td>`;
+      return `<td class="${c[2]||''}">${v}</td>`;}).join('')+'</tr>';});
+    $('trades').innerHTML=h+'</tbody>';
+    // dropped-signal table
+    const dc=m.dropped_counts; $('dropinfo').textContent=`${dc.total} total · ${dc.veto} veto · ${dc.vol_gate} vol-gate · ${dc.flat_candidates} flat`;
+    let dh='<thead><tr><th class="l">time</th><th class="l">reason</th><th class="l">box dir</th><th>L1 flat</th></tr></thead><tbody>';
+    (D.dropped||[]).forEach(d=>{dh+=`<tr><td class="l">${DB.dt(d.time)}</td><td class="l">${d.reason}</td><td class="l">${d.box_dir}</td><td>${d.l1_flat?'yes':'no'}</td></tr>`;});
+    $('dropped').innerHTML=dh+'</tbody>';
+    DB.status(D.l2_trades&&D.l2_trades.length?'':'L2 took 0 trades for this profile.');
+  },
+};
+DB.initDashboard(cfg);
+// page extra: L2 trades CSV
+$('dl_trades').addEventListener('click',()=>{ const D=window.LAST_DATA; if(!D||!D.l2_trades||!D.l2_trades.length){DB.status('no L2 trades — run first');return;}
+  const headers=['entry','exit','direction','vs_box','exit_reason','pnl','entry_price','exit_price'];
+  const rows=D.l2_trades.map(t=>[DB.dt(t.entry_time),DB.dt(t.exit_time),t.direction,t.l2_dir_vs_box,t.exit_reason,t.pnl,t.entry_price,t.exit_price]);
+  DB.downloadCSV('l2_trades.csv', DB.toCSV(headers,rows)); });
 </script>
-</body></html>
+</body>
+</html>
