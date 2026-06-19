@@ -29,3 +29,16 @@ def test_score_window_in_sample_vs_oos():
     from optimize.l2 import engine
     full = engine.run_l2(r, dict(PERMISSIVE))
     assert s_in["n"] + s_oos["n"] == len(full.ledger)
+
+
+def test_run_small_study_smoke(tmp_path):
+    db = tmp_path / "l2v1_smoke.db"
+    res = l2opt.run(n_trials=3, study_prefix="l2v1smoke", seed=1, min_trades=1,
+                    storage_url=f"sqlite:///{db}")
+    assert res["n_trials"] >= 1
+    assert "champion" in res
+    if res["champion"] is not None:                # feasible winner found in the 8 trials
+        c = res["champion"]
+        assert {"pnl", "max_dd", "n", "win"} <= set(c["in_sample"])
+        assert {"pnl", "max_dd", "n", "win"} <= set(c["oos"])
+        assert "indicators" in c["params"] and c["params"]["ind_1min"] is True

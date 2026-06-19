@@ -3,10 +3,12 @@ full-period in-sample (2025) with an OOS holdout (2026) per spec option-3. Reuse
 sampler / indicator search space / feasibility constraint; persists under prefix l2v1."""
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
 import numpy as np
+import optuna
 
 _PI = Path(__file__).resolve().parents[2]
 if str(_PI) not in sys.path:
@@ -14,6 +16,7 @@ if str(_PI) not in sys.path:
 
 from optimize.l2 import engine, metrics, payload          # noqa: E402
 from optimize import optimizer as OPT                      # noqa: E402
+from optimize import storage as study_storage             # noqa: E402
 
 
 def WINDOWS(l1) -> dict:
@@ -46,3 +49,56 @@ def suggest_l2_params(trial, b: dict, cap: int) -> dict:
     return dict(sl_soft=sl_soft, sl_hard=sl_soft + delta, tp=tp, gate_pct=gate_pct,
                 dd_limit=dd_limit, cooldown=int(cooldown), flip=bool(flip), window="full",
                 indicators=specs, k=int(k_rule), ind_1min=True)
+
+
+def run(n_trials: int = 200, tf: str = "4h", study_prefix: str = "l2v1", seed: int = 1,
+        min_trades: int = 5, sampler: str = "nsga3", storage_url: str | None = None,
+        dd_pnl_cap: float = OPT.DD_PNL_CAP) -> dict:
+    """NSGA-III search over L2 profiles. Objective = (in-sample L2 P/L, -in-sample max_dd, win-rate)
+    with the DD<=dd_pnl_cap*P/L feasibility constraint; OOS (2026) is scored only for the champion."""
+    l1 = payload.run_l1_cached(tf)
+    w = WINDOWS(l1)
+    caps = OPT._load_json(OPT._CAPS); bounds = OPT._load_json(OPT._BOUNDS)
+    cap = int(caps[tf]["cooldown_cap"]); b = bounds[tf]
+    print(f"[l2:{tf}] in-sample bars {w['in']}  OOS {w['oos']}  trials={n_trials}  min_trades={min_trades}",
+          flush=True)
+
+    def objective(trial):
+        params = suggest_l2_params(trial, b, cap)
+        s = score_window(l1, params, *w["in"])
+        if s["n"] < min_trades:
+            raise optuna.TrialPruned()
+        pnl, dd, win = float(s["pnl"]), float(s["max_dd"]), float(s["win"])
+        trial.set_user_attr("in_pnl", pnl); trial.set_user_attr("in_dd", dd)
+        trial.set_user_attr("in_win", win); trial.set_user_attr("in_n", int(s["n"]))
+        trial.set_user_attr("params", json.dumps(params))
+        trial.set_user_attr("constraint", [float(dd - dd_pnl_cap * pnl)])   # feasible iff <= 0
+        return pnl, -dd, win
+
+    def _constraints(trial):
+        return trial.user_attrs.get("constraint", [1.0])
+
+    study_name = f"{study_prefix}_{tf}"
+    url = storage_url or study_storage.storage_url(OPT._db_for(tf, study_name))
+    storage = optuna.storages.RDBStorage(url=url, engine_kwargs=study_storage.engine_kwargs(url))
+    study = optuna.create_study(study_name=study_name, storage=storage,
+                                directions=["maximize", "maximize", "maximize"],
+                                sampler=OPT.make_sampler(sampler, seed, _constraints, n_objectives=3),
+                                load_if_exists=True)
+    import warnings; warnings.filterwarnings("ignore")
+    study.optimize(objective, n_trials=n_trials)
+
+    feasible = [t for t in study.trials
+                if t.values is not None and t.user_attrs.get("constraint", [1.0])[0] <= 0]
+    champion = None
+    if feasible:
+        best = max(feasible, key=lambda t: t.values[0])     # highest in-sample P/L among feasible
+        cp = json.loads(best.user_attrs["params"])
+        champion = {"params": cp,
+                    "in_sample": score_window(l1, cp, *w["in"]),
+                    "oos": score_window(l1, cp, *w["oos"])}
+        print(f"[l2:{tf}] champion in-sample P/L ${champion['in_sample']['pnl']:,.0f} "
+              f"(n={champion['in_sample']['n']}) -> OOS P/L ${champion['oos']['pnl']:,.0f} "
+              f"(n={champion['oos']['n']})", flush=True)
+    return {"study": study, "n_trials": len(study.trials), "n_feasible": len(feasible),
+            "champion": champion}
