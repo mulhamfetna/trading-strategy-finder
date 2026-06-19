@@ -42,3 +42,15 @@ def test_run_small_study_smoke(tmp_path):
         assert {"pnl", "max_dd", "n", "win"} <= set(c["in_sample"])
         assert {"pnl", "max_dd", "n", "win"} <= set(c["oos"])
         assert "indicators" in c["params"] and c["params"]["ind_1min"] is True
+
+
+def test_export_champion_writes_json(tmp_path):
+    champ = {"params": dict(PERMISSIVE),
+             "in_sample": {"pnl": 1.0, "max_dd": 2.0, "n": 3, "win": 50.0},
+             "oos": {"pnl": -1.0, "max_dd": 4.0, "n": 2, "win": 0.0}}
+    p = l2opt._export_champion(champ, "4h", tmp_path)
+    assert p.exists()
+    import json as _j
+    d = _j.loads(p.read_text())
+    assert d["tf"] == "4h" and d["in_sample"]["n"] == 3 and d["oos"]["pnl"] == -1.0
+    assert d["prefix"] == "l2v1" and d["params"]["tp"] == 120.2     # params round-trip intact
