@@ -1,0 +1,100 @@
+/* Shared dashboard styles — included by BOTH index.html (L1) and l2.html (L2).
+   Edit HERE to update both dashboards (DRY). TradingView palette mirrored from chart_theme.ts. */
+:root { --bg:#131722; --surface:#1e222d; --tile:#2a2e39; --border:#363a45; --text:#d1d4dc;
+        --muted:#787b86; --green:#00c853; --red:#ff5252; --blue:#2962ff; --orange:#ff9800; }
+* { box-sizing:border-box; }
+html,body { height:100%; margin:0; }
+body { background:var(--bg); color:var(--text); font:13px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; display:flex; flex-direction:column; }
+header { display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); background:var(--surface); padding:12px 16px; }
+header h1 { font-size:18px; font-weight:600; color:var(--blue); margin:0; }
+header p { font-size:11px; color:var(--muted); margin:2px 0 0; }
+.hdr-right { display:flex; align-items:center; gap:10px; }
+.dirty { font-size:11px; color:var(--muted); }
+.dirty.stale { color:var(--red); font-weight:700; }
+.dirty.ok { color:var(--green); }
+/* Run button doubles as a freshness signal: GREEN = results match the form; RED (pulsing) = the form
+   changed since the last run, so the results below are stale and a Run is needed. */
+button.run { border:0; border-radius:6px; background:var(--green); color:#fff; font-size:13px; font-weight:600; padding:9px 18px; cursor:pointer; transition:background .15s; }
+button.run:disabled { opacity:.5; cursor:wait; }
+button.run.stale { background:var(--red); animation:stalePulse 1.4s ease-in-out infinite; }
+@keyframes stalePulse { 0%,100%{ box-shadow:0 0 0 0 rgba(255,82,82,.55);} 50%{ box-shadow:0 0 0 6px rgba(255,82,82,0);} }
+button.ghost { border:1px solid var(--border); border-radius:6px; background:var(--tile); color:var(--text); font-size:12px; padding:8px 12px; cursor:pointer; }
+button.ghost:hover { border-color:var(--blue); }
+.body { display:flex; flex:1; overflow:hidden; }
+aside { width:340px; min-width:240px; max-width:760px; flex:none; overflow-y:auto; border-right:1px solid var(--border); background:var(--bg); padding:12px; }
+body.no-settings aside { display:none; }
+/* drag this to resize the settings panel; charts refit via the <main> ResizeObserver */
+#gutter { flex:none; width:6px; cursor:col-resize; background:var(--border); }
+#gutter:hover, #gutter.drag { background:var(--blue); }
+body.no-settings #gutter { display:none; }
+main { flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:12px; }
+/* settings panel */
+.sgroup { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 12px; margin-bottom:10px; }
+.sgroup h3 { font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:0 0 8px; }
+.fld { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:6px 0; }
+.fld label { font-size:12px; color:var(--text); flex:0 1 auto; }
+/* inputs FILL the right side of the row and grow with the (resizable) panel, so full numbers always
+   show — no clipping/wrapping. min-width keeps ~6 digits visible even at the narrowest panel width. */
+.fld input, .fld select { background:var(--tile); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:6px 8px; font-size:13px; flex:1 1 110px; min-width:96px; max-width:240px; width:auto; text-align:right; }
+.hint { font-size:10px; color:var(--muted); margin-top:-2px; }
+input.matherr { border-color:var(--red) !important; }   /* invalid inline-math expression */
+.resetlink { font-size:11px; color:var(--blue); cursor:pointer; background:none; border:0; padding:0; }
+/* a settings field disabled for this page (e.g. an L1 control L2 doesn't use) — greyed, not hidden */
+.fld.disabled { opacity:.4; } .fld.disabled input, .fld.disabled select { pointer-events:none; }
+/* metric cards */
+/* responsive: cards keep a consistent min width and WRAP into as many rows as the window allows
+   (6-across on a wide screen → 4/3/2-per-row as it narrows) instead of overflowing with a horizontal scroll */
+.cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 12px; }
+.card .v { font-size:20px; font-weight:600; } .card .k { font-size:10px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+/* full-width separator/header between metric-card groups (financials · streaks · totals · counts) */
+.cardgrp { grid-column:1 / -1; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); border-top:1px solid var(--border); padding-top:7px; margin-top:3px; }
+.pos { color:var(--green); } .neg { color:var(--red); }
+/* panels */
+.panel { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 10px 4px; }
+.panel h2 { font-size:12px; margin:0 0 4px; color:var(--muted); font-weight:600; }
+.csvbtn { float:right; font-size:10px; padding:1px 7px; cursor:pointer; }
+.profile-actions { display:flex; gap:8px; margin-bottom:10px; }
+.profile-actions .resetlink { flex:1; margin:0; text-align:center; }
+/* error banner — pinned across the very top of the page */
+#err { display:none; position:fixed; top:0; left:0; right:0; z-index:2000;
+       background:#3a0c12; border-bottom:2px solid #ff5252; color:#ff8a8a;
+       padding:10px 44px 10px 16px; font-size:13px; line-height:1.4; text-align:center;
+       box-shadow:0 2px 10px rgba(0,0,0,.45); }
+#err #errclose { position:absolute; right:10px; top:50%; transform:translateY(-50%);
+       background:none; border:none; color:#ff8a8a; font-size:16px; cursor:pointer; padding:0 6px; }
+#err #errclose:hover { color:#fff; }
+.legend { font-size:11px; color:var(--muted); } .sw{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin:0 3px 0 12px;}
+.chart { width:100%; }
+.twocol { display:flex; gap:12px; flex-wrap:wrap; } .twocol>.panel{flex:1 1 460px;}
+.log { height:300px; overflow:auto; font:11px/1.5 ui-monospace,Menlo,monospace; }
+.log .row { display:flex; gap:8px; padding:1px 4px; border-bottom:1px solid #20242f; }
+.log .t{color:var(--muted);white-space:nowrap;} .log .b{font-weight:700;width:60px;flex:none;}
+.ENTRY .b{color:var(--blue)} .WIN .b{color:var(--green)} .LOSS .b{color:var(--red)} .LOCK .b{color:var(--red)} .UNLOCK .b{color:var(--green)} .SKIP .b{color:var(--muted)}
+.NOENTRY .b{color:#e0a34a} .NOENTRY{opacity:.78}
+.WARMUP .b{color:#9aa0a6} .WARMUP{opacity:.8} .WARMED .b{color:var(--green)} .WARMED{opacity:.8}
+table{width:100%;border-collapse:collapse;font-size:11px;} th,td{padding:3px 6px;text-align:right;border-bottom:1px solid #20242f;white-space:nowrap;}
+th{position:sticky;top:0;background:#181c26;color:var(--muted);} td.l,th.l{text-align:left;}
+.tablewrap{height:300px;overflow:auto;}
+.note{color:var(--muted);font-size:11px;padding:0 4px 8px;}
+/* indicator panel (built from /api/config indicator_schema — nothing hardcoded) */
+.ind{border:1px solid var(--border);border-radius:6px;padding:6px 8px;margin:6px 0;background:var(--tile);}
+.ind .indhead{display:flex;align-items:center;justify-content:space-between;gap:6px;}
+.ind .indhead label{display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;}
+.ind .indbody{margin-top:6px;display:none;} .ind.on{border-color:var(--blue);} .ind.on .indbody{display:block;}
+.ind select,.ind input{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:5px;padding:3px 5px;font-size:12px;}
+.ind .fld{margin:4px 0;} .ind .fld input{flex:1 1 64px;min-width:60px;max-width:150px;width:auto;}
+/* paired-input rows (clip min/max, retrace+unit) also fill & split the row instead of fixed tiny boxes */
+.rrow{display:flex;gap:4px;align-items:center;justify-content:flex-end;flex:1 1 auto;max-width:240px;}
+.rrow input{flex:1 1 0;min-width:0;width:auto;}
+/* split long/short SL/TP — per-side sub-section heading (mode chosen via the SL/TP-mode dropdown) */
+.subhead{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:8px 0 2px;border-top:1px dashed var(--border);padding-top:6px;}
+/* separator between the SL/TP value boxes and the direction / on-veto controls */
+hr.sep{border:0;border-top:1px solid var(--border);margin:10px 0 8px;}
+.genrep{font:11px/1.6 ui-monospace,Menlo,monospace;color:var(--muted);} .genrep b{color:var(--text);}
+/* per-entry indicator vote chips (decision #1/#5 — every indicator's opinion, active or not) */
+.ind-chips{display:flex;flex-wrap:wrap;gap:4px;padding:1px 4px 4px 72px;border-bottom:1px solid #20242f;}
+.chip{font:10px/1.4 ui-monospace,Menlo,monospace;border:1px solid var(--border);border-radius:3px;padding:0 5px;}
+.chip.confirm{color:var(--green);border-color:rgba(0,200,83,.45);}
+.chip.veto{color:var(--red);border-color:rgba(255,82,82,.45);}
+.chip.neutral{color:var(--muted);} .chip.off{opacity:.38;}
