@@ -11,7 +11,7 @@
 <div id="err" role="alert"><span id="errmsg"></span><button id="errclose" title="dismiss" aria-label="dismiss">✕</button></div>
 <header>
   <div>
-    <h1>🍃→🔁 L2 Second-Layer Dashboard <a href="index.html" style="font-size:13px;color:#2962ff;text-decoration:none;margin-left:10px">← L1 backtest</a></h1>
+    <h1>🍃→🔁 L2 Second-Layer Dashboard <a href="index.html" style="font-size:13px;color:#2962ff;text-decoration:none;margin-left:10px">← L1 backtest</a><a href="combined.html" style="font-size:13px;color:#ff9800;text-decoration:none;margin-left:6px">⊕ Combined</a></h1>
     <p>manages L1's dropped (veto + vol-gate) signals · <span id="l1info" style="color:#9aa0aa"></span></p>
   </div>
   <div class="hdr-right">
@@ -92,7 +92,7 @@ function dedupe(a){const m={};a.forEach(p=>{if(p.value!=null)m[p.time]=p.value;}
 
 const cfg={
   endpoints:{config:'/api/l2_config', backtest:'/api/l2_backtest', profiles:'/api/l2_profiles'},
-  runLabel:'Run L2', warmupEndpoint:'/api/warmup', profileKey:'wsg_l2_profiles_v1',
+  runLabel:'Run L2', warmupEndpoint:'/api/warmup', profileKey:'wsg_l2_profiles_v1', autoFillSelected:true,
   panels:[
     {id:'price', height:430, build:c=>({
       candle:c.addCandlestickSeries({upColor:TH.green,downColor:TH.red,wickUpColor:TH.green,wickDownColor:TH.red,borderVisible:false}),

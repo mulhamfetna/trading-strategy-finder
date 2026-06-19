@@ -80,6 +80,49 @@ def test_build_l2_payload_permissive_matches_metrics():
     assert abs(t["tp_hard_line"] - (t["entry_price"] + 120.2)) < 1e-6
 
 
+def test_custom_l1_differs_from_frozen_and_is_memoised():
+    """run_l1_cached with a NON-lean L1 profile produces a different L1 book (proves L1 is editable),
+    and is memoised in-process by params-hash."""
+    frozen = payload.run_l1_cached("4h")
+    custom_params = {**payload.PERMISSIVE, "gate_pct": 50, "flip": True}
+    a = payload.run_l1_cached("4h", params=custom_params)
+    b = payload.run_l1_cached("4h", params=dict(custom_params))
+    assert a is b                                        # memoised by hash
+    assert a is not frozen
+    assert a.params != frozen.params                     # genuinely a different L1 profile
+
+
+def test_build_combined_payload_three_groups_and_labeled_ledger():
+    """Combined payload reports L1/L2/combined groups, a merged source-labeled ledger, and 3 equity series."""
+    l1p = payload.l1_default_params("4h")                 # best L1 = frozen lean champion
+    l2p = dict(payload.PERMISSIVE)
+    out = payload.build_combined_payload(l1p, l2p)
+    for key in ("meta", "candles", "l1_spans", "dropped",
+                "l1_trades", "l2_trades", "ledger", "l1_equity", "l2_equity", "combined_equity"):
+        assert key in out, key
+    s = out["meta"]["summary"]
+    assert set(s) == {"l1", "l2", "combined"}
+    assert round(s["l1"]["pnl"]) == 149989 and s["l1"]["n"] == 255   # L1 = lean champion book
+    # merged ledger = every L1 + L2 trade, each labeled, sorted by exit time
+    assert len(out["ledger"]) == len(out["l1_trades"]) + len(out["l2_trades"])
+    assert {r["layer"] for r in out["ledger"]} == {"L1", "L2"}
+    xs = [r["exit_time"] for r in out["ledger"]]
+    assert xs == sorted(xs)
+    assert sum(r["layer"] == "L1" for r in out["ledger"]) == 255
+
+
+def test_l1_default_params_is_lean_champion_schema():
+    p = payload.l1_default_params("4h")
+    assert p["window"] == "full" and p["ind_1min"] is True
+    assert isinstance(p["indicators"], list) and any(s.get("enabled") for s in p["indicators"])
+
+
+def test_save_and_load_l1_profile_roundtrips(tmp_path, monkeypatch):
+    monkeypatch.setattr(payload, "_L1_PROFILES", tmp_path / "l1_profiles.json")
+    profs = payload.save_l1_profile("leanish", dict(payload.PERMISSIVE))
+    assert "leanish" in profs and payload.load_l1_profiles()["leanish"]["tp"] == 120.2
+
+
 def test_derive_lines_short_mirrors_long():
     line = payload._derive_lines(
         {"entry_price": 1000.0, "direction": "short"},

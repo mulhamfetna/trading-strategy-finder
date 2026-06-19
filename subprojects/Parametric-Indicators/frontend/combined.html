@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Combined L1 + L2 Dashboard</title>
+<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+<link rel="stylesheet" href="dashboard_common.css">
+<style>
+  /* settings two-page nav (L1 / L2) + chart layer toggle — combined-page extras only */
+  .navtabs{display:flex;gap:6px;margin-bottom:10px;}
+  .navtab{flex:1;font-size:12px;font-weight:600;padding:7px 0;border:1px solid var(--border);border-radius:6px;
+          background:var(--surface);color:var(--muted);cursor:pointer;text-align:center;}
+  .navtab.on{color:#fff;border-color:var(--blue);background:var(--blue);}
+  .navtab.l2.on{background:var(--orange);border-color:var(--orange);}
+  .layerpane{display:none;} .layerpane.on{display:block;}
+  .segctl{display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-right:10px;}
+  .segctl button{border:0;background:var(--surface);color:var(--muted);font-size:12px;font-weight:600;padding:7px 12px;cursor:pointer;}
+  .segctl button.on{background:var(--blue);color:#fff;}
+  .layerbadge{font-weight:700;width:26px;display:inline-block;}
+  .L1 .layerbadge{color:var(--blue);} .L2 .layerbadge{color:var(--orange);}
+</style>
+</head>
+<body>
+<div id="err" role="alert"><span id="errmsg"></span><button id="errclose" title="dismiss" aria-label="dismiss">✕</button></div>
+<header>
+  <div>
+    <h1>🍃 + 🔁 Combined L1 + L2 Dashboard
+      <a href="index.html" style="font-size:13px;color:#2962ff;text-decoration:none;margin-left:10px">L1</a>
+      <a href="l2.html" style="font-size:13px;color:#ff9800;text-decoration:none;margin-left:6px">L2</a></h1>
+    <p>both layers run in parallel on the same data · every box / chart / log reports L1, L2 and the combined book</p>
+  </div>
+  <div class="hdr-right">
+    <span class="segctl" id="layerseg" title="show L1 only, L2 only, or both on all charts">
+      <button data-layer="both" class="on">Both</button><button data-layer="l1">L1</button><button data-layer="l2">L2</button></span>
+    <span class="dirty" id="dirty"></span>
+    <button class="ghost" id="toggle" title="Show/hide the settings panel">⚙ Hide settings</button>
+    <button class="run" id="run">Run combined</button>
+  </div>
+</header>
+
+<div class="body">
+  <aside>
+    <div class="navtabs">
+      <div class="navtab l1 on" id="tab_l1" data-pane="l1">🍃 L1 settings</div>
+      <div class="navtab l2" id="tab_l2" data-pane="l2">🔁 L2 settings</div>
+    </div>
+
+    <!-- ───────────────────────── L1 settings pane ───────────────────────── -->
+    <div class="layerpane on" id="pane_l1">
+      <div class="profile-actions">
+        <button class="resetlink" id="l1_reset" title="restore the selected L1 profile's values">↺ Reset to selected</button>
+        <button class="resetlink" id="l1_save" title="save the current L1 settings as a reusable profile">💾 Save L1 profile</button>
+      </div>
+      <div class="sgroup"><h3>L1 base (editable)</h3>
+        <div class="fld"><label>L1 profile</label><select id="l1_strategy" title="load an L1 profile"></select></div>
+        <div class="hint" id="l1info">the primary strategy · L2 manages the signals THIS L1 drops</div>
+        <div class="fld"><label>Indicators on 1-min</label><select id="l1_ind_1min"><option value="true">true (regime)</option><option value="false">false (decision TF)</option></select></div>
+      </div>
+      <div class="sgroup"><h3>Entry / exit (points)</h3>
+        <div class="fld"><label>SL soft</label><input id="l1_sl_soft" type="number" step="1" value="149.8"></div>
+        <div class="fld"><label>SL hard</label><input id="l1_sl_hard" type="number" step="1" value="167.1"></div>
+        <div class="fld"><label>Take-profit</label><input id="l1_tp" type="number" step="1" value="120.2"></div>
+        <hr class="sep">
+        <div class="fld"><label>Direction</label><select id="l1_flip"><option value="false">normal (box dir)</option><option value="true">flipped</option></select></div>
+      </div>
+      <div class="sgroup"><h3>Volatility gate</h3>
+        <div class="fld"><label>Gate percentile</label><input id="l1_gate_pct" type="number" step="1" value="0"></div></div>
+      <div class="sgroup"><h3>Drawdown circuit-breaker</h3>
+        <div class="fld"><label>Trigger ($)</label><input id="l1_dd_limit" type="number" step="100" value="0"></div>
+        <div class="fld"><label>Cooldown (trades)</label><input id="l1_cooldown" type="number" step="1" value="0"></div></div>
+      <div class="sgroup"><h3>Confirmation layer</h3>
+        <div class="fld"><label>K (min confirms)</label><input id="l1_k" type="number" step="1" min="1" value="1"></div></div>
+      <div class="sgroup"><h3>Indicators (L1)</h3><div id="l1_indpanel"><div class="hint">loading schema…</div></div></div>
+    </div>
+
+    <!-- ───────────────────────── L2 settings pane ───────────────────────── -->
+    <div class="layerpane" id="pane_l2">
+      <div class="profile-actions">
+        <button class="resetlink" id="l2_reset" title="restore the selected L2 profile's values">↺ Reset to selected</button>
+        <button class="resetlink" id="l2_save" title="save the current L2 settings as a reusable profile">💾 Save L2 profile</button>
+      </div>
+      <div class="sgroup"><h3>L2 layer (editable)</h3>
+        <div class="fld"><label>L2 profile</label><select id="l2_strategy" title="load an L2 profile"></select></div>
+        <div class="hint">acts only on L1's dropped (veto + vol-gate) signals while L1 is flat · L1 entering force-closes L2</div>
+        <div class="fld"><label>Indicators on 1-min</label><select id="l2_ind_1min"><option value="true">true (regime)</option><option value="false">false (decision TF)</option></select></div>
+      </div>
+      <div class="sgroup"><h3>Entry / exit (points)</h3>
+        <div class="fld"><label>SL soft</label><input id="l2_sl_soft" type="number" step="1" value="149.8"></div>
+        <div class="fld"><label>SL hard</label><input id="l2_sl_hard" type="number" step="1" value="167.1"></div>
+        <div class="fld"><label>Take-profit</label><input id="l2_tp" type="number" step="1" value="120.2"></div>
+        <hr class="sep">
+        <div class="fld"><label>Direction</label><select id="l2_flip"><option value="false">normal (box dir)</option><option value="true">flipped</option></select></div>
+      </div>
+      <div class="sgroup"><h3>Volatility gate</h3>
+        <div class="fld"><label>Gate percentile</label><input id="l2_gate_pct" type="number" step="1" value="0"></div></div>
+      <div class="sgroup"><h3>Drawdown circuit-breaker</h3>
+        <div class="fld"><label>Trigger ($)</label><input id="l2_dd_limit" type="number" step="100" value="0"></div>
+        <div class="fld"><label>Cooldown (trades)</label><input id="l2_cooldown" type="number" step="1" value="0"></div></div>
+      <div class="sgroup"><h3>Confirmation layer</h3>
+        <div class="fld"><label>K (min confirms)</label><input id="l2_k" type="number" step="1" min="1" value="1"></div></div>
+      <div class="sgroup"><h3>Indicators (L2)</h3><div id="l2_indpanel"><div class="hint">loading schema…</div></div></div>
+    </div>
+  </aside>
+  <div id="gutter" title="drag to resize the settings panel"></div>
+
+  <main>
+    <div class="cards" id="cards"></div>
+    <div class="panel">
+      <h2>Price · L1-flat shading · dropped signals · L1 &amp; L2 trades · exit lines
+        <span class="legend"><span class="sw" style="background:var(--blue)"></span>L1 trade
+        <span class="sw" style="background:var(--orange)"></span>L2 trade · square=dropped signal · circle=exit (L1=force-close)</span></h2>
+      <div id="price" class="chart" style="height:430px"></div>
+    </div>
+    <div class="panel">
+      <h2>Equity — <span style="color:var(--green)">combined (L1+L2)</span> · <span style="color:var(--blue)">L1-only</span> · <span style="color:var(--orange)">L2 standalone</span> ($, 1 contract)</h2>
+      <div id="equity" class="chart" style="height:220px"></div>
+    </div>
+    <div class="twocol">
+      <div class="panel"><h2>Combined trade ledger — every entry labeled L1 / L2
+        <button class="ghost csvbtn" id="dl_ledger" title="download combined ledger CSV (with layer column)">⬇ CSV</button></h2>
+        <div class="tablewrap"><table id="ledger"></table></div></div>
+      <div class="panel"><h2>Dropped signals <span id="dropinfo" class="legend"></span></h2>
+        <div class="tablewrap"><table id="dropped"></table></div></div>
+    </div>
+    <p class="note" id="status"></p>
+  </main>
+</div>
+
+<script src="dashboard_common.js"></script>
+<script>
+const TH=DB.TH, $=window.$;
+const LAYER_FIELDS=['sl_soft','sl_hard','tp','gate_pct','dd_limit','cooldown','k'];
+function dedupe(a){const m={};a.forEach(p=>{if(p.value!=null)m[p.time]=p.value;});return Object.keys(m).map(Number).sort((x,y)=>x-y).map(t=>({time:t,value:m[t]}));}
+
+// ── per-layer form read / write ──────────────────────────────────────────────
+function collectLayer(pfx){
+  const v=id=>$(pfx+'_'+id);
+  const o={indicators:DB.specsOf($(pfx+'_indpanel')), k:+v('k').value||1, gate_pct:+v('gate_pct').value,
+    sl_soft:+v('sl_soft').value, sl_hard:+v('sl_hard').value, tp:+v('tp').value,
+    dd_limit:+v('dd_limit').value, cooldown:+v('cooldown').value,
+    flip:v('flip').value==='true', ind_1min:v('ind_1min').value==='true'};
+  return o;
+}
+function setLayer(pfx,P){ if(!P)return;
+  LAYER_FIELDS.forEach(f=>{ if(P[f]!=null&&$(pfx+'_'+f)) $(pfx+'_'+f).value=P[f]; });
+  if($(pfx+'_flip')) $(pfx+'_flip').value=String(!!P.flip);
+  if($(pfx+'_ind_1min')) $(pfx+'_ind_1min').value=String(P.ind_1min!==false);
+  if(P.indicators) DB.applySpecsTo($(pfx+'_indpanel'),P.indicators);
+}
+
+// ── per-layer profile dropdown ───────────────────────────────────────────────
+const STORE={l1:{},l2:{}};
+function fillDropdown(pfx,profiles){
+  const sel=$(pfx+'_strategy'); STORE[pfx]={};
+  const names=Object.keys(profiles||{});
+  sel.innerHTML = names.length ? names.map(n=>{STORE[pfx][n]=profiles[n];return `<option value="${n}">👤 ${n}</option>`;}).join('')
+                               : '<option value="">(no saved profiles)</option>';
+}
+
+// ── charts ───────────────────────────────────────────────────────────────────
+let H={};
+function buildCharts(){
+  const price=DB.makeChart('price',430);
+  const equity=DB.makeChart('equity',220);
+  H={price:{chart:price, series:{
+      candle:price.addCandlestickSeries({upColor:TH.green,downColor:TH.red,wickUpColor:TH.green,wickDownColor:TH.red,borderVisible:false}),
+      shade:price.addLineSeries({color:'rgba(120,123,134,.25)',lineWidth:6,lastValueVisible:false,priceLineVisible:false,crosshairMarkerVisible:false}),
+      tp:price.addLineSeries({color:'rgba(0,200,83,.6)',lineWidth:1,lastValueVisible:false,priceLineVisible:false,crosshairMarkerVisible:false}),
+      sh:price.addLineSeries({color:'rgba(255,82,82,.6)',lineWidth:1,lastValueVisible:false,priceLineVisible:false,crosshairMarkerVisible:false}),
+      ss:price.addLineSeries({color:'rgba(255,152,0,.6)',lineWidth:1,lastValueVisible:false,priceLineVisible:false,crosshairMarkerVisible:false}),
+      mkr:price.addLineSeries({color:'rgba(0,0,0,0)',lastValueVisible:false,priceLineVisible:false}),
+    }},
+    equity:{chart:equity, series:{
+      l1:equity.addLineSeries({color:TH.blue,lineWidth:1}),
+      comb:equity.addLineSeries({color:TH.green,lineWidth:2}),
+      l2:equity.addLineSeries({color:TH.orange,lineWidth:1}),
+    }}};
+  // cross-chart time sync
+  let sy=false; [price,equity].forEach(s=>s.timeScale().subscribeVisibleTimeRangeChange(r=>{
+    if(sy||!r)return; sy=true; [price,equity].forEach(o=>{if(o!==s){try{o.timeScale().setVisibleRange(r);}catch(e){}}}); sy=false;}));
+}
+
+// ── layer toggle (L1 / L2 / both) applied to ALL charts, no re-fetch ──────────
+let LAYER='both';
+function lineFor(trades){ const tp=[],sh=[],ss=[]; (trades||[]).forEach(t=>{
+  tp.push({time:t.entry_time,value:t.tp_hard_line},{time:t.exit_time,value:t.tp_hard_line},{time:t.exit_time+1});
+  sh.push({time:t.entry_time,value:t.sl_hard_line},{time:t.exit_time,value:t.sl_hard_line},{time:t.exit_time+1});
+  ss.push({time:t.entry_time,value:t.sl_soft_line},{time:t.exit_time,value:t.sl_soft_line},{time:t.exit_time+1});}); return {tp,sh,ss}; }
+function markFor(trades,layer){ const m=[]; (trades||[]).forEach(t=>{
+  const col=layer==='L1'?TH.blue:TH.orange, opp=t.l2_dir_vs_box==='oppose';
+  m.push({time:t.entry_time,position:t.direction==='long'?'belowBar':'aboveBar',color:opp?'#b25b00':col,
+          shape:t.direction==='long'?'arrowUp':'arrowDown',text:layer+(opp?' opp':'')});
+  m.push({time:t.exit_time,position:'inBar',color:t.exit_reason==='L1-entry'?TH.muted:(t.pnl>0?TH.green:TH.red),
+          shape:'circle',text:t.exit_reason==='L1-entry'?'L1':''}); }); return m; }
+function applyLayer(){
+  const D=window.LAST_DATA; if(!D)return; const ps=H.price.series, es=H.equity.series;
+  const showL1=LAYER!=='l2', showL2=LAYER!=='l1';
+  // price markers
+  let mks=[];
+  (D.dropped||[]).forEach(d=>{ if(showL1) mks.push({time:d.time,position:'aboveBar',shape:'square',
+    color:(d.reason==='veto'?'rgba(255,152,0,':'rgba(41,98,255,')+(d.l1_flat?'.9)':'.3)')}); });
+  if(showL1) mks=mks.concat(markFor(D.l1_trades,'L1'));
+  if(showL2) mks=mks.concat(markFor(D.l2_trades,'L2'));
+  mks.sort((a,b)=>a.time-b.time); ps.mkr.setMarkers(mks);
+  // exit lines = union of active layers' trades
+  let lt=[]; if(showL1) lt=lt.concat(D.l1_trades||[]); if(showL2) lt=lt.concat(D.l2_trades||[]);
+  const L=lineFor(lt); try{ps.tp.setData(dedupe(L.tp));ps.sh.setData(dedupe(L.sh));ps.ss.setData(dedupe(L.ss));}catch(e){}
+  // equity: combined always visible; L1/L2 gated by toggle
+  es.l1.applyOptions({visible:showL1}); es.l2.applyOptions({visible:showL2});
+}
+
+// ── render ────────────────────────────────────────────────────────────────────
+function grp(t){return `<div class="cardgrp">${t}</div>`;}
+function metricCards(s){ return DB.card(s.n,'trades')+DB.card(DB.money(s.pnl),'P/L',s.pnl>=0?'pos':'neg')+
+  DB.card('$'+Math.round(s.max_dd).toLocaleString(),'max drawdown','neg')+
+  DB.card((s.win!=null?s.win+'%':'—'),'win rate')+DB.card(s.pf??'—','profit factor'); }
+function render(D){
+  const s=D.meta.summary, ps=H.price.series, es=H.equity.series;
+  $('cards').innerHTML=
+    grp('🍃 L1 alone')+metricCards(s.l1)+
+    grp('🔁 L2 alone')+metricCards(s.l2)+DB.card(s.l2.n_l1_entry_exits,'L1-entry force-closes')+
+    grp('Σ combined book (L1 + L2)')+
+    DB.card(DB.money(s.combined.pnl),'combined P/L',s.combined.pnl>=0?'pos':'neg')+
+    DB.card('$'+Math.round(s.combined.max_dd).toLocaleString(),'combined max DD')+
+    DB.card('$'+Math.round(s.combined.l1_only_dd).toLocaleString(),'L1-only DD')+
+    DB.card(DB.money(s.combined.pnl-s.l1.pnl),'uplift vs L1',(s.combined.pnl-s.l1.pnl)>=0?'pos':'neg')+
+    DB.card(s.combined.dd_not_worse?'OK':'+DD','DD vs L1-alone',s.combined.dd_not_worse?'pos':'neg');
+  ps.candle.setData(D.candles);
+  const hi=D.candles.length?Math.max(...D.candles.map(c=>c.high)):0;
+  const shade=[]; (D.l1_spans||[]).forEach(sp=>{shade.push({time:sp.from,value:hi},{time:sp.to,value:hi},{time:sp.to+1});});
+  try{ps.shade.setData(dedupe(shade));}catch(e){}
+  ps.mkr.setData(D.candles.map(c=>({time:c.time,value:c.close})));
+  es.l1.setData(D.l1_equity||[]); es.comb.setData(D.combined_equity||[]); es.l2.setData(D.l2_equity||[]);
+  applyLayer(); DB.fitCharts();
+  // combined ledger (source-labeled)
+  const cols=[['layer','src','l'],['entry_time','entry','l'],['exit_time','exit','l'],['direction','dir','l'],['exit_reason','reason','l'],['pnl','P/L']];
+  let h='<thead><tr>'+cols.map(c=>`<th class="${c[2]||''}">${c[1]}</th>`).join('')+'</tr></thead><tbody>';
+  (D.ledger||[]).forEach(t=>{h+=`<tr class="${t.layer}">`+cols.map(c=>{let v=t[c[0]];
+    if(c[0]==='layer')return `<td class="l"><span class="layerbadge">${v}</span></td>`;
+    if(c[0]==='entry_time'||c[0]==='exit_time')v=DB.dt(v);
+    if(c[0]==='pnl')return `<td class="${t.pnl>0?'pos':'neg'}">${Math.round(v).toLocaleString()}</td>`;
+    return `<td class="${c[2]||''}">${v}</td>`;}).join('')+'</tr>';});
+  $('ledger').innerHTML=h+'</tbody>';
+  const dc=D.meta.dropped_counts; $('dropinfo').textContent=`${dc.total} total · ${dc.veto} veto · ${dc.vol_gate} vol-gate · ${dc.flat_candidates} flat`;
+  let dh='<thead><tr><th class="l">time</th><th class="l">reason</th><th class="l">box dir</th><th>L1 flat</th></tr></thead><tbody>';
+  (D.dropped||[]).forEach(d=>{dh+=`<tr><td class="l">${DB.dt(d.time)}</td><td class="l">${d.reason}</td><td class="l">${d.box_dir}</td><td>${d.l1_flat?'yes':'no'}</td></tr>`;});
+  $('dropped').innerHTML=dh+'</tbody>';
+  DB.status(`L1 ${D.l1_trades.length} · L2 ${D.l2_trades.length} trades`);
+}
+
+// ── run ────────────────────────────────────────────────────────────────────────
+async function run(){
+  const rb=$('run'); rb.disabled=true; rb.textContent='Running...'; DB.status('running…'); DB.showErr('');
+  try{
+    DB.commitMath();
+    const r=await fetch('/api/combined_backtest',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({l1:collectLayer('l1'), l2:collectLayer('l2'), tf:'4h'})});
+    let D=null; try{D=await r.json();}catch(_){}
+    if(!r.ok) throw new Error((D&&D.error)?D.error:('HTTP '+r.status));
+    if(D&&D.error) throw new Error(D.error);
+    window.LAST_DATA=D; render(D); DB.markClean();
+    DB.status(`✓ done${D.meta.run_ms?' in '+D.meta.run_ms+' ms':''} · L1 ${D.l1_trades.length} · L2 ${D.l2_trades.length} trades`);
+  }catch(e){
+    const conn=/Failed to fetch|NetworkError|fetch/i.test(e.message);
+    DB.showErr(conn?'Cannot reach backend — start server.py then reload.':`Rejected: ${e.message}`); DB.status('⚠ see error above');
+  }finally{ rb.disabled=false; rb.textContent='Run combined'; }
+}
+
+// ── profile save (per layer) ─────────────────────────────────────────────────
+async function saveLayer(pfx){
+  const name=(prompt(`Save current ${pfx.toUpperCase()} settings as profile named:`,'my profile')||'').trim(); if(!name)return;
+  const ep=pfx==='l1'?'/api/l1_profiles':'/api/l2_profiles';
+  try{
+    const r=await fetch(ep,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,preset:collectLayer(pfx)})});
+    let d=null; try{d=await r.json();}catch(_){}
+    if(!r.ok) throw new Error((d&&d.error)||('HTTP '+r.status));
+    fillDropdown(pfx,d.profiles); $(pfx+'_strategy').value=name; DB.status(`saved “${name}” (${pfx.toUpperCase()})`);
+  }catch(e){ DB.showErr(`Save failed (${pfx.toUpperCase()}): ${e.message}`); }
+}
+
+// ── boot ───────────────────────────────────────────────────────────────────────
+(async function(){
+  buildCharts();
+  window.addEventListener('resize',DB.fitCharts);
+  const mainEl=document.querySelector('main'); if(window.ResizeObserver&&mainEl) new ResizeObserver(DB.fitCharts).observe(mainEl);
+  // settings nav
+  document.querySelectorAll('.navtab').forEach(t=>t.addEventListener('click',()=>{
+    document.querySelectorAll('.navtab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.layerpane').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on'); $('pane_'+t.dataset.pane).classList.add('on'); DB.fitCharts(); }));
+  // chart layer toggle
+  $('layerseg').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+    $('layerseg').querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); LAYER=b.dataset.layer; applyLayer(); }));
+  // header controls
+  $('run').addEventListener('click',run);
+  $('errclose').addEventListener('click',()=>DB.showErr(''));
+  $('toggle').addEventListener('click',()=>{const h=document.body.classList.toggle('no-settings'); $('toggle').textContent=h?'⚙ Show settings':'⚙ Hide settings'; requestAnimationFrame(DB.fitCharts);});
+  ['l1','l2'].forEach(pfx=>{
+    $(pfx+'_strategy').addEventListener('change',()=>{const p=STORE[pfx][$(pfx+'_strategy').value]; if(p){setLayer(pfx,p); DB.markDirty(); DB.status(`imported ${pfx.toUpperCase()} profile — click Run`);}});
+    $(pfx+'_reset').addEventListener('click',()=>{const p=STORE[pfx][$(pfx+'_strategy').value]; if(p){setLayer(pfx,p); DB.markDirty();}});
+    $(pfx+'_save').addEventListener('click',()=>saveLayer(pfx));
+  });
+  document.querySelectorAll('aside input,aside select').forEach(el=>el.addEventListener('input',DB.markDirty));
+  DB.mathify(document.querySelector('aside'));
+  // config: build both indicator panels, fill both dropdowns, default to best L1 + best L2
+  try{
+    const r=await fetch('/api/combined_config'); if(!r.ok) throw new Error('config HTTP '+r.status);
+    const c=await r.json();
+    DB.buildPanel($('l1_indpanel'),c.indicator_schema,DB.markDirty);
+    DB.buildPanel($('l2_indpanel'),c.indicator_schema,DB.markDirty);
+    // profile dropdowns: include the "best" default as the first, pre-selected entry
+    fillDropdown('l1',{[c.l1_label||'L1 champion']:c.l1_default, ...(c.l1_profiles||{})});
+    fillDropdown('l2',{[c.l2_label||'L2 champion']:c.l2_default, ...(c.l2_profiles||{})});
+    setLayer('l1',c.l1_default); setLayer('l2',c.l2_default);
+    DB.mathify(document.querySelector('aside'));
+    DB.markDirty(); DB.status('ready · best L1 + best L2 loaded · click Run combined');
+  }catch(e){ DB.markDirty(); DB.showErr(`Cannot reach backend — start server.py then reload. (${e.message})`); }
+})();
+
+// CSV: combined ledger with the layer column kept (so L1/L2 separate easily in a spreadsheet)
+$('dl_ledger').addEventListener('click',()=>{ const D=window.LAST_DATA; if(!D||!D.ledger||!D.ledger.length){DB.status('no trades — run first');return;}
+  const headers=['layer','entry','exit','direction','exit_reason','pnl','entry_price','exit_price'];
+  const rows=D.ledger.map(t=>[t.layer,DB.dt(t.entry_time),DB.dt(t.exit_time),t.direction,t.exit_reason,t.pnl,t.entry_price,t.exit_price]);
+  DB.downloadCSV('combined_ledger.csv',DB.toCSV(headers,rows)); });
+</script>
+</body>
+</html>

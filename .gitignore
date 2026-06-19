@@ -50,6 +50,8 @@ htmlcov/
 dashboard_*.html
 !subprojects/signals/stage1_0_reverse_signals/dashboard/*.html
 !subprojects/Parametric-Indicators/frontend/index.html
+!subprojects/Parametric-Indicators/frontend/l2.html
+!subprojects/Parametric-Indicators/frontend/combined.html
 
 # OS
 .DS_Store

@@ -1,13 +1,14 @@
 # Dashboards — shared module convention
 
-Two dashboards, **one shared codebase** so changes hit both:
+Three dashboards, **one shared codebase** so changes hit all of them:
 
 | File | Role |
 |---|---|
 | `dashboard_common.css` | **All** dashboard styling (theme, settings panel, cards, panels, charts, log, tables, indicator panel). |
-| `dashboard_common.js` | The shared engine: `DB.initDashboard(cfg)` + helpers (chart scaffolding + time-sync + resize, gutter, inline-math, indicator panel + warmup, strategy dropdown, profile save, CSV, dirty/error, run/reset/boot). |
+| `dashboard_common.js` | The shared engine: `DB.initDashboard(cfg)` + helpers (chart scaffolding + time-sync + resize, gutter, inline-math, indicator panel + warmup, strategy dropdown, profile save, CSV, dirty/error, run/reset/boot). Panel-scoped indicator helpers `DB.buildPanel(host, schema, onChange)` / `DB.specsOf(host)` / `DB.applySpecsTo(host, specs)` let a page build **multiple** indicator panels (combined.html builds two); the single-panel path delegates to them. `cfg.autoFillSelected` makes the boot fill the form from the selected saved profile. |
 | `index.html` | **L1** backtest dashboard. Uses `dashboard_common.css`. (Its JS is still the original inline script — a follow-up will migrate it onto `DB.initDashboard`; tracked below.) |
-| `l2.html` | **L2** second-layer dashboard. A thin page: skeleton + a `cfg` object (endpoints, chart panels, `params()`/`setForm()`/`render()`/`onConfig()`) → `DB.initDashboard(cfg)`. |
+| `l2.html` | **L2** second-layer dashboard. A thin page: skeleton + a `cfg` object → `DB.initDashboard(cfg)`. |
+| `combined.html` | **L1 + L2 combined** dashboard. Runs both layers in parallel (`/api/combined_backtest`); two editable forms behind a settings nav, 3 box groups (L1 / L2 / combined), an L1‖L2‖Both chart toggle, and a source-labeled merged ledger. Uses the shared CSS + `DB.*` helpers with its own dual-form boot (the single-form `initDashboard` doesn't fit two forms). |
 
 ## The rule (update both at once)
 - **Styling / shared widgets / shared behavior** → edit `dashboard_common.{css,js}` **only**. Both dashboards pick it up (the server serves static files fresh per request — just reload the page, no restart).

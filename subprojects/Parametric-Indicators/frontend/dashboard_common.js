@@ -89,8 +89,10 @@
       } catch (e) { $('fp_heavy').textContent = 'warmup calc failed'; }
     }, 250);
   }
-  function buildIndicatorPanel(sch) {
-    const host = $('indpanel'); if (!host) return; host.innerHTML = '';
+  // panel-scoped builder — works on ANY host element (the combined dashboard builds two: L1 + L2).
+  // onChange (optional) fires on any input; the default single-panel path passes markDirty+warmup.
+  function buildPanel(host, sch, onChange) {
+    if (!host) return; host.innerHTML = '';
     const modeOpts = sel => sch.modes.map(m => `<option ${m === sel ? 'selected' : ''}>${m}</option>`).join('');
     sch.indicators.forEach(ind => {
       const div = document.createElement('div'); div.className = 'ind'; div.dataset.key = ind.key;
@@ -100,30 +102,40 @@
       host.appendChild(div);
       const en = div.querySelector('.ind-en'); en.addEventListener('change', () => div.classList.toggle('on', en.checked));
     });
-    if ($('g_retrace_unit') && sch.retrace_units) { $('g_retrace_unit').innerHTML = sch.retrace_units.map(u => `<option ${u === sch.retrace_default.unit ? 'selected' : ''}>${u}</option>`).join('');
-      $('g_retrace').value = sch.retrace_default.amount; $('g_wait').value = sch.wait_default; }
-    if ($('k_rule')) $('k_rule').value = sch.k_default;
-    if (sch.gen_params && $('gen_swing_l')) { const g = {}; sch.gen_params.forEach(p => g[p.name] = p.default); $('gen_swing_l').value = g.swing_l; $('gen_golf_n').value = g.golf_n; }
-    host.querySelectorAll('input,select').forEach(el => { el.addEventListener('input', markDirty); el.addEventListener('change', recomputeWarmup); });
-    mathify(host); panelBuilt = true; recomputeWarmup();
+    if (onChange) host.querySelectorAll('input,select').forEach(el => { el.addEventListener('input', onChange); el.addEventListener('change', onChange); });
+    mathify(host);
   }
-  function indicatorSpecs() {
-    const specs = [];
-    document.querySelectorAll('#indpanel .ind').forEach(el => {
+  // read/write specs for a given host (default = the page's single #indpanel).
+  function specsOf(host) {
+    host = host || $('indpanel'); const specs = [];
+    (host ? host.querySelectorAll('.ind') : []).forEach(el => {
       const p = {}; el.querySelectorAll('.ind-p').forEach(i => p[i.dataset.p] = +i.value);
       specs.push({ key: el.dataset.key, enabled: el.querySelector('.ind-en').checked, mode: el.querySelector('.ind-mode').value, params: p });
     });
     return specs;
   }
-  function applyIndicatorSpecs(specs) {
-    if (!specs || !specs.length) return; const by = {}; specs.forEach(s => by[s.key] = s);
-    document.querySelectorAll('#indpanel .ind').forEach(el => {
+  function applySpecsTo(host, specs) {
+    if (!specs || !specs.length || !host) return; const by = {}; specs.forEach(s => by[s.key] = s);
+    host.querySelectorAll('.ind').forEach(el => {
       const s = by[el.dataset.key]; if (!s) return;
       const en = el.querySelector('.ind-en'); en.checked = !!s.enabled; el.classList.toggle('on', !!s.enabled);
       if (s.mode) el.querySelector('.ind-mode').value = s.mode;
       el.querySelectorAll('.ind-p').forEach(i => { if (s.params && s.params[i.dataset.p] != null) i.value = s.params[i.dataset.p]; });
     });
   }
+
+  // single-panel path (index.html / l2.html): delegates to the host-scoped helpers above (DRY).
+  function buildIndicatorPanel(sch) {
+    const host = $('indpanel'); if (!host) return;
+    buildPanel(host, sch, () => { markDirty(); recomputeWarmup(); });
+    if ($('g_retrace_unit') && sch.retrace_units) { $('g_retrace_unit').innerHTML = sch.retrace_units.map(u => `<option ${u === sch.retrace_default.unit ? 'selected' : ''}>${u}</option>`).join('');
+      $('g_retrace').value = sch.retrace_default.amount; $('g_wait').value = sch.wait_default; }
+    if ($('k_rule')) $('k_rule').value = sch.k_default;
+    if (sch.gen_params && $('gen_swing_l')) { const g = {}; sch.gen_params.forEach(p => g[p.name] = p.default); $('gen_swing_l').value = g.swing_l; $('gen_golf_n').value = g.golf_n; }
+    panelBuilt = true; recomputeWarmup();
+  }
+  const indicatorSpecs = () => specsOf($('indpanel'));
+  const applyIndicatorSpecs = specs => applySpecsTo($('indpanel'), specs);
 
   // ── CSV helpers ──────────────────────────────────────────────────────────────────────────────
   function csvEsc(v) { v = (v == null ? '' : String(v)); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
@@ -191,6 +203,12 @@
       if (c.strategies && c.strategies.length) { window.SERVER_STRATEGIES = c.strategies; buildStrategyDropdown(cfg); }
       const def = cfg.onConfig ? cfg.onConfig(c) : null;
       if (def) cfg.setForm(def);
+      // auto-fill the form from the currently-selected saved profile so its values are visible on load
+      // (fixes "imported profile doesn't fill the boxes"). Opt-in per page via cfg.autoFillSelected.
+      else if (cfg.autoFillSelected && $('strategy')) {
+        const p = window.STRATEGIES && window.STRATEGIES[$('strategy').value];
+        if (p) cfg.setForm(p);
+      }
       if (window.WINNER_DATA && cfg.render) { cfg.render(window.WINNER_DATA, cfg.handles); status('showing last saved run · Run for a live run'); }
       else { markDirty(); status('ready · click Run'); }
     } catch (e) { markDirty(); showErr(`Cannot reach backend — start server.py then reload. (${e.message})`); }
@@ -216,5 +234,5 @@
 
   window.DB = { TH, COMMON, dt, money, card, makeChart, fitCharts, mathify, commitMath, showErr,
     markDirty, markClean, indicatorSpecs, applyIndicatorSpecs, recomputeWarmup, buildStrategyDropdown,
-    toCSV, downloadCSV, initDashboard, status };
+    buildPanel, specsOf, applySpecsTo, toCSV, downloadCSV, initDashboard, status };
 })();

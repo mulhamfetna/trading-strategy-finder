@@ -45,3 +45,36 @@ def test_l2_routes_smoke():
             assert e.code == 400
     finally:
         srv.shutdown()
+
+
+def test_combined_routes_smoke():
+    srv, port = _serve()
+    try:
+        cfg = json.loads(urllib.request.urlopen(f"http://127.0.0.1:{port}/api/combined_config").read())
+        for k in ("indicator_schema", "l1_default", "l2_default"):
+            assert k in cfg, k
+
+        # combined backtest with the best-L1 + best-L2 defaults: 3 metric groups + labeled merged ledger
+        out = json.loads(_post(port, "/api/combined_backtest",
+                               {"l1": cfg["l1_default"], "l2": cfg["l2_default"], "tf": "4h"}).read())
+        s = out["meta"]["summary"]
+        assert set(s) == {"l1", "l2", "combined"}
+        assert s["l1"]["n"] == 255                                  # L1 = the lean champion book
+        assert len(out["ledger"]) == len(out["l1_trades"]) + len(out["l2_trades"])
+        assert {r["layer"] for r in out["ledger"]} == {"L1", "L2"}
+        assert "run_ms" in out["meta"]
+
+        # editing L1 must change the L1 book (proves L1 is editable end-to-end)
+        flipped = {**cfg["l1_default"], "flip": not cfg["l1_default"]["flip"]}
+        out2 = json.loads(_post(port, "/api/combined_backtest",
+                                {"l1": flipped, "l2": cfg["l2_default"]}).read())
+        assert out2["meta"]["summary"]["l1"]["pnl"] != s["l1"]["pnl"]
+
+        try:
+            _post(port, "/api/combined_backtest",
+                  {"l1": {**cfg["l1_default"], "gate_pct": 150}, "l2": cfg["l2_default"]})
+            assert False, "expected 400"
+        except urllib.error.HTTPError as e:
+            assert e.code == 400
+    finally:
+        srv.shutdown()

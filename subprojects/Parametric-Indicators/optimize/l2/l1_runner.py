@@ -106,8 +106,11 @@ class L1Result:
     state_timeline: np.ndarray  # bool, True = L1 in-position
 
 
-def run_l1(tf: str = "4h") -> L1Result:
-    params = _lean_params(tf)
+def run_l1(tf: str = "4h", params: dict | None = None) -> L1Result:
+    """params=None → the FROZEN lean champion (default; golden + disk-cache stay valid). Pass a dict to
+    run an ARBITRARY L1 profile (combined dashboard: L1 editable) — same engine, same schema as L2
+    (sl_soft/sl_hard/tp/gate_pct/dd_limit/cooldown/flip/k/ind_1min/indicators)."""
+    params = _lean_params(tf) if params is None else dict(params)
     df_dec, df1, box, vf, n_split = data_mod.load_inputs(tf)
     bar_td = TF.get(tf).bar_td
     n = len(df_dec)
