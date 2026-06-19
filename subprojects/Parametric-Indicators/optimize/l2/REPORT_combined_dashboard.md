@@ -34,7 +34,7 @@ identical and `metrics.score()` runs on either ledger.
 | # | Requirement | Where |
 |---|---|---|
 | 1 | **Apply both profiles in parallel**, report dual | `build_combined_payload(l1_params, l2_params)` → `summary = {l1, l2, combined}` |
-| 2 | **Boxes in 3 groups** — L1 alone / L2 alone / combined | `#cards` renders `🍃 L1 alone`, `🔁 L2 alone`, `Σ combined book` group headers |
+| 2 | **Boxes in 3 groups** — L1 alone / L2 alone / combined | `#cards` renders the 3 groups. **The L1 group is the standalone L1 dashboard's COMPLETE box set, copied verbatim** — financials (P/L, max DD, win, PF), streaks (no-entry streak, box-silence, position-hold, gate non-entry, indicator non-entry), totals (cumulative candle counts for the same five), counts (trades+exposure, breaker locks, warmup, longest indicator requirement). L2 group = the L2 dashboard's L2-standalone boxes + dropped counts + warmup. Combined = combined P/L, max DD, L1-only DD, uplift, DD guardrail. |
 | 3 | **Charts full L1+L2, with a button to gray out L1 / L2 / both** | `Both ‖ L1 ‖ L2` segmented toggle in the header → `applyLayer()` re-draws markers/lines + equity series visibility for ALL charts, no re-fetch |
 | 4 | **Settings panel = two pages (L1 / L2) with a nav bar** | `.navtabs` (🍃 L1 settings ‖ 🔁 L2 settings) switch `.layerpane`s; each is a full form + profile dropdown + indicator panel |
 | 5 | **Logs label every entry L1 / L2, separable in the CSV** | merged `ledger` carries a `layer` column; the table shows an L1/L2 badge; `combined_ledger.csv` keeps the `layer` column as the first field |

@@ -103,6 +103,17 @@ def test_build_combined_payload_three_groups_and_labeled_ledger():
     s = out["meta"]["summary"]
     assert set(s) == {"l1", "l2", "combined"}
     assert round(s["l1"]["pnl"]) == 149989 and s["l1"]["n"] == 255   # L1 = lean champion book
+    # L1 group must carry the FULL box set the standalone L1 dashboard shows (financials+streaks+totals+counts)
+    for k in ("n_taken", "n_candidates", "exposure", "n_locks",
+              "noentry_streak_n", "noentry_streak_days", "box_silence", "position_hold",
+              "gate_noentry", "indicator_noentry", "noentry_total", "box_silence_total",
+              "position_hold_total", "gate_noentry_total", "indicator_noentry_total"):
+        assert k in s["l1"], f"L1 group missing box: {k}"
+    # totals invariant: noentry == box-silence + gate + indicator (mutually exclusive per bar)
+    L1 = s["l1"]
+    assert L1["noentry_total"]["bars"] == (L1["box_silence_total"]["bars"]
+                                           + L1["gate_noentry_total"]["bars"]
+                                           + L1["indicator_noentry_total"]["bars"])
     # merged ledger = every L1 + L2 trade, each labeled, sorted by exit time
     assert len(out["ledger"]) == len(out["l1_trades"]) + len(out["l2_trades"])
     assert {r["layer"] for r in out["ledger"]} == {"L1", "L2"}

@@ -104,6 +104,9 @@ class L1Result:
     cause: np.ndarray      # per-bar attribution (object array; cause[0] is None)
     dropped_signals: list  # [{idx, ts, box_dir, reason}] for veto + vol_gate only
     state_timeline: np.ndarray  # bool, True = L1 in-position
+    n_candidates: int = 0       # pre-breaker candidate trades (for exposure %)
+    n_skipped_breaker: int = 0  # candidates the breaker skipped
+    n_locks: int = 0            # number of breaker lock events
 
 
 def run_l1(tf: str = "4h", params: dict | None = None) -> L1Result:
@@ -151,4 +154,5 @@ def run_l1(tf: str = "4h", params: dict | None = None) -> L1Result:
 
     return L1Result(tf=tf, params=params, df_dec=df_dec, df1=df1, box=box, vf=vf, n_split=n_split,
                     bar_td=bar_td, sig_int=sig_int, vol_gate=vol_gate, veto=veto, confirm=confirm,
-                    ledger=taken, cause=cause, dropped_signals=dropped, state_timeline=state_timeline)
+                    ledger=taken, cause=cause, dropped_signals=dropped, state_timeline=state_timeline,
+                    n_candidates=len(cand), n_skipped_breaker=_skipped, n_locks=_locks)

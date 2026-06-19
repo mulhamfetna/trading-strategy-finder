@@ -158,6 +158,20 @@ function fillDropdown(pfx,profiles){
                                : '<option value="">(no saved profiles)</option>';
 }
 
+// ── per-layer warmup boxes (same /api/warmup the L1/L2 dashboards use) ────────
+function fmtDur(c){const m=Math.round(c),h=Math.floor(m/60),mm=m%60;return h?`${h}h ${mm}m`:`${mm}m`;}
+const _warmTimers={};
+function warmup(pfx){ clearTimeout(_warmTimers[pfx]); _warmTimers[pfx]=setTimeout(async()=>{
+  const w=$('fp_warm_'+pfx),hv=$('fp_heavy_'+pfx); if(!w||!hv)return;
+  try{
+    const r=await fetch('/api/warmup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({indicators:DB.specsOf($(pfx+'_indpanel'))})});
+    const d=await r.json();
+    if(d.error){w.textContent='—';hv.textContent='(check params)';return;}
+    w.textContent=d.max_bars?`${d.max_bars.toLocaleString()} candles · ${fmtDur(d.max_bars)}`:'no indicators on';
+    hv.textContent=d.driver?`${d.driver.label} — ${d.driver.bars.toLocaleString()} candles · ${fmtDur(d.driver.bars)}`:'—';
+  }catch(e){hv.textContent='warmup calc failed';}
+},250); }
+
 // ── charts ───────────────────────────────────────────────────────────────────
 let H={};
 function buildCharts(){
@@ -212,20 +226,49 @@ function applyLayer(){
 
 // ── render ────────────────────────────────────────────────────────────────────
 function grp(t){return `<div class="cardgrp">${t}</div>`;}
-function metricCards(s){ return DB.card(s.n,'trades')+DB.card(DB.money(s.pnl),'P/L',s.pnl>=0?'pos':'neg')+
-  DB.card('$'+Math.round(s.max_dd).toLocaleString(),'max drawdown','neg')+
-  DB.card((s.win!=null?s.win+'%':'—'),'win rate')+DB.card(s.pf??'—','profit factor'); }
+const durc=d=>d?(d.bars+'c · '+d.days+'d'):'—';
+// L1 group = EVERY box the standalone L1 dashboard shows (financials · streaks · totals · counts)
+function l1Cards(S){ return (
+  grp('🍃 L1 — financials')+
+  DB.card(DB.money(S.pnl),'total P/L',S.pnl>=0?'pos':'neg')+
+  DB.card('$'+Math.round(S.max_dd).toLocaleString(),'max drawdown','neg')+
+  DB.card(S.win+'%','win rate')+DB.card(S.pf??'—','profit factor')+
+  grp('🍃 L1 — streaks · longest consecutive run')+
+  DB.card((S.noentry_streak_n??0)+' · '+(S.noentry_streak_days??0)+'d','longest no-entry streak (signals · days)'+(S.noentry_streak_start?' — from '+S.noentry_streak_start:''))+
+  DB.card(durc(S.box_silence),'longest box-silence (no box signal)')+
+  DB.card(durc(S.position_hold),'longest position hold (trade open)')+
+  DB.card(durc(S.gate_noentry),'longest gate non-entry (vol-gate blocked)')+
+  DB.card(durc(S.indicator_noentry),'longest indicator non-entry (gate-approved, indicators blocked)')+
+  grp('🍃 L1 — totals · cumulative candles')+
+  DB.card(durc(S.noentry_total),'total no-entry candles (box+gate+indicator)')+
+  DB.card(durc(S.box_silence_total),'total box-silence candles (no box signal)')+
+  DB.card(durc(S.position_hold_total),'total position-hold candles (trade open)')+
+  DB.card(durc(S.gate_noentry_total),'total gate non-entry candles (vol-gate blocked)')+
+  DB.card(durc(S.indicator_noentry_total),'total indicator non-entry candles (gate-approved, indicators blocked)')+
+  grp('🍃 L1 — counts')+
+  DB.card(S.n_taken+'/'+S.n_candidates,'trades ('+S.exposure+'%)')+
+  DB.card(S.n_locks,'breaker locks')+
+  `<div class="card"><div class="v" id="fp_warm_l1" style="font-size:15px">—</div><div class="k">L1 warmup period</div></div>`+
+  `<div class="card"><div class="v" id="fp_heavy_l1" style="font-size:12px;line-height:1.25">—</div><div class="k">L1 longest indicator candles requirement</div></div>`); }
 function render(D){
-  const s=D.meta.summary, ps=H.price.series, es=H.equity.series;
+  const s=D.meta.summary, ps=H.price.series, es=H.equity.series, dc=D.meta.dropped_counts, L2=s.l2, C=s.combined;
   $('cards').innerHTML=
-    grp('🍃 L1 alone')+metricCards(s.l1)+
-    grp('🔁 L2 alone')+metricCards(s.l2)+DB.card(s.l2.n_l1_entry_exits,'L1-entry force-closes')+
+    l1Cards(s.l1)+
+    grp('🔁 L2 alone (on L1’s dropped signals)')+
+    DB.card(L2.n,'L2 trades')+DB.card(DB.money(L2.pnl),'L2 P/L',L2.pnl>=0?'pos':'neg')+
+    DB.card('$'+Math.round(L2.max_dd).toLocaleString(),'L2 max drawdown','neg')+
+    DB.card(L2.win+'%','L2 win rate')+DB.card(L2.pf??'—','L2 profit factor')+
+    DB.card(L2.n_l1_entry_exits,'L1-entry force-closes')+
+    DB.card(dc.total,'dropped (veto+gate)')+DB.card(dc.flat_candidates,'flat candidates')+
+    `<div class="card"><div class="v" id="fp_warm_l2" style="font-size:15px">—</div><div class="k">L2 warmup period</div></div>`+
+    `<div class="card"><div class="v" id="fp_heavy_l2" style="font-size:12px;line-height:1.25">—</div><div class="k">L2 longest indicator candles requirement</div></div>`+
     grp('Σ combined book (L1 + L2)')+
-    DB.card(DB.money(s.combined.pnl),'combined P/L',s.combined.pnl>=0?'pos':'neg')+
-    DB.card('$'+Math.round(s.combined.max_dd).toLocaleString(),'combined max DD')+
-    DB.card('$'+Math.round(s.combined.l1_only_dd).toLocaleString(),'L1-only DD')+
-    DB.card(DB.money(s.combined.pnl-s.l1.pnl),'uplift vs L1',(s.combined.pnl-s.l1.pnl)>=0?'pos':'neg')+
-    DB.card(s.combined.dd_not_worse?'OK':'+DD','DD vs L1-alone',s.combined.dd_not_worse?'pos':'neg');
+    DB.card(DB.money(C.pnl),'combined P/L',C.pnl>=0?'pos':'neg')+
+    DB.card('$'+Math.round(C.max_dd).toLocaleString(),'combined max DD')+
+    DB.card('$'+Math.round(C.l1_only_dd).toLocaleString(),'L1-only DD')+
+    DB.card(DB.money(C.pnl-s.l1.pnl),'uplift vs L1',(C.pnl-s.l1.pnl)>=0?'pos':'neg')+
+    DB.card(C.dd_not_worse?'OK':'+DD','DD vs L1-alone',C.dd_not_worse?'pos':'neg');
+  warmup('l1'); warmup('l2');
   ps.candle.setData(D.candles);
   const hi=D.candles.length?Math.max(...D.candles.map(c=>c.high)):0;
   const shade=[]; (D.l1_spans||[]).forEach(sp=>{shade.push({time:sp.from,value:hi},{time:sp.to,value:hi},{time:sp.to+1});});
@@ -308,8 +351,8 @@ async function saveLayer(pfx){
   try{
     const r=await fetch('/api/combined_config'); if(!r.ok) throw new Error('config HTTP '+r.status);
     const c=await r.json();
-    DB.buildPanel($('l1_indpanel'),c.indicator_schema,DB.markDirty);
-    DB.buildPanel($('l2_indpanel'),c.indicator_schema,DB.markDirty);
+    DB.buildPanel($('l1_indpanel'),c.indicator_schema,()=>{DB.markDirty();warmup('l1');});
+    DB.buildPanel($('l2_indpanel'),c.indicator_schema,()=>{DB.markDirty();warmup('l2');});
     // profile dropdowns: include the "best" default as the first, pre-selected entry
     fillDropdown('l1',{[c.l1_label||'L1 champion']:c.l1_default, ...(c.l1_profiles||{})});
     fillDropdown('l2',{[c.l2_label||'L2 champion']:c.l2_default, ...(c.l2_profiles||{})});

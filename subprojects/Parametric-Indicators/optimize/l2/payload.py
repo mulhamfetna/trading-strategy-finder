@@ -233,6 +233,59 @@ def _combined_equity_series(l1_ledger: list, l2_ledger: list) -> list:
     return _dedupe(out)
 
 
+def _l1_full_summary(l1) -> dict:
+    """The FULL L1 box set — identical fields to strategy.build_payload's summary (financials + streaks +
+    totals + counts) — computed from the L1-runner arrays so the combined dashboard's L1 group shows every
+    box the standalone L1 dashboard shows. Uses the same optimize.pause_streaks helpers strategy.py uses."""
+    import numpy as np
+    from optimize import pause_streaks
+    base = metrics.score(l1)                                   # pnl, max_dd, n, win, pf
+    n = len(l1.df_dec)
+    bar_secs = int(l1.bar_td.total_seconds())
+    sig = np.asarray(l1.sig_int)[:n]
+    volg = np.asarray(l1.vol_gate, dtype=bool)[:n]
+    veto = np.asarray(l1.veto, dtype=bool)[:n]
+    conf = np.asarray(l1.confirm, dtype=bool)[:n]
+    dec_dates = l1.df_dec["Date"].to_numpy()
+    # position-hold spans = [entry_idx, exit_bar) per taken trade (same convention as build_state_timeline)
+    spans = []
+    for t in l1.ledger:
+        e = int(t["entry_idx"])
+        xb = int(np.searchsorted(dec_dates, np.datetime64(t["exit_time"]), side="left"))
+        spans.append((e, max(xb, e + 1)))
+    pm = pause_streaks.pause_metrics(sig, volg, veto, conf, bar_secs, trade_spans=spans)
+    pt = pause_streaks.pause_totals(sig, volg, veto, conf, bar_secs, trade_spans=spans)
+    # longest no-entry streak = longest run of consecutive BLOCKED box-signal bars (gate/veto/confirm<K),
+    # broken by an entry opportunity (would_enter); box-silence bars neither extend nor break it.
+    entry_ops = {"would_enter"}
+    blocked = {"vol_gated", "vetoed", "confirm<K"}
+    best_n = best_s = best_e = 0
+    cur = cur_s = 0
+    for i in range(1, n):
+        c = l1.cause[i]
+        if c in blocked:
+            if cur == 0:
+                cur_s = i
+            cur += 1
+            if cur > best_n:
+                best_n, best_s, best_e = cur, cur_s, i
+        elif c in entry_ops:
+            cur = 0
+    ne_days = round((_epoch(dec_dates[best_e]) - _epoch(dec_dates[best_s])) / 86400.0, 1) if best_n else 0.0
+    ne_start = (pd.Timestamp(dec_dates[best_s]).strftime("%Y-%m-%d") if best_n else None)
+    base.update(
+        n_taken=len(l1.ledger), n_candidates=int(l1.n_candidates),
+        exposure=round(100 * len(l1.ledger) / max(int(l1.n_candidates), 1), 1),
+        n_locks=int(l1.n_locks), n_skipped_breaker=int(l1.n_skipped_breaker),
+        noentry_streak_n=best_n, noentry_streak_days=ne_days, noentry_streak_start=ne_start,
+        box_silence=pm["box_silence"], position_hold=pm["position_hold"],
+        gate_noentry=pm["gate_noentry"], indicator_noentry=pm["indicator_noentry"],
+        noentry_total=pt["noentry_total"], box_silence_total=pt["box_silence_total"],
+        position_hold_total=pt["position_hold_total"], gate_noentry_total=pt["gate_noentry_total"],
+        indicator_noentry_total=pt["indicator_noentry_total"])
+    return base
+
+
 def _serialize_trade(t: dict, p: dict, layer: str) -> dict:
     """Common chart/log row for an L1 or L2 trade (epoch times, prices, P/L, SL/TP display lines)."""
     row = {"layer": layer,
@@ -269,7 +322,7 @@ def build_combined_payload(l1_params: dict, l2_params: dict, tf: str = "4h") -> 
 
     return {
         "meta": {
-            "summary": {"l1": metrics.score(l1), "l2": metrics.score(res),
+            "summary": {"l1": _l1_full_summary(l1), "l2": metrics.score(res),
                         "combined": metrics.combined(l1, res)},
             "dropped_counts": {"veto": ds.n_veto, "vol_gate": ds.n_vol_gate,
                                "total": len(ds), "flat_candidates": len(ds.flat_candidates())},
