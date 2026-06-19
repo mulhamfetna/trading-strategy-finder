@@ -37,6 +37,14 @@ def test_l1_cache_returns_same_object():
     assert len(a.ledger) == 255
 
 
+def test_l1_disk_cache_survives_memory_clear():
+    payload.run_l1_cached("4h")                       # warms in-memory + disk
+    assert payload._l1_cache_file("4h").exists()      # persisted to the disk cache
+    payload._L1_CACHE.clear()                          # drop the in-process memo
+    r = payload.run_l1_cached("4h")                    # must reload from disk (no recompute)
+    assert len(r.ledger) == 255
+
+
 def test_save_and_load_l2_profile_roundtrips(tmp_path, monkeypatch):
     monkeypatch.setattr(payload, "_PROFILES", tmp_path / "l2_profiles.json")
     profs = payload.save_l2_profile("mine", dict(payload.PERMISSIVE))

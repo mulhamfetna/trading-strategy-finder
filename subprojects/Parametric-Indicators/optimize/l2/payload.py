@@ -3,8 +3,11 @@ Runs the cached frozen L1 (lean 4h) + a manual L2 profile, serializes a chart-re
 persists hand-tuned L2 profiles. server.py is a thin router over this module."""
 from __future__ import annotations
 
+import hashlib
 import json
+import pickle
 import sys
+import tempfile
 from pathlib import Path
 
 import pandas as pd
@@ -18,6 +21,14 @@ from indicators import library                                # noqa: E402
 
 _PROFILES = _PI / "profiles" / "l2_profiles.json"
 _L1_CACHE: dict = {}
+# Disk cache for the FROZEN L1 run (deterministic → safe to persist). Keyed by tf + a hash of the lean
+# params, so any param change invalidates it. Lives in a temp dir (no git footprint); recomputed if absent.
+_DISK_CACHE = Path(tempfile.gettempdir()) / "wsh_l1_cache"
+
+
+def _l1_cache_file(tf: str) -> Path:
+    h = hashlib.sha256(json.dumps(l1_runner._lean_params(tf), sort_keys=True, default=str).encode()).hexdigest()[:16]
+    return _DISK_CACHE / f"l1_{tf}_{h}.pkl"
 
 # Deterministic anchor profile (no indicators / no vol gate => take every flat dropped signal).
 PERMISSIVE: dict = {"indicators": [], "k": 1, "gate_pct": 0, "sl_soft": 149.8, "sl_hard": 167.1,
@@ -28,11 +39,31 @@ class L2ParamError(ValueError):
     """Invalid L2 profile parameter — surfaced to the UI as HTTP 400 (never silently clamped)."""
 
 
-def run_l1_cached(tf: str = "4h"):
-    """Frozen L1 (lean champion), computed once per process (~38s first call, then instant)."""
-    if tf not in _L1_CACHE:
-        _L1_CACHE[tf] = l1_runner.run_l1(tf)
-    return _L1_CACHE[tf]
+def run_l1_cached(tf: str = "4h", use_disk: bool = True):
+    """Frozen L1 (lean champion). Memoised in-process; also persisted to a disk cache (the L1 run is
+    deterministic) so repeat processes load in ~1s instead of recomputing the ~38s 1-min indicator pass.
+    Set use_disk=False to force a fresh recompute (e.g. parity checks)."""
+    if tf in _L1_CACHE:
+        return _L1_CACHE[tf]
+    cf = _l1_cache_file(tf)
+    if use_disk and cf.exists():
+        try:
+            with open(cf, "rb") as f:
+                r = pickle.load(f)
+            _L1_CACHE[tf] = r
+            return r
+        except Exception:
+            pass                                      # corrupt/stale pickle → recompute
+    r = l1_runner.run_l1(tf)
+    _L1_CACHE[tf] = r
+    if use_disk:
+        try:
+            _DISK_CACHE.mkdir(parents=True, exist_ok=True)
+            with open(cf, "wb") as f:
+                pickle.dump(r, f)
+        except Exception:
+            pass                                      # cache write best-effort; never fail the run
+    return r
 
 
 def validate_l2_params(p: dict) -> dict:
