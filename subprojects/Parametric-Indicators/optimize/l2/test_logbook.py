@@ -1,0 +1,71 @@
+"""run_causal parity + structure tests. The causal log must reproduce the legacy oracle exactly
+(L1 via l1_runner, L2 via engine.run_l2) — parity is the gate for the whole rebuild."""
+import sys
+import json
+from pathlib import Path
+
+_PI = Path(__file__).resolve().parents[2]
+if str(_PI) not in sys.path:
+    sys.path.insert(0, str(_PI))
+
+import numpy as np
+from optimize.l2 import logbook, payload, l1_runner, engine, metrics
+
+_CHAMP = json.load(open(str(_PI / "optimize/results/l2v1_4h_champion.json")))["params"]
+
+
+def test_run_causal_emits_one_row_per_decision_bar():
+    res = logbook.run_causal(payload.l1_default_params("4h"), dict(payload.PERMISSIVE), "4h")
+    assert res.n == len(res.log) == len(res.dec_dates)
+    assert {r.layer for r in res.log} <= {"L1", "L2", None}
+    assert all(r.reason for r in res.log)                       # every row attributed
+    assert all(r.box_cause is not None for r in res.log if r.i > 0)  # box_cause kept on every bar incl. in-position
+    assert res.warmup["l1"]["warmup_bars"] > 0                  # L1 lean champion has 1-min indicators
+
+
+def test_causal_l1_matches_legacy_oracle():
+    """L1 entries (bar + direction) and P/L from the causal log == the legacy l1_runner ledger exactly."""
+    legacy = l1_runner.run_l1("4h")                             # frozen lean champion
+    res = logbook.run_causal(payload.l1_default_params("4h"), dict(payload.PERMISSIVE), "4h")
+    l1_entries = [(r.i, r.direction) for r in res.log if r.layer == "L1" and r.decision == "entry"]
+    legacy_entries = [(int(t["entry_idx"]), t["direction"]) for t in legacy.ledger]
+    assert l1_entries == legacy_entries
+    assert round(sum(r.pnl for r in res.log if r.layer == "L1")) == 149989
+
+
+def test_causal_l2_matches_legacy_engine():
+    """L2 book from the causal log == legacy engine.run_l2 (l1_priority) STRUCTURALLY: entry set,
+    count, DD, and the force-closed subset — not just rounded dollars."""
+    legacy_l1 = l1_runner.run_l1("4h")
+    legacy = engine.run_l2(legacy_l1, _CHAMP)                   # l1_priority
+    res = logbook.run_causal(payload.l1_default_params("4h"), _CHAMP, "4h")
+    l2_rows = [r for r in res.log if r.layer == "L2" and r.decision == "entry"]
+    assert sorted((r.i, r.direction) for r in l2_rows) == \
+           sorted((int(t["entry_idx"]), t["direction"]) for t in legacy.ledger)
+    assert len(l2_rows) == 80
+    assert round(metrics.score(legacy)["pnl"]) == round(sum(r.pnl for r in l2_rows)) == 78391
+    eq = np.cumsum([r.pnl for r in sorted(l2_rows, key=lambda r: r.exit_time)])
+    assert round(float((np.maximum.accumulate(eq) - eq).max())) == 8961               # L2 DD
+    fc_causal = sorted((r.i, round(r.exit_price, 4), round(r.pnl, 2)) for r in l2_rows if r.exit_reason == "L1-entry")
+    fc_legacy = sorted((int(t["entry_idx"]), round(float(t["exit_price"]), 4), round(float(t["pnl"]), 2))
+                       for t in legacy.ledger if t["exit_reason"] == "L1-entry")
+    assert fc_causal == fc_legacy and len(fc_causal) == legacy.n_l1_entry_exits
+
+
+def test_l1_and_l2_entries_are_disjoint():
+    """One shared account: a bar cannot be both an L1 and an L2 entry."""
+    res = logbook.run_causal(payload.l1_default_params("4h"), _CHAMP, "4h")
+    l1b = {r.i for r in res.log if r.layer == "L1" and r.decision == "entry"}
+    l2b = {r.i for r in res.log if r.layer == "L2" and r.decision == "entry"}
+    assert l1b.isdisjoint(l2b)
+
+
+def test_force_close_only_strictly_inside_l2_span():
+    """An L1 entry on an L2 trade's natural-exit bar must NOT force-close it; only one strictly inside does."""
+    dec_dates = np.array(["2025-01-01T00:00", "2025-01-01T04:00", "2025-01-01T08:00", "2025-01-01T12:00"],
+                         dtype="datetime64[ns]")
+    dec_close = np.array([100.0, 110.0, 120.0, 130.0])
+    cand = [{"entry_idx": 0, "entry_time": dec_dates[0], "entry_price": 100.0, "direction": "long",
+             "exit_time": dec_dates[2], "exit_price": 120.0, "exit_reason": "TAKE_PROFIT_HARD", "pnl_points": 20.0}]
+    assert engine.force_close_on_l1_entry(list(cand), [2], dec_dates, dec_close, 20.0)[0]["exit_reason"] == "TAKE_PROFIT_HARD"
+    assert engine.force_close_on_l1_entry(list(cand), [1], dec_dates, dec_close, 20.0)[0]["exit_reason"] == "L1-entry"

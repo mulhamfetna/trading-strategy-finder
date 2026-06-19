@@ -20,9 +20,10 @@ from optimize.l2.l1_runner import apply_breaker                    # noqa: E402
 from indicators import library, runner                             # noqa: E402
 
 
-def _l2_gate_masks(l1, l2_params: dict) -> np.ndarray:
-    """L2's own per-bar eligibility = vol_gate ∧ ¬veto ∧ confirm≥K, computed with L2's params over the
-    SAME data L1 used. Identical recipe to core.backtest_metrics' gate construction."""
+def l2_gate_components(l1, l2_params: dict):
+    """L2's per-bar gate components (vol_gate, veto, confirm) computed with L2's params over the SAME
+    data L1 used. Identical recipe to core.backtest_metrics' gate construction. Returned separately so
+    callers (the causal log builder) can attribute WHY L2 declined a bar; `_l2_gate_masks` ANDs them."""
     d, d1, box = l1.df_dec, l1.df1, l1.box
     n = len(d)
     gate_pct = float(l2_params.get("gate_pct", 0.0))
@@ -40,6 +41,12 @@ def _l2_gate_masks(l1, l2_params: dict) -> np.ndarray:
         votes = runner.compute_votes(d, box, inds, src=src)
         veto = np.asarray(runner.veto_mask(d, box, inds, src=src, votes=votes), dtype=bool)[:n]
         confirm = np.asarray(runner.confirm_mask(d, box, inds, K, src=src, votes=votes), dtype=bool)[:n]
+    return vol_gate, veto, confirm
+
+
+def _l2_gate_masks(l1, l2_params: dict) -> np.ndarray:
+    """L2's own per-bar eligibility = vol_gate ∧ ¬veto ∧ confirm≥K (the ANDed components)."""
+    vol_gate, veto, confirm = l2_gate_components(l1, l2_params)
     return vol_gate & ~veto & confirm
 
 
