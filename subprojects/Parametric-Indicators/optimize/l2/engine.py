@@ -78,7 +78,14 @@ class L2Result:
     n_l1_entry_exits: int
 
 
-def run_l2(l1, l2_params: dict, bar_mask=None) -> L2Result:
+def run_l2(l1, l2_params: dict, bar_mask=None, exit_mode: str = "l1_priority") -> L2Result:
+    """exit_mode (spec round 1 vs 2):
+      'l1_priority' (default, round 1) — when L1 opens during an L2 trade, L2 force-closes (reason
+                     'L1-entry'); L1 wins ties.
+      'keep_l2'     (round 2 A/B)      — L2 keeps its position to its own SL/TP; the overlapping L1 trade
+                     yields. (The combined book then drops the overlapped L1 trades — see round2.compare.)"""
+    if exit_mode not in ("l1_priority", "keep_l2"):
+        raise ValueError(f"exit_mode must be 'l1_priority' or 'keep_l2' (got {exit_mode!r})")
     d, d1 = l1.df_dec, l1.df1
     n = len(d)
     dec_dates = d["Date"].to_numpy()
@@ -100,8 +107,11 @@ def run_l2(l1, l2_params: dict, bar_mask=None) -> L2Result:
         float(l2_params["sl_soft"]), float(l2_params["sl_hard"]), float(l2_params["tp"]),
         bool(l2_params.get("flip", False)))
 
-    l1_entries = [int(t["entry_idx"]) for t in l1.ledger]
-    cand_fc = force_close_on_l1_entry(cand, l1_entries, dec_dates, dec_close, pv)
+    if exit_mode == "keep_l2":
+        cand_fc = cand                                       # L2 runs to its own exit; L1 yields
+    else:
+        l1_entries = [int(t["entry_idx"]) for t in l1.ledger]
+        cand_fc = force_close_on_l1_entry(cand, l1_entries, dec_dates, dec_close, pv)
     taken, skipped, n_locks = apply_breaker(cand_fc, pv, float(l2_params.get("dd_limit", 0.0)),
                                             int(l2_params.get("cooldown", 0)))
 

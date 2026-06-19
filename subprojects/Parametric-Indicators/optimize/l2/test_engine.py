@@ -39,6 +39,17 @@ def test_l2_never_opens_while_l1_in_position():
         assert not bool(r.state_timeline[int(t["entry_idx"])]), "L2 opened while L1 in-position"
 
 
+def test_run_l2_keep_l2_exit_mode_skips_force_close():
+    r = l1_runner.run_l1("4h")
+    permissive = {"indicators": [], "k": 1, "gate_pct": 0, "sl_soft": 149.8, "sl_hard": 167.1,
+                  "tp": 120.2, "dd_limit": 0, "cooldown": 0, "flip": False, "ind_1min": False}
+    l1p = engine.run_l2(r, dict(permissive))                      # default = round-1 L1-priority
+    keep = engine.run_l2(r, dict(permissive), exit_mode="keep_l2")
+    assert l1p.n_l1_entry_exits > 0                               # round-1 truncates on L1 entry
+    assert keep.n_l1_entry_exits == 0                             # keep-L2 never force-closes
+    assert not any(t["exit_reason"] == "L1-entry" for t in keep.ledger)
+
+
 def test_run_l2_bar_mask_restricts_entries_to_window():
     r = l1_runner.run_l1("4h")
     n = len(r.df_dec)
