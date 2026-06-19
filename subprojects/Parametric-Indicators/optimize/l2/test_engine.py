@@ -39,6 +39,20 @@ def test_l2_never_opens_while_l1_in_position():
         assert not bool(r.state_timeline[int(t["entry_idx"])]), "L2 opened while L1 in-position"
 
 
+def test_run_l2_bar_mask_restricts_entries_to_window():
+    r = l1_runner.run_l1("4h")
+    n = len(r.df_dec)
+    cut = r.n_split                       # 2025 / 2026 split
+    in_mask = np.zeros(n, dtype=bool); in_mask[:cut] = True
+    permissive = {"indicators": [], "k": 1, "gate_pct": 0, "sl_soft": 149.8, "sl_hard": 167.1,
+                  "tp": 120.2, "dd_limit": 0, "cooldown": 0, "flip": False, "ind_1min": False}
+    full = engine.run_l2(r, dict(permissive))
+    win = engine.run_l2(r, dict(permissive), bar_mask=in_mask)
+    assert all(int(t["entry_idx"]) < cut for t in win.ledger), "windowed L2 opened outside the mask"
+    assert len(win.ledger) <= len(full.ledger)
+    assert len(win.ledger) > 0            # 2025 has dropped signals
+
+
 def test_l1_entry_exits_correspond_to_real_l1_entries():
     r = l1_runner.run_l1("4h")
     res = engine.run_l2(r, dict(r.params, flip=True))     # flip => 'oppose' labelling exercised

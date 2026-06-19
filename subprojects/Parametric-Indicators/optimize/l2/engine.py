@@ -78,7 +78,7 @@ class L2Result:
     n_l1_entry_exits: int
 
 
-def run_l2(l1, l2_params: dict) -> L2Result:
+def run_l2(l1, l2_params: dict, bar_mask=None) -> L2Result:
     d, d1 = l1.df_dec, l1.df1
     n = len(d)
     dec_dates = d["Date"].to_numpy()
@@ -90,6 +90,8 @@ def run_l2(l1, l2_params: dict) -> L2Result:
         dropped_mask[int(ds["idx"])] = True
     l1_flat = ~l1.state_timeline
     l2_gate = dropped_mask & l1_flat & _l2_gate_masks(l1, l2_params)
+    if bar_mask is not None:                                  # window L2 to a bar range (in-sample / OOS)
+        l2_gate = l2_gate & np.asarray(bar_mask, dtype=bool)[:n]
 
     cand = fast_backtest(
         dec_dates, dec_close, l1.sig_int, l2_gate,
