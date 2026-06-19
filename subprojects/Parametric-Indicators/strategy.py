@@ -463,6 +463,7 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
     _spans = [(0, max(1, round((_ts(t["exit_time"]) - _ts(t["entry_time"])) / _bar_secs)))
               for t in cand if t.get("exit_time") is not None]
     _pm = pause_streaks.pause_metrics(_sig, _volg, _veto, _conf, _bar_secs, trade_spans=_spans)
+    _pt = pause_streaks.pause_totals(_sig, _volg, _veto, _conf, _bar_secs, trade_spans=_spans)
 
     # The missing confirm<K NOENTRY events: the engine's blocked_log only carries veto/vol_gate, so a box
     # signal that passed the vol gate + had no veto but failed the K-confirmer test was silently dropped.
@@ -486,7 +487,10 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
                    max_dd=round(float(uw.max()), 0) if len(eqc) else 0.0, n_locks=sum(1 for e in events if e["type"] == "LOCK"),
                    noentry_streak_n=_best_n, noentry_streak_days=noentry_days, noentry_streak_start=noentry_start,
                    box_silence=_pm["box_silence"], position_hold=_pm["position_hold"],
-                   gate_noentry=_pm["gate_noentry"], indicator_noentry=_pm["indicator_noentry"])
+                   gate_noentry=_pm["gate_noentry"], indicator_noentry=_pm["indicator_noentry"],
+                   noentry_total=_pt["noentry_total"], box_silence_total=_pt["box_silence_total"],
+                   position_hold_total=_pt["position_hold_total"], gate_noentry_total=_pt["gate_noentry_total"],
+                   indicator_noentry_total=_pt["indicator_noentry_total"])
     params_out = dict(sl_soft=sl_soft, sl_hard=sl_hard, tp=tp, gate_pct=(None if gthr is None else float(gate_pct)),
                       gate_thr=(None if gthr is None else round(gthr, 0)), dd_limit=(ddl if use_brk else None),
                       cooldown=cooldown, dd_cap=dd_cap, pv=pv, flip=flip, window=window,

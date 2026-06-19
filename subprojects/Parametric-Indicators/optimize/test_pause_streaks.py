@@ -1,6 +1,6 @@
 import numpy as np
 
-from optimize.pause_streaks import longest_run, pause_metrics, per_bar_cause
+from optimize.pause_streaks import longest_run, pause_metrics, pause_totals, per_bar_cause
 
 
 def test_longest_run():
@@ -21,6 +21,23 @@ def test_pause_metrics_decomposition():
     assert m["indicator_noentry"]["bars"] == 2          # idx4 (veto) + idx5 (confirm) consecutive
     assert m["position_hold"]["bars"] == 6
     assert "days" in m["box_silence"]
+
+
+def test_pause_totals_counts_and_invariant():
+    sig = np.array([0, 1, 0, 0, 1, 1, 0], dtype=int)    # candidates at idx 1,4,5
+    volg = np.array([1, 0, 1, 1, 1, 1, 1], dtype=bool)  # idx1 vol-gated
+    veto = np.array([0, 0, 0, 0, 1, 0, 0], dtype=bool)  # idx4 vetoed
+    conf = np.array([1, 1, 1, 1, 1, 0, 1], dtype=bool)  # idx5 confirm<K
+    t = pause_totals(sig, volg, veto, conf, bar_seconds=4 * 3600, trade_spans=[(0, 6)])
+    assert t["box_silence_total"]["bars"] == 4          # idx 0,2,3,6
+    assert t["gate_noentry_total"]["bars"] == 1         # idx1
+    assert t["indicator_noentry_total"]["bars"] == 2    # idx4 (veto) + idx5 (confirm<K)
+    assert t["position_hold_total"]["bars"] == 6        # total bars in position (one 6-bar trade)
+    assert t["noentry_total"]["bars"] == 7              # 4 + 1 + 2 (invariant)
+    assert t["noentry_total"]["bars"] == (t["box_silence_total"]["bars"]
+                                          + t["gate_noentry_total"]["bars"]
+                                          + t["indicator_noentry_total"]["bars"])
+    assert "days" in t["noentry_total"] and "hours" in t["position_hold_total"]
 
 
 def test_per_bar_cause_partition():

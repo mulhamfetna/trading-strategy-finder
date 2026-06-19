@@ -50,3 +50,18 @@ def pause_metrics(sig, vol_gate, veto, confirm, bar_seconds, trade_spans=None) -
             "gate_noentry": _dur(longest_run(gate_block), bar_seconds),
             "indicator_noentry": _dur(longest_run(indic_block), bar_seconds),
             "position_hold": _dur(hold_bars, bar_seconds)}
+
+
+def pause_totals(sig, vol_gate, veto, confirm, bar_seconds, trade_spans=None) -> dict:
+    """TOTAL candle counts (not longest run) for the same no-entry characters as pause_metrics, plus
+    total bars spent in an open position. box_silence/gate/indicator are mutually exclusive per bar, so
+    noentry_total == box_silence_total + gate_noentry_total + indicator_noentry_total. trade_spans =
+    list of (entry_idx, exit_idx); position_hold_total sums their lengths."""
+    box_silence, gate_block, indic_block, _ = per_bar_cause(sig, vol_gate, veto, confirm)
+    bs, gb, ib = int(box_silence.sum()), int(gate_block.sum()), int(indic_block.sum())
+    hold = int(sum(max(0, int(b) - int(a)) for a, b in (trade_spans or [])))
+    return {"box_silence_total": _dur(bs, bar_seconds),
+            "gate_noentry_total": _dur(gb, bar_seconds),
+            "indicator_noentry_total": _dur(ib, bar_seconds),
+            "position_hold_total": _dur(hold, bar_seconds),
+            "noentry_total": _dur(bs + gb + ib, bar_seconds)}
