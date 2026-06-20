@@ -116,7 +116,9 @@ def run_l2(l1, l2_params: dict, bar_mask=None, exit_mode: str = "l1_priority") -
         d1["Date"].to_numpy(), d1["High"].to_numpy(float),
         d1["Low"].to_numpy(float), d1["Close"].to_numpy(float),
         float(l2_params["sl_soft"]), float(l2_params["sl_hard"]), float(l2_params["tp"]),
-        bool(l2_params.get("flip", False)))
+        bool(l2_params.get("flip", False)),
+        **{k: l2_params.get(k) for k in ("long_sl_soft", "long_sl_hard", "long_tp",
+                                         "short_sl_soft", "short_sl_hard", "short_tp")})
 
     if exit_mode == "keep_l2":
         cand_fc = cand                                       # L2 runs to its own exit; L1 yields

@@ -113,6 +113,21 @@ def validate_layer_params(p: dict) -> dict:
         flip=bool(p.get("flip", False)), ind_1min=bool(p.get("ind_1min", False)),
         window=_validate_window(p.get("window", "full")),
     )
+    # optional split long/short SL/TP overrides — each None => fall back to the shared sl_soft/sl_hard/tp
+    # (so the default carries all-None and is byte-identical + the use_frozen round-trip still holds).
+    for side in ("long", "short"):
+        for base in ("sl_soft", "sl_hard", "tp"):
+            v = p.get(f"{side}_{base}")
+            if v in (None, ""):
+                out[f"{side}_{base}"] = None
+            else:
+                fv = float(v)
+                if fv <= 0:
+                    raise L2ParamError(f"{side}_{base} must be > 0")
+                out[f"{side}_{base}"] = fv
+        ss, sh = out[f"{side}_sl_soft"], out[f"{side}_sl_hard"]
+        if ss is not None and sh is not None and sh < ss:
+            raise L2ParamError(f"{side}_sl_hard ({sh}) must be >= {side}_sl_soft ({ss})")
     inds = p.get("indicators", [])
     if not isinstance(inds, list):
         raise L2ParamError("indicators must be a list")
