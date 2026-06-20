@@ -1,0 +1,54 @@
+{
+ "4h": {
+  "median_pnl": 28227.7,
+  "full_pnl": 88992.7,
+  "full_dd": 12594.4,
+  "win": 86.5,
+  "worst_dd": 6161.5,
+  "trial": 5591,
+  "box": {
+   "sl_soft": 80.34,
+   "sl_hard": 106.16,
+   "tp": 70.0,
+   "gate_pct": 72.02,
+   "dd_limit": 573.73,
+   "cooldown": 0,
+   "flip": false,
+   "k": 2,
+   "long_sl_soft": 151.57,
+   "long_sl_hard": 171.65,
+   "long_tp": 37.59,
+   "short_sl_soft": 113.6,
+   "short_sl_hard": 253.39,
+   "short_tp": 116.47
+  },
+  "indicators": {
+   "sma_trend": {
+    "fast": 239,
+    "slow": 326
+   },
+   "vwap": {},
+   "keltner": {
+    "n": 162,
+    "m": 4.0
+   },
+   "obv": {
+    "slope": 50
+   },
+   "bollinger": {
+    "n": 85,
+    "k": 4.6000000000000005
+   },
+   "adx": {
+    "n": 54,
+    "threshold": 12
+   },
+   "order_block": {
+    "swing_l": 20
+   },
+   "fvg": {
+    "lookback": 1
+   }
+  }
+ }
+}
