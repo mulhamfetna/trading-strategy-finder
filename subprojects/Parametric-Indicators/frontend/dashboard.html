@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Unified L1 · L2 · Combined Dashboard</title>
+<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+<link rel="stylesheet" href="dashboard_common.css">
+<style>
+  .navtabs{display:flex;gap:6px;margin-bottom:10px;}
+  .navtab{flex:1;font-size:12px;font-weight:600;padding:7px 0;border:1px solid var(--border);border-radius:6px;
+          background:var(--surface);color:var(--muted);cursor:pointer;text-align:center;}
+  .navtab.on{color:#fff;border-color:var(--blue);background:var(--blue);}
+  .navtab.l2.on{background:var(--orange);border-color:var(--orange);}
+  .layerpane{display:none;} .layerpane.on{display:block;}
+  .segctl{display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-right:10px;}
+  .segctl button{border:0;background:var(--surface);color:var(--muted);font-size:13px;font-weight:700;padding:7px 14px;cursor:pointer;}
+  .segctl button.on{background:var(--blue);color:#fff;}
+  .segctl button[data-view="l2"].on{background:var(--orange);}
+  .segctl button[data-view="combined"].on{background:var(--green);}
+  .layerbadge{font-weight:700;width:26px;display:inline-block;}
+  .L1 .layerbadge{color:var(--blue);} .L2 .layerbadge{color:var(--orange);}
+  .viewonly{display:none;}
+</style>
+</head>
+<body>
+<div id="err" role="alert"><span id="errmsg"></span><button id="errclose" title="dismiss" aria-label="dismiss">✕</button></div>
+<header>
+  <div>
+    <h1><span id="vicon">Σ</span> Unified Dashboard — <span id="vname">Combined</span>
+      <span style="font-size:13px;color:var(--muted);font-weight:400;margin-left:8px">one Run · three tabs · one causal pass</span></h1>
+    <p>L1 (frozen-editable) · L2 manages L1's dropped signals · combined per-box rules — switch tabs freely, no re-run</p>
+  </div>
+  <div class="hdr-right">
+    <span class="segctl" id="viewtabs" title="switch the result view — one Run fills all three">
+      <button data-view="l1">🍃 L1</button><button data-view="l2">🔁 L2</button><button data-view="combined" class="on">Σ Combined</button></span>
+    <span class="dirty" id="dirty"></span>
+    <button class="ghost" id="toggle" title="Show/hide the settings panel">⚙ Hide settings</button>
+    <button class="run" id="run">▶ Run</button>
+  </div>
+</header>
+
+<div class="body">
+  <aside>
+    <div class="navtabs">
+      <div class="navtab l1 on" id="tab_l1" data-pane="l1">🍃 L1 settings</div>
+      <div class="navtab l2" id="tab_l2" data-pane="l2">🔁 L2 settings</div>
+    </div>
+
+    <div class="layerpane on" id="pane_l1">
+      <div class="profile-actions">
+        <button class="resetlink" id="l1_reset" title="restore the selected L1 profile's values">↺ Reset to selected</button>
+        <button class="resetlink" id="l1_save" title="save the current L1 settings as a reusable profile">💾 Save L1 profile</button>
+      </div>
+      <div class="sgroup"><h3>L1 base (editable)</h3>
+        <div class="fld"><label>L1 profile</label><select id="l1_strategy" title="load an L1 profile"></select></div>
+        <div class="hint" id="l1info">the primary strategy · L2 manages the signals THIS L1 drops</div>
+        <div class="fld"><label>Indicators on 1-min</label><select id="l1_ind_1min"><option value="true">true (regime)</option><option value="false">false (decision TF)</option></select></div>
+        <div class="fld"><label>Window</label><select id="l1_window"><option value="full">full</option><option value="2024">2024</option><option value="2025">2025 (in-sample)</option><option value="2026">2026 (OOS)</option><option value="full+20d">full+20d</option><option value="2026+20d">2026+20d</option></select></div>
+      </div>
+      <div class="sgroup"><h3>Entry / exit (points)</h3>
+        <div class="fld"><label>SL soft</label><input id="l1_sl_soft" type="number" step="1" value="149.8"></div>
+        <div class="fld"><label>SL hard</label><input id="l1_sl_hard" type="number" step="1" value="167.1"></div>
+        <div class="fld"><label>Take-profit</label><input id="l1_tp" type="number" step="1" value="120.2"></div>
+        <hr class="sep">
+        <div class="fld"><label>Split long/short SL/TP</label><select id="l1_split"><option value="false">off (shared)</option><option value="true">on (per-side)</option></select></div>
+        <div class="splitbox" id="l1_splitbox" style="display:none">
+          <div class="fld"><label>long SLs / SLh / TP</label><span><input id="l1_long_sl_soft" type="number" step="1" placeholder="SLs"><input id="l1_long_sl_hard" type="number" step="1" placeholder="SLh"><input id="l1_long_tp" type="number" step="1" placeholder="TP"></span></div>
+          <div class="fld"><label>short SLs / SLh / TP</label><span><input id="l1_short_sl_soft" type="number" step="1" placeholder="SLs"><input id="l1_short_sl_hard" type="number" step="1" placeholder="SLh"><input id="l1_short_tp" type="number" step="1" placeholder="TP"></span></div>
+          <div class="hint">blank per-side ⇒ falls back to the shared value above</div>
+        </div>
+        <hr class="sep">
+        <div class="fld"><label>Direction</label><select id="l1_flip"><option value="false">normal (box dir)</option><option value="true">flipped</option></select></div>
+      </div>
+      <div class="sgroup"><h3>Volatility gate</h3>
+        <div class="fld"><label>Gate percentile</label><input id="l1_gate_pct" type="number" step="1" value="0"></div></div>
+      <div class="sgroup"><h3>Drawdown circuit-breaker</h3>
+        <div class="fld"><label>Trigger ($)</label><input id="l1_dd_limit" type="number" step="100" value="0"></div>
+        <div class="fld"><label>Cooldown (trades)</label><input id="l1_cooldown" type="number" step="1" value="0"></div></div>
+      <div class="sgroup"><h3>Confirmation layer</h3>
+        <div class="fld"><label>K (min confirms)</label><input id="l1_k" type="number" step="1" min="1" value="1"></div></div>
+      <div class="sgroup"><h3>Indicators (L1)</h3><div id="l1_indpanel"><div class="hint">loading schema…</div></div></div>
+    </div>
+
+    <div class="layerpane" id="pane_l2">
+      <div class="profile-actions">
+        <button class="resetlink" id="l2_reset" title="restore the selected L2 profile's values">↺ Reset to selected</button>
+        <button class="resetlink" id="l2_save" title="save the current L2 settings as a reusable profile">💾 Save L2 profile</button>
+      </div>
+      <div class="sgroup"><h3>L2 layer (editable)</h3>
+        <div class="fld"><label>L2 profile</label><select id="l2_strategy" title="load an L2 profile"></select></div>
+        <div class="hint">acts only on L1's dropped (veto + vol-gate) signals while L1 is flat · L1 entering force-closes L2</div>
+        <div class="fld"><label>Indicators on 1-min</label><select id="l2_ind_1min"><option value="true">true (regime)</option><option value="false">false (decision TF)</option></select></div>
+      </div>
+      <div class="sgroup"><h3>Entry / exit (points)</h3>
+        <div class="fld"><label>SL soft</label><input id="l2_sl_soft" type="number" step="1" value="149.8"></div>
+        <div class="fld"><label>SL hard</label><input id="l2_sl_hard" type="number" step="1" value="167.1"></div>
+        <div class="fld"><label>Take-profit</label><input id="l2_tp" type="number" step="1" value="120.2"></div>
+        <hr class="sep">
+        <div class="fld"><label>Split long/short SL/TP</label><select id="l2_split"><option value="false">off (shared)</option><option value="true">on (per-side)</option></select></div>
+        <div class="splitbox" id="l2_splitbox" style="display:none">
+          <div class="fld"><label>long SLs / SLh / TP</label><span><input id="l2_long_sl_soft" type="number" step="1" placeholder="SLs"><input id="l2_long_sl_hard" type="number" step="1" placeholder="SLh"><input id="l2_long_tp" type="number" step="1" placeholder="TP"></span></div>
+          <div class="fld"><label>short SLs / SLh / TP</label><span><input id="l2_short_sl_soft" type="number" step="1" placeholder="SLs"><input id="l2_short_sl_hard" type="number" step="1" placeholder="SLh"><input id="l2_short_tp" type="number" step="1" placeholder="TP"></span></div>
+          <div class="hint">L2 split is opt-in · blank per-side ⇒ shared value above</div>
+        </div>
+        <hr class="sep">
+        <div class="fld"><label>Direction</label><select id="l2_flip"><option value="false">normal (box dir)</option><option value="true">flipped</option></select></div>
+      </div>
+      <div class="sgroup"><h3>Volatility gate</h3>
+        <div class="fld"><label>Gate percentile</label><input id="l2_gate_pct" type="number" step="1" value="0"></div></div>
+      <div class="sgroup"><h3>Drawdown circuit-breaker</h3>
+        <div class="fld"><label>Trigger ($)</label><input id="l2_dd_limit" type="number" step="100" value="0"></div>
+        <div class="fld"><label>Cooldown (trades)</label><input id="l2_cooldown" type="number" step="1" value="0"></div></div>
+      <div class="sgroup"><h3>Confirmation layer</h3>
+        <div class="fld"><label>K (min confirms)</label><input id="l2_k" type="number" step="1" min="1" value="1"></div></div>
+      <div class="sgroup"><h3>Indicators (L2)</h3><div id="l2_indpanel"><div class="hint">loading schema…</div></div></div>
+    </div>
+  </aside>
+  <div id="gutter" title="drag to resize the settings panel"></div>
+
+  <main>
+    <div class="cards" id="cards"></div>
+    <div class="panel">
+      <h2 id="pricehd">Price · L1-flat shading · dropped signals · trades · exit lines</h2>
+      <div id="price" class="chart" style="height:430px"></div>
+    </div>
+    <div class="panel">
+      <h2>Equity — <span style="color:var(--green)">combined</span> · <span style="color:var(--blue)">L1</span> · <span style="color:var(--orange)">L2</span> ($, 1 contract)</h2>
+      <div id="equity" class="chart" style="height:200px"></div>
+    </div>
+    <div class="twocol">
+      <div class="panel"><h2>Volatility forecast (HAR-RV) · vol-gate threshold</h2><div id="vol" class="chart" style="height:170px"></div></div>
+      <div class="panel"><h2>Engine state — <span style="color:var(--green)">active</span> / <span style="color:var(--red)">breaker-locked</span></h2><div id="state" class="chart" style="height:170px"></div></div>
+    </div>
+    <div class="panel"><h2>Drawdown (underwater $, this view)</h2><div id="drawdown" class="chart" style="height:160px"></div></div>
+    <div class="twocol">
+      <div class="panel"><h2>Event log (entries · breaker skips)</h2>
+        <div class="tablewrap" style="max-height:260px"><div id="eventlog" class="log"></div></div></div>
+      <div class="panel viewonly" data-show="combined,l2"><h2>Dropped signals <span id="dropinfo" class="legend"></span></h2>
+        <div class="tablewrap"><table id="dropped"></table></div></div>
+    </div>
+    <div class="panel"><h2>Trade ledger <span id="ledgerhd" class="legend"></span>
+        <button class="ghost csvbtn" id="dl_ledger" title="download ledger CSV">⬇ CSV</button></h2>
+      <div class="tablewrap"><table id="ledger"></table></div></div>
+    <div class="panel"><h2>Per-candle log — every candle (the single source of truth)
+      <button class="ghost csvbtn" id="dl_log" title="download the full per-candle log CSV">⬇ full-log CSV</button></h2>
+      <div class="tablewrap" style="max-height:340px"><table id="logtbl"></table></div></div>
+    <p class="note" id="status"></p>
+  </main>
+</div>
+
+<script src="dashboard_common.js"></script>
+<script>
+const TH=DB.TH, $=window.$;
+let VIEW='combined';                         // active result tab
+const VIEWS={l1:null, l2:null, combined:null};   // cached payload per view (one Run fills all 3)
+function dedupe(a){const m={};(a||[]).forEach(p=>{if(p&&p.value!=null)m[p.time]=p.value;});return Object.keys(m).map(Number).sort((x,y)=>x-y).map(t=>({time:t,value:m[t]}));}
+
+// ── per-layer form read / write ──────────────────────────────────────────────
+const LAYER_FIELDS=['sl_soft','sl_hard','tp','gate_pct','dd_limit','cooldown','k'];
+const SPLIT_FIELDS=['long_sl_soft','long_sl_hard','long_tp','short_sl_soft','short_sl_hard','short_tp'];
+function collectLayer(pfx){
+  const v=id=>$(pfx+'_'+id), out={indicators:DB.specsOf($(pfx+'_indpanel')), k:+v('k').value||1, gate_pct:+v('gate_pct').value,
+    sl_soft:+v('sl_soft').value, sl_hard:+v('sl_hard').value, tp:+v('tp').value,
+    dd_limit:+v('dd_limit').value, cooldown:+v('cooldown').value,
+    flip:v('flip').value==='true', ind_1min:v('ind_1min').value==='true',
+    window:(v('window')?v('window').value:'full')};
+  if(v('split') && v('split').value==='true') SPLIT_FIELDS.forEach(f=>{const el=v(f); if(el&&el.value!=='')out[f]=+el.value;});
+  return out;
+}
+function setLayer(pfx,P){ if(!P)return;
+  LAYER_FIELDS.forEach(f=>{ if(P[f]!=null&&$(pfx+'_'+f)) $(pfx+'_'+f).value=P[f]; });
+  if($(pfx+'_flip')) $(pfx+'_flip').value=String(!!P.flip);
+  if($(pfx+'_ind_1min')) $(pfx+'_ind_1min').value=String(P.ind_1min!==false);
+  if($(pfx+'_window')&&P.window) $(pfx+'_window').value=P.window;
+  if(P.indicators) DB.applySpecsTo($(pfx+'_indpanel'),P.indicators);
+}
+const STORE={l1:{},l2:{}};
+function fillDropdown(pfx,profiles){
+  const sel=$(pfx+'_strategy'); STORE[pfx]={};
+  const names=Object.keys(profiles||{});
+  sel.innerHTML = names.length ? names.map(n=>{STORE[pfx][n]=profiles[n];return `<option value="${n}">👤 ${n}</option>`;}).join('')
+                               : '<option value="">(no saved profiles)</option>';
+}
+
+// ── charts ───────────────────────────────────────────────────────────────────
+let H={};
+function buildCharts(){
+  const price=DB.makeChart('price',430), equity=DB.makeChart('equity',200);
+  const vol=DB.makeChart('vol',170), state=DB.makeChart('state',170), dd=DB.makeChart('drawdown',160);
+  H={price:{chart:price, series:{
+      candle:price.addCandlestickSeries({upColor:TH.green,downColor:TH.red,wickUpColor:TH.green,wickDownColor:TH.red,borderVisible:false}),
+      shade:price.addLineSeries({color:'rgba(120,123,134,.25)',lineWidth:6,lastValueVisible:false,priceLineVisible:false,crosshairMarkerVisible:false}),
+      tp:price.addLineSeries({color:'rgba(0,200,83,.6)',lineWidth:1,lastValueVisible:false,priceLineVisible:false,crosshairMarkerVisible:false}),
+      sh:price.addLineSeries({color:'rgba(255,82,82,.6)',lineWidth:1,lastValueVisible:false,priceLineVisible:false,crosshairMarkerVisible:false}),
+      ss:price.addLineSeries({color:'rgba(255,152,0,.6)',lineWidth:1,lastValueVisible:false,priceLineVisible:false,crosshairMarkerVisible:false}),
+      mkr:price.addLineSeries({color:'rgba(0,0,0,0)',lastValueVisible:false,priceLineVisible:false}),
+    }},
+    equity:{chart:equity, series:{
+      l1:equity.addLineSeries({color:TH.blue,lineWidth:1}),
+      comb:equity.addLineSeries({color:TH.green,lineWidth:2}),
+      l2:equity.addLineSeries({color:TH.orange,lineWidth:1}),
+    }},
+    vol:{chart:vol, series:{
+      line:vol.addLineSeries({color:TH.muted,lineWidth:1}),
+      gthr:vol.addLineSeries({color:TH.orange,lineWidth:1,lineStyle:2,lastValueVisible:false,priceLineVisible:false,crosshairMarkerVisible:false}),
+    }},
+    state:{chart:state, series:{area:state.addAreaSeries({lineColor:TH.green,topColor:'rgba(0,200,83,.25)',bottomColor:'rgba(0,200,83,0)',lineWidth:1})}},
+    drawdown:{chart:dd, series:{area:dd.addAreaSeries({lineColor:TH.red,topColor:'rgba(255,82,82,.05)',bottomColor:'rgba(255,82,82,.4)',lineWidth:1,invertFilledArea:true})}}};
+  const charts=[price,equity,vol,state,dd]; let sy=false;
+  charts.forEach(s=>s.timeScale().subscribeVisibleTimeRangeChange(r=>{
+    if(sy||!r)return; sy=true; charts.forEach(o=>{if(o!==s){try{o.timeScale().setVisibleRange(r);}catch(e){}}}); sy=false;}));
+}
+
+// ── box renderers (one per view: L1/L2 flat dicts; combined wrapped {value,layer}) ────────────
+function grp(t){return `<div class="cardgrp">${t}</div>`;}
+const durF=d=>d?(d.bars+'c · '+d.days+'d'):'—', barsF=d=>d?(d.bars.toLocaleString()+' candles'):'—';
+function boxesL1(b){return (
+  grp('🍃 L1 — financials')+
+  DB.card(DB.money(b.pnl),'total P/L',b.pnl>=0?'pos':'neg')+
+  DB.card('$'+Math.round(b.max_dd).toLocaleString(),'max drawdown','neg')+
+  DB.card(b.win+'%','win rate')+DB.card(b.pf??'—','profit factor')+
+  grp('🍃 L1 — streaks · longest consecutive run')+
+  DB.card((b.noentry_streak_n??0)+' · '+(b.noentry_streak_days??0)+'d','longest no-entry streak'+(b.noentry_streak_start?' — from '+b.noentry_streak_start:''))+
+  DB.card(durF(b.box_silence),'longest box-silence (no box signal)')+
+  DB.card(durF(b.position_hold),'longest position hold (trade open)')+
+  DB.card(durF(b.gate_noentry),'longest gate non-entry (vol-gate blocked)')+
+  DB.card(durF(b.indicator_noentry),'longest indicator non-entry (indicators blocked)')+
+  grp('🍃 L1 — totals · cumulative candles')+
+  DB.card(durF(b.noentry_total),'total no-entry candles (box+gate+indicator)')+
+  DB.card(durF(b.box_silence_total),'total box-silence candles')+
+  DB.card(durF(b.position_hold_total),'total position-hold candles')+
+  DB.card(durF(b.gate_noentry_total),'total gate non-entry candles')+
+  DB.card(durF(b.indicator_noentry_total),'total indicator non-entry candles')+
+  grp('🍃 L1 — counts')+
+  DB.card(b.n_taken+'/'+b.n_candidates,'trades ('+b.exposure+'%)')+DB.card(b.n_locks,'breaker locks')+
+  DB.card(barsF(b.warmup),'warmup period')+DB.card(barsF(b.indicator_req),'longest indicator candles requirement'));
+}
+function boxesL2(b,dc,trades){
+  const fc=(trades||[]).filter(t=>t.exit_reason==='L1-entry').length;
+  return (
+  grp('🔁 L2 — financials')+
+  DB.card(b.n_taken,'L2 trades')+DB.card(DB.money(b.pnl),'L2 P/L',b.pnl>=0?'pos':'neg')+
+  DB.card('$'+Math.round(b.max_dd).toLocaleString(),'L2 max drawdown','neg')+
+  DB.card(b.win+'%','L2 win rate')+DB.card(b.pf??'—','profit factor')+DB.card(fc,'L1-entry force-closes')+
+  grp('🔁 L2 — streaks · longest consecutive run')+
+  DB.card((b.noentry_streak_n??0)+' · '+(b.noentry_streak_days??0)+'d','longest no-entry streak'+(b.noentry_streak_start?' — from '+b.noentry_streak_start:''))+
+  DB.card(durF(b.gate_noentry),'longest gate non-entry (L2 vol-gate)')+
+  DB.card(durF(b.indicator_noentry),'longest indicator non-entry (L2 indicators)')+
+  DB.card(durF(b.position_hold),'longest position hold (L2 trade open)')+
+  grp('🔁 L2 — totals · cumulative candles')+
+  DB.card(durF(b.noentry_total),'total L2 no-entry candles')+
+  DB.card(durF(b.gate_noentry_total),'total L2 gate non-entry')+
+  DB.card(durF(b.indicator_noentry_total),'total L2 indicator non-entry')+
+  DB.card(durF(b.position_hold_total),'total L2 position-hold candles')+
+  grp('🔁 L2 — counts')+
+  DB.card(b.n_taken+'/'+b.n_candidates,'trades ('+b.exposure+'%)')+DB.card(b.n_locks,'breaker locks')+
+  DB.card(barsF(b.warmup),'warmup period')+DB.card(barsF(b.indicator_req),'longest indicator requirement')+
+  grp('L1 dropped signals (the L2 candidate set)')+
+  DB.card(dc.total,'dropped (veto+gate)')+DB.card(dc.flat_candidates,'flat candidates'));
+}
+const V=b=>b?b.value:undefined, durW=b=>{const v=V(b);return v?(v.bars+'c · '+v.days+'d'):'—';}, barsW=b=>{const v=V(b);return v?(v.bars.toLocaleString()+' candles'):'—';};
+const tag=(s,b)=>DB.boxFromLog(s,b);
+function boxesCombined(b){return (
+  grp('Σ financials · P/L+trades summed · DD/win/PF recomputed')+
+  DB.card(DB.money(V(b.pnl)),'combined P/L',V(b.pnl)>=0?'pos':'neg')+
+  DB.card('$'+Math.round(V(b.max_dd)).toLocaleString(),'combined max DD','neg')+
+  DB.card(V(b.win)+'%','win rate')+DB.card(V(b.pf)??'—','profit factor')+
+  grp('streaks · max(L1,L2) · longest consecutive run')+
+  DB.card(tag((V(b.noentry_streak_n)??0)+' · '+(V(b.noentry_streak_days)??0)+'d',b.noentry_streak_n),'longest no-entry streak'+(V(b.noentry_streak_start)?' — from '+V(b.noentry_streak_start):''))+
+  DB.card(tag(durW(b.box_silence),b.box_silence),'longest box-silence (no box signal)')+
+  DB.card(tag(durW(b.position_hold),b.position_hold),'longest position hold (trade open)')+
+  DB.card(tag(durW(b.gate_noentry),b.gate_noentry),'longest gate non-entry (vol-gate blocked)')+
+  DB.card(tag(durW(b.indicator_noentry),b.indicator_noentry),'longest indicator non-entry (indicators blocked)')+
+  grp('counts · trades+locks summed · warmup/req max(L1,L2)')+
+  DB.card(V(b.n_taken)+'/'+V(b.n_candidates),'trades ('+V(b.exposure)+'%)')+DB.card(V(b.n_locks),'breaker locks')+
+  DB.card(tag(barsW(b.warmup),b.warmup),'warmup period')+DB.card(tag(barsW(b.indicator_req),b.indicator_req),'longest indicator requirement')+
+  grp('Σ combined guardrails')+
+  DB.card('$'+Math.round(V(b.l1_only_dd)).toLocaleString(),'L1-only DD')+
+  DB.card(DB.money(V(b.uplift)),'uplift vs L1',V(b.uplift)>=0?'pos':'neg')+
+  DB.card(V(b.dd_not_worse)?'OK':'+DD','DD vs L1-alone',V(b.dd_not_worse)?'pos':'neg')+
+  DB.card(V(b.n_l1_entry_exits),'L1-entry force-closes'));
+}
+
+// ── render the active view from its cached payload ───────────────────────────
+function lineFor(trades){ const tp=[],sh=[],ss=[]; (trades||[]).forEach(t=>{
+  tp.push({time:t.entry_time,value:t.tp_hard_line},{time:t.exit_time,value:t.tp_hard_line},{time:t.exit_time+1});
+  sh.push({time:t.entry_time,value:t.sl_hard_line},{time:t.exit_time,value:t.sl_hard_line},{time:t.exit_time+1});
+  ss.push({time:t.entry_time,value:t.sl_soft_line},{time:t.exit_time,value:t.sl_soft_line},{time:t.exit_time+1});}); return {tp,sh,ss}; }
+function markFor(trades){ const m=[]; (trades||[]).forEach(t=>{const col=t.layer==='L1'?TH.blue:TH.orange;
+  m.push({time:t.entry_time,position:t.direction==='long'?'belowBar':'aboveBar',color:col,shape:t.direction==='long'?'arrowUp':'arrowDown',text:t.layer||''});
+  m.push({time:t.exit_time,position:'inBar',color:t.exit_reason==='L1-entry'?TH.muted:(t.pnl>0?TH.green:TH.red),shape:'circle',text:t.exit_reason==='L1-entry'?'L1':''}); }); return m; }
+function _pad(a,t0,t1,sv){const o=(a||[]).slice();if(!o.length)return [{time:t0,value:sv},{time:t1,value:sv}];if(o[0].time>t0)o.unshift({time:t0,value:sv});if(o[o.length-1].time<t1)o.push({time:t1,value:o[o.length-1].value});return o;}
+
+function renderView(view){
+  const D=VIEWS[view]; if(!D){DB.status('click Run');return;}
+  VIEW=view;
+  $('vicon').textContent = view==='l1'?'🍃':view==='l2'?'🔁':'Σ';
+  $('vname').textContent = view==='l1'?'Layer 1':view==='l2'?'Layer 2':'Combined';
+  document.querySelectorAll('.viewonly').forEach(el=>{el.style.display=(el.dataset.show||'').split(',').includes(view)?'':'none';});
+  const b=D.meta.boxes, dc=D.meta.dropped_counts||{}, tr=D.trades||[], eng=D.engine||{};
+  $('cards').innerHTML = view==='l1'?boxesL1(b):view==='l2'?boxesL2(b,dc,tr):boxesCombined(b);
+
+  const ps=H.price.series, es=H.equity.series, vs=H.vol.series, sts=H.state.series, dds=H.drawdown.series;
+  ps.candle.setData(D.candles||[]);
+  const t0=D.candles&&D.candles.length?D.candles[0].time:0, t1=D.candles&&D.candles.length?D.candles[D.candles.length-1].time:0;
+  const hi=D.candles&&D.candles.length?Math.max(...D.candles.map(c=>c.high)):0;
+  const shade=[]; (D.l1_spans||[]).forEach(sp=>{shade.push({time:sp.from,value:hi},{time:sp.to,value:hi},{time:sp.to+1});});
+  try{ps.shade.setData(dedupe(shade));}catch(e){}
+  const L=lineFor(tr); try{ps.tp.setData(dedupe(L.tp));ps.sh.setData(dedupe(L.sh));ps.ss.setData(dedupe(L.ss));}catch(e){}
+  ps.mkr.setData((D.candles||[]).map(c=>({time:c.time,value:c.close})));
+  const mks=markFor(tr).sort((a,b)=>a.time-b.time); ps.mkr.setMarkers(mks);
+
+  es.l1.setData(view==='l2'?[]:(D.l1_equity||[]));
+  es.l2.setData(view==='l1'?[]:(D.l2_equity||[]));
+  es.comb.setData(view==='combined'?(D.combined_equity||[]):[]);
+
+  vs.line.setData((eng.vol||[]));
+  vs.gthr.setData(eng.gate_thr!=null?(eng.vol||[]).map(p=>({time:p.time,value:eng.gate_thr})):[]);
+  sts.area.setData(_pad(eng.state,t0,t1,1));
+  dds.area.setData(_pad((eng.drawdown||[]).map(p=>({time:p.time,value:-Math.abs(p.value)})),t0,t1,0));
+  try{Object.values(H).forEach(h=>h.chart.timeScale().setVisibleRange({from:t0,to:t1}));}catch(e){DB.fitCharts();}
+
+  // event log
+  $('eventlog').innerHTML=(eng.events||[]).slice(-400).map(e=>
+    `<div class="row ${e.type}"><span class="t">${DB.dt(e.time)}</span><span class="b">${e.type}</span><span>${e.text||''}</span></div>`).join('')||'<div class="hint">no events</div>';
+
+  // dropped table (L2/combined)
+  if((D.dropped||[]).length){ let dh='<thead><tr><th class="l">time</th><th class="l">reason</th><th class="l">box dir</th><th>L1 flat</th></tr></thead><tbody>';
+    (D.dropped||[]).forEach(d=>{dh+=`<tr><td class="l">${DB.dt(d.time)}</td><td class="l">${d.reason}</td><td class="l">${d.box_dir}</td><td>${d.l1_flat?'yes':'no'}</td></tr>`;});
+    $('dropped').innerHTML=dh+'</tbody>'; $('dropinfo').textContent=`${dc.total||0} total · ${dc.veto||0} veto · ${dc.vol_gate||0} vol-gate · ${dc.flat_candidates||0} flat`; }
+
+  // trade ledger (source-labeled)
+  const cols=[['layer','src','l'],['entry_time','entry','l'],['exit_time','exit','l'],['direction','dir','l'],['exit_reason','reason','l'],['pnl','P/L']];
+  let h='<thead><tr>'+cols.map(c=>`<th class="${c[2]||''}">${c[1]}</th>`).join('')+'</tr></thead><tbody>';
+  tr.forEach(t=>{h+=`<tr class="${t.layer||''}">`+cols.map(c=>{let v=t[c[0]];
+    if(c[0]==='layer')return `<td class="l"><span class="layerbadge">${v||''}</span></td>`;
+    if(c[0]==='entry_time'||c[0]==='exit_time')v=DB.dt(v);
+    if(c[0]==='pnl')return `<td class="${t.pnl>0?'pos':'neg'}">${Math.round(v).toLocaleString()}</td>`;
+    return `<td class="${c[2]||''}">${v==null?'':v}</td>`;}).join('')+'</tr>';});
+  $('ledger').innerHTML=h+'</tbody>'; $('ledgerhd').textContent=`${tr.length} trades`;
+
+  // per-candle log
+  const lcols=[['layer','src','l'],['time','time','l'],['decision','decision','l'],['reason','reason','l'],['box_cause','box cause','l'],['direction','dir','l'],['pnl','P/L']];
+  let lh='<thead><tr>'+lcols.map(c=>`<th class="${c[2]||''}">${c[1]}</th>`).join('')+'</tr></thead><tbody>';
+  (D.log||[]).forEach(r=>{lh+=`<tr class="${r.layer||''}">`+lcols.map(c=>{let v=r[c[0]];
+    if(c[0]==='layer')return `<td class="l">${v?`<span class="layerbadge">${v}</span>`:''}</td>`;
+    if(c[0]==='time')v=DB.dt(v);
+    if(c[0]==='pnl')return `<td class="${r.pnl>0?'pos':(r.pnl<0?'neg':'')}">${r.pnl?Math.round(r.pnl).toLocaleString():''}</td>`;
+    return `<td class="${c[2]||''}">${v==null?'':v}</td>`;}).join('')+'</tr>';});
+  $('logtbl').innerHTML=lh+'</tbody>';
+  DB.status(`${view.toUpperCase()} · ${tr.length} trades · ${(D.log||[]).length} candles`);
+  DB.fitCharts();
+}
+
+// ── one Run → fan out to all three views → render active ──────────────────────
+async function run(){
+  const rb=$('run'); rb.disabled=true; rb.textContent='Running…'; DB.status('running all three views…'); DB.showErr('');
+  try{
+    DB.commitMath();
+    const body=JSON.stringify({l1:collectLayer('l1'), l2:collectLayer('l2'), tf:'4h'});
+    const views=['l1','l2','combined'];
+    const results=await Promise.all(views.map(v=>
+      fetch('/api/causal_backtest',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...JSON.parse(body),view:v})})
+        .then(async r=>{let d=null;try{d=await r.json();}catch(_){} if(!r.ok||(d&&d.error))throw new Error((d&&d.error)||('HTTP '+r.status)); return d;})));
+    views.forEach((v,i)=>VIEWS[v]=results[i]);
+    renderView(VIEW); DB.markClean(); DB.status('✓ done — all three tabs filled');
+  }catch(e){
+    const conn=/Failed to fetch|NetworkError|fetch/i.test(e.message);
+    DB.showErr(conn?'Cannot reach backend — start server.py then reload.':`Rejected: ${e.message}`); DB.status('⚠ see error above');
+  }finally{ rb.disabled=false; rb.textContent='▶ Run'; }
+}
+
+async function saveLayer(pfx){
+  const name=(prompt(`Save current ${pfx.toUpperCase()} settings as profile named:`,'my profile')||'').trim(); if(!name)return;
+  const ep=pfx==='l1'?'/api/l1_profiles':'/api/l2_profiles';
+  try{
+    const r=await fetch(ep,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,preset:collectLayer(pfx)})});
+    let d=null; try{d=await r.json();}catch(_){}
+    if(!r.ok) throw new Error((d&&d.error)||('HTTP '+r.status));
+    fillDropdown(pfx,d.profiles); $(pfx+'_strategy').value=name; DB.status(`saved “${name}” (${pfx.toUpperCase()})`);
+  }catch(e){ DB.showErr(`Save failed (${pfx.toUpperCase()}): ${e.message}`); }
+}
+
+// ── boot ───────────────────────────────────────────────────────────────────────
+(async function(){
+  buildCharts();
+  window.addEventListener('resize',DB.fitCharts);
+  const mainEl=document.querySelector('main'); if(window.ResizeObserver&&mainEl) new ResizeObserver(DB.fitCharts).observe(mainEl);
+  document.querySelectorAll('.navtab').forEach(t=>t.addEventListener('click',()=>{
+    document.querySelectorAll('.navtab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.layerpane').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on'); $('pane_'+t.dataset.pane).classList.add('on'); DB.fitCharts(); }));
+  $('viewtabs').querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>{
+    $('viewtabs').querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+    btn.classList.add('on'); renderView(btn.dataset.view); }));
+  $('run').addEventListener('click',run);
+  $('errclose').addEventListener('click',()=>DB.showErr(''));
+  $('toggle').addEventListener('click',()=>{const h=document.body.classList.toggle('no-settings'); $('toggle').textContent=h?'⚙ Show settings':'⚙ Hide settings'; requestAnimationFrame(DB.fitCharts);});
+  ['l1','l2'].forEach(pfx=>{
+    $(pfx+'_strategy').addEventListener('change',()=>{const p=STORE[pfx][$(pfx+'_strategy').value]; if(p){setLayer(pfx,p); DB.markDirty(); DB.status(`imported ${pfx.toUpperCase()} profile — click Run`);}});
+    $(pfx+'_reset').addEventListener('click',()=>{const p=STORE[pfx][$(pfx+'_strategy').value]; if(p){setLayer(pfx,p); DB.markDirty();}});
+    $(pfx+'_save').addEventListener('click',()=>saveLayer(pfx));
+    $(pfx+'_split').addEventListener('change',()=>{$(pfx+'_splitbox').style.display=$(pfx+'_split').value==='true'?'':'none'; DB.markDirty();});
+  });
+  document.querySelectorAll('aside input,aside select').forEach(el=>el.addEventListener('input',DB.markDirty));
+  DB.mathify(document.querySelector('aside'));
+  try{
+    const r=await fetch('/api/combined_config'); if(!r.ok) throw new Error('config HTTP '+r.status);
+    const c=await r.json();
+    DB.buildPanel($('l1_indpanel'),c.indicator_schema,DB.markDirty);
+    DB.buildPanel($('l2_indpanel'),c.indicator_schema,DB.markDirty);
+    fillDropdown('l1',{[c.l1_label||'L1 champion']:c.l1_default, ...(c.l1_profiles||{})});
+    fillDropdown('l2',{[c.l2_label||'L2 champion']:c.l2_default, ...(c.l2_profiles||{})});
+    setLayer('l1',c.l1_default); setLayer('l2',c.l2_default);
+    DB.mathify(document.querySelector('aside'));
+    DB.markDirty(); DB.status('ready · best L1 + best L2 loaded · click Run');
+  }catch(e){ DB.markDirty(); DB.showErr(`Cannot reach backend — start server.py then reload. (${e.message})`); }
+})();
+
+$('dl_ledger').addEventListener('click',()=>{ const D=VIEWS[VIEW]; if(!D||!D.trades||!D.trades.length){DB.status('no trades — run first');return;}
+  const headers=['layer','entry','exit','direction','exit_reason','pnl','entry_price','exit_price'];
+  const rows=D.trades.map(t=>[t.layer,DB.dt(t.entry_time),DB.dt(t.exit_time),t.direction,t.exit_reason,t.pnl,t.entry_price,t.exit_price]);
+  DB.downloadCSV(`${VIEW}_ledger.csv`,DB.toCSV(headers,rows)); });
+$('dl_log').addEventListener('click',async()=>{ try{ const r=await fetch('/api/causal_log.csv'); if(!r.ok){DB.status('run first');return;}
+  DB.downloadCSV('causal_log.csv', await r.text()); }catch(e){ DB.showErr('log CSV failed: '+e.message); } });
+</script>
+</body>
+</html>
