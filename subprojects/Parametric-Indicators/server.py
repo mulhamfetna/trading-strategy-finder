@@ -29,6 +29,7 @@ from optimize.l2 import payload as l2payload
 FRONTEND = HERE / "frontend"
 _CTYPE = {".html": "text/html", ".js": "application/javascript", ".css": "text/css",
           ".json": "application/json", ".md": "text/markdown"}
+_LAST_CAUSAL: dict = {}     # caches the last /api/causal_backtest log so GET /api/causal_log.csv can serve it
 
 print("loading data (4h / 1m / box) + computing HAR-RV ...", flush=True)
 _t = time.time()
@@ -95,6 +96,20 @@ class H(BaseHTTPRequestHandler):
                 "l1_profiles": l2payload.load_l1_profiles(),
                 "l2_profiles": l2payload.load_l2_profiles(),
                 "l1_label": "🍃 WS lean 4h champion", "l2_label": "🔁 L2 (extend champion)"}))
+        if path == "/api/causal_log.csv":
+            # full per-candle causal log as CSV (the `layer` column lets L1/L2 be separated downstream).
+            # GET can't carry the L1/L2 params cleanly, so this serves the LAST /api/causal_backtest log
+            # (cached per-process). One row per candle.
+            rows = _LAST_CAUSAL.get("log")
+            if not rows:
+                return self._send(409, "run /api/causal_backtest first", "text/plain")
+            cols = list(rows[0].keys())
+
+            def cell(v):
+                s = "" if v is None else str(v)
+                return ('"' + s.replace('"', '""') + '"') if ("," in s or '"' in s or "\n" in s) else s
+            csv = "\n".join([",".join(cols)] + [",".join(cell(r[c]) for c in cols) for r in rows])
+            return self._send(200, csv, "text/csv")
         name = "index.html" if path in ("/", "") else path.lstrip("/")
         f = FRONTEND / name
         if ".." in name or not f.is_file():
@@ -173,6 +188,25 @@ class H(BaseHTTPRequestHandler):
                 return self._send(400, json.dumps({"error": f"Invalid L1 profile: {e}"}))
             except Exception as e:
                 return self._send(500, json.dumps({"error": f"Save failed: {e}"}))
+        if path == "/api/causal_backtest":
+            # causal log-first backtest for one view (l1 | l2 | combined). Boxes/charts/log all derive
+            # from the SAME per-candle log; the full log is cached for the CSV route.
+            try:
+                n = int(self.headers.get("Content-Length", 0))
+                body = json.loads(self.rfile.read(n) or b"{}")
+                t0 = time.time()
+                out = l2payload.build_view_payload(body.get("l1") or {}, body.get("l2") or {},
+                                                   body.get("tf", "4h"), body.get("view", "combined"))
+                out["meta"]["run_ms"] = round((time.time() - t0) * 1000)
+                _LAST_CAUSAL["log"] = out["log"]
+                print(f"causal backtest [{out['meta']['view']}] n={out['meta']['n']} "
+                      f"({out['meta']['run_ms']}ms)", flush=True)
+                return self._send(200, json.dumps(out))
+            except l2payload.L2ParamError as e:
+                return self._send(400, json.dumps({"error": f"Invalid parameter: {e}"}))
+            except Exception as e:
+                import traceback; traceback.print_exc()
+                return self._send(500, json.dumps({"error": f"Causal backtest failed: {e}"}))
         if path == "/api/combined_backtest":
             try:
                 n = int(self.headers.get("Content-Length", 0))

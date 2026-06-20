@@ -339,6 +339,80 @@ def build_combined_payload(l1_params: dict, l2_params: dict, tf: str = "4h") -> 
     }
 
 
+def _serialize_log_row(r) -> dict:
+    """Compact per-candle log row for the dashboard table + the full payload (one per candle)."""
+    return {"i": r.i, "time": r.time, "layer": r.layer, "decision": r.decision, "reason": r.reason,
+            "box_cause": r.box_cause, "event_type": r.event_type, "direction": r.direction,
+            "box_dir": r.box_dir, "exit_time": r.exit_time, "exit_reason": r.exit_reason,
+            "pnl": round(r.pnl, 2), "equity": r.equity, "dd": r.dd, "in_position": r.in_position,
+            "position_owner": r.position_owner, "l2_reason": r.l2_reason}
+
+
+def build_view_payload(l1_params: dict, l2_params: dict, tf: str = "4h", view: str = "combined") -> dict:
+    """Causal log-first payload for one VIEW (l1 | l2 | combined). Boxes are derived from the per-candle
+    log (aggregate.*); charts/log/CSV all project the SAME log. Separated views carry only their layer's
+    trades; the combined view carries both (the frontend grays the opposite layer)."""
+    from optimize.l2 import logbook, aggregate          # inline: logbook imports payload (avoid circular)
+    from optimize import timeframes as TF
+    if view not in ("l1", "l2", "combined"):
+        raise L2ParamError(f"view must be l1|l2|combined (got {view!r})")
+    l1p = validate_layer_params(l1_params)
+    l2p = validate_layer_params(l2_params)
+    res = logbook.run_causal(l1p, l2p, tf)
+    l1 = run_l1_cached(tf) if l1p == l1_default_params(tf) else run_l1_cached(tf, params=l1p)
+    ds = dataset.build_dataset(l1)
+    bar_secs = int(TF.get(tf).bar_td.total_seconds())
+    dec_dates = l1.df_dec["Date"].to_numpy()
+
+    boxes = (aggregate.combined_boxes(res, bar_secs) if view == "combined"
+             else aggregate.boxes_for_layer(res, view.upper(), bar_secs))
+
+    candles = [{"time": _epoch(d), "open": float(o), "high": float(h), "low": float(lo), "close": float(c)}
+               for d, o, h, lo, c in zip(l1.df_dec["Date"], l1.df_dec["Open"], l1.df_dec["High"],
+                                         l1.df_dec["Low"], l1.df_dec["Close"])]
+
+    def _trade_row(r):
+        p = l1p if r.layer == "L1" else l2p
+        row = {"layer": r.layer, "entry_time": r.time, "exit_time": r.exit_time, "direction": r.direction,
+               "entry_price": float(r.entry_price), "exit_price": float(r.exit_price),
+               "exit_reason": r.exit_reason, "pnl": round(r.pnl, 2)}
+        row.update(_derive_lines({"entry_price": r.entry_price, "direction": r.direction}, p))
+        return row
+
+    entry_rows = [r for r in res.log if r.decision == "entry"]
+    all_trades = [_trade_row(r) for r in entry_rows]
+    if view == "l1":
+        trades = [t for t in all_trades if t["layer"] == "L1"]
+    elif view == "l2":
+        trades = [t for t in all_trades if t["layer"] == "L2"]
+    else:
+        trades = sorted(all_trades, key=lambda t: t["exit_time"])
+
+    def _eq(layer):
+        rows = sorted([r for r in res.log if r.layer == layer and r.decision == "entry"], key=lambda r: r.exit_time)
+        return _dedupe([{"time": r.exit_time, "value": r.equity} for r in rows])
+    merged = sorted(entry_rows, key=lambda r: r.exit_time)
+    comb_eq, eq = [], 0.0
+    for r in merged:
+        eq += r.pnl
+        comb_eq.append({"time": r.exit_time, "value": round(eq, 2)})
+
+    return {
+        "meta": {"view": view, "n": res.n, "boxes": boxes,
+                 "dropped_counts": {"veto": ds.n_veto, "vol_gate": ds.n_vol_gate,
+                                    "total": len(ds), "flat_candidates": len(ds.flat_candidates())}},
+        "candles": candles,
+        "l1_spans": _spans_from_timeline(l1.state_timeline, dec_dates),
+        "dropped": [{"time": _epoch(d["ts"]), "reason": d["reason"], "box_dir": d["box_dir"],
+                     "l1_flat": (not bool(l1.state_timeline[d["idx"]]))} for d in l1.dropped_signals],
+        "trades": trades,
+        "l1_equity": _eq("L1"),
+        "l2_equity": _eq("L2"),
+        "combined_equity": _dedupe(comb_eq),
+        "log": [_serialize_log_row(r) for r in res.log],
+    }
+
+
 def build_l2_payload(l2_params: dict, tf: str = "4h") -> dict:
     p = validate_l2_params(l2_params)
     l1 = run_l1_cached(tf)
