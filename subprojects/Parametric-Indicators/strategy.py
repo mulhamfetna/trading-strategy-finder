@@ -229,6 +229,37 @@ def validate_params(params):
                 veto_as_flip=bool(params.get("veto_as_flip")), **split)
 
 
+_WINDOW_LOHI = {"full": lambda N, n: (0, N), "2024": lambda N, n: (0, N),
+                "2025": lambda N, n: (0, n), "2026": lambda N, n: (n, N),
+                "full+20d": lambda N, n: (0, N), "2026+20d": lambda N, n: (n, N)}
+
+
+def window_slice(df4, df1, box, vf, n2025, window, timeframe):
+    """Resolve a window selection to its windowed dataset + the pre-window gate references.
+
+    Bundle-swaps for the ISOLATED windows (2024 -> load_year_bundle, +20d -> get_bundle_plus20d) then
+    physically slices [lo:hi]. Returns:
+      (d4, d1, vfw)  — the WINDOWED decision frame, 1-min frame and vol-forecast (what the engine runs on)
+      (df4, vf, n2025, box) — the POST-swap FULL references (the gate must seed on vf[:n2025]; split_ts
+                              uses df4/n2025 — these are NEVER the sliced versions)
+      (lo, hi)       — the slice bounds.
+    Shared by strategy.build_payload AND optimize.l2.l1_runner.run_l1 so windowed L1 numbers match
+    byte-for-byte across both engines (4h data sources are verified identical). The gate is seeded on
+    the unsliced vf[:n2025] here-or-by-caller, never on the windowed vfw."""
+    bar_td = TF.get(timeframe).bar_td
+    if window == "2024":
+        df4, df1, box, vf, n2025 = load_year_bundle(2024)
+    elif window in ("full+20d", "2026+20d"):
+        df4, df1, box, vf, n2025 = get_bundle_plus20d(timeframe)
+    N = len(df4)
+    lo, hi = _WINDOW_LOHI[window](N, n2025)
+    d4 = df4.iloc[lo:hi].reset_index(drop=True)
+    t0, t1 = d4["Date"].iloc[0], d4["Date"].iloc[-1] + bar_td
+    d1 = df1[(df1["Date"] >= t0) & (df1["Date"] < t1)].reset_index(drop=True)
+    vfw = vf[lo:hi]
+    return d4, d1, vfw, df4, vf, n2025, box, lo, hi
+
+
 def build_payload(df4, df1, box, vf, n2025, params=None):
     P = validate_params(params)
     sl_soft, sl_hard, tp = P["sl_soft"], P["sl_hard"], P["tp"]
@@ -239,21 +270,10 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
     # decision-bar duration generalises the old hardcoded "+4h" 1-minute slice bound to any TF.
     bar_td = TF.get(P["timeframe"]).bar_td
 
-    # 2024 is an ISOLATED window: swap in its own self-contained bundle so 2025/2026/full stay
-    # byte-identical (their vol-forecast + gate are untouched). The whole 2024 bundle = one window.
-    if window == "2024":
-        df4, df1, box, vf, n2025 = load_year_bundle(2024)
-    elif window in ("full+20d", "2026+20d"):
-        # combined bundle: 2025 + 2026 + the last-20-days tail (same per-TF split as get_bundle).
-        df4, df1, box, vf, n2025 = get_bundle_plus20d(P["timeframe"])
-
-    N = len(df4)
-    lo, hi = {"full": (0, N), "2024": (0, N), "2025": (0, n2025), "2026": (n2025, N),
-              "full+20d": (0, N), "2026+20d": (n2025, N)}[window]
-    d4 = df4.iloc[lo:hi].reset_index(drop=True)
-    t0, t1 = d4["Date"].iloc[0], d4["Date"].iloc[-1] + bar_td
-    d1 = df1[(df1["Date"] >= t0) & (df1["Date"] < t1)].reset_index(drop=True)
-    vfw = vf[lo:hi]
+    # window selection (bundle-swap for the isolated 2024/+20d windows + physical slice) — shared with
+    # l1_runner.run_l1 so windowed L1 numbers match byte-for-byte across both engines. df4/vf/n2025/box
+    # are rebound to the POST-swap FULL frames (split_ts + the gate seed use them, never the sliced d4).
+    d4, d1, vfw, df4, vf, n2025, box, lo, hi = window_slice(df4, df1, box, vf, n2025, window, P["timeframe"])
 
     gthr = gate = None
     if gate_pct > 0:
