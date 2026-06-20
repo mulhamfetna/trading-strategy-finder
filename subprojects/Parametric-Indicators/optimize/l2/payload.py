@@ -396,7 +396,7 @@ def build_view_payload(l1_params: dict, l2_params: dict, tf: str = "4h", view: s
     is the engine's complete L1 dashboard payload (strategy.build_payload — vol/state/drawdown/events/
     split-SL-TP/window, nothing lost) PLUS the causal per-candle log + the log-derived L1 boxes. So
     index.html runs entirely off /api/causal_backtest with no feature loss, boxes consistent with the log."""
-    from optimize.l2 import logbook, aggregate          # inline: logbook imports payload (avoid circular)
+    from optimize.l2 import logbook, aggregate, charts  # inline: logbook imports payload (avoid circular)
     from optimize import timeframes as TF
     if view not in ("l1", "l2", "combined"):
         raise L2ParamError(f"view must be l1|l2|combined (got {view!r})")
@@ -422,6 +422,9 @@ def build_view_payload(l1_params: dict, l2_params: dict, tf: str = "4h", view: s
 
     boxes = (aggregate.combined_boxes(res, bar_secs) if view == "combined"
              else aggregate.boxes_for_layer(res, view.upper(), bar_secs))
+    # per-layer engine charts (vol/gate_thr/state/equity/drawdown/events) from the SAME causal run, so the
+    # L2 + Combined tabs get engine charts they never had — charts and boxes can't disagree (one pass).
+    engine_charts = charts.charts_for_layer(res, l1, "combined" if view == "combined" else view.upper())
 
     candles = [{"time": _epoch(d), "open": float(o), "high": float(h), "low": float(lo), "close": float(c)}
                for d, o, h, lo, c in zip(l1.df_dec["Date"], l1.df_dec["Open"], l1.df_dec["High"],
@@ -465,6 +468,7 @@ def build_view_payload(l1_params: dict, l2_params: dict, tf: str = "4h", view: s
         "l1_equity": _eq("L1"),
         "l2_equity": _eq("L2"),
         "combined_equity": _dedupe(comb_eq),
+        "engine": engine_charts,
         "log": [_serialize_log_row(r) for r in res.log],
     }
 
