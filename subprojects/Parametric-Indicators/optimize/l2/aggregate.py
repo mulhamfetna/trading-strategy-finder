@@ -27,7 +27,6 @@ import pandas as pd
 
 from optimize import pause_streaks
 
-_BLOCKED = {"vol_gated", "vetoed", "confirm<K"}          # box signalled but blocked (no-entry streak set)
 _GATE = {"vol_gated"}
 _INDIC = {"vetoed", "confirm<K"}
 
@@ -50,22 +49,46 @@ def _financials(entries: list) -> dict:
     )
 
 
-def _noentry_streak(rows: list, bar_seconds: int) -> dict:
-    """Longest run of consecutive BLOCKED box-signal bars (gate/veto/confirm<K), reset by an entry
-    opportunity (would_enter); box-silence neither extends nor breaks it. Matches the standalone box."""
+def _bar_category(row, layer: str) -> str:
+    """Per-bar no-entry category FROM THIS LAYER'S perspective: box_silence|gate|indicator|opportunity|none.
+    L1 reads its own box_cause; L2 reads its own per-bar decision (l2_reason) on the bars it evaluated —
+    so L2's streak/total boxes reflect L2's gate/veto, not L1's market view (Task-4 review fix)."""
+    if layer == "L1":
+        c = row.box_cause
+        if c == "box_silence":
+            return "box_silence"
+        if c in _GATE:
+            return "gate"
+        if c in _INDIC:
+            return "indicator"
+        if c == "would_enter":
+            return "opportunity"
+        return "none"
+    c = row.l2_reason                       # L2: only set on bars L2 evaluated (dropped + L1-flat)
+    if c in _GATE:
+        return "gate"
+    if c in _INDIC:
+        return "indicator"
+    if c in ("entered", "passed"):
+        return "opportunity"
+    return "none"                           # bars L2 didn't evaluate (incl. L1 box_silence — N/A for L2)
+
+
+def _noentry_streak(rows: list, cats: list, bar_seconds: int) -> dict:
+    """Longest run of consecutive BLOCKED bars (gate/indicator), reset by an entry opportunity;
+    box_silence/none neither extend nor break it. Layer-aware via `cats`."""
     best_n = 0
     best_s = best_e = None
     cur = 0
     cur_s = None
-    for r in rows:
-        c = r.box_cause
-        if c in _BLOCKED:
+    for r, c in zip(rows, cats):
+        if c in ("gate", "indicator"):
             if cur == 0:
                 cur_s = r
             cur += 1
             if cur > best_n:
                 best_n, best_s, best_e = cur, cur_s, r
-        elif c == "would_enter":
+        elif c == "opportunity":
             cur = 0
     days = round((best_e.time - best_s.time) / 86400.0, 1) if best_n else 0.0
     start = pd.Timestamp(best_s.time, unit="s").strftime("%Y-%m-%d") if best_n else None
@@ -77,14 +100,14 @@ def boxes_for_layer(result, layer: str, bar_seconds: int) -> dict:
     entries = [r for r in log if r.layer == layer and r.decision == "entry"]
     out = _financials(entries)
 
-    # per-bar masks from box_cause (over ALL bars — matches legacy pause_totals/pause_metrics)
-    bc = [r.box_cause for r in log]
-    box_sil = np.array([c == "box_silence" for c in bc], dtype=bool)
-    gate = np.array([c in _GATE for c in bc], dtype=bool)
-    indic = np.array([c in _INDIC for c in bc], dtype=bool)
+    # per-bar no-entry category from THIS layer's perspective, over ALL bars (matches legacy pause_totals)
+    cats = [_bar_category(r, layer) for r in log]
+    box_sil = np.array([c == "box_silence" for c in cats], dtype=bool)
+    gate = np.array([c == "gate" for c in cats], dtype=bool)
+    indic = np.array([c == "indicator" for c in cats], dtype=bool)
     pos = np.array([r.position_owner == layer for r in log], dtype=bool)
 
-    streak = _noentry_streak(log, bar_seconds)
+    streak = _noentry_streak(log, cats, bar_seconds)
     out.update(
         noentry_streak_n=streak["n"], noentry_streak_days=streak["days"], noentry_streak_start=streak["start"],
         box_silence=pause_streaks._dur(pause_streaks.longest_run(box_sil), bar_seconds),
@@ -109,6 +132,79 @@ def boxes_for_layer(result, layer: str, bar_seconds: int) -> dict:
     w = (result.warmup or {}).get(layer.lower(), {})
     out["warmup"] = pause_streaks._dur(int(w.get("warmup_bars", 0)), bar_seconds)
     out["indicator_req"] = pause_streaks._dur(int(w.get("indicator_req_bars", 0)), bar_seconds)
+    return out
+
+
+def _merged_dd(log: list) -> float:
+    """Max underwater of the merged L1+L2 equity, cumulated in EXIT-time order (matches metrics.combined)."""
+    ex = sorted([r for r in log if r.decision == "entry"], key=lambda r: (r.exit_time or 0))
+    pnls = np.array([r.pnl for r in ex], dtype=float)
+    if not len(pnls):
+        return 0.0
+    eq = np.cumsum(pnls)
+    return float((np.maximum.accumulate(eq) - eq).max())
+
+
+def combined_boxes(result, bar_seconds: int) -> dict:
+    """Per-box combination rules for the combined view (NOT uniform max):
+      sum      → pnl, n_taken (trades), n_candidates, breaker locks  (no layer tag)
+      recompute→ max_dd (merged EXIT-ordered equity), win, pf, exposure  (from the combined trade set)
+      max+tag  → all streak boxes + warmup + indicator_req  (which layer produced the larger)
+      guardrail→ l1_only_dd, uplift, dd_not_worse, n_l1_entry_exits  (kept; additive)
+      excluded → all *_total keys (deferred — kept only in the individual views)."""
+    log = result.log
+    l1 = boxes_for_layer(result, "L1", bar_seconds)
+    l2 = boxes_for_layer(result, "L2", bar_seconds)
+
+    def mx_num(key):
+        a, b = l1[key], l2[key]
+        return {"value": max(a, b), "layer": ("L1" if a >= b else "L2")}
+
+    def mx_dur(key):
+        a, b = l1[key], l2[key]
+        win_l1 = a["bars"] >= b["bars"]
+        return {"value": (a if win_l1 else b), "layer": ("L1" if win_l1 else "L2")}
+
+    entries = [r for r in log if r.decision == "entry"]
+    pnls = np.array([r.pnl for r in entries], dtype=float)
+    wins, losses = pnls[pnls > 0], pnls[pnls < 0]
+    win = round(100 * float((pnls > 0).mean()), 1) if len(pnls) else 0.0
+    pf = round(float(wins.sum() / abs(losses.sum())), 2) if len(losses) and losses.sum() != 0 else None
+    n_taken = l1["n_taken"] + l2["n_taken"]
+    n_candidates = l1["n_candidates"] + l2["n_candidates"]
+    combined_pnl = round(l1["pnl"] + l2["pnl"], 2)
+    merged_dd = round(_merged_dd(log), 2)
+
+    out = {
+        # sum (no layer tag)
+        "pnl": {"value": combined_pnl},
+        "n_taken": {"value": n_taken},
+        "n_candidates": {"value": n_candidates},
+        "n_locks": {"value": l1["n_locks"] + l2["n_locks"]},
+        # recompute from the combined trade set
+        "max_dd": {"value": merged_dd},
+        "win": {"value": win},
+        "pf": {"value": pf},
+        "exposure": {"value": round(100 * n_taken / max(n_candidates, 1), 1)},
+        # max + producing-layer tag
+        "noentry_streak_n": mx_num("noentry_streak_n"),
+        "box_silence": mx_dur("box_silence"),
+        "gate_noentry": mx_dur("gate_noentry"),
+        "indicator_noentry": mx_dur("indicator_noentry"),
+        "position_hold": mx_dur("position_hold"),
+        "warmup": mx_dur("warmup"),
+        "indicator_req": mx_dur("indicator_req"),
+        # guardrails (kept — additive; present in today's combined.html)
+        "l1_only_dd": {"value": round(l1["max_dd"], 2)},
+        "uplift": {"value": round(combined_pnl - l1["pnl"], 2)},
+        "dd_not_worse": {"value": merged_dd <= round(l1["max_dd"], 2)},
+        "n_l1_entry_exits": {"value": sum(1 for r in log if r.layer == "L2" and r.exit_reason == "L1-entry")},
+    }
+    # the no-entry-streak's days/start follow the winning layer
+    streak_layer = out["noentry_streak_n"]["layer"]
+    src = l1 if streak_layer == "L1" else l2
+    out["noentry_streak_days"] = {"value": src["noentry_streak_days"], "layer": streak_layer}
+    out["noentry_streak_start"] = {"value": src["noentry_streak_start"], "layer": streak_layer}
     return out
 
 
