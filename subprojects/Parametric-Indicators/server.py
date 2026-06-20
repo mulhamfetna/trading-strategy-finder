@@ -110,7 +110,7 @@ class H(BaseHTTPRequestHandler):
                 return ('"' + s.replace('"', '""') + '"') if ("," in s or '"' in s or "\n" in s) else s
             csv = "\n".join([",".join(cols)] + [",".join(cell(r[c]) for c in cols) for r in rows])
             return self._send(200, csv, "text/csv")
-        name = "index.html" if path in ("/", "") else path.lstrip("/")
+        name = "dashboard.html" if path in ("/", "") else path.lstrip("/")   # the unified 3-tab app
         f = FRONTEND / name
         if ".." in name or not f.is_file():
             return self._send(404, "not found", "text/plain")
