@@ -339,6 +339,17 @@ def build_combined_payload(l1_params: dict, l2_params: dict, tf: str = "4h") -> 
     }
 
 
+def _layer_from_strategy(sp: dict) -> dict:
+    """Map index.html's full strategy params → the L1 layer schema run_causal uses (single SL/TP core;
+    1-min indicators). The engine charts/boxes for the unified L1 view come from strategy.build_payload;
+    this layer projection drives the per-candle causal log."""
+    return validate_layer_params({
+        "sl_soft": sp.get("sl_soft"), "sl_hard": sp.get("sl_hard"), "tp": sp.get("tp"),
+        "gate_pct": sp.get("gate_pct", 0) or 0, "dd_limit": sp.get("dd_limit", 0) or 0,
+        "cooldown": sp.get("cooldown", 0) or 0, "flip": bool(sp.get("flip", False)),
+        "indicators": sp.get("indicators", []), "k": sp.get("k", 1), "ind_1min": True})
+
+
 def _serialize_log_row(r) -> dict:
     """Compact per-candle log row for the dashboard table + the full payload (one per candle)."""
     return {"i": r.i, "time": r.time, "layer": r.layer, "decision": r.decision, "reason": r.reason,
@@ -348,14 +359,32 @@ def _serialize_log_row(r) -> dict:
             "position_owner": r.position_owner, "l2_reason": r.l2_reason}
 
 
-def build_view_payload(l1_params: dict, l2_params: dict, tf: str = "4h", view: str = "combined") -> dict:
+def build_view_payload(l1_params: dict, l2_params: dict, tf: str = "4h", view: str = "combined",
+                       l1_engine: dict | None = None) -> dict:
     """Causal log-first payload for one VIEW (l1 | l2 | combined). Boxes are derived from the per-candle
     log (aggregate.*); charts/log/CSV all project the SAME log. Separated views carry only their layer's
-    trades; the combined view carries both (the frontend grays the opposite layer)."""
+    trades; the combined view carries both (the frontend grays the opposite layer).
+
+    UNIFIED L1 view: when `l1_engine` (the full strategy-param dict) is given with view='l1', the payload
+    is the engine's complete L1 dashboard payload (strategy.build_payload — vol/state/drawdown/events/
+    split-SL-TP/window, nothing lost) PLUS the causal per-candle log + the log-derived L1 boxes. So
+    index.html runs entirely off /api/causal_backtest with no feature loss, boxes consistent with the log."""
     from optimize.l2 import logbook, aggregate          # inline: logbook imports payload (avoid circular)
     from optimize import timeframes as TF
     if view not in ("l1", "l2", "combined"):
         raise L2ParamError(f"view must be l1|l2|combined (got {view!r})")
+
+    if view == "l1" and l1_engine:
+        import strategy                                  # the L1 engine (full feature set)
+        l1p = validate_layer_params(l1_params)
+        res = logbook.run_causal(l1p, dict(PERMISSIVE), tf)          # causal log for the L1 layer
+        bar_secs = int(TF.get(tf).bar_td.total_seconds())
+        base = strategy.build_payload(*strategy.get_bundle(l1_engine.get("timeframe") or tf), l1_engine)
+        base["log"] = [_serialize_log_row(r) for r in res.log]
+        base["meta"]["boxes"] = aggregate.boxes_for_layer(res, "L1", bar_secs)   # log-derived (== engine summary)
+        base["meta"]["n"] = res.n
+        base["meta"]["view"] = "l1"
+        return base
     l1p = validate_layer_params(l1_params)
     l2p = validate_layer_params(l2_params)
     res = logbook.run_causal(l1p, l2p, tf)

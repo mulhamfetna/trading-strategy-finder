@@ -132,7 +132,7 @@ function syncGateBtn(){ const off=(+$('gate_pct').value||0)===0; const b=$('gate
   b.title=off?`turn the volatility gate back on (gate_pct→${lastGatePct})`:'turn the volatility gate off (gate_pct→0) and back on'; }
 
 const cfg={
-  endpoints:{config:'/api/config', backtest:'/api/backtest', profiles:'/api/profiles'},
+  endpoints:{config:'/api/config', backtest:'/api/backtest_causal', profiles:'/api/profiles'},
   runLabel:'Run Backtest', warmupEndpoint:'/api/warmup', profileKey:'wsg_profiles_v1',
   panels:[
     {id:'price',height:430,build:c=>({
@@ -245,6 +245,13 @@ const cfg={
       else if(['pnl','equity','dd'].includes(c[0])){const col=c[0]==='pnl'?(t.pnl>0?'pos':'neg'):'';return `<td class="${col}">${Math.round(v).toLocaleString()}</td>`;}
       return `<td class="${c[2]||''}">${v}</td>`;}).join('')+'</tr>';});
     $('trades').innerHTML=h+'</tbody>';
+    // per-candle causal log (now bundled with every Run via /api/backtest_causal — the single source of truth)
+    if(D.log){ const lc=[['time','time','l'],['decision','decision','l'],['reason','reason','l'],['box_cause','box cause','l'],['direction','dir','l'],['pnl','P/L']];
+      let lh='<thead><tr>'+lc.map(c=>`<th class="${c[2]||''}">${c[1]}</th>`).join('')+'</tr></thead><tbody>';
+      D.log.forEach(rw=>{lh+='<tr>'+lc.map(c=>{let v=rw[c[0]]; if(c[0]==='time')v=DB.dt(v);
+        if(c[0]==='pnl')return `<td class="${rw.pnl>0?'pos':(rw.pnl<0?'neg':'')}">${rw.pnl?Math.round(rw.pnl).toLocaleString():''}</td>`;
+        return `<td class="${c[2]||''}">${v==null?'':v}</td>`;}).join('')+'</tr>';});
+      if($('caulog'))$('caulog').innerHTML=lh+'</tbody>'; }
     DB.fitCharts();
   },
 };

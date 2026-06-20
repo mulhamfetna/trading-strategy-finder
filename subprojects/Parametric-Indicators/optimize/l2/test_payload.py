@@ -134,6 +134,33 @@ def test_save_and_load_l1_profile_roundtrips(tmp_path, monkeypatch):
     assert "leanish" in profs and payload.load_l1_profiles()["leanish"]["tp"] == 120.2
 
 
+def test_unified_l1_view_bundles_engine_payload_plus_log():
+    """The unified L1 view (build_view_payload view=l1 + l1_engine=strategy params) returns the engine's
+    full payload (vol/state/drawdown/events/trades) PLUS the causal per-candle log + log-derived boxes,
+    and the log boxes equal the engine summary (consistent)."""
+    import sys as _sys
+    _sys.path.insert(0, str(_PI))
+    import strategy
+    sp = dict(strategy.WINNER) if hasattr(strategy, "WINNER") else None
+    import config
+    sp = {**config.WINNER, "timeframe": "4h", "window": "full", "indicators": [], "k": 1,
+          "veto_as_flip": False, "gen": {"swing_l": 2, "golf_n": 3}, "retrace_amount": 0,
+          "retrace_unit": "points", "wait_bars": 0}
+    eng = payload._layer_from_strategy(sp)
+    out = payload.build_view_payload(eng, {}, "4h", "l1", l1_engine=sp)
+    for k in ("vol", "state", "drawdown", "events", "candles", "trades", "log"):
+        assert k in out, k
+    assert out["meta"]["view"] == "l1" and out["meta"]["n"] == len(out["log"])
+    assert round(out["meta"]["boxes"]["pnl"]) == round(out["meta"]["summary"]["pnl"])   # log == engine
+
+
+def test_layer_from_strategy_maps_core():
+    import config
+    sp = {**config.WINNER, "indicators": [], "k": 1}
+    lp = payload._layer_from_strategy(sp)
+    assert lp["window"] == "full" and lp["ind_1min"] is True and lp["sl_soft"] == config.WINNER["sl_soft"]
+
+
 def test_derive_lines_short_mirrors_long():
     line = payload._derive_lines(
         {"entry_price": 1000.0, "direction": "short"},

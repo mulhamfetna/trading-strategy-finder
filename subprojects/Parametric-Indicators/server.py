@@ -188,6 +188,25 @@ class H(BaseHTTPRequestHandler):
                 return self._send(400, json.dumps({"error": f"Invalid L1 profile: {e}"}))
             except Exception as e:
                 return self._send(500, json.dumps({"error": f"Save failed: {e}"}))
+        if path == "/api/backtest_causal":
+            # Unified L1 view: same body as /api/backtest (full strategy params). Returns the engine's
+            # complete L1 dashboard payload (strategy.build_payload — all features) + the causal per-candle
+            # log + log-derived L1 boxes, so index.html runs entirely off the causal log with no feature loss.
+            try:
+                n = int(self.headers.get("Content-Length", 0))
+                body = json.loads(self.rfile.read(n) or b"{}")
+                t0 = time.time()
+                l1lay = l2payload._layer_from_strategy(body)
+                out = l2payload.build_view_payload(l1lay, {}, body.get("timeframe", "4h"), "l1", l1_engine=body)
+                out["meta"]["run_ms"] = round((time.time() - t0) * 1000)
+                _LAST_CAUSAL["log"] = out["log"]
+                print(f"backtest_causal [l1] n={out['meta']['n']} ({out['meta']['run_ms']}ms)", flush=True)
+                return self._send(200, json.dumps(out))
+            except (l2payload.L2ParamError, strategy.ParamError) as e:
+                return self._send(400, json.dumps({"error": f"Invalid parameter: {e}"}))
+            except Exception as e:
+                import traceback; traceback.print_exc()
+                return self._send(500, json.dumps({"error": f"L1 causal backtest failed: {e}"}))
         if path == "/api/causal_backtest":
             # causal log-first backtest for one view (l1 | l2 | combined). Boxes/charts/log all derive
             # from the SAME per-candle log; the full log is cached for the CSV route.
