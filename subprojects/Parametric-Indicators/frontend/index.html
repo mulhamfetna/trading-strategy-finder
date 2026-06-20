@@ -210,6 +210,7 @@ const cfg={
       DB.card(S.n_locks,'breaker locks')+
       `<div class="card"><div class="v" id="fp_warm" style="font-size:15px">—</div><div class="k">warmup period</div></div>`+
       `<div class="card"><div class="v" id="fp_heavy" style="font-size:12px;line-height:1.25">—</div><div class="k">longest indicator candles requirement</div></div>`;
+    if(DB.recomputeWarmup)DB.recomputeWarmup();   // render() just reset fp_warm/fp_heavy to '—'; repopulate them (fixes blank-after-Run)
     ps.candle.setData(D.candles);
     const tpD=[],shD=[],ssD=[],mks=[];let last=0;
     D.trades.forEach(t=>{

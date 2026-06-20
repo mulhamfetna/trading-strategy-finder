@@ -86,8 +86,10 @@
         const r = await fetch(_warmEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ indicators: indicatorSpecs() }) });
         const d = await r.json();
         if (d.error) { $('fp_warm').textContent = '—'; $('fp_heavy').textContent = '(check params)'; return; }
-        $('fp_warm').textContent = d.max_bars ? `${d.max_bars.toLocaleString()} candles · ${fmtDur(d.max_bars)}` : 'no indicators on';
-        $('fp_heavy').textContent = d.driver ? `${d.driver.label} — ${d.driver.bars.toLocaleString()} candles · ${fmtDur(d.driver.bars)}` : '—';
+        // measured zero (no indicators enabled) reads as a real value, not missing data ('—').
+        // The two cards stay DISTINCT: fp_warm = warmup period, fp_heavy = longest indicator requirement.
+        $('fp_warm').textContent = d.max_bars ? `${d.max_bars.toLocaleString()} candles · ${fmtDur(d.max_bars)}` : '0 candles · 0d (no indicators)';
+        $('fp_heavy').textContent = d.driver ? `${d.driver.label} — ${d.driver.bars.toLocaleString()} candles · ${fmtDur(d.driver.bars)}` : '0 candles (no indicator requirement)';
       } catch (e) { $('fp_heavy').textContent = 'warmup calc failed'; }
     }, 250);
   }
