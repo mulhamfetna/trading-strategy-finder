@@ -113,6 +113,10 @@
       <div class="panel"><h2>Event log — what happened, when &amp; why <button class="ghost csvbtn" id="dl_events" title="download the event log as CSV">⬇ CSV</button></h2><div class="log" id="log"></div></div>
       <div class="panel"><h2>Trade ledger <button class="ghost csvbtn" id="dl_trades" title="download the trade ledger as CSV">⬇ CSV</button></h2><div class="tablewrap"><table id="trades"></table></div></div>
     </div>
+    <div class="panel"><h2>Per-candle causal log (L1 view, from the single source of truth) — consistent with the Combined dashboard
+        <button class="ghost csvbtn" id="load_caulog" title="compute the L1 view from the causal log for the CURRENT core settings">↻ load</button>
+        <button class="ghost csvbtn" id="dl_caulog" title="download the full per-candle log CSV">⬇ full-log CSV</button></h2>
+      <div class="tablewrap" style="max-height:320px"><table id="caulog"><thead><tr><th class="l">—</th></tr></thead><tbody><tr><td class="l" style="color:var(--muted)">click ↻ load to compute the causal L1 per-candle log for the current SL/TP · gate · indicators</td></tr></tbody></table></div></div>
     <p class="note" id="status"></p>
   </main>
 </div>
@@ -266,6 +270,34 @@ if($('dl_trades'))$('dl_trades').addEventListener('click',()=>{ const D=window.L
   const keys=['entry_time','exit_time','direction','entry_price','exit_price','sl_soft_line','sl_hard_line','tp_soft_line','tp_hard_line','exit_reason','pnl','equity','dd','year'];
   const rows=D.trades.map(t=>keys.map(k=>(k==='entry_time'||k==='exit_time')?DB.dt(t[k]):t[k]));
   DB.downloadCSV(`trade_ledger_${_tfTag()}.csv`, DB.toCSV(keys,rows)); });
+
+// ── per-candle causal log (L1 view) — additive: maps the current CORE settings to the layer schema
+// and computes the L1 projection of the single source-of-truth log (consistent with the Combined page).
+function _l1LayerParams(){ return { indicators: DB.indicatorSpecs(), k:+$('k_rule').value||1, gate_pct:+$('gate_pct').value||0,
+  sl_soft:+$('sl_soft').value, sl_hard:+$('sl_hard').value, tp:+$('tp').value, dd_limit:+$('dd_limit').value||0,
+  cooldown:+$('cooldown').value||0, flip:$('flip').value==='true', ind_1min:true }; }
+const _L2_MIN={indicators:[],k:1,gate_pct:0,sl_soft:1,sl_hard:1,tp:1,dd_limit:0,cooldown:0,flip:false,ind_1min:false};
+if($('load_caulog'))$('load_caulog').addEventListener('click',async()=>{
+  const btn=$('load_caulog'); btn.disabled=true; btn.textContent='…'; DB.status('computing causal L1 log…');
+  try{ DB.commitMath();
+    const r=await fetch('/api/causal_backtest',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({l1:_l1LayerParams(), l2:_L2_MIN, tf:$('timeframe').value||'4h', view:'l1'})});
+    let D=null; try{D=await r.json();}catch(_){}
+    if(!r.ok||!D||D.error) throw new Error((D&&D.error)||('HTTP '+r.status));
+    window.CAULOG=D;
+    const b=D.meta.boxes;
+    const lcols=[['time','time','l'],['decision','decision','l'],['reason','reason','l'],['box_cause','box cause','l'],['direction','dir','l'],['pnl','P/L']];
+    let h='<thead><tr>'+lcols.map(c=>`<th class="${c[2]||''}">${c[1]}</th>`).join('')+'</tr></thead><tbody>';
+    (D.log||[]).forEach(rw=>{h+=`<tr>`+lcols.map(c=>{let v=rw[c[0]]; if(c[0]==='time')v=DB.dt(v);
+      if(c[0]==='pnl')return `<td class="${rw.pnl>0?'pos':(rw.pnl<0?'neg':'')}">${rw.pnl?Math.round(rw.pnl).toLocaleString():''}</td>`;
+      return `<td class="${c[2]||''}">${v==null?'':v}</td>`;}).join('')+'</tr>';});
+    $('caulog').innerHTML=h+'</tbody>';
+    DB.status(`causal L1 log: P/L $${Math.round(b.pnl).toLocaleString()} · ${b.n_taken} trades · ${(D.log||[]).length} candles`);
+  }catch(e){ DB.showErr('causal log failed: '+e.message); }
+  finally{ btn.disabled=false; btn.textContent='↻ load'; }
+});
+if($('dl_caulog'))$('dl_caulog').addEventListener('click',async()=>{ try{ const r=await fetch('/api/causal_log.csv');
+  if(!r.ok){DB.status('click ↻ load first');return;} DB.downloadCSV('causal_log_l1.csv', await r.text()); }catch(e){ DB.showErr('log CSV failed: '+e.message); } });
 
 </script>
 </body>
