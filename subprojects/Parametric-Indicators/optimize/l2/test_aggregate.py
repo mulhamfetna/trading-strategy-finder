@@ -55,7 +55,9 @@ def test_combined_boxes_apply_per_box_rules():
     # SUM boxes (no layer tag)
     assert c["pnl"]["value"] == round(l1["pnl"] + l2["pnl"], 2) and "layer" not in c["pnl"]
     assert c["n_taken"]["value"] == l1["n_taken"] + l2["n_taken"]
+    assert c["n_candidates"]["value"] == l1["n_candidates"] + l2["n_candidates"]
     assert c["n_locks"]["value"] == l1["n_locks"] + l2["n_locks"]
+    assert c["uplift"]["value"] == round(l2["pnl"], 2)
     # max_dd RECOMPUTED from merged exit-ordered equity == legacy metrics.combined oracle (not a loose bound)
     legacy_l1 = l1_runner.run_l1("4h")
     legacy_l2 = engine.run_l2(legacy_l1, champ)

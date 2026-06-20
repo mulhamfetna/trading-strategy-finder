@@ -196,7 +196,7 @@ def combined_boxes(result, bar_seconds: int) -> dict:
         "indicator_req": mx_dur("indicator_req"),
         # guardrails (kept — additive; present in today's combined.html)
         "l1_only_dd": {"value": round(l1["max_dd"], 2)},
-        "uplift": {"value": round(combined_pnl - l1["pnl"], 2)},
+        "uplift": {"value": round(l2["pnl"], 2)},          # L2's exact contribution (L1/L2 trades disjoint)
         "dd_not_worse": {"value": merged_dd <= round(l1["max_dd"], 2)},
         "n_l1_entry_exits": {"value": sum(1 for r in log if r.layer == "L2" and r.exit_reason == "L1-entry")},
     }
