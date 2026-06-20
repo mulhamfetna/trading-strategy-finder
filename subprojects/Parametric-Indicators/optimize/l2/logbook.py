@@ -75,7 +75,8 @@ class CausalResult:
     log: list
     n: int
     dec_dates: object
-    warmup: dict = field(default_factory=dict)   # {l1:{warmup_bars,indicator_req_bars}, l2:{...}}
+    warmup: dict = field(default_factory=dict)   # {l1:{warmup_bars,indicator_req_bars}, l2:{...}} (config-derived)
+    counts: dict = field(default_factory=dict)   # {l1:{n_locks,n_skipped}, l2:{...}} (engine-event scalars)
 
 
 def _epoch(ts) -> int:
@@ -182,4 +183,6 @@ def run_causal(l1_params: dict, l2_params: dict, tf: str = "4h", bar_mask=None) 
             r.dd = round(peak - eq, 2)
 
     return CausalResult(tf=tf, l1_params=l1p, l2_params=l2p, log=log, n=n, dec_dates=dec_dates,
-                        warmup={"l1": _warmup_for(l1p), "l2": _warmup_for(l2p)})
+                        warmup={"l1": _warmup_for(l1p), "l2": _warmup_for(l2p)},
+                        counts={"l1": {"n_locks": int(l1.n_locks), "n_skipped": int(l1.n_skipped_breaker)},
+                                "l2": {"n_locks": int(res.n_locks), "n_skipped": int(res.n_skipped_breaker)}})
