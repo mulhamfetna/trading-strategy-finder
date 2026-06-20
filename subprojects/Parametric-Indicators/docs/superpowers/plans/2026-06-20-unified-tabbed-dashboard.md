@@ -156,6 +156,31 @@ STEP 0–2 greenlit to start now. Four blockers clear BEFORE STEP 4 (window). Ve
   (logbook.py:126 AND payload.py:391). L2-split gate test must exercise a force-closed L2 trade. Measure
   the bounded mega-payload at the FINEST TF (2m/+20d), not 4h.
 
+## 6c. STEP 3 progress + the 3b design (the seed-carrying trap)
+STEP 3a DONE (e08745c): `strategy.window_slice()` extracted, build_payload refactored, golden 6/6 green,
+all 6 windows smoke-sane. De-risk verified: `data.load_inputs("4h")` == `get_bundle("4h")` byte-identical.
+
+**3b — thread window through run_l1 + run_l2 (the careful half).** Non-obvious parity trap found while
+designing it:
+- `run_l1` can window cleanly: after `data.load_inputs(tf)`, if window!="full" call
+  `strategy.window_slice(...)` → run the engine on the WINDOWED `d4/d1/vfw`, but seed the gate on the
+  PRE-window `vf_full[:n_split]` (window_slice returns both). For 4h this matches build_payload because
+  the data is byte-identical.
+- **THE TRAP:** `engine.run_l2` re-seeds its OWN gate as `np.percentile(l1.vf[:l1.n_split], gate_pct)`
+  (engine.py:33). If `L1Result.vf` is the windowed `vfw`, then for window=2026 the windowed vf is
+  `vf_full[n_split:N]` — there is NO prefix of it equal to the 2025 in-sample threshold, so L2 would
+  silently re-seed on OUT-OF-SAMPLE 2026 data and diverge. `counterfactual_pause`/`diagnose_pause` have
+  the same `vf[:n_split]` shape.
+- **FIX:** `L1Result` must carry the gate SEED explicitly — add `gthr` (the computed threshold, or the
+  pre-window `(seed_vf, seed_n)`) to L1Result, and have `run_l2` (and any reseeder) use
+  `l1.gthr` instead of recomputing `percentile(l1.vf[:l1.n_split])`. This also lets STEP 2's centralized
+  `gate_threshold` be computed ONCE in run_l1 and reused. Add to validate_layer_params + _lean_params +
+  l1_default_params symmetrically (keep window="full" default so use_frozen holds at BOTH sites:
+  logbook.py:126 AND payload.py:391). Extend `run_l1_cached` disk-cache key (payload.py:32) with window.
+- **3b parity gate:** assert `run_l1(window=w)` financials (P/L, n, max_dd, n_locks) ==
+  `build_payload(window=w)` for w∈{full,2024,2025,2026,full+20d,2026+20d}, AND L2 stays $78,391/80 for
+  window=full (frozen). Then STEP 4 charts consume the windowed CausalResult.
+
 ## 8. Open sub-decisions carried into round 2
 - L2 split SL/TP: include or declare L1-only? (default: wire schema, keep L2 split OFF until proven).
 - Warmup/indicator-req single-source vs keep `/api/warmup` driver label (avoid content degradation).
