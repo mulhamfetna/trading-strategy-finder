@@ -6,7 +6,19 @@ recommendation.**
 
 ---
 
-## F1 — L1-only non-card panels not yet carried into the unified L1 tab  ⚠️ honest gap
+## F1 — L1-only non-card panels  ✅ RESOLVED
+
+**Resolved** (frontend rewire, browser-verified): the unified **L1 tab now fetches the rich engine
+view** (`/api/backtest_causal` with the L1 form params) instead of the leaner causal `view=l1`. It
+therefore carries `strategy.build_payload`'s full payload — the **SMC `gen_report` panel** (10 structure
+cards) + the **rich event log** with would-be-P/L on skips and **per-indicator vote chips** — while the
+18 boxes stay log-derived and **equal to the engine summary** ($149,989, verified). L2/Combined keep the
+causal path (no richer source). Browser check: L1 18 cards / $149,989 / gen_report visible / 162
+chip blocks; L2 20 / Combined 17 unchanged. The original analysis is kept below for the record.
+
+---
+
+### (original) L1-only non-card panels not yet carried into the unified L1 tab
 
 **What it is.** The old `index.html` (now deleted) showed two L1 things that are NOT metric cards and so
 were *not* covered by the 18/20/17 card golden:

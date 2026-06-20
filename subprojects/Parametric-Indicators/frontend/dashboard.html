@@ -139,6 +139,8 @@
       <div class="panel viewonly" data-show="combined,l2"><h2>Dropped signals <span id="dropinfo" class="legend"></span></h2>
         <div class="tablewrap"><table id="dropped"></table></div></div>
     </div>
+    <div class="panel viewonly" data-show="l1"><h2>Phase 1 — SMC structure generation report (L1)</h2>
+      <div id="genrep" class="cards"></div></div>
     <div class="panel"><h2>Trade ledger <span id="ledgerhd" class="legend"></span>
         <button class="ghost csvbtn" id="dl_ledger" title="download ledger CSV">⬇ CSV</button></h2>
       <div class="tablewrap"><table id="ledger"></table></div></div>
@@ -297,9 +299,17 @@ function renderView(view){
   VIEW=view;
   $('vicon').textContent = view==='l1'?'🍃':view==='l2'?'🔁':'Σ';
   $('vname').textContent = view==='l1'?'Layer 1':view==='l2'?'Layer 2':'Combined';
-  document.querySelectorAll('.viewonly').forEach(el=>{el.style.display=(el.dataset.show||'').split(',').includes(view)?'':'none';});
-  const b=D.meta.boxes, dc=D.meta.dropped_counts||{}, tr=D.trades||[], eng=D.engine||{};
+  document.querySelectorAll('.viewonly').forEach(el=>{el.style.display=(el.dataset.show||'').split(',').includes(view)?'block':'none';});  // explicit 'block' overrides .viewonly{display:none}
+  const b=D.meta.boxes, dc=D.meta.dropped_counts||{};
+  const tr=(D.trades||[]).map(t=>view==='l1'?{...t,layer:t.layer||'L1'}:t);
+  // L1 tab carries the RICH build_payload payload (charts/events/gen_report at the top level);
+  // L2/Combined carry the causal `engine` block. Normalize to one shape.
+  const eng = view==='l1' ? {vol:D.vol, gate_thr:D.gate_thr, state:D.state, drawdown:D.drawdown, events:D.events} : (D.engine||{});
   $('cards').innerHTML = view==='l1'?boxesL1(b):view==='l2'?boxesL2(b,dc,tr):boxesCombined(b);
+  // SMC structure report (L1 only — from strategy.build_payload's gen_report)
+  const gr=(view==='l1')?D.meta.gen_report:null;
+  $('genrep').innerHTML = gr ? Object.entries(gr).filter(([k,v])=>k==='bars'||k.startsWith('n_'))
+      .map(([k,v])=>DB.card((+v).toLocaleString(),k.replace(/^n_/,'').replace(/_/g,' '))).join('') : '';
 
   const ps=H.price.series, es=H.equity.series, vs=H.vol.series, sts=H.state.series, dds=H.drawdown.series;
   ps.candle.setData(D.candles||[]);
@@ -311,7 +321,7 @@ function renderView(view){
   ps.mkr.setData((D.candles||[]).map(c=>({time:c.time,value:c.close})));
   const mks=markFor(tr).sort((a,b)=>a.time-b.time); ps.mkr.setMarkers(mks);
 
-  es.l1.setData(view==='l2'?[]:(D.l1_equity||[]));
+  es.l1.setData(view==='l1'?(D.equity||[]):(D.l1_equity||[]));   // L1 rich payload carries D.equity
   es.l2.setData(view==='l1'?[]:(D.l2_equity||[]));
   es.comb.setData(view==='combined'?(D.combined_equity||[]):[]);
 
@@ -321,9 +331,12 @@ function renderView(view){
   dds.area.setData(_pad((eng.drawdown||[]).map(p=>({time:p.time,value:-Math.abs(p.value)})),t0,t1,0));
   try{Object.values(H).forEach(h=>h.chart.timeScale().setVisibleRange({from:t0,to:t1}));}catch(e){DB.fitCharts();}
 
-  // event log
-  $('eventlog').innerHTML=(eng.events||[]).slice(-400).map(e=>
-    `<div class="row ${e.type}"><span class="t">${DB.dt(e.time)}</span><span class="b">${e.type}</span><span>${e.text||''}</span></div>`).join('')||'<div class="hint">no events</div>';
+  // event log (L1 rich events carry per-indicator vote chips)
+  $('eventlog').innerHTML=(eng.events||[]).slice(-400).map(e=>{
+    let row=`<div class="row ${e.type}"><span class="t">${DB.dt(e.time)}</span><span class="b">${e.type}</span><span>${e.text||''}</span></div>`;
+    if(e.indicators&&e.indicators.length){ row+=`<div class="ind-chips">`+e.indicators.map(r=>
+      `<span class="chip ${r.vote} ${r.active?'':'off'}" title="${r.key} · ${r.vote}${r.active?'':' · INACTIVE'}">${r.key}:${(r.vote||'')[0]||''}</span>`).join('')+`</div>`; }
+    return row;}).join('')||'<div class="hint">no events</div>';
 
   // dropped table (L2/combined)
   if((D.dropped||[]).length){ let dh='<thead><tr><th class="l">time</th><th class="l">reason</th><th class="l">box dir</th><th>L1 flat</th></tr></thead><tbody>';
@@ -358,12 +371,18 @@ async function run(){
   const rb=$('run'); rb.disabled=true; rb.textContent='Running…'; DB.status('running all three views…'); DB.showErr('');
   try{
     DB.commitMath();
-    const body=JSON.stringify({l1:collectLayer('l1'), l2:collectLayer('l2'), tf:'4h'});
-    const views=['l1','l2','combined'];
-    const results=await Promise.all(views.map(v=>
-      fetch('/api/causal_backtest',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...JSON.parse(body),view:v})})
-        .then(async r=>{let d=null;try{d=await r.json();}catch(_){} if(!r.ok||(d&&d.error))throw new Error((d&&d.error)||('HTTP '+r.status)); return d;})));
-    views.forEach((v,i)=>VIEWS[v]=results[i]);
+    const l1lay=collectLayer('l1'), l2lay=collectLayer('l2');
+    const J=o=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(o)});
+    const grab=async p=>{const r=await p;let d=null;try{d=await r.json();}catch(_){} if(!r.ok||(d&&d.error))throw new Error((d&&d.error)||('HTTP '+r.status)); return d;};
+    // L1 tab = the RICH engine view (strategy.build_payload): full event log w/ would-be-P/L + indicator
+    // chips + the SMC gen_report panel, with boxes still log-derived (== engine summary). L2/Combined use
+    // the causal views. All three derive from the same params; numbers match by construction.
+    const [l1,l2,comb]=await Promise.all([
+      grab(fetch('/api/backtest_causal', J({...l1lay, timeframe:'4h'}))),
+      grab(fetch('/api/causal_backtest', J({l1:l1lay, l2:l2lay, tf:'4h', view:'l2'}))),
+      grab(fetch('/api/causal_backtest', J({l1:l1lay, l2:l2lay, tf:'4h', view:'combined'}))),
+    ]);
+    VIEWS.l1=l1; VIEWS.l2=l2; VIEWS.combined=comb;
     renderView(VIEW); DB.markClean(); DB.status('✓ done — all three tabs filled');
   }catch(e){
     const conn=/Failed to fetch|NetworkError|fetch/i.test(e.message);
