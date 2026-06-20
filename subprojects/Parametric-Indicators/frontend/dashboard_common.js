@@ -10,7 +10,7 @@
     grid:{vertLines:{color:'#20242f'},horzLines:{color:'#20242f'}},
     timeScale:{timeVisible:true,borderColor:TH.border}, rightPriceScale:{borderColor:TH.border}, crosshair:{mode:0} };
   const $ = id => document.getElementById(id);
-  window.$ = $;
+  if (typeof window !== 'undefined') window.$ = $;
 
   const dt = t => new Date(t * 1000).toISOString().slice(0, 16).replace('T', ' ');
   const money = n => (n >= 0 ? '+' : '') + '$' + Math.round(n).toLocaleString();
@@ -63,8 +63,10 @@
       el.setAttribute('inputmode', 'text'); el.setAttribute('autocomplete', 'off'); el.classList.add('mathnum');
     });
   }
-  document.addEventListener('focusout', e => { const t = e.target; if (t.classList && t.classList.contains('mathnum')) commitField(t); });
-  document.addEventListener('keydown', e => { const t = e.target; if (e.key === 'Enter' && t.classList && t.classList.contains('mathnum')) commitField(t); });
+  if (typeof document !== 'undefined') {
+    document.addEventListener('focusout', e => { const t = e.target; if (t.classList && t.classList.contains('mathnum')) commitField(t); });
+    document.addEventListener('keydown', e => { const t = e.target; if (e.key === 'Enter' && t.classList && t.classList.contains('mathnum')) commitField(t); });
+  }
 
   // ── error banner + dirty/clean run-state ─────────────────────────────────────────────────────
   function showErr(msg) { const e = $('err'); if (!e) return; $('errmsg').textContent = msg || ''; e.style.display = msg ? 'block' : 'none';
@@ -232,7 +234,39 @@
     }
   }
 
-  window.DB = { TH, COMMON, dt, money, card, makeChart, fitCharts, mathify, commitMath, showErr,
+  // ── causal log-first view helpers (shared by all three dashboards) ───────────────────────────
+  // boxFromLog: append a "· L1/L2" producing-layer tag to an already-formatted value, ONLY when the
+  // combined box carries a layer (max-type boxes); sum/recompute boxes carry no layer → no tag.
+  function boxFromLog(displayValue, box) {
+    return String(displayValue) + (box && box.layer ? ` · ${box.layer}` : '');
+  }
+  // flatAreaSeries: a per-candle realized-P/L step curve for `layer` — FLAT across bars with no exit,
+  // stepping only on that layer's trade exits (the separated views' flat areas). One point per candle.
+  function flatAreaSeries(log, layer) {
+    const exits = {};
+    (log || []).forEach(r => { if (r.layer === layer && r.decision === 'entry' && r.exit_time != null)
+      exits[r.exit_time] = (exits[r.exit_time] || 0) + r.pnl; });
+    let eq = 0; const out = [];
+    (log || []).slice().sort((a, b) => a.time - b.time).forEach(r => {
+      if (exits[r.time] != null) eq += exits[r.time];
+      out.push({ time: r.time, value: Math.round(eq * 100) / 100 });
+    });
+    return out;
+  }
+  // grayMarkers: return a COPY of markers with the grayed ones recolored to the muted theme gray
+  // (combined view toggle — never hides, only de-emphasizes). Input is never mutated.
+  function grayMarkers(markers, grayed) {
+    return (markers || []).map(m => grayed ? { ...m, color: TH.muted } : { ...m });
+  }
+  // grayLine: gray an equity line IN PLACE without hiding it (never visible:false).
+  function grayLine(series, grayed, origColor) {
+    if (series && series.applyOptions) series.applyOptions({ color: grayed ? TH.muted : origColor });
+  }
+
+  const DB = { TH, COMMON, dt, money, card, makeChart, fitCharts, mathify, commitMath, showErr,
     markDirty, markClean, indicatorSpecs, applyIndicatorSpecs, recomputeWarmup, buildStrategyDropdown,
-    buildPanel, specsOf, applySpecsTo, toCSV, downloadCSV, initDashboard, status };
+    buildPanel, specsOf, applySpecsTo, toCSV, downloadCSV, initDashboard, status,
+    boxFromLog, flatAreaSeries, grayMarkers, grayLine };
+  if (typeof window !== 'undefined') window.DB = DB;
+  if (typeof module !== 'undefined' && module.exports) module.exports = DB;   // node test harness
 })();
