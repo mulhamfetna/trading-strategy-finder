@@ -24,6 +24,7 @@ import config                                              # noqa: E402
 from optimize import two_stage as TS                       # noqa: E402
 from optimize.fast_engine import fast_backtest             # noqa: E402
 from indicators import library, runner                     # noqa: E402
+from volatility import gate_threshold                       # noqa: E402
 
 CAUSES = ["box_silence", "vol_gated", "vetoed", "confirm<K", "would_enter"]
 
@@ -67,7 +68,7 @@ def load_champion(tf: str = "4h"):
 
     vol_gate = np.ones(n, dtype=bool)
     if gate_pct > 0:
-        gthr = float(np.percentile(vf[:n_split], gate_pct))
+        gthr = gate_threshold(vf, n_split, gate_pct)
         vol_gate = vf[:n] <= gthr
     src = runner.indicator_source_1min(d, d1, bar_td)
     votes = runner.compute_votes(d, box, inds, src=src)

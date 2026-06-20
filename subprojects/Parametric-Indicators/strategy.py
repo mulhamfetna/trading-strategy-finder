@@ -13,7 +13,7 @@ import pandas as pd
 import config
 from loader import load_data
 from engine import SimpleStrategy, SimpleStrategyParams
-from volatility import vol_forecast
+from volatility import vol_forecast, gate_threshold
 from optimize import timeframes as TF
 from optimize.signals import decision_signals
 
@@ -257,7 +257,7 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
 
     gthr = gate = None
     if gate_pct > 0:
-        gthr = float(np.percentile(vf[:n2025], float(gate_pct)))
+        gthr = gate_threshold(vf, n2025, gate_pct)
         gate = vfw <= gthr
 
     # WS-I indicator confirmation layer (off by default ⇒ identical to the pure box strategy).

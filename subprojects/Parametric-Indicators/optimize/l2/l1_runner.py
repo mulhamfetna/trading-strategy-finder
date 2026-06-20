@@ -21,6 +21,7 @@ from optimize import data as data_mod, timeframes as TF, signals as sig_mod   # 
 from optimize.fast_engine import fast_backtest, signals_to_int     # noqa: E402
 from optimize.counterfactual_pause import attribute                # noqa: E402
 from indicators import library, runner                             # noqa: E402
+from volatility import gate_threshold                              # noqa: E402
 
 
 def _lean_params(tf: str = "4h") -> dict:
@@ -122,7 +123,7 @@ def run_l1(tf: str = "4h", params: dict | None = None) -> L1Result:
     # vol gate (frozen on the reference segment, causal) — mirrors core.backtest_metrics / load_champion.
     vol_gate = np.ones(n, dtype=bool)
     if params["gate_pct"] > 0:
-        gthr = float(np.percentile(vf[:n_split], params["gate_pct"]))
+        gthr = gate_threshold(vf, n_split, params["gate_pct"])
         vol_gate = vf[:n] <= gthr
 
     inds = library.from_specs([s for s in params["indicators"] if s.get("enabled")])

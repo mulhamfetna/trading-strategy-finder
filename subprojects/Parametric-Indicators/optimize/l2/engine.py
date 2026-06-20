@@ -18,6 +18,7 @@ import config                                                       # noqa: E402
 from optimize.fast_engine import fast_backtest                     # noqa: E402
 from optimize.l2.l1_runner import apply_breaker                    # noqa: E402
 from indicators import library, runner                             # noqa: E402
+from volatility import gate_threshold                              # noqa: E402
 
 
 def l2_gate_components(l1, l2_params: dict):
@@ -30,7 +31,7 @@ def l2_gate_components(l1, l2_params: dict):
     K = int(l2_params.get("k", 1))
     vol_gate = np.ones(n, dtype=bool)
     if gate_pct > 0:
-        gthr = float(np.percentile(l1.vf[:l1.n_split], gate_pct))
+        gthr = gate_threshold(l1.vf, l1.n_split, gate_pct)
         vol_gate = l1.vf[:n] <= gthr
     veto = np.zeros(n, dtype=bool)
     confirm = np.ones(n, dtype=bool)

@@ -75,3 +75,13 @@ def har_forecast(rv: np.ndarray) -> np.ndarray:
 def vol_forecast(df4: pd.DataFrame, df1: pd.DataFrame, bar_minutes: int = 240) -> np.ndarray:
     """HAR-RV forecast for an arbitrary decision timeframe (bar_minutes); default 4h."""
     return har_forecast(compute_rv_pts(df4, df1, bar_minutes=bar_minutes))
+
+
+def gate_threshold(vf: np.ndarray, n_split: int, gate_pct: float) -> float:
+    """The causal volatility-gate threshold: the gate_pct-th percentile of the IN-SAMPLE prefix
+    vf[:n_split]. Single source of truth for the seed used by strategy.build_payload,
+    l1_runner.run_l1, engine.run_l2, counterfactual_pause and diagnose_pause — so window selection
+    can NEVER accidentally re-seed the gate on a windowed/sliced vf (it must always seed on the
+    pre-window prefix). Callers keep their own `if gate_pct > 0` guard and apply `vf <= gthr`
+    against whichever range (full or windowed) they gate."""
+    return float(np.percentile(vf[:n_split], float(gate_pct)))

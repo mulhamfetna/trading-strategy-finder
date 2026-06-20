@@ -27,6 +27,7 @@ if str(_PI) not in sys.path:
 
 from optimize import two_stage as TS
 from indicators import library, runner
+from volatility import gate_threshold
 
 
 def diagnose(tf: str = "4h") -> dict:
@@ -48,7 +49,7 @@ def diagnose(tf: str = "4h") -> dict:
     # vol gate (causal threshold frozen on vf[:n_split]) — same as core.backtest_metrics
     vol_gate = np.ones(n, dtype=bool)
     if gate_pct > 0:
-        gthr = float(np.percentile(vf[:n_split], gate_pct))
+        gthr = gate_threshold(vf, n_split, gate_pct)
         vol_gate = vf[:n] <= gthr
 
     # indicator veto / confirm (1-minute source, as the champion was tuned)
