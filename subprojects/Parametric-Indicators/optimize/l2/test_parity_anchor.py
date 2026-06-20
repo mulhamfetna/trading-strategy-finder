@@ -65,6 +65,26 @@ def test_combined_anchor(causal):
     assert round(b["uplift"]["value"]) == 78391           # L2's exact marginal contribution
 
 
+@pytest.mark.parametrize("window", ["full", "2024", "2025", "2026", "full+20d", "2026+20d"])
+def test_run_l1_window_matches_build_payload(window):
+    """STEP 3b gate: the causal run_l1 windowed via strategy.window_slice must reproduce
+    strategy.build_payload's numbers for EVERY window — proving the shared slice helper + the L2
+    gate-seed carried on L1Result.vf_seed keep the two engines in lockstep across windows."""
+    import numpy as np
+    import strategy
+    from optimize.l2 import l1_runner
+    P = dict(sl_soft=30, sl_hard=40, tp=60, gate_pct=0, dd_limit=0, cooldown=0, flip=False,
+             k=1, indicators=[])
+    r = l1_runner.run_l1("4h", params={**P, "ind_1min": False, "window": window})
+    pnls = np.array([t["pnl"] for t in r.ledger], dtype=float)
+    eq = np.cumsum(pnls)
+    r_dd = float((np.maximum.accumulate(eq) - eq).max()) if len(pnls) else 0.0
+    s = strategy.build_payload(*strategy.get_bundle("4h"), {**P, "window": window, "timeframe": "4h"})["meta"]["summary"]
+    assert len(pnls) == s["n_taken"], f"{window}: n {len(pnls)} != {s['n_taken']}"
+    assert abs(pnls.sum() - s["pnl"]) < 1.0, f"{window}: P/L {pnls.sum()} != {s['pnl']}"
+    assert abs(r_dd - s["max_dd"]) < 1.0, f"{window}: max_dd {r_dd} != {s['max_dd']}"
+
+
 def test_frozen_default_guard():
     """The default L1 params must round-trip through validate_layer_params unchanged, so run_causal's
     use_frozen equality (logbook.py:126) and build_view_payload's (payload.py:391) both select the

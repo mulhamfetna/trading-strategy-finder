@@ -75,9 +75,21 @@ def run_l1_cached(tf: str = "4h", use_disk: bool = True, params: dict | None = N
     return r
 
 
+_WINDOWS = ("full", "2024", "2025", "2026", "full+20d", "2026+20d")
+
+
+def _validate_window(w):
+    """Window selection (default 'full'). Strict — no silent fallback (mirrors strategy.validate_params)."""
+    w = w or "full"
+    if w not in _WINDOWS:
+        raise L2ParamError(f"window must be one of {'|'.join(_WINDOWS)} (got {w!r})")
+    return w
+
+
 def validate_layer_params(p: dict) -> dict:
-    """Validate one layer's levers (L1 or L2 — identical schema); return a clean engine-ready dict
-    (window='full'). Raise on any bad/missing value (no silent fallback)."""
+    """Validate one layer's levers (L1 or L2 — identical schema); return a clean engine-ready dict.
+    window defaults to 'full' (the frozen default round-trips so run_causal/build_view_payload still hit
+    the cached oracle). Raise on any bad/missing value (no silent fallback)."""
     if not isinstance(p, dict):
         raise L2ParamError("params must be an object")
 
@@ -99,7 +111,7 @@ def validate_layer_params(p: dict) -> dict:
         gate_pct=num("gate_pct", 0, 100), dd_limit=num("dd_limit", 0),
         cooldown=int(num("cooldown", 0)), k=int(num("k", 1)),
         flip=bool(p.get("flip", False)), ind_1min=bool(p.get("ind_1min", False)),
-        window="full",
+        window=_validate_window(p.get("window", "full")),
     )
     inds = p.get("indicators", [])
     if not isinstance(inds, list):

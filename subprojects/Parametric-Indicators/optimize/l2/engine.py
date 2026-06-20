@@ -31,7 +31,10 @@ def l2_gate_components(l1, l2_params: dict):
     K = int(l2_params.get("k", 1))
     vol_gate = np.ones(n, dtype=bool)
     if gate_pct > 0:
-        gthr = gate_threshold(l1.vf, l1.n_split, gate_pct)
+        # seed on L1's IN-SAMPLE prefix (vf_seed), NOT l1.vf[:n_split] — the latter is the WINDOWED vf,
+        # so for a 2026 window it would reseed on out-of-sample data and diverge.
+        seed = l1.vf_seed if l1.vf_seed is not None else l1.vf[:l1.n_split]
+        gthr = gate_threshold(seed, len(seed), gate_pct)
         vol_gate = l1.vf[:n] <= gthr
     veto = np.zeros(n, dtype=bool)
     confirm = np.ones(n, dtype=bool)

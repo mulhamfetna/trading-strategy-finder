@@ -105,6 +105,8 @@ class L1Result:
     cause: np.ndarray      # per-bar attribution (object array; cause[0] is None)
     dropped_signals: list  # [{idx, ts, box_dir, reason}] for veto + vol_gate only
     state_timeline: np.ndarray  # bool, True = L1 in-position
+    vf_seed: np.ndarray = None  # the IN-SAMPLE vf prefix (vf_full[:n2025]) the gate seeds on; survives
+                                # windowing so L2 (engine.run_l2) seeds on 2025 even for a 2026 window
     n_candidates: int = 0       # pre-breaker candidate trades (for exposure %)
     n_skipped_breaker: int = 0  # candidates the breaker skipped
     n_locks: int = 0            # number of breaker lock events
@@ -117,13 +119,26 @@ def run_l1(tf: str = "4h", params: dict | None = None) -> L1Result:
     params = _lean_params(tf) if params is None else dict(params)
     df_dec, df1, box, vf, n_split = data_mod.load_inputs(tf)
     bar_td = TF.get(tf).bar_td
+    # window selection (default full): physically slice the data via the SHARED helper so windowed L1
+    # numbers match strategy.build_payload byte-for-byte (4h sources verified identical). The gate seeds
+    # on the PRE-window in-sample prefix vf_seed — NEVER on the windowed vf — and L2 inherits the window
+    # because it runs on this (now windowed) df_dec.
+    window = (params.get("window") or "full")
+    if window != "full":
+        import strategy                                       # lazy (acyclic): the shared window slicer
+        df_dec, df1, vf, _df_full, _vf_full, n_split, box, _lo, _hi = strategy.window_slice(
+            df_dec, df1, box, vf, n_split, window, tf)
+        vf_seed = np.asarray(_vf_full)[:n_split]              # in-sample prefix from the POST-swap full vf
+        vf = np.asarray(vf)                                   # the engine runs on the WINDOWED vf
+    else:
+        vf_seed = np.asarray(vf)[:n_split]
     n = len(df_dec)
     sig_int = np.asarray(signals_to_int(sig_mod.decision_signals(df_dec, box)))[:n]
 
-    # vol gate (frozen on the reference segment, causal) — mirrors core.backtest_metrics / load_champion.
+    # vol gate seeded on the IN-SAMPLE prefix (vf_seed), applied on the (windowed) vf — causal.
     vol_gate = np.ones(n, dtype=bool)
     if params["gate_pct"] > 0:
-        gthr = gate_threshold(vf, n_split, params["gate_pct"])
+        gthr = gate_threshold(vf_seed, len(vf_seed), params["gate_pct"])
         vol_gate = vf[:n] <= gthr
 
     inds = library.from_specs([s for s in params["indicators"] if s.get("enabled")])
@@ -156,4 +171,5 @@ def run_l1(tf: str = "4h", params: dict | None = None) -> L1Result:
     return L1Result(tf=tf, params=params, df_dec=df_dec, df1=df1, box=box, vf=vf, n_split=n_split,
                     bar_td=bar_td, sig_int=sig_int, vol_gate=vol_gate, veto=veto, confirm=confirm,
                     ledger=taken, cause=cause, dropped_signals=dropped, state_timeline=state_timeline,
+                    vf_seed=vf_seed,
                     n_candidates=len(cand), n_skipped_breaker=_skipped, n_locks=_locks)
