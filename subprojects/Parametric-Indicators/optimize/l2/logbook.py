@@ -12,10 +12,16 @@ and for a non-entry, why and which layer. Because the trades are the oracle's, L
 and the force-closed subset match the legacy path exactly (see test_logbook.py).
 
 `LogRow` is a strict SUPERSET of today's strategy.py event fields (additive rule): event_type mirrors
-ENTRY/WIN/LOSS/LOCK/UNLOCK/SKIP/NOENTRY/WARMUP/WARMED; text/would_be_pnl/veto_flip preserved; box_cause
-preserves the underlying box/gate/veto/confirm cause even on open_trade/force_closed rows (legacy
-pause_totals counts those bars). Per-bar indicator-vote detail (the `indicators` list) is populated
-when the dashboards are wired (Tasks 8-10); the field exists now so the schema is frozen as a superset.
+ENTRY/WIN/LOSS/LOCK/UNLOCK/SKIP/NOENTRY/WARMUP/WARMED; box_cause preserves the underlying box/gate/veto/
+confirm cause even on open_trade/force_closed rows (legacy pause_totals counts those bars).
+
+Fields populated by run_causal now: i, time, layer, decision, reason, box_cause, event_type, direction,
+box_dir, entry/exit prices+time, exit_reason, pnl (full precision), equity, dd (per-layer running),
+in_position, position_owner, l2_reason. DEFERRED display fields — present in the schema (so the superset
+is frozen) but populated only when the dashboards are wired (Tasks 8-10), NOT by run_causal yet:
+`text` (human-readable line), `indicators` (per-bar vote detail), `veto_flip` (REVERSED annotation),
+and `would_be_pnl` (the SKIP/breaker-skipped candidate's would-be P/L — needs the engine to surface the
+skipped candidate's pnl, which apply_breaker currently discards). None affect trade parity.
 """
 from __future__ import annotations
 
@@ -163,6 +169,17 @@ def run_causal(l1_params: dict, l2_params: dict, tf: str = "4h", bar_mask=None) 
             log.append(LogRow(i=i, time=ts, layer=owner, decision="nonentry", reason=reason, box_cause=c,
                               event_type=ev, box_dir=box_dir, in_position=bool(l1_state[i] or l2_state[i]),
                               position_owner=owner, l2_reason=l2r))
+
+    # per-layer running equity + underwater drawdown, booked in exit-time order and written back onto the
+    # entry row (so the log carries each layer's equity curve directly — used by the chart tasks).
+    for lyr in ("L1", "L2"):
+        rows = sorted([r for r in log if r.layer == lyr and r.decision == "entry"], key=lambda r: r.exit_time)
+        eq = peak = 0.0
+        for r in rows:
+            eq += r.pnl
+            peak = max(peak, eq)
+            r.equity = round(eq, 2)
+            r.dd = round(peak - eq, 2)
 
     return CausalResult(tf=tf, l1_params=l1p, l2_params=l2p, log=log, n=n, dec_dates=dec_dates,
                         warmup={"l1": _warmup_for(l1p), "l2": _warmup_for(l2p)})

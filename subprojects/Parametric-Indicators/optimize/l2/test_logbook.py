@@ -30,7 +30,11 @@ def test_causal_l1_matches_legacy_oracle():
     l1_entries = [(r.i, r.direction) for r in res.log if r.layer == "L1" and r.decision == "entry"]
     legacy_entries = [(int(t["entry_idx"]), t["direction"]) for t in legacy.ledger]
     assert l1_entries == legacy_entries
-    assert round(sum(r.pnl for r in res.log if r.layer == "L1")) == 149989
+    l1_rows = [r for r in res.log if r.layer == "L1" and r.decision == "entry"]
+    assert round(sum(r.pnl for r in l1_rows)) == 149989
+    # per-layer running equity is booked in exit-time order; final equity == layer P/L; dd never negative
+    last = max(l1_rows, key=lambda r: r.exit_time)
+    assert round(last.equity) == 149989 and all(r.dd >= 0 for r in l1_rows)
 
 
 def test_causal_l2_matches_legacy_engine():
