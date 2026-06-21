@@ -3,8 +3,8 @@
 **Workstream:** merge the three standalone dashboards into one 3-tab page, restore full options, never
 move the numbers, package + document it. **Branch `dev`, commits `a8835fe → 53b7da0` (16).**
 
-**Status: ~90% closed.** All build steps (0–7) + 3 of 5 follow-ups (F1/F2/F3) are DONE, verified, and
-pushed. **Two items remain: F4 (a decision) and F5 (a 5-minute cosmetic).** Neither blocks use.
+**Status: ✅ CLOSED.** All build steps (0–7) + ALL five follow-ups (F1–F5) are DONE, verified, and
+pushed. Nothing open in this workstream. (Adjacent task #210 — backtester speed — is tracked separately.)
 
 ```mermaid
 flowchart LR
@@ -85,9 +85,8 @@ default** and **not validated** (L2's force-close + flip semantics make per-side
 - [x] Old pages retired; served at `/`
 - [x] One-click launcher + agent manual + shareable kit
 - [x] Cache robustness (F2) + fan-out efficiency (F3)
-- [ ] **F4** L2-split decision recorded (hide UI *or* validate)
-- [ ] **F5** favicon (zero console errors)
+- [x] **F4** L2-split **validated** (option b) — per-side + force-close + display semantics tested + documented
+- [x] **F5** favicon → 204, **zero console errors**
 
-**Two checkboxes from a fully-closed workstream.** Say the word and I'll do F5 now (trivial) and execute
-F4 option (a) — hide the L2 split toggle — which closes both in one short pass; or hold F4 for a study if
-you'd rather validate it.
+**Workstream fully closed.** All 9 Definition-of-Done boxes ticked; commits `a8835fe → <F4/F5 commit>`
+on `dev`. The only remaining trading-system item touching this code is the separate speed task #210.

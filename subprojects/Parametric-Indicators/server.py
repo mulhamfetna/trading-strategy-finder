@@ -54,6 +54,8 @@ class H(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = self.path.split("?")[0]
+        if path == "/favicon.ico":                          # F5 — no icon shipped; 204 keeps the console clean
+            return self._send(204, "")
         if path == "/api/health":
             return self._send(200, json.dumps({"status": "ok", "bars": len(DF4), "winner": config.WINNER}))
         if path == "/api/config":

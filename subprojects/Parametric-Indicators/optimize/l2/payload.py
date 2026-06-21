@@ -255,10 +255,17 @@ def _spans_from_timeline(state_timeline, dec_dates) -> list:
 
 
 def _derive_lines(t: dict, p: dict) -> dict:
-    """SL/TP line levels for display only (entry_price ± points; engine fill convention)."""
-    ep = float(t["entry_price"])
-    sl_hard = float(p["sl_hard"]); sl_soft = float(p["sl_soft"]); tp = float(p["tp"])
-    if t["direction"] == "long":
+    """SL/TP line levels for display only (entry_price ± points; engine fill convention). Split-aware:
+    a trade's FINAL direction uses its per-side long_*/short_* override when set (else the shared
+    value) — so the drawn lines match what fast_backtest actually used for the exit (F4)."""
+    ep = float(t["entry_price"]); side = t["direction"]
+
+    def pick(base):                                          # per-side override ⇒ shared fallback
+        v = p.get(f"{side}_{base}")
+        return float(v) if v not in (None, "") else float(p[base])
+
+    sl_hard, sl_soft, tp = pick("sl_hard"), pick("sl_soft"), pick("tp")
+    if side == "long":
         return {"sl_hard_line": ep - sl_hard, "sl_soft_line": ep - sl_soft, "tp_hard_line": ep + tp}
     return {"sl_hard_line": ep + sl_hard, "sl_soft_line": ep + sl_soft, "tp_hard_line": ep - tp}
 

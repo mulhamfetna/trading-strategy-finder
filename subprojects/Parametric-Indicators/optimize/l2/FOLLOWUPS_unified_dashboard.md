@@ -122,7 +122,24 @@ fine-TF latency becomes a problem.
 
 ---
 
-## F4 — L2 split SL/TP is plumbed but semantically unresolved
+## F4 — L2 split SL/TP — validated (option b)  ✅ RESOLVED
+
+**Resolved** by validating + documenting the semantics (the lever stays exposed). Documented semantics:
+1. **per-side application** — split applies to a trade's FINAL (post-flip) direction; long trades use
+   `long_*`, short trades use `short_*`, with the shared `sl_soft/sl_hard/tp` as the fallback when a
+   side is None (exactly `fast_backtest`'s rule);
+2. **force-close priority** — when L1 enters during an L2 trade, `force_close_on_l1_entry` exits it at
+   that decision bar's CLOSE (reason `L1-entry`), regardless of SL/TP, so split never corrupts a
+   force-closed exit;
+3. **display consistency** — `_derive_lines` is now split-aware, so the chart's SL/TP lines match the
+   per-side levels the engine actually used.
+Evidence: `optimize/l2/test_l2_split_semantics.py` (3 tests) — split changes the L2 book (live on L2);
+every force-closed L2 trade exits at the bar close (split-independent); `_derive_lines` is per-side with
+shared fallback. The $78,391/80 anchor (split-off) is unchanged. The original analysis is kept below.
+
+---
+
+### (original) L2 split SL/TP is plumbed but semantically unresolved
 
 **What it is.** STEP 5 wired `long_*/short_*` split SL/TP through **both** `run_l1` and `run_l2`. For L1
 it's a clean per-side override. For **L2** the meaning is unclear: `run_l2`'s `force_close_on_l1_entry`
@@ -146,7 +163,14 @@ semantics; otherwise hide the L2 split toggle to avoid implying it's validated.
 
 ---
 
-## F5 — favicon 404 (cosmetic)
+## F5 — favicon 404  ✅ RESOLVED
+
+**Resolved** (`server.py`): `GET /favicon.ico` now returns HTTP 204 (no content). Browser-verified:
+favicon → 204 and **zero console errors** on load. The original note is kept below.
+
+---
+
+### (original) favicon 404 (cosmetic)
 
 **What it is.** The browser auto-requests `/favicon.ico`; the server returns 404, which shows as the one
 console error in verification.
