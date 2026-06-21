@@ -1,5 +1,9 @@
 # WS-G Drawdown-Capped Strategy — standalone app
 
+> 🗺️ **New here (human or agent)? Read [`MASTER.md`](MASTER.md) first** — the father document for the
+> whole subproject: orientation, a router to every doc, a code map, and a dictionary. This README is the
+> single-strategy view; `MASTER.md` is the map of everything.
+
 A **self-contained** full-stack app for one trading strategy: the WS-G drawdown-capped NQ
 strategy (git tag `v4.2-wsg-drawdown-capped-winner`). Backend + frontend + engine + docs all
 live in **this folder** — you do **not** need the rest of the repo to read, run, or understand it.
