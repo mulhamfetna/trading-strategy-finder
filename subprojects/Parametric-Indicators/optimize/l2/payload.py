@@ -26,11 +26,34 @@ _L1_CUSTOM_CACHE: dict = {}      # custom-L1 runs memoised in-process by (tf, pa
 # Disk cache for the FROZEN L1 run (deterministic → safe to persist). Keyed by tf + a hash of the lean
 # params, so any param change invalidates it. Lives in a temp dir (no git footprint); recomputed if absent.
 _DISK_CACHE = Path(tempfile.gettempdir()) / "wsh_l1_cache"
+# F2 — bump this whenever L1Result's fields change. It's part of the cache FILENAME, so old-schema
+# pickles get a different name and are never loaded (a stale pickle would otherwise unpickle with a
+# new field defaulted, e.g. the STEP-3b vf_seed=None bug). Loads also field-check (run_l1_cached).
+_L1_CACHE_VER = "v2-vf_seed"
 
 
 def _l1_cache_file(tf: str) -> Path:
-    h = hashlib.sha256(json.dumps(l1_runner._lean_params(tf), sort_keys=True, default=str).encode()).hexdigest()[:16]
-    return _DISK_CACHE / f"l1_{tf}_{h}.pkl"
+    h = hashlib.sha256((_L1_CACHE_VER + json.dumps(l1_runner._lean_params(tf), sort_keys=True,
+                                                   default=str)).encode()).hexdigest()[:16]
+    return _DISK_CACHE / f"l1_{tf}_{_L1_CACHE_VER}_{h}.pkl"
+
+
+_CAUSAL_MEMO: dict = {}            # F3 — share ONE causal pass across the fan-out's per-view calls
+_CAUSAL_MEMO_MAX = 8
+
+
+def _run_causal_memo(l1p: dict, l2p: dict, tf: str):
+    """Memoise logbook.run_causal by (l1p, l2p, tf) so the unified page's three per-view requests
+    (l2 + combined send identical params) reuse ONE pass instead of recomputing it. The CausalResult is
+    read-only downstream (aggregate/charts only read it), so sharing is safe. Bounded LRU-ish."""
+    from optimize.l2 import logbook                       # lazy: logbook imports payload (circular)
+    key = (tf, hashlib.sha256(json.dumps([l1p, l2p], sort_keys=True, default=str).encode()).hexdigest()[:16])
+    r = _CAUSAL_MEMO.get(key)
+    if r is None:
+        if len(_CAUSAL_MEMO) >= _CAUSAL_MEMO_MAX:
+            _CAUSAL_MEMO.pop(next(iter(_CAUSAL_MEMO)))
+        r = _CAUSAL_MEMO[key] = logbook.run_causal(l1p, l2p, tf)
+    return r
 
 # Deterministic anchor profile (no indicators / no vol gate => take every flat dropped signal).
 PERMISSIVE: dict = {"indicators": [], "k": 1, "gate_pct": 0, "sl_soft": 149.8, "sl_hard": 167.1,
@@ -59,6 +82,8 @@ def run_l1_cached(tf: str = "4h", use_disk: bool = True, params: dict | None = N
         try:
             with open(cf, "rb") as f:
                 r = pickle.load(f)
+            if getattr(r, "vf_seed", None) is None:       # F2 belt-and-suspenders: stale schema → recompute
+                raise ValueError("stale L1 cache schema")
             _L1_CACHE[tf] = r
             return r
         except Exception:
@@ -404,7 +429,7 @@ def build_view_payload(l1_params: dict, l2_params: dict, tf: str = "4h", view: s
     if view == "l1" and l1_engine:
         import strategy                                  # the L1 engine (full feature set)
         l1p = validate_layer_params(l1_params)
-        res = logbook.run_causal(l1p, dict(PERMISSIVE), tf)          # causal log for the L1 layer
+        res = _run_causal_memo(l1p, dict(PERMISSIVE), tf)            # causal log for the L1 layer (memoised)
         bar_secs = int(TF.get(tf).bar_td.total_seconds())
         base = strategy.build_payload(*strategy.get_bundle(l1_engine.get("timeframe") or tf), l1_engine)
         base["log"] = [_serialize_log_row(r) for r in res.log]
@@ -414,7 +439,7 @@ def build_view_payload(l1_params: dict, l2_params: dict, tf: str = "4h", view: s
         return base
     l1p = validate_layer_params(l1_params)
     l2p = validate_layer_params(l2_params)
-    res = logbook.run_causal(l1p, l2p, tf)
+    res = _run_causal_memo(l1p, l2p, tf)
     l1 = run_l1_cached(tf) if l1p == l1_default_params(tf) else run_l1_cached(tf, params=l1p)
     ds = dataset.build_dataset(l1)
     bar_secs = int(TF.get(tf).bar_td.total_seconds())

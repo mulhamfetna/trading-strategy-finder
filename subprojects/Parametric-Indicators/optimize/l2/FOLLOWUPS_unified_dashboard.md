@@ -52,7 +52,17 @@ panel.
 
 ---
 
-## F2 — L1 disk-cache has no schema-version guard
+## F2 — L1 disk-cache schema-version guard  ✅ RESOLVED
+
+**Resolved** (`payload.py`): added `_L1_CACHE_VER = "v2-vf_seed"` baked into the cache FILENAME
+(`l1_<tf>_<ver>_<hash>.pkl`), so an old-schema pickle has a different name and is never loaded; plus a
+belt-and-suspenders load-time guard that recomputes if the unpickled `L1Result` lacks `vf_seed`. Bump
+`_L1_CACHE_VER` whenever `L1Result` fields change. Verified: filename carries the version; anchor +
+payload tests green. The original analysis is kept below.
+
+---
+
+### (original) L1 disk-cache has no schema-version guard
 
 **What it is.** `run_l1_cached` pickles the frozen `L1Result` to `/tmp/wsh_l1_cache/*.pkl` so repeat
 processes load in ~1s instead of the ~38s 1-min-indicator recompute.
@@ -74,7 +84,19 @@ has the expected attributes and recompute on mismatch. ~10 lines.
 
 ---
 
-## F3 — `run_causal` runs three times per Run (perf; ties to #210)
+## F3 — `run_causal` memo (one literal pass)  ✅ RESOLVED
+
+**Resolved** (`payload.py`): added `_run_causal_memo(l1p, l2p, tf)` — a bounded in-process memo keyed by
+the params hash — and routed `build_view_payload`'s two `run_causal` calls through it. The unified
+page's three per-view requests for one Run now collapse: **l2 + combined share ONE pass** (verified:
+`_CAUSAL_MEMO` size = 1 after both), and the L1 tab's `(l1, PERMISSIVE)` pass is the only other. So a
+Run does 2 causal passes, not 3, and a re-run with unchanged params is instant. The `CausalResult` is
+read-only downstream, so sharing is safe. Numbers unchanged (combined $228,380, L2 $78,391). The
+original analysis is kept below.
+
+---
+
+### (original) run_causal runs three times per Run
 
 **What it is.** The unified page's "one Run fans out" fires three calls (`view=l1`/`l2`/`combined`),
 each of which calls `logbook.run_causal(...)`. So `run_causal` runs **3×** per Run.
