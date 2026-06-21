@@ -62,9 +62,13 @@ def test_causal_routes_smoke():
             {"l1": cfg["l1_default"], "l2": cfg["l2_default"], "view": "combined"}).read())
         b = comb["meta"]["boxes"]
         assert "layer" not in b["pnl"] and b["noentry_streak_n"]["layer"] in ("L1", "L2")
-        # the CSV route serves the last log, with a layer column, one row per candle
+        # the CSV route serves the last log, with a layer column, one row per candle.
+        # It is self-describing: provenance is prepended as #-comment rows (skippable by
+        # pandas.read_csv(comment='#')), so the file can never be silently confused with another run.
         csv = urllib.request.urlopen(f"http://127.0.0.1:{port}/api/causal_log.csv").read().decode()
-        lines = csv.strip().split("\n")
+        assert csv.startswith("# causal_log export")           # provenance stamp present
+        assert "# l2_source=" in csv and "# NOTE:" in csv       # l2 provenance + equity caveat
+        lines = [ln for ln in csv.strip().split("\n") if not ln.startswith("#")]
         assert lines[0].split(",")[:4] == ["i", "time", "layer", "decision"]
         assert len(lines) - 1 == comb["meta"]["n"]
         # bad view → 400

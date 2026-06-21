@@ -29,7 +29,16 @@ from optimize.l2 import payload as l2payload
 FRONTEND = HERE / "frontend"
 _CTYPE = {".html": "text/html", ".js": "application/javascript", ".css": "text/css",
           ".json": "application/json", ".md": "text/markdown"}
-_LAST_CAUSAL: dict = {}     # caches the last /api/causal_backtest log so GET /api/causal_log.csv can serve it
+_LAST_CAUSAL: dict = {}     # caches the last causal log + its PROVENANCE so GET /api/causal_log.csv is self-describing
+
+
+def _stamp_causal(log, view, l1, l2_source, tf):
+    """Record the last causal log WITH provenance (which view/params produced it). Without this the CSV
+    export could be silently reconciled against a DIFFERENT run — e.g. the L1 tab's PERMISSIVE-L2
+    internal projection (its L2 = a no-gate throwaway) vs the real combined run's extend-champion L2."""
+    _LAST_CAUSAL.clear()
+    _LAST_CAUSAL.update(log=log, view=view, l1=l1, l2_source=l2_source, tf=tf,
+                        ts=time.strftime("%Y-%m-%d %H:%M:%S"))
 
 print("loading data (4h / 1m / box) + computing HAR-RV ...", flush=True)
 _t = time.time()
@@ -100,17 +109,27 @@ class H(BaseHTTPRequestHandler):
                 "l1_label": "🍃 WS lean 4h champion", "l2_label": "🔁 L2 (extend champion)"}))
         if path == "/api/causal_log.csv":
             # full per-candle causal log as CSV (the `layer` column lets L1/L2 be separated downstream).
-            # GET can't carry the L1/L2 params cleanly, so this serves the LAST /api/causal_backtest log
-            # (cached per-process). One row per candle.
+            # GET can't carry params, so this serves the LAST causal run — now STAMPED with provenance
+            # (view/params/l2_source/tf/ts) as leading `#` comment rows so it can't be silently
+            # reconciled against a different run. (pandas: read_csv(..., comment='#').)
             rows = _LAST_CAUSAL.get("log")
             if not rows:
-                return self._send(409, "run /api/causal_backtest first", "text/plain")
+                return self._send(409, "run a backtest first", "text/plain")
             cols = list(rows[0].keys())
 
             def cell(v):
                 s = "" if v is None else str(v)
                 return ('"' + s.replace('"', '""') + '"') if ("," in s or '"' in s or "\n" in s) else s
-            csv = "\n".join([",".join(cols)] + [",".join(cell(r[c]) for c in cols) for r in rows])
+            m = _LAST_CAUSAL
+            prov = [
+                f"# causal_log export · view={m.get('view','?')} · tf={m.get('tf','?')} · generated={m.get('ts','?')}",
+                "# l1_params=" + json.dumps(m.get("l1"), separators=(",", ":"), default=str),
+                "# l2_source=" + (json.dumps(m["l2_source"], separators=(",", ":"), default=str)
+                                  if isinstance(m.get("l2_source"), dict) else str(m.get("l2_source"))),
+                "# NOTE: equity/dd are booked PER-LAYER on entry rows only (0 on non-entry); this column is "
+                "NOT a single combined portfolio curve — it interleaves L1 and L2 per-layer curves.",
+            ]
+            csv = "\n".join(prov + [",".join(cols)] + [",".join(cell(r[c]) for c in cols) for r in rows])
             return self._send(200, csv, "text/csv")
         name = "dashboard.html" if path in ("/", "") else path.lstrip("/")   # the unified 3-tab app
         f = FRONTEND / name
@@ -201,7 +220,9 @@ class H(BaseHTTPRequestHandler):
                 l1lay = l2payload._layer_from_strategy(body)
                 out = l2payload.build_view_payload(l1lay, {}, body.get("timeframe", "4h"), "l1", l1_engine=body)
                 out["meta"]["run_ms"] = round((time.time() - t0) * 1000)
-                _LAST_CAUSAL["log"] = out["log"]
+                _stamp_causal(out["log"], "l1", l1lay,
+                              "PERMISSIVE-internal (L1-view projection — its L2 rows are a no-gate "
+                              "throwaway, NOT a real combined L2)", body.get("timeframe", "4h"))
                 print(f"backtest_causal [l1] n={out['meta']['n']} ({out['meta']['run_ms']}ms)", flush=True)
                 return self._send(200, json.dumps(out))
             except (l2payload.L2ParamError, strategy.ParamError) as e:
@@ -219,7 +240,8 @@ class H(BaseHTTPRequestHandler):
                 out = l2payload.build_view_payload(body.get("l1") or {}, body.get("l2") or {},
                                                    body.get("tf", "4h"), body.get("view", "combined"))
                 out["meta"]["run_ms"] = round((time.time() - t0) * 1000)
-                _LAST_CAUSAL["log"] = out["log"]
+                _stamp_causal(out["log"], out["meta"]["view"], body.get("l1"), body.get("l2"),
+                              body.get("tf", "4h"))
                 print(f"causal backtest [{out['meta']['view']}] n={out['meta']['n']} "
                       f"({out['meta']['run_ms']}ms)", flush=True)
                 return self._send(200, json.dumps(out))
