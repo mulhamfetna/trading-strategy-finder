@@ -1,0 +1,101 @@
+{
+ "abdulfattah1": {
+  "timeframe": "4h",
+  "window": "full",
+  "sl_soft": 139.2,
+  "sl_hard": 153.11,
+  "tp": 183.22,
+  "gate_pct": 83.59,
+  "dd_limit": 1305.2,
+  "cooldown": 0,
+  "flip": false,
+  "dd_cap": 5000,
+  "pv": 20,
+  "k": 1,
+  "retrace_amount": 0,
+  "retrace_unit": "atr_mult",
+  "wait_bars": 0,
+  "gen": {
+   "swing_l": 18,
+   "golf_n": 3
+  },
+  "indicators": [
+   {
+    "key": "ema_trend",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 244,
+     "slow": 373
+    }
+   },
+   {
+    "key": "macd",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 14,
+     "slow": 143,
+     "signal": 81
+    }
+   },
+   {
+    "key": "keltner",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "n": 138,
+     "m": 3.5
+    }
+   },
+   {
+    "key": "rsi",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 53,
+     "lower": 40,
+     "upper": 65
+    }
+   },
+   {
+    "key": "stochastic",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 39,
+     "d": 35,
+     "lower": 23,
+     "upper": 52
+    }
+   },
+   {
+    "key": "mfi",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 39,
+     "lower": 12,
+     "upper": 57
+    }
+   },
+   {
+    "key": "adx",
+    "enabled": true,
+    "mode": "veto",
+    "params": {
+     "n": 81,
+     "threshold": 8
+    }
+   },
+   {
+    "key": "order_block",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "swing_l": 18
+    }
+   }
+  ]
+ }
+}

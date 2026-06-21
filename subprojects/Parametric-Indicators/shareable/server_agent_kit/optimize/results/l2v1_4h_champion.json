@@ -1,0 +1,187 @@
+{
+ "tf": "4h",
+ "prefix": "l2v1",
+ "params": {
+  "sl_soft": 109.43698476200835,
+  "sl_hard": 271.4607610536937,
+  "tp": 62.38708762353957,
+  "gate_pct": 81.32173383876619,
+  "dd_limit": 2296.820459440659,
+  "cooldown": 1,
+  "flip": true,
+  "window": "full",
+  "indicators": [
+   {
+    "key": "ema_trend",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {
+     "fast": 159,
+     "slow": 366
+    }
+   },
+   {
+    "key": "sma_trend",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 109,
+     "slow": 357
+    }
+   },
+   {
+    "key": "macd",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 33,
+     "slow": 122,
+     "signal": 31
+    }
+   },
+   {
+    "key": "vwap",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "keltner",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {
+     "n": 187,
+     "m": 1.7000000000000002
+    }
+   },
+   {
+    "key": "obv",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {
+     "slope": 138
+    }
+   },
+   {
+    "key": "cci",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 138,
+     "threshold": 215
+    }
+   },
+   {
+    "key": "rsi",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "n": 67,
+     "lower": 22,
+     "upper": 79
+    }
+   },
+   {
+    "key": "stochastic",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "n": 74,
+     "d": 6,
+     "lower": 3,
+     "upper": 52
+    }
+   },
+   {
+    "key": "mfi",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 52,
+     "lower": 41,
+     "upper": 75
+    }
+   },
+   {
+    "key": "bollinger",
+    "enabled": false,
+    "mode": "veto",
+    "params": {
+     "n": 117,
+     "k": 2.3
+    }
+   },
+   {
+    "key": "adx",
+    "enabled": false,
+    "mode": "veto",
+    "params": {
+     "n": 45,
+     "threshold": 53
+    }
+   },
+   {
+    "key": "structure_trend",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "swing_l": 4
+    }
+   },
+   {
+    "key": "order_block",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "swing_l": 19
+    }
+   },
+   {
+    "key": "fvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "lookback": 21
+    }
+   },
+   {
+    "key": "ifvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "breaker",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "swing_l": 1
+    }
+   },
+   {
+    "key": "cisd",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   }
+  ],
+  "k": 1,
+  "ind_1min": true
+ },
+ "in_sample": {
+  "pnl": 54401.23965668245,
+  "max_dd": 8961.473468603144,
+  "n": 53,
+  "win": 84.9,
+  "pf": 3.83,
+  "n_l1_entry_exits": 11
+ },
+ "oos": {
+  "pnl": 23989.328590695004,
+  "max_dd": 5429.2152210739005,
+  "n": 27,
+  "win": 92.6,
+  "pf": 4.33,
+  "n_l1_entry_exits": 1
+ }
+}

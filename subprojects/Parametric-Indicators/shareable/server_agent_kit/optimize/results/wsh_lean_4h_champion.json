@@ -1,0 +1,33 @@
+{
+ "4h": {
+  "full_pnl": 149989.0,
+  "full_dd": 15491.0,
+  "win": 67.8,
+  "median_pnl": 149989.0,
+  "decision_pause_days": 11.5,
+  "data_footprint_candles": 138,
+  "box": {
+   "sl_soft": 149.8,
+   "sl_hard": 167.1,
+   "tp": 120.2,
+   "gate_pct": 86.9,
+   "dd_limit": 4747.0,
+   "cooldown": 0,
+   "flip": false,
+   "k": 1
+  },
+  "indicators": {
+   "cci": {
+    "n": 138,
+    "threshold": 35
+   },
+   "order_block": {
+    "swing_l": 10
+   },
+   "structure_trend": {
+    "swing_l": 6
+   }
+  },
+  "source": "\u03b2 ablation of wsh4 1-min 4h champion \u2014 lean 3-indicator subset (drop 5); full-period +5.5% vs the 8-ind champion, footprint 346->138. CAVEAT: full-period only; re-check folds/OOS before deploy."
+ }
+}
