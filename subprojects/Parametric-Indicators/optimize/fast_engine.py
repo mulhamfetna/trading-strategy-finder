@@ -91,7 +91,7 @@ def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
         if d == LONG:
             sls, slh, tpv = L_sls, L_slh, L_tp
             slh_line, tph_line = ep - slh, ep + tpv
-            sls_line, tps_line = ep - sls, ep + tpv           # soft on SL side (normal) / TP side (flip)
+            sls_line, tps_line = ep - sls, ep + tpv           # soft-SL line used; tps_line kept (unused, == hard TP)
         else:
             sls, slh, tpv = S_sls, S_slh, S_tp
             slh_line, tph_line = ep + slh, ep - tpv
@@ -106,11 +106,11 @@ def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
         if d == LONG:
             t_slh = _first_true(lo <= slh_line)
             t_tph = _first_true(hi >= tph_line)
-            soft_breach = (cl <= sls_line) if not flip else (cl >= tps_line)
+            soft_breach = cl <= sls_line   # soft stop-loss (long); flip only reverses entry, not this
         else:
             t_slh = _first_true(hi >= slh_line)
             t_tph = _first_true(lo <= tph_line)
-            soft_breach = (cl >= sls_line) if not flip else (cl <= tps_line)
+            soft_breach = cl >= sls_line   # soft stop-loss (short); flip only reverses entry, not this
         # soft fires at the 2nd of two consecutive breaching closes
         if soft_breach.size >= 2:
             pair = soft_breach[1:] & soft_breach[:-1]
@@ -118,11 +118,10 @@ def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
         else:
             t_soft = -1
 
-        # assemble candidates with their priority, pick earliest (tie → priority order)
-        if not flip:
-            order = [(t_slh, R_SL_HARD, slh_line), (t_tph, R_TP_HARD, tph_line), (t_soft, R_SL_SOFT, None)]
-        else:
-            order = [(t_tph, R_TP_HARD, tph_line), (t_slh, R_SL_HARD, slh_line), (t_soft, R_TP_SOFT, None)]
+        # assemble candidates with their priority, pick earliest (tie → priority order).
+        # Single exit model regardless of flip: hard-SL > hard-TP > soft-SL on the ENTERED direction.
+        # `flip` only reverses entry (d = -raw above); it no longer swaps "soft" to the TP side.
+        order = [(t_slh, R_SL_HARD, slh_line), (t_tph, R_TP_HARD, tph_line), (t_soft, R_SL_SOFT, None)]
         best = None  # (slice_t, priority_rank, reason, fill)
         for rank, (ti, reason, line) in enumerate(order):
             if ti < 0:
