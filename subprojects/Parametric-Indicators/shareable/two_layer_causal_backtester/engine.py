@@ -1,25 +1,21 @@
 """Simple backtest engine — Stage 1 entry + dual-SL/TP exit on 1-min bars.
 
-Two coexisting modes selected by `flip_entry_direction`:
+Single exit model (2026-06-22): `flip_entry_direction` only REVERSES the entry
+direction (long↔short); the exit logic is identical either way.
 
-  NORMAL mode (flip_entry_direction=False, the default):
-    - Entry direction = Stage 1 signal verbatim.
-    - Exit lines: sl_soft, sl_hard, tp_hard.
+  Entry direction:
+    - flip=False: Stage 1 signal verbatim.
+    - flip=True:  Stage 1 signal SWAPPED (long↔short). Holds untouched.
+
+  Exit lines (both modes): sl_soft, sl_hard, tp (one take-profit).
+    - Hard SL fires on bar EXTREME touching sl_hard_line; fill at line.
+    - Hard TP fires on bar EXTREME touching tp_hard_line; fill at line.
     - Soft SL fires on 2 consecutive 1-min closes past sl_soft_line; fill at 2nd close.
-    - Hard SL fires on bar EXTREME touching sl_hard_line; fill at line.
-    - Hard TP fires on bar EXTREME touching tp_hard_line; fill at line.
     - Per-bar tie-break: hard SL > hard TP > soft SL (loss-first pessimism).
+  There is NO soft take-profit. flip=True on signal S == flip=False on ¬S,
+  trade-for-trade.
 
-  FLIPPED mode (flip_entry_direction=True):
-    - Entry direction = Stage 1 signal SWAPPED (long↔short); holds untouched.
-    - Exit lines: tp_soft, tp_hard, sl_hard. (Soft SL is inactive.)
-    - Soft TP fires on 2 consecutive 1-min closes past tp_soft_line; fill at 2nd close.
-    - Hard SL fires on bar EXTREME touching sl_hard_line; fill at line.
-    - Hard TP fires on bar EXTREME touching tp_hard_line; fill at line.
-    - Per-bar tie-break: hard TP > hard SL > soft TP (symmetric flip — the whole
-      logic flips, including the priority order).
-
-  Entry signal at candle level (both modes):
+  Entry signal at candle level:
         long  iff Stage 1 rule fires long
         short iff Stage 1 rule fires short
         hold  otherwise
@@ -27,19 +23,15 @@ Two coexisting modes selected by `flip_entry_direction`:
 
   Position size = 1 contract. No ladder. NQ point value = $20.
 
-  Line orientation (both modes — depends on the actual position direction,
-  i.e. the post-flip direction in flipped mode):
-    long position:  sl_soft_line, sl_hard_line below entry; tp_soft_line, tp_hard_line above
+  Line orientation (depends on the actual post-flip position direction):
+    long position:  sl_soft_line, sl_hard_line below entry; tp_hard_line above
     short position: mirrored
 
-  Re-entry gate (both modes): after exit at time T, next 4h candle is signal-
-  eligible iff its `Date` (4h start) > T. Fresh Stage 1 evaluation; no SL/TP
-  differentiation in the gate; no direction memory.
+  Re-entry gate: after exit at time T, next 4h candle is signal-eligible iff its
+  `Date` (4h start) > T. Fresh Stage 1 evaluation; no direction memory.
 
-  All four soft/hard thresholds (sl_soft, sl_hard, tp_soft, tp_hard) are
-  REQUIRED > 0. Constraints: sl_hard >= sl_soft, tp_hard >= tp_soft. The
-  inactive soft threshold (sl_soft when flipped, tp_soft when normal) is
-  validated but ignored at runtime in that mode.
+  The three thresholds (sl_soft, sl_hard, tp_hard) are REQUIRED > 0.
+  Constraint: sl_hard >= sl_soft.
 
 Live reference: `docs/strategy/files/simple_strategy.md` (file overview) and
 `docs/strategy/references/simple_engine_truth_table.md` (formal decision tables).
@@ -72,20 +64,16 @@ ExitReason = Literal[
 class SimpleStrategyParams:
     """All values REQUIRED (no-fallback rule).
 
-    Constraints:
+    Constraint:
       - sl_hard_points >= sl_soft_points (the hard SL line is at or beyond
         the soft SL line)
-      - tp_hard_points >= tp_soft_points (the hard TP line is at or beyond
-        the soft TP line)
 
-    All four soft/hard thresholds are validated > 0 regardless of mode;
-    one of them is inactive at runtime (sl_soft_points when flipped,
-    tp_soft_points when not flipped) but the value is preserved so the
-    user can round-trip between modes without losing input.
+    The three thresholds (sl_soft, sl_hard, tp_hard) are validated > 0. There is
+    a single take-profit (tp_hard_points); `flip_entry_direction` only reverses
+    the entry direction, it does not change the exit lines.
     """
     sl_soft_points: float
     sl_hard_points: float
-    tp_soft_points: float
     tp_hard_points: float
     data_path_4h:   str
     data_path_1min: str
@@ -98,11 +86,9 @@ class SimpleStrategyParams:
     # unaffected. See study_range_regime/ACTION_PLAN_range_regime_sltp.md (Phase E) + UPDATE_engine_split_sltp.md.
     long_sl_soft_points:  Optional[float] = None
     long_sl_hard_points:  Optional[float] = None
-    long_tp_soft_points:  Optional[float] = None
     long_tp_hard_points:  Optional[float] = None
     short_sl_soft_points: Optional[float] = None
     short_sl_hard_points: Optional[float] = None
-    short_tp_soft_points: Optional[float] = None
     short_tp_hard_points: Optional[float] = None
 
 
@@ -168,7 +154,7 @@ class SimpleStrategy:
     NQ_POINT_VALUE = 20.0  # NQ futures: $20 per point per contract.
 
     def __init__(self, params: SimpleStrategyParams) -> None:
-        for fld in ('sl_soft_points', 'sl_hard_points', 'tp_soft_points', 'tp_hard_points'):
+        for fld in ('sl_soft_points', 'sl_hard_points', 'tp_hard_points'):
             v = getattr(params, fld)
             if v <= 0:
                 raise ValueError(f'{fld} must be > 0, got {v}')
@@ -176,11 +162,6 @@ class SimpleStrategy:
             raise ValueError(
                 f'sl_hard_points ({params.sl_hard_points}) must be >= '
                 f'sl_soft_points ({params.sl_soft_points})'
-            )
-        if params.tp_hard_points < params.tp_soft_points:
-            raise ValueError(
-                f'tp_hard_points ({params.tp_hard_points}) must be >= '
-                f'tp_soft_points ({params.tp_soft_points})'
             )
         if params.direction_scope not in ('both', 'long_only', 'short_only'):
             raise ValueError(f'direction_scope invalid: {params.direction_scope}')
@@ -193,21 +174,17 @@ class SimpleStrategy:
         def _side(side: str):
             ss = getattr(params, f'{side}_sl_soft_points')
             sh = getattr(params, f'{side}_sl_hard_points')
-            ts = getattr(params, f'{side}_tp_soft_points')
             th = getattr(params, f'{side}_tp_hard_points')
             ss = params.sl_soft_points if ss is None else float(ss)
             sh = params.sl_hard_points if sh is None else float(sh)
-            ts = params.tp_soft_points if ts is None else float(ts)
             th = params.tp_hard_points if th is None else float(th)
-            for nm, v in (('sl_soft', ss), ('sl_hard', sh), ('tp_soft', ts), ('tp_hard', th)):
+            for nm, v in (('sl_soft', ss), ('sl_hard', sh), ('tp_hard', th)):
                 if v <= 0:
                     raise ValueError(f'{side}_{nm}_points must be > 0, got {v}')
             if sh < ss:
                 raise ValueError(f'{side}_sl_hard_points ({sh}) must be >= {side}_sl_soft_points ({ss})')
-            if th < ts:
-                raise ValueError(f'{side}_tp_hard_points ({th}) must be >= {side}_tp_soft_points ({ts})')
-            return (ss, sh, ts, th)
-        self._long_pts = _side('long')    # (sl_soft, sl_hard, tp_soft, tp_hard) for FINAL dir == 'long'
+            return (ss, sh, th)
+        self._long_pts = _side('long')    # (sl_soft, sl_hard, tp_hard) for FINAL dir == 'long'
         self._short_pts = _side('short')  # …for FINAL dir == 'short'
 
     def backtest(
@@ -289,8 +266,8 @@ class SimpleStrategy:
 
         def _walk_exit_for_4h(idx: int) -> None:
             """Walk 1-min bars belonging to df_4h[idx] looking for an exit
-            on the currently open trade. Dispatches to the normal or
-            flipped exit model based on `flip`."""
+            on the currently open trade. Single exit model regardless of `flip`
+            (hard-SL > hard-TP > soft-SL)."""
             nonlocal open_trade, blocked_until, soft_consec_count
             if open_trade is None or start_1m is None:
                 return
@@ -299,7 +276,6 @@ class SimpleStrategy:
             d   = open_trade['direction']
             ss  = open_trade['sl_soft_line']
             sh  = open_trade['sl_hard_line']
-            ts_ = open_trade['tp_soft_line']
             th  = open_trade['tp_hard_line']
             ep  = open_trade['entry_price']
             pv  = self.NQ_POINT_VALUE
@@ -316,50 +292,28 @@ class SimpleStrategy:
                 fill: Optional[float] = None
                 resets_counter = True
 
-                if not flip:
-                    # NORMAL mode: hard SL > hard TP > soft SL.
-                    if d == 'long':
-                        if m_low <= sh:
-                            exit_reason, fill = 'STOP_LOSS_HARD', sh
-                        elif m_high >= th:
-                            exit_reason, fill = 'TAKE_PROFIT_HARD', th
-                        elif m_close <= ss:
-                            soft_consec_count += 1
-                            resets_counter = False
-                            if soft_consec_count >= 2:
-                                exit_reason, fill = 'STOP_LOSS_SOFT', m_close
-                    else:  # short
-                        if m_high >= sh:
-                            exit_reason, fill = 'STOP_LOSS_HARD', sh
-                        elif m_low <= th:
-                            exit_reason, fill = 'TAKE_PROFIT_HARD', th
-                        elif m_close >= ss:
-                            soft_consec_count += 1
-                            resets_counter = False
-                            if soft_consec_count >= 2:
-                                exit_reason, fill = 'STOP_LOSS_SOFT', m_close
-                else:
-                    # FLIPPED mode: hard TP > hard SL > soft TP (Q-A: symmetric flip).
-                    if d == 'long':
-                        if m_high >= th:
-                            exit_reason, fill = 'TAKE_PROFIT_HARD', th
-                        elif m_low <= sh:
-                            exit_reason, fill = 'STOP_LOSS_HARD', sh
-                        elif m_close >= ts_:
-                            soft_consec_count += 1
-                            resets_counter = False
-                            if soft_consec_count >= 2:
-                                exit_reason, fill = 'TAKE_PROFIT_SOFT', m_close
-                    else:  # short
-                        if m_low <= th:
-                            exit_reason, fill = 'TAKE_PROFIT_HARD', th
-                        elif m_high >= sh:
-                            exit_reason, fill = 'STOP_LOSS_HARD', sh
-                        elif m_close <= ts_:
-                            soft_consec_count += 1
-                            resets_counter = False
-                            if soft_consec_count >= 2:
-                                exit_reason, fill = 'TAKE_PROFIT_SOFT', m_close
+                # Single exit model (flip or not): hard-SL > hard-TP > soft-SL on the ENTERED
+                # direction. `flip` only reverses entry direction; there is no soft take-profit.
+                if d == 'long':
+                    if m_low <= sh:
+                        exit_reason, fill = 'STOP_LOSS_HARD', sh
+                    elif m_high >= th:
+                        exit_reason, fill = 'TAKE_PROFIT_HARD', th
+                    elif m_close <= ss:
+                        soft_consec_count += 1
+                        resets_counter = False
+                        if soft_consec_count >= 2:
+                            exit_reason, fill = 'STOP_LOSS_SOFT', m_close
+                else:  # short
+                    if m_high >= sh:
+                        exit_reason, fill = 'STOP_LOSS_HARD', sh
+                    elif m_low <= th:
+                        exit_reason, fill = 'TAKE_PROFIT_HARD', th
+                    elif m_close >= ss:
+                        soft_consec_count += 1
+                        resets_counter = False
+                        if soft_consec_count >= 2:
+                            exit_reason, fill = 'STOP_LOSS_SOFT', m_close
 
                 if exit_reason is not None and fill is not None:
                     sub_ts = pd.Timestamp(md_arr[t])                   # materialise the exit timestamp
@@ -490,16 +444,14 @@ class SimpleStrategy:
 
                 # per-direction (split) points; _long_pts/_short_pts == shared when no split set ⇒ identical
                 if edir == 'long':
-                    ss, sh, ts, th = self._long_pts
+                    ss, sh, th = self._long_pts
                     sl_soft_line = entry_px - ss * _m
                     sl_hard_line = entry_px - sh * _m
-                    tp_soft_line = entry_px + ts * _m * _tm
                     tp_hard_line = entry_px + th * _m * _tm
                 else:
-                    ss, sh, ts, th = self._short_pts
+                    ss, sh, th = self._short_pts
                     sl_soft_line = entry_px + ss * _m
                     sl_hard_line = entry_px + sh * _m
-                    tp_soft_line = entry_px - ts * _m * _tm
                     tp_hard_line = entry_px - th * _m * _tm
 
                 open_trade = {
@@ -511,7 +463,6 @@ class SimpleStrategy:
                     'veto_flip':    bool(vflip),               # entered reversed because of a veto
                     'sl_soft_line': sl_soft_line,
                     'sl_hard_line': sl_hard_line,
-                    'tp_soft_line': tp_soft_line,
                     'tp_hard_line': tp_hard_line,
                     'flip':         flip,
                     'exit_time':    None,

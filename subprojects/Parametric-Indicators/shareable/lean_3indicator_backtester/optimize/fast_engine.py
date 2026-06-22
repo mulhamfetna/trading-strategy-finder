@@ -9,11 +9,10 @@ FAITHFULNESS (must match engine.py exactly — see optimize/test_fast_parity.py)
     (post-flip), entry price = close[idx-1], entry time = date[idx]. Gated by gate[idx]; one position
     at a time; re-entry only on a decision bar whose date > the last exit time.
   • Exit (resolved on 1-min, lines are absolute point distances):
-      NORMAL  (flip=False): per-bar priority hard-SL > hard-TP > soft-SL.
+      Single exit model (flip or not): per-bar priority hard-SL > hard-TP > soft-SL.
         long : SLh low≤ep-slh(fill line) · TPh high≥ep+tp(fill line) · SLs 2 consecutive closes≤ep-sls(fill close)
         short: mirrored.
-      FLIPPED (flip=True): direction swapped at entry; priority hard-TP > hard-SL > soft-TP, soft on
-        the TP side (tp_soft = tp). sl_soft is inactive (matches engine).
+      flip=True only REVERSES the entry direction (d = -raw); the exit logic is identical (matches engine).
   • "2 consecutive closes" == close past the soft line on bar t AND bar t-1 (the engine's consec≥2,
     which resets on any non-breach → equivalent to a pairwise AND); fill at the 2nd bar's close.
   • Same-bar ties resolved by the priority order above. No look-ahead (scan starts at the 1-min bar
@@ -89,11 +88,11 @@ def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
         if d == LONG:
             t_slh = _first_true(lo <= slh_line)
             t_tph = _first_true(hi >= tph_line)
-            soft_breach = (cl <= sls_line) if not flip else (cl >= tps_line)
+            soft_breach = cl <= sls_line   # soft stop-loss (long); flip only reverses entry, not this
         else:
             t_slh = _first_true(hi >= slh_line)
             t_tph = _first_true(lo <= tph_line)
-            soft_breach = (cl >= sls_line) if not flip else (cl <= tps_line)
+            soft_breach = cl >= sls_line   # soft stop-loss (short); flip only reverses entry, not this
         # soft fires at the 2nd of two consecutive breaching closes
         if soft_breach.size >= 2:
             pair = soft_breach[1:] & soft_breach[:-1]
@@ -102,10 +101,8 @@ def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
             t_soft = -1
 
         # assemble candidates with their priority, pick earliest (tie → priority order)
-        if not flip:
-            order = [(t_slh, R_SL_HARD, slh_line), (t_tph, R_TP_HARD, tph_line), (t_soft, R_SL_SOFT, None)]
-        else:
-            order = [(t_tph, R_TP_HARD, tph_line), (t_slh, R_SL_HARD, slh_line), (t_soft, R_TP_SOFT, None)]
+        # Single exit model regardless of flip: hard-SL > hard-TP > soft-SL on the ENTERED direction.
+        order = [(t_slh, R_SL_HARD, slh_line), (t_tph, R_TP_HARD, tph_line), (t_soft, R_SL_SOFT, None)]
         best = None  # (slice_t, priority_rank, reason, fill)
         for rank, (ti, reason, line) in enumerate(order):
             if ti < 0:

@@ -286,7 +286,7 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
                              "params": dict(i.config.params)})
             return rows
 
-    sp = SimpleStrategyParams(sl_soft_points=sl_soft, sl_hard_points=sl_hard, tp_soft_points=tp,
+    sp = SimpleStrategyParams(sl_soft_points=sl_soft, sl_hard_points=sl_hard,
                               tp_hard_points=tp, data_path_4h="", data_path_1min="",
                               box_data_path="", flip_entry_direction=flip)
     blocked = []   # diagnostic: directional signals the gate dropped (logged, not traded)
@@ -329,7 +329,7 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
         eq += pnl; peak = max(peak, eq); dd = peak - eq
         events.append({"time": xt, "type": "WIN" if pnl > 0 else "LOSS", "text": f"exit @ {t['exit_price']:.1f} via {t['exit_reason']} | P/L {pnl:+,.0f} | equity ${eq:,.0f} | DD ${dd:,.0f}"})
         eqc.append({"time": xt, "value": round(eq, 2)})
-        rec = {k: t[k] for k in ("entry_price", "exit_price", "direction", "exit_reason", "sl_soft_line", "sl_hard_line", "tp_soft_line", "tp_hard_line")}
+        rec = {k: t[k] for k in ("entry_price", "exit_price", "direction", "exit_reason", "sl_soft_line", "sl_hard_line", "tp_hard_line")}
         rec["veto_flip"] = bool(t.get("veto_flip"))
         rec.update(entry_time=et, exit_time=xt, pnl=round(pnl, 2), equity=round(eq, 2), dd=round(dd, 2), year=pd.Timestamp(t["exit_time"]).year)
         taken.append(rec)
