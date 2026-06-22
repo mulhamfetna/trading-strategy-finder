@@ -288,9 +288,9 @@ class SimpleStrategy:
             return 'short' if d == 'long' else 'long'
 
         def _walk_exit_for_4h(idx: int) -> None:
-            """Walk 1-min bars belonging to df_4h[idx] looking for an exit
-            on the currently open trade. Dispatches to the normal or
-            flipped exit model based on `flip`."""
+            """Walk 1-min bars belonging to df_4h[idx] looking for an exit on the currently open
+            trade. Single exit model regardless of `flip`: hard-SL > hard-TP > soft-SL on the
+            ENTERED direction. `flip` only reverses entry direction (see entry logic below)."""
             nonlocal open_trade, blocked_until, soft_consec_count
             if open_trade is None or start_1m is None:
                 return
@@ -316,50 +316,29 @@ class SimpleStrategy:
                 fill: Optional[float] = None
                 resets_counter = True
 
-                if not flip:
-                    # NORMAL mode: hard SL > hard TP > soft SL.
-                    if d == 'long':
-                        if m_low <= sh:
-                            exit_reason, fill = 'STOP_LOSS_HARD', sh
-                        elif m_high >= th:
-                            exit_reason, fill = 'TAKE_PROFIT_HARD', th
-                        elif m_close <= ss:
-                            soft_consec_count += 1
-                            resets_counter = False
-                            if soft_consec_count >= 2:
-                                exit_reason, fill = 'STOP_LOSS_SOFT', m_close
-                    else:  # short
-                        if m_high >= sh:
-                            exit_reason, fill = 'STOP_LOSS_HARD', sh
-                        elif m_low <= th:
-                            exit_reason, fill = 'TAKE_PROFIT_HARD', th
-                        elif m_close >= ss:
-                            soft_consec_count += 1
-                            resets_counter = False
-                            if soft_consec_count >= 2:
-                                exit_reason, fill = 'STOP_LOSS_SOFT', m_close
-                else:
-                    # FLIPPED mode: hard TP > hard SL > soft TP (Q-A: symmetric flip).
-                    if d == 'long':
-                        if m_high >= th:
-                            exit_reason, fill = 'TAKE_PROFIT_HARD', th
-                        elif m_low <= sh:
-                            exit_reason, fill = 'STOP_LOSS_HARD', sh
-                        elif m_close >= ts_:
-                            soft_consec_count += 1
-                            resets_counter = False
-                            if soft_consec_count >= 2:
-                                exit_reason, fill = 'TAKE_PROFIT_SOFT', m_close
-                    else:  # short
-                        if m_low <= th:
-                            exit_reason, fill = 'TAKE_PROFIT_HARD', th
-                        elif m_high >= sh:
-                            exit_reason, fill = 'STOP_LOSS_HARD', sh
-                        elif m_close <= ts_:
-                            soft_consec_count += 1
-                            resets_counter = False
-                            if soft_consec_count >= 2:
-                                exit_reason, fill = 'TAKE_PROFIT_SOFT', m_close
+                # Single exit model (flip or not): hard-SL > hard-TP > soft-SL on the ENTERED
+                # direction. `flip` only reverses entry direction; it no longer swaps "soft" to the
+                # TP side. (ts_ stays computed at entry but unused — soft-TP is inactive, as before.)
+                if d == 'long':
+                    if m_low <= sh:
+                        exit_reason, fill = 'STOP_LOSS_HARD', sh
+                    elif m_high >= th:
+                        exit_reason, fill = 'TAKE_PROFIT_HARD', th
+                    elif m_close <= ss:
+                        soft_consec_count += 1
+                        resets_counter = False
+                        if soft_consec_count >= 2:
+                            exit_reason, fill = 'STOP_LOSS_SOFT', m_close
+                else:  # short
+                    if m_high >= sh:
+                        exit_reason, fill = 'STOP_LOSS_HARD', sh
+                    elif m_low <= th:
+                        exit_reason, fill = 'TAKE_PROFIT_HARD', th
+                    elif m_close >= ss:
+                        soft_consec_count += 1
+                        resets_counter = False
+                        if soft_consec_count >= 2:
+                            exit_reason, fill = 'STOP_LOSS_SOFT', m_close
 
                 if exit_reason is not None and fill is not None:
                     sub_ts = pd.Timestamp(md_arr[t])                   # materialise the exit timestamp
