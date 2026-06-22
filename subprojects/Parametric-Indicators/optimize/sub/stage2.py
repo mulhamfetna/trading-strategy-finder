@@ -86,7 +86,7 @@ def eval_dynamic(df4, df1, box, gate_full, sig_obj, champ, mult_full, lo, hi):
     t0 = d["Date"].iloc[0]; t1 = d["Date"].iloc[-1] + _BAR
     d1 = df1[(df1["Date"] >= t0) & (df1["Date"] < t1)].reset_index(drop=True)
     sp = SimpleStrategyParams(sl_soft_points=float(champ["sl_soft"]), sl_hard_points=float(champ["sl_hard"]),
-                              tp_soft_points=float(champ["tp"]), tp_hard_points=float(champ["tp"]),
+                              tp_hard_points=float(champ["tp"]),
                               data_path_4h="", data_path_1min="", box_data_path="", flip_entry_direction=False)
     mult = None if mult_full is None else np.asarray(mult_full[lo:hi], dtype=float)
     trades, _ = SimpleStrategy(sp).backtest(d, d1, box, entry_gate=np.asarray(gate_full[lo:hi], bool),

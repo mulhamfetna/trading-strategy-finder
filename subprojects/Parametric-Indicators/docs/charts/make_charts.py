@@ -64,7 +64,7 @@ def engine_vs_fast():
     df, df1, box, vf, n = data.load_inputs("4h")
     si = signals_to_int(signals.decision_signals(df, box))
     g = vf <= float(np.percentile(vf[:n], 60))
-    sp = SimpleStrategyParams(sl_soft_points=30, sl_hard_points=40, tp_soft_points=60, tp_hard_points=60,
+    sp = SimpleStrategyParams(sl_soft_points=30, sl_hard_points=40, tp_hard_points=60,
                               data_path_4h="", data_path_1min="", box_data_path="", flip_entry_direction=False)
     DD, DC = df["Date"].to_numpy(), df["Close"].to_numpy(float)
     MD, MH = df1["Date"].to_numpy(), df1["High"].to_numpy(float)

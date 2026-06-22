@@ -29,7 +29,7 @@ def _bundle():
 
 
 def _params(**over):
-    base = dict(sl_soft_points=100.0, sl_hard_points=150.0, tp_soft_points=100.0, tp_hard_points=120.0,
+    base = dict(sl_soft_points=100.0, sl_hard_points=150.0, tp_hard_points=120.0,
                 data_path_4h="", data_path_1min="", box_data_path="", direction_scope='both',
                 flip_entry_direction=False)
     base.update(over)
@@ -49,9 +49,9 @@ def _key(t):
 
 def test_degenerate_split_equals_shared():
     shared = _run(_params())
-    split = _run(_params(long_sl_soft_points=100.0, long_sl_hard_points=150.0, long_tp_soft_points=100.0,
+    split = _run(_params(long_sl_soft_points=100.0, long_sl_hard_points=150.0,
                          long_tp_hard_points=120.0, short_sl_soft_points=100.0, short_sl_hard_points=150.0,
-                         short_tp_soft_points=100.0, short_tp_hard_points=120.0))
+                         short_tp_hard_points=120.0))
     assert len(shared) == len(split), f"trade count differs: {len(shared)} vs {len(split)}"
     assert [_key(a) for a in shared] == [_key(b) for b in split], "degenerate split must equal shared exactly"
     return len(shared)
@@ -59,9 +59,8 @@ def test_degenerate_split_equals_shared():
 
 def test_direction_consistency():
     # asymmetric: long TP far (300), short TP near (60); long SL 150/short SL 90
-    sp = _params(long_sl_hard_points=150.0, long_tp_hard_points=300.0, long_tp_soft_points=290.0,
-                 short_sl_hard_points=90.0, short_sl_soft_points=80.0, short_tp_hard_points=60.0,
-                 short_tp_soft_points=55.0)
+    sp = _params(long_sl_hard_points=150.0, long_tp_hard_points=300.0,
+                 short_sl_hard_points=90.0, short_sl_soft_points=80.0, short_tp_hard_points=60.0)
     tr = _run(sp)
     nL = nS = 0
     for t in tr:
@@ -79,8 +78,8 @@ def test_direction_consistency():
 
 
 def test_bad_split_raises():
-    for bad in (dict(long_sl_hard_points=50.0, long_sl_soft_points=100.0),   # hard < soft
-                dict(short_tp_hard_points=10.0, short_tp_soft_points=20.0),   # hard < soft
+    for bad in (dict(long_sl_hard_points=50.0, long_sl_soft_points=100.0),   # long hard SL < soft SL
+                dict(short_sl_hard_points=50.0, short_sl_soft_points=100.0),  # short hard SL < soft SL
                 dict(long_tp_hard_points=-5.0)):                              # <= 0
         try:
             engine.SimpleStrategy(_params(**bad))

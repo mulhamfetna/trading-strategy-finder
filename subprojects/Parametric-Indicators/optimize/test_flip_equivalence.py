@@ -54,7 +54,7 @@ def test_flip_equals_reversed_signal(inputs, ss, sh, tp, gp):
 
 def test_flip_engine_uses_normal_exit_reasons(inputs):
     df, df1, box, *_ = inputs
-    sp = SimpleStrategyParams(sl_soft_points=30, sl_hard_points=40, tp_soft_points=60,
+    sp = SimpleStrategyParams(sl_soft_points=30, sl_hard_points=40,
                               tp_hard_points=60, data_path_4h="", data_path_1min="",
                               box_data_path="", flip_entry_direction=True)
     E0, _ = SimpleStrategy(sp).backtest(df, df1, box, entry_gate=None)

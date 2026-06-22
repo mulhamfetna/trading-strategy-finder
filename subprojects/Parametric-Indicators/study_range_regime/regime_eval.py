@@ -65,7 +65,7 @@ def _eval(df4, df1, box, gate, sig_obj, champ, mult, lo, hi, mode):
     t0 = d["Date"].iloc[0]; t1 = d["Date"].iloc[-1] + _BAR
     d1 = df1[(df1["Date"] >= t0) & (df1["Date"] < t1)].reset_index(drop=True)
     sp = SimpleStrategyParams(sl_soft_points=float(champ["sl_soft"]), sl_hard_points=float(champ["sl_hard"]),
-                              tp_soft_points=float(champ["tp"]), tp_hard_points=float(champ["tp"]),
+                              tp_hard_points=float(champ["tp"]),
                               data_path_4h="", data_path_1min="", box_data_path="", flip_entry_direction=False)
     kw = {}
     if mult is not None:

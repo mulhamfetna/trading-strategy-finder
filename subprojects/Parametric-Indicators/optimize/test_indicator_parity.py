@@ -51,7 +51,7 @@ def main(tf: str = "4h") -> int:
     def run_case(specs, k):
         inds = library.from_specs(specs)
         g = vol_gate & ~runner.veto_mask(df, box, inds) & runner.confirm_mask(df, box, inds, k)
-        sp = SimpleStrategyParams(sl_soft_points=SS, sl_hard_points=SH, tp_soft_points=TP,
+        sp = SimpleStrategyParams(sl_soft_points=SS, sl_hard_points=SH,
                                   tp_hard_points=TP, data_path_4h="", data_path_1min="",
                                   box_data_path="", flip_entry_direction=False)
         E0, _ = SimpleStrategy(sp).backtest(df, df1, box, entry_gate=g)

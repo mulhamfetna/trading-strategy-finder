@@ -44,7 +44,7 @@ def test_composite_gate_disabled_indicator_equals_vol_gate(inputs):
 def test_engine_trades_identical_when_indicators_off(inputs):
     df4, df1, box, vf, n2025 = inputs
     vg = _vol_gate(df4, vf, n2025)
-    sp = SimpleStrategyParams(sl_soft_points=30, sl_hard_points=40, tp_soft_points=60,
+    sp = SimpleStrategyParams(sl_soft_points=30, sl_hard_points=40,
                               tp_hard_points=60, data_path_4h="", data_path_1min="",
                               box_data_path="", flip_entry_direction=False)
     base_trades, _ = SimpleStrategy(sp).backtest(df4, df1, box, entry_gate=vg)
@@ -58,7 +58,7 @@ def test_engine_trades_identical_when_indicators_off(inputs):
 
 
 def _sp():
-    return SimpleStrategyParams(sl_soft_points=30, sl_hard_points=40, tp_soft_points=60,
+    return SimpleStrategyParams(sl_soft_points=30, sl_hard_points=40,
                                 tp_hard_points=60, data_path_4h="", data_path_1min="",
                                 box_data_path="", flip_entry_direction=False)
 

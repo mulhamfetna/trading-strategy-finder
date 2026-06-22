@@ -45,7 +45,7 @@ def reference_entry_times(tf_name: str) -> list[pd.Timestamp]:
     entry timestamps of all completed trades (the realized cadence)."""
     df_dec, df1, box, _vf, _n = data_mod.load_inputs(tf_name)
     sp = SimpleStrategyParams(sl_soft_points=REF["sl_soft"], sl_hard_points=REF["sl_hard"],
-                              tp_soft_points=REF["tp"], tp_hard_points=REF["tp"],
+                              tp_hard_points=REF["tp"],
                               data_path_4h="", data_path_1min="", box_data_path="",
                               flip_entry_direction=False)
     trades, _ = SimpleStrategy(sp).backtest(df_dec, df1, box, entry_gate=None)

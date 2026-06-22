@@ -42,7 +42,7 @@ def main(tf: str = "4h") -> int:
 
     ok_all = True
     for name, ss, sh, tp, gp, flip in CASES:
-        sp = SimpleStrategyParams(sl_soft_points=ss, sl_hard_points=sh, tp_soft_points=tp,
+        sp = SimpleStrategyParams(sl_soft_points=ss, sl_hard_points=sh,
                                   tp_hard_points=tp, data_path_4h="", data_path_1min="",
                                   box_data_path="", flip_entry_direction=flip)
         E0, _ = SimpleStrategy(sp).backtest(df, df1, box, entry_gate=gate(gp))
@@ -65,9 +65,9 @@ def main(tf: str = "4h") -> int:
                                  ("split flip L20/28/50 S40/55/80 g0", (20, 28, 50), (40, 55, 80), 0, True)]:
         l_ss, l_sh, l_tp = L; s_ss, s_sh, s_tp = S
         sp = SimpleStrategyParams(
-            sl_soft_points=l_ss, sl_hard_points=l_sh, tp_soft_points=l_tp, tp_hard_points=l_tp,
-            long_sl_soft_points=l_ss, long_sl_hard_points=l_sh, long_tp_soft_points=l_tp, long_tp_hard_points=l_tp,
-            short_sl_soft_points=s_ss, short_sl_hard_points=s_sh, short_tp_soft_points=s_tp, short_tp_hard_points=s_tp,
+            sl_soft_points=l_ss, sl_hard_points=l_sh, tp_hard_points=l_tp,
+            long_sl_soft_points=l_ss, long_sl_hard_points=l_sh, long_tp_hard_points=l_tp,
+            short_sl_soft_points=s_ss, short_sl_hard_points=s_sh, short_tp_hard_points=s_tp,
             data_path_4h="", data_path_1min="", box_data_path="", flip_entry_direction=flip)
         E0, _ = SimpleStrategy(sp).backtest(df, df1, box, entry_gate=gate(gp))
         E = [t for t in E0 if t.get("exit_reason") not in (None, "OPEN")]

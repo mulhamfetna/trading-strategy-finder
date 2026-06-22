@@ -9,11 +9,10 @@ FAITHFULNESS (must match engine.py exactly — see optimize/test_fast_parity.py)
     (post-flip), entry price = close[idx-1], entry time = date[idx]. Gated by gate[idx]; one position
     at a time; re-entry only on a decision bar whose date > the last exit time.
   • Exit (resolved on 1-min, lines are absolute point distances):
-      NORMAL  (flip=False): per-bar priority hard-SL > hard-TP > soft-SL.
+      Single exit model (flip or not): per-bar priority hard-SL > hard-TP > soft-SL.
         long : SLh low≤ep-slh(fill line) · TPh high≥ep+tp(fill line) · SLs 2 consecutive closes≤ep-sls(fill close)
         short: mirrored.
-      FLIPPED (flip=True): direction swapped at entry; priority hard-TP > hard-SL > soft-TP, soft on
-        the TP side (tp_soft = tp). sl_soft is inactive (matches engine).
+      flip=True only REVERSES the entry direction (d = -raw); the exit logic is identical (matches engine).
   • "2 consecutive closes" == close past the soft line on bar t AND bar t-1 (the engine's consec≥2,
     which resets on any non-breach → equivalent to a pairwise AND); fill at the 2nd bar's close.
   • Same-bar ties resolved by the priority order above. No look-ahead (scan starts at the 1-min bar
