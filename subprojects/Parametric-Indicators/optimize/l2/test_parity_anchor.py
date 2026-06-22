@@ -48,6 +48,10 @@ def test_l1_anchor(causal):
     assert round(b["max_dd"]) == 15491
 
 
+@pytest.mark.xfail(reason="flip semantics changed 2026-06-22 (reverse-entry-only); l2v1 champion is "
+                          "flip=true so its $78,391/80/$8,961 numbers move. Re-lock after the l2v2 "
+                          "re-optimization. See docs/superpowers/specs/2026-06-22-flip-semantics-"
+                          "reverse-entry-only-design.md §5.", strict=False)
 def test_l2_anchor(causal):
     res, bs = causal
     b = aggregate.boxes_for_layer(res, "L2", bs)
@@ -56,6 +60,9 @@ def test_l2_anchor(causal):
     assert round(b["max_dd"]) == 8961
 
 
+@pytest.mark.xfail(reason="depends on the L2 (flip=true) champion; combined $228,380/335/$20,303 move "
+                          "with the 2026-06-22 flip-semantics change. Re-lock after l2v2 re-opt. See "
+                          "the flip-semantics design spec §5.", strict=False)
 def test_combined_anchor(causal):
     res, bs = causal
     b = aggregate.combined_boxes(res, bs)

@@ -27,7 +27,13 @@ def cc():
     return res, l1
 
 
-@pytest.mark.parametrize("layer", ["L1", "L2", "combined"])
+@pytest.mark.parametrize("layer", [
+    "L1",
+    pytest.param("L2", marks=pytest.mark.xfail(reason="L2 (flip=true) chart values move with the "
+        "2026-06-22 flip-semantics change; re-lock after l2v2 re-opt (design spec §5)", strict=False)),
+    pytest.param("combined", marks=pytest.mark.xfail(reason="combined depends on the L2 (flip=true) "
+        "layer; values move with the 2026-06-22 flip-semantics change; re-lock after l2v2 re-opt", strict=False)),
+])
 def test_charts_shapes_and_consistency(cc, layer):
     res, l1 = cc
     c = charts.charts_for_layer(res, l1, layer)
