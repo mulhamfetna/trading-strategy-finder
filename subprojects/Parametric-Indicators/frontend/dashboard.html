@@ -349,6 +349,7 @@ function renderView(view){
   if((D.dropped||[]).length){ let dh='<thead><tr><th class="l">time</th><th class="l">reason</th><th class="l">box dir</th><th>L1 flat</th></tr></thead><tbody>';
     (D.dropped||[]).forEach(d=>{dh+=`<tr><td class="l">${DB.dt(d.time)}</td><td class="l">${d.reason}</td><td class="l">${d.box_dir}</td><td>${d.l1_flat?'yes':'no'}</td></tr>`;});
     $('dropped').innerHTML=dh+'</tbody>'; $('dropinfo').textContent=`${dc.total||0} total · ${dc.veto||0} veto · ${dc.vol_gate||0} vol-gate · ${dc.flat_candidates||0} flat`; }
+  else { $('dropped').innerHTML=''; $('dropinfo').textContent=''; }   // clear stale rows when the active view has no dropped signals (else the prior view's table lingers)
 
   // trade ledger (source-labeled)
   const cols=[['layer','src','l'],['entry_time','entry','l'],['exit_time','exit','l'],['direction','dir','l'],['exit_reason','reason','l'],['pnl','P/L']];
