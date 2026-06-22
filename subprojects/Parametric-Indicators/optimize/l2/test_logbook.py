@@ -9,10 +9,9 @@ if str(_PI) not in sys.path:
     sys.path.insert(0, str(_PI))
 
 import numpy as np
-import pytest
 from optimize.l2 import logbook, payload, l1_runner, engine, metrics
 
-_CHAMP = json.load(open(str(_PI / "optimize/results/l2v1_4h_champion.json")))["params"]
+_CHAMP = json.load(open(str(_PI / "optimize/results/l2v2_4h_champion.json")))["params"]
 
 
 def test_run_causal_emits_one_row_per_decision_bar():
@@ -38,9 +37,6 @@ def test_causal_l1_matches_legacy_oracle():
     assert round(last.equity) == 149989 and all(r.dd >= 0 for r in l1_rows)
 
 
-@pytest.mark.xfail(reason="hardcodes the l2v1 (flip=true) champion's $78,391/80/$8,961; these move with "
-                          "the 2026-06-22 flip-semantics change (cross-engine parity itself still holds). "
-                          "Re-lock after l2v2 re-opt — see the flip-semantics design spec §5.", strict=False)
 def test_causal_l2_matches_legacy_engine():
     """L2 book from the causal log == legacy engine.run_l2 (l1_priority) STRUCTURALLY: entry set,
     count, DD, and the force-closed subset — not just rounded dollars."""
@@ -50,10 +46,10 @@ def test_causal_l2_matches_legacy_engine():
     l2_rows = [r for r in res.log if r.layer == "L2" and r.decision == "entry"]
     assert sorted((r.i, r.direction) for r in l2_rows) == \
            sorted((int(t["entry_idx"]), t["direction"]) for t in legacy.ledger)
-    assert len(l2_rows) == 80
-    assert round(metrics.score(legacy)["pnl"]) == round(sum(r.pnl for r in l2_rows)) == 78391
+    assert len(l2_rows) == 34
+    assert round(metrics.score(legacy)["pnl"]) == round(sum(r.pnl for r in l2_rows)) == 25383
     eq = np.cumsum([r.pnl for r in sorted(l2_rows, key=lambda r: r.exit_time)])
-    assert round(float((np.maximum.accumulate(eq) - eq).max())) == 8961               # L2 DD
+    assert round(float((np.maximum.accumulate(eq) - eq).max())) == 7136               # L2 DD (l2v2)
     fc_causal = sorted((r.i, round(r.exit_price, 4), round(r.pnl, 2)) for r in l2_rows if r.exit_reason == "L1-entry")
     fc_legacy = sorted((int(t["entry_idx"]), round(float(t["exit_price"]), 4), round(float(t["pnl"]), 2))
                        for t in legacy.ledger if t["exit_reason"] == "L1-entry")

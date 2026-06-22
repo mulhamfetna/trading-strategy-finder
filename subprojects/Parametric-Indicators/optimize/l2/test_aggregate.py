@@ -7,16 +7,9 @@ _PI = Path(__file__).resolve().parents[2]
 if str(_PI) not in sys.path:
     sys.path.insert(0, str(_PI))
 
-import pytest
-
 from optimize.l2 import logbook, aggregate, payload
 
 _BS = 4 * 3600
-
-# Shared reason for the flip-semantics retirement (2026-06-22): the l2v1 champion is flip=true, so its
-# log-derived boxes/counts move under the new reverse-entry-only exit model. Re-lock after the l2v2
-# re-optimization — see docs/superpowers/specs/2026-06-22-flip-semantics-reverse-entry-only-design.md §5.
-_FLIP_XFAIL = "L2 (flip=true) numbers move with the 2026-06-22 flip-semantics change; re-lock after l2v2 re-opt"
 
 
 def test_l1_boxes_from_log_match_known_values():
@@ -36,13 +29,13 @@ def test_l1_boxes_from_log_match_known_values():
     assert b["n_candidates"] >= b["n_taken"] and 0 <= b["exposure"] <= 100
 
 
-@pytest.mark.xfail(reason=_FLIP_XFAIL, strict=False)
 def test_l2_boxes_from_log_for_champion():
     import json
-    champ = json.load(open(str(_PI / "optimize/results/l2v1_4h_champion.json")))["params"]
+    champ = json.load(open(str(_PI / "optimize/results/l2v2_4h_champion.json")))["params"]
     res = logbook.run_causal(payload.l1_default_params("4h"), champ, "4h")
     b = aggregate.boxes_for_layer(res, "L2", bar_seconds=_BS)
-    assert b["n_taken"] == 80 and round(b["pnl"]) == 78391 and round(b["max_dd"]) == 8961
+    # l2v2 champion (reverse-entry-only engine, re-opt 2026-06-22)
+    assert b["n_taken"] == 34 and round(b["pnl"]) == 25383 and round(b["max_dd"]) == 7136
     # L2 taxonomy is from L2's OWN perspective (l2_reason), not L1's box_cause:
     # L2 never sees box_silence (it only acts on box signals L1 dropped), so its box_silence_total is 0.
     assert b["box_silence_total"]["bars"] == 0

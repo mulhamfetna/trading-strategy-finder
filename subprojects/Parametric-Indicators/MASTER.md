@@ -133,9 +133,10 @@ No credentials needed — only the two data-path env vars (`.env.example`).
   out-of-sample data.
 - **Champion / preset** — a tuned parameter set (e.g. `wsh_lean_4h_champion.json`, `l2v1_4h_champion`).
 - **Golden gate** — `perf/check_golden.py`: byte-for-byte parity check across 6 TFs; the regression alarm.
-- **Parity anchors** — L1 $149,989 (flip=false, **byte-identical, locked**). L2 $78,391 / Combined
-  $228,380 were flip-dependent and were **retired on 2026-06-22** by the flip-semantics change; they are
-  xfail pending the `l2v2` re-optimization, which re-locks the new numbers (see `REPORT_flip_semantics.md`).
+- **Parity anchors** — L1 $149,989 / 255 / $15,491 (flip=false, **byte-identical, locked**). L2 + Combined
+  were **re-locked 2026-06-22** to the `l2v2` champion after the flip-semantics change: L2 **$25,383 / 34 /
+  $7,136**, Combined **$175,372 / 289 / $14,342** (the old $78,391 / $228,380 were inflated by the flip
+  quirk; l2v2 is the honest, OOS-positive baseline — see `optimize/l2/REPORT_flip_semantics.md`).
 - **WS-* / Q* / P* / DASH** — workstream codenames (see §6).
 
 ---

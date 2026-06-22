@@ -4,8 +4,8 @@ guard. Every step of the unified-dashboard rebuild must keep this green.
 
 Anchors (NQ, $20/pt, 1 contract, full research window):
   L1 (frozen lean champion)  $149,989 / 255 trades / $15,491 max DD
-  L2 (extend champion)        $78,391 /  80 trades /  $8,961 max DD
-  Combined                   $228,380 / 335 trades / $20,303 max DD  (recomputed merged book)
+  L2 (l2v2, reverse-entry)    $25,383 /  34 trades /  $7,136 max DD   (re-opt 2026-06-22)
+  Combined                   $175,372 / 289 trades / $14,342 max DD  (recomputed merged book)
 
 The frozen-default guard protects the disk-cached oracle: run_causal selects it via the EXACT dict
 equality use_frozen = (validate_layer_params(l1_default_params(tf)) == l1_default_params(tf))
@@ -28,7 +28,7 @@ from optimize.l2 import logbook, aggregate, payload
 from optimize import timeframes as TF
 
 _TF = "4h"
-_L2_CHAMP = _PI / "optimize" / "results" / "l2v1_4h_champion.json"
+_L2_CHAMP = _PI / "optimize" / "results" / "l2v2_4h_champion.json"   # re-locked 2026-06-22 (reverse-entry-only)
 
 
 @pytest.fixture(scope="module")
@@ -48,28 +48,23 @@ def test_l1_anchor(causal):
     assert round(b["max_dd"]) == 15491
 
 
-@pytest.mark.xfail(reason="flip semantics changed 2026-06-22 (reverse-entry-only); l2v1 champion is "
-                          "flip=true so its $78,391/80/$8,961 numbers move. Re-lock after the l2v2 "
-                          "re-optimization. See docs/superpowers/specs/2026-06-22-flip-semantics-"
-                          "reverse-entry-only-design.md §5.", strict=False)
 def test_l2_anchor(causal):
     res, bs = causal
     b = aggregate.boxes_for_layer(res, "L2", bs)
-    assert b["n_taken"] == 80
-    assert round(b["pnl"]) == 78391
-    assert round(b["max_dd"]) == 8961
+    # l2v2 champion (reverse-entry-only engine, re-optimized 2026-06-22) — the honest, OOS-positive L2.
+    assert b["n_taken"] == 34
+    assert round(b["pnl"]) == 25383
+    assert round(b["max_dd"]) == 7136
 
 
-@pytest.mark.xfail(reason="depends on the L2 (flip=true) champion; combined $228,380/335/$20,303 move "
-                          "with the 2026-06-22 flip-semantics change. Re-lock after l2v2 re-opt. See "
-                          "the flip-semantics design spec §5.", strict=False)
 def test_combined_anchor(causal):
     res, bs = causal
     b = aggregate.combined_boxes(res, bs)
-    assert b["n_taken"]["value"] == 335
-    assert round(b["pnl"]["value"]) == 228380
-    assert round(b["max_dd"]["value"]) == 20303          # recomputed, merged book (< L1+L2 DDs)
-    assert round(b["uplift"]["value"]) == 78391           # L2's exact marginal contribution
+    # l2v2-era combined (L1 frozen + the honest reverse-entry-only L2)
+    assert b["n_taken"]["value"] == 289
+    assert round(b["pnl"]["value"]) == 175372
+    assert round(b["max_dd"]["value"]) == 14342          # recomputed, merged book (< L1+L2 DDs)
+    assert round(b["uplift"]["value"]) == 25383           # L2's exact marginal contribution
 
 
 @pytest.mark.parametrize("window", ["full", "2024", "2025", "2026", "full+20d", "2026+20d"])

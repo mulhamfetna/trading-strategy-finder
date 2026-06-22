@@ -15,25 +15,19 @@ from optimize.l2 import logbook, payload, charts
 from volatility import gate_threshold
 
 _TF = "4h"
-_EXPECT = {"L1": 149989, "L2": 78391, "combined": 228380}
+_EXPECT = {"L1": 149989, "L2": 25383, "combined": 175372}   # l2v2 re-lock 2026-06-22 (reverse-entry-only)
 
 
 @pytest.fixture(scope="module")
 def cc():
     l1p = payload.l1_default_params(_TF)
-    l2p = json.loads((_PI / "optimize" / "results" / "l2v1_4h_champion.json").read_text())["params"]
+    l2p = json.loads((_PI / "optimize" / "results" / "l2v2_4h_champion.json").read_text())["params"]
     res = logbook.run_causal(l1p, l2p, _TF)
     l1 = payload.run_l1_cached(_TF)
     return res, l1
 
 
-@pytest.mark.parametrize("layer", [
-    "L1",
-    pytest.param("L2", marks=pytest.mark.xfail(reason="L2 (flip=true) chart values move with the "
-        "2026-06-22 flip-semantics change; re-lock after l2v2 re-opt (design spec §5)", strict=False)),
-    pytest.param("combined", marks=pytest.mark.xfail(reason="combined depends on the L2 (flip=true) "
-        "layer; values move with the 2026-06-22 flip-semantics change; re-lock after l2v2 re-opt", strict=False)),
-])
+@pytest.mark.parametrize("layer", ["L1", "L2", "combined"])
 def test_charts_shapes_and_consistency(cc, layer):
     res, l1 = cc
     c = charts.charts_for_layer(res, l1, layer)

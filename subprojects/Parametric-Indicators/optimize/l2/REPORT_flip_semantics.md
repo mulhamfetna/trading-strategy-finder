@@ -66,8 +66,29 @@ The −5k phantom is gone: soft-SL now caps losses ~109 pt before the hard stop 
   `test_logbook::test_causal_l2_matches_legacy_engine` (cross-engine parity still holds there; only the
   hardcoded l2v1 numbers are stale).
 
-## Next (separate, heavy)
+## l2v2 re-optimization — DONE (2026-06-22)
 
-`l2v2` re-optimization under the new semantics on the AMD/Postgres optimizer → new L2 champion
-(`optimize/results/l2v2_4h_champion.json`) → re-lock the L2 + combined anchors (remove the xfail markers)
-→ regenerate the WS-I 1h/2h stats.
+Re-optimized on the AMD server (28 parallel workers, one shared Postgres study, 616 trials, `min_trades=10`
+after round 1 @5 gave a thin 8-trade overfit and round 2 @20 gave 0 feasible). New champion
+(`optimize/results/l2v2_4h_champion.json`):
+
+- **in-sample +$24,479 (25 trades) → OOS +$904 (9 trades)** — positive OOS (round 1 was −$3,465).
+- `flip=True · sl_soft 110.4 · sl_hard 178.4 · tp 57.4 · gate 66.7% · dd_limit $1,881 · cooldown 1 · k=3`;
+  indicators ema_trend, macd, keltner, obv, rsi, mfi, order_block.
+
+**New parity anchors (re-locked, all xfail markers removed):**
+
+| | l2v2 (honest) | l2v1 (retired) |
+|---|---|---|
+| L1 | $149,989 · 255 · $15,491 | same (byte-identical) |
+| L2 | **$25,383 · 34 · $7,136** | $78,391 · 80 · $8,961 |
+| Combined | **$175,372 · 289 · $14,342** | $228,380 · 335 · $20,303 |
+
+The combined dropped $228k → $175k **because the old number was inflated by the flip quirk** (riding losers
+to the hard stop + a soft take-profit). Under the corrected semantics — soft-SL caps losses ~110 pt, no
+soft-TP — the honest L2 is ~$25k over 34 trades and holds up out-of-sample. Re-locked in
+`test_parity_anchor.py`, `test_aggregate.py`, `test_charts.py`, `test_logbook.py` (23 tests green).
+
+**Still open:** the production *default* L2 (dashboard / `l2_profiles.json` / `payload.py`) still points at
+l2v1 — swapping it to l2v2 is a separate, more invasive change (left for a follow-up decision). Also: the
+WS-I 1h/2h (`flip=true`) champion stats remain stale.
