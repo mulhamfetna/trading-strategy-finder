@@ -170,7 +170,7 @@ flowchart LR
    │ long:  t_slh = first( low  ≤ ep−sl_hard )     (hard SL, fill at line)   │
    │        t_tph = first( high ≥ ep+tp     )      (hard TP, fill at line)   │
    │        t_soft= 2nd of two consecutive closes ≤ ep−sl_soft (fill close) │
-   │ short: mirrored.   flip: TP/SL priority swapped, soft on the TP side.  │
+   │ short: mirrored.   flip: reverses entry direction only (exits normal)  │
    │ pick EARLIEST hit; ties broken by priority order (hard-SL>hard-TP>soft)│
    └────────────────────────────────────────────────────────────────────────┘
         │  exit time xt, fill price → pnl_points

@@ -122,6 +122,9 @@ No credentials needed — only the two data-path env vars (`.env.example`).
 - **Indicators / K-of-N** — confirm/veto layer on the 1-minute frame; need ≥K confirmations to enter.
 - **Breaker (dd_limit/cooldown)** — halts entries after a drawdown bleed for `cooldown` trades.
   (`dd_cap` is **display-only**, not a trade lever.)
+- **flip** — reverse the box signal's entry direction (long↔short). Exits then follow the **normal**
+  model on the entered direction (`hard-SL > hard-TP > soft-SL`; soft = stop-loss). Changed 2026-06-22
+  from the old "soft swaps to the TP side" rule — see `optimize/l2/REPORT_flip_semantics.md`.
 - **Window** — backtest segment: `full / 2024 / 2025(in-sample) / 2026(OOS) / full+20d / 2026+20d`.
 - **L1 / L2 / Combined** — primary strategy / second layer on L1's dropped signals / both on one account.
 - **Causal log** — one per-candle pass (`logbook.run_causal`) that is the single source of truth; every
@@ -130,7 +133,9 @@ No credentials needed — only the two data-path env vars (`.env.example`).
   out-of-sample data.
 - **Champion / preset** — a tuned parameter set (e.g. `wsh_lean_4h_champion.json`, `l2v1_4h_champion`).
 - **Golden gate** — `perf/check_golden.py`: byte-for-byte parity check across 6 TFs; the regression alarm.
-- **Parity anchors** — L1 $149,989 / L2 $78,391 / Combined $228,380; must stay byte-identical.
+- **Parity anchors** — L1 $149,989 (flip=false, **byte-identical, locked**). L2 $78,391 / Combined
+  $228,380 were flip-dependent and were **retired on 2026-06-22** by the flip-semantics change; they are
+  xfail pending the `l2v2` re-optimization, which re-locks the new numbers (see `REPORT_flip_semantics.md`).
 - **WS-* / Q* / P* / DASH** — workstream codenames (see §6).
 
 ---
