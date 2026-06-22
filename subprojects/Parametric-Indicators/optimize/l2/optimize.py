@@ -104,11 +104,11 @@ def run(n_trials: int = 200, tf: str = "4h", study_prefix: str = "l2v1", seed: i
             "champion": champion}
 
 
-def _export_champion(champion: dict, tf: str, out_dir) -> Path:
+def _export_champion(champion: dict, tf: str, out_dir, prefix: str = "l2v1") -> Path:
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    path = out_dir / f"l2v1_{tf}_champion.json"
-    rec = {"tf": tf, "prefix": "l2v1", "params": champion["params"],
+    path = out_dir / f"{prefix}_{tf}_champion.json"
+    rec = {"tf": tf, "prefix": prefix, "params": champion["params"],
            "in_sample": champion["in_sample"], "oos": champion["oos"]}
     path.write_text(json.dumps(rec, indent=1))
     return path
@@ -130,7 +130,7 @@ def main() -> int:
               min_trades=a.min_trades, sampler=a.sampler, storage_url=a.storage_url)
     print(f"[l2:{a.tf}] {res['n_trials']} trials · {res['n_feasible']} feasible", flush=True)
     if res["champion"] is not None:
-        p = _export_champion(res["champion"], a.tf, a.out)
+        p = _export_champion(res["champion"], a.tf, a.out, a.prefix)
         print(f"[l2:{a.tf}] champion -> {p}", flush=True)
     else:
         print(f"[l2:{a.tf}] no feasible champion (try more trials / lower --min-trades)", flush=True)
