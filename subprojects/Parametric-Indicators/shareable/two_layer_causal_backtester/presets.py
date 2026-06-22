@@ -165,8 +165,13 @@ def strategies() -> list[dict]:
         c = champs.get(tf)
         if not c:
             continue
-        out.append({"id": f"wsi_{tf}",
-                    "label": f"WS-I {tf} champion — typ ${c['median_pnl']:,.0f}",
+        # Degraded champions (e.g. flip=true TFs whose old-quirk tuning went negative under the
+        # corrected reverse-entry-only engine) are kept selectable but unmistakably flagged.
+        if c.get("degraded"):
+            label = f"⚠ WS-I {tf} — DEGRADED (reverse-entry-only flip) — typ ${c['median_pnl']:,.0f}"
+        else:
+            label = f"WS-I {tf} champion — typ ${c['median_pnl']:,.0f}"
+        out.append({"id": f"wsi_{tf}", "label": label,
                     "preset": _preset(tf, c["box"], c.get("indicators", {}))})
     # NEW: wsh4 champions — indicators tuned on the 1-MINUTE frame. Added alongside (not replacing) the
     # entries above; labelled "⏱1-min" so it's unmistakable which regime they came from. The dev

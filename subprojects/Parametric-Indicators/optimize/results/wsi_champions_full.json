@@ -160,7 +160,7 @@
   }
  },
  "1h": {
-  "median_pnl": 12284.4,
+  "median_pnl": -1281.1,
   "box": {
    "sl_soft": 13.03,
    "sl_hard": 101.8,
@@ -206,10 +206,16 @@
    "structure_trend": {
     "swing_l": 11
    }
-  }
+  },
+  "full_pnl": 3259.4,
+  "full_dd": 9374.6,
+  "win": 19.1,
+  "degraded": true,
+  "note": "DEGRADED under reverse-entry-only flip (2026-06-22): this flip=true champion was tuned around the old flip quirk (inert soft-SL); re-evaluated under the corrected engine its fold-median P/L is negative. Superseded \u2014 not a live champion. Re-optimize to replace.",
+  "stored_pre_flipfix_median_pnl": 12284.4
  },
  "2h": {
-  "median_pnl": 15131.7,
+  "median_pnl": -6088.2,
   "box": {
    "sl_soft": 82.55,
    "sl_hard": 153.67,
@@ -246,7 +252,13 @@
    "order_block": {
     "swing_l": 12
    }
-  }
+  },
+  "full_pnl": -17536.6,
+  "full_dd": 38011.0,
+  "win": 70.3,
+  "degraded": true,
+  "note": "DEGRADED under reverse-entry-only flip (2026-06-22): this flip=true champion was tuned around the old flip quirk (inert soft-SL); re-evaluated under the corrected engine its fold-median P/L is negative. Superseded \u2014 not a live champion. Re-optimize to replace.",
+  "stored_pre_flipfix_median_pnl": 15131.7
  },
  "4h": {
   "median_pnl": 24252.8,
