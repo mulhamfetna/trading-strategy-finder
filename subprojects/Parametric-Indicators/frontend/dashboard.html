@@ -20,6 +20,8 @@
   .segctl button[data-view="combined"].on{background:var(--green);}
   .layerbadge{font-weight:700;width:26px;display:inline-block;}
   .L1 .layerbadge{color:var(--blue);} .L2 .layerbadge{color:var(--orange);}
+  .flipbadge{display:inline-block;margin-left:6px;padding:0 5px;border-radius:3px;font-size:11px;
+    font-weight:700;color:#111;background:var(--orange);cursor:help;vertical-align:middle;}
   .viewonly{display:none;}
 </style>
 </head>
@@ -27,7 +29,7 @@
 <div id="err" role="alert"><span id="errmsg"></span><button id="errclose" title="dismiss" aria-label="dismiss">✕</button></div>
 <header>
   <div>
-    <h1><span id="vicon">Σ</span> Unified Dashboard — <span id="vname">Combined</span>
+    <h1><span id="vicon">Σ</span> Unified Dashboard — <span id="vname">Combined</span><span id="flipbadge_hdr"></span>
       <span style="font-size:13px;color:var(--muted);font-weight:400;margin-left:8px">one Run · three tabs · one causal pass</span></h1>
     <p>L1 (frozen-editable) · L2 manages L1's dropped signals · combined per-box rules — switch tabs freely, no re-run</p>
   </div>
@@ -155,6 +157,7 @@
 <script>
 const TH=DB.TH, $=window.$;
 let VIEW='combined';                         // active result tab
+let RUNFLIP={l1:false,l2:false};             // per-layer flip of the LAST run (for the 'entry flipped' badge)
 const VIEWS={l1:null, l2:null, combined:null};   // cached payload per view (one Run fills all 3)
 function dedupe(a){const m={};(a||[]).forEach(p=>{if(p&&p.value!=null)m[p.time]=p.value;});return Object.keys(m).map(Number).sort((x,y)=>x-y).map(t=>({time:t,value:m[t]}));}
 
@@ -299,6 +302,10 @@ function renderView(view){
   VIEW=view;
   $('vicon').textContent = view==='l1'?'🍃':view==='l2'?'🔁':'Σ';
   $('vname').textContent = view==='l1'?'Layer 1':view==='l2'?'Layer 2':'Combined';
+  const _fl = view==='l1' ? (RUNFLIP.l1?['L1']:[]) : view==='l2' ? (RUNFLIP.l2?['L2']:[])
+            : [...(RUNFLIP.l1?['L1']:[]), ...(RUNFLIP.l2?['L2']:[])];
+  $('flipbadge_hdr').innerHTML = _fl.length
+    ? `<span class="flipbadge" title="${_fl.join(' & ')} entries are REVERSED from the box signal (a box short entered long, and vice-versa). SL/TP read normally for the entered direction.">⇄ ${_fl.join('+')} flipped</span>` : '';
   document.querySelectorAll('.viewonly').forEach(el=>{el.style.display=(el.dataset.show||'').split(',').includes(view)?'block':'none';});  // explicit 'block' overrides .viewonly{display:none}
   const b=D.meta.boxes, dc=D.meta.dropped_counts||{};
   const tr=(D.trades||[]).map(t=>view==='l1'?{...t,layer:t.layer||'L1'}:t);
@@ -348,6 +355,8 @@ function renderView(view){
   let h='<thead><tr>'+cols.map(c=>`<th class="${c[2]||''}">${c[1]}</th>`).join('')+'</tr></thead><tbody>';
   tr.forEach(t=>{h+=`<tr class="${t.layer||''}">`+cols.map(c=>{let v=t[c[0]];
     if(c[0]==='layer')return `<td class="l"><span class="layerbadge">${v||''}</span></td>`;
+    if(c[0]==='direction'){const fl=RUNFLIP[(t.layer||'').toLowerCase()];const opp=v==='long'?'short':'long';
+      return `<td class="l">${v==null?'':v}${fl?` <span class="flipbadge" title="box signaled ${opp} → entered ${v}">⇄</span>`:''}</td>`;}
     if(c[0]==='entry_time'||c[0]==='exit_time')v=DB.dt(v);
     if(c[0]==='pnl')return `<td class="${t.pnl>0?'pos':'neg'}">${Math.round(v).toLocaleString()}</td>`;
     return `<td class="${c[2]||''}">${v==null?'':v}</td>`;}).join('')+'</tr>';});
@@ -372,6 +381,7 @@ async function run(){
   try{
     DB.commitMath();
     const l1lay=collectLayer('l1'), l2lay=collectLayer('l2');
+    RUNFLIP={l1:!!l1lay.flip, l2:!!l2lay.flip};   // remember for the 'entry flipped' badge
     const J=o=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(o)});
     const grab=async p=>{const r=await p;let d=null;try{d=await r.json();}catch(_){} if(!r.ok||(d&&d.error))throw new Error((d&&d.error)||('HTTP '+r.status)); return d;};
     // L1 tab = the RICH engine view (strategy.build_payload): full event log w/ would-be-P/L + indicator
