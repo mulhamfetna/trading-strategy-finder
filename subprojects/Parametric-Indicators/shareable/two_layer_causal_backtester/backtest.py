@@ -25,7 +25,7 @@ DATA YOU PROVIDE (the bundle ships code + champions, NOT the multi-year candle C
 CHAMPIONS (bundled in champions/)
   --l1-champion  the frozen lean L1 (default champions/wsh_lean_4h_champion.json — also auto-loaded
                  from optimize/results/ by the frozen-oracle path).
-  --l2-champion  the L2 extend champion (default champions/l2v1_4h_champion.json).
+  --l2-champion  the L2 extend champion (default champions/l2v2_4h_champion.json).
 
 USAGE
   python3 backtest.py --view all --tf 4h
@@ -101,8 +101,8 @@ def main() -> int:
     ap.add_argument("--tf", default="4h", help="decision timeframe (default 4h)")
     ap.add_argument("--l1-champion", default=str(_HERE / "champions" / "wsh_lean_4h_champion.json"),
                     help="frozen lean L1 champion JSON (default champions/wsh_lean_4h_champion.json)")
-    ap.add_argument("--l2-champion", default=str(_HERE / "champions" / "l2v1_4h_champion.json"),
-                    help="L2 extend champion JSON (default champions/l2v1_4h_champion.json)")
+    ap.add_argument("--l2-champion", default=str(_HERE / "champions" / "l2v2_4h_champion.json"),
+                    help="L2 extend champion JSON (default champions/l2v2_4h_champion.json)")
     ap.add_argument("--out-prefix", default="out", help="prefix for the per-candle log CSV (default out)")
     args = ap.parse_args()
 

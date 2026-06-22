@@ -1,30 +1,30 @@
 {
- "l2v1 champion (extend) \u00b7 IS +$54.4k / OOS +$24.0k (4h, 4-ind)": {
-  "sl_soft": 109.43698476200835,
-  "sl_hard": 271.4607610536937,
-  "tp": 62.38708762353957,
-  "gate_pct": 81.32173383876619,
-  "dd_limit": 2296.820459440659,
+ "l2v2 champion (extend) \u00b7 IS +$24.5k / OOS +$0.9k (4h, 7-ind)": {
+  "sl_soft": 110.35287055519004,
+  "sl_hard": 178.4093548191584,
+  "tp": 57.42856263596016,
+  "gate_pct": 66.68759129027293,
+  "dd_limit": 1880.5225926836372,
   "cooldown": 1,
   "flip": true,
   "window": "full",
   "indicators": [
    {
     "key": "ema_trend",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 159,
-     "slow": 366
+     "fast": 161,
+     "slow": 334
     }
    },
    {
     "key": "sma_trend",
-    "enabled": true,
+    "enabled": false,
     "mode": "confirm",
     "params": {
-     "fast": 109,
-     "slow": 357
+     "fast": 288,
+     "slow": 76
     }
    },
    {
@@ -32,9 +32,9 @@
     "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 33,
-     "slow": 122,
-     "signal": 31
+     "fast": 52,
+     "slow": 167,
+     "signal": 24
     }
    },
    {
@@ -45,38 +45,38 @@
    },
    {
     "key": "keltner",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "n": 187,
+     "n": 96,
      "m": 1.7000000000000002
     }
    },
    {
     "key": "obv",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "slope": 138
+     "slope": 64
     }
    },
    {
     "key": "cci",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "n": 138,
-     "threshold": 215
+     "n": 149,
+     "threshold": 245
     }
    },
    {
     "key": "rsi",
-    "enabled": false,
+    "enabled": true,
     "mode": "both",
     "params": {
-     "n": 67,
-     "lower": 22,
-     "upper": 79
+     "n": 63,
+     "lower": 34,
+     "upper": 59
     }
    },
    {
@@ -84,10 +84,10 @@
     "enabled": false,
     "mode": "both",
     "params": {
-     "n": 74,
-     "d": 6,
-     "lower": 3,
-     "upper": 52
+     "n": 50,
+     "d": 33,
+     "lower": 37,
+     "upper": 61
     }
    },
    {
@@ -95,9 +95,9 @@
     "enabled": true,
     "mode": "both",
     "params": {
-     "n": 52,
-     "lower": 41,
-     "upper": 75
+     "n": 66,
+     "lower": 27,
+     "upper": 97
     }
    },
    {
@@ -105,8 +105,8 @@
     "enabled": false,
     "mode": "veto",
     "params": {
-     "n": 117,
-     "k": 2.3
+     "n": 103,
+     "k": 4.1
     }
    },
    {
@@ -114,8 +114,8 @@
     "enabled": false,
     "mode": "veto",
     "params": {
-     "n": 45,
-     "threshold": 53
+     "n": 84,
+     "threshold": 18
     }
    },
    {
@@ -123,15 +123,15 @@
     "enabled": false,
     "mode": "both",
     "params": {
-     "swing_l": 4
+     "swing_l": 5
     }
    },
    {
     "key": "order_block",
-    "enabled": false,
+    "enabled": true,
     "mode": "both",
     "params": {
-     "swing_l": 19
+     "swing_l": 5
     }
    },
    {
@@ -139,7 +139,7 @@
     "enabled": false,
     "mode": "both",
     "params": {
-     "lookback": 21
+     "lookback": 12
     }
    },
    {
@@ -153,7 +153,7 @@
     "enabled": false,
     "mode": "both",
     "params": {
-     "swing_l": 1
+     "swing_l": 10
     }
    },
    {
@@ -163,7 +163,7 @@
     "params": {}
    }
   ],
-  "k": 1,
+  "k": 3,
   "ind_1min": true
  }
 }
