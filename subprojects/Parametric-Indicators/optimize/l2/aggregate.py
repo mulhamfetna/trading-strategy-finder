@@ -45,6 +45,7 @@ def _financials(entries: list) -> dict:
         max_dd=max_dd,
         win=round(100 * float((pnls > 0).mean()), 1) if len(pnls) else 0.0,
         pf=(round(float(wins.sum() / abs(losses.sum())), 2) if len(losses) and losses.sum() != 0 else None),
+        payoff=(round(float(wins.mean() / abs(losses.mean())), 2) if len(wins) and len(losses) else None),
         n_taken=len(entries),
     )
 
@@ -170,6 +171,7 @@ def combined_boxes(result, bar_seconds: int) -> dict:
     wins, losses = pnls[pnls > 0], pnls[pnls < 0]
     win = round(100 * float((pnls > 0).mean()), 1) if len(pnls) else 0.0
     pf = round(float(wins.sum() / abs(losses.sum())), 2) if len(losses) and losses.sum() != 0 else None
+    payoff = round(float(wins.mean() / abs(losses.mean())), 2) if len(wins) and len(losses) else None
     n_taken = l1["n_taken"] + l2["n_taken"]
     n_candidates = l1["n_candidates"] + l2["n_candidates"]
     combined_pnl = round(l1["pnl"] + l2["pnl"], 2)
@@ -185,6 +187,7 @@ def combined_boxes(result, bar_seconds: int) -> dict:
         "max_dd": {"value": merged_dd},
         "win": {"value": win},
         "pf": {"value": pf},
+        "payoff": {"value": payoff},
         "exposure": {"value": round(100 * n_taken / max(n_candidates, 1), 1)},
         # max + producing-layer tag
         "noentry_streak_n": mx_num("noentry_streak_n"),

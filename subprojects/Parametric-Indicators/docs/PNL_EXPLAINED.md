@@ -203,7 +203,10 @@ The summary block (`optimize/core.py:177-185`):
 | **max_dd** | `max(peak − equity)` over all trades = `(maximum.accumulate(eq) − eq).max()` | `core.py:159,180` |
 | **win** | `100 × (pnl > 0).mean()`, 1 dp | `core.py:183` |
 | **pf** (profit factor) | `Σ(winning pnl) / |Σ(losing pnl)|`, 2 dp; `None` if no losses | `core.py:184-185` |
+| **payoff** (reward-to-risk) | `avg win / |avg loss|` = `wins.mean() / |losses.mean()|`, 2 dp; `None` if no wins or no losses | `core.py:186-187` |
 | **exposure** | `100 × taken / candidates` | `core.py:182` |
+
+**pf vs payoff — why both.** Profit factor folds in *how often* you win (it's `payoff × W/(1−W)`, with `W` = win rate), so it tells you whether the *account* made money. Payoff ignores frequency and tells you the *per-trade* reward-to-risk: how big a typical win is vs a typical loss. They can disagree — e.g. l2v2's L1 shows `pf 1.56` (account profitable) but `payoff 0.74` (each win is smaller than each loss), the signature of a high-hit-rate strategy with a few larger stops. Read them together: pf = "did it profit", payoff = "how is each trade shaped", win-rate = the bridge between them. Both are recomputed for the combined account over the merged L1+L2 trade set.
 
 **Sign convention:** drawdown is stored **positive** (it's `peak − equity`, the depth underwater).
 A reported `max_dd` of `$7,136` means the equity curve was, at worst, $7,136 below its prior peak.

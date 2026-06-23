@@ -502,6 +502,7 @@ def build_payload(df4, df1, box, vf, n2025, params=None):
                    exposure=round(100 * len(taken) / max(len(cand), 1), 1),
                    win=round(100 * (pnl > 0).mean(), 1) if len(pnl) else 0.0,
                    pf=round(float(wins.sum() / abs(losses.sum())), 2) if len(losses) and losses.sum() != 0 else None,
+                   payoff=round(float(wins.mean() / abs(losses.mean())), 2) if len(wins) and len(losses) else None,
                    avg_win=round(float(wins.mean()), 0) if len(wins) else 0, avg_loss=round(float(losses.mean()), 0) if len(losses) else 0,
                    max_dd=round(float(uw.max()), 0) if len(eqc) else 0.0, n_locks=sum(1 for e in events if e["type"] == "LOCK"),
                    noentry_streak_n=_best_n, noentry_streak_days=noentry_days, noentry_streak_start=noentry_start,

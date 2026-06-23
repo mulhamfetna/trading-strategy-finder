@@ -183,6 +183,8 @@ def backtest_metrics(
         win=round(100 * (pnl_arr > 0).mean(), 1),
         pf=(round(float(wins.sum() / abs(losses.sum())), 2)
             if len(losses) and losses.sum() != 0 else None),
+        payoff=(round(float(wins.mean() / abs(losses.mean())), 2)
+                if len(wins) and len(losses) else None),   # avg win / |avg loss| (reward-to-risk)
         n_locks=n_locks,
         trades=taken,
         **_ne,

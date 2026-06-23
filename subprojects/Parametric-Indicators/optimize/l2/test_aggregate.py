@@ -70,6 +70,13 @@ def test_combined_boxes_apply_per_box_rules():
     losses = [r.pnl for r in entries if r.pnl < 0]
     assert c["win"]["value"] == round(100 * len(wins) / max(len(entries), 1), 1)
     assert c["pf"]["value"] == (round(sum(wins) / abs(sum(losses)), 2) if losses else None)
+    # payoff ratio = avg win / |avg loss|, recomputed from the COMBINED trade set
+    exp_payoff = (round((sum(wins) / len(wins)) / abs(sum(losses) / len(losses)), 2)
+                  if wins and losses else None)
+    assert c["payoff"]["value"] == exp_payoff
+    # per-layer boxes also carry payoff (avg win / |avg loss|)
+    for bx in (l1, l2):
+        assert "payoff" in bx
     # MAX boxes tagged with the producing layer
     assert c["noentry_streak_n"]["value"] == max(l1["noentry_streak_n"], l2["noentry_streak_n"])
     assert c["noentry_streak_n"]["layer"] in ("L1", "L2") and c["warmup"]["layer"] in ("L1", "L2")

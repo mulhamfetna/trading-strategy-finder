@@ -29,6 +29,8 @@ def score(l2) -> dict:
         win=round(100 * (arr > 0).mean(), 1) if len(arr) else 0.0,
         pf=(round(float(wins.sum() / abs(losses.sum())), 2)
             if len(losses) and losses.sum() != 0 else None),
+        payoff=(round(float(wins.mean() / abs(losses.mean())), 2)
+                if len(wins) and len(losses) else None),   # avg win / |avg loss| (reward-to-risk)
         n_l1_entry_exits=int(getattr(l2, "n_l1_entry_exits", 0)),
     )
 

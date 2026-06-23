@@ -221,7 +221,7 @@ function boxesL1(b){return (
   grp('🍃 L1 — financials')+
   DB.card(DB.money(b.pnl),'total P/L',b.pnl>=0?'pos':'neg')+
   DB.card('$'+Math.round(b.max_dd).toLocaleString(),'max drawdown','neg')+
-  DB.card(b.win+'%','win rate')+DB.card(b.pf??'—','profit factor')+
+  DB.card(b.win+'%','win rate')+DB.card(b.pf??'—','profit factor')+DB.card(b.payoff??'—','payoff ratio')+
   grp('🍃 L1 — streaks · longest consecutive run')+
   DB.card((b.noentry_streak_n??0)+' · '+(b.noentry_streak_days??0)+'d','longest no-entry streak'+(b.noentry_streak_start?' — from '+b.noentry_streak_start:''))+
   DB.card(durF(b.box_silence),'longest box-silence (no box signal)')+
@@ -244,7 +244,7 @@ function boxesL2(b,dc,trades){
   grp('🔁 L2 — financials')+
   DB.card(b.n_taken,'L2 trades')+DB.card(DB.money(b.pnl),'L2 P/L',b.pnl>=0?'pos':'neg')+
   DB.card('$'+Math.round(b.max_dd).toLocaleString(),'L2 max drawdown','neg')+
-  DB.card(b.win+'%','L2 win rate')+DB.card(b.pf??'—','profit factor')+DB.card(fc,'L1-entry force-closes')+
+  DB.card(b.win+'%','L2 win rate')+DB.card(b.pf??'—','profit factor')+DB.card(b.payoff??'—','payoff ratio')+DB.card(fc,'L1-entry force-closes')+
   grp('🔁 L2 — streaks · longest consecutive run')+
   DB.card((b.noentry_streak_n??0)+' · '+(b.noentry_streak_days??0)+'d','longest no-entry streak'+(b.noentry_streak_start?' — from '+b.noentry_streak_start:''))+
   DB.card(durF(b.gate_noentry),'longest gate non-entry (L2 vol-gate)')+
@@ -267,7 +267,7 @@ function boxesCombined(b){return (
   grp('Σ financials · P/L+trades summed · DD/win/PF recomputed')+
   DB.card(DB.money(V(b.pnl)),'combined P/L',V(b.pnl)>=0?'pos':'neg')+
   DB.card('$'+Math.round(V(b.max_dd)).toLocaleString(),'combined max DD','neg')+
-  DB.card(V(b.win)+'%','win rate')+DB.card(V(b.pf)??'—','profit factor')+
+  DB.card(V(b.win)+'%','win rate')+DB.card(V(b.pf)??'—','profit factor')+DB.card(V(b.payoff)??'—','payoff ratio')+
   grp('streaks · max(L1,L2) · longest consecutive run')+
   DB.card(tag((V(b.noentry_streak_n)??0)+' · '+(V(b.noentry_streak_days)??0)+'d',b.noentry_streak_n),'longest no-entry streak'+(V(b.noentry_streak_start)?' — from '+V(b.noentry_streak_start):''))+
   DB.card(tag(durW(b.box_silence),b.box_silence),'longest box-silence (no box signal)')+
