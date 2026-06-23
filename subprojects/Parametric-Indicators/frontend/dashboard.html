@@ -352,25 +352,39 @@ function renderView(view){
   else { $('dropped').innerHTML=''; $('dropinfo').textContent=''; }   // clear stale rows when the active view has no dropped signals (else the prior view's table lingers)
 
   // trade ledger (source-labeled)
-  const cols=[['layer','src','l'],['entry_time','entry','l'],['exit_time','exit','l'],['direction','dir','l'],['exit_reason','reason','l'],['pnl','P/L']];
+  const cols=[['layer','src','l'],['entry_time','entry','l'],['exit_time','exit','l'],['direction','dir','l'],['exit_reason','reason','l'],['entry_price','entry $','r'],['exit_price','exit $','r'],['pnl','P/L','r']];
   let h='<thead><tr>'+cols.map(c=>`<th class="${c[2]||''}">${c[1]}</th>`).join('')+'</tr></thead><tbody>';
   tr.forEach(t=>{h+=`<tr class="${t.layer||''}">`+cols.map(c=>{let v=t[c[0]];
     if(c[0]==='layer')return `<td class="l"><span class="layerbadge">${v||''}</span></td>`;
     if(c[0]==='direction'){const fl=RUNFLIP[(t.layer||'').toLowerCase()];const opp=v==='long'?'short':'long';
       return `<td class="l">${v==null?'':v}${fl?` <span class="flipbadge" title="box signaled ${opp} → entered ${v}">⇄</span>`:''}</td>`;}
     if(c[0]==='entry_time'||c[0]==='exit_time')v=DB.dt(v);
+    if(c[0]==='entry_price'||c[0]==='exit_price')return `<td class="r">${v==null?'':(+v).toFixed(2)}</td>`;
     if(c[0]==='pnl')return `<td class="${t.pnl>0?'pos':'neg'}">${Math.round(v).toLocaleString()}</td>`;
     return `<td class="${c[2]||''}">${v==null?'':v}</td>`;}).join('')+'</tr>';});
   $('ledger').innerHTML=h+'</tbody>'; $('ledgerhd').textContent=`${tr.length} trades`;
 
-  // per-candle log
-  const lcols=[['layer','src','l'],['time','time','l'],['decision','decision','l'],['reason','reason','l'],['box_cause','box cause','l'],['direction','dir','l'],['pnl','P/L']];
+  // per-candle log — VERBOSE: every LogRow field as a column (wide table, .tablewrap scrolls).
+  const lcols=[['i','#','r'],['time','time','l'],['layer','src','l'],['decision','decision','l'],
+    ['reason','reason','l'],['box_cause','box cause','l'],['event_type','event','l'],
+    ['direction','dir','l'],['box_dir','box dir','l'],['veto_flip','flip','l'],
+    ['entry_price','entry $','r'],['exit_time','exit','l'],['exit_price','exit $','r'],
+    ['exit_reason','exit reason','l'],['would_be_pnl','would-be','r'],['pnl','P/L','r'],
+    ['equity','equity','r'],['dd','dd','r'],['in_position','pos','l'],
+    ['position_owner','owner','l'],['l2_reason','l2 reason','l'],['indicators','indicators','l']];
   let lh='<thead><tr>'+lcols.map(c=>`<th class="${c[2]||''}">${c[1]}</th>`).join('')+'</tr></thead><tbody>';
-  (D.log||[]).forEach(r=>{lh+=`<tr class="${r.layer||''}">`+lcols.map(c=>{let v=r[c[0]];
-    if(c[0]==='layer')return `<td class="l">${v?`<span class="layerbadge">${v}</span>`:''}</td>`;
-    if(c[0]==='time')v=DB.dt(v);
-    if(c[0]==='pnl')return `<td class="${r.pnl>0?'pos':(r.pnl<0?'neg':'')}">${r.pnl?Math.round(r.pnl).toLocaleString():''}</td>`;
-    return `<td class="${c[2]||''}">${v==null?'':v}</td>`;}).join('')+'</tr>';});
+  (D.log||[]).forEach(r=>{lh+=`<tr class="${r.layer||''}">`+lcols.map(c=>{const k=c[0];let v=r[k];
+    if(k==='layer')return `<td class="l">${v?`<span class="layerbadge">${v}</span>`:''}</td>`;
+    if(k==='time'||k==='exit_time')return `<td class="l">${v?DB.dt(v):''}</td>`;
+    if(k==='indicators')return `<td class="l"><span style="display:flex;gap:3px;flex-wrap:wrap">`+
+      ((Array.isArray(v)?v:[]).map(x=>`<span class="chip ${x.vote} ${x.active?'':'off'}" title="${x.key}:${x.vote}">${x.key}:${(x.vote||'')[0]||''}</span>`).join(''))+`</span></td>`;
+    if(k==='veto_flip')return `<td class="l">${v?'⇄':''}</td>`;
+    if(k==='in_position')return `<td class="l">${v?'✓':''}</td>`;
+    if(k==='pnl')return `<td class="${r.pnl>0?'pos':(r.pnl<0?'neg':'')}">${r.pnl?Math.round(r.pnl).toLocaleString():''}</td>`;
+    if(k==='would_be_pnl')return `<td class="r">${v==null?'':Math.round(v).toLocaleString()}</td>`;
+    if(k==='equity'||k==='dd')return `<td class="r">${v?Math.round(v).toLocaleString():''}</td>`;
+    if(k==='entry_price'||k==='exit_price')return `<td class="r">${v==null?'':(+v).toFixed(2)}</td>`;
+    return `<td class="${c[2]==='r'?'r':'l'}">${v==null?'':v}</td>`;}).join('')+'</tr>';});
   $('logtbl').innerHTML=lh+'</tbody>';
   DB.status(`${view.toUpperCase()} · ${tr.length} trades · ${(D.log||[]).length} candles`);
   DB.fitCharts();
