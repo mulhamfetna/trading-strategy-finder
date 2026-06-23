@@ -17,8 +17,13 @@ position; "indicators not hit" simply means "no SL/TP/soft-SL exit fired."
 
 ## Decisions (locked during brainstorm)
 
-1. **Meaning:** max hold time. Count 1-min bars since entry; force-close on the Nth bar if nothing
-   higher-priority fired.
+1. **Meaning:** max hold time. Count **traded** 1-min bars since entry (bars present in the data, *not*
+   wall-clock minutes); force-close on the Nth bar if nothing higher-priority fired. **Gap caveat
+   (confirmed 2026-06-23):** NQ futures are closed overnight/weekends, so those windows have no 1-min
+   bars. A gap-crossing trade therefore holds exactly N traded bars but can span several calendar days
+   (e.g. `cap_1min=240` → 3h59m for a gap-free trade, but a Friday-afternoon entry exits ~Sunday). This
+   is intended; the user chose "count traded bars" over a wall-clock cap. Dashboard label + tooltip say
+   "traded 1-min bars" to make the unit explicit.
 2. **Scope:** per-layer parameter `cap_1min` (L1 and L2 independent), beside `sl_soft/sl_hard/tp/...`.
 3. **Mechanics:** fill at the Nth 1-min bar's **close**; precedence **hard-SL > hard-TP > soft-SL >
    TIME_CAP**; the counter spans decision windows; for L2 the existing L1-entry force-close still wins

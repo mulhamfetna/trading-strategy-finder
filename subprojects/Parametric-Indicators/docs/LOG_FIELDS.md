@@ -106,8 +106,18 @@ A new exit reason `TIME_CAP` was added: a per-layer `cap_1min` setting (default 
 an open trade at the Nth 1-minute bar's close if no SL/TP/soft-SL fired. Precedence is lowest
 (hard-SL > hard-TP > soft-SL > TIME_CAP). It's modeled as a 4th exit candidate in both engines
 (`engine.py` walk + `fast_engine.py`), threaded through the L1/L2 layer params, exposed as a
-"Max hold (1-min bars)" dashboard field, and surfaces in this log/CSV automatically. Spec/plan:
+"Max hold (traded 1-min bars)" dashboard field, and surfaces in this log/CSV automatically. Spec/plan:
 `docs/superpowers/{specs,plans}/2026-06-23-max-1min-open-trade-streak-cap*`.
+
+**Semantics — `cap_1min` counts TRADED 1-min bars, not wall-clock minutes.** The cap fires at the Nth
+1-minute bar *present in the data* from entry (bar 1 = the first bar at/after the fill). NQ futures are
+closed overnight and over weekends, so those windows contain **no** 1-min bars. A trade entered before a
+gap therefore still holds exactly N bars, but its calendar span can be several days — e.g. with
+`cap_1min=240`, a Friday-afternoon entry exits ~Sunday evening (240 traded bars straddle the weekend),
+not 4 wall-clock hours later. Gap-free trades hold a clean N minutes (e.g. 240 → 3h59m, since bar 1 is
+index 0). This is intended and confirmed behaviour (`fast_engine` slices `m_close[e:]` by array index;
+`engine.py` increments `bars_held` per traded bar) — the field label and tooltip say "traded 1-min bars"
+to make the unit explicit.
 
 ## Follow-up — shareable bundles
 

@@ -103,7 +103,7 @@ in points):
 | `TAKE_PROFIT_HARD` | 1-min **high ≥** TP line (long) / **low ≤** (short) — intrabar touch | **the line** | `engine.py:301-302, 311-312` |
 | `STOP_LOSS_SOFT` | **2 consecutive** 1-min **closes** past the soft line | **the 2nd close** (not the line) | `engine.py:303-317` |
 | `L1-entry` (L2 only) | L1 takes a position → L2 force-flat | bar close | combined/causal path |
-| `TIME_CAP` | open for ≥ `cap_1min` 1-min bars with no SL/TP/soft exit (per-layer max-hold; `cap_1min=0` = off) | **the Nth bar's close** | `engine.py` walk + `fast_engine.py` order |
+| `TIME_CAP` | open for ≥ `cap_1min` **traded** 1-min bars with no SL/TP/soft exit (per-layer max-hold; `cap_1min=0` = off) | **the Nth bar's close** | `engine.py` walk + `fast_engine.py` order |
 | `OPEN` | dataset ends with position still open | — (not counted as a realized trade's exit) | `engine.py:481-483` |
 
 **Hard exits fill at the line** (a touch is assumed fillable at that price). **Soft-SL fills at
@@ -122,8 +122,11 @@ flowchart LR
   P --> R["⇒ hard-SL &gt; hard-TP &gt; soft-SL &gt; TIME_CAP"]
 ```
 
-(`TIME_CAP` is the optional per-layer max-hold cap — `cap_1min` 1-min bars; `0` = off. It only fires
-when no SL/TP/soft exit did, so it sits last in precedence.)
+(`TIME_CAP` is the optional per-layer max-hold cap — `cap_1min` **traded** 1-min bars; `0` = off. It only
+fires when no SL/TP/soft exit did, so it sits last in precedence. The count is *bars present in the data*,
+not wall-clock minutes: overnight/weekend market gaps contain no 1-min bars, so a gap-crossing trade holds
+exactly `cap_1min` bars but can span several calendar days — e.g. `cap_1min=240` exits in 3h59m for a
+gap-free trade, but a Friday-afternoon entry exits ~Sunday evening. See `docs/LOG_FIELDS.md` § TIME_CAP.)
 
 `fast_engine.py:122` → `order = [(t_slh, R_SL_HARD, slh_line), (t_tph, R_TP_HARD, tph_line), (t_soft, R_SL_SOFT, None)]`
 and the earliest-index / lowest-rank selection at `fast_engine.py:125-132`. Same rule stated in

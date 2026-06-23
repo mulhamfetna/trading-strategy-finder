@@ -79,7 +79,7 @@
       <div class="sgroup"><h3>Drawdown circuit-breaker</h3>
         <div class="fld"><label>Trigger ($)</label><input id="l1_dd_limit" type="number" step="100" value="0"></div>
         <div class="fld"><label>Cooldown (trades)</label><input id="l1_cooldown" type="number" step="1" value="0"></div>
-        <div class="fld"><label>Max hold (1-min bars, 0=off)</label><input id="l1_cap_1min" type="number" step="1" min="0" value="0"></div></div>
+        <div class="fld" title="Force-close (TIME_CAP) after N TRADED 1-min bars from entry — counts bars present in the data, not wall-clock minutes. Overnight/weekend market gaps have no bars, so a gap-crossing trade can span several calendar days while still holding exactly N bars. 0 = off."><label>Max hold (traded 1-min bars, 0=off)</label><input id="l1_cap_1min" type="number" step="1" min="0" value="0"></div></div>
       <div class="sgroup"><h3>Confirmation layer</h3>
         <div class="fld"><label>K (min confirms)</label><input id="l1_k" type="number" step="1" min="1" value="1"></div></div>
       <div class="sgroup"><h3>Indicators (L1)</h3><div id="l1_indpanel"><div class="hint">loading schema…</div></div></div>
@@ -114,7 +114,7 @@
       <div class="sgroup"><h3>Drawdown circuit-breaker</h3>
         <div class="fld"><label>Trigger ($)</label><input id="l2_dd_limit" type="number" step="100" value="0"></div>
         <div class="fld"><label>Cooldown (trades)</label><input id="l2_cooldown" type="number" step="1" value="0"></div>
-        <div class="fld"><label>Max hold (1-min bars, 0=off)</label><input id="l2_cap_1min" type="number" step="1" min="0" value="0"></div></div>
+        <div class="fld" title="Force-close (TIME_CAP) after N TRADED 1-min bars from entry — counts bars present in the data, not wall-clock minutes. Overnight/weekend market gaps have no bars, so a gap-crossing trade can span several calendar days while still holding exactly N bars. 0 = off."><label>Max hold (traded 1-min bars, 0=off)</label><input id="l2_cap_1min" type="number" step="1" min="0" value="0"></div></div>
       <div class="sgroup"><h3>Confirmation layer</h3>
         <div class="fld"><label>K (min confirms)</label><input id="l2_k" type="number" step="1" min="1" value="1"></div></div>
       <div class="sgroup"><h3>Indicators (L2)</h3><div id="l2_indpanel"><div class="hint">loading schema…</div></div></div>
