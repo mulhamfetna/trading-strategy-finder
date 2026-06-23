@@ -85,6 +85,27 @@ def main(tf: str = "4h") -> int:
         ok_all &= ok
         print(f"{name:24} engine={len(E):4} fast={len(F):4} mismatch={diffs:3}  {'OK' if ok else 'FAIL'}")
 
+    # cap_1min — max-hold TIME_CAP exit parity: engine must match fast trade-for-trade with the cap on,
+    # and the cap must actually fire (≥1 TIME_CAP). Default-off is covered by the CASES above (no cap arg).
+    for name, ss, sh, tp, gp, flip, cap in [("cap20 30/40/60 g60", 30, 40, 60, 60, False, 20),
+                                            ("cap10 flip wide g0", 60, 120, 150, 0, True, 10)]:
+        sp = SimpleStrategyParams(sl_soft_points=ss, sl_hard_points=sh, tp_hard_points=tp,
+                                  data_path_4h="", data_path_1min="", box_data_path="",
+                                  flip_entry_direction=flip, cap_1min=cap)
+        E0, _ = SimpleStrategy(sp).backtest(df, df1, box, entry_gate=gate(gp))
+        E = [t for t in E0 if t.get("exit_reason") not in (None, "OPEN")]
+        F = fast_backtest(DD, DC, sig_int, gate(gp), MD, MH, ML, MC, ss, sh, tp, flip, cap_1min=cap)
+        diffs = sum(
+            1 for e, f in zip(E, F)
+            if pd.Timestamp(e["entry_time"]) != pd.Timestamp(f["entry_time"])
+            or e["direction"] != f["direction"] or e["exit_reason"] != f["exit_reason"]
+            or pd.Timestamp(e["exit_time"]) != pd.Timestamp(f["exit_time"])
+            or abs(e["pnl_points"] - f["pnl_points"]) > 1e-6
+        )
+        ok = len(E) == len(F) and diffs == 0 and any(t["exit_reason"] == "TIME_CAP" for t in F)
+        ok_all &= ok
+        print(f"{name:24} engine={len(E):4} fast={len(F):4} mismatch={diffs:3}  {'OK' if ok else 'FAIL'}")
+
     print("FAST-PARITY OK ✓" if ok_all else "FAST-PARITY FAILED ✗")
     return 0 if ok_all else 1
 

@@ -56,6 +56,7 @@ ExitReason = Literal[
     'STOP_LOSS_SOFT',
     'TAKE_PROFIT_HARD',
     'TAKE_PROFIT_SOFT',
+    'TIME_CAP',
     'OPEN',
 ]
 
@@ -90,6 +91,7 @@ class SimpleStrategyParams:
     short_sl_soft_points: Optional[float] = None
     short_sl_hard_points: Optional[float] = None
     short_tp_hard_points: Optional[float] = None
+    cap_1min: int = 0   # max hold in 1-min bars; 0 = off. Force-close at the Nth bar's close as TIME_CAP.
 
 
 def _stage1_candle_signal(
@@ -255,6 +257,7 @@ class SimpleStrategy:
         open_trade: Optional[Dict] = None
         blocked_until: Optional[pd.Timestamp] = None
         soft_consec_count: int = 0   # consecutive 1-min closes past the active soft line
+        bars_held: int = 0           # 1-min bars at/after entry on the open trade (for the time cap)
         armed: Optional[Dict] = None  # carry-mode (entry_resolver) armed-but-unfilled setup
         scope = self.params.direction_scope
         flip = self.params.flip_entry_direction
@@ -268,7 +271,7 @@ class SimpleStrategy:
             """Walk 1-min bars belonging to df_4h[idx] looking for an exit on the currently open
             trade. Single exit model regardless of `flip`: hard-SL > hard-TP > soft-SL on the
             ENTERED direction. `flip` only reverses entry direction (see entry logic below)."""
-            nonlocal open_trade, blocked_until, soft_consec_count
+            nonlocal open_trade, blocked_until, soft_consec_count, bars_held
             if open_trade is None or start_1m is None:
                 return
             lo = int(start_1m[idx])
@@ -280,10 +283,12 @@ class SimpleStrategy:
             ep  = open_trade['entry_price']
             pv  = self.NQ_POINT_VALUE
             entry_time_np = np.datetime64(open_trade['entry_time'])   # for the no-look-ahead skip
+            cap = self.params.cap_1min                                 # 0 = off
 
             for t in range(lo, hi):
                 if md_arr[t] < entry_time_np:                          # sub_ts < entry_time (skip pre-entry)
                     continue
+                bars_held += 1                                         # bar 1 = first bar at/after entry
                 m_high  = float(mh_arr[t])
                 m_low   = float(ml_arr[t])
                 m_close = float(mc_arr[t])
@@ -315,6 +320,10 @@ class SimpleStrategy:
                         resets_counter = False
                         if soft_consec_count >= 2:
                             exit_reason, fill = 'STOP_LOSS_SOFT', m_close
+
+                # time cap (max hold): lowest priority — only if no SL/TP/soft fired this bar.
+                if exit_reason is None and cap > 0 and bars_held >= cap:
+                    exit_reason, fill, resets_counter = 'TIME_CAP', m_close, True
 
                 if exit_reason is not None and fill is not None:
                     sub_ts = pd.Timestamp(md_arr[t])                   # materialise the exit timestamp
@@ -473,6 +482,7 @@ class SimpleStrategy:
                     'pnl_dollars':  None,
                 }
                 soft_consec_count = 0
+                bars_held = 0
 
                 # Exit walk for the same new 4h window (its 1-min bars are
                 # all chronologically AFTER the signal — no look-ahead).
