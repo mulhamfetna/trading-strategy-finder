@@ -103,6 +103,7 @@ in points):
 | `TAKE_PROFIT_HARD` | 1-min **high ≥** TP line (long) / **low ≤** (short) — intrabar touch | **the line** | `engine.py:301-302, 311-312` |
 | `STOP_LOSS_SOFT` | **2 consecutive** 1-min **closes** past the soft line | **the 2nd close** (not the line) | `engine.py:303-317` |
 | `L1-entry` (L2 only) | L1 takes a position → L2 force-flat | bar close | combined/causal path |
+| `TIME_CAP` | open for ≥ `cap_1min` 1-min bars with no SL/TP/soft exit (per-layer max-hold; `cap_1min=0` = off) | **the Nth bar's close** | `engine.py` walk + `fast_engine.py` order |
 | `OPEN` | dataset ends with position still open | — (not counted as a realized trade's exit) | `engine.py:481-483` |
 
 **Hard exits fill at the line** (a touch is assumed fillable at that price). **Soft-SL fills at
@@ -112,14 +113,17 @@ books the second close as the exit; a single breach that snaps back resets the c
 
 ### 4.2 Precedence within a bar — loss-first
 
-If more than one condition is live, the engine is pessimistic: **hard-SL > hard-TP > soft-SL**.
+If more than one condition is live, the engine is pessimistic: **hard-SL > hard-TP > soft-SL > TIME_CAP**.
 
 ```mermaid
 flowchart LR
-  S["candidates on the same 1-min bar"] --> O["order = [hard-SL, hard-TP, soft-SL]"]
+  S["candidates on the same 1-min bar"] --> O["order = [hard-SL, hard-TP, soft-SL, TIME_CAP]"]
   O --> P["pick the EARLIEST bar;<br/>tie on the same bar → earlier in this list wins"]
-  P --> R["⇒ hard-SL beats hard-TP beats soft-SL"]
+  P --> R["⇒ hard-SL &gt; hard-TP &gt; soft-SL &gt; TIME_CAP"]
 ```
+
+(`TIME_CAP` is the optional per-layer max-hold cap — `cap_1min` 1-min bars; `0` = off. It only fires
+when no SL/TP/soft exit did, so it sits last in precedence.)
 
 `fast_engine.py:122` → `order = [(t_slh, R_SL_HARD, slh_line), (t_tph, R_TP_HARD, tph_line), (t_soft, R_SL_SOFT, None)]`
 and the earliest-index / lowest-rank selection at `fast_engine.py:125-132`. Same rule stated in

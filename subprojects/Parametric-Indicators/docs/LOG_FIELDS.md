@@ -100,7 +100,19 @@ exposed was *dropped* — the current 23-field per-candle log is a strict **supe
   are kept as test oracles. End state: the only backtest path is the log-first one — an engine-derived
   box cannot resurface. (`/api/l2_config` is a config route, left as-is.)
 
+## TIME_CAP exit (2026-06-23)
+
+A new exit reason `TIME_CAP` was added: a per-layer `cap_1min` setting (default `0` = off) force-closes
+an open trade at the Nth 1-minute bar's close if no SL/TP/soft-SL fired. Precedence is lowest
+(hard-SL > hard-TP > soft-SL > TIME_CAP). It's modeled as a 4th exit candidate in both engines
+(`engine.py` walk + `fast_engine.py`), threaded through the L1/L2 layer params, exposed as a
+"Max hold (1-min bars)" dashboard field, and surfaces in this log/CSV automatically. Spec/plan:
+`docs/superpowers/{specs,plans}/2026-06-23-max-1min-open-trade-streak-cap*`.
+
 ## Follow-up — shareable bundles
+
+`cap_1min`/`TIME_CAP` also needs the same port into the bundles (see below).
+
 
 `shareable/server_agent_kit/` and `shareable/two_layer_causal_backtester/` carry their own copies of
 `logbook.py` / `aggregate.py` / `payload.py` / `dashboard.html`. They still have the pre-verbose log
