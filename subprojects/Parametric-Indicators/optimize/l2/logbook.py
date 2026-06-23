@@ -117,6 +117,19 @@ def _l2_reason(eligible_eval: bool, entered: bool, vol_gate: bool, veto: bool, c
     return "passed"          # L2 gate passed but no open (e.g. already in an L2 position / breaker)
 
 
+def _veto_flip(direction, box_dir) -> bool:
+    """True when the entered direction reverses the box signal (flip / veto-flip)."""
+    return bool(direction and box_dir and direction != box_dir)
+
+
+def _row_text(layer, decision, reason, direction, box_dir, exit_reason, pnl) -> str:
+    """Human-readable one-line summary for the row (deferred display field)."""
+    if decision == "entry":
+        rev = " (reversed)" if _veto_flip(direction, box_dir) else ""
+        return f"{layer} ENTER {direction}{rev} → {exit_reason} {pnl:+.0f}"
+    return f"no-entry: {reason}"
+
+
 def run_causal(l1_params: dict, l2_params: dict, tf: str = "4h", bar_mask=None) -> CausalResult:
     """Single causal pass → complete per-candle log. l1_params=None or the frozen-lean default uses the
     cached frozen L1 (byte-identical to the oracle); any other dict runs an arbitrary L1."""
@@ -137,6 +150,8 @@ def run_causal(l1_params: dict, l2_params: dict, tf: str = "4h", bar_mask=None) 
     sig = np.asarray(l1.sig_int)[:n]
     dropped = {int(d["idx"]) for d in l1.dropped_signals}          # veto + vol_gate bars (the L2 candidate set)
     vg, vt, cf = engine.l2_gate_components(l1, l2p)                # L2's own gate decomposition
+    votes_by_bar = getattr(l1, "votes_by_bar", None) or [[] for _ in range(n)]
+    skipped_wb = getattr(l1, "skipped_would_be", None) or {}
 
     log: list[LogRow] = []
     for i in range(n):
@@ -149,14 +164,20 @@ def run_causal(l1_params: dict, l2_params: dict, tf: str = "4h", bar_mask=None) 
                               event_type="ENTRY", direction=t1["direction"], box_dir=box_dir,
                               entry_price=float(t1["entry_price"]), exit_time=_epoch(t1["exit_time"]),
                               exit_price=float(t1["exit_price"]), exit_reason=t1["exit_reason"],
-                              pnl=float(t1["pnl"]), in_position=True, position_owner="L1"))
+                              pnl=float(t1["pnl"]), in_position=True, position_owner="L1",
+                              veto_flip=_veto_flip(t1["direction"], box_dir), indicators=votes_by_bar[i],
+                              text=_row_text("L1", "entry", "entered", t1["direction"], box_dir,
+                                             t1["exit_reason"], float(t1["pnl"]))))
         elif t2 is not None:
             log.append(LogRow(i=i, time=ts, layer="L2", decision="entry", reason="entered", box_cause=c,
                               event_type="ENTRY", direction=t2["direction"], box_dir=box_dir,
                               entry_price=float(t2["entry_price"]), exit_time=_epoch(t2["exit_time"]),
                               exit_price=float(t2["exit_price"]), exit_reason=t2["exit_reason"],
                               pnl=float(t2["pnl"]), in_position=True, position_owner="L2",
-                              l2_reason="entered"))
+                              l2_reason="entered",
+                              veto_flip=_veto_flip(t2["direction"], box_dir), indicators=votes_by_bar[i],
+                              text=_row_text("L2", "entry", "entered", t2["direction"], box_dir,
+                                             t2["exit_reason"], float(t2["pnl"]))))
         else:
             if l1_state[i]:
                 reason, owner, ev = "open_trade", "L1", "NOENTRY"
@@ -169,7 +190,9 @@ def run_causal(l1_params: dict, l2_params: dict, tf: str = "4h", bar_mask=None) 
             l2r = _l2_reason(i in dropped and not l1_state[i], False, bool(vg[i]), bool(vt[i]), bool(cf[i]))
             log.append(LogRow(i=i, time=ts, layer=owner, decision="nonentry", reason=reason, box_cause=c,
                               event_type=ev, box_dir=box_dir, in_position=bool(l1_state[i] or l2_state[i]),
-                              position_owner=owner, l2_reason=l2r))
+                              position_owner=owner, l2_reason=l2r, indicators=votes_by_bar[i],
+                              would_be_pnl=skipped_wb.get(i),
+                              text=_row_text(owner, "nonentry", reason, None, box_dir, None, 0.0)))
 
     # per-layer running equity + underwater drawdown, booked in exit-time order and written back onto the
     # entry row (so the log carries each layer's equity curve directly — used by the chart tasks).

@@ -86,3 +86,16 @@ def test_l1result_exposes_votes_and_skipped_would_be():
     assert set(chip) == {"key", "vote", "active"}
     assert chip["vote"] in ("confirm", "veto", "neutral")
     assert isinstance(l1.skipped_would_be, dict)
+
+
+def test_run_causal_populates_deferred_fields():
+    """verbose-logs: run_causal fills text/indicators/veto_flip/would_be_pnl."""
+    res = logbook.run_causal(payload.l1_default_params("4h"), payload.l2_default_params(), "4h")
+    rows = res.log
+    assert any(r.indicators for r in rows), "no row carries indicator votes"
+    assert all(isinstance(r.text, str) and r.text for r in rows), "text not populated on every row"
+    skip_rows = [r for r in rows if r.event_type == "SKIP"]
+    assert (not skip_rows) or any(r.would_be_pnl is not None for r in skip_rows), "SKIP rows missing would_be_pnl"
+    for r in rows:
+        if r.decision == "entry" and r.box_dir and r.direction:
+            assert r.veto_flip == (r.direction != r.box_dir)
