@@ -78,7 +78,8 @@
         <div class="fld"><label>Gate percentile</label><input id="l1_gate_pct" type="number" step="1" value="0"></div></div>
       <div class="sgroup"><h3>Drawdown circuit-breaker</h3>
         <div class="fld"><label>Trigger ($)</label><input id="l1_dd_limit" type="number" step="100" value="0"></div>
-        <div class="fld"><label>Cooldown (trades)</label><input id="l1_cooldown" type="number" step="1" value="0"></div></div>
+        <div class="fld"><label>Cooldown (trades)</label><input id="l1_cooldown" type="number" step="1" value="0"></div>
+        <div class="fld"><label>Max hold (1-min bars, 0=off)</label><input id="l1_cap_1min" type="number" step="1" min="0" value="0"></div></div>
       <div class="sgroup"><h3>Confirmation layer</h3>
         <div class="fld"><label>K (min confirms)</label><input id="l1_k" type="number" step="1" min="1" value="1"></div></div>
       <div class="sgroup"><h3>Indicators (L1)</h3><div id="l1_indpanel"><div class="hint">loading schema…</div></div></div>
@@ -112,7 +113,8 @@
         <div class="fld"><label>Gate percentile</label><input id="l2_gate_pct" type="number" step="1" value="0"></div></div>
       <div class="sgroup"><h3>Drawdown circuit-breaker</h3>
         <div class="fld"><label>Trigger ($)</label><input id="l2_dd_limit" type="number" step="100" value="0"></div>
-        <div class="fld"><label>Cooldown (trades)</label><input id="l2_cooldown" type="number" step="1" value="0"></div></div>
+        <div class="fld"><label>Cooldown (trades)</label><input id="l2_cooldown" type="number" step="1" value="0"></div>
+        <div class="fld"><label>Max hold (1-min bars, 0=off)</label><input id="l2_cap_1min" type="number" step="1" min="0" value="0"></div></div>
       <div class="sgroup"><h3>Confirmation layer</h3>
         <div class="fld"><label>K (min confirms)</label><input id="l2_k" type="number" step="1" min="1" value="1"></div></div>
       <div class="sgroup"><h3>Indicators (L2)</h3><div id="l2_indpanel"><div class="hint">loading schema…</div></div></div>
@@ -162,12 +164,12 @@ const VIEWS={l1:null, l2:null, combined:null};   // cached payload per view (one
 function dedupe(a){const m={};(a||[]).forEach(p=>{if(p&&p.value!=null)m[p.time]=p.value;});return Object.keys(m).map(Number).sort((x,y)=>x-y).map(t=>({time:t,value:m[t]}));}
 
 // ── per-layer form read / write ──────────────────────────────────────────────
-const LAYER_FIELDS=['sl_soft','sl_hard','tp','gate_pct','dd_limit','cooldown','k'];
+const LAYER_FIELDS=['sl_soft','sl_hard','tp','gate_pct','dd_limit','cooldown','k','cap_1min'];
 const SPLIT_FIELDS=['long_sl_soft','long_sl_hard','long_tp','short_sl_soft','short_sl_hard','short_tp'];
 function collectLayer(pfx){
   const v=id=>$(pfx+'_'+id), out={indicators:DB.specsOf($(pfx+'_indpanel')), k:+v('k').value||1, gate_pct:+v('gate_pct').value,
     sl_soft:+v('sl_soft').value, sl_hard:+v('sl_hard').value, tp:+v('tp').value,
-    dd_limit:+v('dd_limit').value, cooldown:+v('cooldown').value,
+    dd_limit:+v('dd_limit').value, cooldown:+v('cooldown').value, cap_1min:+v('cap_1min').value||0,
     flip:v('flip').value==='true', ind_1min:v('ind_1min').value==='true',
     window:(v('window')?v('window').value:'full')};
   if(v('split') && v('split').value==='true') SPLIT_FIELDS.forEach(f=>{const el=v(f); if(el&&el.value!=='')out[f]=+el.value;});

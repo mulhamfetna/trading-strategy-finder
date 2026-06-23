@@ -321,6 +321,7 @@ def _layer_from_strategy(sp: dict) -> dict:
         "sl_soft": sp.get("sl_soft"), "sl_hard": sp.get("sl_hard"), "tp": sp.get("tp"),
         "gate_pct": sp.get("gate_pct", 0) or 0, "dd_limit": sp.get("dd_limit", 0) or 0,
         "cooldown": sp.get("cooldown", 0) or 0, "flip": bool(sp.get("flip", False)),
+        "cap_1min": sp.get("cap_1min", 0) or 0,
         "indicators": sp.get("indicators", []), "k": sp.get("k", 1), "ind_1min": True})
 
 
