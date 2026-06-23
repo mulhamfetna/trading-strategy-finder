@@ -41,6 +41,26 @@ def _l1_cache_file(tf: str) -> Path:
 _CAUSAL_MEMO: dict = {}            # F3 — share ONE causal pass across the fan-out's per-view calls
 _CAUSAL_MEMO_MAX = 8
 
+# task #210 — memoise the RICH L1 build_payload (strategy.build_payload). It recomputes every indicator
+# on the 1-minute frame (~8s) and is otherwise rerun on every L1-view request even when params are
+# unchanged. It's a deterministic pure function of (tf, l1_engine params) and its result is read-only
+# (serialised to JSON), so caching by that key is byte-identical. Bounded LRU-ish like _CAUSAL_MEMO.
+_L1_PAYLOAD_MEMO: dict = {}
+_L1_PAYLOAD_MEMO_MAX = 8
+
+
+def _build_l1_payload_memo(l1_engine: dict, tf: str):
+    """Memoise strategy.build_payload for the unified L1 view by (tf, l1_engine-params-hash)."""
+    import strategy                                        # the L1 engine (full feature set)
+    key = (tf, hashlib.sha256(json.dumps(l1_engine, sort_keys=True, default=str).encode()).hexdigest()[:16])
+    r = _L1_PAYLOAD_MEMO.get(key)
+    if r is None:
+        if len(_L1_PAYLOAD_MEMO) >= _L1_PAYLOAD_MEMO_MAX:
+            _L1_PAYLOAD_MEMO.pop(next(iter(_L1_PAYLOAD_MEMO)))
+        r = _L1_PAYLOAD_MEMO[key] = strategy.build_payload(
+            *strategy.get_bundle(l1_engine.get("timeframe") or tf), l1_engine)
+    return r
+
 
 def _run_causal_memo(l1p: dict, l2p: dict, tf: str):
     """Memoise logbook.run_causal by (l1p, l2p, tf) so the unified page's three per-view requests
@@ -438,8 +458,9 @@ def build_view_payload(l1_params: dict, l2_params: dict, tf: str = "4h", view: s
         l1p = validate_layer_params(l1_params)
         res = _run_causal_memo(l1p, dict(PERMISSIVE), tf)            # causal log for the L1 layer (memoised)
         bar_secs = int(TF.get(tf).bar_td.total_seconds())
-        base = strategy.build_payload(*strategy.get_bundle(l1_engine.get("timeframe") or tf), l1_engine)
-        base["log"] = [_serialize_log_row(r) for r in res.log]
+        cached = _build_l1_payload_memo(l1_engine, tf)               # rich engine payload (memoised — the ~8s pass)
+        base = dict(cached); base["meta"] = dict(cached["meta"])     # shallow copy: per-request fields below must
+        base["log"] = [_serialize_log_row(r) for r in res.log]       #   not mutate the cached object
         base["meta"]["boxes"] = aggregate.boxes_for_layer(res, "L1", bar_secs)   # log-derived (== engine summary)
         base["meta"]["n"] = res.n
         base["meta"]["view"] = "l1"
