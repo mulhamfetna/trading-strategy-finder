@@ -177,19 +177,6 @@ class H(BaseHTTPRequestHandler):
                     "max_bars": (mx["bars"] if mx else 0), "driver": mx}))
             except Exception as e:
                 return self._send(400, json.dumps({"error": f"warmup calc: {e}"}))
-        if path == "/api/l2_backtest":
-            try:
-                n = int(self.headers.get("Content-Length", 0))
-                body = json.loads(self.rfile.read(n) or b"{}")
-                t0 = time.time()
-                out = l2payload.build_l2_payload(body)
-                out["meta"]["run_ms"] = round((time.time() - t0) * 1000)
-                return self._send(200, json.dumps(out))
-            except l2payload.L2ParamError as e:
-                return self._send(400, json.dumps({"error": f"Invalid L2 parameter: {e}"}))
-            except Exception as e:
-                import traceback; traceback.print_exc()
-                return self._send(500, json.dumps({"error": f"L2 backtest failed: {e}"}))
         if path == "/api/l2_profiles":
             try:
                 n = int(self.headers.get("Content-Length", 0))
@@ -253,24 +240,6 @@ class H(BaseHTTPRequestHandler):
             except Exception as e:
                 import traceback; traceback.print_exc()
                 return self._send(500, json.dumps({"error": f"Causal backtest failed: {e}"}))
-        if path == "/api/combined_backtest":
-            try:
-                n = int(self.headers.get("Content-Length", 0))
-                body = json.loads(self.rfile.read(n) or b"{}")
-                t0 = time.time()
-                out = l2payload.build_combined_payload(body.get("l1") or {}, body.get("l2") or {},
-                                                       body.get("tf", "4h"))
-                out["meta"]["run_ms"] = round((time.time() - t0) * 1000)
-                s = out["meta"]["summary"]
-                print(f"combined backtest -> L1 ${s['l1']['pnl']:,.0f} + L2 ${s['l2']['pnl']:,.0f} "
-                      f"= ${s['combined']['pnl']:,.0f} (DD ${s['combined']['max_dd']:,.0f}) "
-                      f"({out['meta']['run_ms']}ms)", flush=True)
-                return self._send(200, json.dumps(out))
-            except l2payload.L2ParamError as e:
-                return self._send(400, json.dumps({"error": f"Invalid parameter: {e}"}))
-            except Exception as e:
-                import traceback; traceback.print_exc()
-                return self._send(500, json.dumps({"error": f"Combined backtest failed: {e}"}))
         if path != "/api/backtest":
             return self._send(404, '{"error":"unknown endpoint"}')
         try:

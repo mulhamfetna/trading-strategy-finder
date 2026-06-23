@@ -54,32 +54,6 @@ def test_save_and_load_l2_profile_roundtrips(tmp_path, monkeypatch):
         payload.save_l2_profile("", dict(payload.PERMISSIVE))
 
 
-def test_build_l2_payload_permissive_matches_metrics():
-    out = payload.build_l2_payload(dict(payload.PERMISSIVE))
-    for key in ("meta", "candles", "l1_spans", "dropped", "l2_trades",
-                "l2_equity", "l1_equity", "combined_equity"):
-        assert key in out, key
-    m = out["meta"]
-    assert m["l1"]["n_trades"] == 255
-    assert round(m["l1"]["pnl"]) == 149989
-    s = m["summary"]["l2"]
-    assert s["n"] == 349 and s["n_l1_entry_exits"] == 52
-    assert round(s["pnl"]) == -64299
-    g = m["summary"]["combined"]
-    assert g["dd_not_worse"] is False
-    assert round(g["max_dd"]) == 50574 and round(g["l1_only_dd"]) == 15491
-    assert m["dropped_counts"] == {"veto": 286, "vol_gate": 206, "total": 492, "flat_candidates": 410}
-    assert len(out["candles"]) > 0 and len(out["dropped"]) == 492
-    for ser in ("l2_equity", "l1_equity", "combined_equity"):
-        ts = [pt["time"] for pt in out[ser]]
-        assert ts == sorted(ts) and len(ts) == len(set(ts)), ser
-    longs = [t for t in out["l2_trades"] if t["direction"] == "long"]
-    assert longs, "expected at least one long L2 trade"
-    t = longs[0]
-    assert abs(t["sl_hard_line"] - (t["entry_price"] - 167.1)) < 1e-6
-    assert abs(t["tp_hard_line"] - (t["entry_price"] + 120.2)) < 1e-6
-
-
 def test_custom_l1_differs_from_frozen_and_is_memoised():
     """run_l1_cached with a NON-lean L1 profile produces a different L1 book (proves L1 is editable),
     and is memoised in-process by params-hash."""
@@ -90,36 +64,6 @@ def test_custom_l1_differs_from_frozen_and_is_memoised():
     assert a is b                                        # memoised by hash
     assert a is not frozen
     assert a.params != frozen.params                     # genuinely a different L1 profile
-
-
-def test_build_combined_payload_three_groups_and_labeled_ledger():
-    """Combined payload reports L1/L2/combined groups, a merged source-labeled ledger, and 3 equity series."""
-    l1p = payload.l1_default_params("4h")                 # best L1 = frozen lean champion
-    l2p = dict(payload.PERMISSIVE)
-    out = payload.build_combined_payload(l1p, l2p)
-    for key in ("meta", "candles", "l1_spans", "dropped",
-                "l1_trades", "l2_trades", "ledger", "l1_equity", "l2_equity", "combined_equity"):
-        assert key in out, key
-    s = out["meta"]["summary"]
-    assert set(s) == {"l1", "l2", "combined"}
-    assert round(s["l1"]["pnl"]) == 149989 and s["l1"]["n"] == 255   # L1 = lean champion book
-    # L1 group must carry the FULL box set the standalone L1 dashboard shows (financials+streaks+totals+counts)
-    for k in ("n_taken", "n_candidates", "exposure", "n_locks",
-              "noentry_streak_n", "noentry_streak_days", "box_silence", "position_hold",
-              "gate_noentry", "indicator_noentry", "noentry_total", "box_silence_total",
-              "position_hold_total", "gate_noentry_total", "indicator_noentry_total"):
-        assert k in s["l1"], f"L1 group missing box: {k}"
-    # totals invariant: noentry == box-silence + gate + indicator (mutually exclusive per bar)
-    L1 = s["l1"]
-    assert L1["noentry_total"]["bars"] == (L1["box_silence_total"]["bars"]
-                                           + L1["gate_noentry_total"]["bars"]
-                                           + L1["indicator_noentry_total"]["bars"])
-    # merged ledger = every L1 + L2 trade, each labeled, sorted by exit time
-    assert len(out["ledger"]) == len(out["l1_trades"]) + len(out["l2_trades"])
-    assert {r["layer"] for r in out["ledger"]} == {"L1", "L2"}
-    xs = [r["exit_time"] for r in out["ledger"]]
-    assert xs == sorted(xs)
-    assert sum(r["layer"] == "L1" for r in out["ledger"]) == 255
 
 
 def test_l1_default_params_is_lean_champion_schema():

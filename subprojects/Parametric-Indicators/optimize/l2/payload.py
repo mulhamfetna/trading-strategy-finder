@@ -16,7 +16,7 @@ _PI = Path(__file__).resolve().parents[2]
 if str(_PI) not in sys.path:
     sys.path.insert(0, str(_PI))
 
-from optimize.l2 import l1_runner, engine, metrics, dataset   # noqa: E402
+from optimize.l2 import l1_runner, engine, dataset   # noqa: E402
 from indicators import library                                # noqa: E402
 
 _PROFILES = _PI / "profiles" / "l2_profiles.json"
@@ -312,112 +312,6 @@ def _combined_equity_series(l1_ledger: list, l2_ledger: list) -> list:
     return _dedupe(out)
 
 
-def _l1_full_summary(l1) -> dict:
-    """The FULL L1 box set — identical fields to strategy.build_payload's summary (financials + streaks +
-    totals + counts) — computed from the L1-runner arrays so the combined dashboard's L1 group shows every
-    box the standalone L1 dashboard shows. Uses the same optimize.pause_streaks helpers strategy.py uses."""
-    import numpy as np
-    from optimize import pause_streaks
-    base = metrics.score(l1)                                   # pnl, max_dd, n, win, pf
-    n = len(l1.df_dec)
-    bar_secs = int(l1.bar_td.total_seconds())
-    sig = np.asarray(l1.sig_int)[:n]
-    volg = np.asarray(l1.vol_gate, dtype=bool)[:n]
-    veto = np.asarray(l1.veto, dtype=bool)[:n]
-    conf = np.asarray(l1.confirm, dtype=bool)[:n]
-    dec_dates = l1.df_dec["Date"].to_numpy()
-    # position-hold spans = [entry_idx, exit_bar) per taken trade (same convention as build_state_timeline)
-    spans = []
-    for t in l1.ledger:
-        e = int(t["entry_idx"])
-        xb = int(np.searchsorted(dec_dates, np.datetime64(t["exit_time"]), side="left"))
-        spans.append((e, max(xb, e + 1)))
-    pm = pause_streaks.pause_metrics(sig, volg, veto, conf, bar_secs, trade_spans=spans)
-    pt = pause_streaks.pause_totals(sig, volg, veto, conf, bar_secs, trade_spans=spans)
-    # longest no-entry streak = longest run of consecutive BLOCKED box-signal bars (gate/veto/confirm<K),
-    # broken by an entry opportunity (would_enter); box-silence bars neither extend nor break it.
-    entry_ops = {"would_enter"}
-    blocked = {"vol_gated", "vetoed", "confirm<K"}
-    best_n = best_s = best_e = 0
-    cur = cur_s = 0
-    for i in range(1, n):
-        c = l1.cause[i]
-        if c in blocked:
-            if cur == 0:
-                cur_s = i
-            cur += 1
-            if cur > best_n:
-                best_n, best_s, best_e = cur, cur_s, i
-        elif c in entry_ops:
-            cur = 0
-    ne_days = round((_epoch(dec_dates[best_e]) - _epoch(dec_dates[best_s])) / 86400.0, 1) if best_n else 0.0
-    ne_start = (pd.Timestamp(dec_dates[best_s]).strftime("%Y-%m-%d") if best_n else None)
-    base.update(
-        n_taken=len(l1.ledger), n_candidates=int(l1.n_candidates),
-        exposure=round(100 * len(l1.ledger) / max(int(l1.n_candidates), 1), 1),
-        n_locks=int(l1.n_locks), n_skipped_breaker=int(l1.n_skipped_breaker),
-        noentry_streak_n=best_n, noentry_streak_days=ne_days, noentry_streak_start=ne_start,
-        box_silence=pm["box_silence"], position_hold=pm["position_hold"],
-        gate_noentry=pm["gate_noentry"], indicator_noentry=pm["indicator_noentry"],
-        noentry_total=pt["noentry_total"], box_silence_total=pt["box_silence_total"],
-        position_hold_total=pt["position_hold_total"], gate_noentry_total=pt["gate_noentry_total"],
-        indicator_noentry_total=pt["indicator_noentry_total"])
-    return base
-
-
-def _serialize_trade(t: dict, p: dict, layer: str) -> dict:
-    """Common chart/log row for an L1 or L2 trade (epoch times, prices, P/L, SL/TP display lines)."""
-    row = {"layer": layer,
-           "entry_time": _epoch(t["entry_time"]), "exit_time": _epoch(t["exit_time"]),
-           "direction": t["direction"], "entry_price": float(t["entry_price"]),
-           "exit_price": float(t["exit_price"]), "exit_reason": t["exit_reason"],
-           "pnl": round(float(t["pnl"]), 2)}
-    if "l2_dir_vs_box" in t:
-        row["l2_dir_vs_box"] = t["l2_dir_vs_box"]
-    row.update(_derive_lines(t, p))
-    return row
-
-
-def build_combined_payload(l1_params: dict, l2_params: dict, tf: str = "4h") -> dict:
-    """Combined dashboard backend: run an EDITABLE L1 + an L2 over its dropped signals, and serialize a
-    chart-ready payload that reports BOTH layers and the combined book. Boxes come in 3 groups
-    (L1 alone / L2 alone / combined); trades are merged into one source-labeled ledger."""
-    l1p = validate_layer_params(l1_params)
-    l2p = validate_layer_params(l2_params)
-    l1 = run_l1_cached(tf, params=l1p)
-    res = engine.run_l2(l1, l2p)
-    ds = dataset.build_dataset(l1)
-    dec_dates = l1.df_dec["Date"].to_numpy()
-
-    candles = [{"time": _epoch(d), "open": float(o), "high": float(h), "low": float(lo), "close": float(c)}
-               for d, o, h, lo, c in zip(l1.df_dec["Date"], l1.df_dec["Open"], l1.df_dec["High"],
-                                         l1.df_dec["Low"], l1.df_dec["Close"])]
-    dropped = [{"time": _epoch(d["ts"]), "reason": d["reason"], "box_dir": d["box_dir"],
-                "l1_flat": (not bool(l1.state_timeline[d["idx"]]))} for d in l1.dropped_signals]
-    l1_trades = [_serialize_trade(t, l1p, "L1") for t in l1.ledger]
-    l2_trades = [_serialize_trade(t, l2p, "L2") for t in res.ledger]
-    # one merged ledger, sorted by exit, each row carrying its source layer (for the labeled log + CSV)
-    merged = sorted(l1_trades + l2_trades, key=lambda r: r["exit_time"])
-
-    return {
-        "meta": {
-            "summary": {"l1": _l1_full_summary(l1), "l2": metrics.score(res),
-                        "combined": metrics.combined(l1, res)},
-            "dropped_counts": {"veto": ds.n_veto, "vol_gate": ds.n_vol_gate,
-                               "total": len(ds), "flat_candidates": len(ds.flat_candidates())},
-        },
-        "candles": candles,
-        "l1_spans": _spans_from_timeline(l1.state_timeline, dec_dates),
-        "dropped": dropped,
-        "l1_trades": l1_trades,
-        "l2_trades": l2_trades,
-        "ledger": merged,
-        "l1_equity": _equity_series(l1.ledger),
-        "l2_equity": _equity_series(res.ledger),
-        "combined_equity": _combined_equity_series(l1.ledger, res.ledger),
-    }
-
-
 def _layer_from_strategy(sp: dict) -> dict:
     """Map index.html's full strategy params → the L1 layer schema run_causal uses (single SL/TP core;
     1-min indicators). The engine charts/boxes for the unified L1 view come from strategy.build_payload;
@@ -528,40 +422,3 @@ def build_view_payload(l1_params: dict, l2_params: dict, tf: str = "4h", view: s
         "log": [_serialize_log_row(r) for r in res.log],
     }
 
-
-def build_l2_payload(l2_params: dict, tf: str = "4h") -> dict:
-    p = validate_l2_params(l2_params)
-    l1 = run_l1_cached(tf)
-    res = engine.run_l2(l1, p)
-    ds = dataset.build_dataset(l1)
-    dec_dates = l1.df_dec["Date"].to_numpy()
-
-    candles = [{"time": _epoch(d), "open": float(o), "high": float(h), "low": float(lo), "close": float(c)}
-               for d, o, h, lo, c in zip(l1.df_dec["Date"], l1.df_dec["Open"], l1.df_dec["High"],
-                                         l1.df_dec["Low"], l1.df_dec["Close"])]
-    dropped = [{"time": _epoch(d["ts"]), "reason": d["reason"], "box_dir": d["box_dir"],
-                "l1_flat": (not bool(l1.state_timeline[d["idx"]]))} for d in l1.dropped_signals]
-    l2_trades = []
-    for t in res.ledger:
-        row = {"entry_time": _epoch(t["entry_time"]), "exit_time": _epoch(t["exit_time"]),
-               "direction": t["direction"], "entry_price": float(t["entry_price"]),
-               "exit_price": float(t["exit_price"]), "exit_reason": t["exit_reason"],
-               "pnl": round(float(t["pnl"]), 2), "l2_dir_vs_box": t.get("l2_dir_vs_box", "agree")}
-        row.update(_derive_lines(t, p))
-        l2_trades.append(row)
-
-    return {
-        "meta": {
-            "l1": {"n_trades": len(l1.ledger), "pnl": round(sum(t["pnl"] for t in l1.ledger), 2)},
-            "summary": {"l2": metrics.score(res), "combined": metrics.combined(l1, res)},
-            "dropped_counts": {"veto": ds.n_veto, "vol_gate": ds.n_vol_gate,
-                               "total": len(ds), "flat_candidates": len(ds.flat_candidates())},
-        },
-        "candles": candles,
-        "l1_spans": _spans_from_timeline(l1.state_timeline, dec_dates),
-        "dropped": dropped,
-        "l2_trades": l2_trades,
-        "l2_equity": _equity_series(res.ledger),
-        "l1_equity": _equity_series(l1.ledger),
-        "combined_equity": _combined_equity_series(l1.ledger, res.ledger),
-    }
