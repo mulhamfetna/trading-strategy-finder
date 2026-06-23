@@ -36,13 +36,21 @@ def market_structure(close: np.ndarray, swing_l: int = 2):
     n = len(c)
     sh = np.zeros(n, bool); sl = np.zeros(n, bool)
     L = int(swing_l)
-    for t in range(L, n - L):
-        left = c[t - L:t]
-        right = c[t + 1:t + 1 + L]
-        if (c[t] > left).all() and (c[t] > right).all():
-            sh[t] = True
-        if (c[t] < left).all() and (c[t] < right).all():
-            sl[t] = True
+    if L < 1 or n <= 2 * L:
+        return sh, sl
+    # Vectorised fractal (task #210): sh[t] ⇔ c[t] strictly above each of the L closes on BOTH sides.
+    # ANDing the per-offset comparisons is identical to the original per-window `.all()` (proven
+    # bit-identical vs the python loop on real 1-min closes) but runs L array-ops instead of n×L scalars.
+    gt_l = np.ones(n, bool); gt_r = np.ones(n, bool)
+    lt_l = np.ones(n, bool); lt_r = np.ones(n, bool)
+    for k in range(1, L + 1):
+        gt_l[k:] &= c[k:] > c[:-k]      # c[t] > c[t-k]
+        lt_l[k:] &= c[k:] < c[:-k]
+        gt_r[:-k] &= c[:-k] > c[k:]     # c[t] > c[t+k]
+        lt_r[:-k] &= c[:-k] < c[k:]
+    sh = gt_l & gt_r; sl = lt_l & lt_r
+    sh[:L] = False; sh[n - L:] = False   # pivot only defined for t ∈ [L, n-L)
+    sl[:L] = False; sl[n - L:] = False
     return sh, sl
 
 

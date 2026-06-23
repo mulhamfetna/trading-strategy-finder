@@ -31,6 +31,28 @@ def test_market_structure_swings_l1():
     np.testing.assert_array_equal(sl, [False, False, True, False, True, False, False])
 
 
+def test_market_structure_vectorized_matches_bruteforce():
+    """task #210 — the vectorized fractal must be bit-identical to the naive per-window .all() loop
+    (the implementation it replaced) for every swing_l, including ties and edges."""
+    def brute(c, L):
+        n = len(c); sh = np.zeros(n, bool); sl = np.zeros(n, bool)
+        for t in range(L, n - L):
+            left, right = c[t - L:t], c[t + 1:t + 1 + L]
+            sh[t] = (c[t] > left).all() and (c[t] > right).all()
+            sl[t] = (c[t] < left).all() and (c[t] < right).all()
+        return sh, sl
+    rng = np.random.default_rng(0)
+    for series in (rng.standard_normal(2000),                       # generic
+                   rng.integers(0, 5, 2000).astype(float),          # many ties (plateaus)
+                   np.arange(500, dtype=float),                     # strictly increasing
+                   np.zeros(50)):                                   # all equal (no swings)
+        for L in (1, 2, 3, 5, 11, 19):
+            sh_v, sl_v = smc.market_structure(series, L)
+            sh_b, sl_b = brute(series, L)
+            np.testing.assert_array_equal(sh_v, sh_b, err_msg=f"sh L={L}")
+            np.testing.assert_array_equal(sl_v, sl_b, err_msg=f"sl L={L}")
+
+
 def test_structure_trend_uptrend_then_downtrend():
     # rising HH/HL then falling LH/LL; L=1 swings
     close = np.array([10, 12, 11, 14, 13, 16, 15,   12, 13, 9, 10, 6], dtype=float)
