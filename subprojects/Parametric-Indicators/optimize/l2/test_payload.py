@@ -171,3 +171,14 @@ def test_derive_lines_short_mirrors_long():
 def test_dedupe_keeps_last_and_sorts():
     out = payload._dedupe([{"time": 3, "value": 1}, {"time": 1, "value": 2}, {"time": 3, "value": 9}])
     assert out == [{"time": 1, "value": 2}, {"time": 3, "value": 9}]
+
+
+def test_serialize_log_row_has_all_fields():
+    """verbose-logs: _serialize_log_row emits every LogRow field (23)."""
+    from optimize.l2 import logbook
+    res = logbook.run_causal(payload.l1_default_params("4h"), payload.l2_default_params(), "4h")
+    row = payload._serialize_log_row(res.log[0])
+    for k in ("i","time","layer","decision","reason","box_cause","event_type","direction","box_dir",
+              "entry_price","exit_time","exit_price","exit_reason","pnl","equity","dd","in_position",
+              "position_owner","l2_reason","text","veto_flip","would_be_pnl","indicators"):
+        assert k in row, f"missing {k}"

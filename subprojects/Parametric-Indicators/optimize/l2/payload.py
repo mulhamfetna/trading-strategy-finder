@@ -433,9 +433,12 @@ def _serialize_log_row(r) -> dict:
     """Compact per-candle log row for the dashboard table + the full payload (one per candle)."""
     return {"i": r.i, "time": r.time, "layer": r.layer, "decision": r.decision, "reason": r.reason,
             "box_cause": r.box_cause, "event_type": r.event_type, "direction": r.direction,
-            "box_dir": r.box_dir, "exit_time": r.exit_time, "exit_reason": r.exit_reason,
+            "box_dir": r.box_dir, "entry_price": r.entry_price, "exit_time": r.exit_time,
+            "exit_price": r.exit_price, "exit_reason": r.exit_reason,
             "pnl": round(r.pnl, 2), "equity": r.equity, "dd": r.dd, "in_position": r.in_position,
-            "position_owner": r.position_owner, "l2_reason": r.l2_reason}
+            "position_owner": r.position_owner, "l2_reason": r.l2_reason,
+            "text": r.text, "veto_flip": r.veto_flip, "would_be_pnl": r.would_be_pnl,
+            "indicators": r.indicators}
 
 
 def build_view_payload(l1_params: dict, l2_params: dict, tf: str = "4h", view: str = "combined",
