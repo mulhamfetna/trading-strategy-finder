@@ -22,6 +22,8 @@ _PI = Path(__file__).resolve().parents[2]
 if str(_PI) not in sys.path:
     sys.path.insert(0, str(_PI))
 
+import json as _json
+
 import numpy as np
 import pandas as pd
 
@@ -212,8 +214,9 @@ def combined_boxes(result, bar_seconds: int) -> dict:
 
 
 _CSV_COLS = ["i", "time", "datetime", "layer", "decision", "reason", "box_cause", "event_type",
-             "direction", "box_dir", "entry_price", "exit_time", "exit_price", "exit_reason",
-             "pnl", "equity", "dd", "in_position", "position_owner", "l2_reason"]
+             "direction", "box_dir", "veto_flip", "entry_price", "exit_time", "exit_price",
+             "exit_reason", "would_be_pnl", "pnl", "equity", "dd", "in_position", "position_owner",
+             "l2_reason", "text", "indicators"]
 
 
 def log_to_csv(log: list):
@@ -231,6 +234,10 @@ def log_to_csv(log: list):
                "exit_price": r.exit_price if r.exit_price is not None else "",
                "exit_reason": r.exit_reason or "", "pnl": r.pnl, "equity": r.equity, "dd": r.dd,
                "in_position": r.in_position, "position_owner": r.position_owner or "",
-               "l2_reason": r.l2_reason or ""}
+               "l2_reason": r.l2_reason or "",
+               "veto_flip": r.veto_flip,
+               "would_be_pnl": r.would_be_pnl if r.would_be_pnl is not None else "",
+               "text": r.text or "",
+               "indicators": _json.dumps(r.indicators or [], separators=(",", ":"))}
         rows.append([rec[c] for c in header])
     return header, rows

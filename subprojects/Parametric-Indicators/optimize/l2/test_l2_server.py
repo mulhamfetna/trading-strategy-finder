@@ -69,8 +69,16 @@ def test_causal_routes_smoke():
         assert csv.startswith("# causal_log export")           # provenance stamp present
         assert "# l2_source=" in csv and "# NOTE:" in csv       # l2 provenance + equity caveat
         lines = [ln for ln in csv.strip().split("\n") if not ln.startswith("#")]
-        assert lines[0].split(",")[:4] == ["i", "time", "layer", "decision"]
+        hdr = lines[0].split(",")
+        assert hdr[:4] == ["i", "time", "layer", "decision"]
         assert len(lines) - 1 == comb["meta"]["n"]
+        # verbose-logs: the live CSV now carries every field, incl. JSON-encoded per-bar votes
+        import csv as _csvmod, io as _io, json as _json
+        for col in ("entry_price", "exit_price", "text", "veto_flip", "would_be_pnl", "indicators"):
+            assert col in hdr, f"live CSV missing {col}"
+        recs = list(_csvmod.DictReader(_io.StringIO("\n".join(lines))))
+        ind_cells = [r["indicators"] for r in recs if r["indicators"] not in ("", "[]")]
+        assert ind_cells and isinstance(_json.loads(ind_cells[0]), list), "indicators not JSON on live CSV"
         # bad view → 400
         try:
             _post(port, "/api/causal_backtest", {"l1": cfg["l1_default"], "l2": cfg["l2_default"], "view": "x"})

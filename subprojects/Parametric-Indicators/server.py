@@ -118,7 +118,10 @@ class H(BaseHTTPRequestHandler):
             cols = list(rows[0].keys())
 
             def cell(v):
-                s = "" if v is None else str(v)
+                if isinstance(v, (list, dict)):        # e.g. the per-bar `indicators` votes → valid JSON cell
+                    s = json.dumps(v, separators=(",", ":"), default=str)
+                else:
+                    s = "" if v is None else str(v)
                 return ('"' + s.replace('"', '""') + '"') if ("," in s or '"' in s or "\n" in s) else s
             m = _LAST_CAUSAL
             prov = [

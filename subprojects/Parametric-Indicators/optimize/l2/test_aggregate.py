@@ -95,3 +95,15 @@ def test_log_to_csv_has_layer_and_reason_columns():
     # the layer column lets L1/L2 be separated downstream
     li = header.index("layer")
     assert {r[li] for r in rows} <= {"L1", "L2", ""}
+
+
+def test_log_to_csv_has_all_verbose_columns_and_json_indicators():
+    """verbose-logs: CSV header carries all 23 columns; the indicators cell is JSON."""
+    import json as _json
+    res = logbook.run_causal(payload.l1_default_params("4h"), payload.l2_default_params(), "4h")
+    header, rows = aggregate.log_to_csv(res.log)
+    for col in ("entry_price", "exit_price", "text", "veto_flip", "would_be_pnl", "indicators"):
+        assert col in header, f"CSV missing {col}"
+    ind_i = header.index("indicators")
+    cells = [r[ind_i] for r in rows if r[ind_i] not in ("", "[]")]
+    assert cells and isinstance(_json.loads(cells[0]), list), "indicators cell not JSON list"
