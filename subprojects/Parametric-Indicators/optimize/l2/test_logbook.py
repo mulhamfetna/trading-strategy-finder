@@ -99,3 +99,12 @@ def test_run_causal_populates_deferred_fields():
     for r in rows:
         if r.decision == "entry" and r.box_dir and r.direction:
             assert r.veto_flip == (r.direction != r.box_dir)
+
+
+def test_cap_1min_produces_time_cap_exits():
+    """time-cap: cap_1min>0 on L1 yields TIME_CAP exits; default (0) yields none."""
+    capped = dict(payload.l1_default_params("4h"), cap_1min=3)   # tight cap → many time-cap exits
+    res = logbook.run_causal(capped, dict(payload.PERMISSIVE), "4h")
+    assert "TIME_CAP" in {r.exit_reason for r in res.log if r.decision == "entry"}
+    res0 = logbook.run_causal(payload.l1_default_params("4h"), dict(payload.PERMISSIVE), "4h")
+    assert "TIME_CAP" not in {r.exit_reason for r in res0.log if r.decision == "entry"}

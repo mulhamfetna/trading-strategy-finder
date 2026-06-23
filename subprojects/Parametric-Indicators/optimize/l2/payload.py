@@ -157,6 +157,7 @@ def validate_layer_params(p: dict) -> dict:
         cooldown=int(num("cooldown", 0)), k=int(num("k", 1)),
         flip=bool(p.get("flip", False)), ind_1min=bool(p.get("ind_1min", False)),
         window=_validate_window(p.get("window", "full")),
+        cap_1min=int(num("cap_1min", 0)) if p.get("cap_1min") not in (None, "") else 0,
     )
     # optional split long/short SL/TP overrides — each None => fall back to the shared sl_soft/sl_hard/tp
     # (so the default carries all-None and is byte-identical + the use_frozen round-trip still holds).
