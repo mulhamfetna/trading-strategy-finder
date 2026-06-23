@@ -5,7 +5,7 @@ in-position state timeline. L1's engine bytes are never touched (golden stays gr
 from __future__ import annotations
 
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
@@ -38,6 +38,24 @@ def _lean_params(tf: str = "4h") -> dict:
 
 
 LEAN_4H_PARAMS: dict = _lean_params("4h")
+
+
+def _votes_by_bar(votes: dict, inds, n: int) -> list:
+    """Per-bar [{key, vote, active}] for every enabled indicator. The vote int (from compute_votes)
+    encodes confirm(+1)/veto(-1)/neutral(0) relative to the box direction — same convention the rich
+    L1 view uses (strategy.attrib). `inds` here are already the enabled set, so active=True."""
+    out = [[] for _ in range(n)]
+    for ind in inds:
+        if not ind.config.enabled:
+            continue
+        arr = votes.get(id(ind))
+        if arr is None:
+            continue
+        for i in range(min(n, len(arr))):
+            v = int(arr[i])
+            vote = "confirm" if v == 1 else "veto" if v == -1 else "neutral"
+            out[i].append({"key": ind.key, "vote": vote, "active": True})
+    return out
 
 
 def apply_breaker(cand: list[dict], pv: float, dd_limit: float, cooldown: int):
@@ -110,6 +128,8 @@ class L1Result:
     n_candidates: int = 0       # pre-breaker candidate trades (for exposure %)
     n_skipped_breaker: int = 0  # candidates the breaker skipped
     n_locks: int = 0            # number of breaker lock events
+    votes_by_bar: list = field(default_factory=list)   # per-bar [{key,vote,active}] for every enabled indicator
+    skipped_would_be: dict = field(default_factory=dict)  # {bar_idx: would_be_pnl $} for breaker-skipped candidates
 
 
 def run_l1(tf: str = "4h", params: dict | None = None) -> L1Result:
@@ -169,9 +189,12 @@ def run_l1(tf: str = "4h", params: dict | None = None) -> L1Result:
                             "box_dir": "long" if sig_int[idx - 1] == 1 else "short",
                             "reason": "veto" if cause[idx] == "vetoed" else "vol_gate"})
     state_timeline = build_state_timeline(taken, dec_dates, n)
+    skipped_would_be = {int(t["entry_idx"]): float(t["pnl_points"]) * pv for t in cand
+                        if int(t["entry_idx"]) < len(cause) and cause[int(t["entry_idx"])] == "would_enter"}
 
     return L1Result(tf=tf, params=params, df_dec=df_dec, df1=df1, box=box, vf=vf, n_split=n_split,
                     bar_td=bar_td, sig_int=sig_int, vol_gate=vol_gate, veto=veto, confirm=confirm,
                     ledger=taken, cause=cause, dropped_signals=dropped, state_timeline=state_timeline,
                     vf_seed=vf_seed,
-                    n_candidates=len(cand), n_skipped_breaker=_skipped, n_locks=_locks)
+                    n_candidates=len(cand), n_skipped_breaker=_skipped, n_locks=_locks,
+                    votes_by_bar=_votes_by_bar(votes, inds, n), skipped_would_be=skipped_would_be)

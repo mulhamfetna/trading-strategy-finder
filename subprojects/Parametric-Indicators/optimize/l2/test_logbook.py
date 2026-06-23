@@ -73,3 +73,16 @@ def test_force_close_only_strictly_inside_l2_span():
              "exit_time": dec_dates[2], "exit_price": 120.0, "exit_reason": "TAKE_PROFIT_HARD", "pnl_points": 20.0}]
     assert engine.force_close_on_l1_entry(list(cand), [2], dec_dates, dec_close, 20.0)[0]["exit_reason"] == "TAKE_PROFIT_HARD"
     assert engine.force_close_on_l1_entry(list(cand), [1], dec_dates, dec_close, 20.0)[0]["exit_reason"] == "L1-entry"
+
+
+def test_l1result_exposes_votes_and_skipped_would_be():
+    """task #210/verbose-logs: L1Result surfaces per-bar votes + breaker-skipped would-be P/L."""
+    l1 = payload.run_l1_cached("4h", use_disk=False)
+    n = len(l1.df_dec)
+    assert hasattr(l1, "votes_by_bar") and len(l1.votes_by_bar) == n
+    nonempty = [v for v in l1.votes_by_bar if v]
+    assert nonempty, "no per-bar votes recorded"
+    chip = nonempty[0][0]
+    assert set(chip) == {"key", "vote", "active"}
+    assert chip["vote"] in ("confirm", "veto", "neutral")
+    assert isinstance(l1.skipped_would_be, dict)

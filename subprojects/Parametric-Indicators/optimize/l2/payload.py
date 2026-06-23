@@ -29,7 +29,7 @@ _DISK_CACHE = Path(tempfile.gettempdir()) / "wsh_l1_cache"
 # F2 — bump this whenever L1Result's fields change. It's part of the cache FILENAME, so old-schema
 # pickles get a different name and are never loaded (a stale pickle would otherwise unpickle with a
 # new field defaulted, e.g. the STEP-3b vf_seed=None bug). Loads also field-check (run_l1_cached).
-_L1_CACHE_VER = "v2-vf_seed"
+_L1_CACHE_VER = "v3-votes"
 
 
 def _l1_cache_file(tf: str) -> Path:
