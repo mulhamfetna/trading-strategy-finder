@@ -108,3 +108,50 @@ def decision_signals(df_dec: pd.DataFrame, box: pd.DataFrame) -> np.ndarray:
     out[has_short] = "short"
     out[has_long] = "long"   # long assigned last ⇒ long wins ties (matches the scalar rule)
     return out
+
+
+def box_fire_stats(df_dec: pd.DataFrame, box: pd.DataFrame) -> dict:
+    """Per-candle box-fire counts — the pre-collapse detail `decision_signals` discards. A level-pair
+    'fires' under the EXACT same rule decision_signals uses (long iff green & touched & close>upper;
+    short iff red & touched & close<lower). Boxes are split weekly vs monthly via `_WEEKLY_LEVELS` /
+    `_MONTHLY_LEVELS`. Returns totals over all candles:
+      total_candles, fired_candles (>=1 pair), multi_box_candles (>=2 pairs),
+      both_tf_candles (>=1 weekly AND >=1 monthly pair), total_fires (sum of all pair-fires).
+    Market-structure level (layer-independent) — identical for L1/L2/combined."""
+    from box_lookup import _WEEKLY_LEVELS, _MONTHLY_LEVELS
+    n = len(df_dec)
+    if n == 0:
+        return {"total_candles": 0, "fired_candles": 0, "multi_box_candles": 0,
+                "both_tf_candles": 0, "total_fires": 0}
+
+    O = df_dec["Open"].to_numpy(dtype=float)
+    H = df_dec["High"].to_numpy(dtype=float)
+    L = df_dec["Low"].to_numpy(dtype=float)
+    C = df_dec["Close"].to_numpy(dtype=float)
+    sub = box.reindex(_box_dates_vec(pd.DatetimeIndex(df_dec["Date"])))
+    green = C > O
+    red = C < O
+
+    def _fire_count(pairs):
+        cnt = np.zeros(n, dtype=int)
+        for upper_col, lower_col, _label in pairs:
+            if upper_col not in sub.columns or lower_col not in sub.columns:
+                continue
+            up = sub[upper_col].to_numpy(dtype=float)
+            lo = sub[lower_col].to_numpy(dtype=float)
+            valid = ~np.isnan(up) & ~np.isnan(lo)
+            touched = valid & (L <= up) & (H >= lo)
+            fired = (green & touched & (C > up)) | (red & touched & (C < lo))
+            cnt += fired.astype(int)
+        return cnt
+
+    w = _fire_count(_WEEKLY_LEVELS)
+    m = _fire_count(_MONTHLY_LEVELS)
+    total = w + m
+    return {
+        "total_candles": int(n),
+        "fired_candles": int((total >= 1).sum()),
+        "multi_box_candles": int((total >= 2).sum()),
+        "both_tf_candles": int(((w >= 1) & (m >= 1)).sum()),
+        "total_fires": int(total.sum()),
+    }
