@@ -26,12 +26,25 @@ def taxonomy_l1(result) -> dict:
     indicator_no_confirm = cnt(lambda r: r.box_cause == "confirm<K")
     passed_all_gates = cnt(lambda r: r.box_cause == "would_enter")
 
+    l1_entries = [r for r in log if r.layer == "L1" and r.decision == "entry"]
+    entered = len(l1_entries)
+    entered_pnl = sum(r.pnl for r in l1_entries)
+
+    skipped_rows = [r for r in log if r.reason == "breaker_locked"]   # would_enter & flat, breaker/cooldown
+    passed_skipped = len(skipped_rows)
+    skipped_pnl = sum((r.would_be_pnl or 0.0) for r in skipped_rows)
+
+    passed_in_position = passed_all_gates - entered - passed_skipped  # would_enter while a trade was open
+
     out = {
         "no_box_signal": _box(no_box_signal),
         "gate_rejected": _box(gate_rejected),
         "indicator_veto": _box(indicator_veto),
         "indicator_no_confirm": _box(indicator_no_confirm),
         "passed_all_gates": _box(passed_all_gates),
+        "entered": _box(entered, entered_pnl),
+        "passed_skipped": _box(passed_skipped, skipped_pnl),
+        "passed_in_position": _box(passed_in_position),
         "n_classified": int(result.n - 1),
     }
     return out
