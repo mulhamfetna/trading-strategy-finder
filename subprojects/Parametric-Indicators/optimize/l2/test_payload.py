@@ -126,3 +126,11 @@ def test_serialize_log_row_has_all_fields():
               "entry_price","exit_time","exit_price","exit_reason","pnl","equity","dd","in_position",
               "position_owner","l2_reason","text","veto_flip","would_be_pnl","indicators"):
         assert k in row, f"missing {k}"
+
+
+def test_view_payload_carries_taxonomy():
+    p = payload.build_view_payload(payload.l1_default_params("4h"), dict(payload.PERMISSIVE),
+                                   "4h", view="l1")
+    tax = p["meta"]["taxonomy"]
+    assert tax["entered"]["count"] == 255
+    assert tax["n_classified"] == p["meta"]["n"] - 1

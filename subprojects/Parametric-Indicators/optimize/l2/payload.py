@@ -347,7 +347,7 @@ def build_view_payload(l1_params: dict, l2_params: dict, tf: str = "4h", view: s
     is the engine's complete L1 dashboard payload (strategy.build_payload — vol/state/drawdown/events/
     split-SL-TP/window, nothing lost) PLUS the causal per-candle log + the log-derived L1 boxes. So
     index.html runs entirely off /api/causal_backtest with no feature loss, boxes consistent with the log."""
-    from optimize.l2 import logbook, aggregate, charts  # inline: logbook imports payload (avoid circular)
+    from optimize.l2 import logbook, aggregate, charts, taxonomy  # inline: logbook imports payload (avoid circular)
     from optimize import timeframes as TF
     if view not in ("l1", "l2", "combined"):
         raise L2ParamError(f"view must be l1|l2|combined (got {view!r})")
@@ -361,6 +361,7 @@ def build_view_payload(l1_params: dict, l2_params: dict, tf: str = "4h", view: s
         base = dict(cached); base["meta"] = dict(cached["meta"])     # shallow copy: per-request fields below must
         base["log"] = [_serialize_log_row(r) for r in res.log]       #   not mutate the cached object
         base["meta"]["boxes"] = aggregate.boxes_for_layer(res, "L1", bar_secs)   # log-derived (== engine summary)
+        base["meta"]["taxonomy"] = taxonomy.taxonomy_l1(res)
         base["meta"]["n"] = res.n
         base["meta"]["view"] = "l1"
         return base
@@ -410,6 +411,9 @@ def build_view_payload(l1_params: dict, l2_params: dict, tf: str = "4h", view: s
 
     return {
         "meta": {"view": view, "n": res.n, "boxes": boxes,
+                 "taxonomy": (taxonomy.taxonomy_combined(res) if view == "combined"
+                              else taxonomy.taxonomy_l2(res) if view == "l2"
+                              else taxonomy.taxonomy_l1(res)),
                  "dropped_counts": {"veto": ds.n_veto, "vol_gate": ds.n_vol_gate,
                                     "total": len(ds), "flat_candidates": len(ds.flat_candidates())}},
         "candles": candles,
