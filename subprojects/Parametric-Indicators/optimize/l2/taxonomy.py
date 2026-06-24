@@ -14,6 +14,29 @@ def _box(count, pnl=None):
     return {"count": int(count)} if pnl is None else {"count": int(count), "pnl": round(float(pnl), 2)}
 
 
+_EXIT_KEYS = {"TAKE_PROFIT_HARD": "tp_exit", "STOP_LOSS_SOFT": "sl_soft_exit",
+              "STOP_LOSS_HARD": "sl_hard_exit", "TIME_CAP": "time_cap_exit"}
+
+
+def _exit_boxes(entries: list) -> dict:
+    """{tp_exit, sl_soft_exit, sl_hard_exit, time_cap_exit, time_cap_win, time_cap_loss} from entry rows."""
+    agg = {k: [0, 0.0] for k in _EXIT_KEYS}
+    tcw = [0, 0.0]
+    tcl = [0, 0.0]
+    for r in entries:
+        k = r.exit_reason
+        if k in agg:
+            agg[k][0] += 1
+            agg[k][1] += r.pnl
+        if k == "TIME_CAP":
+            (tcw if r.pnl > 0 else tcl)[0] += 1
+            (tcw if r.pnl > 0 else tcl)[1] += r.pnl
+    out = {name: _box(agg[k][0], agg[k][1]) for k, name in _EXIT_KEYS.items()}
+    out["time_cap_win"] = _box(tcw[0], tcw[1])
+    out["time_cap_loss"] = _box(tcl[0], tcl[1])
+    return out
+
+
 def taxonomy_l1(result) -> dict:
     log = result.log
 
@@ -47,4 +70,5 @@ def taxonomy_l1(result) -> dict:
         "passed_in_position": _box(passed_in_position),
         "n_classified": int(result.n - 1),
     }
+    out.update(_exit_boxes(l1_entries))
     return out

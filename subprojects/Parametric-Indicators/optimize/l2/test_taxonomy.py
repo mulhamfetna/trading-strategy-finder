@@ -38,3 +38,15 @@ def test_l1_passed_branch_splits_and_reconciles():
     # passed_skipped carries counterfactual would-be $ (key present)
     assert "pnl" in t["passed_skipped"]
     assert "pnl" not in t["passed_in_position"]   # count-only
+
+
+def test_l1_exit_leaves_partition_entries_and_timecap_winloss():
+    res = _l1_res()
+    t = taxonomy.taxonomy_l1(res)
+    exits = ["tp_exit", "sl_soft_exit", "sl_hard_exit", "time_cap_exit"]
+    assert sum(t[k]["count"] for k in exits) == t["entered"]["count"]
+    assert round(sum(t[k]["pnl"] for k in exits), 2) == t["entered"]["pnl"]
+    # TIME_CAP win/loss partition the TIME_CAP bucket
+    assert t["time_cap_win"]["count"] + t["time_cap_loss"]["count"] == t["time_cap_exit"]["count"]
+    assert round(t["time_cap_win"]["pnl"] + t["time_cap_loss"]["pnl"], 2) == t["time_cap_exit"]["pnl"]
+    assert all(r >= 0 for r in [t["time_cap_win"]["pnl"]] if t["time_cap_win"]["count"])
