@@ -289,6 +289,63 @@ function boxesCombined(b){return (
   DB.card(V(b.n_l1_entry_exits),'L1-entry force-closes'));
 }
 
+// ── candle taxonomy (count + $) — flat L1/L2 dict, or combined {l1,l2,combined_exits} ──────────
+function _txCard(node, label){ if(!node) return DB.card('—', label);
+  const d = (node.pnl!==undefined) ? (' · '+DB.money(node.pnl)) : '';
+  const cls = (node.pnl!==undefined) ? (node.pnl>=0?'pos':'neg') : '';
+  return DB.card((node.count||0).toLocaleString(), label+d, cls); }
+function _txL1(t, pfx){ return (
+  grp(pfx+' — every candle')+
+  _txCard(t.no_box_signal,'no box signal')+
+  _txCard(t.gate_rejected,'box signal · gate-rejected')+
+  _txCard(t.indicator_veto,'box signal · indicator veto')+
+  _txCard(t.indicator_no_confirm,'box signal · no confirm (<K)')+
+  _txCard(t.passed_all_gates,'box signal · passed all gates')+
+  grp(pfx+' — passed gates ▸')+
+  _txCard(t.entered,'entered (trade)')+
+  _txCard(t.passed_skipped,'passed · skipped (breaker/cooldown)')+
+  _txCard(t.passed_in_position,'passed · already in position')+
+  grp(pfx+' — entered ▸ exits')+
+  _txCard(t.tp_exit,'take-profit')+
+  _txCard(t.sl_soft_exit,'stop-loss soft')+
+  _txCard(t.sl_hard_exit,'stop-loss hard')+
+  _txCard(t.time_cap_exit,'time-cap (max hold)')+
+  grp(pfx+' — time-cap ▸ win/loss')+
+  _txCard(t.time_cap_win,'time-cap win')+
+  _txCard(t.time_cap_loss,'time-cap loss')); }
+function _txL2(t){ return (
+  grp('🔁 L2 — of L1’s forwarded drops')+
+  _txCard(t.l2_evaluated,'evaluated by L2')+
+  _txCard(t.gate_rejected,'gate-rejected')+
+  _txCard(t.indicator_veto,'indicator veto')+
+  _txCard(t.indicator_no_confirm,'no confirm (<K)')+
+  _txCard(t.passed_no_open,'passed · no open')+
+  _txCard(t.forwarded_but_l1_in_position,'forwarded · L1 in position')+
+  grp('🔁 L2 — entered ▸ exits')+
+  _txCard(t.entered,'entered (trade)')+
+  _txCard(t.tp_exit,'take-profit')+
+  _txCard(t.sl_soft_exit,'stop-loss soft')+
+  _txCard(t.sl_hard_exit,'stop-loss hard')+
+  _txCard(t.time_cap_exit,'time-cap (max hold)')+
+  _txCard(t.l1_entry_exit,'L1-entry force-close')+
+  grp('🔁 L2 — time-cap ▸ win/loss')+
+  _txCard(t.time_cap_win,'time-cap win')+
+  _txCard(t.time_cap_loss,'time-cap loss')); }
+function boxesTaxonomy(tax, view){ if(!tax) return '';
+  if(view==='l1') return _txL1(tax,'🍃 L1');
+  if(view==='l2') return _txL2(tax);
+  const ce=tax.combined_exits||{};
+  return _txL1(tax.l1||{},'🍃 L1')+_txL2(tax.l2||{})+
+    grp('Σ combined — entered ▸ exits (L1+L2)')+
+    _txCard(ce.entered,'entered (trade)')+
+    _txCard(ce.tp_exit,'take-profit')+
+    _txCard(ce.sl_soft_exit,'stop-loss soft')+
+    _txCard(ce.sl_hard_exit,'stop-loss hard')+
+    _txCard(ce.time_cap_exit,'time-cap (max hold)')+
+    _txCard(ce.l1_entry_exit,'L1-entry force-close')+
+    _txCard(ce.time_cap_win,'time-cap win')+
+    _txCard(ce.time_cap_loss,'time-cap loss'); }
+
 // ── render the active view from its cached payload ───────────────────────────
 function lineFor(trades){ const tp=[],sh=[],ss=[]; (trades||[]).forEach(t=>{
   tp.push({time:t.entry_time,value:t.tp_hard_line},{time:t.exit_time,value:t.tp_hard_line},{time:t.exit_time+1});
@@ -314,7 +371,8 @@ function renderView(view){
   // L1 tab carries the RICH build_payload payload (charts/events/gen_report at the top level);
   // L2/Combined carry the causal `engine` block. Normalize to one shape.
   const eng = view==='l1' ? {vol:D.vol, gate_thr:D.gate_thr, state:D.state, drawdown:D.drawdown, events:D.events} : (D.engine||{});
-  $('cards').innerHTML = view==='l1'?boxesL1(b):view==='l2'?boxesL2(b,dc,tr):boxesCombined(b);
+  $('cards').innerHTML = (view==='l1'?boxesL1(b):view==='l2'?boxesL2(b,dc,tr):boxesCombined(b))
+    + boxesTaxonomy(D.meta.taxonomy, view);
   // SMC structure report (L1 only — from strategy.build_payload's gen_report)
   const gr=(view==='l1')?D.meta.gen_report:null;
   $('genrep').innerHTML = gr ? Object.entries(gr).filter(([k,v])=>k==='bars'||k.startsWith('n_'))
