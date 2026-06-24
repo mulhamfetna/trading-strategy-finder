@@ -102,3 +102,18 @@ def taxonomy_l2(result) -> dict:
     out["forwarded_but_l1_in_position"] = _box(l1_drops - out["l2_evaluated"]["count"])
     out["n_classified"] = int(out["l2_evaluated"]["count"])
     return out
+
+
+_COMBINED_LEAVES = ("entered", "tp_exit", "sl_soft_exit", "sl_hard_exit",
+                    "time_cap_exit", "time_cap_win", "time_cap_loss", "l1_entry_exit")
+
+
+def taxonomy_combined(result) -> dict:
+    l1 = taxonomy_l1(result)
+    l2 = taxonomy_l2(result)
+    comb = {}
+    for k in _COMBINED_LEAVES:
+        a = l1.get(k, {"count": 0, "pnl": 0.0})
+        b = l2.get(k, {"count": 0, "pnl": 0.0})
+        comb[k] = _box(a["count"] + b["count"], a.get("pnl", 0.0) + b.get("pnl", 0.0))
+    return {"l1": l1, "l2": l2, "combined_exits": comb}

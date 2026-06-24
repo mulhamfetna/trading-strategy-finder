@@ -71,3 +71,15 @@ def test_l2_tree_partitions_and_reconciles_to_l1_drops():
     # universe reconciles to L1's forwarded vetoed+vol_gated drops
     l1_drops = sum(1 for r in res.log if r.box_cause in ("vetoed", "vol_gated"))
     assert t["l2_evaluated"]["count"] + t["forwarded_but_l1_in_position"]["count"] == l1_drops
+
+
+def test_combined_exits_are_additive_over_layers():
+    res = _l2_res()
+    t = taxonomy.taxonomy_combined(res)
+    l1, l2 = t["l1"], t["l2"]
+    for k in ("tp_exit", "sl_soft_exit", "sl_hard_exit", "time_cap_exit",
+              "time_cap_win", "time_cap_loss", "entered"):
+        assert t["combined_exits"][k]["count"] == l1[k]["count"] + l2[k]["count"]
+        assert round(t["combined_exits"][k]["pnl"], 2) == round(l1[k]["pnl"] + l2[k]["pnl"], 2)
+    # L1-entry force-close exists only on L2 → combined == L2's
+    assert t["combined_exits"]["l1_entry_exit"]["count"] == l2["l1_entry_exit"]["count"]
