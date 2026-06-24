@@ -346,6 +346,31 @@ function boxesTaxonomy(tax, view){ if(!tax) return '';
     _txCard(ce.time_cap_win,'time-cap win')+
     _txCard(ce.time_cap_loss,'time-cap loss'); }
 
+// ── totals overview (headline candle/entry counts) — read meta.n / box_counts / taxonomy / boxes ──
+function _ct(v, label){ return DB.card((v==null?0:v).toLocaleString(), label); }
+function boxesTotals(view, b, tax, bc){ bc=bc||{}; tax=tax||{};
+  const fired=bc.fired_candles||0, total=bc.total_candles||0;
+  const common =
+    _ct(total,'total candles (this timeframe)')+
+    _ct(fired,'box-signal candles (≥1 box fired)')+
+    _ct(total-fired,'no-box-signal candles')+
+    _ct(bc.multi_box_candles,'multi-box candles (≥2 boxes)')+
+    _ct(bc.both_tf_candles,'both-timeframe candles (weekly+monthly)')+
+    _ct(bc.total_fires,'total box-fires (per-box)');
+  if(view==='l1') return grp('📋 L1 — totals')+common+
+    _ct(tax.entered&&tax.entered.count,'L1 entries (trades)')+
+    _ct(tax.passed_skipped&&tax.passed_skipped.count,'breaker/cooldown-skipped')+
+    _ct(b&&b.position_hold_total&&b.position_hold_total.bars,'candles with an open position');
+  if(view==='l2') return grp('📋 L2 — totals')+common+
+    _ct(tax.l2_evaluated&&tax.l2_evaluated.count,'L2-evaluated candles (forwarded drops)')+
+    _ct(tax.entered&&tax.entered.count,'L2 entries (trades)')+
+    _ct(b&&b.position_hold_total&&b.position_hold_total.bars,'candles with an open position');
+  const l1=tax.l1||{}, l2=tax.l2||{}, ce=tax.combined_exits||{};
+  return grp('📋 Σ combined — totals')+common+
+    _ct(l1.entered&&l1.entered.count,'L1 entries (trades)')+
+    _ct(l2.entered&&l2.entered.count,'L2 entries (trades)')+
+    _ct(ce.entered&&ce.entered.count,'combined entries (L1+L2)'); }
+
 // ── render the active view from its cached payload ───────────────────────────
 function lineFor(trades){ const tp=[],sh=[],ss=[]; (trades||[]).forEach(t=>{
   tp.push({time:t.entry_time,value:t.tp_hard_line},{time:t.exit_time,value:t.tp_hard_line},{time:t.exit_time+1});
@@ -371,7 +396,8 @@ function renderView(view){
   // L1 tab carries the RICH build_payload payload (charts/events/gen_report at the top level);
   // L2/Combined carry the causal `engine` block. Normalize to one shape.
   const eng = view==='l1' ? {vol:D.vol, gate_thr:D.gate_thr, state:D.state, drawdown:D.drawdown, events:D.events} : (D.engine||{});
-  $('cards').innerHTML = (view==='l1'?boxesL1(b):view==='l2'?boxesL2(b,dc,tr):boxesCombined(b))
+  $('cards').innerHTML = boxesTotals(view, b, D.meta.taxonomy, D.meta.box_counts)
+    + (view==='l1'?boxesL1(b):view==='l2'?boxesL2(b,dc,tr):boxesCombined(b))
     + boxesTaxonomy(D.meta.taxonomy, view);
   // SMC structure report (L1 only — from strategy.build_payload's gen_report)
   const gr=(view==='l1')?D.meta.gen_report:null;
