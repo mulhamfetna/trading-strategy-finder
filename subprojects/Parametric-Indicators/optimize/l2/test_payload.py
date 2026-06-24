@@ -134,3 +134,12 @@ def test_view_payload_carries_taxonomy():
     tax = p["meta"]["taxonomy"]
     assert tax["entered"]["count"] == 255
     assert tax["n_classified"] == p["meta"]["n"] - 1
+
+
+def test_view_payload_carries_box_counts():
+    p = payload.build_view_payload(payload.l1_default_params("4h"), dict(payload.PERMISSIVE),
+                                   "4h", view="l1")
+    bc = p["meta"]["box_counts"]
+    assert bc["total_candles"] == p["meta"]["n"]
+    assert bc["multi_box_candles"] == 191 and bc["both_tf_candles"] == 157
+    assert bc["fired_candles"] == 829
