@@ -269,7 +269,7 @@ function boxesL2(b,dc,trades){
 const V=b=>b?b.value:undefined, durW=b=>{const v=V(b);return v?(v.bars+'c · '+v.days+'d'):'—';}, barsW=b=>{const v=V(b);return v?(v.bars.toLocaleString()+' candles'):'—';};
 const tag=(s,b)=>DB.boxFromLog(s,b);
 function boxesCombined(b){return (
-  grp('Σ financials · P/L+trades summed · DD/win/PF recomputed')+
+  grp('combined financials · P/L+trades summed · DD/win/PF recomputed')+
   DB.card(DB.money(V(b.pnl)),'combined P/L',V(b.pnl)>=0?'pos':'neg')+
   DB.card('$'+Math.round(V(b.max_dd)).toLocaleString(),'combined max DD','neg')+
   DB.card(V(b.win)+'%','win rate')+DB.card(V(b.pf)??'—','profit factor')+DB.card(V(b.payoff)??'—','payoff ratio')+
@@ -282,35 +282,39 @@ function boxesCombined(b){return (
   grp('counts · trades+locks summed · warmup/req max(L1,L2)')+
   DB.card(V(b.n_taken)+'/'+V(b.n_candidates),'trades ('+V(b.exposure)+'%)')+DB.card(V(b.n_locks),'breaker locks')+
   DB.card(tag(barsW(b.warmup),b.warmup),'warmup period')+DB.card(tag(barsW(b.indicator_req),b.indicator_req),'longest indicator requirement')+
-  grp('Σ combined guardrails')+
+  grp('combined guardrails')+
   DB.card('$'+Math.round(V(b.l1_only_dd)).toLocaleString(),'L1-only DD')+
   DB.card(DB.money(V(b.uplift)),'uplift vs L1',V(b.uplift)>=0?'pos':'neg')+
   DB.card(V(b.dd_not_worse)?'OK':'+DD','DD vs L1-alone',V(b.dd_not_worse)?'pos':'neg')+
   DB.card(V(b.n_l1_entry_exits),'L1-entry force-closes'));
 }
 
-// ── candle taxonomy (count + $) — flat L1/L2 dict, or combined {l1,l2,combined_exits} ──────────
-function _txCard(node, label){ if(!node) return DB.card('—', label);
-  const d = (node.pnl!==undefined) ? (' · '+DB.money(node.pnl)) : '';
-  const cls = (node.pnl!==undefined) ? (node.pnl>=0?'pos':'neg') : '';
-  return DB.card((node.count||0).toLocaleString(), label+d, cls); }
+// ── count cards (consistent anatomy: big integer value · optional $ sub-line · label) ──────────
+function _esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function _countCard(count, label, sub, subcls){
+  const v = (count==null?0:count).toLocaleString();
+  const subline = (sub!=null) ? `<div class="sub ${subcls||''}">${sub}</div>` : '';
+  return `<div class="card"><div class="v">${v}</div>${subline}<div class="k">${_esc(label)}</div></div>`; }
+function _txCard(node, label){ if(!node) return _countCard(0, label);
+  if(node.pnl!==undefined) return _countCard(node.count, label, DB.money(node.pnl), node.pnl>=0?'pos':'neg');
+  return _countCard(node.count, label); }
 function _txL1(t, pfx){ return (
   grp(pfx+' — every candle')+
   _txCard(t.no_box_signal,'no box signal')+
   _txCard(t.gate_rejected,'box signal · gate-rejected')+
   _txCard(t.indicator_veto,'box signal · indicator veto')+
-  _txCard(t.indicator_no_confirm,'box signal · no confirm (<K)')+
+  _txCard(t.indicator_no_confirm,'box signal · no confirm (under K)')+
   _txCard(t.passed_all_gates,'box signal · passed all gates')+
-  grp(pfx+' — passed gates ▸')+
+  grp(pfx+' — passed gates')+
   _txCard(t.entered,'entered (trade)')+
   _txCard(t.passed_skipped,'passed · skipped (breaker/cooldown)')+
   _txCard(t.passed_in_position,'passed · already in position')+
-  grp(pfx+' — entered ▸ exits')+
+  grp(pfx+' — entered → exits')+
   _txCard(t.tp_exit,'take-profit')+
   _txCard(t.sl_soft_exit,'stop-loss soft')+
   _txCard(t.sl_hard_exit,'stop-loss hard')+
   _txCard(t.time_cap_exit,'time-cap (max hold)')+
-  grp(pfx+' — time-cap ▸ win/loss')+
+  grp(pfx+' — time-cap → win/loss')+
   _txCard(t.time_cap_win,'time-cap win')+
   _txCard(t.time_cap_loss,'time-cap loss')); }
 function _txL2(t){ return (
@@ -318,17 +322,17 @@ function _txL2(t){ return (
   _txCard(t.l2_evaluated,'evaluated by L2')+
   _txCard(t.gate_rejected,'gate-rejected')+
   _txCard(t.indicator_veto,'indicator veto')+
-  _txCard(t.indicator_no_confirm,'no confirm (<K)')+
+  _txCard(t.indicator_no_confirm,'no confirm (under K)')+
   _txCard(t.passed_no_open,'passed · no open')+
   _txCard(t.forwarded_but_l1_in_position,'forwarded · L1 in position')+
-  grp('🔁 L2 — entered ▸ exits')+
+  grp('🔁 L2 — entered → exits')+
   _txCard(t.entered,'entered (trade)')+
   _txCard(t.tp_exit,'take-profit')+
   _txCard(t.sl_soft_exit,'stop-loss soft')+
   _txCard(t.sl_hard_exit,'stop-loss hard')+
   _txCard(t.time_cap_exit,'time-cap (max hold)')+
   _txCard(t.l1_entry_exit,'L1-entry force-close')+
-  grp('🔁 L2 — time-cap ▸ win/loss')+
+  grp('🔁 L2 — time-cap → win/loss')+
   _txCard(t.time_cap_win,'time-cap win')+
   _txCard(t.time_cap_loss,'time-cap loss')); }
 function boxesTaxonomy(tax, view){ if(!tax) return '';
@@ -336,7 +340,7 @@ function boxesTaxonomy(tax, view){ if(!tax) return '';
   if(view==='l2') return _txL2(tax);
   const ce=tax.combined_exits||{};
   return _txL1(tax.l1||{},'🍃 L1')+_txL2(tax.l2||{})+
-    grp('Σ combined — entered ▸ exits (L1+L2)')+
+    grp('combined — entered → exits (L1+L2)')+
     _txCard(ce.entered,'entered (trade)')+
     _txCard(ce.tp_exit,'take-profit')+
     _txCard(ce.sl_soft_exit,'stop-loss soft')+
@@ -347,7 +351,7 @@ function boxesTaxonomy(tax, view){ if(!tax) return '';
     _txCard(ce.time_cap_loss,'time-cap loss'); }
 
 // ── totals overview (headline candle/entry counts) — read meta.n / box_counts / taxonomy / boxes ──
-function _ct(v, label){ return DB.card((v==null?0:v).toLocaleString(), label); }
+function _ct(v, label){ return _countCard(v, label); }
 function boxesTotals(view, b, tax, bc){ bc=bc||{}; tax=tax||{};
   const fired=bc.fired_candles||0, total=bc.total_candles||0;
   const common =
@@ -366,7 +370,7 @@ function boxesTotals(view, b, tax, bc){ bc=bc||{}; tax=tax||{};
     _ct(tax.entered&&tax.entered.count,'L2 entries (trades)')+
     _ct(b&&b.position_hold_total&&b.position_hold_total.bars,'candles with an open position');
   const l1=tax.l1||{}, l2=tax.l2||{}, ce=tax.combined_exits||{};
-  return grp('📋 Σ combined — totals')+common+
+  return grp('📋 combined — totals')+common+
     _ct(l1.entered&&l1.entered.count,'L1 entries (trades)')+
     _ct(l2.entered&&l2.entered.count,'L2 entries (trades)')+
     _ct(ce.entered&&ce.entered.count,'combined entries (L1+L2)'); }

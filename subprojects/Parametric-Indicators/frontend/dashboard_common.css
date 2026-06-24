@@ -46,7 +46,10 @@ input.matherr { border-color:var(--red) !important; }   /* invalid inline-math e
    (6-across on a wide screen → 4/3/2-per-row as it narrows) instead of overflowing with a horizontal scroll */
 .cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; }
 .card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 12px; }
-.card .v { font-size:20px; font-weight:600; } .card .k { font-size:10px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+.card { display:flex; flex-direction:column; }
+.card .v { font-size:20px; font-weight:600; line-height:1.15; }
+.card .sub { font-size:12px; font-weight:600; margin-top:1px; color:var(--muted); }
+.card .k { font-size:10px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin-top:auto; padding-top:4px; }
 /* full-width separator/header between metric-card groups (financials · streaks · totals · counts) */
 .cardgrp { grid-column:1 / -1; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); border-top:1px solid var(--border); padding-top:7px; margin-top:3px; }
 .pos { color:var(--green); } .neg { color:var(--red); }
