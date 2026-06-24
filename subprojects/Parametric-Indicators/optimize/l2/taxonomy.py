@@ -72,3 +72,33 @@ def taxonomy_l1(result) -> dict:
     }
     out.update(_exit_boxes(l1_entries))
     return out
+
+
+_L2_REASON = {"vol_gated": "gate_rejected", "vetoed": "indicator_veto",
+              "confirm<K": "indicator_no_confirm", "passed": "passed_no_open", "entered": "entered"}
+
+
+def taxonomy_l2(result) -> dict:
+    log = result.log
+    l2_entries = [r for r in log if r.layer == "L2" and r.decision == "entry"]
+
+    parts = {k: 0 for k in _L2_REASON}
+    for r in log:
+        if r.l2_reason in parts:
+            parts[r.l2_reason] += 1
+
+    out = {name: _box(parts[reason]) for reason, name in _L2_REASON.items() if name != "entered"}
+
+    entered_pnl = sum(r.pnl for r in l2_entries)
+    out["entered"] = _box(len(l2_entries), entered_pnl)
+    out["l2_evaluated"] = _box(sum(parts.values()))
+
+    exits = _exit_boxes(l2_entries)
+    fc = [r for r in l2_entries if r.exit_reason == "L1-entry"]
+    exits["l1_entry_exit"] = _box(len(fc), sum(r.pnl for r in fc))
+    out.update(exits)
+
+    l1_drops = sum(1 for r in log if r.box_cause in ("vetoed", "vol_gated"))
+    out["forwarded_but_l1_in_position"] = _box(l1_drops - out["l2_evaluated"]["count"])
+    out["n_classified"] = int(out["l2_evaluated"]["count"])
+    return out
