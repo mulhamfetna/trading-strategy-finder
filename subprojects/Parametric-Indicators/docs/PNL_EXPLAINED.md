@@ -128,6 +128,9 @@ not wall-clock minutes: overnight/weekend market gaps contain no 1-min bars, so 
 exactly `cap_1min` bars but can span several calendar days — e.g. `cap_1min=240` exits in 3h59m for a
 gap-free trade, but a Friday-afternoon entry exits ~Sunday evening. See `docs/LOG_FIELDS.md` § TIME_CAP.)
 
+The dashboard's "📊 Candle taxonomy" boxes classify every candle (count + $) straight from this
+log — see `docs/LOG_FIELDS.md` § Candle taxonomy boxes and `optimize/l2/taxonomy.py`.
+
 `fast_engine.py:122` → `order = [(t_slh, R_SL_HARD, slh_line), (t_tph, R_TP_HARD, tph_line), (t_soft, R_SL_SOFT, None)]`
 and the earliest-index / lowest-rank selection at `fast_engine.py:125-132`. Same rule stated in
 `engine.py:14`.

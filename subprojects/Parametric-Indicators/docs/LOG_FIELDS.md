@@ -119,6 +119,22 @@ index 0). This is intended and confirmed behaviour (`fast_engine` slices `m_clos
 `engine.py` increments `bars_held` per traded bar) — the field label and tooltip say "traded 1-min bars"
 to make the unit explicit.
 
+## Candle taxonomy boxes (2026-06-24)
+
+A per-node counter set classifies every candle, derived purely from this log (no engine change).
+L1 partitions all bars (except bar 0) by `box_cause`:
+`no_box_signal(box_silence) | gate_rejected(vol_gated) | indicator_veto(vetoed) |
+indicator_no_confirm(confirm<K) | passed_all_gates(would_enter)`. The `passed_all_gates` bucket
+splits into `entered` (a trade), `passed_skipped` (`reason==breaker_locked`), and
+`passed_in_position` (a qualified signal while a trade was already open). `entered` trades split by
+`exit_reason` (tp/sl-soft/sl-hard/time-cap), and TIME_CAP splits win/loss. L2 mirrors this from its
+own `l2_reason` over the L1 drops it was forwarded (`vetoed∪vol_gated`, L1-flat), adding the
+`l1_entry_exit` force-close leaf and a `forwarded_but_l1_in_position` reconciliation box. Each box
+carries a count; trading leaves also carry summed $ (realized; `passed_skipped` uses `would_be_pnl`).
+Computed in `optimize/l2/taxonomy.py`, surfaced at `meta.taxonomy`, rendered as the
+"📊 Candle taxonomy" dashboard group. Invariants locked in `optimize/l2/test_taxonomy.py`
+(partition sums, `entered==n_taken`, exit/win-loss partitions, L2 universe reconcile, additive combined).
+
 ## Follow-up — shareable bundles
 
 `cap_1min`/`TIME_CAP` also needs the same port into the bundles (see below).
