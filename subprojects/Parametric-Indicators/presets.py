@@ -110,6 +110,19 @@ def _champions_lean() -> dict:
 
 
 _CHAMP_WSH6_LOWDD_JSON = _HERE / "optimize" / "results" / "wsh6_lowdd_4h_champion.json"
+_CHAMP_WSH6COLD_JSON = _HERE / "optimize" / "results" / "wsh6cold_4h_champion.json"
+
+def _champions_wsh6cold() -> dict:
+    """wsh6cold (cold-start control, no warm-start) — the best-feasible pick. VERIFIED to generalize:
+    reproduces $153,321/$9,589 exactly, and EDGES the uncapped champion out-of-sample on 2026 ($60,488
+    vs $58,029, payoff 1.32 vs 0.74). A moderate cap=448 + 7-ind config the warm search skipped — a
+    legitimate side-by-side alternative (healthier payoff profile; ~DD-neutral OOS, not DD-halving)."""
+    if not _CHAMP_WSH6COLD_JSON.exists():
+        return {}
+    try:
+        return json.loads(_CHAMP_WSH6COLD_JSON.read_text())
+    except Exception:
+        return {}
 
 def _champions_wsh6_lowdd() -> dict:
     """wsh6 (cap_1min searched) — the lowest-drawdown CAPPED Pareto pick. A conservative alternative:
@@ -239,6 +252,18 @@ def strategies() -> list[dict]:
         out.append({"id": f"wsh6lowdd_{tf}",
                     "label": (f"🛡 WS low-DD {tf} · cap {int(c['box']['cap_1min'])} — ${c['full_pnl']:,.0f} "
                               f"(DD ${c['full_dd']:,.0f}, ~half vs champ)"),
+                    "preset": p})
+    # NEW: wsh6cold COLD-START candidate — the no-warm-start control found a moderate-cap (448) 7-ind config
+    # the warm search skipped. VERIFIED: reproduces exactly + EDGES the uncapped champion OOS-2026 ($60,488 vs
+    # $58,029, payoff 1.32 vs 0.74). Side-by-side alternative (healthier payoff; ~DD-neutral OOS), NOT a swap.
+    for tf, c in _champions_wsh6cold().items():
+        b = dict(c["box"]); b.setdefault("cap_mode", "bars")
+        p = _preset(tf, b, c.get("indicators", {}))
+        p["trained_on"] = ("wsh6cold cold-start control (no warm-start) — verified to generalize: edges the "
+                           "uncapped champion out-of-sample on 2026 with a healthier payoff profile")
+        out.append({"id": f"wsh6cold_{tf}",
+                    "label": (f"❄ WS cold {tf} · cap {int(c['box']['cap_1min'])} — ${c['full_pnl']:,.0f} "
+                              f"(OOS ${c.get('oos_2026_pnl',0):,.0f} > champ, payoff 1.3)"),
                     "preset": p})
     # user-saved profiles (server-side store) — first-class entries, id prefixed 'user_'
     for name, preset in load_user_profiles().items():

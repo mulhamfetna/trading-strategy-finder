@@ -274,6 +274,17 @@ def warm_start_seeds(tf_name: str, split_sltp: bool, b: dict) -> list[dict]:
                 seeds.append(_native_seed(c["box"], c.get("indicators", {}), split_sltp, b))
         except Exception:
             pass
+    # wsh6cold: the cold-start discovery (moderate cap=448) that beat the warm champion OOS-2026. Seed it too so
+    # a re-opt's front is provably ≥ BOTH the old uncapped champion AND this capped peak (closes the seeding-bias
+    # gap the cold-start exposed). Carries cap_1min via _native_seed; absent file ⇒ skipped (safe).
+    cold_f = _RESULTS_DIR / "wsh6cold_4h_champion.json"
+    if cold_f.exists():
+        try:
+            c = json.loads(cold_f.read_text()).get(tf_name)
+            if c:
+                seeds.append(_native_seed(c["box"], c.get("indicators", {}), split_sltp, b))
+        except Exception:
+            pass
     return seeds
 
 
