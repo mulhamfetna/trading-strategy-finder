@@ -15,14 +15,16 @@ def _box(count, pnl=None):
 
 
 _EXIT_KEYS = {"TAKE_PROFIT_HARD": "tp_exit", "STOP_LOSS_SOFT": "sl_soft_exit",
-              "STOP_LOSS_HARD": "sl_hard_exit", "TIME_CAP": "time_cap_exit"}
+              "STOP_LOSS_HARD": "sl_hard_exit", "TIME_CAP": "time_cap_exit",
+              "END_OF_DAY": "end_of_day_exit"}
 
 
 def _exit_boxes(entries: list) -> dict:
-    """{tp_exit, sl_soft_exit, sl_hard_exit, time_cap_exit, time_cap_win, time_cap_loss} from entry rows."""
+    """{tp_exit, sl_soft_exit, sl_hard_exit, time_cap_exit, end_of_day_exit, + time_cap/end_of_day
+    win/loss} from entry rows. TIME_CAP and END_OF_DAY close at market, so each splits win/loss."""
     agg = {k: [0, 0.0] for k in _EXIT_KEYS}
-    tcw = [0, 0.0]
-    tcl = [0, 0.0]
+    tcw = [0, 0.0]; tcl = [0, 0.0]
+    eodw = [0, 0.0]; eodl = [0, 0.0]
     for r in entries:
         k = r.exit_reason
         if k in agg:
@@ -31,9 +33,14 @@ def _exit_boxes(entries: list) -> dict:
         if k == "TIME_CAP":
             (tcw if r.pnl > 0 else tcl)[0] += 1
             (tcw if r.pnl > 0 else tcl)[1] += r.pnl
+        if k == "END_OF_DAY":
+            (eodw if r.pnl > 0 else eodl)[0] += 1
+            (eodw if r.pnl > 0 else eodl)[1] += r.pnl
     out = {name: _box(agg[k][0], agg[k][1]) for k, name in _EXIT_KEYS.items()}
     out["time_cap_win"] = _box(tcw[0], tcw[1])
     out["time_cap_loss"] = _box(tcl[0], tcl[1])
+    out["end_of_day_win"] = _box(eodw[0], eodw[1])
+    out["end_of_day_loss"] = _box(eodl[0], eodl[1])
     return out
 
 
@@ -105,7 +112,8 @@ def taxonomy_l2(result) -> dict:
 
 
 _COMBINED_LEAVES = ("entered", "tp_exit", "sl_soft_exit", "sl_hard_exit",
-                    "time_cap_exit", "time_cap_win", "time_cap_loss", "l1_entry_exit")
+                    "time_cap_exit", "time_cap_win", "time_cap_loss",
+                    "end_of_day_exit", "end_of_day_win", "end_of_day_loss", "l1_entry_exit")
 
 
 def taxonomy_combined(result) -> dict:

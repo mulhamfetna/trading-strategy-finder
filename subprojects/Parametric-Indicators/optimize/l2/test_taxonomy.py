@@ -73,6 +73,16 @@ def test_l2_tree_partitions_and_reconciles_to_l1_drops():
     assert t["l2_evaluated"]["count"] + t["forwarded_but_l1_in_position"]["count"] == l1_drops
 
 
+def test_eod_exit_leaves_and_partition():
+    p = dict(payload.l1_default_params(_TF), cap_mode="eod", eod_margin_min=15)
+    res = logbook.run_causal(p, dict(payload.PERMISSIVE), _TF)
+    t = taxonomy.taxonomy_l1(res)
+    exits = ["tp_exit", "sl_soft_exit", "sl_hard_exit", "time_cap_exit", "end_of_day_exit"]
+    assert sum(t[k]["count"] for k in exits) == t["entered"]["count"]
+    assert t["end_of_day_exit"]["count"] > 0
+    assert t["end_of_day_win"]["count"] + t["end_of_day_loss"]["count"] == t["end_of_day_exit"]["count"]
+
+
 def test_combined_exits_are_additive_over_layers():
     res = _l2_res()
     t = taxonomy.taxonomy_combined(res)
