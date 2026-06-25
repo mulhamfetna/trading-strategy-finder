@@ -119,6 +119,23 @@ index 0). This is intended and confirmed behaviour (`fast_engine` slices `m_clos
 `engine.py` increments `bars_held` per traded bar) — the field label and tooltip say "traded 1-min bars"
 to make the unit explicit.
 
+## END_OF_DAY exit cap (2026-06-25)
+
+A second exit-cap mode sits alongside the 1-min bar cap, selected per layer by `cap_mode` ∈
+`none | bars | eod` (default `none`; a bare `cap_1min>0` normalises to `bars`). In `eod` mode an open
+trade is force-closed at the end of its **trading day** — the 18:00→17:00 session (box-date rule), NOT
+the calendar day. **Full days** (session ends 16:59) exit `eod_margin_min` minutes before the 17:00
+close (default 15 → the 16:45 bar). **Partial / early-close days** (12:59, 13:14, 09:xx) exit at the
+session's last bar. Abnormal/truncated sessions get no EOD (trade runs to data end → OPEN, dropped).
+There is no 17:00 bar, so the rule is "last bar with time ≤ cutoff", never an exact-time match.
+
+Computed in `optimize/trading_days.py` (`eod_targets(m_dates, margin_min) → (eod_target, session_last)`,
+locked by `optimize/test_trading_days.py` to 342 full / 14 partial / 1 abnormal). Modeled as a 5th exit
+candidate in both engines (lowest priority: hard-SL > hard-TP > soft-SL > cap), threaded through the
+same seams as `cap_1min`, parity-locked by `test_fast_parity`. Surfaces as `exit_reason == "END_OF_DAY"`
+with taxonomy leaves `end_of_day_exit` + `end_of_day_win`/`end_of_day_loss`, and a "Exit cap mode"
+dashboard dropdown. Default-off is byte-identical (golden unchanged).
+
 ## Candle taxonomy boxes (2026-06-24)
 
 A per-node counter set classifies every candle, derived purely from this log (no engine change).

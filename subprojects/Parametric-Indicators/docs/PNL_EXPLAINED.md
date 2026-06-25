@@ -104,6 +104,7 @@ in points):
 | `STOP_LOSS_SOFT` | **2 consecutive** 1-min **closes** past the soft line | **the 2nd close** (not the line) | `engine.py:303-317` |
 | `L1-entry` (L2 only) | L1 takes a position → L2 force-flat | bar close | combined/causal path |
 | `TIME_CAP` | open for ≥ `cap_1min` **traded** 1-min bars with no SL/TP/soft exit (per-layer max-hold; `cap_1min=0` = off) | **the Nth bar's close** | `engine.py` walk + `fast_engine.py` order |
+| `END_OF_DAY` | `cap_mode='eod'`: open at the trading-day close cutoff (full: `eod_margin_min` min before the 17:00 close; partial: the session's last bar) | **that bar's close** | `optimize/trading_days.eod_targets` + both engines |
 | `OPEN` | dataset ends with position still open | — (not counted as a realized trade's exit) | `engine.py:481-483` |
 
 **Hard exits fill at the line** (a touch is assumed fillable at that price). **Soft-SL fills at
