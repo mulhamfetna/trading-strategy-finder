@@ -25,3 +25,21 @@ def test_native_seed_carries_cap_1min():
     assert s0["cap_1min"] == 0                                   # absent → 0 (reproduces prior champ)
     s1 = OPT._native_seed({**box0, "cap_1min": 5000}, {}, split_sltp=False, b=b)
     assert s1["cap_1min"] == OPT.CAP_1MIN_MAX                    # clamped to bound
+
+
+def test_backtest_metrics_honors_cap_1min():
+    """backtest_metrics threads cap_1min: a tight cap changes the result vs uncapped (cap=0)."""
+    from optimize import core, data as data_mod, timeframes as TF
+    from optimize.fast_engine import signals_to_int
+    from optimize import signals as sig_mod
+    df_dec, df1, box, vf, n_split = data_mod.load_inputs("4h")
+    si = signals_to_int(sig_mod.decision_signals(df_dec, box))
+    base = {"sl_soft": 149.8, "sl_hard": 178.4, "tp": 120.2, "gate_pct": 0, "dd_limit": 0,
+            "cooldown": 0, "flip": False, "window": "full", "indicators": [], "k": 1, "ind_1min": False}
+    m0 = core.backtest_metrics(df_dec, df1, box, vf, n_split, {**base, "cap_1min": 0},
+                               TF.get("4h").bar_td, sig_int=si)
+    m5 = core.backtest_metrics(df_dec, df1, box, vf, n_split, {**base, "cap_1min": 5},
+                               TF.get("4h").bar_td, sig_int=si)
+    assert round(m0["pnl"], 2) != round(m5["pnl"], 2)            # tight cap forces earlier exits
+    assert m0 == core.backtest_metrics(df_dec, df1, box, vf, n_split, dict(base),
+                                       TF.get("4h").bar_td, sig_int=si)   # no cap key == cap=0 (off path)

@@ -69,6 +69,7 @@ def backtest_metrics(
     # sl_soft/sl_hard/tp for both sides ⇒ byte-identical to the pre-split path (golden + fast-parity locked).
     _split = {k: (float(params[k]) if params.get(k) is not None else None) for k in
               ("long_sl_soft", "long_sl_hard", "long_tp", "short_sl_soft", "short_sl_hard", "short_tp")}
+    cap_1min = int(params.get("cap_1min", 0) or 0)    # max-hold (traded 1-min bars); 0 = off (bars cap)
 
     N = len(df_dec)
     lo, hi = {"full": (0, N), "2025": (0, n_split), "2026": (n_split, N)}[window]
@@ -119,7 +120,7 @@ def backtest_metrics(
         d["Date"].to_numpy(), d["Close"].to_numpy(float), si, gate,
         d1["Date"].to_numpy(), d1["High"].to_numpy(float),
         d1["Low"].to_numpy(float), d1["Close"].to_numpy(float),
-        sl_soft, sl_hard, tp, flip, **_split)
+        sl_soft, sl_hard, tp, flip, cap_1min=cap_1min, **_split)
     # fast_backtest returns completed trades already in entry order (no OPEN trades)
 
     # Global-HWM drawdown breaker overlay (identical math to strategy.build_payload).
