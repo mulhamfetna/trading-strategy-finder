@@ -43,3 +43,18 @@ def test_backtest_metrics_honors_cap_1min():
     assert round(m0["pnl"], 2) != round(m5["pnl"], 2)            # tight cap forces earlier exits
     assert m0 == core.backtest_metrics(df_dec, df1, box, vf, n_split, dict(base),
                                        TF.get("4h").bar_td, sig_int=si)   # no cap key == cap=0 (off path)
+
+
+def test_l2_suggest_includes_cap_1min():
+    import optuna
+    from optimize.l2 import optimize as L2O
+    from indicators import library
+    b = {"sl_soft": [10, 200], "sl_hard": [0, 400], "tp": [10, 300]}
+    fixed = {"sl_soft": 100.0, "sl_hard_delta": 20.0, "tp": 120.0, "gate_pct": 0.0,
+             "dd_limit": 0.0, "cooldown": 0, "flip": False, "k": 1, "cap_1min": 90}
+    for key in library.REGISTRY:                                  # every searched indicator param
+        fixed[f"en_{key}"] = False
+        for prm in library.SCHEMA[key].get("params", []):
+            fixed[f"{key}_{prm['name']}"] = prm["default"]
+    p = L2O.suggest_l2_params(optuna.trial.FixedTrial(fixed), b, cap=10)
+    assert p["cap_1min"] == 90

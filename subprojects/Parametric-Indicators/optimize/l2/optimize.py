@@ -46,17 +46,20 @@ def suggest_l2_params(trial, b: dict, cap: int) -> dict:
     specs = [{k: v for k, v in s.items() if k != "_searched"}
              for s in OPT._suggest_indicators(trial)]
     k_rule = trial.suggest_int("k", 1, 5)
+    cap_1min = trial.suggest_int("cap_1min", 0, OPT.CAP_1MIN_MAX)   # max-hold (traded 1-min bars); 0 = off
     return dict(sl_soft=sl_soft, sl_hard=sl_soft + delta, tp=tp, gate_pct=gate_pct,
                 dd_limit=dd_limit, cooldown=int(cooldown), flip=bool(flip), window="full",
-                indicators=specs, k=int(k_rule), ind_1min=True)
+                indicators=specs, k=int(k_rule), ind_1min=True, cap_1min=int(cap_1min))
 
 
 def run(n_trials: int = 200, tf: str = "4h", study_prefix: str = "l2v1", seed: int = 1,
         min_trades: int = 5, sampler: str = "nsga3", storage_url: str | None = None,
-        dd_pnl_cap: float = OPT.DD_PNL_CAP) -> dict:
+        dd_pnl_cap: float = OPT.DD_PNL_CAP, l1_params: dict | None = None) -> dict:
     """NSGA-III search over L2 profiles. Objective = (in-sample L2 P/L, -in-sample max_dd, win-rate)
-    with the DD<=dd_pnl_cap*P/L feasibility constraint; OOS (2026) is scored only for the champion."""
-    l1 = payload.run_l1_cached(tf)
+    with the DD<=dd_pnl_cap*P/L feasibility constraint; OOS (2026) is scored only for the champion.
+    `l1_params` (optional) scores L2 on a CANDIDATE L1's residuals (e.g. the wsh6 cap_1min champion)
+    instead of the frozen production L1 — used to run L2 over a new L1 without overwriting it."""
+    l1 = payload.run_l1_cached(tf) if l1_params is None else payload.run_l1_cached(tf, params=l1_params)
     w = WINDOWS(l1)
     caps = OPT._load_json(OPT._CAPS); bounds = OPT._load_json(OPT._BOUNDS)
     cap = int(caps[tf]["cooldown_cap"]); b = bounds[tf]
