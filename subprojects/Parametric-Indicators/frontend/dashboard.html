@@ -79,7 +79,10 @@
       <div class="sgroup"><h3>Drawdown circuit-breaker</h3>
         <div class="fld"><label>Trigger ($)</label><input id="l1_dd_limit" type="number" step="100" value="0"></div>
         <div class="fld"><label>Cooldown (trades)</label><input id="l1_cooldown" type="number" step="1" value="0"></div>
-        <div class="fld" title="Force-close (TIME_CAP) after N TRADED 1-min bars from entry — counts bars present in the data, not wall-clock minutes. Overnight/weekend market gaps have no bars, so a gap-crossing trade can span several calendar days while still holding exactly N bars. 0 = off."><label>Max hold (traded 1-min bars, 0=off)</label><input id="l1_cap_1min" type="number" step="1" min="0" value="0"></div></div>
+        <div class="fld" title="Exit cap: none · max N traded 1-min bars · end-of-trading-day (full days N min before the 17:00 close, partial days at the session close)."><label>Exit cap mode</label>
+          <select id="l1_cap_mode" onchange="capModeToggle('l1')"><option value="none">none</option><option value="bars">max 1-min bars</option><option value="eod">end-of-day</option></select></div>
+        <div class="fld" id="l1_cap_bars_fld"><label>Max hold (traded 1-min bars)</label><input id="l1_cap_1min" type="number" step="1" min="0" value="0"></div>
+        <div class="fld" id="l1_cap_eod_fld" style="display:none"><label>Exit N min before full-day close</label><input id="l1_eod_margin_min" type="number" step="1" min="0" value="15"></div></div>
       <div class="sgroup"><h3>Confirmation layer</h3>
         <div class="fld"><label>K (min confirms)</label><input id="l1_k" type="number" step="1" min="1" value="1"></div></div>
       <div class="sgroup"><h3>Indicators (L1)</h3><div id="l1_indpanel"><div class="hint">loading schema…</div></div></div>
@@ -114,7 +117,10 @@
       <div class="sgroup"><h3>Drawdown circuit-breaker</h3>
         <div class="fld"><label>Trigger ($)</label><input id="l2_dd_limit" type="number" step="100" value="0"></div>
         <div class="fld"><label>Cooldown (trades)</label><input id="l2_cooldown" type="number" step="1" value="0"></div>
-        <div class="fld" title="Force-close (TIME_CAP) after N TRADED 1-min bars from entry — counts bars present in the data, not wall-clock minutes. Overnight/weekend market gaps have no bars, so a gap-crossing trade can span several calendar days while still holding exactly N bars. 0 = off."><label>Max hold (traded 1-min bars, 0=off)</label><input id="l2_cap_1min" type="number" step="1" min="0" value="0"></div></div>
+        <div class="fld" title="Exit cap: none · max N traded 1-min bars · end-of-trading-day (full days N min before the 17:00 close, partial days at the session close)."><label>Exit cap mode</label>
+          <select id="l2_cap_mode" onchange="capModeToggle('l2')"><option value="none">none</option><option value="bars">max 1-min bars</option><option value="eod">end-of-day</option></select></div>
+        <div class="fld" id="l2_cap_bars_fld"><label>Max hold (traded 1-min bars)</label><input id="l2_cap_1min" type="number" step="1" min="0" value="0"></div>
+        <div class="fld" id="l2_cap_eod_fld" style="display:none"><label>Exit N min before full-day close</label><input id="l2_eod_margin_min" type="number" step="1" min="0" value="15"></div></div>
       <div class="sgroup"><h3>Confirmation layer</h3>
         <div class="fld"><label>K (min confirms)</label><input id="l2_k" type="number" step="1" min="1" value="1"></div></div>
       <div class="sgroup"><h3>Indicators (L2)</h3><div id="l2_indpanel"><div class="hint">loading schema…</div></div></div>
@@ -164,12 +170,16 @@ const VIEWS={l1:null, l2:null, combined:null};   // cached payload per view (one
 function dedupe(a){const m={};(a||[]).forEach(p=>{if(p&&p.value!=null)m[p.time]=p.value;});return Object.keys(m).map(Number).sort((x,y)=>x-y).map(t=>({time:t,value:m[t]}));}
 
 // ── per-layer form read / write ──────────────────────────────────────────────
-const LAYER_FIELDS=['sl_soft','sl_hard','tp','gate_pct','dd_limit','cooldown','k','cap_1min'];
+const LAYER_FIELDS=['sl_soft','sl_hard','tp','gate_pct','dd_limit','cooldown','k','cap_1min','cap_mode','eod_margin_min'];
 const SPLIT_FIELDS=['long_sl_soft','long_sl_hard','long_tp','short_sl_soft','short_sl_hard','short_tp'];
+function capModeToggle(pfx){ const m=$(pfx+'_cap_mode').value;
+  $(pfx+'_cap_bars_fld').style.display = m==='bars' ? '' : 'none';
+  $(pfx+'_cap_eod_fld').style.display  = m==='eod'  ? '' : 'none'; }
 function collectLayer(pfx){
   const v=id=>$(pfx+'_'+id), out={indicators:DB.specsOf($(pfx+'_indpanel')), k:+v('k').value||1, gate_pct:+v('gate_pct').value,
     sl_soft:+v('sl_soft').value, sl_hard:+v('sl_hard').value, tp:+v('tp').value,
     dd_limit:+v('dd_limit').value, cooldown:+v('cooldown').value, cap_1min:+v('cap_1min').value||0,
+    cap_mode:(v('cap_mode')?v('cap_mode').value:'none')||'none', eod_margin_min:+ (v('eod_margin_min')?v('eod_margin_min').value:15)||15,
     flip:v('flip').value==='true', ind_1min:v('ind_1min').value==='true',
     window:(v('window')?v('window').value:'full')};
   if(v('split') && v('split').value==='true') SPLIT_FIELDS.forEach(f=>{const el=v(f); if(el&&el.value!=='')out[f]=+el.value;});
@@ -314,9 +324,13 @@ function _txL1(t, pfx){ return (
   _txCard(t.sl_soft_exit,'stop-loss soft')+
   _txCard(t.sl_hard_exit,'stop-loss hard')+
   _txCard(t.time_cap_exit,'time-cap (max hold)')+
+  _txCard(t.end_of_day_exit,'end-of-day')+
   grp(pfx+' — time-cap → win/loss')+
   _txCard(t.time_cap_win,'time-cap win')+
-  _txCard(t.time_cap_loss,'time-cap loss')); }
+  _txCard(t.time_cap_loss,'time-cap loss')+
+  grp(pfx+' — end-of-day → win/loss')+
+  _txCard(t.end_of_day_win,'end-of-day win')+
+  _txCard(t.end_of_day_loss,'end-of-day loss')); }
 function _txL2(t){ return (
   grp('🔁 L2 — of L1’s forwarded drops')+
   _txCard(t.l2_evaluated,'evaluated by L2')+
@@ -331,10 +345,14 @@ function _txL2(t){ return (
   _txCard(t.sl_soft_exit,'stop-loss soft')+
   _txCard(t.sl_hard_exit,'stop-loss hard')+
   _txCard(t.time_cap_exit,'time-cap (max hold)')+
+  _txCard(t.end_of_day_exit,'end-of-day')+
   _txCard(t.l1_entry_exit,'L1-entry force-close')+
   grp('🔁 L2 — time-cap → win/loss')+
   _txCard(t.time_cap_win,'time-cap win')+
-  _txCard(t.time_cap_loss,'time-cap loss')); }
+  _txCard(t.time_cap_loss,'time-cap loss')+
+  grp('🔁 L2 — end-of-day → win/loss')+
+  _txCard(t.end_of_day_win,'end-of-day win')+
+  _txCard(t.end_of_day_loss,'end-of-day loss')); }
 function boxesTaxonomy(tax, view){ if(!tax) return '';
   if(view==='l1') return _txL1(tax,'🍃 L1');
   if(view==='l2') return _txL2(tax);
@@ -346,9 +364,12 @@ function boxesTaxonomy(tax, view){ if(!tax) return '';
     _txCard(ce.sl_soft_exit,'stop-loss soft')+
     _txCard(ce.sl_hard_exit,'stop-loss hard')+
     _txCard(ce.time_cap_exit,'time-cap (max hold)')+
+    _txCard(ce.end_of_day_exit,'end-of-day')+
     _txCard(ce.l1_entry_exit,'L1-entry force-close')+
     _txCard(ce.time_cap_win,'time-cap win')+
-    _txCard(ce.time_cap_loss,'time-cap loss'); }
+    _txCard(ce.time_cap_loss,'time-cap loss')+
+    _txCard(ce.end_of_day_win,'end-of-day win')+
+    _txCard(ce.end_of_day_loss,'end-of-day loss'); }
 
 // ── totals overview (headline candle/entry counts) — read meta.n / box_counts / taxonomy / boxes ──
 function _ct(v, label){ return _countCard(v, label); }
