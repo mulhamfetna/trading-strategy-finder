@@ -219,6 +219,7 @@ def _native_seed(box: dict, inds: dict, split_sltp: bool, b: dict) -> dict:
         gate_pct=clamp(float(box["gate_pct"]), 0.0, 100.0),
         dd_limit=clamp(float(box["dd_limit"]), 0.0, DD_LIMIT_MAX),
         cooldown=int(box["cooldown"]), flip=bool(box["flip"]), k=int(box["k"]),
+        cap_1min=max(0, min(CAP_1MIN_MAX, int(box.get("cap_1min", 0)))),
     )
     for key in library.REGISTRY:
         on = key in inds
@@ -317,9 +318,10 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         specs = [{k: v for k, v in s.items() if k != "_searched"}      # strip the test-hook key before engine use
                  for s in _suggest_indicators(trial, exclude_inds, only_inds)]   # α: scoped search space
         k_rule = trial.suggest_int("k", 1, 5)           # clamped to #confirmers by confirm_mask
+        cap_1min = trial.suggest_int("cap_1min", 0, CAP_1MIN_MAX)   # max-hold (traded 1-min bars); 0 = off
         params = dict(sl_soft=sl_soft, sl_hard=sl_soft + delta, tp=tp, gate_pct=gate_pct,
                       dd_limit=dd_limit, cooldown=cooldown, flip=flip, window="full",
-                      indicators=specs, k=k_rule, ind_1min=ind_1min)
+                      indicators=specs, k=k_rule, ind_1min=ind_1min, cap_1min=cap_1min)
         if split_sltp:                                   # separate long vs short SL/TP (point 5)
             l_ss = trial.suggest_float("long_sl_soft", float(b["sl_soft"][0]), float(b["sl_soft"][1]))
             l_d = trial.suggest_float("long_sl_hard_delta", 0.0, float(b["sl_hard"][1]))
