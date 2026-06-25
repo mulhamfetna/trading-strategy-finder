@@ -57,6 +57,7 @@ ExitReason = Literal[
     'TAKE_PROFIT_HARD',
     'TAKE_PROFIT_SOFT',
     'TIME_CAP',
+    'END_OF_DAY',
     'OPEN',
 ]
 
@@ -92,6 +93,8 @@ class SimpleStrategyParams:
     short_sl_hard_points: Optional[float] = None
     short_tp_hard_points: Optional[float] = None
     cap_1min: int = 0   # max hold in 1-min bars; 0 = off. Force-close at the Nth bar's close as TIME_CAP.
+    cap_mode: str = "none"        # none | bars | eod. 'eod' = end-of-trading-day exit (END_OF_DAY).
+    eod_margin_min: int = 15      # minutes before the 17:00 close to exit on FULL days (eod mode).
 
 
 def _stage1_candle_signal(
@@ -249,9 +252,15 @@ class SimpleStrategy:
             mh_arr = df_1min['High'].to_numpy(dtype=float)
             ml_arr = df_1min['Low'].to_numpy(dtype=float)
             mc_arr = df_1min['Close'].to_numpy(dtype=float)
+            if self.params.cap_mode == "eod":
+                from optimize.trading_days import eod_targets
+                eod_target_arr, session_last_arr = eod_targets(md_arr, self.params.eod_margin_min)
+            else:
+                eod_target_arr = session_last_arr = None
         else:
             start_1m = None
             md_arr = mh_arr = ml_arr = mc_arr = None
+            eod_target_arr = session_last_arr = None
 
         trades: List[Dict] = []
         open_trade: Optional[Dict] = None
@@ -324,6 +333,17 @@ class SimpleStrategy:
                 # time cap (max hold): lowest priority — only if no SL/TP/soft fired this bar.
                 if exit_reason is None and cap > 0 and bars_held >= cap:
                     exit_reason, fill, resets_counter = 'TIME_CAP', m_close, True
+
+                # end-of-day cap: same lowest priority — force-close at the session's EOD target bar.
+                if (exit_reason is None and self.params.cap_mode == "eod"
+                        and eod_target_arr is not None):
+                    e0 = open_trade['entry_e']
+                    eg = int(eod_target_arr[e0])
+                    if eg >= 0:
+                        if eg < e0:
+                            eg = int(session_last_arr[e0])
+                        if t >= eg:
+                            exit_reason, fill, resets_counter = 'END_OF_DAY', m_close, True
 
                 if exit_reason is not None and fill is not None:
                     sub_ts = pd.Timestamp(md_arr[t])                   # materialise the exit timestamp
@@ -466,6 +486,7 @@ class SimpleStrategy:
 
                 open_trade = {
                     'entry_idx':    idx,                       # the new bar
+                    'entry_e':      int(start_1m[idx]) if start_1m is not None else 0,  # entry global 1-min index (eod cap)
                     'signal_idx':   sidx,                      # the (armed) signal's just-closed bar
                     'entry_time':   entry_ts,
                     'entry_price':  entry_px,

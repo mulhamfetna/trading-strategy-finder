@@ -106,6 +106,27 @@ def main(tf: str = "4h") -> int:
         ok_all &= ok
         print(f"{name:24} engine={len(E):4} fast={len(F):4} mismatch={diffs:3}  {'OK' if ok else 'FAIL'}")
 
+    # END_OF_DAY parity: engine must match fast trade-for-trade with cap_mode='eod', and EOD must fire.
+    from optimize import trading_days
+    et, sl_arr = trading_days.eod_targets(MD, 15)
+    sp = SimpleStrategyParams(sl_soft_points=60, sl_hard_points=120, tp_hard_points=150,
+                              data_path_4h="", data_path_1min="", box_data_path="",
+                              flip_entry_direction=False, cap_mode="eod", eod_margin_min=15)
+    E0, _ = SimpleStrategy(sp).backtest(df, df1, box, entry_gate=gate(0))
+    E = [t for t in E0 if t.get("exit_reason") not in (None, "OPEN")]
+    F = fast_backtest(DD, DC, sig_int, gate(0), MD, MH, ML, MC, 60, 120, 150, False,
+                      cap_mode="eod", eod_target=et, session_last=sl_arr)
+    diffs = sum(
+        1 for e, f in zip(E, F)
+        if pd.Timestamp(e["entry_time"]) != pd.Timestamp(f["entry_time"])
+        or e["direction"] != f["direction"] or e["exit_reason"] != f["exit_reason"]
+        or pd.Timestamp(e["exit_time"]) != pd.Timestamp(f["exit_time"])
+        or abs(e["pnl_points"] - f["pnl_points"]) > 1e-6
+    )
+    ok = len(E) == len(F) and diffs == 0 and any(t["exit_reason"] == "END_OF_DAY" for t in F)
+    ok_all &= ok
+    print(f"{'eod g0 60/120/150':24} engine={len(E):4} fast={len(F):4} mismatch={diffs:3}  {'OK' if ok else 'FAIL'}")
+
     print("FAST-PARITY OK ✓" if ok_all else "FAST-PARITY FAILED ✗")
     return 0 if ok_all else 1
 
