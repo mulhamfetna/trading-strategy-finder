@@ -26,10 +26,10 @@ import pandas as pd
 # signal/direction encoding
 LONG, SHORT, HOLD = 1, -1, 0
 # exit reason codes
-R_SL_HARD, R_TP_HARD, R_SL_SOFT, R_TP_SOFT, R_TIME_CAP = 0, 1, 2, 3, 4
+R_SL_HARD, R_TP_HARD, R_SL_SOFT, R_TP_SOFT, R_TIME_CAP, R_END_OF_DAY = 0, 1, 2, 3, 4, 5
 REASON_NAME = {R_SL_HARD: "STOP_LOSS_HARD", R_TP_HARD: "TAKE_PROFIT_HARD",
                R_SL_SOFT: "STOP_LOSS_SOFT", R_TP_SOFT: "TAKE_PROFIT_SOFT",
-               R_TIME_CAP: "TIME_CAP"}
+               R_TIME_CAP: "TIME_CAP", R_END_OF_DAY: "END_OF_DAY"}
 
 
 def signals_to_int(sig_obj: np.ndarray) -> np.ndarray:
@@ -54,7 +54,10 @@ def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
                   long_sl_soft: float | None = None, long_sl_hard: float | None = None,
                   long_tp: float | None = None,
                   short_sl_soft: float | None = None, short_sl_hard: float | None = None,
-                  short_tp: float | None = None, cap_1min: int = 0) -> list[dict]:
+                  short_tp: float | None = None, cap_1min: int = 0,
+                  cap_mode: str = "none",
+                  eod_target: np.ndarray | None = None,
+                  session_last: np.ndarray | None = None) -> list[dict]:
     """Return the list of completed trades (dicts with entry/exit/dir/reason/pnl_points), in order.
     Mirrors engine.SimpleStrategy(...).backtest(...) candidate stream (exit_reason != OPEN).
 
@@ -122,9 +125,22 @@ def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
         # Single exit model regardless of flip: hard-SL > hard-TP > soft-SL on the ENTERED direction.
         # `flip` only reverses entry (d = -raw above); it no longer swaps "soft" to the TP side.
         # time cap (max hold): the Nth 1-min bar from entry (bar 1 = slice index 0). Lowest priority.
-        t_cap = (cap_1min - 1) if (cap_1min and 0 <= cap_1min - 1 < len(cl)) else -1
+        # back-compat: a bare cap_1min (existing tests/golden) is the bars cap.
+        mode = "bars" if (cap_mode == "none" and cap_1min) else cap_mode
+        if mode == "eod" and eod_target is not None:
+            g = int(eod_target[e])
+            if g < 0:
+                t_cap = -1
+            else:
+                if g < e:
+                    g = int(session_last[e])
+                t_cap = (g - e) if 0 <= (g - e) < len(cl) else -1
+            cap_reason = R_END_OF_DAY
+        else:
+            t_cap = (cap_1min - 1) if (cap_1min and 0 <= cap_1min - 1 < len(cl)) else -1
+            cap_reason = R_TIME_CAP
         order = [(t_slh, R_SL_HARD, slh_line), (t_tph, R_TP_HARD, tph_line),
-                 (t_soft, R_SL_SOFT, None), (t_cap, R_TIME_CAP, None)]
+                 (t_soft, R_SL_SOFT, None), (t_cap, cap_reason, None)]
         best = None  # (slice_t, priority_rank, reason, fill)
         for rank, (ti, reason, line) in enumerate(order):
             if ti < 0:
