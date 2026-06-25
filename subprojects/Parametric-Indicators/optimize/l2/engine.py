@@ -111,6 +111,12 @@ def run_l2(l1, l2_params: dict, bar_mask=None, exit_mode: str = "l1_priority") -
     if bar_mask is not None:                                  # window L2 to a bar range (in-sample / OOS)
         l2_gate = l2_gate & np.asarray(bar_mask, dtype=bool)[:n]
 
+    _cap_mode = str(l2_params.get("cap_mode") or "none")
+    if _cap_mode == "eod":
+        from optimize.trading_days import eod_targets
+        _eod_t, _eod_sl = eod_targets(d1["Date"].to_numpy(), int(l2_params.get("eod_margin_min", 15) or 15))
+    else:
+        _eod_t = _eod_sl = None
     cand = fast_backtest(
         dec_dates, dec_close, l1.sig_int, l2_gate,
         d1["Date"].to_numpy(), d1["High"].to_numpy(float),
@@ -118,6 +124,7 @@ def run_l2(l1, l2_params: dict, bar_mask=None, exit_mode: str = "l1_priority") -
         float(l2_params["sl_soft"]), float(l2_params["sl_hard"]), float(l2_params["tp"]),
         bool(l2_params.get("flip", False)),
         cap_1min=int(l2_params.get("cap_1min", 0) or 0),
+        cap_mode=_cap_mode, eod_target=_eod_t, session_last=_eod_sl,
         **{k: l2_params.get(k) for k in ("long_sl_soft", "long_sl_hard", "long_tp",
                                          "short_sl_soft", "short_sl_hard", "short_tp")})
 

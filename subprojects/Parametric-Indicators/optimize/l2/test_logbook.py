@@ -108,3 +108,10 @@ def test_cap_1min_produces_time_cap_exits():
     assert "TIME_CAP" in {r.exit_reason for r in res.log if r.decision == "entry"}
     res0 = logbook.run_causal(payload.l1_default_params("4h"), dict(payload.PERMISSIVE), "4h")
     assert "TIME_CAP" not in {r.exit_reason for r in res0.log if r.decision == "entry"}
+
+
+def test_cap_mode_eod_produces_end_of_day_exits():
+    """cap_mode='eod' on L1 yields END_OF_DAY exits via the causal log."""
+    p = dict(payload.l1_default_params("4h"), cap_mode="eod", eod_margin_min=15)
+    res = logbook.run_causal(p, dict(payload.PERMISSIVE), "4h")
+    assert "END_OF_DAY" in {r.exit_reason for r in res.log if r.decision == "entry"}

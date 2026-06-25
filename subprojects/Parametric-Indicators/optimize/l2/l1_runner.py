@@ -170,12 +170,19 @@ def run_l1(tf: str = "4h", params: dict | None = None) -> L1Result:
 
     engine_gate = vol_gate & ~veto & confirm
     dec_dates = df_dec["Date"].to_numpy()
+    _cap_mode = str(params.get("cap_mode") or "none")
+    if _cap_mode == "eod":
+        from optimize.trading_days import eod_targets
+        _eod_t, _eod_sl = eod_targets(df1["Date"].to_numpy(), int(params.get("eod_margin_min", 15) or 15))
+    else:
+        _eod_t = _eod_sl = None
     cand = fast_backtest(
         dec_dates, df_dec["Close"].to_numpy(float), sig_int, engine_gate,
         df1["Date"].to_numpy(), df1["High"].to_numpy(float),
         df1["Low"].to_numpy(float), df1["Close"].to_numpy(float),
         params["sl_soft"], params["sl_hard"], params["tp"], params["flip"],
         cap_1min=int(params.get("cap_1min", 0) or 0),
+        cap_mode=_cap_mode, eod_target=_eod_t, session_last=_eod_sl,
         **{k: params.get(k) for k in ("long_sl_soft", "long_sl_hard", "long_tp",
                                       "short_sl_soft", "short_sl_hard", "short_tp")})
     pv = float(config.NQ_POINT_VALUE)

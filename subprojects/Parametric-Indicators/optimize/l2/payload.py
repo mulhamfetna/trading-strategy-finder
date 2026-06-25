@@ -158,6 +158,8 @@ def validate_layer_params(p: dict) -> dict:
         flip=bool(p.get("flip", False)), ind_1min=bool(p.get("ind_1min", False)),
         window=_validate_window(p.get("window", "full")),
         cap_1min=int(num("cap_1min", 0)) if p.get("cap_1min") not in (None, "") else 0,
+        cap_mode=(str(p.get("cap_mode") or "none")),
+        eod_margin_min=int(num("eod_margin_min", 15)) if p.get("eod_margin_min") not in (None, "") else 15,
     )
     # optional split long/short SL/TP overrides — each None => fall back to the shared sl_soft/sl_hard/tp
     # (so the default carries all-None and is byte-identical + the use_frozen round-trip still holds).
@@ -174,6 +176,9 @@ def validate_layer_params(p: dict) -> dict:
         ss, sh = out[f"{side}_sl_soft"], out[f"{side}_sl_hard"]
         if ss is not None and sh is not None and sh < ss:
             raise L2ParamError(f"{side}_sl_hard ({sh}) must be >= {side}_sl_soft ({ss})")
+    # back-compat: a bare cap_1min>0 with no explicit mode is the bars cap.
+    if out["cap_mode"] == "none" and out["cap_1min"] > 0:
+        out["cap_mode"] = "bars"
     inds = p.get("indicators", [])
     if not isinstance(inds, list):
         raise L2ParamError("indicators must be a list")
@@ -322,6 +327,8 @@ def _layer_from_strategy(sp: dict) -> dict:
         "gate_pct": sp.get("gate_pct", 0) or 0, "dd_limit": sp.get("dd_limit", 0) or 0,
         "cooldown": sp.get("cooldown", 0) or 0, "flip": bool(sp.get("flip", False)),
         "cap_1min": sp.get("cap_1min", 0) or 0,
+        "cap_mode": sp.get("cap_mode", "none") or "none",
+        "eod_margin_min": sp.get("eod_margin_min", 15) or 15,
         "indicators": sp.get("indicators", []), "k": sp.get("k", 1), "ind_1min": True})
 
 
