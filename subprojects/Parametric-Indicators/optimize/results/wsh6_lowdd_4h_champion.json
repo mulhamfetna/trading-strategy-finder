@@ -1,0 +1,54 @@
+{
+ "4h": {
+  "trial": 6745,
+  "median_pnl": 19379.0,
+  "full_pnl": 96181.5,
+  "full_dd": 6435.0,
+  "win": 68.2,
+  "box": {
+   "sl_soft": 143.72,
+   "sl_hard": 202.94,
+   "tp": 185.17,
+   "gate_pct": 72.6,
+   "dd_limit": 919.77,
+   "cooldown": 1,
+   "flip": false,
+   "k": 1,
+   "cap_1min": 1393
+  },
+  "indicators": {
+   "ema_trend": {
+    "fast": 143,
+    "slow": 386
+   },
+   "macd": {
+    "fast": 42,
+    "slow": 49,
+    "signal": 6
+   },
+   "obv": {
+    "slope": 90
+   },
+   "cci": {
+    "n": 139,
+    "threshold": 300
+   },
+   "mfi": {
+    "n": 26,
+    "lower": 43,
+    "upper": 77
+   },
+   "bollinger": {
+    "n": 47,
+    "k": 1.7000000000000002
+   },
+   "adx": {
+    "n": 57,
+    "threshold": 6
+   },
+   "fvg": {
+    "lookback": 22
+   }
+  }
+ }
+}

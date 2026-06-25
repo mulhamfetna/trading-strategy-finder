@@ -109,6 +109,19 @@ def _champions_lean() -> dict:
         return {}
 
 
+_CHAMP_WSH6_LOWDD_JSON = _HERE / "optimize" / "results" / "wsh6_lowdd_4h_champion.json"
+
+def _champions_wsh6_lowdd() -> dict:
+    """wsh6 (cap_1min searched) — the lowest-drawdown CAPPED Pareto pick. A conservative alternative:
+    a hard max-hold cap trades return for much smaller DD (never beats the uncapped champion on P/L)."""
+    if not _CHAMP_WSH6_LOWDD_JSON.exists():
+        return {}
+    try:
+        return json.loads(_CHAMP_WSH6_LOWDD_JSON.read_text())
+    except Exception:
+        return {}
+
+
 def _all_specs(inds_on: dict | None = None):
     """Return (full 15-indicator spec list, gen_swing_l). Every registered indicator is emitted with
     enabled True/False so importing a preset RESETS indicators not in it (a previously-on indicator
@@ -146,6 +159,15 @@ def _preset(timeframe: str, box: dict, inds_on: dict) -> dict:
     if any(box.get(k) is not None for k in _SPLIT):
         for k in _SPLIT:
             p[k] = box.get(k)
+    # Optional exit cap (cap_1min bars cap / cap_mode). Absent ⇒ omitted ⇒ no cap (existing presets
+    # unchanged). A bars cap sets cap_mode='bars' so the dashboard applies it; 'eod' carries the margin.
+    if box.get("cap_mode"):
+        p["cap_mode"] = box["cap_mode"]
+        if box["cap_mode"] == "eod":
+            p["eod_margin_min"] = int(box.get("eod_margin_min", 15) or 15)
+    if box.get("cap_1min"):
+        p["cap_1min"] = int(box["cap_1min"])
+        p.setdefault("cap_mode", "bars")
     return p
 
 
@@ -205,6 +227,18 @@ def strategies() -> list[dict]:
         out.append({"id": f"wshlean_{tf}",
                     "label": (f"🍃 WS lean {tf} · 3-ind cci/OB/structure — ${c['full_pnl']:,.0f} "
                               f"(+5.5% vs champ · footprint {c.get('data_footprint_candles','?')})"),
+                    "preset": p})
+    # NEW: wsh6 low-DD CAPPED variant — the cap_1min search (11.4k trials) found NO config that beats the
+    # uncapped champion on P/L; the cap is a pure drawdown trade. This is the best-P/L feasible CAPPED point:
+    # a conservative profile (~−36% P/L for ~−58% DD). Side-by-side alternative, NOT a champion swap.
+    for tf, c in _champions_wsh6_lowdd().items():
+        b = dict(c["box"]); b.setdefault("cap_mode", "bars")
+        p = _preset(tf, b, c.get("indicators", {}))
+        p["trained_on"] = ("wsh6 cap_1min search — lowest-DD capped Pareto pick (cap trades return for DD; "
+                           "never beats the uncapped champion on P/L)")
+        out.append({"id": f"wsh6lowdd_{tf}",
+                    "label": (f"🛡 WS low-DD {tf} · cap {int(c['box']['cap_1min'])} — ${c['full_pnl']:,.0f} "
+                              f"(DD ${c['full_dd']:,.0f}, ~half vs champ)"),
                     "preset": p})
     # user-saved profiles (server-side store) — first-class entries, id prefixed 'user_'
     for name, preset in load_user_profiles().items():
