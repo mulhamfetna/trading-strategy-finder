@@ -123,16 +123,17 @@ DD_LIMIT_MAX = 5000.0
 # and the best-found point can regress. We scale trials ∝ dimensions and report the plan for acceptance.
 # ─────────────────────────────────────────────────────────────────────────────────────────────────
 TRIALS_PER_DIM = 100   # empirical norm: wsh4 ran ~5483 trials over 52 dims ≈ 105/dim (wsh5 ≈ 87/dim)
+CAP_1MIN_MAX = 1440    # max searched max-hold in traded 1-min bars (~1 trading day); 0 = off
 
 
 def search_dims(split_sltp: bool) -> dict:
     """Breakdown of the tunable search dimensions for the current REGISTRY/SCHEMA.
     base continuous (sl_soft, sl_hard_delta, tp, gate_pct, dd_limit)=5; categorical (flip)=1;
-    integer (cooldown, k)=2; one on/off flag per indicator; every indicator param; +6 if split_sltp."""
+    integer (cooldown, k, cap_1min)=3; one on/off flag per indicator; every indicator param; +6 if split_sltp."""
     en_flags = len(library.REGISTRY)
     ind_params = sum(len(library.SCHEMA[k].get("params", [])) for k in library.REGISTRY)
     split = 6 if split_sltp else 0
-    d = dict(base_cont=5, base_cat=1, base_int=2, en_flags=en_flags, ind_params=ind_params, split=split)
+    d = dict(base_cont=5, base_cat=1, base_int=3, en_flags=en_flags, ind_params=ind_params, split=split)
     d["total"] = sum(d.values())
     return d
 
