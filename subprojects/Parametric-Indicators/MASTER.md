@@ -108,6 +108,7 @@ No credentials needed — only the two data-path env vars (`.env.example`).
 | **Profit semantics / drawdown case study** | `docs/TYPICAL_VS_TOTAL_PROFIT.md` · `WSI-Case_Study/CASE_STUDY_2026_maxDD.md` |
 | **Perf / speed (#210) + golden** | `perf/` (`ACTION_PLAN_axisB.md`, golden baselines) |
 | **Plans & design specs (superpowers)** | `docs/superpowers/plans/` (6) · `docs/superpowers/specs/` (2) |
+| **Milestone: two layers + time-cap + cold-start (latest)** | `docs/MILESTONE_two_layers_time_capped.md` — the time-cap (`none\|bars\|eod`), `cap_1min` as a searched dim, and the cold-start discovery (wsh6cold `cap=448` → $153,321/$9,589, OOS-verified, triple-confirmed) |
 | **System-wide change log / mega-narrative** | `SYSTEM_UPDATES_MEGADOC.md` · `STAGE_REPORT_optimizer_hardening_and_dashboard.md` |
 | **Shareable, runnable bundles** | `shareable/` — `two_layer_causal_backtester.zip`, `server_agent_kit.zip`, `lean_3indicator_backtester.zip`, `winning_strategy_backtester.zip` (each has its own README+PLAYBOOK) |
 

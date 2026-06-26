@@ -85,3 +85,71 @@ fresh prefixes `wsh6` / `l2v3` per the no-mix rule; storage on `wsh-pg` Postgres
 - No all-TF sweep (4h only this round).
 - No end-of-day mode in the search (bars cap only).
 - No bundle port.
+
+## Results (2026-06-26)
+
+The run executed, and the outcome was **richer than the spec anticipated** — it surfaced a methodological
+finding (cold-start seeding bias) and an OOS-verified, triple-confirmed new champion. Full narrative:
+`docs/MILESTONE_two_layers_time_capped.md`.
+
+### wsh6 warm search — verdict: "a cap only costs PnL"
+
+The planned warm-started `wsh6` 4h non-split cap search ran to **11,407 trials** (**8,650 feasible**).
+Warm-started from the current champion (`cap=0`), it found **no capped configuration that beat the
+uncapped champion on PnL**. Taken alone this would have closed the question as "the time-cap doesn't help."
+
+### The cold-start discovery
+
+We did **not** trust the single warm verdict. **Warm-start is a floor, not a freeze** — enqueuing the
+champion guarantees `≥ seed` but re-samples all 57 dims every trial, biasing the search toward the seed's
+neighbourhood. A **cold-start control** `wsh6cold` (`--no-warm-start`, **22,868 trials**, **17,807
+feasible**) found a **moderate `cap=448`** config the warm search had **skipped** — exposing a mild
+**seeding bias** in the warm run.
+
+### wsh6cold champion + OOS verification
+
+| config | full PnL | full DD | 2025 PnL | 2026-OOS PnL | OOS DD | OOS win | OOS payoff |
+|---|--:|--:|--:|--:|--:|--:|--:|
+| WARM / old champ (`cap0`) | $149,989 | $15,491 | $91,960 | $58,029 | $8,141 | 72.5% | 0.74 |
+| COLD wsh6cold (`cap448`) | **$153,321** | **$9,589** | $90,513 | **$60,488** | $8,280 | 60.6% | **1.32** |
+
+- **Reproduced to the cent: $153,321 / $9,589 DD.**
+- **Edges the old champion OOS:** +$2,459 ($60,488 vs $58,029), **payoff 1.32 vs 0.74**, **PF 2.02 vs
+  1.93**. Lower OOS win-rate (60.6% vs 72.5%) but a much healthier payoff profile.
+- **DD nuance:** the −38% full-window DD is **mostly in-sample** (2025: 9,589 vs 15,491); the **2026 OOS
+  DDs converge** (~$8.2k each) → **≈ DD-neutral OOS**, healthier payoff the real win.
+- **Cap is load-bearing:** **127/211** trades exit via `TIME_CAP`; the **SAME config uncapped** earns only
+  **$114,438 / $18,755 DD**.
+
+**wsh6cold params:** box `sl_soft=123.30`, `sl_hard=190.45`, `tp=230.74`, `gate_pct=97.69`,
+`dd_limit=1766.21`, `cooldown=1`, `k=3`, `flip=false`, `cap_1min=448`, `ind_1min=true`. 7 indicators:
+`ema_trend`(fast 172/slow 362), `macd`(95/39/98), `obv`(slope 128), `cci`(n 139/thr 50),
+`bollinger`(n 108/k 4.0), `adx`(n 38/thr 17), `cisd`.
+
+### wsh7 triple-confirmation
+
+A third re-optimization (**24,237 trials**) warm-started from **BOTH** the old champion **and** the cold
+`cap=448` winner. Its best-feasible **converged back to the cold seed** (surfaced as **trial #2**);
+**nothing beat it**. So `cap=448` is: **discovered by cold-start · verified OOS · unbeaten by
+re-optimization**.
+
+### L2 rounds (l2v3 / l2v4)
+
+- **l2v3** (L2 on the **OLD frozen L1**) **overfit**: **+$78,651 in-sample → −$6,651 2026-OOS** → **NOT
+  promoted**; production L2 stays **l2v2**.
+- **l2v4** (L2 cold-start on the **wsh6cold L1's 569 residual signals**, via `--l1-champion`) is
+  **RUNNING / pending** and will be **OOS-gated** before any promotion.
+
+### Infrastructure delivered (beyond the spec)
+
+- `--l1-champion` CLI flag — score L2 on any candidate L1's residuals (`617c610`).
+- Candidate-L1 disk cache in `run_l1_cached` (`params != None`) — **406× faster** reload (`c03ed8a`).
+- `warm_start_seeds` now enqueues **both** the old champion **and** the cold winner (`c831320`).
+- wsh6cold registered as a **side-by-side dashboard preset** AND an **L1-tab profile**
+  (`profiles/l1_profiles.json`) (`c831320`, `5c5c67f`).
+- Verified shareable bundle `shareable/wsh6cold_4h_backtester` reproducing **$153,321**.
+
+### Gate status
+
+`perf/check_golden.py` ✅ 6/6 (default `cap=0` path unchanged; no production file overwritten); both
+engines parity-locked on the time-cap; production defaults and anchors untouched (everything additive).
