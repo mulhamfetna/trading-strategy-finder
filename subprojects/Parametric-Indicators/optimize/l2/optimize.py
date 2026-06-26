@@ -117,6 +117,19 @@ def _export_champion(champion: dict, tf: str, out_dir, prefix: str = "l2v1") -> 
     return path
 
 
+def _l1_params_from_champion(path: str, tf: str) -> dict:
+    """Build an engine-ready L1 layer-params dict from a champion json (box + indicators dict) so L2 is
+    scored on THIS L1's residuals (e.g. the wsh6cold cap=448 winner) instead of the frozen production L1.
+    L1 champions are searched on the 1-minute frame, so ind_1min is forced True (presets._preset omits it,
+    and the layer-schema default of False would compute indicators on the wrong frame → wrong residuals)."""
+    import presets                                          # noqa: E402  (top-level module via _PI on sys.path)
+    rec = json.loads(Path(path).read_text())
+    c = rec.get(tf, rec)                                    # accept {tf:{...}} or a bare champion record
+    lp = presets._preset(tf, c["box"], c.get("indicators", {}))
+    lp["ind_1min"] = True
+    return payload.validate_layer_params(lp)
+
+
 def main() -> int:
     import argparse
     ap = argparse.ArgumentParser(description="L2 optimizer (round 1, option-3 validation)")
@@ -127,10 +140,17 @@ def main() -> int:
     ap.add_argument("--min-trades", type=int, default=5)
     ap.add_argument("--sampler", default="nsga3")
     ap.add_argument("--storage-url", default=None, help="override store (else WSH_STORAGE_URL / per-TF sqlite)")
+    ap.add_argument("--l1-champion", default=None,
+                    help="path to an L1 champion json; score L2 on THIS L1's residuals (candidate L1) "
+                         "instead of the frozen production L1")
     ap.add_argument("--out", default=str(_PI / "optimize" / "results"))
     a = ap.parse_args()
+    l1_params = _l1_params_from_champion(a.l1_champion, a.tf) if a.l1_champion else None
+    if l1_params is not None:
+        print(f"[l2:{a.tf}] scoring L2 on CANDIDATE L1 residuals from {a.l1_champion} "
+              f"(cap_1min={l1_params.get('cap_1min')}, ind_1min={l1_params.get('ind_1min')})", flush=True)
     res = run(n_trials=a.trials, tf=a.tf, study_prefix=a.prefix, seed=a.seed,
-              min_trades=a.min_trades, sampler=a.sampler, storage_url=a.storage_url)
+              min_trades=a.min_trades, sampler=a.sampler, storage_url=a.storage_url, l1_params=l1_params)
     print(f"[l2:{a.tf}] {res['n_trials']} trials · {res['n_feasible']} feasible", flush=True)
     if res["champion"] is not None:
         p = _export_champion(res["champion"], a.tf, a.out, a.prefix)
