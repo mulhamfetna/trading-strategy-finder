@@ -29,13 +29,13 @@ def test_touch_state_collapses_to_net_long_wins_ties():
     assert list(st) == [1, -1, 0]
 
 
-def test_traversal_state_fires_long_on_below_inside_above():
+def test_traversal_state_fires_long_on_below_inside_above(tmp_path):
     # one weekly level box (W-RL via WRLU/WRLD); close path below -> inside -> above must fire 'long'.
     box = pd.DataFrame({
         "Date": pd.to_datetime(["2025-01-02"]),
         "WRLU": [110.0], "WRLD": [100.0],
     }).set_index("Date", drop=False)
-    box_csv = str(Path(_PI) / "optimize" / "l2" / "contributors" / "_tmp_box_state.csv")
+    box_csv = str(tmp_path / "_tmp_box_state.csv")
     box.reset_index(drop=True).to_csv(box_csv, index=False)
     # decision bars all map to box-date 2025-01-02 (hour < 18 ⇒ same day)
     df_dec = pd.DataFrame({
@@ -45,7 +45,6 @@ def test_traversal_state_fires_long_on_below_inside_above():
                   120.0], # above -> traversal fires LONG
     })
     st = state.traversal_state(df_dec, box_csv, tick_threshold=0.75)
-    Path(box_csv).unlink()
     assert st[0] == 0 and st[1] == 0 and st[2] == 1     # only the through-traversal bar fires long
 
 

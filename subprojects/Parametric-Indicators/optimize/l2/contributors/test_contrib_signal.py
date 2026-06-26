@@ -7,6 +7,7 @@ if str(_PI) not in sys.path:
     sys.path.insert(0, str(_PI))
 
 import numpy as np
+import pytest
 from optimize.l2.contributors import votes
 
 
@@ -58,6 +59,13 @@ def test_truthtable_missing_cell_and_hold_box_default_ignore():
     es_st = np.array([1, 1], dtype=np.int8)
     cvote, veto = votes.signal_truthtable(nq_box, es_st, table={})
     assert not cvote.any() and not veto.any()          # nothing specified ⇒ pure identity
+
+
+def test_signal_stance_invalid_mode_raises():
+    nq_box = np.array([1], dtype=np.int8)
+    es_st = np.array([1], dtype=np.int8)
+    with pytest.raises(ValueError, match="invalid mode"):
+        votes.signal_stance(nq_box, es_st, mode="bogus")
 
 
 def test_signal_masks_compatible_with_l2_gate_shape_and_off_is_identity():

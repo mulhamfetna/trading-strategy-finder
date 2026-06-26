@@ -3,9 +3,11 @@
 The single Part-A alignment chokepoint. For each NQ decision bar we take the contributor's LAST-CLOSED
 decision bar — causal, no look-ahead by construction. A contributor bar 'closes' at start+bar_td and is
 available to NQ bar i (which closes at nq_start_i + bar_td) iff es_start_j + bar_td ≤ nq_start_i + bar_td,
-i.e. es_start_j ≤ nq_start_i (the bar_td offsets cancel for same-width grids). For the ES exact grid this
-is the coincident bar (identity). ETFs (later) layer an as-of + one-business-day box-shift adapter on top;
-the causal 'start ≤ start' rule is unchanged."""
+i.e. es_start_j ≤ nq_start_i (the bar_td offsets cancel ONLY when both grids share the same bar width).
+For the ES exact grid (identical bar_td) this is the coincident bar (identity). ETFs with a DIFFERENT
+bar width cannot rely on this cancellation — they must gate on a real close-vs-close comparison
+(contributor-close ≤ NQ-close) in Part B before reuse; the searchsorted `start ≤ start` rule used here
+is causal ONLY for equal-width grids (e.g. ES, same bar_td as NQ)."""
 from __future__ import annotations
 
 import numpy as np

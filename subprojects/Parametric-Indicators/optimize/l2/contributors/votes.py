@@ -102,6 +102,8 @@ def signal_stance(nq_box_dir, nq_es_state, mode: str):
     """Encoding (i): directional stance + mode (Spec §5a-i). The ES net state is a stance (+1/-1/0);
     orient to NQ box_dir via votes.stance_directions (cdir=state, vdir=-state). mode ∈ {confirm,veto,both}
     selects channels. Returns (confirm_vote, veto) bool arrays, entry-bar-aligned, identity-when-off."""
+    if mode not in ("confirm", "veto", "both"):
+        raise ValueError(f"invalid mode {mode!r}")
     bd = np.asarray(nq_box_dir, dtype=np.int8)
     st = np.asarray(nq_es_state, dtype=np.int8)
     cdir, vdir = ind_votes.stance_directions(st)
