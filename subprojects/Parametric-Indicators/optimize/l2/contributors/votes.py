@@ -37,7 +37,7 @@ _ST_STR = {1: "long", -1: "short", 0: "hold"}
 
 def committee_votes(es_df_dec: pd.DataFrame, j_es, nq_box_dir, specs):
     """Run the committee on the contributor's decision bars, oriented to NQ box_dir. Returns
-    ({id(ind): int8 vote[] of len(j_es)}, inds) for ENABLED indicators (votes ∈ {+1 CONFIRM, -1 VETO, 0})."""
+    ({ind.key: int8 vote[] of len(j_es)}, inds) for ENABLED indicators (votes ∈ {+1 CONFIRM, -1 VETO, 0})."""
     es_ctx = runner.market_context(es_df_dec)
     inds = library.from_specs([s for s in specs if s.get("enabled")])
     bd = np.asarray(nq_box_dir, dtype=np.int8)
@@ -83,3 +83,53 @@ def committee_confirm_mask(votes_d: dict, inds, k: int, n: int) -> np.ndarray:
     ok = cc >= k_eff
     out[1:] = ok[:-1]
     return out
+
+
+# ---- §5a composite signal voter — both encodings ---------------------------------------------------
+
+def _shift_to_entry(craw: np.ndarray, vraw: np.ndarray):
+    """Align per-signal-bar verdicts to the entry bar (out[idx]=verdict@idx-1; idx0 identity-off) — the
+    same shift runner.veto_mask/confirm_mask use. Returns (confirm_vote, veto) bool arrays."""
+    n = len(craw)
+    cvote = np.zeros(n, dtype=bool)
+    veto = np.zeros(n, dtype=bool)
+    cvote[1:] = craw[:-1]
+    veto[1:] = vraw[:-1]
+    return cvote, veto
+
+
+def signal_stance(nq_box_dir, nq_es_state, mode: str):
+    """Encoding (i): directional stance + mode (Spec §5a-i). The ES net state is a stance (+1/-1/0);
+    orient to NQ box_dir via votes.stance_directions (cdir=state, vdir=-state). mode ∈ {confirm,veto,both}
+    selects channels. Returns (confirm_vote, veto) bool arrays, entry-bar-aligned, identity-when-off."""
+    bd = np.asarray(nq_box_dir, dtype=np.int8)
+    st = np.asarray(nq_es_state, dtype=np.int8)
+    cdir, vdir = ind_votes.stance_directions(st)
+    has = bd != HOLD
+    would_confirm = ((cdir == bd) | (cdir == BOTH)) & has
+    would_veto = ((vdir == bd) | (vdir == BOTH)) & has
+    n = len(bd)
+    craw = would_confirm if mode in ("confirm", "both") else np.zeros(n, dtype=bool)
+    vraw = would_veto if mode in ("veto", "both") else np.zeros(n, dtype=bool)
+    return _shift_to_entry(craw, vraw)
+
+
+def signal_truthtable(nq_box_dir, nq_es_state, table: dict):
+    """Encoding (ii): full 6-cell truth table (Spec §5a-ii). For each NQ decision bar with a directional
+    box, look up table[(nq_dir, es_state)] ∈ {confirm,veto,ignore} and emit poolable confirm_vote + veto
+    bool arrays, entry-bar-aligned. HOLD box bars and unspecified cells default to ignore. Cells:
+    (long|short) × (long|short|hold) = 6."""
+    bd = np.asarray(nq_box_dir, dtype=np.int8)
+    st = np.asarray(nq_es_state, dtype=np.int8)
+    n = len(bd)
+    craw = np.zeros(n, dtype=bool)
+    vraw = np.zeros(n, dtype=bool)
+    for i in range(n):
+        if bd[i] == 0:                                 # no NQ box direction ⇒ nothing to confirm/veto
+            continue
+        action = table.get((_DIR_STR[int(bd[i])], _ST_STR[int(st[i])]), "ignore")
+        if action == "confirm":
+            craw[i] = True
+        elif action == "veto":
+            vraw[i] = True
+    return _shift_to_entry(craw, vraw)
