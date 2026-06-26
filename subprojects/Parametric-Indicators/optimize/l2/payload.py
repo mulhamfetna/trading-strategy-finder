@@ -38,6 +38,13 @@ def _l1_cache_file(tf: str) -> Path:
     return _DISK_CACHE / f"l1_{tf}_{_L1_CACHE_VER}_{h}.pkl"
 
 
+def _l1_custom_cache_file(tf: str, h: str) -> Path:
+    """Disk-cache path for an ARBITRARY (non-frozen) L1 profile, keyed by the params-hash `h` (computed by
+    the caller). Same temp dir + version scheme as the frozen cache, so a deterministic candidate L1 (e.g. a
+    wsh6cold champion driving an L2 sweep) loads in ~1s on every worker respawn instead of the ~38s recompute."""
+    return _DISK_CACHE / f"l1custom_{tf}_{_L1_CACHE_VER}_{h}.pkl"
+
+
 _CAUSAL_MEMO: dict = {}            # F3 — share ONE causal pass across the fan-out's per-view calls
 _CAUSAL_MEMO_MAX = 8
 
@@ -92,9 +99,31 @@ def run_l1_cached(tf: str = "4h", use_disk: bool = True, params: dict | None = N
     if params is not None:
         h = hashlib.sha256(json.dumps(params, sort_keys=True, default=str).encode()).hexdigest()[:16]
         key = (tf, h)
-        if key not in _L1_CUSTOM_CACHE:
-            _L1_CUSTOM_CACHE[key] = l1_runner.run_l1(tf, params=validate_layer_params(params))
-        return _L1_CUSTOM_CACHE[key]
+        if key in _L1_CUSTOM_CACHE:
+            return _L1_CUSTOM_CACHE[key]
+        cf = _l1_custom_cache_file(tf, h)
+        if use_disk and cf.exists():
+            try:
+                with open(cf, "rb") as f:
+                    r = pickle.load(f)
+                if getattr(r, "vf_seed", None) is None:   # F2: stale schema → recompute (mirror frozen path)
+                    raise ValueError("stale L1 cache schema")
+                _L1_CUSTOM_CACHE[key] = r
+                return r
+            except Exception:
+                pass                                      # corrupt/stale pickle → recompute
+        r = l1_runner.run_l1(tf, params=validate_layer_params(params))
+        _L1_CUSTOM_CACHE[key] = r
+        if use_disk:
+            try:                                          # atomic write: 24 workers may race on first launch
+                _DISK_CACHE.mkdir(parents=True, exist_ok=True)
+                with tempfile.NamedTemporaryFile(dir=str(_DISK_CACHE), suffix=".tmp", delete=False) as tf_:
+                    pickle.dump(r, tf_)
+                    tmp = Path(tf_.name)
+                tmp.replace(cf)                           # os.replace under the hood → atomic on same fs
+            except Exception:
+                pass                                      # cache write best-effort; never fail the run
+        return r
     if tf in _L1_CACHE:
         return _L1_CACHE[tf]
     cf = _l1_cache_file(tf)
