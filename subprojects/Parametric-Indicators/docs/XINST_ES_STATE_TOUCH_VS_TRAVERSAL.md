@@ -39,10 +39,22 @@ useful to NQ (Spec §12).
 
 ## 1. 🟦 TOUCH — "did ES *deliver* a Stage-1 signal on this bar?"
 
-**Touch reads a pre-computed answer.** ES already has its own Stage-1 signal pipeline whose output is
-written to disk under `ES_SIGNALS_DELIVERY/2_holds_dropped`. Each delivered row says *"on this datetime, ES
-touched a box edge and emitted a long (or short) signal."* Touch just **looks that up** per NQ decision bar
-and collapses it to one net value.
+> **⚠️ The important part is the RULE, not "pre-computed vs live."** Touch happens to be read from disk and
+> traversal happens to be recomputed — but that is an implementation detail. The reason their outputs differ
+> is that **touch and traversal are two *different detection rules*** (see §2.5). Do not think of them as the
+> same signal computed two ways.
+
+**Touch is a single-candle breakout rule (stateless).** Under the hood it is `decision_signals` →
+`_stage1_candle_signal` (`engine.py:100`), evaluated on **one candle at a time** against its box
+(upper `U`, lower `L`):
+
+- candle **color** = green if `close > open`, red if `close < open`
+- **touched** = the candle's range overlaps the box: `low ≤ U` **and** `high ≥ U`
+- **LONG** if `green` **and** `close > U`  ·  **SHORT** if `red` **and** `close < L`  ·  else **hold**
+
+There is **no memory of prior candles** — one decisive candle that closes through an edge fires the signal.
+ES's pipeline already ran this rule and wrote the long/short rows to `ES_SIGNALS_DELIVERY/2_holds_dropped`;
+touch_state just **looks them up** per NQ decision bar and collapses to one net value.
 
 The collapse rule (mirrors NQ L1's *one-entry-per-candle* + `decision_signals`):
 
@@ -111,6 +123,45 @@ Where `above` / `inside` / `below` are decided relative to the box edges **with 
 
 **Character:** *strict / conviction-driven.* It requires a full penetration with an inside observation.
 Fewer non-zero bars, higher-conviction confirmation. It says **"ES decisively traversed the level."**
+
+---
+
+## 2.5 "Won't they give the same result?" — No. Here's exactly why.
+
+It's natural to think: *same boxes, same prices → same signal, one just pre-computed.* But touch and traversal
+ask **different questions**, so they disagree in **both** directions. Take a box with **U = 100, L = 95**:
+
+```mermaid
+flowchart TB
+  subgraph A["Case A — one gap-up candle (open 96 · close 102 · low 94 · high 103)"]
+    a1["🟦 TOUCH: green · touched (94≤100, 103≥95) · close 102 > 100 → LONG ✅"]
+    a2["🟩 TRAVERSAL: close 102 = 'above'; prior side 'below'; never closed INSIDE → gap-skip → HOLD 🤷"]
+  end
+  subgraph B["Case B — slow grind (closes: 94 → 97 → 101)"]
+    b1["🟩 TRAVERSAL: below → inside → above → LONG ✅ (on the 101 bar)"]
+    b2["🟦 TOUCH: fires only if THAT exit candle is green AND touches AND close>100; a small/red exit → HOLD 🤷.<br/>And the 94 bar, if red & close<95, already fired TOUCH=SHORT — which traversal calls 'first obs = hold'"]
+  end
+```
+
+- **Case A:** a single decisive candle → **touch = LONG**, but **traversal = HOLD** (it never saw a *close*
+  inside the box, so the below→above jump is a silent gap-skip).
+- **Case B:** a multi-bar walk-through → **traversal = LONG**, but **touch** may be **HOLD** on that bar (and
+  may even have fired the *opposite* sign earlier on a single red bar that traversal ignored as "first obs").
+
+The roots of the divergence:
+
+| | 🟦 touch | 🟩 traversal |
+|---|---|---|
+| Unit of decision | **one candle** | **a sequence of candles** |
+| Uses | open/close color + high/low **touch** + close-vs-edge | each bar's **close** side + remembered history |
+| "Inside" required? | **no** — can fire closing straight through | **yes** — must close inside before the opposite-side exit |
+| Single big candle | fires | often **silent** (gap-skip) |
+| Reaction to a slow grind | may miss the exit bar | fires on completion |
+
+So the difference is **not** "lookup vs recompute" — it is **single-candle breakout** vs **stateful
+through-the-box journey**. Two different detectors that happen to read the same boxes. *(If they were the same
+rule, the optimizer choosing between them would be pointless — the whole reason it's a searched knob is that
+they carry different information.)*
 
 ---
 
@@ -193,6 +244,8 @@ flowchart TB
 - Both are **causal / look-ahead-safe**: each bar's state uses only ES bars that had already closed at that
   NQ decision moment (proven by the look-ahead guard test in the contributors suite).
 
-> **Bottom line:** *touch* = ES's **delivered** signal, re-indexed (loose, frequent). *traversal* = a
-> **recomputed through-the-box walk** (strict, sparse). Same output shape (+1/−1/0), different philosophy;
-> the optimizer chooses, the dashboard lets you feel the difference by hand.
+> **Bottom line:** they are **two different detection rules**, not one signal computed two ways. *touch* = a
+> **single-candle breakout** (one candle closes through a box edge; stateless, frequent). *traversal* = a
+> **stateful through-the-box walk** (below→inside→above across bars; sparse, higher-conviction). Same output
+> shape (+1/−1/0), genuinely **different information** — which is exactly why `state_def` is a searched knob,
+> not a performance toggle. The optimizer chooses; the dashboard lets you feel the difference by hand.
