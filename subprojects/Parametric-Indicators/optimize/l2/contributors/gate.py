@@ -70,7 +70,11 @@ def _signal_masks(cfg, es, j_dec, nq_box_dir, n):
         cvote, veto = votes.signal_stance(nq_box_dir, nq_es_state, mode)
         return cvote, veto, mode in ("confirm", "both")
     if enc == "truthtable":
-        table = {tuple(k) if isinstance(k, list) else k: v for k, v in sig["table"].items()}
+        # keys may be ("long","short") tuples (direct cfg) or "long|short" strings (JSON-safe, from the
+        # optimizer — the objective json.dumps()es params, and JSON dict keys must be strings).
+        def _key(k):
+            return tuple(k.split("|")) if isinstance(k, str) else tuple(k)
+        table = {_key(k): v for k, v in sig["table"].items()}
         cvote, veto = votes.signal_truthtable(nq_box_dir, nq_es_state, table)
         return cvote, veto, any(v == "confirm" for v in table.values())
     raise ValueError(f"invalid signal encoding {enc!r}")
