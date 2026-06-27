@@ -175,6 +175,25 @@ def confirm_mask(df, box, indicators, k, src=None, votes=None):
     return out
 
 
+def confirm_count(df, box, indicators, src=None, votes=None):
+    """Entry-shifted per-bar CONFIRM count + #confirm-capable-enabled indicators. Mirrors confirm_mask's
+    internals so confirm_mask(df,box,inds,k) == [True] + (cc_entry[1:] >= min(k, n_confirmers)). The
+    cross-instrument topology combine needs the raw count (merged pools counts), not just the >=K gate."""
+    n = len(df)
+    confirmers = [ind for ind in indicators
+                  if ind.config.enabled and ind.config.mode in ("confirm", "both")]
+    cc_entry = np.zeros(n, dtype=np.int64)
+    if not confirmers:
+        return cc_entry, 0
+    if votes is None:
+        votes = compute_votes(df, box, confirmers, src)
+    cc = np.zeros(n, dtype=np.int64)
+    for ind in confirmers:
+        cc += (votes[id(ind)] == CONFIRM).astype(np.int64)
+    cc_entry[1:] = cc[:-1]                          # align to entry bar (idx0 = 0; the gate treats it identity)
+    return cc_entry, len(confirmers)
+
+
 def build_layer(df, box, indicators, k, vol_gate,
                 retrace_amount=0.0, retrace_unit="atr_mult", wait_bars=0,
                 src=None, votes=None, veto_as_flip=False):
