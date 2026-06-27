@@ -35,3 +35,52 @@ def test_assert_unique_keys_raises_on_dup():
                                   {"key": "macd", "enabled": True}])
     gate._assert_unique_keys([{"key": "macd", "enabled": True},
                               {"key": "cci", "enabled": True}])  # no raise
+
+
+def _synth_es(n=8, closes=None):
+    d = pd.date_range("2025-01-01 18:00", periods=n, freq="4h")
+    if closes is None:
+        closes = np.array([10, 11, 13, 16, 15, 12, 14, 17], dtype=float)[:n]
+    df = pd.DataFrame({"Date": d, "Open": closes, "High": closes + 1.0,
+                       "Low": closes - 1.0, "Close": closes})
+    return SimpleNamespace(df_dec=df.copy(), df1=df.copy(), box=None,
+                           delivery=None, tick_threshold=0.75)
+
+
+def _cfg_committee():
+    return {"token": "ES", "enabled": True, "tf": "4h", "state_def": "touch",
+            "signal": {"encoding": "none"},
+            "committee": [{"key": "ema_trend", "enabled": True, "mode": "confirm",
+                           "params": {"fast": 1, "slow": 2}}]}
+
+
+def test_committee_channel_shapes_dtypes_and_entry_shift(monkeypatch):
+    from optimize.l2.contributors import loader as _loader
+    es = _synth_es()
+    monkeypatch.setattr(_loader, "load_contributor_inputs", lambda token, tf="4h": es)
+    l1 = _fake_l1(8)
+    l1.sig_int = np.array([1, 1, 1, -1, -1, 1, 1, -1], dtype=np.int8)
+    veto, cc = gate.contributor_gate_masks(_cfg_committee(), l1)
+    assert veto.dtype == bool and cc.dtype == np.int64
+    assert len(veto) == len(cc) == 8
+    assert cc[0] == 0                                   # entry-shift identity at idx0 (no future leak)
+    assert (cc < gate.NO_CONFIRM_CONSTRAINT).all()      # real confirm source => real counts, not sentinel
+    assert cc.max() <= 1                                # one confirm indicator => count in {0,1}
+
+
+def test_committee_lookahead_guard_future_bars_dont_change_earlier(monkeypatch):
+    from optimize.l2.contributors import loader as _loader
+    k = 4                                               # freeze NQ bars [0..k]
+    base = _synth_es()
+    es2 = _synth_es()
+    es2.df_dec.loc[k + 1:, "Close"] += 99.0             # mutate ONLY future ES bars
+    es2.df_dec.loc[k + 1:, ["Open", "High", "Low"]] += 99.0
+    es2.df1 = es2.df_dec.copy()
+    l1 = _fake_l1(8); l1.sig_int = np.array([1, 1, 1, -1, -1, 1, 1, -1], dtype=np.int8)
+
+    monkeypatch.setattr(_loader, "load_contributor_inputs", lambda token, tf="4h": base)
+    v1, c1 = gate.contributor_gate_masks(_cfg_committee(), l1)
+    monkeypatch.setattr(_loader, "load_contributor_inputs", lambda token, tf="4h": es2)
+    v2, c2 = gate.contributor_gate_masks(_cfg_committee(), l1)
+    assert np.array_equal(v1[:k + 1], v2[:k + 1])       # earlier NQ-bar masks unaffected by future ES
+    assert np.array_equal(c1[:k + 1], c2[:k + 1])

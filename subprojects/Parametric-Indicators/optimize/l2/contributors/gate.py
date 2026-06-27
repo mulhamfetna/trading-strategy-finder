@@ -32,4 +32,37 @@ def contributor_gate_masks(cfg: dict, l1):
     n = len(l1.df_dec)
     if not cfg.get("enabled"):
         return np.zeros(n, dtype=bool), np.full(n, NO_CONFIRM_CONSTRAINT, dtype=np.int64)
-    raise NotImplementedError  # Task 2/3 fill the enabled path
+
+    es = loader.load_contributor_inputs(cfg["token"], cfg.get("tf", "4h"))
+    bar_td = l1.bar_td
+    nq_box_dir = np.asarray(l1.sig_int, dtype=np.int8)
+    j_dec = align.align_decbars(l1.df_dec["Date"].to_numpy(),
+                                es.df_dec["Date"].to_numpy(), bar_td)   # NQ-decbar -> ES-decbar idx
+
+    com_veto, com_cc_entry, n_confirmers = _committee_masks(cfg, es, j_dec, nq_box_dir, n, bar_td)
+
+    veto = com_veto
+    if n_confirmers == 0:
+        confirm_count = np.full(n, NO_CONFIRM_CONSTRAINT, dtype=np.int64)
+    else:
+        confirm_count = com_cc_entry
+    return veto, confirm_count
+
+
+def _committee_masks(cfg, es, j_dec, nq_box_dir, n, bar_td):
+    """(veto: bool[n] entry-shifted, confirm_count_entry: int64[n] entry-shifted, n_confirmers).
+    Runs the contributor's indicator committee 1-MINUTE-sourced (I2 seam) and NQ-aligned."""
+    com_specs = [s for s in cfg.get("committee", []) if s.get("enabled")]
+    _assert_unique_keys(com_specs)
+    if not com_specs:
+        return np.zeros(n, dtype=bool), np.zeros(n, dtype=np.int64), 0
+    inds = library.from_specs(com_specs)
+    es_ctx1, j_es1 = runner.indicator_source_1min(es.df_dec, es.df1, bar_td)
+    j_nq = align.gather_to_nq(j_es1, j_dec, fill=-1)        # NQ-decbar -> ES-1min idx (causal; <0 => none)
+    votes_d = {ind.key: runner._vote_from_1min(ind, es_ctx1, j_nq, nq_box_dir) for ind in inds}
+    com_veto = votes.committee_veto_mask(votes_d, inds, n)          # already entry-shifted
+    cc_raw = votes.committee_confirm_count(votes_d, inds, n)        # UNshifted (per-signal-bar)
+    cc_entry = np.zeros(n, dtype=np.int64)
+    cc_entry[1:] = cc_raw[:-1]                                      # shift to entry bar
+    n_confirmers = len([i for i in inds if i.config.enabled and i.config.mode in ("confirm", "both")])
+    return com_veto, cc_entry, n_confirmers
