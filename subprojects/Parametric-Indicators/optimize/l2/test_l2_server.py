@@ -78,3 +78,29 @@ def test_causal_routes_smoke():
     finally:
         srv.shutdown()
 
+
+def test_es_contributor_through_http_changes_trades():
+    """Manual-test wiring: an ES contributor block POSTed exactly as the dashboard sends it survives
+    validation, reaches run_l2 and changes the L2 book vs the contributor-free POST (and a disabled
+    contributor is a no-op)."""
+    srv, port = _serve()
+    try:
+        cfg = json.loads(urllib.request.urlopen(f"http://127.0.0.1:{port}/api/combined_config").read())
+        l2 = dict(cfg["l2_default"])
+        es = {"token": "ES", "enabled": True, "tf": "4h", "state_def": "touch", "k_es": 1,
+              "signal": {"encoding": "stance", "mode": "both", "table": {}},
+              "committee": [{"key": "ema_trend", "enabled": True, "mode": "confirm",
+                             "params": {"fast": 20, "slow": 50}}]}
+        base = json.loads(_post(port, "/api/causal_backtest",
+            {"l1": cfg["l1_default"], "l2": l2, "tf": "4h", "view": "l2"}).read())
+        on = json.loads(_post(port, "/api/causal_backtest",
+            {"l1": cfg["l1_default"], "l2": {**l2, "contributor_topology": "separate_and",
+             "contributors": [es]}, "tf": "4h", "view": "l2"}).read())
+        off = json.loads(_post(port, "/api/causal_backtest",
+            {"l1": cfg["l1_default"], "l2": {**l2, "contributor_topology": "separate_and",
+             "contributors": [{**es, "enabled": False}]}, "tf": "4h", "view": "l2"}).read())
+        assert on["trades"] != base["trades"]                 # enabled ES reshapes the L2 book
+        assert off["trades"] == base["trades"]                # disabled ES is a pure no-op
+    finally:
+        srv.shutdown()
+

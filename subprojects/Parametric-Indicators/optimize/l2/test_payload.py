@@ -143,3 +143,60 @@ def test_view_payload_carries_box_counts():
     assert bc["total_candles"] == p["meta"]["n"]
     assert bc["multi_box_candles"] == 191 and bc["both_tf_candles"] == 157
     assert bc["fired_candles"] == 829
+
+
+# --- cross-instrument contributors: dashboard manual-test wiring (validate_layer_params) ---
+
+def _es_contributor(enabled=True):
+    return {"token": "ES", "enabled": enabled, "tf": "4h", "state_def": "touch", "k_es": 1,
+            "signal": {"encoding": "stance", "mode": "both"},
+            "committee": [{"key": "ema_trend", "enabled": True, "mode": "confirm",
+                           "params": {"fast": 20, "slow": 50}}]}
+
+
+def test_validate_no_contributors_is_byte_identical():
+    """No contributor key in => out carries NO contributor keys (byte-identical contributor-free L2)."""
+    out = payload.validate_layer_params(dict(payload.PERMISSIVE))
+    assert "contributors" not in out and "contributor_topology" not in out
+
+
+def test_validate_keeps_and_validates_contributors_block():
+    p = {**payload.PERMISSIVE, "contributor_topology": "or_boost",
+         "contributors": [_es_contributor()]}
+    out = payload.validate_layer_params(p)
+    assert out["contributor_topology"] == "or_boost"
+    assert len(out["contributors"]) == 1
+    c = out["contributors"][0]
+    assert c["token"] == "ES" and c["enabled"] is True and c["state_def"] == "touch"
+    assert c["k_es"] == 1 and c["signal"]["encoding"] == "stance"
+    assert c["committee"][0]["key"] == "ema_trend"
+
+
+def test_validate_rejects_bad_contributor_config():
+    with pytest.raises(payload.L2ParamError):   # bad topology
+        payload.validate_layer_params({**payload.PERMISSIVE, "contributor_topology": "nope",
+                                       "contributors": [_es_contributor()]})
+    with pytest.raises(payload.L2ParamError):   # bad state_def
+        bad = {**_es_contributor(), "state_def": "sideways"}
+        payload.validate_layer_params({**payload.PERMISSIVE, "contributors": [bad]})
+    with pytest.raises(payload.L2ParamError):   # bad signal encoding
+        bad = {**_es_contributor(), "signal": {"encoding": "wat"}}
+        payload.validate_layer_params({**payload.PERMISSIVE, "contributors": [bad]})
+    with pytest.raises(payload.L2ParamError):   # bad committee indicator key
+        bad = {**_es_contributor(),
+               "committee": [{"key": "not_real", "enabled": True, "mode": "both", "params": {}}]}
+        payload.validate_layer_params({**payload.PERMISSIVE, "contributors": [bad]})
+
+
+def test_contributors_reach_engine_and_change_trades():
+    """End-to-end manual-test proof: an enabled ES contributor through build_view_payload changes the
+    causal L2 book vs the contributor-free run (params survive validation AND reach run_l2)."""
+    l1 = payload.l1_default_params("4h")
+    base = payload.build_view_payload(l1, dict(payload.PERMISSIVE), "4h", view="l2")
+    es = {**payload.PERMISSIVE, "contributor_topology": "separate_and",
+          "contributors": [_es_contributor()]}
+    withes = payload.build_view_payload(l1, es, "4h", view="l2")
+    base_n = base["meta"].get("n_trades", base["meta"].get("n"))
+    es_n = withes["meta"].get("n_trades", withes["meta"].get("n"))
+    # separate_and with a real ES confirm source can only DROP eligible bars => trades change
+    assert base != withes

@@ -124,6 +124,31 @@
       <div class="sgroup"><h3>Confirmation layer</h3>
         <div class="fld"><label>K (min confirms)</label><input id="l2_k" type="number" step="1" min="1" value="1"></div></div>
       <div class="sgroup"><h3>Indicators (L2)</h3><div id="l2_indpanel"><div class="hint">loading schema…</div></div></div>
+      <div class="sgroup"><h3>Cross-instrument contributors (ES)</h3>
+        <div class="fld" title="Master switch. OFF ⇒ L2 behaves exactly like the contributor-free champion (byte-identical)."><label>ES contributor</label>
+          <select id="l2_es_enable" onchange="esEnableToggle()"><option value="false">off (NQ only)</option><option value="true">on (peek at ES)</option></select></div>
+        <div id="l2_es_body" style="display:none">
+          <div class="fld" title="How NQ's and ES's confirms combine. separate_and: both must agree · merged: pool the yeses · or_boost: a strong ES yes can rescue an NQ-unsure bar. A veto from anyone always stops a trade."><label>Topology</label>
+            <select id="l2_ctopo"><option value="separate_and">separate_and (both must agree)</option><option value="merged">merged (pool yeses)</option><option value="or_boost">or_boost (ES can rescue)</option></select></div>
+          <div class="fld" title="How ES's net mood is read on each NQ decision bar."><label>ES state</label>
+            <select id="l2_es_state"><option value="touch">touch (delivered)</option><option value="traversal">traversal (box walk)</option></select></div>
+          <div class="fld"><label>k_es (min ES confirms)</label><input id="l2_es_kes" type="number" step="1" min="1" max="19" value="1"></div>
+          <div class="fld" title="ES mood voter. none: ignore ES mood · stance: ES dir vs NQ dir · truthtable: a hand-set 6-cell rule."><label>ES mood encoding</label>
+            <select id="l2_es_enc" onchange="esEncToggle()"><option value="none">none</option><option value="stance">stance</option><option value="truthtable">truthtable</option></select></div>
+          <div class="fld" id="l2_es_mode_fld" style="display:none"><label>ES mood mode</label>
+            <select id="l2_es_mode"><option value="both">confirm + veto</option><option value="confirm">confirm only</option><option value="veto">veto only</option></select></div>
+          <div id="l2_es_tt" style="display:none">
+            <div class="hint">Truth table — for each (NQ dir, ES mood) pick confirm / veto / ignore</div>
+            <div class="fld"><label>NQ long · ES long</label><select id="l2_tt_long_long" class="tt"><option>confirm</option><option>veto</option><option selected>ignore</option></select></div>
+            <div class="fld"><label>NQ long · ES short</label><select id="l2_tt_long_short" class="tt"><option>confirm</option><option>veto</option><option selected>ignore</option></select></div>
+            <div class="fld"><label>NQ long · ES hold</label><select id="l2_tt_long_hold" class="tt"><option>confirm</option><option>veto</option><option selected>ignore</option></select></div>
+            <div class="fld"><label>NQ short · ES long</label><select id="l2_tt_short_long" class="tt"><option>confirm</option><option>veto</option><option selected>ignore</option></select></div>
+            <div class="fld"><label>NQ short · ES short</label><select id="l2_tt_short_short" class="tt"><option>confirm</option><option>veto</option><option selected>ignore</option></select></div>
+            <div class="fld"><label>NQ short · ES hold</label><select id="l2_tt_short_hold" class="tt"><option>confirm</option><option>veto</option><option selected>ignore</option></select></div>
+          </div>
+          <div class="sgroup"><h3>ES committee (indicators on ES)</h3><div id="l2_es_indpanel"><div class="hint">loading schema…</div></div></div>
+        </div>
+      </div>
     </div>
   </aside>
   <div id="gutter" title="drag to resize the settings panel"></div>
@@ -183,14 +208,34 @@ function collectLayer(pfx){
     flip:v('flip').value==='true', ind_1min:v('ind_1min').value==='true',
     window:(v('window')?v('window').value:'full')};
   if(v('split') && v('split').value==='true') SPLIT_FIELDS.forEach(f=>{const el=v(f); if(el&&el.value!=='')out[f]=+el.value;});
+  if(pfx==='l2' && $('l2_es_enable')){ out.contributor_topology=$('l2_ctopo').value; out.contributors=[collectES()]; }
   return out;
 }
+function collectTT(){ const t={}; ['long','short'].forEach(d=>['long','short','hold'].forEach(s=>{const el=$('l2_tt_'+d+'_'+s); if(el)t[d+'|'+s]=el.value;})); return t; }
+function collectES(){ return {token:'ES', enabled:$('l2_es_enable').value==='true', tf:'4h',
+  state_def:$('l2_es_state').value, k_es:+$('l2_es_kes').value||1,
+  signal:{encoding:$('l2_es_enc').value, mode:$('l2_es_mode').value, table:collectTT()},
+  committee:DB.specsOf($('l2_es_indpanel'))}; }
+function esEnableToggle(){ $('l2_es_body').style.display = $('l2_es_enable').value==='true' ? '' : 'none'; }
+function esEncToggle(){ const e=$('l2_es_enc').value;
+  $('l2_es_mode_fld').style.display = (e==='stance') ? '' : 'none';
+  $('l2_es_tt').style.display = (e==='truthtable') ? '' : 'none'; }
+function setES(P){ if(!P||!$('l2_es_enable'))return; const c=(P.contributors||[]).find(x=>x&&x.token==='ES');
+  if(P.contributor_topology) $('l2_ctopo').value=P.contributor_topology;
+  if(!c){ $('l2_es_enable').value='false'; esEnableToggle(); return; }
+  $('l2_es_enable').value=String(!!c.enabled); $('l2_es_state').value=c.state_def||'touch';
+  if(c.k_es!=null)$('l2_es_kes').value=c.k_es;
+  const sig=c.signal||{}; $('l2_es_enc').value=sig.encoding||'none'; if(sig.mode)$('l2_es_mode').value=sig.mode;
+  Object.entries(sig.table||{}).forEach(([k,v])=>{const el=$('l2_tt_'+k.replace('|','_')); if(el)el.value=v;});
+  if(c.committee) DB.applySpecsTo($('l2_es_indpanel'),c.committee);
+  esEnableToggle(); esEncToggle(); }
 function setLayer(pfx,P){ if(!P)return;
   LAYER_FIELDS.forEach(f=>{ if(P[f]!=null&&$(pfx+'_'+f)) $(pfx+'_'+f).value=P[f]; });
   if($(pfx+'_flip')) $(pfx+'_flip').value=String(!!P.flip);
   if($(pfx+'_ind_1min')) $(pfx+'_ind_1min').value=String(P.ind_1min!==false);
   if($(pfx+'_window')&&P.window) $(pfx+'_window').value=P.window;
   if(P.indicators) DB.applySpecsTo($(pfx+'_indpanel'),P.indicators);
+  if(pfx==='l2') setES(P);
 }
 const STORE={l1:{},l2:{}};
 function fillDropdown(pfx,profiles){
@@ -565,6 +610,7 @@ async function saveLayer(pfx){
     const c=await r.json();
     DB.buildPanel($('l1_indpanel'),c.indicator_schema,DB.markDirty);
     DB.buildPanel($('l2_indpanel'),c.indicator_schema,DB.markDirty);
+    DB.buildPanel($('l2_es_indpanel'),c.indicator_schema,DB.markDirty);
     fillDropdown('l1',{[c.l1_label||'L1 champion']:c.l1_default, ...(c.l1_profiles||{})});
     fillDropdown('l2',{[c.l2_label||'L2 champion']:c.l2_default, ...(c.l2_profiles||{})});
     setLayer('l1',c.l1_default); setLayer('l2',c.l2_default);

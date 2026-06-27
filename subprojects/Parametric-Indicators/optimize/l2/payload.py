@@ -216,7 +216,77 @@ def validate_layer_params(p: dict) -> dict:
     except Exception as e:
         raise L2ParamError(f"bad indicator config: {e}")
     out["indicators"] = inds
+    _validate_contributors(p, out)
     return out
+
+
+_TOPOLOGIES = ("separate_and", "merged", "or_boost")
+_STATE_DEFS = ("touch", "traversal")
+_SIG_ENCODINGS = ("none", "stance", "truthtable")
+_SIG_MODES = ("confirm", "veto", "both")
+_TT_CELLS = ("confirm", "veto", "ignore")
+
+
+def _validate_contributors(p: dict, out: dict) -> None:
+    """Keep + validate the optional cross-instrument contributor block (Spec §6). ABSENT/empty ⇒ leave
+    `out` untouched ⇒ byte-identical contributor-free L2 (golden 6/6 preserved). Mirrors the optimizer's
+    _suggest_contributor shape so a hand-built dashboard cfg and a searched trial validate identically."""
+    raw = p.get("contributors")
+    if not raw:
+        return
+    if not isinstance(raw, list):
+        raise L2ParamError("contributors must be a list")
+    topo = str(p.get("contributor_topology", "separate_and"))
+    if topo not in _TOPOLOGIES:
+        raise L2ParamError(f"contributor_topology must be one of {'|'.join(_TOPOLOGIES)} (got {topo!r})")
+    clean = []
+    for c in raw:
+        if not isinstance(c, dict):
+            raise L2ParamError("each contributor must be an object")
+        token = str(c.get("token") or "").strip()
+        if not token:
+            raise L2ParamError("contributor missing token")
+        state_def = str(c.get("state_def", "touch"))
+        if state_def not in _STATE_DEFS:
+            raise L2ParamError(f"contributor state_def must be one of {'|'.join(_STATE_DEFS)} "
+                               f"(got {state_def!r})")
+        try:
+            k_es = int(c.get("k_es", 1))
+        except (TypeError, ValueError):
+            raise L2ParamError("contributor k_es must be an integer")
+        if k_es < 1:
+            raise L2ParamError("contributor k_es must be >= 1")
+        sig = dict(c.get("signal") or {})
+        enc = str(sig.get("encoding", "none"))
+        if enc not in _SIG_ENCODINGS:
+            raise L2ParamError(f"contributor signal.encoding must be one of {'|'.join(_SIG_ENCODINGS)} "
+                               f"(got {enc!r})")
+        if enc == "stance":
+            mode = str(sig.get("mode", ""))
+            if mode not in _SIG_MODES:
+                raise L2ParamError(f"contributor signal.mode must be one of {'|'.join(_SIG_MODES)} "
+                                   f"(got {mode!r})")
+        if enc == "truthtable":
+            table = sig.get("table") or {}
+            if not isinstance(table, dict):
+                raise L2ParamError("contributor signal.table must be an object")
+            for v in table.values():
+                if v not in _TT_CELLS:
+                    raise L2ParamError(f"truth-table cell must be one of {'|'.join(_TT_CELLS)} (got {v!r})")
+        com = c.get("committee", [])
+        if not isinstance(com, list):
+            raise L2ParamError("contributor committee must be a list")
+        try:
+            library.from_specs([s for s in com if s.get("enabled")])   # validates ES committee params
+        except Exception as e:
+            raise L2ParamError(f"bad contributor committee config: {e}")
+        clean.append({"token": token, "enabled": bool(c.get("enabled", False)),
+                      "tf": str(c.get("tf", "4h")), "state_def": state_def, "k_es": k_es,
+                      "signal": {"encoding": enc, "mode": sig.get("mode"),
+                                 "table": sig.get("table") or {}},
+                      "committee": com})
+    out["contributor_topology"] = topo
+    out["contributors"] = clean
 
 
 # back-compat alias (L2 callers, tests)
