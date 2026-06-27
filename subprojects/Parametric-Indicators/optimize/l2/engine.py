@@ -114,7 +114,7 @@ def _l2_eligibility(l1, l2_params: dict) -> np.ndarray:
     contribs = [c for c in (l2_params.get("contributors") or []) if c.get("enabled")]
     if not contribs:
         return vol_gate & ~nq_veto & nq_confirm
-    from optimize.l2.contributors import gate as cg
+    from optimize.l2.contributors import gate as cg, combine
     topo = str(l2_params.get("contributor_topology", "separate_and"))
     veto = nq_veto.copy()
     parsed = []                                              # (confirm_count, k_es, has_confirm)
@@ -123,28 +123,9 @@ def _l2_eligibility(l1, l2_params: dict) -> np.ndarray:
         veto |= cveto
         has_confirm = not bool((ccount == cg.NO_CONFIRM_CONSTRAINT).all())
         parsed.append((ccount, int(cfg.get("k_es", 1)), has_confirm))
-    if topo == "separate_and":
-        confirm = nq_confirm.copy()
-        for ccount, k_es, _ in parsed:
-            confirm = confirm & (ccount >= k_es)             # sentinel >= k_es ⇒ True ⇒ no-op
-    elif topo == "merged":
-        pooled = nq_cc.copy(); n_sources = nq_nconf
-        for ccount, _k, has in parsed:
-            if has:
-                pooled = pooled + ccount; n_sources += 1
-        k_m = min(int(l2_params.get("k", 1)), n_sources)
-        confirm = np.ones(n, dtype=bool)
-        if k_m > 0:
-            confirm[1:] = pooled[1:] >= k_m                  # idx0 identity True; pooled entry-shifted
-    elif topo == "or_boost":
-        boost = np.zeros(n, dtype=bool)
-        for ccount, k_es, has in parsed:
-            if has:
-                boost |= (ccount >= k_es)
-        confirm = nq_confirm | boost
-    else:
-        raise ValueError(f"unsupported contributor_topology {topo!r}")
-    return vol_gate & ~veto & confirm
+    # one shared topology-combine (contributors/combine.py) — same logic the L1 fast path uses
+    return combine.combine_eligibility(vol_gate, veto, nq_confirm, nq_cc,
+                                       int(l2_params.get("k", 1)), nq_nconf, parsed, topo)
 
 
 @dataclass
