@@ -33,31 +33,11 @@ def score_window(l1, l2_params: dict, lo: int, hi: int) -> dict:
     return metrics.score(engine.run_l2(l1, l2_params, bar_mask=mask))
 
 
-# SMC structural indicators — EXCLUDED from the cross-instrument committee SEARCH by default because they do
-# not vectorise over the long contributor 1-minute frame: on the 486,954-bar ES frame `ifvg`=58.1s and
-# `breaker`=37.9s ALONE are 90% of a 106.4s 18-indicator committee trial (PERFORMANCE.md §9, profiled
-# 2026-06-27). Dropping the SMC family keeps each contributor-search trial ~10× faster. They remain fully
-# available in the manual dashboard backtester (with a slowdown warning) — this exclusion is OPTIMIZER-ONLY.
-SMC_COMMITTEE_KEYS = ("structure_trend", "order_block", "fvg", "ifvg", "breaker", "cisd")
-
-
-def _suggest_contributor(trial, token: str, exclude_committee=SMC_COMMITTEE_KEYS) -> dict:
-    """Searchable cross-instrument contributor cfg (B1 gate schema): master enable, state definition,
-    composite signal voter (BOTH encodings searched), the namespaced indicator committee, k_es.
-    The 6-cell truth table is keyed by JSON-safe 'dir|state' strings (the objective serialises params).
-    `exclude_committee` keys are forced OFF (not searched) — defaults to the slow SMC family (see above)."""
-    pre = f"{token.lower()}_"
-    specs = [{k: v for k, v in s.items() if k != "_searched"}
-             for s in OPT._suggest_indicators(trial, prefix=pre, exclude=exclude_committee)]
-    enc = trial.suggest_categorical(f"{pre}sig_enc", ["none", "stance", "truthtable"])
-    mode = trial.suggest_categorical(f"{pre}sig_mode", ["confirm", "veto", "both"])
-    table = {f"{d}|{s}": trial.suggest_categorical(f"{pre}tt_{d}_{s}", ["confirm", "veto", "ignore"])
-             for d in ("long", "short") for s in ("long", "short", "hold")}
-    return {"token": token, "enabled": bool(trial.suggest_categorical(f"{pre}enabled", [False, True])),
-            "tf": "4h", "state_def": trial.suggest_categorical(f"{pre}state", ["touch", "traversal"]),
-            "k_es": int(trial.suggest_int(f"{pre}k_es", 1, 5)),
-            "signal": {"encoding": enc, "mode": mode, "table": table},
-            "committee": specs}
+# Cross-instrument contributor search block now lives in optimize/contributor_search.py (shared with the L1
+# optimizer). Keep the original names as back-compat aliases so existing call-sites/tests are unchanged.
+from optimize import contributor_search as _csearch          # noqa: E402
+SMC_COMMITTEE_KEYS = _csearch.SMC_COMMITTEE_KEYS
+_suggest_contributor = _csearch.suggest_contributor
 
 
 def suggest_l2_params(trial, b: dict, cap: int, contrib_tokens=(),

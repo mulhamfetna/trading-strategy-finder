@@ -300,7 +300,8 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         seed: int = 1, ind_1min: bool = False, study_prefix: str = "wsh3",
         split_sltp: bool = False, warm_start: bool = True, sampler: str = "nsga3",
         objective: str = "winrate", exclude_inds: tuple = (), only_inds: tuple = (),
-        dd_pnl_cap: float = DD_PNL_CAP) -> dict:
+        dd_pnl_cap: float = DD_PNL_CAP, contrib_tokens: tuple = (),
+        contrib_exclude=None) -> dict:
     # split_sltp (Q3 / E2): when True the optimizer searches SEPARATE long vs short SL/TP (long_*/short_*),
     # widening the space per the user's point-5 goal. Default False ⇒ shared SL/TP ⇒ identical to prior runs.
     # NOTE FOR THE NEXT FULL RUN (wsh5): launch with split_sltp=True to let longs and shorts get their own
@@ -344,15 +345,27 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
             s_tp = trial.suggest_float("short_tp", float(b["tp"][0]), float(b["tp"][1]))
             params.update(long_sl_soft=l_ss, long_sl_hard=l_ss + l_d, long_tp=l_tp,
                           short_sl_soft=s_ss, short_sl_hard=s_ss + s_d, short_tp=s_tp)
+        # Cross-instrument contributors (opt-in via contrib_tokens). ES is SEARCHABLE, not forced:
+        # es_enabled is a categorical. Masks precomputed ONCE per trial over the full frame (param-dependent),
+        # then sliced per fold. Empty contrib_tokens ⇒ byte-identical to the prior L1 space.
+        _contrib = None
+        if contrib_tokens:
+            from optimize import contributor_search as _cs, contributor_masks as _cmask
+            params["contributor_topology"] = trial.suggest_categorical(
+                "contributor_topology", ["separate_and", "merged", "or_boost"])
+            exc = contrib_exclude if contrib_exclude is not None else _cs.L1_ES_EXCLUDE
+            params["contributors"] = [_cs.suggest_contributor(trial, tok, exclude_committee=exc)
+                                      for tok in contrib_tokens]
+            _contrib = _cmask.precompute_contributor_masks(params, df_dec, df1, box, sig_int, tf.bar_td)
         r = score_walkforward(df_dec, df1, box, vf, params, tf.bar_td, k=folds,
-                              min_trades=min_trades, sig_int=sig_int)
+                              min_trades=min_trades, sig_int=sig_int, contrib=_contrib)
         if not r["valid"]:
             raise optuna.TrialPruned()
         worst_dd = r["worst_dd"]; med_win = r["median_win"]
         # FULL-PERIOD feasibility (user): full-window max DD ≤ 25% of full-window P/L. One extra
         # backtest over the whole window (gate frozen causally on vf[:n_split]).
         full = backtest_metrics(df_dec, df1, box, vf, n_split, dict(params, window="full"),
-                                tf.bar_td, sig_int=sig_int)
+                                tf.bar_td, sig_int=sig_int, contrib=_contrib)
         full_pnl = float(full["pnl"]); full_dd = float(full["max_dd"])
         dec_pause = float(full.get("max_no_entry_days_decision", full.get("max_no_entry_days", 0.0)))
         trial.set_user_attr("worst_dd", worst_dd)
@@ -488,7 +501,12 @@ def main() -> int:
     ap.add_argument("--dd-pnl-cap", type=float, default=DD_PNL_CAP,
                     help=f"feasibility cap: max full-window DD as a fraction of full-window P/L (default "
                          f"{DD_PNL_CAP}; RELAX e.g. 0.5 to let shorter-pause/higher-DD strategies qualify)")
+    ap.add_argument("--contributors", default="",
+                    help="comma-separated cross-instrument contributor tokens to SEARCH on L1 (e.g. 'ES'); "
+                         "ES is SEARCHABLE not forced (es_enabled is a categorical). Empty ⇒ no contributor "
+                         "block (existing L1 space unchanged). ES committee excludes SMC + stochastic + adx.")
     a = ap.parse_args()
+    contrib_tokens = tuple(t.strip() for t in a.contributors.split(",") if t.strip())
     # report the plan (search size + recommended trials) — always, so the budget is visible
     rec = print_plan(a.timeframe, a.split_sltp, a.trials_per_dim,
                      n_trials=(None if a.auto_trials else a.trials), sampler=a.sampler)
@@ -499,10 +517,16 @@ def main() -> int:
     n_trials = rec if a.auto_trials else a.trials
     _excl = tuple(x for x in a.exclude_indicators.split(",") if x)
     _only = tuple(x for x in a.only_indicators.split(",") if x)
+    if contrib_tokens:
+        from optimize import contributor_search as _cs
+        print(f"[{a.timeframe}] **searching cross-instrument contributors {list(contrib_tokens)} on L1 "
+              f"(ES SEARCHABLE, not forced; topology + es_committee). Excluded committee keys: "
+              f"{list(_cs.L1_ES_EXCLUDE)} (SMC + stochastic + adx, fold-scored cost).**", flush=True)
     run(a.timeframe, n_trials=n_trials, folds=a.folds, min_trades=a.min_trades,
         ind_1min=a.ind_1min, study_prefix=a.study_prefix, split_sltp=a.split_sltp,
         warm_start=not a.no_warm_start, sampler=a.sampler,
-        objective=a.objective, exclude_inds=_excl, only_inds=_only, dd_pnl_cap=a.dd_pnl_cap)
+        objective=a.objective, exclude_inds=_excl, only_inds=_only, dd_pnl_cap=a.dd_pnl_cap,
+        contrib_tokens=contrib_tokens)
     return 0
 
 
