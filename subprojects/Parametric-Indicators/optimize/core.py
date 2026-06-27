@@ -30,6 +30,38 @@ from optimize.fast_engine import fast_backtest, signals_to_int  # noqa: E402
 from optimize import signals as _sig  # noqa: E402
 
 
+def _contributor_gate(d, d1, box, vfw, vf, n_split, gate_ref_vf, gate_pct, params,
+                      bar_duration, contrib, lo, hi):
+    """Entry gate for the cross-instrument contributor path (L1 opt-in): vol_gate ∧ (NQ veto/confirm
+    COMBINED with the precomputed contributor masks by topology). The expensive ES committee is NOT
+    recomputed here — it lives in `contrib` (precomputed once per trial over the full frame); only the
+    cheap NQ masks are computed on this window, then combined via the shared contributors/combine helper."""
+    import numpy as np
+    from indicators import library, runner
+    from optimize.l2.contributors import combine
+    gate_vol = None
+    if gate_pct > 0:
+        ref = gate_ref_vf if gate_ref_vf is not None else vf[:n_split]
+        gate_vol = vfw <= float(np.percentile(ref, gate_pct))
+    base = gate_vol if gate_vol is not None else np.ones(len(d), dtype=bool)
+    specs = params.get("indicators") or []
+    inds = library.from_specs(specs) if specs else []
+    if inds and any(i.config.enabled for i in inds):
+        src = runner.indicator_source_1min(d, d1, bar_duration) if params.get("ind_1min") else None
+        votes = runner.compute_votes(d, box, inds, src=src)
+        nq_veto = runner.veto_mask(d, box, inds, src=src, votes=votes)
+        nq_confirm = runner.confirm_mask(d, box, inds, int(params.get("k", 1)), src=src, votes=votes)
+        nq_cc, nq_nconf = runner.confirm_count(d, box, inds, src=src, votes=votes)
+    else:
+        m = len(d)
+        nq_veto = np.zeros(m, dtype=bool); nq_confirm = np.ones(m, dtype=bool)
+        nq_cc = np.zeros(m, dtype=np.int64); nq_nconf = 0
+    veto = nq_veto | np.asarray(contrib["veto"])[lo:hi]
+    parsed = [(cc[lo:hi], k_es, has) for (cc, k_es, has) in contrib["parsed"]]
+    return combine.combine_eligibility(base, veto, nq_confirm, nq_cc, int(params.get("k", 1)),
+                                       nq_nconf, parsed, contrib["topology"])
+
+
 def backtest_metrics(
     df_dec: pd.DataFrame,
     df1: pd.DataFrame,
@@ -42,6 +74,7 @@ def backtest_metrics(
     gate_ref_vf: np.ndarray | None = None,
     sig_int: np.ndarray | None = None,
     gate_used: np.ndarray | None = None,
+    contrib: dict | None = None,
     pv: float = config.NQ_POINT_VALUE,
 ) -> dict:
     """Run one backtest on an arbitrary decision timeframe; return summary metrics + trades.
@@ -87,6 +120,10 @@ def backtest_metrics(
     # (parity preserved; golden unaffected).
     if gate_used is not None:
         gate = np.asarray(gate_used, dtype=bool)[lo:hi]
+    elif contrib is not None:
+        # Cross-instrument contributor path (L1 opt-in). Default (contrib=None) is byte-identical.
+        gate = _contributor_gate(d, d1, box, vfw, vf, n_split, gate_ref_vf, gate_pct, params,
+                                 bar_duration, contrib, lo, hi)
     else:
         # Volatility gate threshold frozen on the reference segment (causal); 0 => no gate.
         gate = None
