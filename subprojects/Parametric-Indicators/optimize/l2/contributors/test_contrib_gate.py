@@ -13,6 +13,15 @@ import pytest
 from optimize.l2.contributors import gate
 
 
+@pytest.fixture(autouse=True)
+def _clear_gate_caches():
+    # gate memoises the (token, tf) ES inputs/source in-process; the monkeypatched synthetic-ES tests
+    # below would otherwise pollute it for the real-ES test. Clear around every test for isolation.
+    gate._clear_caches()
+    yield
+    gate._clear_caches()
+
+
 def _fake_l1(n=5):
     dates = pd.date_range("2025-01-01 18:00", periods=n, freq="4h")
     return SimpleNamespace(df_dec=pd.DataFrame({"Date": dates}),

@@ -67,3 +67,22 @@ def test_suggested_contributor_runs_in_engine():
     l1 = payload.run_l1_cached("4h")
     r = engine.run_l2(l1, p)            # must not raise; produces a valid ledger
     assert isinstance(r.ledger, list)
+
+
+def test_es_source_cache_parity_and_speedup():
+    import time
+    import numpy as np
+    from optimize.l2 import payload
+    from optimize.l2.contributors import gate
+    l1 = payload.run_l1_cached("4h")
+    cfg = {"token": "ES", "enabled": True, "tf": "4h", "state_def": "touch",
+           "signal": {"encoding": "stance", "mode": "both"},
+           "committee": [{"key": "ema_trend", "enabled": True, "mode": "confirm",
+                          "params": {"fast": 20, "slow": 50}}]}
+    gate._clear_caches()
+    t = time.time(); v1, c1 = gate.contributor_gate_masks(cfg, l1); cold = time.time() - t
+    t = time.time(); v2, c2 = gate.contributor_gate_masks(cfg, l1); warm = time.time() - t
+    assert np.array_equal(v1, v2) and np.array_equal(c1, c2)   # cache is result-neutral (identical masks)
+    assert ("ES", "4h") in gate._SRC_CACHE and ("ES", "4h") in gate._INPUT_CACHE
+    assert warm < cold                                          # warm reuses the cached source => faster
+    print(f"\n[cache] cold={cold:.2f}s warm={warm:.2f}s ({cold/max(warm,1e-3):.0f}x)")

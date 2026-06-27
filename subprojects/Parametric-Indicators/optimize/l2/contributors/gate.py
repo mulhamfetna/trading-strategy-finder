@@ -19,6 +19,33 @@ from optimize.l2.contributors import align, loader, registry, state, votes  # no
 # K_eff=0 => all-True identity). Never reached by a real count (max ~= 18 committee + 1 signal).
 NO_CONFIRM_CONSTRAINT = np.int64(1 << 30)
 
+# In-process memo of the PARAM-INDEPENDENT contributor inputs + 1-minute indicator source, keyed by
+# (token, tf). These are pure functions of the instrument's data — rebuilding them every optimizer trial
+# (the ~75s the ES committee cost a fresh trial) is wasted work. Memoising is result-neutral by
+# construction (proven by the contributors suite + golden staying byte-identical). Only the per-trial,
+# param-DEPENDENT indicator votes recompute. _clear_caches() lets tests measure cold vs warm.
+_INPUT_CACHE: dict = {}
+_SRC_CACHE: dict = {}
+
+
+def _clear_caches() -> None:
+    _INPUT_CACHE.clear()
+    _SRC_CACHE.clear()
+
+
+def _cached_inputs(token: str, tf: str):
+    key = (token, tf)
+    if key not in _INPUT_CACHE:
+        _INPUT_CACHE[key] = loader.load_contributor_inputs(token, tf)
+    return _INPUT_CACHE[key]
+
+
+def _cached_source(token: str, tf: str, es, bar_td):
+    key = (token, tf)
+    if key not in _SRC_CACHE:
+        _SRC_CACHE[key] = runner.indicator_source_1min(es.df_dec, es.df1, bar_td)
+    return _SRC_CACHE[key]
+
 
 def _assert_unique_keys(specs) -> None:
     keys = [s["key"] for s in specs if s.get("enabled")]
@@ -33,7 +60,7 @@ def contributor_gate_masks(cfg: dict, l1):
     if not cfg.get("enabled"):
         return np.zeros(n, dtype=bool), np.full(n, NO_CONFIRM_CONSTRAINT, dtype=np.int64)
 
-    es = loader.load_contributor_inputs(cfg["token"], cfg.get("tf", "4h"))
+    es = _cached_inputs(cfg["token"], cfg.get("tf", "4h"))
     bar_td = l1.bar_td
     nq_box_dir = np.asarray(l1.sig_int, dtype=np.int8)
     j_dec = align.align_decbars(l1.df_dec["Date"].to_numpy(),
@@ -88,7 +115,7 @@ def _committee_masks(cfg, es, j_dec, nq_box_dir, n, bar_td):
     if not com_specs:
         return np.zeros(n, dtype=bool), np.zeros(n, dtype=np.int64), 0
     inds = library.from_specs(com_specs)
-    es_ctx1, j_es1 = runner.indicator_source_1min(es.df_dec, es.df1, bar_td)
+    es_ctx1, j_es1 = _cached_source(cfg["token"], cfg.get("tf", "4h"), es, bar_td)
     j_nq = align.gather_to_nq(j_es1, j_dec, fill=-1)        # NQ-decbar -> ES-1min idx (causal; <0 => none)
     votes_d = {ind.key: runner._vote_from_1min(ind, es_ctx1, j_nq, nq_box_dir) for ind in inds}
     com_veto = votes.committee_veto_mask(votes_d, inds, n)          # already entry-shifted
