@@ -101,27 +101,50 @@ def force_close_on_l1_entry(cand: list[dict], l1_entries, dec_dates: np.ndarray,
     return out
 
 
-def _apply_contributors(l1, l2_params: dict, l2_gate: np.ndarray) -> np.ndarray:
-    """AND each ENABLED cross-instrument contributor's sub-gate into the L2 gate (Spec §6). Topology
-    'separate_and': sub = ~contrib_veto & (contrib_confirm_count >= k_es). Absent/disabled contributors
-    are the identity (sentinel confirm_count >= any k_es, all-False veto) ⇒ byte-identical contributor-free
-    L2. MERGED / OR-confirm-boost (which need NQ's confirm COUNT) are Part B2b."""
-    contribs = l2_params.get("contributors")
+def _l2_eligibility(l1, l2_params: dict) -> np.ndarray:
+    """L2 per-bar eligibility (vol_gate ∧ ¬veto ∧ confirm) combined with enabled cross-instrument
+    contributors per topology (Spec §6). Veto is always any-OR. CONFIRM combines by topology:
+      separate_and — NQ ∧ each (contrib_count >= k_es)   (a contributor must ALSO agree)
+      merged       — pooled (NQ + contributor) confirm count >= min(k, #sources)
+      or_boost     — NQ ∨ any (contrib_count >= k_es)     (a contributor confirm can rescue a bar)
+    A contributor with no confirm source (sentinel count) adds no confirm in any topology, so
+    no-enabled-contributor ⇒ exactly the NQ gate ⇒ byte-identical contributor-free L2."""
+    vol_gate, nq_veto, nq_confirm, nq_cc, k_eff, nq_nconf = _nq_components(l1, l2_params)
+    n = len(vol_gate)
+    contribs = [c for c in (l2_params.get("contributors") or []) if c.get("enabled")]
     if not contribs:
-        return l2_gate
-    from optimize.l2.contributors import gate as contrib_gate
+        return vol_gate & ~nq_veto & nq_confirm
+    from optimize.l2.contributors import gate as cg
     topo = str(l2_params.get("contributor_topology", "separate_and"))
-    out = l2_gate
+    veto = nq_veto.copy()
+    parsed = []                                              # (confirm_count, k_es, has_confirm)
     for cfg in contribs:
-        if not cfg.get("enabled"):
-            continue
-        cveto, ccount = contrib_gate.contributor_gate_masks(cfg, l1)
-        if topo == "separate_and":
-            k_es = int(cfg.get("k_es", 1))
-            out = out & (~cveto) & (ccount >= k_es)
-        else:
-            raise ValueError(f"unsupported contributor_topology {topo!r} (B2b adds merged/or_boost)")
-    return out
+        cveto, ccount = cg.contributor_gate_masks(cfg, l1)
+        veto |= cveto
+        has_confirm = not bool((ccount == cg.NO_CONFIRM_CONSTRAINT).all())
+        parsed.append((ccount, int(cfg.get("k_es", 1)), has_confirm))
+    if topo == "separate_and":
+        confirm = nq_confirm.copy()
+        for ccount, k_es, _ in parsed:
+            confirm = confirm & (ccount >= k_es)             # sentinel >= k_es ⇒ True ⇒ no-op
+    elif topo == "merged":
+        pooled = nq_cc.copy(); n_sources = nq_nconf
+        for ccount, _k, has in parsed:
+            if has:
+                pooled = pooled + ccount; n_sources += 1
+        k_m = min(int(l2_params.get("k", 1)), n_sources)
+        confirm = np.ones(n, dtype=bool)
+        if k_m > 0:
+            confirm[1:] = pooled[1:] >= k_m                  # idx0 identity True; pooled entry-shifted
+    elif topo == "or_boost":
+        boost = np.zeros(n, dtype=bool)
+        for ccount, k_es, has in parsed:
+            if has:
+                boost |= (ccount >= k_es)
+        confirm = nq_confirm | boost
+    else:
+        raise ValueError(f"unsupported contributor_topology {topo!r}")
+    return vol_gate & ~veto & confirm
 
 
 @dataclass
@@ -151,8 +174,7 @@ def run_l2(l1, l2_params: dict, bar_mask=None, exit_mode: str = "l1_priority") -
     for ds in l1.dropped_signals:
         dropped_mask[int(ds["idx"])] = True
     l1_flat = ~l1.state_timeline
-    l2_gate = dropped_mask & l1_flat & _l2_gate_masks(l1, l2_params)
-    l2_gate = _apply_contributors(l1, l2_params, l2_gate)    # cross-instrument sub-gate (no-op if none)
+    l2_gate = dropped_mask & l1_flat & _l2_eligibility(l1, l2_params)   # NQ gate + contributors (topology)
     if bar_mask is not None:                                  # window L2 to a bar range (in-sample / OOS)
         l2_gate = l2_gate & np.asarray(bar_mask, dtype=bool)[:n]
 

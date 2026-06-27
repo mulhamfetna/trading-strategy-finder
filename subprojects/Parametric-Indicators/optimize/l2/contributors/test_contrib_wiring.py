@@ -37,17 +37,15 @@ def _es_on(topology="separate_and"):
 
 
 def test_separate_and_gate_is_a_subset_of_base():
-    # SEPARATE-AND only ANDs sub-gates, so the eligible-bar GATE is a subset of the base gate.
+    # SEPARATE-AND only tightens, so the eligible-bar GATE is a subset of the NQ-only gate.
     # (NB: the TAKEN-trade set is NOT monotonic — fast_backtest is sequential, so removing an early
     #  entry can free a later one. The invariant lives at the gate, not the ledger.)
-    import numpy as np
     l1 = payload.run_l1_cached("4h")
-    n = len(l1.df_dec)
-    base = np.ones(n, dtype=bool)
-    out = engine._apply_contributors(l1, _es_on(), base.copy())
-    assert out.dtype == bool and len(out) == n
-    assert bool((out <= base).all())      # contributor sub-gate only removes bars, never adds
-    assert int((~out).sum()) > 0          # and it actually removes some (the ES cci-veto fires)
+    base = engine._l2_eligibility(l1, _P)
+    out = engine._l2_eligibility(l1, _es_on())
+    assert out.dtype == bool and len(out) == len(base)
+    assert bool((out <= base).all())                 # contributor sub-gate only removes bars, never adds
+    assert int((~out).sum()) > int((~base).sum())    # and it actually removes some (the ES cci-veto fires)
 
 
 def test_separate_and_is_live_impossible_k_blocks_all():
@@ -63,4 +61,4 @@ def test_separate_and_is_live_impossible_k_blocks_all():
 def test_unsupported_topology_raises():
     l1 = payload.run_l1_cached("4h")
     with pytest.raises(ValueError, match="topology"):
-        engine.run_l2(l1, _es_on(topology="merged"))   # B2b adds merged/or_boost
+        engine.run_l2(l1, _es_on(topology="nonsense"))   # merged/or_boost are now supported (B2b)
