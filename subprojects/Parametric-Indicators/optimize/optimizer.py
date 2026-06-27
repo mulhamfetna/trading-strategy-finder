@@ -53,11 +53,13 @@ def _suggest_param(trial, name, p):
     return trial.suggest_float(name, lo, hi, step=st)
 
 
-def _suggest_indicators(trial, exclude=(), only=()):
+def _suggest_indicators(trial, exclude=(), only=(), prefix=""):
     """WS-I.8 search space: each registered indicator on/off + its params (rectangular — params always
     suggested so NSGA crossover stays well-defined). Mode = the schema default. Keys in `exclude`, or (when
     `only` is non-empty) keys NOT in `only`, are forced OFF with default params and NOT suggested (α: revert
-    to wsh4-era / restrict to a subset ⇒ fewer dimensions). `_searched` flags which keys entered the search."""
+    to wsh4-era / restrict to a subset ⇒ fewer dimensions). `_searched` flags which keys entered the search.
+    `prefix` namespaces the Optuna param names (e.g. 'es_') so a cross-instrument contributor's committee
+    can be searched alongside NQ's without name collisions; prefix='' is byte-identical to before."""
     specs = []
     for key in library.REGISTRY:
         meta = library.SCHEMA[key]
@@ -66,8 +68,8 @@ def _suggest_indicators(trial, exclude=(), only=()):
             params = {p["name"]: p["default"] for p in meta["params"]}
             specs.append({"key": key, "enabled": False, "mode": meta["mode"], "params": params, "_searched": False})
             continue
-        enabled = trial.suggest_categorical(f"en_{key}", [False, True])
-        params = {p["name"]: _suggest_param(trial, f"{key}_{p['name']}", p) for p in meta["params"]}
+        enabled = trial.suggest_categorical(f"{prefix}en_{key}", [False, True])
+        params = {p["name"]: _suggest_param(trial, f"{prefix}{key}_{p['name']}", p) for p in meta["params"]}
         specs.append({"key": key, "enabled": enabled, "mode": meta["mode"], "params": params, "_searched": True})
     return specs
 
