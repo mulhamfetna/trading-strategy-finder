@@ -129,3 +129,21 @@ def test_truthtable_with_confirm_cell_is_a_confirm_source(monkeypatch):
     veto, cc = gate.contributor_gate_masks(cfg, l1)
     assert (cc < gate.NO_CONFIRM_CONSTRAINT).all()          # a 'confirm' cell => real confirm source
     assert not veto.any()                                   # table has no 'veto' cell
+
+
+def test_real_es_smoke_and_disabled_noop():
+    from optimize.l2 import payload
+    l1 = payload.run_l1_cached("4h")
+    n = len(l1.df_dec)
+    cfg = {"token": "ES", "enabled": True, "tf": "4h", "state_def": "touch",
+           "signal": {"encoding": "stance", "mode": "both"},
+           "committee": [{"key": "ema_trend", "enabled": True, "mode": "confirm",
+                          "params": {"fast": 20, "slow": 50}}]}
+    veto, cc = gate.contributor_gate_masks(cfg, l1)
+    assert len(veto) == len(cc) == n
+    assert veto.dtype == bool and cc.dtype == np.int64
+    assert cc.min() >= 0
+    assert (cc < gate.NO_CONFIRM_CONSTRAINT).all()       # real confirm sources => real counts
+    # disabled => sentinel no-op even on the real l1
+    v0, c0 = gate.contributor_gate_masks({"token": "ES", "enabled": False}, l1)
+    assert not v0.any() and (c0 == gate.NO_CONFIRM_CONSTRAINT).all() and len(v0) == n
