@@ -84,3 +84,48 @@ def test_committee_lookahead_guard_future_bars_dont_change_earlier(monkeypatch):
     v2, c2 = gate.contributor_gate_masks(_cfg_committee(), l1)
     assert np.array_equal(v1[:k + 1], v2[:k + 1])       # earlier NQ-bar masks unaffected by future ES
     assert np.array_equal(c1[:k + 1], c2[:k + 1])
+
+
+_NQ_DIR = np.array([1, 1, 1, -1, -1, 1, 1, -1], dtype=np.int8)
+_ES_STATE = np.array([1, 1, -1, -1, 1, 1, -1, -1], dtype=np.int8)
+
+
+def _patch_state(monkeypatch, arr=_ES_STATE):
+    from optimize.l2.contributors import state as _state, loader as _loader
+    monkeypatch.setattr(_loader, "load_contributor_inputs", lambda token, tf="4h": _synth_es())
+    monkeypatch.setattr(_state, "touch_state", lambda df_dec, delivery: arr)
+
+
+def test_signal_only_stance_both_matches_signal_stance(monkeypatch):
+    from optimize.l2.contributors import votes
+    _patch_state(monkeypatch)
+    l1 = _fake_l1(8); l1.sig_int = _NQ_DIR
+    cfg = {"token": "ES", "enabled": True, "tf": "4h", "state_def": "touch",
+           "committee": [], "signal": {"encoding": "stance", "mode": "both"}}
+    veto, cc = gate.contributor_gate_masks(cfg, l1)
+    exp_cvote, exp_veto = votes.signal_stance(_NQ_DIR, _ES_STATE, "both")
+    assert np.array_equal(veto, exp_veto)
+    assert np.array_equal(cc, exp_cvote.astype(np.int64))   # committee empty => cc = signal confirm
+    assert (cc < gate.NO_CONFIRM_CONSTRAINT).all()          # stance 'both' is a confirm source
+
+
+def test_signal_veto_only_has_no_confirm_source_sentinel(monkeypatch):
+    from optimize.l2.contributors import votes
+    _patch_state(monkeypatch)
+    l1 = _fake_l1(8); l1.sig_int = _NQ_DIR
+    cfg = {"token": "ES", "enabled": True, "tf": "4h", "state_def": "touch",
+           "committee": [], "signal": {"encoding": "stance", "mode": "veto"}}
+    veto, cc = gate.contributor_gate_masks(cfg, l1)
+    _, exp_veto = votes.signal_stance(_NQ_DIR, _ES_STATE, "veto")
+    assert np.array_equal(veto, exp_veto)
+    assert (cc == gate.NO_CONFIRM_CONSTRAINT).all()         # no confirm source anywhere => sentinel
+
+
+def test_truthtable_with_confirm_cell_is_a_confirm_source(monkeypatch):
+    _patch_state(monkeypatch)
+    l1 = _fake_l1(8); l1.sig_int = _NQ_DIR
+    cfg = {"token": "ES", "enabled": True, "tf": "4h", "state_def": "touch", "committee": [],
+           "signal": {"encoding": "truthtable", "table": {("long", "long"): "confirm"}}}
+    veto, cc = gate.contributor_gate_masks(cfg, l1)
+    assert (cc < gate.NO_CONFIRM_CONSTRAINT).all()          # a 'confirm' cell => real confirm source
+    assert not veto.any()                                   # table has no 'veto' cell

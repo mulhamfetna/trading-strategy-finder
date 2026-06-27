@@ -40,13 +40,40 @@ def contributor_gate_masks(cfg: dict, l1):
                                 es.df_dec["Date"].to_numpy(), bar_td)   # NQ-decbar -> ES-decbar idx
 
     com_veto, com_cc_entry, n_confirmers = _committee_masks(cfg, es, j_dec, nq_box_dir, n, bar_td)
+    sig_cvote, sig_veto, sig_has_confirm = _signal_masks(cfg, es, j_dec, nq_box_dir, n)
 
-    veto = com_veto
-    if n_confirmers == 0:
+    veto = com_veto | sig_veto
+    n_confirm_sources = n_confirmers + (1 if sig_has_confirm else 0)
+    if n_confirm_sources == 0:
         confirm_count = np.full(n, NO_CONFIRM_CONSTRAINT, dtype=np.int64)
     else:
-        confirm_count = com_cc_entry
+        confirm_count = com_cc_entry + sig_cvote.astype(np.int64)
     return veto, confirm_count
+
+
+def _signal_masks(cfg, es, j_dec, nq_box_dir, n):
+    """(confirm_vote: bool[n], veto: bool[n], has_confirm: bool) for the composite signal voter, entry-
+    bar-aligned. ES net state (touch|traversal) is gathered onto NQ bars (hold fill) then run through the
+    chosen encoding. encoding 'none' => pure no-op."""
+    enc = cfg.get("signal", {}).get("encoding", "none")
+    if enc == "none":
+        return np.zeros(n, dtype=bool), np.zeros(n, dtype=bool), False
+    if cfg.get("state_def", "touch") == "touch":
+        es_state = state.touch_state(es.df_dec, es.delivery)
+    else:
+        c = registry.get_contributor(cfg["token"])
+        es_state = state.traversal_state(es.df_dec, c.box_csv, c.tick_threshold)
+    nq_es_state = align.gather_to_nq(es_state, j_dec, fill=0)        # NQ-decbar -> ES state (hold fill)
+    sig = cfg["signal"]
+    if enc == "stance":
+        mode = sig["mode"]
+        cvote, veto = votes.signal_stance(nq_box_dir, nq_es_state, mode)
+        return cvote, veto, mode in ("confirm", "both")
+    if enc == "truthtable":
+        table = {tuple(k) if isinstance(k, list) else k: v for k, v in sig["table"].items()}
+        cvote, veto = votes.signal_truthtable(nq_box_dir, nq_es_state, table)
+        return cvote, veto, any(v == "confirm" for v in table.values())
+    raise ValueError(f"invalid signal encoding {enc!r}")
 
 
 def _committee_masks(cfg, es, j_dec, nq_box_dir, n, bar_td):
