@@ -573,6 +573,15 @@ single-digit seconds. Across thousands of trials × 24 workers this is the domin
 > it is the indicator committee, and within it **two indicators (`ifvg`, `breaker`) are 90% of the cost**.
 > Excluding them turns a 106 s worst-case trial into ~10 s with no impact on the contributor-free path.
 
+### 9.5 L1 contributor: also drop `stochastic` + `adx`
+
+When ES is searched on the **L1** optimizer (`optimizer.py --contributors ES`), each trial scores **K
+walk-forward folds + a full-period backtest**, so the ES committee compute is effectively multiplied vs the
+single-window L2 path. The masks are precomputed **once per trial over the full frame** then sliced per fold
+(so the committee runs once, not K+1 times), but the per-trial floor still matters. So the L1 ES committee
+(`contributor_search.L1_ES_EXCLUDE`) excludes **`stochastic` (2.2 s) + `adx` (2.2 s)** on top of the SMC
+family — the heaviest remaining non-SMC indicators on the 487k-bar ES frame. L2 keeps the SMC-only default.
+
 ---
 
 ## 10. One-paragraph bottom line
