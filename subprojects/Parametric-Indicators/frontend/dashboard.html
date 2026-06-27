@@ -146,7 +146,9 @@
             <div class="fld"><label>NQ short · ES short</label><select id="l2_tt_short_short" class="tt"><option>confirm</option><option>veto</option><option selected>ignore</option></select></div>
             <div class="fld"><label>NQ short · ES hold</label><select id="l2_tt_short_hold" class="tt"><option>confirm</option><option>veto</option><option selected>ignore</option></select></div>
           </div>
-          <div class="sgroup"><h3>ES committee (indicators on ES)</h3><div id="l2_es_indpanel"><div class="hint">loading schema…</div></div></div>
+          <div class="sgroup"><h3>ES committee (indicators on ES)</h3>
+            <div class="hint" style="color:var(--orange)"><b>⚠ SMC indicators (structure_trend, order_block, fvg, ifvg, breaker, cisd) are SLOW on ES's 1-min frame</b> — ifvg ≈58s &amp; breaker ≈38s per run. They are <b>excluded from the optimizer</b> for speed but available here; enabling them will noticeably slow this backtester (see docs/PERFORMANCE.md §9).</div>
+            <div id="l2_es_indpanel"><div class="hint">loading schema…</div></div></div>
         </div>
       </div>
     </div>

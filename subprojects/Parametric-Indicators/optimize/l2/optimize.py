@@ -33,13 +33,22 @@ def score_window(l1, l2_params: dict, lo: int, hi: int) -> dict:
     return metrics.score(engine.run_l2(l1, l2_params, bar_mask=mask))
 
 
-def _suggest_contributor(trial, token: str) -> dict:
+# SMC structural indicators — EXCLUDED from the cross-instrument committee SEARCH by default because they do
+# not vectorise over the long contributor 1-minute frame: on the 486,954-bar ES frame `ifvg`=58.1s and
+# `breaker`=37.9s ALONE are 90% of a 106.4s 18-indicator committee trial (PERFORMANCE.md §9, profiled
+# 2026-06-27). Dropping the SMC family keeps each contributor-search trial ~10× faster. They remain fully
+# available in the manual dashboard backtester (with a slowdown warning) — this exclusion is OPTIMIZER-ONLY.
+SMC_COMMITTEE_KEYS = ("structure_trend", "order_block", "fvg", "ifvg", "breaker", "cisd")
+
+
+def _suggest_contributor(trial, token: str, exclude_committee=SMC_COMMITTEE_KEYS) -> dict:
     """Searchable cross-instrument contributor cfg (B1 gate schema): master enable, state definition,
-    composite signal voter (BOTH encodings searched), the full namespaced indicator committee, k_es.
-    The 6-cell truth table is keyed by JSON-safe 'dir|state' strings (the objective serialises params)."""
+    composite signal voter (BOTH encodings searched), the namespaced indicator committee, k_es.
+    The 6-cell truth table is keyed by JSON-safe 'dir|state' strings (the objective serialises params).
+    `exclude_committee` keys are forced OFF (not searched) — defaults to the slow SMC family (see above)."""
     pre = f"{token.lower()}_"
     specs = [{k: v for k, v in s.items() if k != "_searched"}
-             for s in OPT._suggest_indicators(trial, prefix=pre)]
+             for s in OPT._suggest_indicators(trial, prefix=pre, exclude=exclude_committee)]
     enc = trial.suggest_categorical(f"{pre}sig_enc", ["none", "stance", "truthtable"])
     mode = trial.suggest_categorical(f"{pre}sig_mode", ["confirm", "veto", "both"])
     table = {f"{d}|{s}": trial.suggest_categorical(f"{pre}tt_{d}_{s}", ["confirm", "veto", "ignore"])
@@ -51,10 +60,12 @@ def _suggest_contributor(trial, token: str) -> dict:
             "committee": specs}
 
 
-def suggest_l2_params(trial, b: dict, cap: int, contrib_tokens=()) -> dict:
+def suggest_l2_params(trial, b: dict, cap: int, contrib_tokens=(),
+                      contrib_exclude=SMC_COMMITTEE_KEYS) -> dict:
     """Engine-ready L2 param dict from an Optuna trial — mirrors optimizer.objective's space (shared
     SL/TP; indicators on the 1-minute frame to match the lean L1 regime). `contrib_tokens` (opt-in) adds
-    a searchable cross-instrument contributor block + topology; empty ⇒ byte-identical to the prior space."""
+    a searchable cross-instrument contributor block + topology; empty ⇒ byte-identical to the prior space.
+    `contrib_exclude` keys are dropped from EACH contributor's committee search (default = slow SMC family)."""
     sl_soft = trial.suggest_float("sl_soft", float(b["sl_soft"][0]), float(b["sl_soft"][1]))
     delta = trial.suggest_float("sl_hard_delta", 0.0, float(b["sl_hard"][1]))
     tp = trial.suggest_float("tp", float(b["tp"][0]), float(b["tp"][1]))
@@ -72,14 +83,15 @@ def suggest_l2_params(trial, b: dict, cap: int, contrib_tokens=()) -> dict:
     if contrib_tokens:
         params["contributor_topology"] = trial.suggest_categorical(
             "contributor_topology", ["separate_and", "merged", "or_boost"])
-        params["contributors"] = [_suggest_contributor(trial, tok) for tok in contrib_tokens]
+        params["contributors"] = [_suggest_contributor(trial, tok, exclude_committee=contrib_exclude)
+                                   for tok in contrib_tokens]
     return params
 
 
 def run(n_trials: int = 200, tf: str = "4h", study_prefix: str = "l2v1", seed: int = 1,
         min_trades: int = 5, sampler: str = "nsga3", storage_url: str | None = None,
         dd_pnl_cap: float = OPT.DD_PNL_CAP, l1_params: dict | None = None,
-        contrib_tokens=()) -> dict:
+        contrib_tokens=(), contrib_exclude=SMC_COMMITTEE_KEYS) -> dict:
     """NSGA-III search over L2 profiles. Objective = (in-sample L2 P/L, -in-sample max_dd, win-rate)
     with the DD<=dd_pnl_cap*P/L feasibility constraint; OOS (2026) is scored only for the champion.
     `l1_params` (optional) scores L2 on a CANDIDATE L1's residuals (e.g. the wsh6 cap_1min champion)
@@ -90,9 +102,14 @@ def run(n_trials: int = 200, tf: str = "4h", study_prefix: str = "l2v1", seed: i
     cap = int(caps[tf]["cooldown_cap"]); b = bounds[tf]
     print(f"[l2:{tf}] in-sample bars {w['in']}  OOS {w['oos']}  trials={n_trials}  min_trades={min_trades}",
           flush=True)
+    if contrib_tokens and contrib_exclude:
+        print(f"[l2:{tf}] **NOTE: SMC indicators {list(contrib_exclude)} are EXCLUDED from the "
+              f"cross-instrument committee search (speed — ifvg/breaker are ~90% of per-trial cost, "
+              f"PERFORMANCE.md §9). They remain available in the manual dashboard backtester.**", flush=True)
 
     def objective(trial):
-        params = suggest_l2_params(trial, b, cap, contrib_tokens=contrib_tokens)
+        params = suggest_l2_params(trial, b, cap, contrib_tokens=contrib_tokens,
+                                   contrib_exclude=contrib_exclude)
         s = score_window(l1, params, *w["in"])
         if s["n"] < min_trades:
             raise optuna.TrialPruned()
@@ -128,16 +145,22 @@ def run(n_trials: int = 200, tf: str = "4h", study_prefix: str = "l2v1", seed: i
         print(f"[l2:{tf}] champion in-sample P/L ${champion['in_sample']['pnl']:,.0f} "
               f"(n={champion['in_sample']['n']}) -> OOS P/L ${champion['oos']['pnl']:,.0f} "
               f"(n={champion['oos']['n']})", flush=True)
+    smc_excluded = list(contrib_exclude) if (contrib_tokens and contrib_exclude) else []
     return {"study": study, "n_trials": len(study.trials), "n_feasible": len(feasible),
-            "champion": champion}
+            "champion": champion, "contrib_smc_excluded": smc_excluded}
 
 
-def _export_champion(champion: dict, tf: str, out_dir, prefix: str = "l2v1") -> Path:
+def _export_champion(champion: dict, tf: str, out_dir, prefix: str = "l2v1",
+                     contrib_smc_excluded=()) -> Path:
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / f"{prefix}_{tf}_champion.json"
     rec = {"tf": tf, "prefix": prefix, "params": champion["params"],
            "in_sample": champion["in_sample"], "oos": champion["oos"]}
+    if contrib_smc_excluded:
+        rec["contrib_smc_excluded"] = list(contrib_smc_excluded)
+        rec["contrib_smc_excluded_note"] = ("SMC indicators excluded from the cross-instrument committee "
+                                            "SEARCH for speed (PERFORMANCE.md §9); available in the dashboard.")
     path.write_text(json.dumps(rec, indent=1))
     return path
 
@@ -171,9 +194,13 @@ def main() -> int:
     ap.add_argument("--contributors", default="",
                     help="comma-separated cross-instrument contributor tokens to SEARCH (e.g. 'ES'); "
                          "empty ⇒ no contributor block (existing L2 space unchanged)")
+    ap.add_argument("--contrib-include-smc", action="store_true",
+                    help="include the slow SMC indicators (ifvg/breaker/...) in the contributor committee "
+                         "search (default: EXCLUDED for speed — ~10x slower per trial; PERFORMANCE.md §9)")
     ap.add_argument("--out", default=str(_PI / "optimize" / "results"))
     a = ap.parse_args()
     contrib_tokens = tuple(t.strip() for t in a.contributors.split(",") if t.strip())
+    contrib_exclude = () if a.contrib_include_smc else SMC_COMMITTEE_KEYS
     l1_params = _l1_params_from_champion(a.l1_champion, a.tf) if a.l1_champion else None
     if l1_params is not None:
         print(f"[l2:{a.tf}] scoring L2 on CANDIDATE L1 residuals from {a.l1_champion} "
@@ -183,10 +210,11 @@ def main() -> int:
               f"(+ topology) — search space roughly doubles per contributor", flush=True)
     res = run(n_trials=a.trials, tf=a.tf, study_prefix=a.prefix, seed=a.seed,
               min_trades=a.min_trades, sampler=a.sampler, storage_url=a.storage_url, l1_params=l1_params,
-              contrib_tokens=contrib_tokens)
+              contrib_tokens=contrib_tokens, contrib_exclude=contrib_exclude)
     print(f"[l2:{a.tf}] {res['n_trials']} trials · {res['n_feasible']} feasible", flush=True)
     if res["champion"] is not None:
-        p = _export_champion(res["champion"], a.tf, a.out, a.prefix)
+        p = _export_champion(res["champion"], a.tf, a.out, a.prefix,
+                             contrib_smc_excluded=res.get("contrib_smc_excluded", ()))
         print(f"[l2:{a.tf}] champion -> {p}", flush=True)
     else:
         print(f"[l2:{a.tf}] no feasible champion (try more trials / lower --min-trades)", flush=True)

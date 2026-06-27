@@ -54,3 +54,25 @@ def test_export_champion_writes_json(tmp_path):
     d = _j.loads(p.read_text())
     assert d["tf"] == "4h" and d["in_sample"]["n"] == 3 and d["oos"]["pnl"] == -1.0
     assert d["prefix"] == "l2v1" and d["params"]["tp"] == 120.2     # params round-trip intact
+
+
+def test_contributor_committee_excludes_smc_by_default():
+    """SMC indicators are dropped from the cross-instrument committee SEARCH (speed) — present but forced
+    OFF and never suggested as Optuna dimensions; non-SMC keys ARE searched."""
+    import optuna
+    study = optuna.create_study()
+    trial = study.ask()
+    c = l2opt._suggest_contributor(trial, "ES")
+    by_key = {s["key"]: s for s in c["committee"]}
+    for k in l2opt.SMC_COMMITTEE_KEYS:
+        assert by_key[k]["enabled"] is False                       # SMC forced OFF
+        assert f"es_en_{k}" not in trial.params                    # and NOT a search dimension
+    assert "es_en_ema_trend" in trial.params                       # a non-SMC key IS searched
+
+
+def test_contributor_committee_includes_smc_when_opted_in():
+    import optuna
+    study = optuna.create_study()
+    trial = study.ask()
+    l2opt._suggest_contributor(trial, "ES", exclude_committee=())
+    assert "es_en_ifvg" in trial.params and "es_en_breaker" in trial.params  # SMC searched on opt-in
