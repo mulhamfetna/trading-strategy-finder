@@ -17,7 +17,7 @@ supersedes-as-index: perf/MASTER_REPORT_backtester_optimization.md, perf/REPORT_
 This document consolidates **every** speed/performance concern in the project into one reference: the
 governing rule, the proof gates, the two-engine architecture, the full optimization history, the caching
 layers, the dimensionality→trials→wall-clock model, measured fleet throughput, the open L2-slowdown
-investigation, and the standing verification protocol. Where a topic has its own deep-dive report, this
+investigation, the cross-instrument ES contributor per-trial cost, and the standing verification protocol. Where a topic has its own deep-dive report, this
 document **summarizes and cross-references** it rather than duplicating it. The cross-reference map:
 
 | Topic | Deep-dive doc |
@@ -495,7 +495,87 @@ cheap and safe.
 
 ---
 
-## 9. One-paragraph bottom line
+## 9. Cross-instrument (ES) contributor — per-trial cost (measured 2026-06-27)
+
+The cross-instrument L2 contributor (§ feature: ES feeds NQ's L2) adds a per-trial cost that is **entirely
+the ES indicator committee recompute**. Measured on the real ES 4h alignment (`optimize/l2/contributors/`),
+warm caches primed, single-call timing (scratchpad `prof_es3.py`). NQ L1 4h = **n=2119 decision bars**;
+the ES 1-minute frame the committee runs on = **486,954 bars**.
+
+### 9.1 What is cached vs what recomputes per trial
+
+| Work | Cost | Cadence |
+|---|---|---|
+| `load_contributor_inputs("ES","4h")` (read ES candles/levels) | **492 ms** | once per worker process (`gate._INPUT_CACHE`) |
+| `indicator_source_1min` (build the 1-min `MarketContext`) | **22 ms** | once per worker process (`gate._SRC_CACHE`) |
+| **ES committee votes** (`_vote_from_1min` per enabled indicator) | **see 9.2** | **every trial** — params (fast/slow/period) change each trial, so the indicator series is recomputed over all 486,954 1-min bars |
+| touch/traversal state + signal encoding | < 5 ms | every trial (negligible) |
+
+The one-time cost (**514 ms/worker**) is trivial. The per-trial cost is dominated by recomputing each
+enabled indicator's full 1-min series only to read a vote at the 2,119 NQ decision-bar indices (`j_nq`).
+
+### 9.2 Per-indicator `_vote_from_1min` cost — the smoking gun
+
+```mermaid
+flowchart TB
+  subgraph PATHO["⚠️ pathological — 90% of the cost"]
+    ifvg["ifvg — 58,105 ms"]
+    breaker["breaker — 37,935 ms"]
+  end
+  subgraph HEAVY["heavy SMC / oscillators"]
+    ob["order_block — 2,703 ms"]
+    sto["stochastic — 2,212 ms"]
+    adx["adx — 2,206 ms"]
+  end
+  subgraph CHEAP["the other 13 (sum ≈ 3.4 s)"]
+    rest["keltner 664 · macd 497 · ema 344 · rsi 362 · fvg 270 · vwap 264 · cisd 261 · structure 224 · mfi 208 · cci 79 · bollinger 73 · obv 13 · sma 10"]
+  end
+```
+
+| indicator | ms | indicator | ms | indicator | ms |
+|---|--:|---|--:|---|--:|
+| **ifvg** | **58,105** | keltner | 664 | bollinger | 73 |
+| **breaker** | **37,935** | macd | 497 | cci | 79 |
+| order_block | 2,703 | rsi | 362 | obv | 13 |
+| stochastic | 2,212 | ema_trend | 344 | sma_trend | 10 |
+| adx | 2,206 | fvg | 270 | | |
+| structure_trend | 224 | vwap | 264 | | |
+| mfi | 208 | cisd | 261 | | |
+
+- **Full 18-indicator committee = 106.4 s per trial.** Average 5.9 s/indicator — but the average lies: the
+  distribution is bimodal.
+- **`ifvg` (58.1 s) + `breaker` (37.9 s) = 96.0 s = 90% of the total.** These two SMC scans are ~15–60×
+  slower than everything else on a 487k-bar frame (the inverse-FVG and breaker-block structural passes do
+  not vectorize over a long minute series the way the momentum/trend indicators do).
+- Drop those two and the remaining **16 indicators sum to ~10.4 s**; drop the top-5 (add order_block,
+  stochastic, adx) and the **cheap 13 sum to ~3.4 s**.
+
+### 9.3 Why the optimizer feels this
+
+The contributor committee is searchable per indicator (`en_<key>` booleans, §B3). Most trials enable only a
+subset, so per-trial cost ∝ *which* indicators are on. But NSGA-III **will** explore trials that enable
+`ifvg`/`breaker`, and any such trial pays +40–58 s — versus a typical contributor-free L2 trial that runs in
+single-digit seconds. Across thousands of trials × 24 workers this is the dominant cost of `--contributors ES`.
+
+### 9.4 The levers (cheapest → most work), all to be applied result-neutrally (golden 6/6)
+
+1. **Exclude `ifvg` + `breaker` from the ES committee search space** (cheapest, biggest win): 106 s → ~10 s
+   worst-case trial, a ~10× cut, by removing 90% of the cost for two indicators that are unlikely to be the
+   ones that make ES *help* NQ. Implement as an opt-out list in `_suggest_contributor`. **Recommended first move.**
+2. **Cache the param-independent slow structure** of the SMC indicators per `(token, tf)` if their internal
+   passes have a reusable prefix (needs code reading — only if we keep ifvg/breaker).
+3. **Compute votes only at the `j_nq` indices** instead of the full 487k-bar series — requires the indicator
+   to support sparse/as-of evaluation; large refactor, deferred.
+4. Reuse the **candidate-L1 cache pattern** (§4.4 / §7) for the committee outputs across trials that share an
+   indicator's params — limited benefit because params vary by design.
+
+> **Headline:** the ES contributor's per-trial cost is **not** the alignment/state machinery (cheap, cached);
+> it is the indicator committee, and within it **two indicators (`ifvg`, `breaker`) are 90% of the cost**.
+> Excluding them turns a 106 s worst-case trial into ~10 s with no impact on the contributor-free path.
+
+---
+
+## 10. One-paragraph bottom line
 
 Speed work here is governed by one rule — **prove byte-identical results, never assume them** — enforced by
 the 6-TF golden gate (L1 4h anchor ~$142,203 / 214 trades) and the fast↔slow engine parity locks. Two
@@ -507,4 +587,8 @@ wall-clock while *under*-covering an exponentially larger space. The open headli
 L1 L2 slowdown: a ~9–12× **fleet-only** slowdown whose per-call time is provably unchanged — leading
 hypothesis is memory-bandwidth contention from 24 uncached workers, to be isolated by a controlled A/B on
 the idle fleet, fixed by extending the cache to the candidate path, and merged **only** if golden 6/6 plus a
-candidate-L1 parity test prove it result-neutral.
+candidate-L1 parity test prove it result-neutral. The newest measured finding (§9) is the **cross-instrument
+ES contributor per-trial cost**: alignment/state are cheap and cached (514 ms once/worker), but the ES
+indicator committee recomputes per trial, and **two indicators — `ifvg` (58 s) and `breaker` (38 s) — are
+90% of a 106 s full-committee trial**; excluding them from the ES search space is a ~10× cut with zero
+impact on the contributor-free golden path.
