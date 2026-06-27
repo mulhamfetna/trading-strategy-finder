@@ -21,10 +21,12 @@ from indicators import library, runner                             # noqa: E402
 from volatility import gate_threshold                              # noqa: E402
 
 
-def l2_gate_components(l1, l2_params: dict):
-    """L2's per-bar gate components (vol_gate, veto, confirm) computed with L2's params over the SAME
-    data L1 used. Identical recipe to core.backtest_metrics' gate construction. Returned separately so
-    callers (the causal log builder) can attribute WHY L2 declined a bar; `_l2_gate_masks` ANDs them."""
+def _nq_components(l1, l2_params: dict):
+    """NQ's raw L2 gate ingredients: (vol_gate, veto, confirm, confirm_count_entry, k_eff, n_confirmers).
+    Superset of l2_gate_components — also returns the entry-shifted confirm COUNT (cc_entry[i] = #confirms
+    at bar i-1, idx0=0), k_eff=min(k,#confirmers), and #confirmers, for the topology-pooling combiner.
+    `confirm` == runner.confirm_mask exactly. Single source of truth for both the mask and the count."""
+    from indicators.base import CONFIRM
     d, d1, box = l1.df_dec, l1.df1, l1.box
     n = len(d)
     gate_pct = float(l2_params.get("gate_pct", 0.0))
@@ -38,6 +40,9 @@ def l2_gate_components(l1, l2_params: dict):
         vol_gate = l1.vf[:n] <= gthr
     veto = np.zeros(n, dtype=bool)
     confirm = np.ones(n, dtype=bool)
+    cc_entry = np.zeros(n, dtype=np.int64)
+    k_eff = 0
+    n_confirmers = 0
     specs = [s for s in l2_params.get("indicators", []) if s.get("enabled")]
     if specs:
         inds = library.from_specs(specs)
@@ -45,6 +50,22 @@ def l2_gate_components(l1, l2_params: dict):
         votes = runner.compute_votes(d, box, inds, src=src)
         veto = np.asarray(runner.veto_mask(d, box, inds, src=src, votes=votes), dtype=bool)[:n]
         confirm = np.asarray(runner.confirm_mask(d, box, inds, K, src=src, votes=votes), dtype=bool)[:n]
+        confirmers = [i for i in inds if i.config.enabled and i.config.mode in ("confirm", "both")]
+        n_confirmers = len(confirmers)
+        k_eff = min(K, n_confirmers)
+        if k_eff > 0:
+            cc = np.zeros(n, dtype=np.int64)
+            for ind in confirmers:
+                cc += (votes[id(ind)] == CONFIRM).astype(np.int64)
+            cc_entry[1:] = cc[:-1]                  # entry-shift (confirms read at idx-1); idx0=0
+    return vol_gate, veto, confirm, cc_entry, k_eff, n_confirmers
+
+
+def l2_gate_components(l1, l2_params: dict):
+    """L2's per-bar gate components (vol_gate, veto, confirm) — UNCHANGED public shape, used by the causal
+    log builder to attribute WHY L2 declined a bar; `_l2_gate_masks` ANDs them. Delegates to
+    `_nq_components` so the mask and the topology-count path share one source of truth."""
+    vol_gate, veto, confirm, _, _, _ = _nq_components(l1, l2_params)
     return vol_gate, veto, confirm
 
 
