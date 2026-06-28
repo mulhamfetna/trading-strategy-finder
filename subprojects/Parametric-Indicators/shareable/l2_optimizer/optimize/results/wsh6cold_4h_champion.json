@@ -1,0 +1,50 @@
+{
+ "4h": {
+  "trial": 24666,
+  "median_pnl": 27394.505757868756,
+  "full_pnl": 153321.11,
+  "full_dd": 9588.9,
+  "win": 58.3,
+  "oos_2026_pnl": 60488.0,
+  "oos_2026_dd": 8280.0,
+  "oos_2026_win": 60.6,
+  "box": {
+   "sl_soft": 123.29924842000788,
+   "sl_hard": 190.44503278604503,
+   "tp": 230.73937609059863,
+   "gate_pct": 97.69161619458502,
+   "dd_limit": 1766.212029915295,
+   "cooldown": 1,
+   "flip": false,
+   "k": 3,
+   "cap_1min": 448
+  },
+  "indicators": {
+   "ema_trend": {
+    "fast": 172,
+    "slow": 362
+   },
+   "macd": {
+    "fast": 95,
+    "slow": 39,
+    "signal": 98
+   },
+   "obv": {
+    "slope": 128
+   },
+   "cci": {
+    "n": 139,
+    "threshold": 50
+   },
+   "bollinger": {
+    "n": 108,
+    "k": 4.0
+   },
+   "adx": {
+    "n": 38,
+    "threshold": 17
+   },
+   "cisd": {}
+  }
+ }
+}

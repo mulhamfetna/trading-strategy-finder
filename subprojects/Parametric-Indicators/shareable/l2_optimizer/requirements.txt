@@ -1,0 +1,4 @@
+numpy
+pandas
+optuna>=3.2          # NSGA-III multi-objective sampler (the optimizer brain)
+cmaes               # OPTIONAL — only needed for `--sampler cmaes` (two-stage Stage-B); nsga3 default doesn't use it
