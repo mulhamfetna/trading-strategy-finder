@@ -397,7 +397,7 @@ solo `engine.run_l2` time (§7). L2-on-candidate at 24/min on 24 workers ⇒ 24 
 
 ---
 
-## 7. The candidate-L1 L2 slowdown — investigation (the headline open finding)
+## 7. The candidate-L1 L2 slowdown — investigation (✅ RESOLVED 2026-06-28, see §7.4)
 
 L2 sweeps run at ~270 trials/min when scored against the **frozen** L1 (l2v3) but collapse to ~24 trials/min
 when scored against an **arbitrary candidate** L1 (l2v4) — a ~9–12× fleet slowdown on identical backtest
@@ -454,6 +454,27 @@ After l2v4 finishes and **frees the fleet** (so an A/B is uncontaminated by the 
 
 **Merge ONLY if result-neutral.** This honors §1.1 and §1.3: don't guess the cause or the fix — isolate by
 controlled measurement after the running round, implement, then compare.
+
+### 7.4 ✅ RESOLUTION (2026-06-28) — the indicator-vote memoization (commit `c0db7f7`)
+
+The §7.2 hypothesis was **confirmed and fixed**, exactly per the §7.3 protocol:
+
+- **The fix (§7.3 step 2):** `optimize/core.py` + `optimize/l2/engine.py` now **memoize** the param-independent
+  1-minute indicator source (built once per fold-window, not every trial) **and** per-`(window, config)`
+  indicator votes — so the 24 workers no longer each re-traverse the full ~487k-bar 1-minute series every
+  trial. (Mirrors the parity-locked `gate._cached_source` pattern; the vote reimpl is an exact memoized copy
+  of `runner.compute_votes`.) Originally surfaced via a user-supplied "fastened" bundle; adopted after
+  verification.
+- **Parity (§7.3 step 3):** golden **6/6 byte-identical** + L2 suite **78 passed** (payload / parity-anchor /
+  contributors). Result-neutral.
+- **Measured fleet speedup (§7.3 step 4):** candidate-L1 (`--l1-champion wsh6cold`) 16-worker fleet rate
+  **≈ 24/min → 1,286/min (~50×)** on the idle AMD server. The hypothesis held: the bottleneck was the
+  uncached concurrent 1-minute re-traversal (memory-bandwidth contention), and caching it removed it.
+
+**Conclusion:** the candidate-L1 path is no longer the bottleneck. The per-call disk cache (§4.4) handles the
+candidate L1 *build*; this memoization handles the per-trial *re-traversal* — together they close §7. A
+remaining, separate lever is the **cold** `ifvg`/`breaker` cost (the memo can't help a config's first compute;
+PERFORMANCE.md §9) — tracked as the ifvg/breaker vectorization, not part of this resolution.
 
 ---
 
@@ -592,11 +613,11 @@ fronts (Axis A indicator vectorization, Axis B per-decision-loop rewrite) cut a 
 byte-identically; four caching layers (sig_int, the frozen-L1 disk pass, the within-run causal/payload
 memos, and the new candidate-L1 disk cache at 406× per call) cut repeated work. The trial budget is
 proportional to dimensionality (57→5,700, 114→11,400 at ×100/dim), so doubling dimensions ~doubles
-wall-clock while *under*-covering an exponentially larger space. The open headline finding is the candidate-
-L1 L2 slowdown: a ~9–12× **fleet-only** slowdown whose per-call time is provably unchanged — leading
-hypothesis is memory-bandwidth contention from 24 uncached workers, to be isolated by a controlled A/B on
-the idle fleet, fixed by extending the cache to the candidate path, and merged **only** if golden 6/6 plus a
-candidate-L1 parity test prove it result-neutral. The newest measured finding (§9) is the **cross-instrument
+wall-clock while *under*-covering an exponentially larger space. The former headline finding — the candidate-
+L1 L2 slowdown (~9–12× **fleet-only**) — is now **RESOLVED (§7.4)**: the hypothesis (24 uncached workers each
+re-traversing the 487k-bar 1-minute series → memory-bandwidth contention) was confirmed and fixed by the
+indicator-vote **memoization** (commit `c0db7f7`), measured **≈24/min → 1,286/min (~50×)** on the candidate-L1
+fleet, golden 6/6 byte-identical. The newest measured finding (§9) is the **cross-instrument
 ES contributor per-trial cost**: alignment/state are cheap and cached (514 ms once/worker), but the ES
 indicator committee recomputes per trial, and **two indicators — `ifvg` (58 s) and `breaker` (38 s) — are
 90% of a 106 s full-committee trial**; excluding them from the ES search space is a ~10× cut with zero
