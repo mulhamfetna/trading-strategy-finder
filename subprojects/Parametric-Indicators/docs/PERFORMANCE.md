@@ -603,6 +603,19 @@ single-window L2 path. The masks are precomputed **once per trial over the full 
 (`contributor_search.L1_ES_EXCLUDE`) excludes **`stochastic` (2.2 s) + `adx` (2.2 s)** on top of the SMC
 family — the heaviest remaining non-SMC indicators on the 487k-bar ES frame. L2 keeps the SMC-only default.
 
+### 9.6 Disk-persistent vote cache — cold SMC paid once-ever
+
+Item 1's memoization (§7.4) caches the per-`(slice, config)` indicator votes **in process**, so it resets on
+watchdog respawn and each fresh worker re-pays the cold `ifvg` (74.5 s) / `breaker` (25 s) computes. A
+**disk** tier (`optimize/vote_cache.py`) now sits behind the in-process memos: on a memo miss it loads the
+vote from disk; on a disk miss it computes and **atomically persists** it (best-effort, never fails the run —
+mirrors the §4.4 candidate-L1 disk cache). The key is `(CACHE_VERSION, slice_signature, use_1min, key, mode,
+params)` — versioned + content-signed, so a dataset change (new endpoints) or an indicator-math change (bump
+`CACHE_VERSION`) can't produce a stale hit. Result-neutral by construction (stores/reloads the exact array);
+golden 6/6 + L2 78 + cross-process-reuse tests gate it. Net: the expensive SMC votes are computed **once ever**
+and shared across all workers + respawns — the residual lever after item 1, biggest benefit on many short /
+frequently-respawning sweeps. Votes are per-decision-bar (~2 KB), so the store is tiny.
+
 ---
 
 ## 10. One-paragraph bottom line
