@@ -21,6 +21,56 @@ from indicators import library, runner                             # noqa: E402
 from volatility import gate_threshold                              # noqa: E402
 
 
+def _cached_1min_source(l1):
+    """The 1-MINUTE indicator source (ctx_1min, j_idx) for this L1 run, memoised ON the l1 object.
+    It is a pure function of l1's frozen data (df_dec/df1/bar_td), so rebuilding it every optimizer trial
+    — the heavy market_context(df1) numpy conversion + the searchsorted decbar→1min map — is wasted work
+    (mirrors the ES contributor's gate._cached_source, which the comment there notes saved ~75s/trial).
+    Computed lazily post-load so it never enters the L1 disk-cache pickle. Result-neutral by construction."""
+    src = getattr(l1, "_l2_min_src", None)
+    if src is None:
+        src = runner.indicator_source_1min(l1.df_dec, l1.df1, l1.bar_td)
+        try:
+            l1._l2_min_src = src                          # attach to the in-process L1Result (not pickled)
+        except Exception:
+            pass                                          # read-only l1 (unexpected) → just don't cache
+    return src
+
+
+def _committee_votes(l1, inds, src) -> dict:
+    """compute_votes drop-in (dict keyed by id(ind)) with a per-l1 memo. A given indicator's vote array
+    is a pure function of (1-min-mode?, key, mode, params) for this frozen l1, so identical configs across
+    trials (Optuna revisits the search space heavily; SMC ifvg/breaker are ~90% of per-trial cost) are
+    computed ONCE and reused. Returned arrays are treated read-only downstream (veto/confirm masks copy),
+    so sharing them is safe. Result-neutral: same call as runner.compute_votes, just cached."""
+    enabled = [ind for ind in inds if ind.config.enabled]
+    if not enabled:
+        return {}
+    memo = getattr(l1, "_l2_vote_memo", None)
+    if memo is None:
+        memo = {}
+        try:
+            l1._l2_vote_memo = memo
+        except Exception:
+            memo = None                                   # read-only l1 → compute without caching
+    use1 = src is not None
+    ctx = bdir = None                                     # built lazily, only on a memo miss
+    out = {}
+    for ind in enabled:
+        c = ind.config
+        sig = (use1, ind.key, c.mode, tuple(sorted(c.params.items())))
+        v = memo.get(sig) if memo is not None else None
+        if v is None:
+            if ctx is None:
+                ctx = runner.market_context(l1.df_dec)
+                bdir = runner.box_direction_int(l1.df_dec, l1.box)
+            v = runner._ind_vote(ind, ctx, bdir, src)
+            if memo is not None:
+                memo[sig] = v
+        out[id(ind)] = v
+    return out
+
+
 def _nq_components(l1, l2_params: dict):
     """NQ's raw L2 gate ingredients: (vol_gate, veto, confirm, confirm_count_entry, k_eff, n_confirmers).
     Superset of l2_gate_components — also returns the entry-shifted confirm COUNT (cc_entry[i] = #confirms
@@ -46,8 +96,8 @@ def _nq_components(l1, l2_params: dict):
     specs = [s for s in l2_params.get("indicators", []) if s.get("enabled")]
     if specs:
         inds = library.from_specs(specs)
-        src = runner.indicator_source_1min(d, d1, l1.bar_td) if l2_params.get("ind_1min") else None
-        votes = runner.compute_votes(d, box, inds, src=src)
+        src = _cached_1min_source(l1) if l2_params.get("ind_1min") else None
+        votes = _committee_votes(l1, inds, src)
         veto = np.asarray(runner.veto_mask(d, box, inds, src=src, votes=votes), dtype=bool)[:n]
         confirm = np.asarray(runner.confirm_mask(d, box, inds, K, src=src, votes=votes), dtype=bool)[:n]
         confirmers = [i for i in inds if i.config.enabled and i.config.mode in ("confirm", "both")]

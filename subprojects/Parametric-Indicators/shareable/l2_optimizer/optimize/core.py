@@ -30,6 +30,73 @@ from optimize.fast_engine import fast_backtest, signals_to_int  # noqa: E402
 from optimize import signals as _sig  # noqa: E402
 
 
+# --- per-run memo of the param-INDEPENDENT 1-minute indicator source + per-config indicator votes -----
+# backtest_metrics re-slices df_dec/df1 per fold, so the heavy market_context(df1) build AND the SMC vote
+# computation (ifvg/breaker are ~90% of per-trial cost, per the README) were redone on EVERY trial even
+# though each fold's window recurs identically across trials. We memoise by a CONTENT signature of the
+# (decision, 1-minute) slice — stable across trials for a fixed dataset — so the source builds once per
+# fold and each indicator config's votes compute once. Result-neutral: identical inputs ⇒ identical
+# arrays (mirrors the L2 engine cache + the ES gate cache, both parity-locked). Expensive SMC indicators
+# have tiny config spaces (no params / swing_l∈1..20) ⇒ the vote memo stays small + high-hit. Mirrors
+# optimize/l2/contributors/gate.py's module-level caches (incl. a _clear_caches() test seam).
+_SRC_MEMO: dict = {}
+_VOTE_MEMO: dict = {}
+
+
+def _clear_caches() -> None:
+    _SRC_MEMO.clear()
+    _VOTE_MEMO.clear()
+
+
+def _slice_sig(d, d1, bar_duration):
+    """Hashable CONTENT signature of a (decision, 1-minute) window pair for a fixed dataset: each frame's
+    (length, first, last) timestamp + the bar duration. Same fold across trials ⇒ same signature; two
+    genuinely different contiguous time-slices from one source cannot collide (a slice is determined by
+    its length + endpoints)."""
+    dd = d["Date"].to_numpy("datetime64[ns]").view("int64")
+    md = d1["Date"].to_numpy("datetime64[ns]").view("int64")
+    de = (int(dd[0]), int(dd[-1])) if len(dd) else (0, 0)
+    me = (int(md[0]), int(md[-1])) if len(md) else (0, 0)
+    return (len(dd), de[0], de[1], len(md), me[0], me[1], str(bar_duration))
+
+
+def _cached_source(d, d1, bar_duration):
+    """Memoised runner.indicator_source_1min — built once per distinct slice, reused across trials."""
+    from indicators import runner
+    key = _slice_sig(d, d1, bar_duration)
+    src = _SRC_MEMO.get(key)
+    if src is None:
+        src = runner.indicator_source_1min(d, d1, bar_duration)
+        _SRC_MEMO[key] = src
+    return src
+
+
+def _cached_votes(d, d1, box, inds, src, bar_duration):
+    """runner.compute_votes drop-in (dict keyed by id(ind)) with a per-(slice, config) memo. A given
+    indicator's vote is a pure function of (slice, 1-min-mode?, key, mode, params) for a fixed dataset, so
+    identical configs across trials compute ONCE. Returned arrays are read-only downstream (veto/confirm
+    masks copy), so sharing them is safe."""
+    from indicators import runner
+    base = _slice_sig(d, d1, bar_duration)
+    use1 = src is not None
+    ctx = bdir = None                                    # built lazily, only on a memo miss
+    out = {}
+    for ind in inds:
+        if not ind.config.enabled:
+            continue
+        c = ind.config
+        key = (base, use1, ind.key, c.mode, tuple(sorted(c.params.items())))
+        v = _VOTE_MEMO.get(key)
+        if v is None:
+            if ctx is None:
+                from indicators.runner import market_context, box_direction_int
+                ctx = market_context(d); bdir = box_direction_int(d, box)
+            v = runner._ind_vote(ind, ctx, bdir, src)
+            _VOTE_MEMO[key] = v
+        out[id(ind)] = v
+    return out
+
+
 def _contributor_gate(d, d1, box, vfw, vf, n_split, gate_ref_vf, gate_pct, params,
                       bar_duration, contrib, lo, hi):
     """Entry gate for the cross-instrument contributor path (L1 opt-in): vol_gate ∧ (NQ veto/confirm
@@ -47,8 +114,8 @@ def _contributor_gate(d, d1, box, vfw, vf, n_split, gate_ref_vf, gate_pct, param
     specs = params.get("indicators") or []
     inds = library.from_specs(specs) if specs else []
     if inds and any(i.config.enabled for i in inds):
-        src = runner.indicator_source_1min(d, d1, bar_duration) if params.get("ind_1min") else None
-        votes = runner.compute_votes(d, box, inds, src=src)
+        src = _cached_source(d, d1, bar_duration) if params.get("ind_1min") else None
+        votes = _cached_votes(d, d1, box, inds, src, bar_duration)
         nq_veto = runner.veto_mask(d, box, inds, src=src, votes=votes)
         nq_confirm = runner.confirm_mask(d, box, inds, int(params.get("k", 1)), src=src, votes=votes)
         nq_cc, nq_nconf = runner.confirm_count(d, box, inds, src=src, votes=votes)
@@ -145,8 +212,8 @@ def backtest_metrics(
                 # params["ind_1min"]=True ⇒ indicators read the 1-minute frame (sampled at each decision
                 # bar's last-closed minute); else decision-TF (default, unchanged). Votes computed ONCE
                 # and shared by the veto + confirm masks.
-                src = runner.indicator_source_1min(d, d1, bar_duration) if params.get("ind_1min") else None
-                votes = runner.compute_votes(d, box, inds, src=src)
+                src = _cached_source(d, d1, bar_duration) if params.get("ind_1min") else None
+                votes = _cached_votes(d, d1, box, inds, src, bar_duration)
                 vmask = runner.veto_mask(d, box, inds, src=src, votes=votes)
                 cmask = runner.confirm_mask(d, box, inds, int(params.get("k", 1)), src=src, votes=votes)
                 gate = base & ~vmask & cmask
