@@ -72,26 +72,31 @@ def _cached_source(d, d1, bar_duration):
 
 
 def _cached_votes(d, d1, box, inds, src, bar_duration):
-    """runner.compute_votes drop-in (dict keyed by id(ind)) with a per-(slice, config) memo. A given
-    indicator's vote is a pure function of (slice, 1-min-mode?, key, mode, params) for a fixed dataset, so
-    identical configs across trials compute ONCE. Returned arrays are read-only downstream (veto/confirm
-    masks copy), so sharing them is safe."""
+    """runner.compute_votes drop-in (dict keyed by id(ind)) with a per-(slice, config) memo, backed by a
+    disk cache (vote_cache) so cold computes (ifvg/breaker) persist across processes + respawns. Returned
+    arrays are read-only downstream (veto/confirm masks copy), so sharing them is safe. Result-neutral."""
     from indicators import runner
+    from optimize import vote_cache
     base = _slice_sig(d, d1, bar_duration)
     use1 = src is not None
-    ctx = bdir = None                                    # built lazily, only on a memo miss
+    ctx = bdir = None                                    # built lazily, only on a real (memo+disk) miss
     out = {}
     for ind in inds:
         if not ind.config.enabled:
             continue
         c = ind.config
-        key = (base, use1, ind.key, c.mode, tuple(sorted(c.params.items())))
+        params_t = tuple(sorted(c.params.items()))
+        key = (base, use1, ind.key, c.mode, params_t)
         v = _VOTE_MEMO.get(key)
         if v is None:
-            if ctx is None:
-                from indicators.runner import market_context, box_direction_int
-                ctx = market_context(d); bdir = box_direction_int(d, box)
-            v = runner._ind_vote(ind, ctx, bdir, src)
+            dkey = vote_cache.disk_key(base, use1, ind.key, c.mode, params_t)
+            v = vote_cache.get(dkey)
+            if v is None:
+                if ctx is None:
+                    from indicators.runner import market_context, box_direction_int
+                    ctx = market_context(d); bdir = box_direction_int(d, box)
+                v = runner._ind_vote(ind, ctx, bdir, src)
+                vote_cache.put(dkey, v)
             _VOTE_MEMO[key] = v
         out[id(ind)] = v
     return out
