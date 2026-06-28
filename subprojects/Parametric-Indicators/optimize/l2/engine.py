@@ -46,25 +46,33 @@ def _committee_votes(l1, inds, src) -> dict:
     enabled = [ind for ind in inds if ind.config.enabled]
     if not enabled:
         return {}
+    from optimize import vote_cache
+    from optimize.core import _slice_sig
     memo = getattr(l1, "_l2_vote_memo", None)
     if memo is None:
         memo = {}
         try:
             l1._l2_vote_memo = memo
         except Exception:
-            memo = None                                   # read-only l1 → compute without caching
+            memo = None                                   # read-only l1 → compute without in-memory caching
     use1 = src is not None
-    ctx = bdir = None                                     # built lazily, only on a memo miss
+    base = _slice_sig(l1.df_dec, l1.df1, l1.bar_td)        # L1-frame signature for the disk key
+    ctx = bdir = None                                     # built lazily, only on a real (memo+disk) miss
     out = {}
     for ind in enabled:
         c = ind.config
-        sig = (use1, ind.key, c.mode, tuple(sorted(c.params.items())))
+        params_t = tuple(sorted(c.params.items()))
+        sig = (use1, ind.key, c.mode, params_t)           # in-memory key (per-l1; no slice needed)
         v = memo.get(sig) if memo is not None else None
         if v is None:
-            if ctx is None:
-                ctx = runner.market_context(l1.df_dec)
-                bdir = runner.box_direction_int(l1.df_dec, l1.box)
-            v = runner._ind_vote(ind, ctx, bdir, src)
+            dkey = vote_cache.disk_key(base, use1, ind.key, c.mode, params_t)
+            v = vote_cache.get(dkey)
+            if v is None:
+                if ctx is None:
+                    ctx = runner.market_context(l1.df_dec)
+                    bdir = runner.box_direction_int(l1.df_dec, l1.box)
+                v = runner._ind_vote(ind, ctx, bdir, src)
+                vote_cache.put(dkey, v)
             if memo is not None:
                 memo[sig] = v
         out[id(ind)] = v
