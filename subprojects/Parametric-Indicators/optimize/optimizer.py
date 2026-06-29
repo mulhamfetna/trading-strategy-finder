@@ -321,7 +321,7 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         split_sltp: bool = False, warm_start: bool = True, sampler: str = "nsga3",
         objective: str = "winrate", exclude_inds: tuple = (), only_inds: tuple = (),
         dd_pnl_cap: float = DD_PNL_CAP, contrib_tokens: tuple = (),
-        contrib_exclude=None) -> dict:
+        contrib_exclude=None, instrument: str = "NQ") -> dict:
     # split_sltp (Q3 / E2): when True the optimizer searches SEPARATE long vs short SL/TP (long_*/short_*),
     # widening the space per the user's point-5 goal. Default False ⇒ shared SL/TP ⇒ identical to prior runs.
     # NOTE FOR THE NEXT FULL RUN (wsh5): launch with split_sltp=True to let longs and shorts get their own
@@ -333,9 +333,12 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         raise KeyError(f"no derived caps/bounds for {tf_name} (run cooldown.py + sl_tp_bounds.py)")
     cap = int(caps[tf_name]["cooldown_cap"])
     b = bounds[tf_name]
+    from optimize import instruments
+    pv = float(instruments.point_value(instrument))
+    b, _dd_limit_max = _bounds_for(b, DD_LIMIT_MAX, instrument)   # non-NQ: scale point-bounds + dd ceiling
 
-    print(f"[{tf_name}] loading inputs ...", flush=True)
-    df_dec, df1, box, vf, n_split = data_mod.load_inputs(tf_name)
+    print(f"[{tf_name}] loading inputs ({instrument}, pv={pv:g}) ...", flush=True)
+    df_dec, df1, box, vf, n_split = data_mod.load_inputs(tf_name, instrument)
     sig_int = signals_to_int(sig_mod.decision_signals(df_dec, box))   # precompute once (param-independent)
     print(f"[{tf_name}] {len(df_dec)} decision bars; cooldown cap {cap}; "
           f"bounds sl_soft{b['sl_soft']} sl_hard{b['sl_hard']} tp{b['tp']}; "
@@ -346,7 +349,7 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         delta = trial.suggest_float("sl_hard_delta", 0.0, float(b["sl_hard"][1]))
         tp = trial.suggest_float("tp", float(b["tp"][0]), float(b["tp"][1]))
         gate_pct = trial.suggest_float("gate_pct", 0.0, 100.0)
-        dd_limit = trial.suggest_float("dd_limit", 0.0, DD_LIMIT_MAX)
+        dd_limit = trial.suggest_float("dd_limit", 0.0, _dd_limit_max)
         cooldown = trial.suggest_int("cooldown", 0, cap)
         flip = trial.suggest_categorical("flip", [False, True])
         specs = [{k: v for k, v in s.items() if k != "_searched"}      # strip the test-hook key before engine use
@@ -378,14 +381,14 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
                                       for tok in contrib_tokens]
             _contrib = _cmask.precompute_contributor_masks(params, df_dec, df1, box, sig_int, tf.bar_td)
         r = score_walkforward(df_dec, df1, box, vf, params, tf.bar_td, k=folds,
-                              min_trades=min_trades, sig_int=sig_int, contrib=_contrib)
+                              min_trades=min_trades, sig_int=sig_int, contrib=_contrib, pv=pv)
         if not r["valid"]:
             raise optuna.TrialPruned()
         worst_dd = r["worst_dd"]; med_win = r["median_win"]
         # FULL-PERIOD feasibility (user): full-window max DD ≤ 25% of full-window P/L. One extra
         # backtest over the whole window (gate frozen causally on vf[:n_split]).
         full = backtest_metrics(df_dec, df1, box, vf, n_split, dict(params, window="full"),
-                                tf.bar_td, sig_int=sig_int, contrib=_contrib)
+                                tf.bar_td, sig_int=sig_int, contrib=_contrib, pv=pv)
         full_pnl = float(full["pnl"]); full_dd = float(full["max_dd"])
         dec_pause = float(full.get("max_no_entry_days_decision", full.get("max_no_entry_days", 0.0)))
         trial.set_user_attr("worst_dd", worst_dd)
@@ -410,8 +413,8 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
     # below, removes the many-writer contention (see optimize/server/INCIDENT_wsh4_sqlite_contention.md +
     # MIGRATION_per_tf_db.md). WAL lets readers run alongside the single writer; a 60s busy_timeout makes
     # a worker WAIT for the lock instead of erroring out.
-    study_name = f"{study_prefix}_{tf_name}"
-    db_path = _db_for(tf_name, study_name)
+    study_name = f"{study_prefix}_{tf_name}{_study_suffix(instrument)}"
+    db_path = _db_for(tf_name, study_name, instrument)
     # Tier 1: one source of truth for the store URL. WSH_STORAGE_URL (e.g. postgresql://…) overrides the
     # per-TF sqlite path; unset ⇒ the per-TF sqlite file, byte-identical to before. WAL/busy_timeout file
     # hardening applies only to a sqlite file; a served RDB (Postgres) uses MVCC + a connection pool.
@@ -437,7 +440,7 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
     )
     # Warm-start: enqueue known champions as the FIRST trials so the returned front is provably ≥ their
     # score (the wsh5 "bigger space, worse result" trap cannot recur). skip_if_exists keeps resumes idempotent.
-    if warm_start:
+    if warm_start and instrument == "NQ":              # non-NQ has no champions; NQ seeds are wrong-scaled
         seeds = warm_start_seeds(tf_name, split_sltp, b)
         n_seeded = 0
         for s in seeds:
@@ -525,7 +528,13 @@ def main() -> int:
                     help="comma-separated cross-instrument contributor tokens to SEARCH on L1 (e.g. 'ES'); "
                          "ES is SEARCHABLE not forced (es_enabled is a categorical). Empty ⇒ no contributor "
                          "block (existing L1 space unchanged). ES committee excludes SMC + stochastic + adx.")
+    ap.add_argument("--instrument", default="NQ",
+                    help="instrument to optimize (NQ default, or ES). Non-NQ studies/DBs/champions are "
+                         "suffixed (_ES) so NQ artifacts are untouched; SL/TP bounds auto-scale by price.")
     a = ap.parse_args()
+    from optimize import instruments as _inst
+    if not _inst.is_valid(a.instrument):
+        print(f"unknown instrument {a.instrument!r}; known {list(_inst.TOKENS)}", flush=True); return 2
     contrib_tokens = tuple(t.strip() for t in a.contributors.split(",") if t.strip())
     # report the plan (search size + recommended trials) — always, so the budget is visible
     rec = print_plan(a.timeframe, a.split_sltp, a.trials_per_dim,
@@ -546,7 +555,7 @@ def main() -> int:
         ind_1min=a.ind_1min, study_prefix=a.study_prefix, split_sltp=a.split_sltp,
         warm_start=not a.no_warm_start, sampler=a.sampler,
         objective=a.objective, exclude_inds=_excl, only_inds=_only, dd_pnl_cap=a.dd_pnl_cap,
-        contrib_tokens=contrib_tokens)
+        contrib_tokens=contrib_tokens, instrument=a.instrument)
     return 0
 
 
