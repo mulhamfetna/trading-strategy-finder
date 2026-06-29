@@ -18,6 +18,7 @@ if str(_PI) not in sys.path:
 import config                                                       # noqa: E402
 import presets                                                      # noqa: E402
 from optimize import data as data_mod, timeframes as TF, signals as sig_mod   # noqa: E402
+from optimize import instruments                                  # noqa: E402
 from optimize.fast_engine import fast_backtest, signals_to_int     # noqa: E402
 from optimize.counterfactual_pause import attribute                # noqa: E402
 from indicators import library, runner                             # noqa: E402
@@ -130,14 +131,15 @@ class L1Result:
     n_locks: int = 0            # number of breaker lock events
     votes_by_bar: list = field(default_factory=list)   # per-bar [{key,vote,active}] for every enabled indicator
     skipped_would_be: dict = field(default_factory=dict)  # {bar_idx: would_be_pnl $} for breaker-skipped candidates
+    instrument: str = "NQ"      # which instrument this L1 ran on (NQ default; drives point value + data paths)
 
 
-def run_l1(tf: str = "4h", params: dict | None = None) -> L1Result:
+def run_l1(tf: str = "4h", params: dict | None = None, instrument: str = "NQ") -> L1Result:
     """params=None → the FROZEN lean champion (default; golden + disk-cache stay valid). Pass a dict to
     run an ARBITRARY L1 profile (combined dashboard: L1 editable) — same engine, same schema as L2
     (sl_soft/sl_hard/tp/gate_pct/dd_limit/cooldown/flip/k/ind_1min/indicators)."""
     params = _lean_params(tf) if params is None else dict(params)
-    df_dec, df1, box, vf, n_split = data_mod.load_inputs(tf)
+    df_dec, df1, box, vf, n_split = data_mod.load_inputs(tf, instrument)
     bar_td = TF.get(tf).bar_td
     # window selection (default full): physically slice the data via the SHARED helper so windowed L1
     # numbers match strategy.build_payload byte-for-byte (4h sources verified identical). The gate seeds
@@ -185,7 +187,7 @@ def run_l1(tf: str = "4h", params: dict | None = None) -> L1Result:
         cap_mode=_cap_mode, eod_target=_eod_t, session_last=_eod_sl,
         **{k: params.get(k) for k in ("long_sl_soft", "long_sl_hard", "long_tp",
                                       "short_sl_soft", "short_sl_hard", "short_tp")})
-    pv = float(config.NQ_POINT_VALUE)
+    pv = float(instruments.point_value(instrument))
     taken, _skipped, _locks = apply_breaker(cand, pv, params["dd_limit"], params["cooldown"])
 
     cause = attribute(sig_int, vol_gate, veto, confirm)
@@ -205,4 +207,5 @@ def run_l1(tf: str = "4h", params: dict | None = None) -> L1Result:
                     ledger=taken, cause=cause, dropped_signals=dropped, state_timeline=state_timeline,
                     vf_seed=vf_seed,
                     n_candidates=len(cand), n_skipped_breaker=_skipped, n_locks=_locks,
-                    votes_by_bar=_votes_by_bar(votes, inds, n), skipped_would_be=skipped_would_be)
+                    votes_by_bar=_votes_by_bar(votes, inds, n), skipped_would_be=skipped_would_be,
+                    instrument=instrument)

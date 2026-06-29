@@ -14,9 +14,9 @@ _PI = Path(__file__).resolve().parents[2]
 if str(_PI) not in sys.path:
     sys.path.insert(0, str(_PI))
 
-import config                                                       # noqa: E402
 from optimize.fast_engine import fast_backtest                     # noqa: E402
 from optimize.l2.l1_runner import apply_breaker                    # noqa: E402
+from optimize import instruments                                   # noqa: E402
 from indicators import library, runner                             # noqa: E402
 from volatility import gate_threshold                              # noqa: E402
 
@@ -207,7 +207,7 @@ def run_l2(l1, l2_params: dict, bar_mask=None, exit_mode: str = "l1_priority") -
     n = len(d)
     dec_dates = d["Date"].to_numpy()
     dec_close = d["Close"].to_numpy(float)
-    pv = float(config.NQ_POINT_VALUE)
+    pv = float(instruments.point_value(getattr(l1, "instrument", "NQ")))
 
     dropped_mask = np.zeros(n, dtype=bool)
     for ds in l1.dropped_signals:
