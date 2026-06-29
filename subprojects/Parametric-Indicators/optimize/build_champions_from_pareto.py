@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -27,6 +28,8 @@ from indicators import library  # noqa: E402
 
 _RESULTS = _HERE / "results"
 _DEFAULT_TFS = ["4h", "2h", "1h", "15m", "5m", "2m"]
+_INSTRUMENT = os.environ.get("WSI_INSTRUMENT", "NQ")   # NQ (default) reads the bare pareto CSVs; ES → _ES
+_SUF = "" if _INSTRUMENT == "NQ" else f"_{_INSTRUMENT}"
 
 # per-indicator param name → caster (int/float), derived from the schema defaults
 _CAST = {key: {p["name"]: type(p["default"]) for p in library.SCHEMA[key].get("params", [])}
@@ -40,7 +43,7 @@ def _num(s: str):
 
 
 def champion_for(tf: str) -> dict | None:
-    csv_path = _RESULTS / f"{tf}_wsi_pareto.csv"
+    csv_path = _RESULTS / f"{tf}_wsi_pareto{_SUF}.csv"
     if not csv_path.exists():
         print(f"  {tf}: no pareto CSV ({csv_path.name})", flush=True)
         return None
