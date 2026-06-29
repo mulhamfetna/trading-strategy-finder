@@ -34,6 +34,8 @@ _IND_PARAM_COLS = [f"{key}_{p['name']}" for key in library.REGISTRY
 
 _DB = _HERE / "studies" / "wsh.db"                     # legacy SHARED store (back-compat)
 _PREFIX = os.environ.get("WSI_STUDY_PREFIX", "wsh3")   # study name prefix (wsh3 = WS-I.10 regime)
+_INSTRUMENT = os.environ.get("WSI_INSTRUMENT", "NQ")   # NQ (default) or ES; non-NQ → suffixed artifacts
+_SUF = "" if _INSTRUMENT == "NQ" else f"_{_INSTRUMENT}"
 
 
 def _study_in(db_path: Path, study_name: str) -> bool:
@@ -55,7 +57,7 @@ def _db_for(tf: str, study_name: str) -> Path:
     """Pick the SQLite file holding this timeframe's study: prefer the per-TF file (wsh_<tf>.db); if it
     is absent but the legacy shared wsh.db holds the study, fall back to the shared file with a LOUD
     warning (so the server's single-file output stays readable). See MIGRATION_per_tf_db.md."""
-    per_tf = _HERE / "studies" / f"wsh_{tf}.db"
+    per_tf = _HERE / "studies" / f"wsh_{tf}{_SUF}.db"
     if _study_in(per_tf, study_name):
         return per_tf
     if _study_in(_DB, study_name):
@@ -102,7 +104,7 @@ def _row(t) -> dict:
 
 
 def export_tf(tf: str):
-    study_name = f"{_PREFIX}_{tf}"
+    study_name = f"{_PREFIX}_{tf}{_SUF}"
     db_path = _db_for(tf, study_name)
     from optimize import storage as study_storage   # Tier 1 — honor WSH_STORAGE_URL (else per-TF sqlite)
     try:
@@ -121,7 +123,7 @@ def export_tf(tf: str):
     cols = ["median_pnl", "worst_dd", "win", "full_pnl", "full_dd", "dd_pct_of_pnl",
             "sl_soft", "sl_hard", "tp", "gate_pct", "dd_limit", "cooldown", "flip", "k",
             "n_indicators", "indicators"] + _IND_PARAM_COLS
-    with open(_RESULTS / f"{tf}_wsi_pareto.csv", "w", newline="") as f:
+    with open(_RESULTS / f"{tf}_wsi_pareto{_SUF}.csv", "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=cols); w.writeheader(); w.writerows(rows)
     _plot(tf, complete, front)
     print(f"  {tf}: {len(complete)} complete, {len(feasible)} feasible, front {len(front)}")
@@ -150,7 +152,7 @@ def _plot(tf, complete, front):
     ax.set_xlabel("worst-fold maxDD ($)"); ax.set_ylabel("median fold P/L ($)")
     ax.set_title(f"WS-I {tf}: median P/L vs worst DD (feasible: DD≤25%·full P/L)")
     ax.legend(); ax.grid(alpha=0.3); fig.tight_layout()
-    fig.savefig(_RESULTS / f"{tf}_wsi_pareto.png", dpi=110); plt.close(fig)
+    fig.savefig(_RESULTS / f"{tf}_wsi_pareto{_SUF}.png", dpi=110); plt.close(fig)
 
 
 def main(argv):
@@ -160,7 +162,7 @@ def main(argv):
     summ = [s for s in summ if s]
     # cross-TF leaderboard
     import csv
-    lead = _RESULTS / "wsi_leaderboard.csv"
+    lead = _RESULTS / f"wsi_leaderboard{_SUF}.csv"
     champ_cols = ["tf", "n_complete", "n_feasible", "front", "median_pnl", "worst_dd", "win",
                   "full_pnl", "dd_pct_of_pnl", "k", "n_indicators", "indicators"]
     with open(lead, "w", newline="") as f:
@@ -173,7 +175,7 @@ def main(argv):
                             dd_pct_of_pnl=c.get("dd_pct_of_pnl"), k=c.get("k"),
                             n_indicators=c.get("n_indicators"), indicators=c.get("indicators")))
     _write_md(summ)
-    print(f"\nwrote {lead} + reports/WS-I_RESULTS.md")
+    print(f"\nwrote {lead} + reports/WS-I_RESULTS{_SUF}.md")
     return 0
 
 
@@ -230,7 +232,7 @@ def _write_md(summ):
               "combo on the **exact dashboard engine** (retrace/wait + carry apply there).",
               "- Fine TFs (1m/2m) historically attract cost-blind flip-scalpers — sanity-check exposure + "
               "trade counts before trusting them.", ""]
-    (_REPORTS / "WS-I_RESULTS.md").write_text("\n".join(lines))
+    (_REPORTS / f"WS-I_RESULTS{_SUF}.md").write_text("\n".join(lines))
 
 
 if __name__ == "__main__":
