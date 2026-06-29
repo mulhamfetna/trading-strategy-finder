@@ -1,4 +1,4 @@
-# Multi-instrument selector (NQ / ES / QQQ / SQQQ) — design
+# Multi-instrument selector (NQ / ES) — design
 
 **Date:** 2026-06-29
 **Status:** approved (design), pending implementation plan
@@ -12,10 +12,15 @@
 
 ## 1. Goal
 
-Add an **instrument** dropdown to both the backtester (`index.html`) and the combined dashboard
-(`dashboard.html`). Selecting an instrument runs the *same* box/L1/L2 engine on **that instrument's candles
-+ boxes + economics**. The decision-timeframe selector (shipped 2026-06-29) composes with it: the run is
-`(instrument, timeframe)`.
+Add an **instrument** dropdown (two tokens: `NQ`, `ES`) to both the backtester (`index.html`) and the combined
+dashboard (`dashboard.html`). Selecting an instrument runs the *same* box/L1/L2 engine on **that instrument's
+candles + boxes + economics**. The decision-timeframe selector (shipped 2026-06-29) composes with it: the run
+is `(instrument, timeframe)`.
+
+**Scope note:** the registry holds 6 tokens (NQ, ES, QQQ-RTH/ETH, SQQQ-RTH/ETH), but this feature exposes only
+**NQ and ES** — both CME futures with clean point-value economics; ES is already wired+validated as the L2
+cross-instrument contributor. The ETFs are deferred (the design generalizes to them trivially later — add
+tokens to `TOKENS` + `POINT_VALUE`).
 
 ## 2. Current state — the single-instrument ("NQ") assumption
 
@@ -42,19 +47,15 @@ tree, addressed by the registry in `all-stocks-signals/instruments.py`:
 
 ## 3. Instrument set & economics
 
-The dropdown exposes all **6** registry tokens (default `NQ`):
+The dropdown exposes **2** tokens (default `NQ`):
 
-| token | data | point value ($/pt) | median 4h close (ref) |
-|---|---|--:|--:|
-| `NQ` | `config.DATA_ROOT` (unchanged) | 20.0 | ~23,861 |
-| `ES` | `ALL_STOCKS/CANDLES/CME/ES_Continuous_Data` + `BOXS/CME/ES` | 50.0 | ~6,508 |
-| `QQQ-RTH` | `ALL_STOCKS/.../ETF/QQQ_Data/RTH` + `BOXS/ETF/RTH/QQQ` | 1.0 | ~580 |
-| `QQQ-ETH` | `…/ETF/QQQ_Data/ETH` + `BOXS/ETF/ETH/QQQ` | 1.0 | ~580 |
-| `SQQQ-RTH` | `…/ETF/SQQQ_Data/RTH` + `BOXS/ETF/RTH/SQQQ` | 1.0 | ~85 |
-| `SQQQ-ETH` | `…/ETF/SQQQ_Data/ETH` + `BOXS/ETF/ETH/SQQQ` | 1.0 | ~85 |
+| token | data | point value ($/pt) | median 4h close (ref) | scale_factor |
+|---|---|--:|--:|--:|
+| `NQ` | `config.DATA_ROOT` (unchanged) | 20.0 | ~23,861 | 1.0 |
+| `ES` | `ALL_STOCKS/CANDLES/CME/ES_Continuous_Data` + `BOXS/CME/ES` | 50.0 | ~6,508 | ~0.273 |
 
-ETF point value = $1 per $1 price move (1 unit = 1 share). SQQQ is inverse/leveraged — the box/signal logic
-derives long/short from SQQQ's *own* price series; pv is just the $/point and needs no special-casing.
+Both are CME index futures with standard multipliers (NQ $20/pt, ES $50/pt). ES's candle+box data is the same
+files the L2 ES-contributor already loads (`contributors/loader.py`), so the path is validated.
 
 ## 4. Architecture
 
@@ -64,15 +65,15 @@ registry (loaded via the same `importlib.util.spec_from_file_location("ass_instr
 `contributors/registry.py` already uses — no `sys.path` pollution) and adds economics:
 
 ```
-TOKENS: tuple[str,...] = ("NQ","ES","QQQ-RTH","QQQ-ETH","SQQQ-RTH","SQQQ-ETH")   # default "NQ"
-POINT_VALUE: dict[str,float] = {"NQ":20.0,"ES":50.0,"QQQ-RTH":1.0,"QQQ-ETH":1.0,"SQQQ-RTH":1.0,"SQQQ-ETH":1.0}
+TOKENS: tuple[str,...] = ("NQ","ES")                       # default "NQ"; ETFs deferred (§1 scope note)
+POINT_VALUE: dict[str,float] = {"NQ":20.0,"ES":50.0}
 
 def is_valid(token: str) -> bool
 def point_value(token: str) -> float                       # KeyError-safe; default NQ=20
 def resolve_paths(token: str, tf: str) -> tuple[str,str,str]
     # returns (dec_csv, min_csv, box_csv).
     # NQ  -> (config.DATA_ROOT/full_data/NQ_<tf>.csv, .../NQ_1m.csv, .../NQ_full_data.csv)  [UNCHANGED]
-    # else-> registry: (inst.candle_csv(tf), inst.candle_csv("1m"), inst.box_csv)
+    # ES  -> registry: (inst.candle_csv(tf), inst.candle_csv("1m"), inst.box_csv)
 def scale_factor(token: str) -> float                      # inst_ref / NQ_ref, cached; NQ -> 1.0
     # ref = median 4h close, read once per token from resolve_paths(token,"4h")[0]
 ```
@@ -112,7 +113,7 @@ recomputes once, then matches golden byte-for-byte.
   For NQ they delegate to the existing `l1_default_params(tf)` / `l2_default_params()` (byte-identical).
   For non-NQ they take the PERMISSIVE anchor and multiply the **point-denominated** fields
   (`sl_soft, sl_hard, tp, dd_limit, dd_cap`) by `instruments.scale_factor(instrument)`, leaving scale-free
-  fields (`gate_pct, cooldown, k, flip, indicators=[]`) untouched. (e.g. QQQ sl_soft ≈ 149.8 × 580/23861 ≈ 3.6.)
+  fields (`gate_pct, cooldown, k, flip, indicators=[]`) untouched. (e.g. ES sl_soft ≈ 149.8 × 6508/23861 ≈ 40.9.)
 
 ### 4.4 API — `?instrument=` on both route families
 - `GET /api/combined_config?tf=&instrument=` → validates `instrument ∈ TOKENS` (**400** otherwise), returns
@@ -123,7 +124,7 @@ recomputes once, then matches golden byte-for-byte.
   (`strategy.py`); same validation + NQ default. (Phase C.)
 
 ### 4.5 Frontend — selector on both UIs
-A `<select id="inst_select">` with the 6 tokens, placed next to the existing TF selector, on **both**
+A `<select id="inst_select">` with the 2 tokens (NQ, ES), placed next to the existing TF selector, on **both**
 `frontend/dashboard.html` and `frontend/index.html`. On change → re-fetch config for `(instrument, tf)`,
 repopulate the default L1/L2 forms (now price-scaled for non-NQ), update an instrument label + a small
 "point value $N" hint, set status `"switched to {instrument} {tf} — click Run"`. The run POSTs and
@@ -145,8 +146,8 @@ flowchart LR
 ## 6. Phasing (one spec, three independently-testable plan phases)
 
 - **Phase A — backend.** `optimize/instruments.py`; thread `instrument` through data/l1_runner/engine/logbook/
-  payload + cache keys; per-instrument defaults; `?instrument=` on the dashboard routes. Deliverable: all 6
-  instruments runnable via curl/tests; golden 6/6.
+  payload + cache keys; per-instrument defaults; `?instrument=` on the dashboard routes. Deliverable: NQ + ES
+  runnable via curl/tests; golden 6/6.
 - **Phase B — dashboard.html** selector + wiring.
 - **Phase C — index.html** (single-layer backtester) selector + its `/api/config` + `/api/backtest`
   instrument plumbing (`strategy.py`).
@@ -154,10 +155,10 @@ flowchart LR
 ## 7. Testing & parity
 
 1. **Golden 6/6 byte-identical** (NQ untouched) — the hard gate, run after every phase-A task.
-2. `optimize/instruments.py` unit tests: `resolve_paths("NQ",…)` == current paths; non-NQ paths exist on disk;
-   `point_value` table; `scale_factor("NQ")==1.0` and `0 < scale_factor("QQQ-RTH") < 1`.
+2. `optimize/instruments.py` unit tests: `resolve_paths("NQ",…)` == current paths; ES paths exist on disk;
+   `point_value` table (NQ 20, ES 50); `scale_factor("NQ")==1.0` and `0 < scale_factor("ES") < 1`.
 3. Per-instrument backend smoke: `build_view_payload(perm_l1, perm_l2, "4h", "l2", instrument=I)` returns a
-   non-empty book for each of the 6, and the PnL reflects `point_value(I)`.
+   non-empty book for NQ and ES, and the PnL reflects `point_value(I)`.
 4. **Cache-isolation test:** NQ and ES at the same `(tf, params)` return **different** trade books (proves no
    cross-instrument cache bleed) — clear caches to a tmp dir first.
 5. Server: `combined_config?instrument=ES` returns ES defaults + label; no-`instrument`==`NQ`==current
@@ -167,9 +168,10 @@ flowchart LR
 
 ## 8. Out of scope (YAGNI)
 
-- Inventing or optimizing per-instrument champions (non-NQ defaults are scaled-permissive; user tunes).
-- ETF box-date-shift nuances beyond the registry's canonical `box_csv` (the −1-business-day shift was a
-  *delivery* concern; the engine applies its own `box_lookup` roll uniformly).
+- The 4 ETF tokens (QQQ-RTH/ETH, SQQQ-RTH/ETH) — deferred; the design adds them by extending `TOKENS` +
+  `POINT_VALUE` (and, for ETFs, deciding $1/share economics + any box-date-shift nuance) with no structural
+  change.
+- Inventing or optimizing per-instrument champions (ES default is scaled-permissive; user tunes).
 - Cross-instrument mixing (the registry forbids it by construction; the L2 ES-contributor is a separate,
   already-shipped feature and is unaffected).
 - Per-instrument profile filtering; saving per-instrument champions.
