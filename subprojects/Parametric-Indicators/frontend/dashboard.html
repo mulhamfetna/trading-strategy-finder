@@ -38,6 +38,10 @@
       <button data-view="l1">🍃 L1</button><button data-view="l2">🔁 L2</button><button data-view="combined" class="on">Σ Combined</button></span>
     <span class="dirty" id="dirty"></span>
     <button class="ghost" id="toggle" title="Show/hide the settings panel">⚙ Hide settings</button>
+    <label class="instsel" title="instrument — switches the candles/boxes/economics">
+      <select id="inst_select">
+        <option value="NQ" selected>NQ</option><option value="ES">ES</option>
+      </select></label>
     <label class="tfsel" title="decision timeframe — switches the L1 champion + the backtest frame">
       <select id="tf_select">
         <option value="4h" selected>4h</option><option value="2h">2h</option><option value="1h">1h</option>
@@ -565,11 +569,11 @@ async function run(){
     // L1 tab = the RICH engine view (strategy.build_payload): full event log w/ would-be-P/L + indicator
     // chips + the SMC gen_report panel, with boxes still log-derived (== engine summary). L2/Combined use
     // the causal views. All three derive from the same params; numbers match by construction.
-    const tf=$('tf_select').value;
+    const tf=$('tf_select').value, inst=$('inst_select').value;
     const [l1,l2,comb]=await Promise.all([
-      grab(fetch('/api/backtest_causal', J({...l1lay, timeframe:tf}))),
-      grab(fetch('/api/causal_backtest', J({l1:l1lay, l2:l2lay, tf, view:'l2'}))),
-      grab(fetch('/api/causal_backtest', J({l1:l1lay, l2:l2lay, tf, view:'combined'}))),
+      grab(fetch('/api/backtest_causal', J({...l1lay, timeframe:tf, instrument:inst}))),
+      grab(fetch('/api/causal_backtest', J({l1:l1lay, l2:l2lay, tf, instrument:inst, view:'l2'}))),
+      grab(fetch('/api/causal_backtest', J({l1:l1lay, l2:l2lay, tf, instrument:inst, view:'combined'}))),
     ]);
     VIEWS.l1=l1; VIEWS.l2=l2; VIEWS.combined=comb;
     renderView(VIEW); DB.markClean(); DB.status('✓ done — all three tabs filled');
@@ -590,9 +594,10 @@ async function saveLayer(pfx){
   }catch(e){ DB.showErr(`Save failed (${pfx.toUpperCase()}): ${e.message}`); }
 }
 
-// fetch + apply the per-TF config (L1/L2 defaults, profiles, indicator panels). Re-callable on TF switch.
-async function loadConfig(tf){
-  const r=await fetch('/api/combined_config?tf='+encodeURIComponent(tf)); if(!r.ok) throw new Error('config HTTP '+r.status);
+// fetch + apply the per-(instrument,TF) config (L1/L2 defaults, profiles, indicator panels). Re-callable on switch.
+async function loadConfig(inst, tf){
+  const r=await fetch('/api/combined_config?instrument='+encodeURIComponent(inst)+'&tf='+encodeURIComponent(tf));
+  if(!r.ok) throw new Error('config HTTP '+r.status);
   const c=await r.json();
   DB.buildPanel($('l1_indpanel'),c.indicator_schema,DB.markDirty);
   DB.buildPanel($('l2_indpanel'),c.indicator_schema,DB.markDirty);
@@ -626,11 +631,13 @@ async function loadConfig(tf){
   });
   document.querySelectorAll('aside input,aside select').forEach(el=>el.addEventListener('input',DB.markDirty));
   DB.mathify(document.querySelector('aside'));
-  $('tf_select').addEventListener('change',async()=>{ try{ await loadConfig($('tf_select').value);
-    DB.markDirty(); DB.status('switched to '+$('tf_select').value+' — click Run'); }
-    catch(e){ DB.showErr('config reload failed: '+e.message); } });
+  const reload=async()=>{ try{ await loadConfig($('inst_select').value,$('tf_select').value);
+    DB.markDirty(); DB.status('switched to '+$('inst_select').value+' '+$('tf_select').value+' — click Run'); }
+    catch(e){ DB.showErr('config reload failed: '+e.message); } };
+  $('tf_select').addEventListener('change',reload);
+  $('inst_select').addEventListener('change',reload);
   try{
-    await loadConfig($('tf_select').value);
+    await loadConfig($('inst_select').value,$('tf_select').value);
     DB.markDirty(); DB.status('ready · best L1 + best L2 loaded · click Run');
   }catch(e){ DB.markDirty(); DB.showErr(`Cannot reach backend — start server.py then reload. (${e.message})`); }
 })();
