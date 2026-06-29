@@ -47,7 +47,7 @@ def split_folds(df_dec: pd.DataFrame, k: int) -> list[tuple[int, int]]:
 
 
 def score_walkforward(df_dec, df1, box, vf, params, bar_duration,
-                      k: int = 5, min_trades: int = 5, sig_int=None, contrib=None) -> dict:
+                      k: int = 5, min_trades: int = 5, sig_int=None, contrib=None, pv=None) -> dict:
     """Score one parameter set across K folds. Returns dict with the objective + per-fold detail.
     sig_int: optional precomputed per-decision-bar signal array (full length) — sliced per fold to
     avoid recomputing the param-independent signals on every trial."""
@@ -80,8 +80,9 @@ def score_walkforward(df_dec, df1, box, vf, params, bar_duration,
                      "topology": contrib["topology"]}
         gate_ref = vf[:lo] if lo > 0 else fvf            # causal: gate frozen on prior data
         p = dict(params); p["window"] = "full"
+        _pvkw = {} if pv is None else {"pv": pv}          # None ⇒ core's NQ default (byte-identical)
         m = backtest_metrics(fdec, df1, box, fvf, len(fdec), p, bar_duration,
-                             gate_ref_vf=gate_ref, sig_int=fsig, contrib=cfold)
+                             gate_ref_vf=gate_ref, sig_int=fsig, contrib=cfold, **_pvkw)
         m["fold"] = j
         folds.append(m)
         if m.get("n_taken", 0) < min_trades:
