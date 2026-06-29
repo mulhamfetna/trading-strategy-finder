@@ -386,10 +386,26 @@ def _scaled_permissive(instrument: str) -> dict:
     return validate_layer_params(p)
 
 
+def _instrument_champions_path(instrument: str) -> Path:
+    """Per-instrument optimized-champions file (same naming the optimizer writes). NQ uses _WSH4_CHAMPS."""
+    suf = "" if instrument == "NQ" else f"_{instrument}"
+    return _WSH4_CHAMPS.with_name(f"wsh4_champions_full{suf}.json")
+
+
 def instrument_l1_default(instrument: str = "NQ", tf: str = "4h") -> dict:
-    """L1 default for an instrument. NQ → the real per-TF champion (unchanged); non-NQ → scaled-permissive."""
+    """L1 default for an instrument. NQ → the real per-TF champion (unchanged). Non-NQ → that instrument's
+    OPTIMIZED champion (results/wsh4_champions_full_<INST>.json) when present for the TF, else the
+    price-scaled permissive default."""
     if instrument == "NQ":
         return l1_default_params(tf)
+    cf = _instrument_champions_path(instrument)
+    if cf.exists():
+        try:
+            champs = json.loads(cf.read_text())
+            if tf in champs:
+                return _champion_layer_params(tf, champs[tf])
+        except Exception:
+            pass                                          # malformed/partial → fall back
     return _scaled_permissive(instrument)
 
 
