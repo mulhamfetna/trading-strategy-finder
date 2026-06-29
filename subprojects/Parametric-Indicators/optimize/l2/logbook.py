@@ -135,8 +135,9 @@ def run_causal(l1_params: dict, l2_params: dict, tf: str = "4h", bar_mask=None) 
     cached frozen L1 (byte-identical to the oracle); any other dict runs an arbitrary L1."""
     l1p = payload.validate_layer_params(l1_params)
     l2p = payload.validate_layer_params(l2_params)
-    # frozen default → cached oracle; else custom L1 (memoised by hash inside run_l1_cached)
-    use_frozen = (l1p == payload.l1_default_params(tf))
+    # frozen default → cached oracle; else custom L1 (memoised by hash inside run_l1_cached). The frozen
+    # disk-cached run only exists for 4h; non-4h defaults are wsh4 champion param dicts → always pass params.
+    use_frozen = (tf == "4h" and l1p == payload.l1_default_params(tf))
     l1 = payload.run_l1_cached(tf) if use_frozen else payload.run_l1_cached(tf, params=l1p)
     res = engine.run_l2(l1, l2p)                                   # l1_priority + force-close (the oracle)
 

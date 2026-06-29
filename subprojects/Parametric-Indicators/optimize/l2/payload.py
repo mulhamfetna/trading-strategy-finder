@@ -488,7 +488,7 @@ def build_view_payload(l1_params: dict, l2_params: dict, tf: str = "4h", view: s
         base["log"] = [_serialize_log_row(r) for r in res.log]       #   not mutate the cached object
         base["meta"]["boxes"] = aggregate.boxes_for_layer(res, "L1", bar_secs)   # log-derived (== engine summary)
         base["meta"]["taxonomy"] = taxonomy.taxonomy_l1(res)
-        _l1u = run_l1_cached(tf) if l1p == l1_default_params(tf) else run_l1_cached(tf, params=l1p)
+        _l1u = run_l1_cached(tf) if (tf == "4h" and l1p == l1_default_params(tf)) else run_l1_cached(tf, params=l1p)
         base["meta"]["box_counts"] = _signals.box_fire_stats(_l1u.df_dec, _l1u.box)
         base["meta"]["n"] = res.n
         base["meta"]["view"] = "l1"
@@ -496,7 +496,9 @@ def build_view_payload(l1_params: dict, l2_params: dict, tf: str = "4h", view: s
     l1p = validate_layer_params(l1_params)
     l2p = validate_layer_params(l2_params)
     res = _run_causal_memo(l1p, l2p, tf)
-    l1 = run_l1_cached(tf) if l1p == l1_default_params(tf) else run_l1_cached(tf, params=l1p)
+    # The frozen-lean disk-cached run only exists for 4h; for other TFs the default L1 is the wsh4 champion
+    # (params dict), so we must always pass params there (run_l1_cached() with no params runs the 4h-only lean).
+    l1 = run_l1_cached(tf) if (tf == "4h" and l1p == l1_default_params(tf)) else run_l1_cached(tf, params=l1p)
     ds = dataset.build_dataset(l1)
     bar_secs = int(TF.get(tf).bar_td.total_seconds())
     dec_dates = l1.df_dec["Date"].to_numpy()

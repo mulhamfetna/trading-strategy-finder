@@ -25,3 +25,13 @@ def test_per_tf_default_matches_wsh4_champion():
 
 def test_tf_set_is_the_six_decision_tfs():
     assert payload._TF_SET == ("4h", "2h", "1h", "15m", "5m", "2m")
+
+
+def test_non_4h_causal_run_does_not_hit_the_4h_only_lean_path():
+    # Regression: build_view_payload / logbook.run_causal used the no-params "frozen lean" L1 run whenever
+    # l1==l1_default_params(tf). The lean champion is 4h-only, so a non-4h default L1 (the wsh4 champion)
+    # crashed with SystemExit("missing wsh_lean_4h_champion.json"). The fix gates that fast path on tf=="4h".
+    l1 = payload.l1_default_params("2h")
+    out = payload.build_view_payload(l1, payload.l2_default_params(), "2h", "l2")
+    assert out["meta"]["view"] == "l2"
+    assert len(out["log"]) == out["meta"]["n"] > 0
