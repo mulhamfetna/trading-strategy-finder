@@ -71,12 +71,13 @@ def suggest_l2_params(trial, b: dict, cap: int, contrib_tokens=(),
 def run(n_trials: int = 200, tf: str = "4h", study_prefix: str = "l2v1", seed: int = 1,
         min_trades: int = 5, sampler: str = "nsga3", storage_url: str | None = None,
         dd_pnl_cap: float = OPT.DD_PNL_CAP, l1_params: dict | None = None,
-        contrib_tokens=(), contrib_exclude=SMC_COMMITTEE_KEYS) -> dict:
+        contrib_tokens=(), contrib_exclude=SMC_COMMITTEE_KEYS, instrument: str = "NQ") -> dict:
     """NSGA-III search over L2 profiles. Objective = (in-sample L2 P/L, -in-sample max_dd, win-rate)
     with the DD<=dd_pnl_cap*P/L feasibility constraint; OOS (2026) is scored only for the champion.
     `l1_params` (optional) scores L2 on a CANDIDATE L1's residuals (e.g. the wsh6 cap_1min champion)
     instead of the frozen production L1 — used to run L2 over a new L1 without overwriting it."""
-    l1 = payload.run_l1_cached(tf) if l1_params is None else payload.run_l1_cached(tf, params=l1_params)
+    l1 = (payload.run_l1_cached(tf, instrument=instrument) if l1_params is None
+          else payload.run_l1_cached(tf, params=l1_params, instrument=instrument))
     w = WINDOWS(l1)
     caps = OPT._load_json(OPT._CAPS); bounds = OPT._load_json(OPT._BOUNDS)
     cap = int(caps[tf]["cooldown_cap"]); b = bounds[tf]
@@ -103,8 +104,8 @@ def run(n_trials: int = 200, tf: str = "4h", study_prefix: str = "l2v1", seed: i
     def _constraints(trial):
         return trial.user_attrs.get("constraint", [1.0])
 
-    study_name = f"{study_prefix}_{tf}"
-    url = storage_url or study_storage.storage_url(OPT._db_for(tf, study_name))
+    study_name = f"{study_prefix}_{tf}{OPT._study_suffix(instrument)}"
+    url = storage_url or study_storage.storage_url(OPT._db_for(tf, study_name, instrument))
     storage = optuna.storages.RDBStorage(url=url, engine_kwargs=study_storage.engine_kwargs(url))
     study = optuna.create_study(study_name=study_name, storage=storage,
                                 directions=["maximize", "maximize", "maximize"],
@@ -131,11 +132,11 @@ def run(n_trials: int = 200, tf: str = "4h", study_prefix: str = "l2v1", seed: i
 
 
 def _export_champion(champion: dict, tf: str, out_dir, prefix: str = "l2v1",
-                     contrib_smc_excluded=()) -> Path:
+                     contrib_smc_excluded=(), instrument: str = "NQ") -> Path:
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    path = out_dir / f"{prefix}_{tf}_champion.json"
-    rec = {"tf": tf, "prefix": prefix, "params": champion["params"],
+    path = out_dir / f"{prefix}_{tf}{OPT._study_suffix(instrument)}_champion.json"
+    rec = {"tf": tf, "prefix": prefix, "instrument": instrument, "params": champion["params"],
            "in_sample": champion["in_sample"], "oos": champion["oos"]}
     if contrib_smc_excluded:
         rec["contrib_smc_excluded"] = list(contrib_smc_excluded)
@@ -175,7 +176,13 @@ def main() -> int:
                     help="include the slow SMC indicators (ifvg/breaker/...) in the contributor committee "
                          "search (default: EXCLUDED for speed — ~10x slower per trial; PERFORMANCE.md §9)")
     ap.add_argument("--out", default=str(_PI / "optimize" / "results"))
+    ap.add_argument("--instrument", default="NQ",
+                    help="instrument to optimize L2 on (NQ default, or ES). Non-NQ studies/champions are "
+                         "suffixed (_ES); L1 residuals + pv follow the instrument automatically.")
     a = ap.parse_args()
+    from optimize import instruments as _inst
+    if not _inst.is_valid(a.instrument):
+        print(f"unknown instrument {a.instrument!r}; known {list(_inst.TOKENS)}", flush=True); return 2
     contrib_tokens = tuple(t.strip() for t in a.contributors.split(",") if t.strip())
     contrib_exclude = () if a.contrib_include_smc else SMC_COMMITTEE_KEYS
     l1_params = _l1_params_from_champion(a.l1_champion, a.tf) if a.l1_champion else None
@@ -187,11 +194,11 @@ def main() -> int:
               f"(+ topology) — search space roughly doubles per contributor", flush=True)
     res = run(n_trials=a.trials, tf=a.tf, study_prefix=a.prefix, seed=a.seed,
               min_trades=a.min_trades, sampler=a.sampler, storage_url=a.storage_url, l1_params=l1_params,
-              contrib_tokens=contrib_tokens, contrib_exclude=contrib_exclude)
+              contrib_tokens=contrib_tokens, contrib_exclude=contrib_exclude, instrument=a.instrument)
     print(f"[l2:{a.tf}] {res['n_trials']} trials · {res['n_feasible']} feasible", flush=True)
     if res["champion"] is not None:
         p = _export_champion(res["champion"], a.tf, a.out, a.prefix,
-                             contrib_smc_excluded=res.get("contrib_smc_excluded", ()))
+                             contrib_smc_excluded=res.get("contrib_smc_excluded", ()), instrument=a.instrument)
         print(f"[l2:{a.tf}] champion -> {p}", flush=True)
     else:
         print(f"[l2:{a.tf}] no feasible champion (try more trials / lower --min-trades)", flush=True)
