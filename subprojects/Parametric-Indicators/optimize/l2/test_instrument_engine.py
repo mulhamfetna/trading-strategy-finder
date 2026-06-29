@@ -22,3 +22,14 @@ def test_run_l1_es_carries_instrument_and_pv():
 def test_run_l1_nq_default_instrument():
     r = l1_runner.run_l1("4h")
     assert r.instrument == "NQ"
+
+
+from optimize.l2 import payload
+
+
+def test_no_cross_instrument_cache_bleed():
+    p = _es_perm()
+    nq = payload.build_view_payload(p, payload.l2_default_params(), "4h", "l2", instrument="NQ")
+    es = payload.build_view_payload(p, payload.l2_default_params(), "4h", "l2", instrument="ES")
+    # identical params+tf+view but different instrument → different books (no cache bleed)
+    assert nq["meta"]["n"] != es["meta"]["n"] or nq["log"] != es["log"]

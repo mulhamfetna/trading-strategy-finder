@@ -32,17 +32,17 @@ _DISK_CACHE = Path(tempfile.gettempdir()) / "wsh_l1_cache"
 _L1_CACHE_VER = "v4-instrument"
 
 
-def _l1_cache_file(tf: str) -> Path:
-    h = hashlib.sha256((_L1_CACHE_VER + json.dumps(l1_runner._lean_params(tf), sort_keys=True,
-                                                   default=str)).encode()).hexdigest()[:16]
-    return _DISK_CACHE / f"l1_{tf}_{_L1_CACHE_VER}_{h}.pkl"
+def _l1_cache_file(tf: str, instrument: str = "NQ") -> Path:
+    h = hashlib.sha256((_L1_CACHE_VER + instrument + json.dumps(l1_runner._lean_params(tf), sort_keys=True,
+                                                                default=str)).encode()).hexdigest()[:16]
+    return _DISK_CACHE / f"l1_{instrument}_{tf}_{_L1_CACHE_VER}_{h}.pkl"
 
 
-def _l1_custom_cache_file(tf: str, h: str) -> Path:
+def _l1_custom_cache_file(tf: str, h: str, instrument: str = "NQ") -> Path:
     """Disk-cache path for an ARBITRARY (non-frozen) L1 profile, keyed by the params-hash `h` (computed by
-    the caller). Same temp dir + version scheme as the frozen cache, so a deterministic candidate L1 (e.g. a
-    wsh6cold champion driving an L2 sweep) loads in ~1s on every worker respawn instead of the ~38s recompute."""
-    return _DISK_CACHE / f"l1custom_{tf}_{_L1_CACHE_VER}_{h}.pkl"
+    the caller) + instrument. Same temp dir + version scheme as the frozen cache, so a deterministic candidate
+    L1 (e.g. a wsh6cold champion driving an L2 sweep) loads in ~1s on every worker respawn instead of recompute."""
+    return _DISK_CACHE / f"l1custom_{instrument}_{tf}_{_L1_CACHE_VER}_{h}.pkl"
 
 
 _CAUSAL_MEMO: dict = {}            # F3 — share ONE causal pass across the fan-out's per-view calls
@@ -69,17 +69,18 @@ def _build_l1_payload_memo(l1_engine: dict, tf: str):
     return r
 
 
-def _run_causal_memo(l1p: dict, l2p: dict, tf: str):
-    """Memoise logbook.run_causal by (l1p, l2p, tf) so the unified page's three per-view requests
+def _run_causal_memo(l1p: dict, l2p: dict, tf: str, instrument: str = "NQ"):
+    """Memoise logbook.run_causal by (instrument, l1p, l2p, tf) so the unified page's three per-view requests
     (l2 + combined send identical params) reuse ONE pass instead of recomputing it. The CausalResult is
     read-only downstream (aggregate/charts only read it), so sharing is safe. Bounded LRU-ish."""
     from optimize.l2 import logbook                       # lazy: logbook imports payload (circular)
-    key = (tf, hashlib.sha256(json.dumps([l1p, l2p], sort_keys=True, default=str).encode()).hexdigest()[:16])
+    key = (instrument, tf,
+           hashlib.sha256(json.dumps([l1p, l2p], sort_keys=True, default=str).encode()).hexdigest()[:16])
     r = _CAUSAL_MEMO.get(key)
     if r is None:
         if len(_CAUSAL_MEMO) >= _CAUSAL_MEMO_MAX:
             _CAUSAL_MEMO.pop(next(iter(_CAUSAL_MEMO)))
-        r = _CAUSAL_MEMO[key] = logbook.run_causal(l1p, l2p, tf)
+        r = _CAUSAL_MEMO[key] = logbook.run_causal(l1p, l2p, tf, instrument)
     return r
 
 # Deterministic anchor profile (no indicators / no vol gate => take every flat dropped signal).
@@ -91,17 +92,18 @@ class L2ParamError(ValueError):
     """Invalid L2 profile parameter — surfaced to the UI as HTTP 400 (never silently clamped)."""
 
 
-def run_l1_cached(tf: str = "4h", use_disk: bool = True, params: dict | None = None):
+def run_l1_cached(tf: str = "4h", use_disk: bool = True, params: dict | None = None, instrument: str = "NQ"):
     """L1 run. params=None → the FROZEN lean champion: memoised in-process AND on disk (deterministic),
     so repeat processes load in ~1s instead of recomputing the ~38s 1-min indicator pass. params=<dict>
-    → an ARBITRARY L1 profile (combined dashboard): run fresh, memoised in-process by (tf, params-hash);
-    NOT disk-cached (the disk key is the lean-param hash). Set use_disk=False to force a fresh recompute."""
+    → an ARBITRARY L1 profile (combined dashboard): run fresh, memoised in-process by (instrument, tf,
+    params-hash). All caches key on instrument so NQ and ES never share an entry. Set use_disk=False to
+    force a fresh recompute."""
     if params is not None:
         h = hashlib.sha256(json.dumps(params, sort_keys=True, default=str).encode()).hexdigest()[:16]
-        key = (tf, h)
+        key = (instrument, tf, h)
         if key in _L1_CUSTOM_CACHE:
             return _L1_CUSTOM_CACHE[key]
-        cf = _l1_custom_cache_file(tf, h)
+        cf = _l1_custom_cache_file(tf, h, instrument)
         if use_disk and cf.exists():
             try:
                 with open(cf, "rb") as f:
@@ -112,7 +114,7 @@ def run_l1_cached(tf: str = "4h", use_disk: bool = True, params: dict | None = N
                 return r
             except Exception:
                 pass                                      # corrupt/stale pickle → recompute
-        r = l1_runner.run_l1(tf, params=validate_layer_params(params))
+        r = l1_runner.run_l1(tf, params=validate_layer_params(params), instrument=instrument)
         _L1_CUSTOM_CACHE[key] = r
         if use_disk:
             try:                                          # atomic write: 24 workers may race on first launch
@@ -124,21 +126,22 @@ def run_l1_cached(tf: str = "4h", use_disk: bool = True, params: dict | None = N
             except Exception:
                 pass                                      # cache write best-effort; never fail the run
         return r
-    if tf in _L1_CACHE:
-        return _L1_CACHE[tf]
-    cf = _l1_cache_file(tf)
+    fkey = (instrument, tf)
+    if fkey in _L1_CACHE:
+        return _L1_CACHE[fkey]
+    cf = _l1_cache_file(tf, instrument)
     if use_disk and cf.exists():
         try:
             with open(cf, "rb") as f:
                 r = pickle.load(f)
             if getattr(r, "vf_seed", None) is None:       # F2 belt-and-suspenders: stale schema → recompute
                 raise ValueError("stale L1 cache schema")
-            _L1_CACHE[tf] = r
+            _L1_CACHE[fkey] = r
             return r
         except Exception:
             pass                                      # corrupt/stale pickle → recompute
-    r = l1_runner.run_l1(tf)
-    _L1_CACHE[tf] = r
+    r = l1_runner.run_l1(tf, instrument=instrument)
+    _L1_CACHE[fkey] = r
     if use_disk:
         try:
             _DISK_CACHE.mkdir(parents=True, exist_ok=True)
@@ -463,7 +466,7 @@ def _serialize_log_row(r) -> dict:
 
 
 def build_view_payload(l1_params: dict, l2_params: dict, tf: str = "4h", view: str = "combined",
-                       l1_engine: dict | None = None) -> dict:
+                       instrument: str = "NQ", l1_engine: dict | None = None) -> dict:
     """Causal log-first payload for one VIEW (l1 | l2 | combined). Boxes are derived from the per-candle
     log (aggregate.*); charts/log/CSV all project the SAME log. Separated views carry only their layer's
     trades; the combined view carries both (the frontend grays the opposite layer).
@@ -481,24 +484,28 @@ def build_view_payload(l1_params: dict, l2_params: dict, tf: str = "4h", view: s
     if view == "l1" and l1_engine:
         import strategy                                  # the L1 engine (full feature set)
         l1p = validate_layer_params(l1_params)
-        res = _run_causal_memo(l1p, dict(PERMISSIVE), tf)            # causal log for the L1 layer (memoised)
+        res = _run_causal_memo(l1p, dict(PERMISSIVE), tf, instrument)  # causal log for the L1 layer (memoised)
         bar_secs = int(TF.get(tf).bar_td.total_seconds())
         cached = _build_l1_payload_memo(l1_engine, tf)               # rich engine payload (memoised — the ~8s pass)
         base = dict(cached); base["meta"] = dict(cached["meta"])     # shallow copy: per-request fields below must
         base["log"] = [_serialize_log_row(r) for r in res.log]       #   not mutate the cached object
         base["meta"]["boxes"] = aggregate.boxes_for_layer(res, "L1", bar_secs)   # log-derived (== engine summary)
         base["meta"]["taxonomy"] = taxonomy.taxonomy_l1(res)
-        _l1u = run_l1_cached(tf) if (tf == "4h" and l1p == l1_default_params(tf)) else run_l1_cached(tf, params=l1p)
+        _l1u = (run_l1_cached(tf, instrument=instrument)
+                if (instrument == "NQ" and tf == "4h" and l1p == l1_default_params(tf))
+                else run_l1_cached(tf, params=l1p, instrument=instrument))
         base["meta"]["box_counts"] = _signals.box_fire_stats(_l1u.df_dec, _l1u.box)
         base["meta"]["n"] = res.n
         base["meta"]["view"] = "l1"
         return base
     l1p = validate_layer_params(l1_params)
     l2p = validate_layer_params(l2_params)
-    res = _run_causal_memo(l1p, l2p, tf)
-    # The frozen-lean disk-cached run only exists for 4h; for other TFs the default L1 is the wsh4 champion
-    # (params dict), so we must always pass params there (run_l1_cached() with no params runs the 4h-only lean).
-    l1 = run_l1_cached(tf) if (tf == "4h" and l1p == l1_default_params(tf)) else run_l1_cached(tf, params=l1p)
+    res = _run_causal_memo(l1p, l2p, tf, instrument)
+    # The frozen-lean disk-cached run only exists for NQ-4h; for other TFs/instruments the default L1 is a
+    # params dict, so we must always pass params there (run_l1_cached() with no params runs the NQ-4h lean).
+    l1 = (run_l1_cached(tf, instrument=instrument)
+          if (instrument == "NQ" and tf == "4h" and l1p == l1_default_params(tf))
+          else run_l1_cached(tf, params=l1p, instrument=instrument))
     ds = dataset.build_dataset(l1)
     bar_secs = int(TF.get(tf).bar_td.total_seconds())
     dec_dates = l1.df_dec["Date"].to_numpy()
