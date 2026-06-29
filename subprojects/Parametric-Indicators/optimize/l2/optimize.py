@@ -150,12 +150,9 @@ def _l1_params_from_champion(path: str, tf: str) -> dict:
     scored on THIS L1's residuals (e.g. the wsh6cold cap=448 winner) instead of the frozen production L1.
     L1 champions are searched on the 1-minute frame, so ind_1min is forced True (presets._preset omits it,
     and the layer-schema default of False would compute indicators on the wrong frame → wrong residuals)."""
-    import presets                                          # noqa: E402  (top-level module via _PI on sys.path)
     rec = json.loads(Path(path).read_text())
     c = rec.get(tf, rec)                                    # accept {tf:{...}} or a bare champion record
-    lp = presets._preset(tf, c["box"], c.get("indicators", {}))
-    lp["ind_1min"] = True
-    return payload.validate_layer_params(lp)
+    return payload._champion_layer_params(tf, c)
 
 
 def main() -> int:

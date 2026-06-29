@@ -337,9 +337,28 @@ def save_l1_profile(name: str, preset: dict) -> dict:
     return profs
 
 
+_TF_SET = ("4h", "2h", "1h", "15m", "5m", "2m")          # the decision TFs (1m excluded — not in the champion sweep)
+_WSH4_CHAMPS = Path(__file__).resolve().parents[1] / "results" / "wsh4_champions_full.json"
+
+
+def _champion_layer_params(tf: str, entry: dict) -> dict:
+    """Engine-ready L1 layer params from a {box, indicators} champion entry. L1 champions run on the
+    1-minute frame, so ind_1min is forced True (mirrors optimize.optimize._l1_params_from_champion)."""
+    import presets                                          # noqa: E402 (top-level module on sys.path)
+    lp = presets._preset(tf, entry["box"], entry.get("indicators", {}))
+    lp["ind_1min"] = True
+    return validate_layer_params(lp)
+
+
 def l1_default_params(tf: str = "4h") -> dict:
-    """The 'best L1' preset = the frozen lean champion, in the layer-param schema the forms speak."""
-    return validate_layer_params(l1_runner._lean_params(tf))
+    """The 'best L1' preset for a TF, in the layer-param schema the forms speak. 4h = the frozen lean
+    champion (unchanged); other TFs = that TF's deployed champion from wsh4_champions_full.json."""
+    if tf == "4h":
+        return validate_layer_params(l1_runner._lean_params(tf))
+    champs = json.loads(_WSH4_CHAMPS.read_text())
+    if tf not in champs:
+        raise L2ParamError(f"no L1 champion for tf={tf!r} (known: {sorted(champs)})")
+    return _champion_layer_params(tf, champs[tf])
 
 
 def l2_default_params() -> dict:
