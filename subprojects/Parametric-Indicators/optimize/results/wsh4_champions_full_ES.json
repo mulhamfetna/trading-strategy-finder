@@ -1,0 +1,35 @@
+{
+ "4h": {
+  "median_pnl": 2937.8,
+  "full_pnl": 33465.1,
+  "full_dd": 8325.0,
+  "win": 52.4,
+  "box": {
+   "sl_soft": 21.5,
+   "sl_hard": 55.0,
+   "tp": 48.8,
+   "gate_pct": 85.7,
+   "dd_limit": 929.0,
+   "cooldown": 0,
+   "flip": false,
+   "k": 2
+  },
+  "indicators": {
+   "cci": {
+    "n": 2,
+    "threshold": 130
+   },
+   "mfi": {
+    "n": 67,
+    "lower": 25,
+    "upper": 81
+   },
+   "rsi": {
+    "n": 10,
+    "lower": 20,
+    "upper": 64
+   },
+   "vwap": {}
+  }
+ }
+}
