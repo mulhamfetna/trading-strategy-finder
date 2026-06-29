@@ -48,7 +48,9 @@ SAMPLER_ARG="${WSH_SAMPLER:+--sampler $WSH_SAMPLER}"   # optimizer brain (P2): n
 OBJ_ARG="${WSH_OBJECTIVE:+--objective $WSH_OBJECTIVE}" # α: winrate*(default)|decision_pause; unset ⇒ winrate (unchanged)
 EXCL_ARG="${WSH_EXCLUDE:+--exclude-indicators $WSH_EXCLUDE}"  # α: e.g. ifvg,breaker,cisd reverts to wsh4-era 15
 DDCAP_ARG="${WSH_DD_CAP:+--dd-pnl-cap $WSH_DD_CAP}"    # α: relax the DD≤cap·P/L feasibility (e.g. 0.5) for shorter pauses
-IND_ARGS="--ind-1min --study-prefix $PREFIX $SPLIT_ARG $SAMPLER_ARG $OBJ_ARG $EXCL_ARG $DDCAP_ARG" # indicators read the 1-minute frame
+INSTRUMENT="${WSH_INSTRUMENT:-NQ}"                     # NQ (default) or ES; non-NQ → suffixed studies/champions
+INST_ARG=""; [ "$INSTRUMENT" != "NQ" ] && INST_ARG="--instrument $INSTRUMENT"
+IND_ARGS="--ind-1min --study-prefix $PREFIX $SPLIT_ARG $SAMPLER_ARG $OBJ_ARG $EXCL_ARG $DDCAP_ARG $INST_ARG" # indicators read the 1-minute frame
 
 SSH_OPTS=(-p "$SRV_PORT" -i "$SRV_KEY" -o IdentitiesOnly=yes -o BatchMode=yes \
           -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 \
@@ -65,7 +67,7 @@ STORAGE_URL="${WSH_STORAGE_URL:-}"
 # server has a $WSI/pg.env (written by the Postgres provisioning), source it so the secret never leaves the
 # box; otherwise empty ⇒ per-TF sqlite. Used by parity/counts/stats/pull and (mirrored) by launch.sh.
 _PG_FALLBACK="[ -z \"\$WSH_STORAGE_URL\" ] && [ -f '$WSI/pg.env' ] && { set -a; . '$WSI/pg.env'; set +a; }"
-REMOTE_ENV="source $REMOTE_VENV/bin/activate; export WSH_DATA_BASE='$WSI' WSG_DATA_ROOT='$WSI/data' WSH_STORAGE_URL='$STORAGE_URL'; $_PG_FALLBACK"
+REMOTE_ENV="source $REMOTE_VENV/bin/activate; export WSH_DATA_BASE='$WSI' WSG_DATA_ROOT='$WSI/data' WSH_STORAGE_URL='$STORAGE_URL' WSI_INSTRUMENT='$INSTRUMENT'; $_PG_FALLBACK"
 
 cmd_push() {
   log "creating scratch + pushing code/data → $WSI"
@@ -102,7 +104,7 @@ cmd_plan() {
   local tfs=("${TFS[@]}")
   log "search-space plan ($PREFIX, split=${WSH_SPLIT:+on}${WSH_SPLIT:-off}) — trials scale ∝ dimensions:"
   for tf in "${tfs[@]}"; do
-    srv "$REMOTE_ENV; cd '$CODE' && python3 optimize/optimizer.py '$tf' --plan $SPLIT_ARG" || true
+    srv "$REMOTE_ENV; cd '$CODE' && python3 optimize/optimizer.py '$tf' --plan $SPLIT_ARG $INST_ARG" || true
   done
 }
 
