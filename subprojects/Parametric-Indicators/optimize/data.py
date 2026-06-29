@@ -36,19 +36,31 @@ _RAW = _BASE / TF.RAW_DIR
 _BOX_CSV = config.DATA_ROOT / "full_data" / "NQ_full_data.csv"   # config.DATA_ROOT honours WSG_DATA_ROOT
 
 
-def load_box() -> pd.DataFrame:
-    """Load the shared box-level frame, indexed by normalized Date (same shape as strategy.py)."""
-    c = pd.read_csv(_BOX_CSV)
+def load_box(instrument: str = "NQ") -> pd.DataFrame:
+    """Load the box-level frame, indexed by normalized Date (same shape as strategy.py). NQ uses the existing
+    _BOX_CSV (byte-identical); other instruments resolve through the registry."""
+    if instrument == "NQ":
+        box_csv = str(_BOX_CSV)
+    else:
+        from optimize import instruments
+        box_csv = instruments.resolve_paths(instrument, "4h")[2]
+    c = pd.read_csv(box_csv)
     c["Date"] = pd.to_datetime(c["Date"]).dt.normalize()
     return c.drop_duplicates(subset=["Date"]).set_index("Date", drop=False)
 
 
-def load_inputs(tf_name: str):
-    """Return (df_dec, df1, box, vf, n_split) for the given decision timeframe."""
+def load_inputs(tf_name: str, instrument: str = "NQ"):
+    """Return (df_dec, df1, box, vf, n_split) for the given decision timeframe + instrument. NQ keeps the
+    existing inline paths (golden-safe); other instruments resolve through optimize.instruments."""
     tf = TF.get(tf_name)
-    df_dec = load_data(str(_RAW / f"NQ_{tf.name}.csv")).sort_values("Date").reset_index(drop=True)
-    df1 = load_data(str(_RAW / "NQ_1m.csv")).sort_values("Date").reset_index(drop=True)
-    box = load_box()
+    if instrument == "NQ":
+        dec_csv, min_csv = str(_RAW / f"NQ_{tf.name}.csv"), str(_RAW / "NQ_1m.csv")
+    else:
+        from optimize import instruments
+        dec_csv, min_csv, _ = instruments.resolve_paths(instrument, tf.name)
+    df_dec = load_data(dec_csv).sort_values("Date").reset_index(drop=True)
+    df1 = load_data(min_csv).sort_values("Date").reset_index(drop=True)
+    box = load_box(instrument)
     vf = vol_forecast(df_dec, df1, bar_minutes=tf.minutes)
     n_split = int((df_dec["Date"].dt.year == config.YEARS[0]).sum())
     return df_dec, df1, box, vf, n_split

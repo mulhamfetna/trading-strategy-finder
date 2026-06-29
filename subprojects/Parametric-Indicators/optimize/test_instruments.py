@@ -29,3 +29,11 @@ def test_scale_factor():
     assert I.scale_factor("NQ") == 1.0
     sf = I.scale_factor("ES")
     assert 0.0 < sf < 1.0           # ES (~6508) is a fraction of NQ (~23861)
+
+
+def test_load_inputs_es_distinct_from_nq():
+    nq_dec, _, _, _, _ = D.load_inputs("4h")              # default NQ
+    es_dec, _, es_box, _, _ = D.load_inputs("4h", instrument="ES")
+    # different instruments → different candle frames + a non-empty ES box
+    assert len(es_dec) > 0 and len(es_box) > 0
+    assert nq_dec["Close"].median() != es_dec["Close"].median()
