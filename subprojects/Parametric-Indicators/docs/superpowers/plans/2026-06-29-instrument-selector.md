@@ -914,7 +914,22 @@ git commit -m "feat(instrument): strategy.py + /api/config + /api/backtest accep
 
 ---
 
-### Task C2: `index.html` instrument selector
+### Task C2: `index.html` instrument selector — RESOLVED (N/A: no separate index.html)
+
+**Resolution (2026-06-29):** During execution we confirmed `frontend/index.html` does **not exist** —
+`server.py` serves `frontend/dashboard.html` at `/` (the unified 3-tab app), and the dashboard never calls the
+legacy `/api/backtest` (it uses `/api/backtest_causal` for the L1 rich tab). The "backtesting system" is the
+dashboard's **L1 tab**, which is already covered: the instrument `<select>` ships in Task B1 (applies to all
+three tabs), and the L1 rich engine payload was made instrument-correct in Task C1 (`_build_l1_payload_memo`
+threads `instrument` → `strategy.build_payload`, pv per-instrument). Verified live: `/api/config?instrument=ES`
+→ pv=50; the L1 tab (`/api/backtest_causal` instrument=ES) returns a payload with `pv=50`; bad instrument →
+400. `/api/backtest` + `strategy.get_bundle/build_payload` were still made instrument-aware in C1, so the
+legacy endpoint is correct if ever re-fronted. **No file to create — task closed.** Original steps below kept
+for historical context.
+
+---
+
+#### (original — superseded)
 
 **Files:**
 - Modify: `frontend/index.html` (instrument select; config fetch; backtest POST; point-value display)
