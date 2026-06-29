@@ -38,7 +38,9 @@ def test_no_cross_instrument_cache_bleed():
 def test_instrument_defaults_scaled():
     nq = payload.instrument_l1_default("NQ", "4h")
     assert nq == payload.l1_default_params("4h")            # NQ unchanged
-    es = payload.instrument_l1_default("ES", "4h")
+    # the SCALING logic itself (decoupled from whether an optimized ES champion file exists on disk —
+    # instrument_l1_default("ES",tf) returns the champion when present, else this scaled-permissive)
+    es = payload._scaled_permissive("ES")
     sf = instruments.scale_factor("ES")
     assert abs(es["sl_soft"] - round(149.8 * sf, 4)) < 1e-6  # point-fields scaled
     assert es["indicators"] == [] and es["gate_pct"] == 0   # permissive, scale-free fields untouched
