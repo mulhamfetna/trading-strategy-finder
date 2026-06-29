@@ -41,7 +41,8 @@ LOCAL_REPORTS="$_HERE/../reports"
 # │  To resume the full all-TF sweep: set TFS=("${TFS_ALL[@]}") and restore the per-TF WORKERS map.  │
 # └──────────────────────────────────────────────────────────────────────────────────────────────┘
 TFS_ALL=(4h 2h 1h 15m 5m 2m)                          # full set (1-minute TF excluded) — restore to resume all-TF sweeps
-TFS=(4h)                                              # ⚠️ 4h ONLY — full-data optimizer focus (see banner above)
+# 4h ONLY by default (full-data focus); override with WSH_TFS="4h 2h 1h 15m 5m 2m" (or "all") for an all-TF sweep.
+if [ "${WSH_TFS:-}" = "all" ]; then TFS=("${TFS_ALL[@]}"); elif [ -n "${WSH_TFS:-}" ]; then read -ra TFS <<< "$WSH_TFS"; else TFS=(4h); fi
 PREFIX="${WSH_PREFIX:-wsh4}"                           # study prefix; override e.g. WSH_PREFIX=wsh5 for a fresh regime
 SPLIT_ARG="${WSH_SPLIT:+--split-sltp}"                 # set WSH_SPLIT=1 to search SEPARATE long/short SL/TP (Q3/E2)
 SAMPLER_ARG="${WSH_SAMPLER:+--sampler $WSH_SAMPLER}"   # optimizer brain (P2): nsga3*(default)|nsga2|tpe|motpe|gp; unset ⇒ nsga3 (unchanged)
@@ -50,6 +51,7 @@ EXCL_ARG="${WSH_EXCLUDE:+--exclude-indicators $WSH_EXCLUDE}"  # α: e.g. ifvg,br
 DDCAP_ARG="${WSH_DD_CAP:+--dd-pnl-cap $WSH_DD_CAP}"    # α: relax the DD≤cap·P/L feasibility (e.g. 0.5) for shorter pauses
 INSTRUMENT="${WSH_INSTRUMENT:-NQ}"                     # NQ (default) or ES; non-NQ → suffixed studies/champions
 INST_ARG=""; [ "$INSTRUMENT" != "NQ" ] && INST_ARG="--instrument $INSTRUMENT"
+RSUF=""; [ "$INSTRUMENT" != "NQ" ] && RSUF="_$INSTRUMENT"   # study/db filename suffix mirrored into launch.sh + readers
 IND_ARGS="--ind-1min --study-prefix $PREFIX $SPLIT_ARG $SAMPLER_ARG $OBJ_ARG $EXCL_ARG $DDCAP_ARG $INST_ARG" # indicators read the 1-minute frame
 
 SSH_OPTS=(-p "$SRV_PORT" -i "$SRV_KEY" -o IdentitiesOnly=yes -o BatchMode=yes \
@@ -79,6 +81,15 @@ cmd_push() {
     "$REPO/subprojects/Parametric-Indicators/" "${SRV_USER}@${SRV_HOST}:$CODE/"
   rsync -az --info=stats1 -e "$RSYNC_E" "$REPO/Full_Canldes_Data/" "${SRV_USER}@${SRV_HOST}:$WSI/Full_Canldes_Data/"
   rsync -az --info=stats1 -e "$RSYNC_E" "$REPO/data/" "${SRV_USER}@${SRV_HOST}:$WSI/data/"
+  # Non-NQ instruments resolve candles+boxes via the all-stocks-signals registry under ALL_STOCKS/. The server
+  # layout mirrors the repo at $WSI (WSH_DATA_BASE), so push both the registry and the data tree there.
+  if [ "$INSTRUMENT" != "NQ" ]; then
+    log "instrument=$INSTRUMENT → syncing the instrument registry + ALL_STOCKS data"
+    srv "mkdir -p '$WSI/subprojects/all-stocks-signals' '$WSI/ALL_STOCKS'"
+    rsync -az --info=stats1 -e "$RSYNC_E" --exclude '__pycache__' --exclude '*.pyc' \
+      "$REPO/subprojects/all-stocks-signals/" "${SRV_USER}@${SRV_HOST}:$WSI/subprojects/all-stocks-signals/"
+    rsync -az --info=stats1 -e "$RSYNC_E" "$REPO/ALL_STOCKS/" "${SRV_USER}@${SRV_HOST}:$WSI/ALL_STOCKS/"
+  fi
   log "push done."
 }
 
@@ -130,7 +141,7 @@ cmd_run() {
 pkill -9 -f optimize/optimizer.py >/dev/null 2>&1 || true
 sleep 2
 source $REMOTE_VENV/bin/activate
-export WSH_DATA_BASE='$WSI' WSG_DATA_ROOT='$WSI/data' WSH_STORAGE_URL='$STORAGE_URL'
+export WSH_DATA_BASE='$WSI' WSG_DATA_ROOT='$WSI/data' WSH_STORAGE_URL='$STORAGE_URL' WSI_INSTRUMENT='$INSTRUMENT'
 [ -z \"\$WSH_STORAGE_URL\" ] && [ -f '$WSI/pg.env' ] && { set -a; . '$WSI/pg.env'; set +a; }   # else Postgres from pg.env
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
 cd '$CODE'; mkdir -p optimize/studies '$WSI/logs'
@@ -150,7 +161,7 @@ run_worker () {
 }
 for pair in $spec; do
   tf=\${pair%%:*}; w=\${pair##*:}
-  python3 -c \"import optuna,sqlite3,os; n='${PREFIX}_\$tf'; per='optimize/studies/wsh_\$tf.db'; sh='optimize/studies/wsh.db'; h=lambda d:(os.path.exists(d) and n in [r[0] for r in sqlite3.connect(d).execute('SELECT study_name FROM studies')]); db=(sh if (not os.path.exists(per) and h(sh)) else per); url=(os.environ.get('WSH_STORAGE_URL') or 'sqlite:///'+db); optuna.create_study(study_name=n, storage=url, directions=['maximize','maximize','maximize'], load_if_exists=True); print('study',n,'->',url)\"
+  python3 -c \"import optuna,sqlite3,os; n='${PREFIX}_\$tf${RSUF}'; per='optimize/studies/wsh_\$tf${RSUF}.db'; sh='optimize/studies/wsh.db'; h=lambda d:(os.path.exists(d) and n in [r[0] for r in sqlite3.connect(d).execute('SELECT study_name FROM studies')]); db=(sh if (not os.path.exists(per) and h(sh)) else per); url=(os.environ.get('WSH_STORAGE_URL') or 'sqlite:///'+db); optuna.create_study(study_name=n, storage=url, directions=['maximize','maximize','maximize'], load_if_exists=True); print('study',n,'->',url)\"
   for i in \$(seq 1 \$w); do run_worker \"\$tf\" \"\$w\" & done
   echo \"\$tf: \$w workers → target \$TARGET (watchdog/respawn, idempotent)\"
 done
@@ -183,7 +194,7 @@ cmd_two_stage() {
 pkill -9 -f 'optimize.two_stage' >/dev/null 2>&1 || true
 sleep 2
 source $REMOTE_VENV/bin/activate
-export WSH_DATA_BASE='$WSI' WSG_DATA_ROOT='$WSI/data' WSH_STORAGE_URL='$STORAGE_URL'
+export WSH_DATA_BASE='$WSI' WSG_DATA_ROOT='$WSI/data' WSH_STORAGE_URL='$STORAGE_URL' WSI_INSTRUMENT='$INSTRUMENT'
 [ -z \"\$WSH_STORAGE_URL\" ] && [ -f '$WSI/pg.env' ] && { set -a; . '$WSI/pg.env'; set +a; }   # else Postgres from pg.env
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
 cd '$CODE'; mkdir -p '$WSI/logs'
@@ -217,13 +228,13 @@ def _has(db, n):
         c=sqlite3.connect(db); r=[x[0] for x in c.execute('SELECT study_name FROM studies')]; c.close(); return n in r
     except Exception: return False
 def _db(tf, n):
-    per='optimize/studies/wsh_%s.db'%tf; sh='optimize/studies/wsh.db'
+    per='optimize/studies/wsh_%s${RSUF}.db'%tf; sh='optimize/studies/wsh.db'
     if _has(per, n): return per
     if _has(sh, n): print(f'  ⚠️  FALLBACK {tf}: per-TF file absent, reading shared wsh.db'); return sh
     return per
 for tf in '${TFS[*]}'.split():
     try:
-        n=f'${PREFIX}_{tf}'
+        n=f'${PREFIX}_{tf}${RSUF}'
         s=optuna.load_study(study_name=n, storage=(os.environ.get('WSH_STORAGE_URL') or 'sqlite:///'+_db(tf, n)))
         c=[t for t in s.trials if t.values is not None]
         feas=sum(1 for t in c if (t.user_attrs.get('full_pnl',0) or 0)>0 and t.user_attrs.get('full_dd',9e9)<=0.25*t.user_attrs.get('full_pnl',0))

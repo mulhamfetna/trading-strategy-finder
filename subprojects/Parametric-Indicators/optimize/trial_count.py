@@ -9,6 +9,7 @@ CLI:  python3 optimize/trial_count.py <tf> [--prefix wsh4]
 """
 from __future__ import annotations
 
+import os
 import sqlite3
 import sys
 from pathlib import Path
@@ -22,12 +23,14 @@ import optuna  # noqa: E402
 from optimize import storage as study_storage  # noqa: E402
 
 _STUDIES = _HERE / "studies"
+_INSTRUMENT = os.environ.get("WSI_INSTRUMENT", "NQ")   # NQ (default) or ES; non-NQ → suffixed study/db
+_SUF = "" if _INSTRUMENT == "NQ" else f"_{_INSTRUMENT}"
 
 
 def _quiet_url(tf: str, study_name: str) -> str:
     """Resolve the storage URL WITHOUT printing (mirrors optimizer._db_for's per-TF + shared fallback,
     then defers to the Tier-1 helper so WSH_STORAGE_URL still wins)."""
-    per = _STUDIES / f"wsh_{tf}.db"
+    per = _STUDIES / f"wsh_{tf}{_SUF}.db"
     shared = _STUDIES / "wsh.db"
 
     def _has(db: Path) -> bool:
@@ -43,7 +46,7 @@ def _quiet_url(tf: str, study_name: str) -> str:
 
 def completed(prefix: str, tf: str) -> int:
     """Completed-trial count for `<prefix>_<tf>` (0 if the study/store is absent or unreadable)."""
-    name = f"{prefix}_{tf}"
+    name = f"{prefix}_{tf}{_SUF}"
     try:
         study = optuna.load_study(study_name=name, storage=_quiet_url(tf, name))
         return sum(1 for t in study.trials if t.values is not None)
