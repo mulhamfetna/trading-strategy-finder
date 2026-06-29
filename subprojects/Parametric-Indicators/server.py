@@ -99,21 +99,26 @@ class H(BaseHTTPRequestHandler):
                        "pnl": round(sum(t["pnl"] for t in l1.ledger), 2)},
                 "l1_label": "🍃 WS lean 4h · 3-ind cci/OB/structure"}))
         if path == "/api/combined_config":
-            # Combined dashboard: BOTH layers editable. Defaults = best L1 (4h = frozen lean champion;
-            # other TFs = that TF's wsh4 champion) + best L2 (promoted extend champion, tf-agnostic);
-            # profile lists + the shared indicator schema. No tf / tf=4h ⇒ byte-identical to before.
+            # Combined dashboard: BOTH layers editable. Defaults are per (instrument, tf): NQ = the real
+            # champion (4h lean / other-TF wsh4); ES = price-scaled permissive. No instrument/tf (or NQ+4h)
+            # ⇒ byte-identical to before. Bad instrument/tf → 400.
             from indicators import library
+            from optimize import instruments as _inst
             tf = q.get("tf", ["4h"])[0]
+            inst = q.get("instrument", ["NQ"])[0]
             if tf not in l2payload._TF_SET:
                 return self._send(400, json.dumps({"error": f"unknown tf {tf!r}; known {list(l2payload._TF_SET)}"}))
-            l1_label = "🍃 WS lean 4h champion" if tf == "4h" else f"🏆 WS champion {tf}"
+            if not _inst.is_valid(inst):
+                return self._send(400, json.dumps({"error": f"unknown instrument {inst!r}; known {list(_inst.TOKENS)}"}))
+            l1_label = ("🍃 WS lean 4h champion" if (inst == "NQ" and tf == "4h") else
+                        (f"🏆 WS champion {tf}" if inst == "NQ" else f"⚙ {inst} permissive (scaled) {tf}"))
             return self._send(200, json.dumps({
                 "indicator_schema": library.schema(),
-                "l1_default": l2payload.l1_default_params(tf),
-                "l2_default": l2payload.l2_default_params(),
+                "l1_default": l2payload.instrument_l1_default(inst, tf),
+                "l2_default": l2payload.instrument_l2_default(inst),
                 "l1_profiles": l2payload.load_l1_profiles(),
                 "l2_profiles": l2payload.load_l2_profiles(),
-                "tf": tf,
+                "tf": tf, "instrument": inst, "point_value": _inst.point_value(inst),
                 "l1_label": l1_label, "l2_label": "🔁 L2 (extend champion)"}))
         if path == "/api/causal_log.csv":
             # full per-candle causal log as CSV (the `layer` column lets L1/L2 be separated downstream).
@@ -236,7 +241,8 @@ class H(BaseHTTPRequestHandler):
                 body = json.loads(self.rfile.read(n) or b"{}")
                 t0 = time.time()
                 out = l2payload.build_view_payload(body.get("l1") or {}, body.get("l2") or {},
-                                                   body.get("tf", "4h"), body.get("view", "combined"))
+                                                   body.get("tf", "4h"), body.get("view", "combined"),
+                                                   instrument=body.get("instrument", "NQ"))
                 out["meta"]["run_ms"] = round((time.time() - t0) * 1000)
                 _stamp_causal(out["log"], out["meta"]["view"], body.get("l1"), body.get("l2"),
                               body.get("tf", "4h"))

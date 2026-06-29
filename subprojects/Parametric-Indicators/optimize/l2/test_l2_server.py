@@ -105,6 +105,24 @@ def test_es_contributor_through_http_changes_trades():
         srv.shutdown()
 
 
+def test_combined_config_per_instrument():
+    srv, port = _serve()
+    try:
+        import urllib.request, urllib.error
+        nq = json.loads(urllib.request.urlopen(f"http://127.0.0.1:{port}/api/combined_config").read())
+        es = json.loads(urllib.request.urlopen(f"http://127.0.0.1:{port}/api/combined_config?instrument=ES").read())
+        assert nq.get("instrument", "NQ") == "NQ" and es["instrument"] == "ES"
+        assert es["point_value"] == 50.0 and nq["point_value"] == 20.0
+        assert es["l1_default"]["sl_soft"] != nq["l1_default"]["sl_soft"]   # scaled
+        try:
+            urllib.request.urlopen(f"http://127.0.0.1:{port}/api/combined_config?instrument=QQQ")
+            assert False, "expected 400"
+        except urllib.error.HTTPError as e:
+            assert e.code == 400
+    finally:
+        srv.shutdown()
+
+
 def test_combined_config_per_tf():
     srv, port = _serve()
     try:
