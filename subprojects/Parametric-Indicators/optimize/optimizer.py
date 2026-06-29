@@ -93,7 +93,27 @@ def _study_in(db_path: Path, study_name: str) -> bool:
         return False
 
 
-def _db_for(tf_name: str, study_name: str) -> Path:
+def _study_suffix(instrument: str) -> str:
+    """'' for NQ (back-compat), '_ES' etc. for other instruments — applied to study/DB/champion names."""
+    return "" if instrument == "NQ" else f"_{instrument}"
+
+
+def _bounds_for(b: dict, dd_limit_max: float, instrument: str):
+    """NQ → (b, dd_limit_max) unchanged. Non-NQ → the point-denominated SL/TP bounds + the dollar dd_limit
+    ceiling scaled by the instrument price ratio (mirrors the scaled-permissive dashboard default), so the
+    search lives in the right magnitude for that instrument instead of NQ's point scale."""
+    if instrument == "NQ":
+        return b, dd_limit_max
+    from optimize import instruments
+    sf = instruments.scale_factor(instrument)
+    sb = dict(b)
+    for k in ("sl_soft", "sl_hard", "tp"):
+        lo, hi = b[k]
+        sb[k] = [float(lo) * sf, float(hi) * sf]
+    return sb, dd_limit_max * sf
+
+
+def _db_for(tf_name: str, study_name: str, instrument: str = "NQ") -> Path:
     """Resolve which SQLite file to use for one timeframe's study.
 
     New layout: each timeframe gets its OWN file (wsh_<tf>.db) so ~30 workers split across 6 locks
@@ -104,7 +124,7 @@ def _db_for(tf_name: str, study_name: str) -> Path:
     loud FALLBACK warning). Otherwise use the new per-TF file. This guarantees studies created under the
     old single-file layout — including those the server is producing right now — stay readable/resumable.
     """
-    per_tf = _STUDIES / f"wsh_{tf_name}.db"
+    per_tf = _STUDIES / f"wsh_{tf_name}{_study_suffix(instrument)}.db"
     if per_tf.exists():
         return per_tf
     if _study_in(_DB, study_name):
