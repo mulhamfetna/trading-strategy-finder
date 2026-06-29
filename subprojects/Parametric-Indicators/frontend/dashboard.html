@@ -38,21 +38,22 @@
       <button data-view="l1">🍃 L1</button><button data-view="l2">🔁 L2</button><button data-view="combined" class="on">Σ Combined</button></span>
     <span class="dirty" id="dirty"></span>
     <button class="ghost" id="toggle" title="Show/hide the settings panel">⚙ Hide settings</button>
-    <label class="instsel" title="instrument — switches the candles/boxes/economics">
-      <select id="inst_select">
-        <option value="NQ" selected>NQ</option><option value="ES">ES</option>
-      </select></label>
-    <label class="tfsel" title="decision timeframe — switches the L1 champion + the backtest frame">
-      <select id="tf_select">
-        <option value="4h" selected>4h</option><option value="2h">2h</option><option value="1h">1h</option>
-        <option value="15m">15m</option><option value="5m">5m</option><option value="2m">2m</option>
-      </select></label>
     <button class="run" id="run">▶ Run</button>
   </div>
 </header>
 
 <div class="body">
   <aside>
+    <div class="sgroup"><h3>Market</h3>
+      <div class="fld"><label title="instrument — switches the candles/boxes/economics">Instrument</label>
+        <select id="inst_select"><option value="NQ" selected>NQ</option><option value="ES">ES</option></select></div>
+      <div class="fld"><label title="decision timeframe — switches the L1 champion + the backtest frame">Timeframe</label>
+        <select id="tf_select">
+          <option value="4h" selected>4h</option><option value="2h">2h</option><option value="1h">1h</option>
+          <option value="15m">15m</option><option value="5m">5m</option><option value="2m">2m</option>
+        </select></div>
+      <div class="hint">applies to all three tabs (L1 · L2 · combined) — switch then click Run</div>
+    </div>
     <div class="navtabs">
       <div class="navtab l1 on" id="tab_l1" data-pane="l1">🍃 L1 settings</div>
       <div class="navtab l2" id="tab_l2" data-pane="l2">🔁 L2 settings</div>

@@ -61,10 +61,10 @@ with sync_playwright() as p:
 
     # ---- 2. switch to 2h: status updates + L1 form repopulates with the 2h champion (no reload) ----
     pg.select_option("#tf_select", "2h")
-    pg.wait_for_function("() => document.getElementById('status').textContent.includes('switched to 2h')",
+    pg.wait_for_function("() => document.getElementById('status').textContent.includes('switched to NQ 2h')",
                          timeout=60000)
-    check("switch 2h: status says 'switched to 2h'",
-          "switched to 2h" in pg.eval_on_selector("#status", "e=>e.textContent"))
+    check("switch 2h: status says 'switched to NQ 2h'",
+          "switched to NQ 2h" in pg.eval_on_selector("#status", "e=>e.textContent"))
     check("switch 2h: L1 sl_soft repopulated to 78.5 (2h champion, not 149.8)",
           abs(fnum("#l1_sl_soft") - EXPECT_SLSOFT["2h"]) < 1e-6, f"(got {val('#l1_sl_soft')!r})")
 
@@ -84,7 +84,7 @@ with sync_playwright() as p:
 
     # ---- 4. switch to 15m: champion changes again ----
     pg.select_option("#tf_select", "15m")
-    pg.wait_for_function("() => document.getElementById('status').textContent.includes('switched to 15m')",
+    pg.wait_for_function("() => document.getElementById('status').textContent.includes('switched to NQ 15m')",
                          timeout=60000)
     check("switch 15m: L1 sl_soft repopulated to 21.6 (15m champion)",
           abs(fnum("#l1_sl_soft") - EXPECT_SLSOFT["15m"]) < 1e-6, f"(got {val('#l1_sl_soft')!r})")
