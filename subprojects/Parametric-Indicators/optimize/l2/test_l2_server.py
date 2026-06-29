@@ -104,3 +104,21 @@ def test_es_contributor_through_http_changes_trades():
     finally:
         srv.shutdown()
 
+
+def test_combined_config_per_tf():
+    srv, port = _serve()
+    try:
+        base = json.loads(urllib.request.urlopen(f"http://127.0.0.1:{port}/api/combined_config").read())
+        tf2h = json.loads(urllib.request.urlopen(f"http://127.0.0.1:{port}/api/combined_config?tf=2h").read())
+        # no-tf == 4h (back-compat); 2h differs (its own champion); both carry the schema
+        assert base["l1_default"]["sl_soft"] != tf2h["l1_default"]["sl_soft"] or base["l1_default"] != tf2h["l1_default"]
+        assert "indicator_schema" in tf2h and tf2h["l1_default"]["ind_1min"] is True
+        # bad tf → 400
+        try:
+            urllib.request.urlopen(f"http://127.0.0.1:{port}/api/combined_config?tf=1m")
+            assert False, "expected 400"
+        except urllib.error.HTTPError as e:
+            assert e.code == 400
+    finally:
+        srv.shutdown()
+

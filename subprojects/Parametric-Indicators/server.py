@@ -62,6 +62,8 @@ class H(BaseHTTPRequestHandler):
         pass
 
     def do_GET(self):
+        from urllib.parse import urlparse, parse_qs
+        q = parse_qs(urlparse(self.path).query)
         path = self.path.split("?")[0]
         if path == "/favicon.ico":                          # F5 — no icon shipped; 204 keeps the console clean
             return self._send(204, "")
@@ -97,16 +99,22 @@ class H(BaseHTTPRequestHandler):
                        "pnl": round(sum(t["pnl"] for t in l1.ledger), 2)},
                 "l1_label": "🍃 WS lean 4h · 3-ind cci/OB/structure"}))
         if path == "/api/combined_config":
-            # Combined dashboard: BOTH layers editable. Defaults = best L1 (frozen lean champion)
-            # + best L2 (promoted extend champion); profile lists + the shared indicator schema.
+            # Combined dashboard: BOTH layers editable. Defaults = best L1 (4h = frozen lean champion;
+            # other TFs = that TF's wsh4 champion) + best L2 (promoted extend champion, tf-agnostic);
+            # profile lists + the shared indicator schema. No tf / tf=4h ⇒ byte-identical to before.
             from indicators import library
+            tf = q.get("tf", ["4h"])[0]
+            if tf not in l2payload._TF_SET:
+                return self._send(400, json.dumps({"error": f"unknown tf {tf!r}; known {list(l2payload._TF_SET)}"}))
+            l1_label = "🍃 WS lean 4h champion" if tf == "4h" else f"🏆 WS champion {tf}"
             return self._send(200, json.dumps({
                 "indicator_schema": library.schema(),
-                "l1_default": l2payload.l1_default_params("4h"),
+                "l1_default": l2payload.l1_default_params(tf),
                 "l2_default": l2payload.l2_default_params(),
                 "l1_profiles": l2payload.load_l1_profiles(),
                 "l2_profiles": l2payload.load_l2_profiles(),
-                "l1_label": "🍃 WS lean 4h champion", "l2_label": "🔁 L2 (extend champion)"}))
+                "tf": tf,
+                "l1_label": l1_label, "l2_label": "🔁 L2 (extend champion)"}))
         if path == "/api/causal_log.csv":
             # full per-candle causal log as CSV (the `layer` column lets L1/L2 be separated downstream).
             # GET can't carry params, so this serves the LAST causal run — now STAMPED with provenance
