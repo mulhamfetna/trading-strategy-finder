@@ -119,19 +119,24 @@ def get_bundle_plus20d(tf_name: str | None):
 _BUNDLE_CACHE: dict = {}
 
 
-def get_bundle(tf_name: str | None):
-    """Return the cached (df_dec, df1, box, vf, n_split) bundle for a decision timeframe.
+def get_bundle(tf_name: str | None, instrument: str = "NQ"):
+    """Return the cached (df_dec, df1, box, vf, n_split) bundle for a decision timeframe + instrument.
+    NQ keeps the parity-locked per-year 4h loader / optimizer loader (byte-identical); non-NQ resolves the
+    all-history per-TF source through optimize.data.load_inputs(tf, instrument). Cache is keyed by both.
     Raises ParamError for an unknown timeframe (no silent fallback)."""
     tf_name = tf_name or "4h"
     if tf_name not in TF.TIMEFRAMES:
         raise ParamError(f"timeframe must be one of {list(TF.TIMEFRAMES)} (got {tf_name!r})")
-    if tf_name not in _BUNDLE_CACHE:
-        if tf_name == "4h":
-            _BUNDLE_CACHE[tf_name] = load_inputs()
+    key = (instrument, tf_name)
+    if key not in _BUNDLE_CACHE:
+        from optimize.data import load_inputs as _load_tf
+        if instrument == "NQ" and tf_name == "4h":
+            _BUNDLE_CACHE[key] = load_inputs()                     # NQ-4h per-year split (parity-locked)
+        elif instrument == "NQ":
+            _BUNDLE_CACHE[key] = _load_tf(tf_name)                 # NQ all-history per-TF (unchanged)
         else:
-            from optimize.data import load_inputs as _load_tf
-            _BUNDLE_CACHE[tf_name] = _load_tf(tf_name)
-    return _BUNDLE_CACHE[tf_name]
+            _BUNDLE_CACHE[key] = _load_tf(tf_name, instrument)     # ES all-history per-TF
+    return _BUNDLE_CACHE[key]
 
 
 class ParamError(ValueError):
@@ -139,7 +144,7 @@ class ParamError(ValueError):
     clamped or defaulted — a bad input is an error the user must see."""
 
 
-def validate_params(params):
+def validate_params(params, instrument: str = "NQ"):
     """Strict validation. Raises ParamError (no silent fallback). Returns a typed dict.
     Required strategy params must all be present; instrument constants (dd_cap, pv) are
     exposed too and default to config only when omitted."""
@@ -173,7 +178,8 @@ def validate_params(params):
     if timeframe not in TF.TIMEFRAMES:
         raise ParamError(f"timeframe must be one of {list(TF.TIMEFRAMES)} (got {timeframe!r})")
     dd_cap = float(params["dd_cap"]) if params.get("dd_cap") not in (None, "") else config.DD_CAP
-    pv = float(params["pv"]) if params.get("pv") not in (None, "") else config.NQ_POINT_VALUE
+    from optimize import instruments
+    pv = float(params["pv"]) if params.get("pv") not in (None, "") else instruments.point_value(instrument)
     if dd_cap <= 0:               raise ParamError(f"dd_cap must be > 0 (got {dd_cap})")
     if pv <= 0:                   raise ParamError(f"pv (point value) must be > 0 (got {pv})")
     # WS-I indicator confirmation layer (optional; absent ⇒ pure box strategy = parity).
@@ -260,8 +266,8 @@ def window_slice(df4, df1, box, vf, n2025, window, timeframe):
     return d4, d1, vfw, df4, vf, n2025, box, lo, hi
 
 
-def build_payload(df4, df1, box, vf, n2025, params=None):
-    P = validate_params(params)
+def build_payload(df4, df1, box, vf, n2025, params=None, instrument: str = "NQ"):
+    P = validate_params(params, instrument)
     sl_soft, sl_hard, tp = P["sl_soft"], P["sl_hard"], P["tp"]
     cooldown, flip = P["cooldown"], P["flip"]
     gate_pct, dd_limit, window = P["gate_pct"], P["dd_limit"], P["window"]

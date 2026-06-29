@@ -74,9 +74,14 @@ class H(BaseHTTPRequestHandler):
             # hardcodes NOTHING (params, bounds, indicator keys/params, enums all come from here)
             from indicators import library
             from optimize import timeframes as TF
+            from optimize import instruments as _inst
             import presets
+            inst = q.get("instrument", ["NQ"])[0]
+            if not _inst.is_valid(inst):
+                return self._send(400, json.dumps({"error": f"unknown instrument {inst!r}; known {list(_inst.TOKENS)}"}))
             return self._send(200, json.dumps({
-                "preset": config.WINNER, "dd_cap": config.DD_CAP, "pv": config.NQ_POINT_VALUE,
+                "preset": config.WINNER, "dd_cap": config.DD_CAP, "pv": _inst.point_value(inst),
+                "instrument": inst, "instruments": list(_inst.TOKENS),
                 # one-click importable winning strategies (plain winner + per-TF WS-I champions)
                 "strategies": presets.strategies(),
                 "bounds": {"sl_soft": [1, None], "sl_hard": [1, None], "tp": [1, None],
@@ -221,7 +226,8 @@ class H(BaseHTTPRequestHandler):
                 body = json.loads(self.rfile.read(n) or b"{}")
                 t0 = time.time()
                 l1lay = l2payload._layer_from_strategy(body)
-                out = l2payload.build_view_payload(l1lay, {}, body.get("timeframe", "4h"), "l1", l1_engine=body)
+                out = l2payload.build_view_payload(l1lay, {}, body.get("timeframe", "4h"), "l1",
+                                                   instrument=body.get("instrument", "NQ"), l1_engine=body)
                 out["meta"]["run_ms"] = round((time.time() - t0) * 1000)
                 _stamp_causal(out["log"], "l1", l1lay,
                               "PERMISSIVE-internal (L1-view projection — its L2 rows are a no-gate "
@@ -261,8 +267,9 @@ class H(BaseHTTPRequestHandler):
             params = json.loads(self.rfile.read(n) or b"{}")
             t0 = time.time()
             # pick the decision-timeframe bundle (lazy-loaded + cached); bad TF → ParamError → 400
-            bundle = strategy.get_bundle((params or {}).get("timeframe"))
-            payload = strategy.build_payload(*bundle, params)
+            _inst = (params or {}).get("instrument", "NQ")
+            bundle = strategy.get_bundle((params or {}).get("timeframe"), _inst)
+            payload = strategy.build_payload(*bundle, params, instrument=_inst)
             payload["meta"]["run_ms"] = round((time.time() - t0) * 1000)
             self._send(200, json.dumps(payload))
             s = payload["meta"]["summary"]
