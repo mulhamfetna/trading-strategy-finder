@@ -372,6 +372,32 @@ def l2_default_params() -> dict:
     return dict(PERMISSIVE)
 
 
+def _scaled_permissive(instrument: str) -> dict:
+    """The PERMISSIVE anchor with point-denominated fields scaled to the instrument's price (scale-free
+    fields untouched). Gives non-NQ a runnable, sane default; the user tunes from there."""
+    from optimize import instruments
+    sf = instruments.scale_factor(instrument)
+    p = dict(PERMISSIVE)
+    for f in ("sl_soft", "sl_hard", "tp", "dd_limit"):
+        if p.get(f) is not None:
+            p[f] = round(float(p[f]) * sf, 4)
+    return validate_layer_params(p)
+
+
+def instrument_l1_default(instrument: str = "NQ", tf: str = "4h") -> dict:
+    """L1 default for an instrument. NQ → the real per-TF champion (unchanged); non-NQ → scaled-permissive."""
+    if instrument == "NQ":
+        return l1_default_params(tf)
+    return _scaled_permissive(instrument)
+
+
+def instrument_l2_default(instrument: str = "NQ") -> dict:
+    """L2 default. NQ → the promoted L2 champion / permissive; non-NQ → scaled-permissive (no L2 champion)."""
+    if instrument == "NQ":
+        return l2_default_params()
+    return _scaled_permissive(instrument)
+
+
 def _epoch(ts) -> int:
     return int(pd.Timestamp(ts).timestamp())
 

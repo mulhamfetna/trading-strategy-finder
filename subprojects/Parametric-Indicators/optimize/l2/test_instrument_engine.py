@@ -33,3 +33,13 @@ def test_no_cross_instrument_cache_bleed():
     es = payload.build_view_payload(p, payload.l2_default_params(), "4h", "l2", instrument="ES")
     # identical params+tf+view but different instrument → different books (no cache bleed)
     assert nq["meta"]["n"] != es["meta"]["n"] or nq["log"] != es["log"]
+
+
+def test_instrument_defaults_scaled():
+    nq = payload.instrument_l1_default("NQ", "4h")
+    assert nq == payload.l1_default_params("4h")            # NQ unchanged
+    es = payload.instrument_l1_default("ES", "4h")
+    sf = instruments.scale_factor("ES")
+    assert abs(es["sl_soft"] - round(149.8 * sf, 4)) < 1e-6  # point-fields scaled
+    assert es["indicators"] == [] and es["gate_pct"] == 0   # permissive, scale-free fields untouched
+    assert payload.instrument_l2_default("NQ") == payload.l2_default_params()
