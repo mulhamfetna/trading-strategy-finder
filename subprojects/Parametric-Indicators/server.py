@@ -115,8 +115,18 @@ class H(BaseHTTPRequestHandler):
                 return self._send(400, json.dumps({"error": f"unknown tf {tf!r}; known {list(l2payload._TF_SET)}"}))
             if not _inst.is_valid(inst):
                 return self._send(400, json.dumps({"error": f"unknown instrument {inst!r}; known {list(_inst.TOKENS)}"}))
-            l1_label = ("🍃 WS lean 4h champion" if (inst == "NQ" and tf == "4h") else
-                        (f"🏆 WS champion {tf}" if inst == "NQ" else f"⚙ {inst} permissive (scaled) {tf}"))
+            # non-NQ: distinguish an OPTIMIZED champion (champions file has this tf) from the scaled-permissive fallback
+            _nonnq_champ = False
+            if inst != "NQ":
+                _cf = l2payload._instrument_champions_path(inst)
+                try:
+                    _nonnq_champ = _cf.exists() and tf in json.loads(_cf.read_text())
+                except Exception:
+                    _nonnq_champ = False
+            l1_label = ("🍃 WS lean 4h champion" if (inst == "NQ" and tf == "4h")
+                        else f"🏆 WS champion {tf}" if inst == "NQ"
+                        else f"🏆 {inst} champion {tf}" if _nonnq_champ
+                        else f"⚙ {inst} permissive (scaled) {tf}")
             return self._send(200, json.dumps({
                 "indicator_schema": library.schema(),
                 "l1_default": l2payload.instrument_l1_default(inst, tf),
