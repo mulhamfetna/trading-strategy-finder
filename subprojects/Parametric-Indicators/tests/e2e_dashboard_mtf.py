@@ -38,6 +38,10 @@ with sync_playwright() as p:
     val = lambda sel: pg.eval_on_selector(sel, "e => e.value")
     visible = lambda sel: pg.is_visible(sel)
 
+    # primary timeframe now lives in the L1 layer pane (shown by default) — set it before switching tabs
+    check("init: primary timeframe in L1 pane is visible", visible("#tf_select"))
+    pg.select_option("#tf_select", "1h")        # primary = 1h (finer)
+
     pg.click("#tab_l2")                          # reveal the L2 settings pane (#pane_l2)
     check("init: L2 mode == residual", val("#l2_mode") == "residual", f"(got {val('#l2_mode')!r})")
     check("init: L2 timeframe picker hidden (residual)", not visible("#l2_tf_fld"))
@@ -45,7 +49,6 @@ with sync_playwright() as p:
     pg.select_option("#l2_mode", "independent")
     check("independent: L2 timeframe picker revealed", visible("#l2_tf_fld"))
 
-    pg.select_option("#tf_select", "1h")        # primary = 1h (finer)
     pg.select_option("#l2_tf", "4h")            # secondary = 4h (coarser)
     posts.clear(); pg.click("#run")
     pg.wait_for_function("() => document.getElementById('status').textContent.includes('done')", timeout=120000)

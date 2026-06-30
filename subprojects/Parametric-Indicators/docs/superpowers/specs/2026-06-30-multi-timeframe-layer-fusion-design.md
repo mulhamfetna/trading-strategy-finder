@@ -88,10 +88,12 @@ with the primary under primary-priority arbitration.
 
 ## 7. Dashboard UI
 
-- **L2 settings group** gains a **Mode** selector: `Residual (same frame)` (default) | `Independent timeframe`.
-- When `Independent timeframe` is selected, reveal an **L2 timeframe** dropdown (the secondary timeframe).
-- The top **Market group** keeps the **stock + primary timeframe** (unchanged). So: stock shared; timeframe is
-  per-layer (primary in Market group, secondary in the L2 group when in independent mode).
+- **Timeframe is per-layer:** the **primary timeframe** selector lives in the **L1 settings pane**
+  ("Timeframe (primary)"); the **secondary timeframe** lives in the **L2 settings pane** ("Timeframe
+  (secondary)"), shown only in `independent` mode (in residual mode L2 inherits L1's frame).
+- The **L2 settings group** gains a **Mode** selector: `Residual (same frame)` (default) | `Independent timeframe`.
+- The top **Market group** keeps only the **stock** (shared by both layers, per decision #1) — the timeframe is
+  no longer global.
 - `run()` threads `l2_mode` + `l2_tf` into the L2/combined requests. Default mode sends nothing new.
 
 ## 8. Profiles
