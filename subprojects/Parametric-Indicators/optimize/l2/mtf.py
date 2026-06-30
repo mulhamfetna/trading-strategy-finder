@@ -12,6 +12,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from optimize.l2 import engine as _engine
+
 
 @dataclass
 class LayerView:
@@ -63,3 +65,30 @@ def _state_on_master(layer: LayerView, master: LayerView) -> np.ndarray:
         hi = max(hi, lo + 1)
         st[lo:hi] = True
     return st
+
+
+def run_dual_tf(primary: LayerView, secondary: LayerView, pv: float) -> DualResult:
+    """Fuse primary + secondary on the master grid (finer tf) under primary priority (spec §3):
+    primary trades kept verbatim (owner 'L1'); a secondary trade is admitted only if the primary is flat at
+    its entry bar, and is force-closed at the first primary entry strictly inside it (reason 'L1-entry');
+    P/L recomputed honestly as pnl_points*pv. Single shared position: never two owners open at once."""
+    master, _ = master_grid(primary, secondary)
+    prim_state = _state_on_master(primary, master)
+    prim_trades = _remap_to_master(primary, master)
+    for t in prim_trades:
+        t["owner"] = "L1"
+    # secondary candidates: drop any whose entry bar has the primary in-position
+    sec_cand = [t for t in _remap_to_master(secondary, master)
+                if not prim_state[int(t["entry_idx"])]]
+    # force-close each at the first primary entry strictly inside the trade (reuse the oracle helper)
+    prim_entries = [int(t["entry_idx"]) for t in prim_trades]
+    sec_fc = _engine.force_close_on_l1_entry(sec_cand, prim_entries, master.dates, master.close, pv)
+    for t in sec_fc:
+        t["owner"] = "L2"
+        t["pnl"] = float(t["pnl_points"]) * pv          # honest recompute after any truncation
+    ledger = sorted(prim_trades + sec_fc, key=lambda t: int(t["entry_idx"]))
+    sec_view = LayerView(dates=master.dates, close=master.close, ledger=sec_fc,
+                         state=np.zeros(len(master.dates), bool), bar_td=master.bar_td)
+    sec_state = _state_on_master(sec_view, master)
+    return DualResult(master_dates=master.dates, master_close=master.close, ledger=ledger,
+                      prim_state=prim_state, sec_state=sec_state)

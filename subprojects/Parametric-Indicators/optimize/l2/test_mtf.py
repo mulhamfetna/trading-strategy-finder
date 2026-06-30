@@ -49,3 +49,47 @@ def test_state_on_master_marks_open_window():
                           exit_reason="tp", pnl_points=0.0, pnl=0.0)]
     st = mtf._state_on_master(coarse, one_h)
     assert list(st) == [False, True, True, False]     # open over [01:00, 03:00)
+
+
+def test_dual_tf_secondary_fills_gap_then_primary_preempts():
+    # master = 1h, 6 bars 00:00..05:00. Primary: one trade entering at 03:00.
+    prim = _lv(60, n=6)
+    prim.ledger = [dict(entry_idx=3, entry_price=3.0, direction="long",
+                        exit_time=np.datetime64("2025-01-01T05:00"), exit_price=5.0,
+                        exit_reason="tp", pnl_points=2.0, pnl=40.0)]
+    prim.state = np.array([False, False, False, True, True, False])
+    # Secondary (4h): one trade entering at 01:00, would exit 05:00 — but primary enters at 03:00.
+    sec = _lv(240, n=2)
+    sec.dates = np.array([np.datetime64("2025-01-01T01:00"), np.datetime64("2025-01-01T04:00")])
+    sec.close = np.array([1.0, 4.0])
+    sec.ledger = [dict(entry_idx=0, entry_price=1.0, direction="long",
+                       exit_time=np.datetime64("2025-01-01T05:00"), exit_price=5.0,
+                       exit_reason="tp", pnl_points=4.0, pnl=200.0)]
+    sec.state = np.array([True, True])
+    res = mtf.run_dual_tf(prim, sec, pv=50.0)
+    owners = {t["owner"]: t for t in res.ledger}
+    assert set(owners) == {"L1", "L2"}
+    assert owners["L1"]["entry_idx"] == 3
+    # secondary entered 01:00 (primary flat), force-closed at primary entry 03:00 (master close 3.0)
+    l2 = owners["L2"]
+    assert l2["entry_idx"] == 1
+    assert l2["exit_reason"] == "L1-entry"
+    assert l2["exit_price"] == 3.0
+    assert l2["pnl"] == (3.0 - 1.0) * 50.0            # honest recompute: 100.0
+
+
+def test_dual_tf_drops_secondary_when_primary_already_open():
+    prim = _lv(60, n=4)
+    prim.ledger = [dict(entry_idx=0, entry_price=0.0, direction="long",
+                        exit_time=np.datetime64("2025-01-01T03:00"), exit_price=3.0,
+                        exit_reason="tp", pnl_points=3.0, pnl=150.0)]
+    prim.state = np.array([True, True, True, False])
+    sec = _lv(240, n=1)
+    sec.dates = np.array([np.datetime64("2025-01-01T01:00")])
+    sec.close = np.array([1.0])
+    sec.ledger = [dict(entry_idx=0, entry_price=1.0, direction="long",
+                       exit_time=np.datetime64("2025-01-01T02:00"), exit_price=2.0,
+                       exit_reason="tp", pnl_points=1.0, pnl=50.0)]
+    sec.state = np.array([True])
+    res = mtf.run_dual_tf(prim, sec, pv=50.0)
+    assert [t["owner"] for t in res.ledger] == ["L1"]   # secondary dropped (primary open at 01:00)
