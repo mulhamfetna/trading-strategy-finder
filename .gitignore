@@ -86,3 +86,6 @@ SERVER_DATA.env
 
 # WS-AS.8 isolated ETF box-shift re-export tree (build artifact)
 output_shifted/
+
+# Server connection config (host/port/user) — keep private; use server.env.example as the template
+subprojects/meta-prophet/server/server.env
