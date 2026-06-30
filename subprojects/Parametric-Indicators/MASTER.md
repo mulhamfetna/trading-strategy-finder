@@ -3,6 +3,9 @@
 **This is the father document.** A fresh agent should read §0–§2, then use the **routers** (§4, §9) to
 jump to the canonical doc for any topic. It does not duplicate those docs — it points to them.
 
+> 🗂️ **For the full list of every workstream — its git work tree (branch/worktree/tag), live status, headline
+> numbers, and next step — see [`WORKSTREAMS.md`](WORKSTREAMS.md)** (the master register + progress watcher).
+
 > 🍼 In one breath: this folder is a self-contained NQ-futures trading system — a "box" strategy gated
 > by indicators + volatility, a multi-objective **optimizer** that tunes it, a **two-layer** (L1+L2)
 > variant, and a **web dashboard** to run/inspect it. ~40 Python modules, ~180 markdown docs. This file
