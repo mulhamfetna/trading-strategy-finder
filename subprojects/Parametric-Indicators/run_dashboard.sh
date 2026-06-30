@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 # run_dashboard.sh — one-click launch of the unified L1 · L2 · Combined dashboard.
 #
 #   ./run_dashboard.sh            start (if not already running) + open it in your browser
@@ -10,7 +10,8 @@
 #
 # The server runs detached (nohup) so it survives this script + the terminal closing.
 
-HERE="${0:A:h}"                 # absolute dir of this script = the Parametric-Indicators project
+# absolute dir of this script = the Parametric-Indicators project (portable: works under bash and zsh)
+HERE="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]:-$0}")")" && pwd)"
 cd "$HERE" || { echo "cannot cd to $HERE"; exit 1; }
 
 PORT="${PORT:-8200}"
@@ -42,7 +43,8 @@ if is_up; then
 fi
 
 echo "▶ starting dashboard on :$PORT  (log: $LOG)"
-nohup "$PY" server.py --port "$PORT" > "$LOG" 2>&1 &
+# setsid → its own session, so it survives this script, the terminal closing, AND a parent process-group kill
+setsid "$PY" server.py --port "$PORT" < /dev/null > "$LOG" 2>&1 &
 for i in {1..60}; do
   if is_up; then echo "✓ ready → $URL"; do_open; exit 0; fi
   sleep 1
