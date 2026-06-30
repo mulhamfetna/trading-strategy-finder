@@ -94,11 +94,12 @@ with the primary under primary-priority arbitration.
 - The **L2 settings group** gains a **Mode** selector: `Residual (same frame)` (default) | `Independent timeframe`.
 - The top **Market group** keeps only the **stock** (shared by both layers, per decision #1) — the timeframe is
   no longer global.
-- **Default page state:** the dashboard opens in the measured baseline — instrument NQ, **primary 1h** (L1 =
-  the 1h champion), **L2 mode = independent**, **secondary 4h** (L2 = the 4h champion). In independent mode the
-  L2 layer auto-loads the **secondary timeframe's champion** (`loadL2Secondary`), so hitting Run reproduces the
-  1h+4h fusion (~$173.8k combined) with no manual setup. Switching L2 mode back to residual restores the
-  same-frame L2 default.
+- **Default page state:** the dashboard opens in the measured baseline — instrument **ES**, **primary 1h**
+  (L1 = the 1h champion), **L2 mode = independent**, **secondary 4h** (L2 = the 4h champion). In independent
+  mode the L2 layer auto-loads the **secondary timeframe's champion** (`loadL2Secondary`), so a fresh load +
+  Run reproduces the ES 1h+4h fusion (**$71,800** combined, 264 trades) with **zero manual changes**.
+  Switching the instrument to NQ gives the NQ 1h+4h fusion ($173,789). Switching L2 mode to residual restores
+  the same-frame L2 default.
 - `run()` threads `l2_mode` + `l2_tf` into the L2/combined requests. Default mode sends nothing new.
 
 ## 8. Profiles

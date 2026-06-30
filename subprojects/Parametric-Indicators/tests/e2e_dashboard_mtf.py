@@ -40,14 +40,16 @@ with sync_playwright() as p:
     val = lambda sel: pg.eval_on_selector(sel, "e => e.value")
     visible = lambda sel: pg.is_visible(sel)
 
-    # DEFAULTS (no interaction): the dashboard opens in the measured 1h-primary + 4h-secondary config
+    # DEFAULTS (no interaction): the dashboard opens in the measured ES 1h-primary + 4h-secondary config
+    check("default: instrument == ES", val("#inst_select") == "ES", f"(got {val('#inst_select')!r})")
     check("default: primary timeframe == 1h", val("#tf_select") == "1h", f"(got {val('#tf_select')!r})")
     check("default: L2 mode == independent", val("#l2_mode") == "independent", f"(got {val('#l2_mode')!r})")
     check("default: secondary timeframe == 4h", val("#l2_tf") == "4h", f"(got {val('#l2_tf')!r})")
 
-    # the L1 form == the 1h champion; the L2 form == the 4h champion (not the residual PERMISSIVE 149.8)
-    ch1 = pg.evaluate("async () => (await (await fetch('/api/combined_config?instrument=NQ&tf=1h')).json()).l1_default.sl_soft")
-    ch4 = pg.evaluate("async () => (await (await fetch('/api/combined_config?instrument=NQ&tf=4h')).json()).l1_default.sl_soft")
+    # the L1 form == the 1h champion; the L2 form == the 4h champion of the DEFAULT instrument (not PERMISSIVE)
+    inst = val("#inst_select")
+    ch1 = pg.evaluate(f"async () => (await (await fetch('/api/combined_config?instrument={inst}&tf=1h')).json()).l1_default.sl_soft")
+    ch4 = pg.evaluate(f"async () => (await (await fetch('/api/combined_config?instrument={inst}&tf=4h')).json()).l1_default.sl_soft")
     check("default: L1 form = 1h champion", abs(float(val("#l1_sl_soft")) - float(ch1)) < 1e-6,
           f"(form {val('#l1_sl_soft')} vs champ {ch1})")
     check("default: L2 form = 4h champion (secondary)", abs(float(val("#l2_sl_soft")) - float(ch4)) < 1e-6,
