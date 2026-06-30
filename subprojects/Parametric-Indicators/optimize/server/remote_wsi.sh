@@ -173,7 +173,7 @@ export WSH_DATA_BASE='$WSI' WSG_DATA_ROOT='$WSI/data' WSH_STORAGE_URL='$STORAGE_
 cd '$CODE'; mkdir -p optimize/studies '$WSI/logs'
 for pair in $spec; do
   tf=\${pair%%:*}; w=\${pair##*:}
-  python3 -c \"import optuna,sqlite3,os; n='${PREFIX}_\${tf}${RSUF}'; per='optimize/studies/wsh_\${tf}${RSUF}.db'; sh='optimize/studies/wsh.db'; h=lambda d:(os.path.exists(d) and n in [r[0] for r in sqlite3.connect(d).execute('SELECT study_name FROM studies')]); db=(sh if (not os.path.exists(per) and h(sh)) else per); url=(os.environ.get('WSH_STORAGE_URL') or 'sqlite:///'+db); optuna.create_study(study_name=n, storage=url, directions=['maximize','maximize','maximize'], load_if_exists=True); print('study',n,'->',url)\"
+  python3 -c \"import optuna,sqlite3,os; n='${PREFIX}_\${tf}${RSUF}'; per='optimize/studies/wsh_\${tf}${RSUF}.db'; sh='optimize/studies/wsh.db'; h=lambda d:(os.path.exists(d) and n in [r[0] for r in sqlite3.connect(d).execute('SELECT study_name FROM studies')]); db=(sh if (not os.path.exists(per) and h(sh)) else per); url=(os.environ.get('WSH_STORAGE_URL') or 'sqlite:///'+db); optuna.create_study(study_name=n, storage=url, directions=['maximize','maximize','maximize'], load_if_exists=True); print('study',n,'ready (', 'postgres' if url.startswith('postgres') else 'sqlite', ')')\"
   for i in \$(seq 1 \$w); do setsid bash '$WSI/worker.sh' \"\$tf\" </dev/null >> \"$WSI/logs/\${tf}.log\" 2>&1 & done
   echo \"\$tf: \$w setsid workers → target $total (independent, watchdog/respawn, idempotent)\"
 done
