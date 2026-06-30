@@ -34,23 +34,26 @@ with sync_playwright() as p:
     pg.on("request", lambda r: grab(posts, r))
     pg.goto(BASE, wait_until="networkidle")
     pg.wait_for_selector("#l2_mode", state="attached")
-    pg.wait_for_function("() => { const e=document.querySelector('#l1_sl_soft'); return e && e.value!==''; }", timeout=60000)
+    # wait until BOTH the L1 (primary) and L2 (secondary, loaded async) forms are populated
+    pg.wait_for_function("() => { const a=document.querySelector('#l1_sl_soft'), b=document.querySelector('#l2_sl_soft');"
+                         " return a && a.value!=='' && b && b.value!==''; }", timeout=60000)
     val = lambda sel: pg.eval_on_selector(sel, "e => e.value")
     visible = lambda sel: pg.is_visible(sel)
 
-    # primary timeframe now lives in the L1 layer pane (shown by default) — set it before switching tabs
-    check("init: primary timeframe in L1 pane is visible", visible("#tf_select"))
-    pg.select_option("#tf_select", "1h")        # primary = 1h (finer)
+    # DEFAULTS (no interaction): the dashboard opens in the measured 1h-primary + 4h-secondary config
+    check("default: primary timeframe == 1h", val("#tf_select") == "1h", f"(got {val('#tf_select')!r})")
+    check("default: L2 mode == independent", val("#l2_mode") == "independent", f"(got {val('#l2_mode')!r})")
+    check("default: secondary timeframe == 4h", val("#l2_tf") == "4h", f"(got {val('#l2_tf')!r})")
 
-    pg.click("#tab_l2")                          # reveal the L2 settings pane (#pane_l2)
-    check("init: L2 mode == residual", val("#l2_mode") == "residual", f"(got {val('#l2_mode')!r})")
-    check("init: L2 timeframe picker hidden (residual)", not visible("#l2_tf_fld"))
+    # the L1 form == the 1h champion; the L2 form == the 4h champion (not the residual PERMISSIVE 149.8)
+    ch1 = pg.evaluate("async () => (await (await fetch('/api/combined_config?instrument=NQ&tf=1h')).json()).l1_default.sl_soft")
+    ch4 = pg.evaluate("async () => (await (await fetch('/api/combined_config?instrument=NQ&tf=4h')).json()).l1_default.sl_soft")
+    check("default: L1 form = 1h champion", abs(float(val("#l1_sl_soft")) - float(ch1)) < 1e-6,
+          f"(form {val('#l1_sl_soft')} vs champ {ch1})")
+    check("default: L2 form = 4h champion (secondary)", abs(float(val("#l2_sl_soft")) - float(ch4)) < 1e-6,
+          f"(form {val('#l2_sl_soft')} vs champ {ch4})")
 
-    pg.select_option("#l2_mode", "independent")
-    check("independent: L2 timeframe picker revealed", visible("#l2_tf_fld"))
-
-    pg.select_option("#l2_tf", "4h")            # secondary = 4h (coarser)
-    posts.clear(); pg.click("#run")
+    posts.clear(); pg.click("#run")             # Run with NO manual changes — reproduces the measured config
     pg.wait_for_function("() => document.getElementById('status').textContent.includes('done')", timeout=120000)
 
     by_view = {pp["url"] + ":" + str(pp["body"].get("view", "l1")): pp["body"] for pp in posts}

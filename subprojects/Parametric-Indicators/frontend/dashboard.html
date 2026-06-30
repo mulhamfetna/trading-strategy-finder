@@ -62,7 +62,7 @@
       <div class="sgroup"><h3>L1 base (editable)</h3>
         <div class="fld"><label title="L1 (primary) decision timeframe — switches the L1 champion + this layer's backtest frame. In independent L2 mode it is the primary/finer frame; the secondary timeframe lives in the L2 layer.">Timeframe (primary)</label>
           <select id="tf_select">
-            <option value="4h" selected>4h</option><option value="2h">2h</option><option value="1h">1h</option>
+            <option value="4h">4h</option><option value="2h">2h</option><option value="1h" selected>1h</option>
             <option value="15m">15m</option><option value="5m">5m</option><option value="2m">2m</option>
           </select></div>
         <div class="fld"><label>L1 profile</label><select id="l1_strategy" title="load an L1 profile"></select></div>
@@ -106,10 +106,10 @@
       <div class="sgroup"><h3>L2 layer (editable)</h3>
         <div class="fld"><label>L2 profile</label><select id="l2_strategy" title="load an L2 profile"></select></div>
         <div class="fld"><label title="Residual = manage L1's dropped signals on the SAME frame (default). Independent timeframe = run L2 as its own strategy on its own timeframe, entering only when L1 is flat (primary priority + force-close).">L2 mode</label>
-          <select id="l2_mode"><option value="residual">Residual (same frame)</option><option value="independent">Independent timeframe</option></select></div>
-        <div class="fld" id="l2_tf_fld" style="display:none"><label title="secondary timeframe — must be coarser-or-equal to the primary (e.g. the 4h in a 1h+4h fusion)">Timeframe (secondary)</label>
-          <select id="l2_tf"><option>4h</option><option>2h</option><option>1h</option><option>15m</option><option>5m</option><option>2m</option></select></div>
-        <div class="hint" id="l2_mode_hint">acts only on L1's dropped (veto + vol-gate) signals while L1 is flat · L1 entering force-closes L2</div>
+          <select id="l2_mode"><option value="residual">Residual (same frame)</option><option value="independent" selected>Independent timeframe</option></select></div>
+        <div class="fld" id="l2_tf_fld"><label title="secondary timeframe — must be coarser-or-equal to the primary (e.g. the 4h in a 1h+4h fusion)">Timeframe (secondary)</label>
+          <select id="l2_tf"><option selected>4h</option><option>2h</option><option>1h</option><option>15m</option><option>5m</option><option>2m</option></select></div>
+        <div class="hint" id="l2_mode_hint">runs L2 as its own strategy on the L2 timeframe (coarser-or-equal to the primary), entering only when L1 is flat · L1 entering force-closes L2</div>
         <div class="fld"><label>Indicators on 1-min</label><select id="l2_ind_1min"><option value="true">true (regime)</option><option value="false">false (decision TF)</option></select></div>
       </div>
       <div class="sgroup"><h3>Entry / exit (points)</h3>
@@ -207,6 +207,7 @@
 const TH=DB.TH, $=window.$;
 let VIEW='combined';                         // active result tab
 let RUNFLIP={l1:false,l2:false};             // per-layer flip of the LAST run (for the 'entry flipped' badge)
+let _l2res=null;                             // cached residual-mode L2 default (for restoring on mode switch)
 const VIEWS={l1:null, l2:null, combined:null};   // cached payload per view (one Run fills all 3)
 // The per-candle log has ONE row per candle (n = candle count) → tens of thousands of rows at 5m/15m. Building
 // that whole 22-column table as innerHTML on EVERY tab switch spiked CPU for seconds (the freeze/fan the user
@@ -627,7 +628,29 @@ async function loadConfig(inst, tf){
   fillDropdown('l1',{[c.l1_label||'L1 champion']:c.l1_default, ...(c.l1_profiles||{})});
   fillDropdown('l2',{[c.l2_label||'L2 champion']:c.l2_default, ...(c.l2_profiles||{})});
   setLayer('l1',c.l1_default); setLayer('l2',c.l2_default);
+  _l2res={label:c.l2_label||'L2 champion', def:c.l2_default, profiles:c.l2_profiles||{}};   // remember residual L2 for mode-switch restore
   DB.mathify(document.querySelector('aside'));
+}
+
+// Independent L2 mode: the secondary is a full strategy on its OWN timeframe, so its sensible default is THAT
+// timeframe's champion (e.g. the 4h champion when l2_tf=4h). Pull it from that TF's config and load it into L2.
+async function loadL2Secondary(inst, l2tf){
+  const r=await fetch('/api/combined_config?instrument='+encodeURIComponent(inst)+'&tf='+encodeURIComponent(l2tf));
+  if(!r.ok) throw new Error('L2 config HTTP '+r.status);
+  const c=await r.json();
+  const label=(c.l1_label||'champion')+' · secondary '+l2tf;
+  fillDropdown('l2',{[label]:c.l1_default, ...(c.l2_profiles||{})});
+  $('l2_strategy').value=label; setLayer('l2',c.l1_default);
+  DB.mathify(document.querySelector('aside'));
+}
+
+// Set the L2 layer to the right default for the current mode: residual → the same-frame L2 champion (cached
+// from loadConfig); independent → the secondary timeframe's champion.
+async function refreshL2(){
+  const inst=$('inst_select').value;
+  if($('l2_mode').value==='independent'){ await loadL2Secondary(inst,$('l2_tf').value); }
+  else if(_l2res){ fillDropdown('l2',{[_l2res.label]:_l2res.def, ..._l2res.profiles}); $('l2_strategy').value=_l2res.label;
+                   setLayer('l2',_l2res.def); DB.mathify(document.querySelector('aside')); }
 }
 
 // ── boot ───────────────────────────────────────────────────────────────────────
@@ -657,17 +680,19 @@ async function loadConfig(inst, tf){
     $('l2_mode_hint').textContent=indep
       ? 'runs L2 as its own strategy on the L2 timeframe (coarser-or-equal to the primary), entering only when L1 is flat · L1 entering force-closes L2'
       : "acts only on L1's dropped (veto + vol-gate) signals while L1 is flat · L1 entering force-closes L2";
-    DB.markDirty();});
+    refreshL2().catch(e=>DB.showErr('L2 default load failed: '+e.message)); DB.markDirty();});
+  $('l2_tf').addEventListener('change',()=>{ if($('l2_mode').value==='independent')
+    refreshL2().catch(e=>DB.showErr('L2 default load failed: '+e.message)); DB.markDirty();});
   document.querySelectorAll('aside input,aside select').forEach(el=>el.addEventListener('input',DB.markDirty));
   DB.mathify(document.querySelector('aside'));
-  const reload=async()=>{ try{ await loadConfig($('inst_select').value,$('tf_select').value);
+  const reload=async()=>{ try{ await loadConfig($('inst_select').value,$('tf_select').value); await refreshL2();
     DB.markDirty(); DB.status('switched to '+$('inst_select').value+' '+$('tf_select').value+' — click Run'); }
     catch(e){ DB.showErr('config reload failed: '+e.message); } };
   $('tf_select').addEventListener('change',reload);
   $('inst_select').addEventListener('change',reload);
   try{
-    await loadConfig($('inst_select').value,$('tf_select').value);
-    DB.markDirty(); DB.status('ready · best L1 + best L2 loaded · click Run');
+    await loadConfig($('inst_select').value,$('tf_select').value); await refreshL2();   // default = 1h primary champion + (independent) 4h secondary champion
+    DB.markDirty(); DB.status('ready · 1h primary + 4h secondary loaded · click Run');
   }catch(e){ DB.markDirty(); DB.showErr(`Cannot reach backend — start server.py then reload. (${e.message})`); }
 })();
 
