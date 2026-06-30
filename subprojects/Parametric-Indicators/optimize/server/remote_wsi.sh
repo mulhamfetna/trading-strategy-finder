@@ -142,6 +142,16 @@ cmd_run() {
   fi
   log "launching NSGA-III search ($PREFIX, 1-minute indicators): target $total trials/TF (idempotent, watchdog/respawn, warm-started) [${tfs[*]}] (min-trades 5) ..."
   local spec=""; for tf in "${tfs[@]}"; do spec+="$tf:${WORKERS[$tf]:-1} "; done
+  # OVERSUBSCRIPTION GUARD: total workers across the selected TFs must not exceed cores−2, or the box pins at
+  # high load and the desktop/SSH FREEZE (incident 2026-06-30). Refuse unless WSH_FORCE_OVERSUBSCRIBE=1.
+  local _cores _wtot=0; _cores=$(srv "nproc" 2>/dev/null | tr -dc '0-9'); _cores=${_cores:-32}
+  for tf in "${tfs[@]}"; do _wtot=$(( _wtot + ${WORKERS[$tf]:-1} )); done
+  log "worker budget: $_wtot total across [${tfs[*]}] vs $_cores cores (cap $(( _cores - 2 )))"
+  if [ "$_wtot" -gt "$(( _cores - 2 ))" ] && [ -z "${WSH_FORCE_OVERSUBSCRIBE:-}" ]; then
+    log "ABORT: $_wtot workers > cores−2 ($(( _cores - 2 ))) → would oversubscribe + freeze the box."
+    log "       Lower WSH_WORKERS (e.g. sum ≤ $(( _cores - 2 ))) or set WSH_FORCE_OVERSUBSCRIBE=1 to override."
+    return 1
+  fi
   # (1) Self-contained watchdog WORKER (one process per worker; tf = \$1). Sets up its OWN env so each worker
   #     is INDEPENDENTLY setsid-detached and survives launcher/session death. Loops the optimizer in fixed
   #     chunks, topping the SHARED study up to TARGET (idempotent); stops when target is reached.

@@ -8,7 +8,8 @@
 #   PORT=8300 ./run_dashboard.sh  use a different port (default 8200)
 #   PYTHON=./.venv/bin/python ./run_dashboard.sh   use a specific interpreter
 #
-# The server runs detached (nohup) so it survives this script + the terminal closing.
+# The server runs detached (setsid → its own session) so it survives this script AND the terminal closing.
+# If it says "already running" but you changed code or it's stale, use:  ./run_dashboard.sh restart
 
 # absolute dir of this script = the Parametric-Indicators project (portable: works under bash and zsh)
 HERE="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]:-$0}")")" && pwd)"
