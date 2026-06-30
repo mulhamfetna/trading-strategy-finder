@@ -100,6 +100,7 @@ No credentials needed — only the two data-path env vars (`.env.example`).
 | **Volatility gate (HAR-RV)** | `docs/HAR_RV_VOLATILITY_GATE.md` · `docs/HAR_LAG_REVIEW.md` |
 | **Optimizer (NSGA-III, two-stage, MAP-Elites, folds, Postgres)** | `docs/OPTIMIZER_DEEP_ANALYSIS.md` · `docs/NSGA3.md` · `optimize/server/` (scaling/deploy) · `optimize/dashboard/` (optimizer UI) · `optimize/reports/` (results) |
 | **WS-I indicator engine (the current engine line)** | `docs/WS-I_MEGADOC.md` · `docs/WS-I.3_ENGINE_REPORT.md` · `docs/WS-I.4_DASHBOARD_REPORT.md` · `WS-I_PLAN.md` · `WS-I_PROGRESS.md` |
+| **Multi-instrument (NQ/ES) dropdown — engine·dashboard·optimizer·ES champions** | `docs/INSTRUMENT_WORKSTREAM_MEGADOC.md` (index) · `docs/INSTRUMENT_01_SELECTOR_ENGINE_DASHBOARD.md` · `docs/INSTRUMENT_02_OPTIMIZER_WIRING.md` · `docs/INSTRUMENT_03_ES_CHAMPION_CAMPAIGN.md` · `docs/INSTRUMENT_04_DASHBOARD_PERF_AND_LAUNCH.md` · `docs/RESEARCH_ES_CHAMPION_VALIDITY.md` · spec `docs/superpowers/specs/2026-06-29-instrument-selector-design.md` |
 | **WS-H multi-timeframe engine** | `optimize/reports/WS-H_RESULTS.md` |
 | **Two-layer system (L1/L2/combined) + causal log** | `optimize/l2/REPORT_causal_logfirst.md` · `optimize/l2/UPDATE_l2_backtester.md` · `optimize/l2/REPORT_l2*.md` |
 | **Unified dashboard (the latest workstream)** | `optimize/l2/REPORT_workstream_closure.md` (status) · `REPORT_unified_dashboard.md` (how) · `REPORT_achievements_and_open.md` (plain-words) · `FOLLOWUPS_unified_dashboard.md` (F1–F5, all ✅) · `frontend/README.md` |

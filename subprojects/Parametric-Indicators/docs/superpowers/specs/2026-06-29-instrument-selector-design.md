@@ -1,7 +1,10 @@
 # Multi-instrument selector (NQ / ES) — design
 
 **Date:** 2026-06-29
-**Status:** approved (design), pending implementation plan
+**Status:** ✅ IMPLEMENTED & shipped to dev (2026-06-30) — see the workstream index
+[`docs/INSTRUMENT_WORKSTREAM_MEGADOC.md`](../../INSTRUMENT_WORKSTREAM_MEGADOC.md) and the four per-set detail
+docs (`docs/INSTRUMENT_0{1..4}_*.md`). Scope shipped as designed: NQ/ES only (ETFs deferred), engine +
+dashboard + L1/L2 optimizer + ES cold-sweep champions.
 **Related:** `config.py` (`NQ_POINT_VALUE`, `DATA_ROOT`), `optimize/data.py` (`load_inputs`, `load_box`,
 `_RAW`, `_BOX_CSV`), `optimize/l2/l1_runner.py` (`run_l1`, `apply_breaker`, pv), `optimize/l2/engine.py`
 (`run_l2`, pv), `optimize/l2/logbook.py` (`run_causal`), `optimize/l2/payload.py` (`run_l1_cached`,
@@ -92,15 +95,19 @@ One optional `instrument` arg, defaulting to `"NQ"`, threaded down. With `instru
 - `payload.run_l1_cached(tf, use_disk, params, instrument="NQ")` and
   `payload.build_view_payload(l1_params, l2_params, tf, view, instrument="NQ", l1_engine=None)` → thread it.
 
-**Parity-critical — cache keying.** Every cache that could otherwise serve NQ data for a non-NQ run gains an
-`instrument` component:
-- `_L1_CACHE` / `_L1_CUSTOM_CACHE` keys, the disk L1 cache filename (`_l1_cache_file`/`_l1_custom_cache_file`),
-  and `_CAUSAL_MEMO` key → include `instrument`.
-- `vote_cache.disk_key(...)` → include `instrument` (the slice signature is already content-derived from the
-  data, so this is belt-and-suspenders, but explicit is correct).
-- `_VOTE_MEMO` / `_SRC_MEMO` in `optimize/core.py` (the in-process vote memo) → key includes instrument.
+**Parity-critical — cache keying.** The interactive run path is `run_l1` → `runner.compute_votes` (uncached)
+→ `payload`'s caches. Those `payload` caches key on `(tf, params)` only, so an ES run with NQ-equal params/tf
+would be served NQ's cached result — a correctness bug. Every such cache gains an `instrument` component:
+- `_L1_CACHE` / `_L1_CUSTOM_CACHE` keys, the disk L1 cache filenames (`_l1_cache_file`/`_l1_custom_cache_file`),
+  and `_CAUSAL_MEMO` key → include `instrument`. Bump `_L1_CACHE_VER` (the L1Result schema gains an
+  `instrument` field).
 NQ's keys are unchanged in *value space*; adding the dimension just means the first NQ run after the change
 recomputes once, then matches golden byte-for-byte.
+- **Not on this path (out of scope):** `optimize/core.py`'s `_VOTE_MEMO`/`_SRC_MEMO` and
+  `optimize/vote_cache.py` are the **optimizer** vote caches; they key on `_slice_sig` (a *content* signature
+  of the actual candle/box data), so two instruments only collide if their data is byte-identical — and they
+  are not reached by `run_l1`/the dashboard/backtester. Per-instrument *optimization* is a separate future
+  effort and would add `instrument` to those keys then.
 
 ### 4.3 Per-instrument defaults
 - **NQ:** unchanged. `l1_default_params(tf)` = lean/wsh4 champion (incl. the per-TF behavior shipped today);
