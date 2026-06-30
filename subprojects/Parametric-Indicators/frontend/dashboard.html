@@ -571,11 +571,16 @@ async function run(){
     // chips + the SMC gen_report panel, with boxes still log-derived (== engine summary). L2/Combined use
     // the causal views. All three derive from the same params; numbers match by construction.
     const tf=$('tf_select').value, inst=$('inst_select').value;
-    const [l1,l2,comb]=await Promise.all([
-      grab(fetch('/api/backtest_causal', J({...l1lay, timeframe:tf, instrument:inst}))),
-      grab(fetch('/api/causal_backtest', J({l1:l1lay, l2:l2lay, tf, instrument:inst, view:'l2'}))),
-      grab(fetch('/api/causal_backtest', J({l1:l1lay, l2:l2lay, tf, instrument:inst, view:'combined'}))),
-    ]);
+    // SEQUENTIAL (not Promise.all): three parallel engine passes would each load the 1-min frame + recompute
+    // the (shared) L1/causal work simultaneously → 3x peak RAM/CPU, which FROZE small boxes. Running them in
+    // order keeps peak at 1x AND lets the backend memoise the L1 + causal pass, so L2/combined reuse the
+    // first run's heavy work (near-instant) instead of recomputing it.
+    DB.status('running L1 (1/3)…');
+    const l1   = await grab(fetch('/api/backtest_causal', J({...l1lay, timeframe:tf, instrument:inst})));
+    DB.status('running L2 (2/3)…');
+    const l2   = await grab(fetch('/api/causal_backtest', J({l1:l1lay, l2:l2lay, tf, instrument:inst, view:'l2'})));
+    DB.status('running combined (3/3)…');
+    const comb = await grab(fetch('/api/causal_backtest', J({l1:l1lay, l2:l2lay, tf, instrument:inst, view:'combined'})));
     VIEWS.l1=l1; VIEWS.l2=l2; VIEWS.combined=comb;
     renderView(VIEW); DB.markClean(); DB.status('✓ done — all three tabs filled');
   }catch(e){

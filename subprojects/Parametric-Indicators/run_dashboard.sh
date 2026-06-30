@@ -43,6 +43,12 @@ if is_up; then
   exit 0
 fi
 
+# Reached here ⇒ NOT healthy. Clear any wedged/stale server.py still bound to this port (a frozen run can
+# leave one that fails health checks but holds the port → a fresh start would hit 'Address already in use').
+if pgrep -f "$MATCH" >/dev/null 2>&1; then
+  echo "· clearing a stale/wedged server on :$PORT"; pkill -9 -f "$MATCH" 2>/dev/null; sleep 1
+fi
+
 echo "▶ starting dashboard on :$PORT  (log: $LOG)"
 # setsid → its own session, so it survives this script, the terminal closing, AND a parent process-group kill
 setsid "$PY" server.py --port "$PORT" < /dev/null > "$LOG" 2>&1 &
