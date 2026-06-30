@@ -67,6 +67,7 @@ def champion_for(tf: str) -> dict | None:
         tp=round(_num(r["tp"]), 2), gate_pct=round(_num(r["gate_pct"]), 2),
         dd_limit=round(_num(r["dd_limit"]), 2), cooldown=int(_num(r["cooldown"])),
         flip=str(r["flip"]).strip().lower() == "true", k=int(_num(r["k"])),
+        cap_1min=int(_num(r.get("cap_1min")) or 0),       # max-hold cap (0=off); presets._preset → cap_mode='bars'
     )
     return dict(median_pnl=_num(r["median_pnl"]), full_pnl=_num(r["full_pnl"]),
                 full_dd=_num(r["full_dd"]), win=_num(r["win"]), box=box, indicators=inds)

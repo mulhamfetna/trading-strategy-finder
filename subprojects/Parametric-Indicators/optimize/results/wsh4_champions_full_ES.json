@@ -12,7 +12,8 @@
    "dd_limit": 462.0,
    "cooldown": 1,
    "flip": true,
-   "k": 1
+   "k": 1,
+   "cap_1min": 871
   },
   "indicators": {
    "adx": {
@@ -61,7 +62,8 @@
    "dd_limit": 480.0,
    "cooldown": 2,
    "flip": true,
-   "k": 4
+   "k": 4,
+   "cap_1min": 114
   },
   "indicators": {
    "adx": {
@@ -130,7 +132,8 @@
    "dd_limit": 612.0,
    "cooldown": 1,
    "flip": true,
-   "k": 5
+   "k": 5,
+   "cap_1min": 923
   },
   "indicators": {
    "cci": {
@@ -169,7 +172,8 @@
    "dd_limit": 661.0,
    "cooldown": 5,
    "flip": true,
-   "k": 4
+   "k": 4,
+   "cap_1min": 109
   },
   "indicators": {
    "bollinger": {
@@ -210,7 +214,8 @@
    "dd_limit": 915.0,
    "cooldown": 0,
    "flip": false,
-   "k": 4
+   "k": 4,
+   "cap_1min": 827
   },
   "indicators": {
    "adx": {

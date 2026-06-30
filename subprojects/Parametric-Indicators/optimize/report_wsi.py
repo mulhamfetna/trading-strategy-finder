@@ -91,6 +91,8 @@ def _row(t) -> dict:
         sl_soft=round(pr["sl_soft"], 1), sl_hard=round(pr["sl_soft"] + pr["sl_hard_delta"], 1),
         tp=round(pr["tp"], 1), gate_pct=round(pr["gate_pct"], 1), dd_limit=round(pr["dd_limit"], 0),
         cooldown=pr["cooldown"], flip=pr["flip"], k=pr["k"],
+        cap_1min=pr.get("cap_1min", 0),                  # max-hold (traded 1-min bars); 0 = off. SEARCHED →
+                                                         # must round-trip or the rebuilt champion mis-exits.
         n_indicators=len(enabled), indicators=";".join(sorted(enabled)),
     )
     # full tuned internals: one column per indicator-param, filled only when that indicator is on
@@ -121,7 +123,7 @@ def export_tf(tf: str):
     rows = [_row(t) for t in front]
     import csv
     cols = ["median_pnl", "worst_dd", "win", "full_pnl", "full_dd", "dd_pct_of_pnl",
-            "sl_soft", "sl_hard", "tp", "gate_pct", "dd_limit", "cooldown", "flip", "k",
+            "sl_soft", "sl_hard", "tp", "gate_pct", "dd_limit", "cooldown", "flip", "k", "cap_1min",
             "n_indicators", "indicators"] + _IND_PARAM_COLS
     with open(_RESULTS / f"{tf}_wsi_pareto{_SUF}.csv", "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=cols); w.writeheader(); w.writerows(rows)
