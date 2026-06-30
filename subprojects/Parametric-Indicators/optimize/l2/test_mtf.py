@@ -116,3 +116,32 @@ def test_run_causal_residual_default_unchanged():
     b = logbook.run_causal(l1p, l2p, tf="4h", instrument="NQ", l2_mode="residual")
     assert a.n == b.n and len(a.log) == len(b.log)
     assert [(r.layer, r.decision, r.pnl) for r in a.log] == [(r.layer, r.decision, r.pnl) for r in b.log]
+
+
+def test_build_view_payload_independent_combined_has_both_owners():
+    from optimize.l2 import payload
+    l1p, l2p = payload.l1_default_params("1h"), payload.l1_default_params("4h")
+    out = payload.build_view_payload(l1p, l2p, tf="1h", view="combined", instrument="NQ",
+                                     l2_mode="independent", l2_tf="4h")
+    owners = {r.get("position_owner") for r in out["log"] if r.get("decision") == "entry"}
+    assert "L1" in owners
+    assert out["meta"]["n"] == len(out["log"])
+
+
+def test_build_view_payload_default_is_residual():
+    from optimize.l2 import payload
+    l1p, l2p = payload.l1_default_params("4h"), dict(payload.PERMISSIVE)
+    a = payload.build_view_payload(l1p, l2p, tf="4h", view="combined", instrument="NQ")
+    b = payload.build_view_payload(l1p, l2p, tf="4h", view="combined", instrument="NQ", l2_mode="residual")
+    assert a["meta"]["n"] == b["meta"]["n"] and len(a["log"]) == len(b["log"])
+
+
+def test_build_view_payload_independent_rejects_coarser_primary():
+    from optimize.l2 import payload
+    l1p, l2p = payload.l1_default_params("4h"), payload.l1_default_params("1h")
+    try:
+        payload.build_view_payload(l1p, l2p, tf="4h", view="combined", instrument="NQ",
+                                   l2_mode="independent", l2_tf="1h")
+        assert False, "expected L2ParamError (primary must be finer-or-equal)"
+    except payload.L2ParamError as e:
+        assert "finer" in str(e).lower()
