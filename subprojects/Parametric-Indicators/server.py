@@ -256,9 +256,15 @@ class H(BaseHTTPRequestHandler):
                 n = int(self.headers.get("Content-Length", 0))
                 body = json.loads(self.rfile.read(n) or b"{}")
                 t0 = time.time()
+                l2_mode = body.get("l2_mode", "residual")
+                l2_tf = body.get("l2_tf")
+                if l2_mode == "independent" and l2_tf not in l2payload._TF_SET:
+                    return self._send(400, json.dumps(
+                        {"error": f"unknown l2_tf {l2_tf!r}; known {list(l2payload._TF_SET)}"}))
                 out = l2payload.build_view_payload(body.get("l1") or {}, body.get("l2") or {},
                                                    body.get("tf", "4h"), body.get("view", "combined"),
-                                                   instrument=body.get("instrument", "NQ"))
+                                                   instrument=body.get("instrument", "NQ"),
+                                                   l2_mode=l2_mode, l2_tf=l2_tf)
                 out["meta"]["run_ms"] = round((time.time() - t0) * 1000)
                 _stamp_causal(out["log"], out["meta"]["view"], body.get("l1"), body.get("l2"),
                               body.get("tf", "4h"))

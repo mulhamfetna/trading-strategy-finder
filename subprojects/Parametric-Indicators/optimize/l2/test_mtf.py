@@ -145,3 +145,52 @@ def test_build_view_payload_independent_rejects_coarser_primary():
         assert False, "expected L2ParamError (primary must be finer-or-equal)"
     except payload.L2ParamError as e:
         assert "finer" in str(e).lower()
+
+
+def _serve_app():
+    import threading
+    from http.server import ThreadingHTTPServer
+    import server                                       # noqa: E402 (data preload on import)
+    srv = ThreadingHTTPServer(("127.0.0.1", 0), server.H)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    return srv, srv.server_address[1]
+
+
+def _post(port, route, obj):
+    import urllib.request
+    import urllib.error
+    req = urllib.request.Request(f"http://127.0.0.1:{port}{route}",
+                                 data=__import__("json").dumps(obj).encode(),
+                                 headers={"Content-Type": "application/json"})
+    try:
+        r = urllib.request.urlopen(req)
+        return r.status, __import__("json").loads(r.read())
+    except urllib.error.HTTPError as e:
+        return e.code, __import__("json").loads(e.read())
+
+
+def test_api_causal_backtest_independent_mode():
+    import json as _json
+    import urllib.request
+    from optimize.l2 import payload
+    srv, port = _serve_app()
+    try:
+        body = {"l1": payload.l1_default_params("1h"), "l2": payload.l1_default_params("4h"),
+                "tf": "1h", "instrument": "NQ", "view": "combined",
+                "l2_mode": "independent", "l2_tf": "4h"}
+        status, out = _post(port, "/api/causal_backtest", body)
+        assert status == 200
+        assert out["meta"]["n"] == len(out["log"])
+    finally:
+        srv.shutdown()
+
+
+def test_api_causal_backtest_bad_l2_tf_400():
+    srv, port = _serve_app()
+    try:
+        body = {"l1": {}, "l2": {}, "tf": "1h", "view": "combined",
+                "l2_mode": "independent", "l2_tf": "9q"}
+        status, out = _post(port, "/api/causal_backtest", body)
+        assert status == 400 and "9q" in out["error"]
+    finally:
+        srv.shutdown()
