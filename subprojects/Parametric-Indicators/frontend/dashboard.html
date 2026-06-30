@@ -105,7 +105,11 @@
       </div>
       <div class="sgroup"><h3>L2 layer (editable)</h3>
         <div class="fld"><label>L2 profile</label><select id="l2_strategy" title="load an L2 profile"></select></div>
-        <div class="hint">acts only on L1's dropped (veto + vol-gate) signals while L1 is flat · L1 entering force-closes L2</div>
+        <div class="fld"><label title="Residual = manage L1's dropped signals on the SAME frame (default). Independent timeframe = run L2 as its own strategy on its own timeframe, entering only when L1 is flat (primary priority + force-close).">L2 mode</label>
+          <select id="l2_mode"><option value="residual">Residual (same frame)</option><option value="independent">Independent timeframe</option></select></div>
+        <div class="fld" id="l2_tf_fld" style="display:none"><label title="secondary timeframe — must be coarser-or-equal to the primary (e.g. the 4h in a 1h+4h fusion)">L2 timeframe</label>
+          <select id="l2_tf"><option>4h</option><option>2h</option><option>1h</option><option>15m</option><option>5m</option><option>2m</option></select></div>
+        <div class="hint" id="l2_mode_hint">acts only on L1's dropped (veto + vol-gate) signals while L1 is flat · L1 entering force-closes L2</div>
         <div class="fld"><label>Indicators on 1-min</label><select id="l2_ind_1min"><option value="true">true (regime)</option><option value="false">false (decision TF)</option></select></div>
       </div>
       <div class="sgroup"><h3>Entry / exit (points)</h3>
@@ -580,6 +584,9 @@ async function run(){
     // chips + the SMC gen_report panel, with boxes still log-derived (== engine summary). L2/Combined use
     // the causal views. All three derive from the same params; numbers match by construction.
     const tf=$('tf_select').value, inst=$('inst_select').value;
+    // MTF: in 'independent' L2 mode the L2 + combined runs carry the secondary timeframe (l2_tf); the L1 tab is
+    // always the primary alone, so it's left untouched. Residual mode sends nothing new (byte-identical path).
+    const l2mode=$('l2_mode').value, ext=(l2mode==='independent')?{l2_mode:l2mode, l2_tf:$('l2_tf').value}:{};
     // SEQUENTIAL (not Promise.all): three parallel engine passes would each load the 1-min frame + recompute
     // the (shared) L1/causal work simultaneously → 3x peak RAM/CPU, which FROZE small boxes. Running them in
     // order keeps peak at 1x AND lets the backend memoise the L1 + causal pass, so L2/combined reuse the
@@ -587,9 +594,9 @@ async function run(){
     DB.status('running L1 (1/3)…');
     const l1   = await grab(fetch('/api/backtest_causal', J({...l1lay, timeframe:tf, instrument:inst})));
     DB.status('running L2 (2/3)…');
-    const l2   = await grab(fetch('/api/causal_backtest', J({l1:l1lay, l2:l2lay, tf, instrument:inst, view:'l2'})));
+    const l2   = await grab(fetch('/api/causal_backtest', J({l1:l1lay, l2:l2lay, tf, instrument:inst, view:'l2', ...ext})));
     DB.status('running combined (3/3)…');
-    const comb = await grab(fetch('/api/causal_backtest', J({l1:l1lay, l2:l2lay, tf, instrument:inst, view:'combined'})));
+    const comb = await grab(fetch('/api/causal_backtest', J({l1:l1lay, l2:l2lay, tf, instrument:inst, view:'combined', ...ext})));
     VIEWS.l1=l1; VIEWS.l2=l2; VIEWS.combined=comb;
     renderView(VIEW); DB.markClean(); DB.status('✓ done — all three tabs filled');
   }catch(e){
@@ -644,6 +651,13 @@ async function loadConfig(inst, tf){
     $(pfx+'_save').addEventListener('click',()=>saveLayer(pfx));
     $(pfx+'_split').addEventListener('change',()=>{$(pfx+'_splitbox').style.display=$(pfx+'_split').value==='true'?'':'none'; DB.markDirty();});
   });
+  // MTF: reveal the secondary-timeframe picker only in 'independent' L2 mode, and reflect it in the hint.
+  $('l2_mode').addEventListener('change',()=>{const indep=$('l2_mode').value==='independent';
+    $('l2_tf_fld').style.display=indep?'':'none';
+    $('l2_mode_hint').textContent=indep
+      ? 'runs L2 as its own strategy on the L2 timeframe (coarser-or-equal to the primary), entering only when L1 is flat · L1 entering force-closes L2'
+      : "acts only on L1's dropped (veto + vol-gate) signals while L1 is flat · L1 entering force-closes L2";
+    DB.markDirty();});
   document.querySelectorAll('aside input,aside select').forEach(el=>el.addEventListener('input',DB.markDirty));
   DB.mathify(document.querySelector('aside'));
   const reload=async()=>{ try{ await loadConfig($('inst_select').value,$('tf_select').value);
