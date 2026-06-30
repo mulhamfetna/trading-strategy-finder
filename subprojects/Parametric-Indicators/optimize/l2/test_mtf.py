@@ -93,3 +93,26 @@ def test_dual_tf_drops_secondary_when_primary_already_open():
     sec.state = np.array([True])
     res = mtf.run_dual_tf(prim, sec, pv=50.0)
     assert [t["owner"] for t in res.ledger] == ["L1"]   # secondary dropped (primary open at 01:00)
+
+
+def test_run_causal_independent_mode_combines_two_tfs():
+    from optimize.l2 import logbook, payload
+    l1p = payload.l1_default_params("1h")          # primary = 1h champion
+    l2p = payload.l1_default_params("4h")          # secondary = 4h (a full profile)
+    res = logbook.run_causal(l1p, l2p, tf="1h", instrument="NQ", l2_mode="independent", l2_tf="4h")
+    owners = {r.position_owner for r in res.log if r.decision == "entry"}
+    assert owners <= {"L1", "L2"} and "L1" in owners
+    # master grid = finer tf (1h) → n == number of 1h decision bars
+    assert res.n == len(payload.run_l1_cached("1h", params=l1p, instrument="NQ").df_dec)
+    # at most one entry per master bar (single shared position)
+    idxs = [r.i for r in res.log if r.decision == "entry"]
+    assert len(idxs) == len(set(idxs))
+
+
+def test_run_causal_residual_default_unchanged():
+    from optimize.l2 import logbook, payload
+    l1p, l2p = payload.l1_default_params("4h"), dict(payload.PERMISSIVE)
+    a = logbook.run_causal(l1p, l2p, tf="4h", instrument="NQ")
+    b = logbook.run_causal(l1p, l2p, tf="4h", instrument="NQ", l2_mode="residual")
+    assert a.n == b.n and len(a.log) == len(b.log)
+    assert [(r.layer, r.decision, r.pnl) for r in a.log] == [(r.layer, r.decision, r.pnl) for r in b.log]

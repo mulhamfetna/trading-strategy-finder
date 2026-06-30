@@ -36,7 +36,8 @@ if str(_PI) not in sys.path:
 import numpy as np
 import pandas as pd
 
-from optimize.l2 import l1_runner, engine, payload
+from optimize.l2 import l1_runner, engine, payload, mtf
+from optimize import instruments as _instruments
 from indicators import library
 
 
@@ -130,11 +131,70 @@ def _row_text(layer, decision, reason, direction, box_dir, exit_reason, pnl) -> 
     return f"no-entry: {reason}"
 
 
-def run_causal(l1_params: dict, l2_params: dict, tf: str = "4h", instrument: str = "NQ", bar_mask=None) -> CausalResult:
+def _layerview(l1result) -> mtf.LayerView:
+    """Adapt an L1Result to the minimal view mtf.run_dual_tf consumes."""
+    return mtf.LayerView(dates=l1result.df_dec["Date"].to_numpy(),
+                         close=l1result.df_dec["Close"].to_numpy(float),
+                         ledger=l1result.ledger,
+                         state=np.asarray(l1result.state_timeline, dtype=bool),
+                         bar_td=l1result.bar_td)
+
+
+def _run_causal_independent(l1p: dict, l2p: dict, tf: str, instrument: str, l2_tf: str) -> CausalResult:
+    """Multi-timeframe fusion: primary = L1 on `tf` (priority); secondary = a full L1 on `l2_tf` that may
+    enter only while the primary is flat. Log + grid are the finer of the two timeframes (mtf.master_grid)."""
+    pv = float(_instruments.point_value(instrument))
+    prim = payload.run_l1_cached(tf, params=l1p, instrument=instrument)
+    sec = payload.run_l1_cached(l2_tf, params=l2p, instrument=instrument)
+    dual = mtf.run_dual_tf(_layerview(prim), _layerview(sec), pv)
+    dates, n = dual.master_dates, len(dual.master_dates)
+    by_idx = {int(t["entry_idx"]): t for t in dual.ledger}
+    log: list[LogRow] = []
+    for i in range(n):
+        ts = _epoch(dates[i])
+        t = by_idx.get(i)
+        if t is not None:
+            owner = t["owner"]
+            log.append(LogRow(i=i, time=ts, layer=owner, decision="entry", reason="entered",
+                              event_type="ENTRY", direction=t["direction"],
+                              entry_price=float(t["entry_price"]), exit_time=_epoch(t["exit_time"]),
+                              exit_price=float(t["exit_price"]), exit_reason=t["exit_reason"],
+                              pnl=float(t["pnl"]), in_position=True, position_owner=owner,
+                              text=_row_text(owner, "entry", "entered", t["direction"], None,
+                                             t["exit_reason"], float(t["pnl"]))))
+        else:
+            inpos = bool(dual.prim_state[i] or dual.sec_state[i])
+            owner = "L1" if dual.prim_state[i] else ("L2" if dual.sec_state[i] else None)
+            reason = "open_trade" if inpos else "box_silence"
+            log.append(LogRow(i=i, time=ts, layer=owner, decision="nonentry", reason=reason,
+                              event_type="NOENTRY", in_position=inpos, position_owner=owner,
+                              text=_row_text(owner, "nonentry", reason, None, None, None, 0.0)))
+    for lyr in ("L1", "L2"):                               # per-layer running equity + underwater dd
+        rows = sorted([r for r in log if r.layer == lyr and r.decision == "entry"], key=lambda r: r.exit_time)
+        eq = peak = 0.0
+        for r in rows:
+            eq += r.pnl
+            peak = max(peak, eq)
+            r.equity = round(eq, 2)
+            r.dd = round(peak - eq, 2)
+    return CausalResult(tf=tf, l1_params=l1p, l2_params=l2p, log=log, n=n, dec_dates=dates,
+                        warmup={"l1": _warmup_for(l1p), "l2": _warmup_for(l2p)},
+                        counts={"l1": {"n_locks": int(prim.n_locks), "n_skipped": int(prim.n_skipped_breaker)},
+                                "l2": {"n_locks": int(sec.n_locks), "n_skipped": int(sec.n_skipped_breaker)}})
+
+
+def run_causal(l1_params: dict, l2_params: dict, tf: str = "4h", instrument: str = "NQ", bar_mask=None,
+               *, l2_mode: str = "residual", l2_tf: str | None = None) -> CausalResult:
     """Single causal pass → complete per-candle log. l1_params=None or the frozen-lean default uses the
-    cached frozen L1 (byte-identical to the oracle); any other dict runs an arbitrary L1."""
+    cached frozen L1 (byte-identical to the oracle); any other dict runs an arbitrary L1.
+
+    l2_mode='residual' (default) → today's path, byte-identical (L2 manages L1's dropped signals on the SAME
+    frame). l2_mode='independent' → multi-timeframe fusion: the secondary is a full L1 run on `l2_tf` and only
+    enters while the primary is flat (primary priority + force-close); see optimize/l2/mtf.py."""
     l1p = payload.validate_layer_params(l1_params)
     l2p = payload.validate_layer_params(l2_params)
+    if l2_mode == "independent":
+        return _run_causal_independent(l1p, l2p, tf, instrument, l2_tf or tf)
     # frozen default → cached oracle; else custom L1 (memoised by hash inside run_l1_cached). The frozen
     # disk-cached run exists only for NQ-4h; other TFs/instruments are param dicts → always pass params.
     use_frozen = (instrument == "NQ" and tf == "4h" and l1p == payload.l1_default_params(tf))
