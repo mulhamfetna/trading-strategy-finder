@@ -84,10 +84,12 @@ cmd_push() {
   # Non-NQ instruments resolve candles+boxes via the all-stocks-signals registry under ALL_STOCKS/. The server
   # layout mirrors the repo at $WSI (WSH_DATA_BASE), so push both the registry and the data tree there.
   if [ "$INSTRUMENT" != "NQ" ]; then
-    log "instrument=$INSTRUMENT → syncing the instrument registry + ALL_STOCKS data"
+    log "instrument=$INSTRUMENT → syncing the instrument registry (instruments.py only) + ALL_STOCKS data (~180MB)"
     srv "mkdir -p '$WSI/subprojects/all-stocks-signals' '$WSI/ALL_STOCKS'"
-    rsync -az --info=stats1 -e "$RSYNC_E" --exclude '__pycache__' --exclude '*.pyc' \
-      "$REPO/subprojects/all-stocks-signals/" "${SRV_USER}@${SRV_HOST}:$WSI/subprojects/all-stocks-signals/"
+    # ONLY the registry file is imported (optimize.instruments._load_registry); the rest of all-stocks-signals
+    # (its 6GB+ output/ delivery bundles) is NOT needed on the server — do not ship it.
+    rsync -az --info=stats1 -e "$RSYNC_E" \
+      "$REPO/subprojects/all-stocks-signals/instruments.py" "${SRV_USER}@${SRV_HOST}:$WSI/subprojects/all-stocks-signals/instruments.py"
     rsync -az --info=stats1 -e "$RSYNC_E" "$REPO/ALL_STOCKS/" "${SRV_USER}@${SRV_HOST}:$WSI/ALL_STOCKS/"
   fi
   log "push done."
@@ -109,6 +111,10 @@ cmd_parity() {
 # 4h gets ALL workers (box has 32 cores; leave 2 for OS/Postgres). The other entries are kept for when the
 # full all-TF sweep is resumed (TFS=TFS_ALL); they are inert while TFS=(4h). (Was spread 6/6/5/5/4/4 across TFs.)
 declare -A WORKERS=( [4h]=30 [2h]=4 [1h]=5 [15m]=5 [5m]=6 [2m]=6 )
+# Override the per-TF worker counts for an all-TF sweep, e.g. WSH_WORKERS="4h:3 2h:4 1h:5 15m:8 5m:10"
+# (favours the slow fine TFs). On Postgres (WSH_STORAGE_URL) the sqlite write-lock cap is gone, so the
+# only ceiling is cores−2. Unset ⇒ the default map above (4h-focus) is used unchanged.
+if [ -n "${WSH_WORKERS:-}" ]; then declare -A WORKERS=(); for _kv in $WSH_WORKERS; do WORKERS[${_kv%%:*}]=${_kv##*:}; done; fi
 
 # Print the dimension-proportional trial plan for the current TFs (dry run — never launches).
 cmd_plan() {
@@ -136,40 +142,46 @@ cmd_run() {
   fi
   log "launching NSGA-III search ($PREFIX, 1-minute indicators): target $total trials/TF (idempotent, watchdog/respawn, warm-started) [${tfs[*]}] (min-trades 5) ..."
   local spec=""; for tf in "${tfs[@]}"; do spec+="$tf:${WORKERS[$tf]:-1} "; done
+  # (1) Self-contained watchdog WORKER (one process per worker; tf = \$1). Sets up its OWN env so each worker
+  #     is INDEPENDENTLY setsid-detached and survives launcher/session death. Loops the optimizer in fixed
+  #     chunks, topping the SHARED study up to TARGET (idempotent); stops when target is reached.
+  srv "cat > '$WSI/worker.sh' <<'EOS'
+#!/usr/bin/env bash
+tf=\"\$1\"; cd '$CODE' || exit 1
+source $REMOTE_VENV/bin/activate
+export WSH_DATA_BASE='$WSI' WSG_DATA_ROOT='$WSI/data' WSH_STORAGE_URL='$STORAGE_URL' WSI_INSTRUMENT='$INSTRUMENT'
+[ -z \"\$WSH_STORAGE_URL\" ] && [ -f '$WSI/pg.env' ] && { set -a; . '$WSI/pg.env'; set +a; }   # else Postgres from pg.env
+export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
+TARGET=$total; log=\"$WSI/logs/\$tf.log\"
+while :; do
+  done=\$(python3 optimize/trial_count.py \"\$tf\" --prefix ${PREFIX} 2>/dev/null || echo 0)
+  if [ \"\${done:-0}\" -ge \"\$TARGET\" ]; then echo \"[watchdog] \$tf reached \$done/\$TARGET — stop\" >> \"\$log\"; break; fi
+  echo \"[watchdog] \$tf \$done/\$TARGET → +chunk \$(date +%H:%M:%S)\" >> \"\$log\"
+  python3 -u optimize/optimizer.py \"\$tf\" --trials 300 --folds 5 --min-trades 5 $IND_ARGS >> \"\$log\" 2>&1 || true
+done
+EOS
+chmod +x '$WSI/worker.sh'"
+  # (2) Launcher: pre-create each study, fire W detached setsid workers per TF, then EXIT (no 'wait'). The
+  #     launching SSH returns immediately (nothing holds the channel open) and the workers persist on their own.
   srv "cat > '$WSI/launch.sh' <<'EOS'
 #!/usr/bin/env bash
 pkill -9 -f optimize/optimizer.py >/dev/null 2>&1 || true
 sleep 2
 source $REMOTE_VENV/bin/activate
 export WSH_DATA_BASE='$WSI' WSG_DATA_ROOT='$WSI/data' WSH_STORAGE_URL='$STORAGE_URL' WSI_INSTRUMENT='$INSTRUMENT'
-[ -z \"\$WSH_STORAGE_URL\" ] && [ -f '$WSI/pg.env' ] && { set -a; . '$WSI/pg.env'; set +a; }   # else Postgres from pg.env
-export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
+[ -z \"\$WSH_STORAGE_URL\" ] && [ -f '$WSI/pg.env' ] && { set -a; . '$WSI/pg.env'; set +a; }
 cd '$CODE'; mkdir -p optimize/studies '$WSI/logs'
-TARGET=$total              # Tier 2: TOTAL trials each study should REACH (idempotent — not 'add N')
-# Watchdog/respawn worker: keep (re)running the optimizer until the SHARED study reaches TARGET. A crashed
-# optimizer (|| true) just loops and tops up the remaining deficit; when target is hit every worker stops.
-run_worker () {
-  local tf=\"\$1\" w=\"\$2\" log=\"$WSI/logs/\$1.log\" done rem per
-  while :; do
-    done=\$(python3 optimize/trial_count.py \"\$tf\" --prefix ${PREFIX} 2>/dev/null || echo 0)
-    rem=\$(( TARGET - done ))
-    if [ \"\$rem\" -le 0 ]; then echo \"[watchdog] \$tf reached \$done/\$TARGET — stop\" >> \"\$log\"; break; fi
-    per=\$(( (rem + w - 1) / w ))
-    python3 -u optimize/optimizer.py \"\$tf\" --trials \"\$per\" --folds 5 --min-trades 5 $IND_ARGS >> \"\$log\" 2>&1 || true
-    echo \"[watchdog] \$tf was \$done/\$TARGET; ran ~\$per; re-checking (respawn if a worker died)\" >> \"\$log\"
-  done
-}
 for pair in $spec; do
   tf=\${pair%%:*}; w=\${pair##*:}
-  python3 -c \"import optuna,sqlite3,os; n='${PREFIX}_\$tf${RSUF}'; per='optimize/studies/wsh_\$tf${RSUF}.db'; sh='optimize/studies/wsh.db'; h=lambda d:(os.path.exists(d) and n in [r[0] for r in sqlite3.connect(d).execute('SELECT study_name FROM studies')]); db=(sh if (not os.path.exists(per) and h(sh)) else per); url=(os.environ.get('WSH_STORAGE_URL') or 'sqlite:///'+db); optuna.create_study(study_name=n, storage=url, directions=['maximize','maximize','maximize'], load_if_exists=True); print('study',n,'->',url)\"
-  for i in \$(seq 1 \$w); do run_worker \"\$tf\" \"\$w\" & done
-  echo \"\$tf: \$w workers → target \$TARGET (watchdog/respawn, idempotent)\"
+  python3 -c \"import optuna,sqlite3,os; n='${PREFIX}_\${tf}${RSUF}'; per='optimize/studies/wsh_\${tf}${RSUF}.db'; sh='optimize/studies/wsh.db'; h=lambda d:(os.path.exists(d) and n in [r[0] for r in sqlite3.connect(d).execute('SELECT study_name FROM studies')]); db=(sh if (not os.path.exists(per) and h(sh)) else per); url=(os.environ.get('WSH_STORAGE_URL') or 'sqlite:///'+db); optuna.create_study(study_name=n, storage=url, directions=['maximize','maximize','maximize'], load_if_exists=True); print('study',n,'->',url)\"
+  for i in \$(seq 1 \$w); do setsid bash '$WSI/worker.sh' \"\$tf\" </dev/null >> \"$WSI/logs/\${tf}.log\" 2>&1 & done
+  echo \"\$tf: \$w setsid workers → target $total (independent, watchdog/respawn, idempotent)\"
 done
-wait               # keep the detached launcher (session leader) alive until every watchdog reaches target
+# NO wait — each worker is its own setsid session and persists independently; the launcher exits here.
 EOS
 chmod +x '$WSI/launch.sh'; setsid bash '$WSI/launch.sh' < /dev/null > '$WSI/launch.out' 2>&1 & echo launcher-started"
   sleep 8
-  log "workers now running:"; srv "pgrep -fc optimize/optimizer.py || echo 0; cat '$WSI/launch.out' 2>/dev/null"
+  log "workers now running:"; srv "pgrep -fc optimize/optimizer.py || echo 0; tail -4 '$WSI/launch.out' 2>/dev/null"
 }
 
 # P3 two-stage decomposition launch (dashboard engine=two_stage). Unlike cmd_run's watchdog/respawn loop
