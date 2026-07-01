@@ -41,3 +41,34 @@ def window_stats(C, z, theta, mode, lo, hi) -> dict:
     n = int(pnls.size)
     return {"pnl": float(pnls.sum()), "n": n,
             "win": (float((pnls > 0).sum()) / n if n else 0.0), "payoff": payoff_ratio(pnls)}
+
+
+def select_theta_train(C, z, mode, train_hi) -> float:
+    idxs_tr = [i for i in eligible_dropped(C)["idxs"] if i < train_hi]
+    if not idxs_tr:
+        return 1e9
+    grid = list(np.quantile(np.abs(z[idxs_tr]), [0.0, 0.5, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95])) + [1e9]
+    best_th, best_pnl = 1e9, -1e18
+    for th in grid:
+        pnl = window_stats(C, z, float(th), mode, 0, train_hi)["pnl"]
+        if pnl > best_pnl:
+            best_pnl, best_th = pnl, float(th)
+    return best_th
+
+
+def evaluate_quarter(C, z, theta, mode, q_start, q_end):
+    m2 = window_stats(C, z, theta, mode, q_start, q_end)
+    champ = window_stats(C, z, 1e9, mode, q_start, q_end)     # theta=inf => champion book only
+    return m2, champ
+
+
+def walk_forward(C, z, mode) -> dict:
+    rows = []; sm = sc = 0.0; wins = 0
+    folds = quarter_folds(C)
+    for f in folds:
+        th = select_theta_train(C, z, mode, f["q_start"])
+        m2, champ = evaluate_quarter(C, z, th, mode, f["q_start"], f["q_end"])
+        rows.append({"q": f["q"], "theta": th, "m2": m2, "champ": champ})
+        sm += m2["pnl"]; sc += champ["pnl"]; wins += int(m2["pnl"] > champ["pnl"])
+    return {"rows": rows, "sum_m2_pnl": sm, "sum_champ_pnl": sc,
+            "folds_m2_wins": wins, "n_folds": len(folds)}
