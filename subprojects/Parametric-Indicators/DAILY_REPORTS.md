@@ -6,6 +6,36 @@ detail. (Generated on request when the user calls "end of day".)
 
 ---
 
+## 2026-07-01
+
+**What did you do today?**
+Today we **closed out the overnight "trade more often" experiment** and turned it into something usable: we pulled
+the results, wrote them up, and wired the best variants into the dashboard as ready-to-use strategies — one set as
+the **zero-touch default that reproduces its numbers exactly** on open. The lesson: we *can* push the system to
+trade about **1.8× more often**, but chasing volume alone costs profit, so it doesn't beat our current best strategy.
+Then we ran a **deep, disciplined research program on Kalman filtering and signal fusion** — the "can we safely
+trade far more of the signals we currently skip?" question. We first pinned down the key fact: our profit-per-trade
+is fixed by the exit rules, so the whole game is getting the **direction** right on the skipped signals — and if we
+could do that perfectly, the upside is roughly **9×**. We then tested three ways to recover that direction:
+combining signals across timeframes (**no edge**); a Kalman trend estimate (**looked great at first — nearly doubled
+out-of-sample profit while trading more — but a rigorous across-time re-test showed the edge is marginal and
+inconsistent**, i.e. the exciting number was over-fit); and we **started designing the third and final approach** —
+using the market's volatility "regime" to adjust both which trades we take and how we exit them.
+
+**What will you do tomorrow?**
+Finish designing, then build and honestly test the **regime-based approach** — the last untested idea, and the only
+one that can raise **profit-per-trade** rather than just trade more. If it survives the same across-time validation,
+it's a genuine win; if it doesn't, we'll have a conclusive answer on whether the skipped signals are worth
+recovering at all — and can close the study cleanly.
+
+**Is there any challenges with your task?**
+The honest across-time testing keeps **deflating exciting first-cut results** — good discipline, but it means no
+confirmed edge yet. The root difficulty is real: the signals the strategy currently skips are genuinely hard to
+trade profitably, and our data window is short, so anything promising has to **prove it holds across time** before
+we trust it. Today's Kalman result is the clearest example — impressive on one split, ordinary under scrutiny.
+
+---
+
 ## 2026-06-30
 
 **What did you do today?**
