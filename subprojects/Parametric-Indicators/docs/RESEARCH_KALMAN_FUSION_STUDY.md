@@ -172,3 +172,40 @@ the magnitude or sizing beyond 1 contract (the l2v3 lesson). Front CSV: `researc
 
 *M2 delivered: `kalman_trend.velocity_z` (2-state filter) + `m2_trend` (causal 4h/1m z, 2 modes, IS/OOS) +
 `run_m2`; 8 new tests (incl. 2 causality guards); golden 6/6 untouched.*
+
+### M2 walk-forward validation (expanding quarterly, θ-on-train) — **edge NOT confirmed ⚠️**
+
+Design/plan: `docs/superpowers/{specs,plans}/2026-07-01-kalman-m2-walkforward*`. Code:
+`research/kalman_fusion/m2_walkforward.py` + `run_m2_wf.py`. Expanding-window: θ selected on each quarter's
+**train** (argmax train P/L over train |z|-quantiles), scored on the **test** quarter vs the champion's
+same-quarter trades.
+
+| **4h · filter** | 2025Q3 | 2025Q4 | 2026Q1 | 2026Q2 | aggregate | folds won |
+|---|--:|--:|--:|--:|--:|:--:|
+| M2 test P/L | $15,995 | $22,323 | **$6,898** | **$30,960** | **$76,176** | **2/4** |
+| champion    | $15,995 | $25,665 | $2,090 | $26,809 | $70,559 | |
+| M2 wins | tie | ❌ | ✅ | ✅ | +$5,617 (**+8%**) | |
+
+`combined · redirect`: aggregate $74,429 vs $70,559, **1/4 folds** (only 2026Q2).
+
+**Verdict — the single-split result was over-optimistic.** Under honest walk-forward the M2 edge shrinks from the
+single-split **+$41,200 (+43%)** to a **marginal +8% aggregate, winning only 2/4 folds** (and just 1/4 for
+`combined`). The +43% was θ implicitly tuned to the one 2026 holdout; walk-forward — θ chosen only from prior
+quarters — mostly reverts to the champion or slightly underperforms, with one clear win (2026Q2).
+
+```mermaid
+flowchart LR
+  A["single-split: +$41k, +43% ✨"] -->|"honest walk-forward"| B["+$5.6k aggregate, +8%<br/>2/4 folds — NOT a majority"]
+  classDef warn fill:#fff3cd,stroke:#b8860b;
+  class B warn;
+```
+
+**Gate → do NOT build M2b or wire M2 to the dashboard on this basis.** The trend-state carries at best a **weak,
+inconsistent** directional signal on the dropped flow — real enough to edge the champion in aggregate, not robust
+enough to trust or size. Options: **(a)** re-test when more forward data exists (a longer out-of-sample), or
+**(b)** move to **M3** (regime-conditioned admission + exits — the only lever that can move payoff off 0.74,
+untried). This is precisely the discipline that made the ES verdict and the l2v3 rejection trustworthy: a fair,
+cheap test that stops an over-fit result from being over-invested in.
+
+*Walk-forward delivered: `m2_walkforward` (quarter folds, window-scored P/L, train-θ selection, driver) +
+`run_m2_wf`; 5 new tests (fold causality, window partition, θ-train-only, aggregate); golden 6/6 untouched.*
