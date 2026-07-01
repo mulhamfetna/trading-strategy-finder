@@ -50,3 +50,24 @@ def policy(C, z, theta, mode):
         else:
             raise ValueError(f"unknown mode {mode!r}")
     return admit, direction
+
+
+import pandas as pd
+import config
+from research.kalman_fusion import rig
+from research.kalman_fusion.metrics import summarize
+from research.kalman_fusion.m1_fusion import n_split
+
+
+def evaluate_m2(C, z, theta, mode):
+    admit, direction = policy(C, z, theta, mode)
+    book = rig.run_book(C, admit, direction)
+    yr0 = config.YEARS[0]
+    is_p = [t["pnl"] for t in book if pd.Timestamp(t["entry_time"]).year == yr0]
+    oos_p = [t["pnl"] for t in book if pd.Timestamp(t["entry_time"]).year != yr0]
+    ed = eligible_dropped(C); ns = n_split(C)
+    is_elig = sum(1 for i in ed["idxs"] if i < ns) + \
+              sum(1 for t in cp.champion_taken_trades(C) if pd.Timestamp(t["entry_time"]).year == yr0)
+    oos_elig = ed["n_eligible"] - is_elig
+    return (summarize(is_p, n_eligible=max(1, is_elig)),
+            summarize(oos_p, n_eligible=max(1, oos_elig)))

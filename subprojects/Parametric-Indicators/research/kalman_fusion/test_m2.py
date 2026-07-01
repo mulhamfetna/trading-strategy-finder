@@ -64,3 +64,24 @@ def test_redirect_flips_and_filter_skips_on_disagreement():
     a_f, d_f = policy(C, z, theta=1.0, mode="filter")
     assert a_r[i] and d_r[i - 1] == int(np.sign(z[i]))            # re-direct admits + flips
     assert not a_f[i]                                             # filter skips the disagreement
+
+
+from research.kalman_fusion.m2_trend import evaluate_m2
+
+
+def test_evaluate_high_theta_is_champion():
+    C = cp.load_champion("4h")
+    z = trend_z(C)["combined"]
+    is_m, oos_m = evaluate_m2(C, z, theta=1e9, mode="redirect")
+    champ = sum(t["pnl_points"] * C["pv"] for t in cp.champion_taken_trades(C))
+    assert abs((is_m.total_pnl + oos_m.total_pnl) - champ) < 1e-6
+
+
+def test_entry_rate_non_increasing_in_theta_m2():
+    C = cp.load_champion("4h")
+    z = trend_z(C)["combined"]
+    rates = []
+    for th in (0.0, 1.0, 2.0, 1e9):
+        is_m, oos_m = evaluate_m2(C, z, theta=th, mode="redirect")
+        rates.append(is_m.n_entries + oos_m.n_entries)
+    assert all(rates[k] >= rates[k + 1] for k in range(len(rates) - 1))
