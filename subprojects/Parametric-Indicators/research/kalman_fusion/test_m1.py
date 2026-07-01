@@ -70,3 +70,26 @@ def test_policy_theta_one_admits_only_champion():
     admit, direction = policy(C, Z, w, theta=1.0)
     assert np.array_equal(admit, cp._engine_gate(C))
     assert int((direction != 0).sum()) == 0
+
+
+from research.kalman_fusion.m1_fusion import evaluate_m1
+
+
+def test_evaluate_theta_one_reproduces_champion_full():
+    C = cp.load_champion("4h")
+    Z, _ = finer_tf_directions(C)
+    w = np.ones(Z.shape[1])
+    is_m, oos_m = evaluate_m1(C, Z, w, theta=1.0)
+    champ_total = sum(t["pnl_points"] * C["pv"] for t in cp.champion_taken_trades(C))
+    assert abs((is_m.total_pnl + oos_m.total_pnl) - champ_total) < 1e-6
+
+
+def test_entry_rate_non_increasing_in_theta():
+    C = cp.load_champion("4h")
+    Z, _ = finer_tf_directions(C)
+    w = np.ones(Z.shape[1])
+    rates = []
+    for th in (0.0, 0.34, 0.67, 1.0):
+        is_m, oos_m = evaluate_m1(C, Z, w, theta=th)
+        rates.append(is_m.n_entries + oos_m.n_entries)
+    assert all(rates[k] >= rates[k + 1] for k in range(len(rates) - 1))
