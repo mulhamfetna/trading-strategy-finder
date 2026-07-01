@@ -41,3 +41,26 @@ def test_trend_z_is_causal():
     Ct = dict(C); Ct["d"] = C["d"].iloc[:m].copy(); Ct["sig"] = np.asarray(C["sig"])[:m]; Ct["n"] = m
     zt = trend_z(Ct, frames=("4h",))["4h"]
     assert np.allclose(zt, zf[:m])
+
+
+from research.kalman_fusion.m2_trend import policy
+from research.kalman_fusion.ceiling import eligible_dropped
+
+
+def test_policy_high_theta_reproduces_champion():
+    C = cp.load_champion("4h")
+    z = trend_z(C)["combined"]
+    admit, direction = policy(C, z, theta=1e9, mode="redirect")
+    assert np.array_equal(admit, cp._engine_gate(C))
+    assert int((direction != 0).sum()) == 0
+
+
+def test_redirect_flips_and_filter_skips_on_disagreement():
+    C = cp.load_champion("4h")
+    i = eligible_dropped(C)["idxs"][0]
+    box = int(np.sign(C["sig"][i - 1]))
+    z = np.zeros(C["n"]); z[i] = -5.0 * (box if box != 0 else 1)   # trend OPPOSES the box direction
+    a_r, d_r = policy(C, z, theta=1.0, mode="redirect")
+    a_f, d_f = policy(C, z, theta=1.0, mode="filter")
+    assert a_r[i] and d_r[i - 1] == int(np.sign(z[i]))            # re-direct admits + flips
+    assert not a_f[i]                                             # filter skips the disagreement

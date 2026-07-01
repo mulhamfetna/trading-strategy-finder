@@ -24,3 +24,29 @@ def trend_z(C, frames=("4h", "1m"), q=1e-5, r=1.0):
         out["1m"] = np.where(j >= 0, z1[np.clip(j, 0, len(z1) - 1)], 0.0)
     out["combined"] = sum(out[f] for f in frames)
     return out
+
+
+from optimize import counterfactual_pause as cp
+from research.kalman_fusion.ceiling import eligible_dropped
+
+
+def policy(C, z, theta, mode):
+    n = int(C["n"])
+    admit = np.asarray(cp._engine_gate(C)).copy()
+    direction = np.zeros(n, dtype=np.int8)
+    box = np.sign(np.asarray(C["sig"]).astype(int))
+    for i in eligible_dropped(C)["idxs"]:
+        if abs(z[i]) <= theta:
+            continue
+        zdir = int(np.sign(z[i]))
+        if zdir == 0:
+            continue
+        if mode == "redirect":
+            admit[i] = True; direction[i - 1] = zdir
+        elif mode == "filter":
+            bdir = int(box[i - 1])
+            if bdir != 0 and zdir == bdir:
+                admit[i] = True; direction[i - 1] = bdir
+        else:
+            raise ValueError(f"unknown mode {mode!r}")
+    return admit, direction
