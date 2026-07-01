@@ -76,3 +76,49 @@ lie) governs promotion.
 *Phase 1 delivered: parity-safe research rig (`research/kalman_fusion/` — `metrics`, `rig`, `ceiling`,
 `run_ceiling`; 10 tests; champion reproduced byte-for-byte) + this M0 ceiling. Production engine + golden gate
 untouched.*
+
+---
+
+## M1 — champion-signal fusion (static weighted vote), NQ 4h — **negative result, STOP**
+
+Design/plan: `docs/superpowers/{specs,plans}/2026-07-01-kalman-m1-*`. Code: `research/kalman_fusion/m1_fusion.py`
++ `run_m1.py`. Director = a causal weighted vote of the finer NQ timeframes' box direction (1h/15m/5m + 4h),
+weights fit on **2025** dropped-signal reliability, θ-swept; exits fixed. IS/OOS split (2025/2026).
+
+**Fitted weights (2025):** 1h 0.10 · 15m 0.15 · 5m 0.10 · 4h 0.03 — i.e. every finer timeframe is only
+~**55–58% reliable** at calling the dropped signal's profitable side (weight = 2·hit−1). Barely-better-than-random.
+
+| θ | IS entries | IS P/L | IS win% | OOS entries | OOS P/L | OOS win% |
+|--:|--:|--:|--:|--:|--:|--:|
+| **1.00** (admit none = champion) | 157 | $113,304 | 70.1% | 57 | **+$28,899** | 66.7% |
+| 0.40 | 363 | $116,803 | 63.1% | 187 | **−$10,451** | 56.7% |
+| 0.00 (admit all confident) | 366 | $101,465 | 62.3% | 188 | **−$8,047** | 56.9% |
+
+*(full sweep: `research/kalman_fusion/m1_front.csv`.)*
+
+**Why it fails — the breakeven line.** At the structurally-pinned payoff 0.74, the break-even win-rate is
+`1/(1+0.74) ≈ 57.5%`. The M1-admitted signals sit **right at** breakeven in-sample (~62% with fitted weights)
+and **below it out-of-sample (56.7%)** — so admitting them **turns the champion's +$28,899 OOS into a loss**.
+The multi-TF director adds trades that don't clear the bar.
+
+```mermaid
+flowchart LR
+  BE["break-even win-rate ≈ 57.5%<br/>(payoff 0.74)"]
+  CH["champion taken: 66.7% OOS ✅"] --> BE
+  M1["M1-admitted dropped: 56.7% OOS ❌"] --> BE
+  classDef bad fill:#fee,stroke:#c00;
+  class M1 bad;
+```
+
+**Gate decision → STOP M1 (do NOT build Phase 2b Kalman on these inputs).** The finer-TF box directions carry
+only ~coin-flip directional information about the dropped flow, and it does not generalise OOS. A Kalman/dynamic
+filter over the *same* near-random inputs cannot manufacture signal ("sophistication ≠ information"). This is the
+ES-verdict discipline applied again: a fair, cheap test returned a clean no.
+
+**Redirect:** the direction headroom M0 exposed is real (oracle $1.3M) but it is **not recoverable from
+discrete multi-TF box directions.** Next candidates use a *different information source*: **M2** — a Kalman
+price/trend **state** on the raw series (continuous microstructure, not discrete box votes) — and **M3** —
+regime-conditioned admission + exits (the only lever that can move payoff off 0.74). Each is its own spec → plan.
+
+*M1 Phase 2a delivered: `m1_fusion` (causal multi-TF matrix, 2025 weight fit, fused-vote policy, IS/OOS eval) +
+`rig.run_book`; 8 new tests (incl. causality guard); golden 6/6 untouched. Verdict recorded; M1 closed.*
