@@ -122,3 +122,53 @@ regime-conditioned admission + exits (the only lever that can move payoff off 0.
 
 *M1 Phase 2a delivered: `m1_fusion` (causal multi-TF matrix, 2025 weight fit, fused-vote policy, IS/OOS eval) +
 `rig.run_book`; 8 new tests (incl. causality guard); golden 6/6 untouched. Verdict recorded; M1 closed.*
+
+---
+
+## M2 — Kalman trend-state director, NQ 4h — **first mechanism to beat the champion OOS ✅**
+
+Design/plan: `docs/superpowers/{specs,plans}/2026-07-01-kalman-m2-*`. Code: `research/kalman_fusion/kalman_trend.py`
+(2-state local-level+trend filter) + `m2_trend.py` + `run_m2.py`. Director = the **continuous** Kalman
+velocity z-score on the raw log-price (4h + 1-min frames, equal-weight, **no fitting**); the only knob is a
+conviction threshold θ (swept over **2025-IS |z| quantiles** — scale-free, no OOS leakage). Two modes: re-direct
+(enter with the trend, may flip) and trend-filter (keep box dir, skip on disagreement). Exits fixed (payoff 0.74).
+
+**Honest read — θ* selected by max 2025-IS P/L, OOS reported (vs champion OOS +$28,899 / 57 / 66.7%):**
+
+| config | θ* | OOS entries | OOS P/L | OOS win% | vs champion |
+|---|--:|--:|--:|--:|---|
+| **4h · filter** | 0.059 | 67 | **+$41,200** | 68.7% | **+$12,301, +10 trades** |
+| combined · redirect | 0.091 | 61 | +$32,769 | 67.2% | +$3,870, +4 |
+| 4h · redirect | 0.107 | 58 | +$31,303 | 67.2% | +$2,404, +1 |
+| combined · filter | 0.080 | 62 | +$29,427 | 66.1% | ≈ champion |
+| 1m alone | — | — | (weakest frame) | — | noisier, near-neutral |
+
+And the edge is **robust across the whole θ ≈ 0.03–0.11 band** (OOS positive, win **64–70% > the 57.5% breakeven**,
+entries *up* vs the champion) — at the lower end of the band OOS P/L reaches **$46–57k** at 70–90 entries, though
+IS is marginally lower there. **This is the first mechanism to admit dropped signals that clear the breakeven bar
+out-of-sample** — unlike M1 (56.7% < 57.5%).
+
+```mermaid
+flowchart LR
+  M1["M1 discrete multi-TF votes<br/>56.7% OOS ❌ below breakeven"] --> BE["breakeven ≈ 57.5% (payoff 0.74)"]
+  M2["M2 continuous Kalman trend, high-|z| admits<br/>67–70% OOS ✅ above breakeven"] --> BE
+  M2 --> WIN["OOS P/L $28.9k → $41k+ AND entries 57 → 67+"]
+  classDef good fill:#efe,stroke:#0a0;
+  class M2,WIN good;
+```
+
+**Why M2 works where M1 didn't:** the *continuous* trend/velocity carries directional information the *discrete*
+box votes lacked; thresholding on |z| **selects the strong-trend dropped signals** (which win ~68%) and skips the
+weak-trend ones (noise). The trend *strength* is the filter, not just its sign.
+
+### Gate → **PROCEED to M2b, and M2 is the lead candidate for the goal**
+- ✅ **Build M2b (adaptive-Q/R + EKF/UKF relatives)** — vanilla already clears the bar; the relatives may widen it.
+- ✅ **Directly serves the user's goal** ("more profitable entries"): M2 *increases* entries **and** OOS P/L at
+  held-or-better payoff — the first mechanism to do so.
+
+**Caveats (honest):** single 2025/2026 split — θ selection on one split is noisy (the strict argmax-IS point is
+modest; the band is stronger), so the **required next hardening is walk-forward / multi-fold** before trusting
+the magnitude or sizing beyond 1 contract (the l2v3 lesson). Front CSV: `research/kalman_fusion/m2_front.csv`.
+
+*M2 delivered: `kalman_trend.velocity_z` (2-state filter) + `m2_trend` (causal 4h/1m z, 2 modes, IS/OOS) +
+`run_m2`; 8 new tests (incl. 2 causality guards); golden 6/6 untouched.*
