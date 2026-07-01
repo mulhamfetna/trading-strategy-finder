@@ -49,3 +49,24 @@ def test_fit_weights_rewards_a_perfect_column():
     w = fit_weights(Z, C, idxs)
     assert w[0] > w[1]
     assert w[1] == 0.0
+
+
+from research.kalman_fusion.m1_fusion import fused, policy
+
+
+def test_fused_sign_and_conviction_bounds():
+    d, c = fused(np.array([1, 1, 1]), np.array([1.0, 1.0, 1.0]))
+    assert d == 1 and abs(c - 1.0) < 1e-9
+    d, c = fused(np.array([1, -1, 0]), np.array([1.0, 1.0, 1.0]))
+    assert d == 0 and 0.0 <= c <= 1.0
+    d, c = fused(np.array([0, 0, 0]), np.array([1.0, 1.0, 1.0]))
+    assert d == 0 and c == 0.0
+
+
+def test_policy_theta_one_admits_only_champion():
+    C = cp.load_champion("4h")
+    Z, _ = finer_tf_directions(C)
+    w = np.ones(Z.shape[1])
+    admit, direction = policy(C, Z, w, theta=1.0)
+    assert np.array_equal(admit, cp._engine_gate(C))
+    assert int((direction != 0).sum()) == 0

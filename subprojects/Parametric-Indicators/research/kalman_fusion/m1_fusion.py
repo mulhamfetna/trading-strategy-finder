@@ -68,3 +68,27 @@ def fit_weights(Z, C, idxs_is) -> np.ndarray:
         hr = (hits / tot) if tot else 0.5
         w[t] = max(0.0, 2.0 * hr - 1.0)
     return w
+
+
+from optimize import counterfactual_pause as cp
+from research.kalman_fusion.ceiling import eligible_dropped
+
+
+def fused(z_row, w):
+    z = np.asarray(z_row, dtype=float); w = np.asarray(w, dtype=float)
+    score = float(np.dot(w, z))
+    denom = float(np.sum(np.abs(w) * (z != 0)))
+    conv = (abs(score) / denom) if denom > 0 else 0.0
+    return int(np.sign(score)), min(1.0, conv)
+
+
+def policy(C, Z, w, theta):
+    n = int(C["n"])
+    admit = np.asarray(cp._engine_gate(C)).copy()
+    direction = np.zeros(n, dtype=np.int8)
+    for i in eligible_dropped(C)["idxs"]:
+        d, conv = fused(Z[i], w)
+        if d != 0 and conv > theta:
+            admit[i] = True
+            direction[i - 1] = d
+    return admit, direction
