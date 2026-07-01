@@ -32,3 +32,39 @@ def finer_tf_directions(C, tfs=("1h", "15m", "5m")):
     four_h[1:] = np.sign(sig[:-1]).astype(np.int8)
     Z = np.column_stack(cols_data + [four_h]).astype(np.int8)
     return Z, list(tfs) + ["4h"]
+
+
+import config                                    # noqa: E402
+from research.kalman_fusion.ceiling import signal_outcomes
+
+
+def n_split(C) -> int:
+    return int((C["d"]["Date"].dt.year == config.YEARS[0]).sum())
+
+
+def profitable_side(C, idxs) -> np.ndarray:
+    o = signal_outcomes(C, idxs)                 # native(+1 long) vs opposite(-1 short) $ P/L
+    ps = np.zeros(len(idxs), dtype=np.int8)
+    both = ~np.isnan(o["native"]) & ~np.isnan(o["opposite"])
+    ps[both & (o["native"] >= o["opposite"])] = 1
+    ps[both & (o["native"] < o["opposite"])] = -1
+    only_nat = ~np.isnan(o["native"]) & np.isnan(o["opposite"]); ps[only_nat] = 1
+    only_opp = np.isnan(o["native"]) & ~np.isnan(o["opposite"]); ps[only_opp] = -1
+    return ps
+
+
+def fit_weights(Z, C, idxs_is) -> np.ndarray:
+    """Per-column reliability weight from 2025 dropped signals: max(0, 2*hit_rate - 1)."""
+    idxs_is = list(idxs_is)
+    ps = profitable_side(C, idxs_is)
+    T = Z.shape[1]
+    w = np.zeros(T, dtype=float)
+    for t in range(T):
+        hits = tot = 0
+        for k, i in enumerate(idxs_is):
+            d = int(Z[i, t]); s = int(ps[k])
+            if d != 0 and s != 0:
+                tot += 1; hits += (d == s)
+        hr = (hits / tot) if tot else 0.5
+        w[t] = max(0.0, 2.0 * hr - 1.0)
+    return w
