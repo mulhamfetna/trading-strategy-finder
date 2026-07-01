@@ -384,7 +384,7 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
                               min_trades=min_trades, sig_int=sig_int, contrib=_contrib, pv=pv)
         if not r["valid"]:
             raise optuna.TrialPruned()
-        worst_dd = r["worst_dd"]; med_win = r["median_win"]
+        worst_dd = r["worst_dd"]; med_win = r["median_win"]; med_entries = r["median_entries"]
         # FULL-PERIOD feasibility (user): full-window max DD ≤ 25% of full-window P/L. One extra
         # backtest over the whole window (gate frozen causally on vf[:n_split]).
         full = backtest_metrics(df_dec, df1, box, vf, n_split, dict(params, window="full"),
@@ -394,6 +394,7 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         trial.set_user_attr("worst_dd", worst_dd)
         trial.set_user_attr("median_pnl", r["median_pnl"])
         trial.set_user_attr("median_win", med_win)
+        trial.set_user_attr("median_entries", med_entries)
         trial.set_user_attr("full_pnl", full_pnl)
         trial.set_user_attr("full_dd", full_dd)
         trial.set_user_attr("decision_pause_days", dec_pause)
@@ -401,9 +402,16 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         # defaults to 0.25 but is RELAXABLE (--dd-pnl-cap / WSH_DD_CAP) — e.g. for the decision-pause search,
         # where shorter pauses trade more and need a looser DD allowance to stay feasible.
         trial.set_user_attr("constraint", [float(full_dd - dd_pnl_cap * full_pnl)])
-        # 3 objectives, all maximised: median fold P/L, −worst-fold DD, and the 3rd is either median win-rate
-        # (default) or −decision_pause (objective='decision_pause' ⇒ MINIMISE the recurring no-entry pause).
-        third = (-dec_pause) if objective == "decision_pause" else med_win
+        # 3 objectives, all maximised: median fold P/L, −worst-fold DD, and the 3rd depends on `objective`:
+        #   winrate*       → median fold win-rate (default, unchanged)
+        #   decision_pause → −decision_pause (MINIMISE the recurring no-entry pause)
+        #   entries        → median fold entry (trade) count (MAXIMISE how much it trades, walk-forward robust)
+        if objective == "decision_pause":
+            third = -dec_pause
+        elif objective == "entries":
+            third = med_entries
+        else:
+            third = med_win
         return r["median_pnl"], -worst_dd, third
 
     def _constraints(trial):
@@ -514,9 +522,10 @@ def main() -> int:
                     help="optimizer 'brain' (default nsga3 = unchanged baseline). nsga2/tpe/motpe/gp are "
                          "drop-in multi-objective alternatives; cmaes is single-objective/continuous-only "
                          "(Stage-B of the two-stage decomposition, refused on the full study).")
-    ap.add_argument("--objective", default="winrate", choices=["winrate", "decision_pause"],
-                    help="3rd objective: winrate* (unchanged) or decision_pause (α: MINIMISE the recurring "
-                         "no-entry pause, S0 max_no_entry_days_decision)")
+    ap.add_argument("--objective", default="winrate", choices=["winrate", "decision_pause", "entries"],
+                    help="3rd objective: winrate* (unchanged), decision_pause (α: MINIMISE the recurring "
+                         "no-entry pause, S0 max_no_entry_days_decision), or entries (MAXIMISE median-fold "
+                         "trade count — highest-PnL/lowest-DD/highest-entries front)")
     ap.add_argument("--exclude-indicators", default="",
                     help="comma-separated keys forced OFF (α: ifvg,breaker,cisd reverts to the wsh4-era 15)")
     ap.add_argument("--only-indicators", default="",

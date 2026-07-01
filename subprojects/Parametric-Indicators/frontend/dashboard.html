@@ -35,7 +35,7 @@
   </div>
   <div class="hdr-right">
     <span class="segctl" id="viewtabs" title="switch the result view — one Run fills all three">
-      <button data-view="l1">🍃 L1</button><button data-view="l2">🔁 L2</button><button data-view="combined" class="on">Σ Combined</button></span>
+      <button data-view="l1" class="on">🍃 L1</button><button data-view="l2">🔁 L2</button><button data-view="combined">Σ Combined</button></span>
     <span class="dirty" id="dirty"></span>
     <button class="ghost" id="toggle" title="Show/hide the settings panel">⚙ Hide settings</button>
     <button class="run" id="run">▶ Run</button>
@@ -46,7 +46,7 @@
   <aside>
     <div class="sgroup"><h3>Market</h3>
       <div class="fld"><label title="instrument — switches the candles/boxes/economics (shared by both layers)">Instrument</label>
-        <select id="inst_select"><option value="NQ">NQ</option><option value="ES" selected>ES</option></select></div>
+        <select id="inst_select"><option value="NQ" selected>NQ</option><option value="ES">ES</option></select></div>
       <div class="hint">stock is shared by both layers · each layer picks its own timeframe below</div>
     </div>
     <div class="navtabs">
@@ -62,7 +62,7 @@
       <div class="sgroup"><h3>L1 base (editable)</h3>
         <div class="fld"><label title="L1 (primary) decision timeframe — switches the L1 champion + this layer's backtest frame. In independent L2 mode it is the primary/finer frame; the secondary timeframe lives in the L2 layer.">Timeframe (primary)</label>
           <select id="tf_select">
-            <option value="4h">4h</option><option value="2h">2h</option><option value="1h" selected>1h</option>
+            <option value="4h" selected>4h</option><option value="2h">2h</option><option value="1h">1h</option>
             <option value="15m">15m</option><option value="5m">5m</option><option value="2m">2m</option>
           </select></div>
         <div class="fld"><label>L1 profile</label><select id="l1_strategy" title="load an L1 profile"></select></div>
@@ -106,7 +106,7 @@
       <div class="sgroup"><h3>L2 layer (editable)</h3>
         <div class="fld"><label>L2 profile</label><select id="l2_strategy" title="load an L2 profile"></select></div>
         <div class="fld"><label title="Residual = manage L1's dropped signals on the SAME frame (default). Independent timeframe = run L2 as its own strategy on its own timeframe, entering only when L1 is flat (primary priority + force-close).">L2 mode</label>
-          <select id="l2_mode"><option value="residual">Residual (same frame)</option><option value="independent" selected>Independent timeframe</option></select></div>
+          <select id="l2_mode"><option value="residual" selected>Residual (same frame)</option><option value="independent">Independent timeframe</option></select></div>
         <div class="fld" id="l2_tf_fld"><label title="secondary timeframe — must be coarser-or-equal to the primary (e.g. the 4h in a 1h+4h fusion)">Timeframe (secondary)</label>
           <select id="l2_tf"><option selected>4h</option><option>2h</option><option>1h</option><option>15m</option><option>5m</option><option>2m</option></select></div>
         <div class="hint" id="l2_mode_hint">runs L2 as its own strategy on the L2 timeframe (coarser-or-equal to the primary), entering only when L1 is flat · L1 entering force-closes L2</div>
@@ -205,7 +205,8 @@
 <script src="dashboard_common.js"></script>
 <script>
 const TH=DB.TH, $=window.$;
-let VIEW='combined';                         // active result tab
+let VIEW='l1';                               // active result tab (default = the L1 champion view)
+const DEFAULT_L1='🏆 wshent1 4h · max-P/L · 36.5/fold · $106.6k · win69';  // dashboard default champion (NQ 4h L1)
 let RUNFLIP={l1:false,l2:false};             // per-layer flip of the LAST run (for the 'entry flipped' badge)
 let _l2res=null;                             // cached residual-mode L2 default (for restoring on mode switch)
 const VIEWS={l1:null, l2:null, combined:null};   // cached payload per view (one Run fills all 3)
@@ -691,8 +692,15 @@ async function refreshL2(){
   $('tf_select').addEventListener('change',reload);
   $('inst_select').addEventListener('change',reload);
   try{
-    await loadConfig($('inst_select').value,$('tf_select').value); await refreshL2();   // default = 1h primary champion + (independent) 4h secondary champion
-    DB.markDirty(); DB.status('ready · 1h primary + 4h secondary loaded · click Run');
+    await loadConfig($('inst_select').value,$('tf_select').value);
+    // DEFAULT: open on the NQ 4h wshent1 max-P/L champion (L1). Select it into the L1 form so a fresh
+    // load + Run reproduces its value ($106,571) with ZERO manual changes (hard-refresh + server-restart).
+    if($('inst_select').value==='NQ' && $('tf_select').value==='4h' && STORE.l1[DEFAULT_L1]){
+      $('l1_strategy').value=DEFAULT_L1; setLayer('l1',STORE.l1[DEFAULT_L1]);
+    }
+    $('l2_tf_fld').style.display=$('l2_mode').value==='independent'?'':'none';   // residual default → hide secondary-tf picker
+    await refreshL2();
+    DB.markDirty(); DB.status('ready · NQ 4h · '+DEFAULT_L1+' (L1 view) · click Run');
   }catch(e){ DB.markDirty(); DB.showErr(`Cannot reach backend — start server.py then reload. (${e.message})`); }
 })();
 
