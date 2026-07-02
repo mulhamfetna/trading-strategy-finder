@@ -8,7 +8,8 @@
 > re-open has a ready-ranked menu. Registered in `WORKSTREAMS.md` under `WS-KALMAN` (further push).
 >
 > *Synthesized from the estimation-theory + quantitative-finance literature (Kalman 1960 → modern deep state-space
-> models). Not yet citation-backed; a `deep-research` pass can add sources on request.*
+> models), then **hardened by a deep-research pass (2026-07-02)** — 104 agents, fan-out web search + adversarial
+> 3-vote verification. The cited, verified evidence is in **§7.5** and reinforces the §8 ranking.*
 
 ---
 
@@ -183,12 +184,69 @@ Beyond Kalman: how to **combine many predictors/signals** or learn the filter it
 
 ---
 
+## 7.5 Evidence base — deep-research findings (cited, adversarially verified)
+
+A `deep-research` pass (2026-07-02; 104 agents, fan-out web search, 3-vote adversarial verification — a claim
+survives only if it is not refuted ≥2/3) produced the following **verified** findings. They independently
+**confirm this backlog's central thesis:** a fancier filter on *price* is weakly and fragilely supported for
+**direction (D)**, whereas **regime/risk-state estimation (R)** from diverse inputs is where the finance evidence
+actually lives.
+
+**On DIRECTION from price (problem D) — weak, data-hungry, overfit-prone:**
+- **EKF + deep-learning fusion is the most concrete documented direction architecture.** A 2026 **EKF-LSTM** hybrid
+  (EKF denoises latent price → LSTM models temporal dependence) reports **>72% single-stock directional accuracy**,
+  beating ARIMA/EKF/LSTM/GRU — **but on a tiny hand-picked sample** (high overfit risk, exactly our failure mode).
+  *[high confidence; architecture 3-0, cross-market outperformance 2-1]* — Economies 2026, `doi.org/10.3390/economies14050184`.
+- **Dual (state+parameter) Kalman estimation is explicitly listed for "determining the underlying price of financial
+  time series"** — a legitimate hook, but the claim is *applicability, not profitability*. *[3-0]* — Wan & van der
+  Merwe UKF chapter.
+
+**On the FILTER SUBSTRATE — UKF/EnKF dominate EKF:**
+- **EKF is the weakest core variant** (first-order linearization, needs Jacobians, fails on non-differentiable
+  systems, low-dimensional only); **UKF is derivative-free & second-order accurate** via sigma points; **EnKF** is
+  the method of choice for high-dimensional nonlinear systems. *[3-0; EnKF 2-1]* — arXiv 1712.01406; Julier-Uhlmann
+  / Wan-van der Merwe theory. → *If we ever filter a nonlinear/regime state, start at UKF, not EKF.*
+
+**On REGIME / RISK STATE (problem R) — this is where the evidence is strong:**
+- **Regime-switching / HMM is the leading family for a market regime state.** Regime differences in conditional
+  *means* generate the skewness, excess kurtosis and vol-persistence of returns, and these models **add value for
+  portfolio choice and risk management even when they do not improve forecasting of the switches themselves.**
+  *[3-0]* — Guidolin, IGIER WP 415 (2011).
+- **Division of labor (key for us):** one-step-ahead point/direction forecasts are **dominated by regime means and
+  are <1% sensitive to transition-probability specification** — so regime dynamics matter for *characterizing the
+  state* (sizing/sit-out), **not** for short-horizon direction. *[medium; 3-0]* — arXiv 2605.14976. → *Use a regime
+  model for the policy head, not for entry direction. Exactly our architecture.*
+- **Stochastic-volatility filtering** via nonlinear/particle filters is the established latent-vol/correlation tool;
+  an **unscented Kalman smoother** extracts Heston volatility, and **both stock prices and options are needed** to
+  capture vol dynamics. *[3-0]* — Li 2013 (CSDA); Triantafyllopoulos (Springer). 
+- **Particle + regime-switching** (a Hamilton filter nested in particle filters) estimates **Markov-switching SV
+  with leverage** on real equity markets; asymmetric-SV leverage models are estimable by particle-filter simulated
+  ML. *[3-0]* — Karame 2018; Mao/Czellar/Ruiz/Veiga 2020 (Econometrics & Statistics).
+- **⚠️ Sobering for the data ask:** the informativeness of exogenous signals is **itself strongly regime-dependent**,
+  and **an adaptive vol-coupled Kalman filter adds little when the raw exogenous signal is already clean.** *[3-0]* —
+  arXiv 2601.05716. → *Directly validates our cheap one-feature pre-test: try VIX raw first; only add a filter if
+  the raw signal underperforms.*
+- **Non-parametric alternative exists:** **PCA + k-means** regime detection avoids pre-specifying the number of
+  regimes, and a **regime-driven tail-hedging overlay beat buy-and-hold out-of-sample.** *[3-0]* — arXiv 2108.05801.
+  → *A cheaper first cut than HMM for the sit-out/sizing overlay.*
+
+**Net evidence verdict:** the literature says **don't** invest in a fancier filter to call price direction on a
+short sample (best result is a tiny-sample deep hybrid); **do** invest in a **regime/risk state** (HMM /
+Markov-switching, SV particle filter, or even PCA-kmeans) feeding **sizing / sit-out** — and **test the raw
+exogenous signal before adding any filter.** This is precisely the WS-SIG-FUSION plan, now evidence-backed.
+
+---
+
 ## 8. Prioritized shortlist for a re-open (ranked for OUR problem)
 
 If this workstream is revisited, attack in this order — cheapest, highest-fit, most finance-native first:
 
 1. **⭐ Markov-switching / HMM regime state** (Cat D/F) → policy head. Directly replaces M3's crude terciles with a
-   principled regime posterior. *Needs the WS-SIG-FUSION data.*
+   principled regime posterior. *Needs the WS-SIG-FUSION data.* **Evidence-backed** (§7.5: HMM is the leading
+   regime family and adds portfolio/risk value; use it for the state, not direction). *Cheaper first cut:* **PCA +
+   k-means** regime detection (no #regimes to pre-specify; OOS tail-hedging beat buy-and-hold — arXiv 2108.05801).
+   *Before any filter, test the raw signal (e.g. VIX) — a filter "adds little when the raw signal is already clean"
+   (arXiv 2601.05716).*
 2. **⭐ Dynamic Factor Model (KF)** (Cat F) → fuse VIX/breadth/rates/skew into a small latent risk-state. *The
    canonical fusion engine for the parked signal workstream.*
 3. **⭐ Stochastic-volatility particle filter** (Cat B/F) → a live vol/jump state for **sizing & sit-out** (problem
@@ -212,6 +270,24 @@ exactly `WS-SIG-FUSION`. This backlog is that workstream's *methods menu*.
 3. **Walk-forward from the start** — no single-split headline numbers (the M2 lesson).
 4. Gate: does it beat the champion / the bar (§0) out-of-sample across a majority of folds? Yes → proceed; No →
    record the verdict and close, same as M1/M2/M3.
+
+---
+
+## 10. Sources (deep-research pass, 2026-07-02 — verified)
+
+Each survived 3-vote adversarial verification (not refuted ≥2/3). Confidence noted where a sub-claim was contested.
+
+1. **EKF-LSTM direction hybrid** (>72% MDA, tiny sample) — *Economies* 14(5):184, 2026 — `https://doi.org/10.3390/economies14050184`
+2. **EKF vs UKF vs EnKF comparison** — arXiv 1712.01406 — `https://arxiv.org/pdf/1712.01406`
+3. **UKF second-order accuracy / sigma points; dual Kalman for "underlying price of financial time series"** — Julier-Uhlmann / Wan-van der Merwe — `https://forum.orekit.org/uploads/short-url/gsxrCARKp2tDboCX6UlBpLznrus.pdf`
+4. **Unscented Kalman smoother for Heston volatility extraction (stock + options)** — Li 2013, *CSDA* — `https://www.researchgate.net/publication/251520898`
+5. **Particle filter for volatility & cross-correlation of multivariate returns** — Triantafyllopoulos, Springer — `https://link.springer.com/chapter/10.1007/978-1-4939-0569-0_30`
+6. **Nested Hamilton-in-particle filter for Markov-switching SV w/ leverage** — Karame 2018, *Econometrics & Statistics* 8 — `https://www.sciencedirect.com/science/article/abs/pii/S2452306218300352`
+7. **Asymmetric-SV leverage via particle-filter simulated ML** — Mao/Czellar/Ruiz/Veiga 2020, *Econometrics & Statistics* 13 — `https://www.sciencedirect.com/science/article/abs/pii/S2452306219300486`
+8. **Regime-switching adds portfolio/risk value; regime means drive moments** — Guidolin, IGIER WP 415, 2011 — `https://repec.unibocconi.it/igier/igi/wp/2011/415.pdf`
+9. **Regime forecasts dominated by means; transition-prob spec ~irrelevant for 1-step** — arXiv 2605.14976 — `https://arxiv.org/pdf/2605.14976`
+10. **Exogenous-signal informativeness is regime-dependent; adaptive KF adds little on clean signals** — arXiv 2601.05716 — `https://arxiv.org/pdf/2601.05716`
+11. **PCA + k-means regime detection; regime-driven tail-hedging beats buy-and-hold OOS** — arXiv 2108.05801 — `https://arxiv.org/pdf/2108.05801`
 
 *Cross-refs: `RESEARCH_KALMAN_FUSION_STUDY.md` (closed study + scope), `KALMAN_FUSION_TRIALS_DEEPDIVE.md` (the
 reusable rig + walk-forward machinery), `EXOGENOUS_SIGNALS_FUSION_WISHLIST.md` (the diverse-input data these methods
