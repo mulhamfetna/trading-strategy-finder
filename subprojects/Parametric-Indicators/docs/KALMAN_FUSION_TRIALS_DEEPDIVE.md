@@ -11,6 +11,13 @@
 > actual results · comparison & explanation**, with **math formulas** and **verbatim code snippets** throughout.
 > All code lives in `research/kalman_fusion/` and is **off the production path** — the golden parity gate
 > (`perf/check_golden.py`, 6 timeframes) was verified byte-identical after every trial.
+>
+> ⚠️ **SCOPE — vanilla only.** This study tested the **vanilla linear** Kalman filter (fixed `q/r`, 2-state
+> constant-velocity), a static linear multi-TF vote, and a vol-regime exit scheme. It did **NOT** test the
+> **advanced Kalman relatives** (EKF, UKF, adaptive/tuned Q–R, IMM, particle) or **advanced state fusion**
+> (factor/HMM/learned). Those were pre-registered as **M2b** and **gated behind vanilla M2 passing walk-forward,
+> which it did not** — so M2b was never built (see §4.6, §5.6). The untested *promising* direction is fusion of
+> **diverse orthogonal inputs**, not a fancier filter on the same price (see the Roadmap / `WS-SIG-FUSION`).
 
 ---
 

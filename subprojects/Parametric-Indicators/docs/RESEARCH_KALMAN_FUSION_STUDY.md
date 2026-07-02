@@ -4,6 +4,18 @@
 > paper depth *and* baby-explanation depth, with all math formulas, verbatim code snippets, and expected-vs-actual
 > comparisons. This file is the concise running log with verdicts; the compendium is the exhaustive reference.
 
+> ⚠️ **SCOPE — what this study did and did NOT cover.** **Tested:** the *vanilla* 2-state **linear** Kalman filter
+> (local-level + constant-velocity, **fixed** `q/r`) on price (M2); a static weighted multi-TF vote (M1, a linear
+> fusion, not a filter); and a vol-regime tercile exit/admission scheme (M3). **NOT tested (gated away):** the
+> **advanced Kalman relatives** — EKF, UKF, adaptive/tuned Q–R, IMM, particle filters — and **advanced state
+> fusion** — factor models, HMM/regime-switching, learned/ML state. These were pre-registered as **M2b**
+> (*"adaptive-Q/R + EKF/UKF relatives"*) **gated behind vanilla M2 clearing walk-forward, which it did not** → M2b
+> was never built. Rationale ("sophistication ≠ information"): for 1-D linear trend extraction the vanilla filter is
+> already near-optimal, so non-linear/adaptive variants are unlikely to manufacture directional signal the input
+> lacks — *a reasoned expectation, not a proof.* The genuinely different, still-untested lever is **fusion of
+> *diverse orthogonal* inputs** (VIX/breadth/rates/options) → the separate `WS-SIG-FUSION` workstream
+> (`docs/EXOGENOUS_SIGNALS_FUSION_WISHLIST.md`), not any fancier filter on the same price.
+
 Extends `docs/RESEARCH_SIGNAL_FUSION_KALMAN.md`. Design:
 `docs/superpowers/specs/2026-07-01-kalman-signal-fusion-study-design.md`. Plan:
 `docs/superpowers/plans/2026-07-01-kalman-signal-fusion-study.md`. Code: `research/kalman_fusion/`.

@@ -116,6 +116,13 @@ quarters** — classic overfitting, no real regime→exit relationship. **→ DE
 **Bottom line:** the signals the champion drops are **genuinely hard to trade** — neither their direction (M1, M2)
 nor their exits (M3) carry an edge that survives across time on ~2 years of data. The study is **closed**.
 
+> **Scope note (important):** this study tested the **standard (vanilla) Kalman filter** and simple fusions —
+> **not** the advanced variants (Extended/Unscented/adaptive Kalman, particle filters) or advanced state fusion
+> (regime-switching / factor / machine-learning models). Those were deliberately **gated behind the standard
+> version first showing an edge, which it didn't** — so building something fancier on the *same price input* was
+> not justified. The genuinely different, still-untested idea is **fusing diverse *external* signals** (§5A) — that
+> is where advanced fusion would actually earn its keep, and it's the parked next workstream.
+
 ### What's worth keeping regardless
 1. **A structural law** — with fixed exits, win-rate is the only lever; breakeven 57.5%. Any future entry work
    should chase *directional accuracy past that bar*, not trade count.
