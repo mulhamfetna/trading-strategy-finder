@@ -8,7 +8,9 @@
 > (local-level + constant-velocity, **fixed** `q/r`) on price (M2); a static weighted multi-TF vote (M1, a linear
 > fusion, not a filter); and a vol-regime tercile exit/admission scheme (M3). **NOT tested (gated away):** the
 > **advanced Kalman relatives** — EKF, UKF, adaptive/tuned Q–R, IMM, particle filters — and **advanced state
-> fusion** — factor models, HMM/regime-switching, learned/ML state. These were pre-registered as **M2b**
+> fusion** — factor models, HMM/regime-switching, learned/ML state. A **ranked further-push catalogue** of every
+> such variant (finance filters emphasized) is parked at `docs/KALMAN_ADVANCED_VARIANTS_BACKLOG.md`. These were
+> pre-registered as **M2b**
 > (*"adaptive-Q/R + EKF/UKF relatives"*) **gated behind vanilla M2 clearing walk-forward, which it did not** → M2b
 > was never built. Rationale ("sophistication ≠ information"): for 1-D linear trend extraction the vanilla filter is
 > already near-optimal, so non-linear/adaptive variants are unlikely to manufacture directional signal the input
