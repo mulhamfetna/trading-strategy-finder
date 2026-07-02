@@ -1,5 +1,9 @@
 # Kalman / signal-fusion study — results
 
+> 📖 **Full-depth trial-by-trial compendium:** `docs/KALMAN_FUSION_TRIALS_DEEPDIVE.md` — every trial documented at
+> paper depth *and* baby-explanation depth, with all math formulas, verbatim code snippets, and expected-vs-actual
+> comparisons. This file is the concise running log with verdicts; the compendium is the exhaustive reference.
+
 Extends `docs/RESEARCH_SIGNAL_FUSION_KALMAN.md`. Design:
 `docs/superpowers/specs/2026-07-01-kalman-signal-fusion-study-design.md`. Plan:
 `docs/superpowers/plans/2026-07-01-kalman-signal-fusion-study.md`. Code: `research/kalman_fusion/`.
