@@ -6,6 +6,12 @@
 > **VIX + VIX3M**). Nothing further to build here until that CSV arrives; work has moved to other features/
 > workstreams. When data lands: pick up at §2 (build the causal loader) → §2.3 one-feature pre-test.
 >
+> **Prep completed while parked (2026-07-02):** ① per-signal spec + causal pipeline (this doc); ② `TradingView
+> symbols + best sources` for every feed (§3 table); ③ the **further-push method menu** for the whole Kalman/fusion
+> family, **evidence-backed by a cited deep-research pass** (`docs/KALMAN_ADVANCED_VARIANTS_BACKLOG.md` §7.5/§10 —
+> confirms regime/HMM + SV-particle for the state, and "test the raw signal before adding a filter"). **Everything
+> is ready except the data.**
+>
 > This is the **signals** request (corrected): the group of **exogenous, orthogonal market data feeds** I asked the
 > user to provide — VIX / vol term structure, market breadth, rates, options skew/flow — for a **regime/risk state**
 > that feeds the **policy head** (sizing · SL/TP · sit-out), **not** the box entry direction. Resume pointer, not a
@@ -107,16 +113,25 @@ engineer, and the **regime read** it gives the policy head.
 
 ## 3. What's blocking (the "provide" ask, restated)
 
-**I need the data feeds.** In priority order (each is independently useful for the §2.3 pre-test):
+**I need the data feeds.** In priority order (each is independently useful for the §2.3 pre-test), with the
+**TradingView symbol** and the best **source** for whoever pulls the data:
 
-1. **VIX (+ VIX3M)** — highest signal-to-effort; the classic regime variable.
-2. **Put/Call ratio** — widely available, strong tail-risk read.
-3. **Breadth ($TICK / $ADD / $TRIN)** — best if intraday.
-4. **Rates (2y/10y) + DXY** — daily is fine.
+| Priority | Feed | CSV columns | TradingView symbol | Best source / notes |
+|:--:|---|---|---|---|
+| **1** | **VIX (+ VIX3M)** — classic regime variable, highest signal-to-effort | `Date, VIX, VIX3M` | `TVC:VIX`, `CBOE:VIX3M` | CBOE (free daily history); TV export works |
+| **2** | **Put/Call ratio** — strong tail-risk read | `Date, PutCallRatio` | `USI:PCC` (total) / `USI:PCCE` (equity) | CBOE (free); TV export |
+| **3** | **Breadth** — best if intraday | `Date, TICK, ADD, TRIN` | `USI:TICK`, `USI:ADD`, `USI:TRIN` (also `USI:UVOL`/`USI:DVOL`) | TV (delayed on free plan) |
+| **4** | **Rates + Dollar** — daily fine | `Date, UST2Y, UST10Y, DXY` | `TVC:US02Y`, `TVC:US10Y`, `TVC:DXY` (slope: `FRED:T10Y2Y`) | **FRED** (free, cleanest) preferred over TV |
+| 5 *(optional)* | **Options skew / gamma** — hard to source | `Date, Skew25d, GEX` | *not on TradingView* — nearest proxy `CBOE:SKEW` (tail-risk index, ≠ true 25Δ RR) | **GEX**: SpotGamma / MenthorQ / Convexitas, or compute from CBOE options OI. **Skew25d**: options vendor. Defer unless cheap. |
 
 Format: CSV, one header row, UTC or ET timestamps stated, covering **2025-01 → 2026 (present)** to match the
 research window. Even **one** feed (VIX) is enough to run the decisive §2.3 pre-test and decide whether the whole
 fusion direction is worth building.
+
+> **Sourcing notes:** items 1–4 are all free and clean from CBOE/FRED (preferred) or TradingView export (needs a
+> paid plan for bulk history; some symbols delayed). **Skew25d and GEX (item 5) are *not* on TradingView** — GEX
+> needs a specialist provider (SpotGamma/MenthorQ) or computing it from raw options open-interest; `CBOE:SKEW` is
+> only a loose proxy for 25-delta skew. Lead with 1–4; treat 5 as nice-to-have.
 
 ---
 
