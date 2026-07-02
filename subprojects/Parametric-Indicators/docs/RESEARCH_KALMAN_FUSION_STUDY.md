@@ -209,3 +209,64 @@ cheap test that stops an over-fit result from being over-invested in.
 
 *Walk-forward delivered: `m2_walkforward` (quarter folds, window-scored P/L, train-θ selection, driver) +
 `run_m2_wf`; 5 new tests (fold causality, window partition, θ-train-only, aggregate); golden 6/6 untouched.*
+
+---
+
+## M3 — vol-regime exits & admission — **edge NOT confirmed ⚠️ (study closes)**
+
+The final untried idea, and the only one that can move the **payoff** lever off 0.74 rather than just admit more
+signals: let the market's **realized-vol regime** (HAR-RV `vf` terciles, cuts frozen on train) decide (3a) how we
+*exit* the trades we already take, and (3b) which dropped signals we *admit*. Design/plan:
+`docs/superpowers/{specs,plans}/2026-07-02-kalman-m3-regime*`. Code: `research/kalman_fusion/m3_regime.py` +
+`m3_walkforward.py` + `run_m3.py`. Pre-registered decision rule: **3a exits-first is decisive — if the learned
+regime→exit map does not beat BASE (=champion) out-of-sample, 3b admission is abandoned.** Walk-forward from the
+start; a-priori exit schemes only (`TIGHT ×0.75`, `BASE ×1.0`, `WIDE ×1.5`) — no sweep.
+
+### 3a — regime-scaled EXITS (expanding quarterly, map-on-train) — **DEAD ❌**
+
+| **NQ 4h** | 2025Q3 | 2025Q4 | 2026Q1 | 2026Q2 | aggregate | folds won |
+|---|--:|--:|--:|--:|--:|:--:|
+| exit_map (L,M,H) | W,W,T | B,W,W | B,B,W | B,B,W | — | |
+| M3 test P/L | $16,484 | $11,246 | **−$8,631** | $42,904 | **$62,003** | **2/4** |
+| base (champion) | $15,995 | $25,665 | $2,090 | $26,809 | $70,559 | |
+| M3 wins | ✅ | ❌ | ❌ | ✅ | **−$8,556 (−12%)** | |
+
+**Verdict — regime tells us nothing durable about exits.** M3 *loses* to the champion in aggregate (−12%) and
+wins only 2/4 folds, and the learned exit map is **unstable across folds** (`W,W,T → B,W,W → B,B,W → B,B,W`) —
+the signature of per-quarter overfitting, not a real regime→exit relationship. 2026Q1 is the clearest tell: the
+map trained on 2025 (`B,B,W`) actively *destroys* value out-of-sample (−$8,631 vs the champion's +$2,090).
+
+```mermaid
+flowchart LR
+  A["3a: regime-scaled exits<br/>a-priori schemes, map-on-train"] -->|"honest walk-forward"| B["−$8.6k aggregate, −12%<br/>2/4 folds, unstable map"]
+  B -->|"pre-registered rule"| C["3b admission ABANDONED"]
+  classDef dead fill:#f8d7da,stroke:#a94442;
+  class B,C dead;
+```
+
+### 3b — regime-gated ADMISSION — **not run (gated on 3a, which failed)**
+
+By the pre-registered rule, 3a's failure abandons 3b: if the vol regime can't improve exits on the *good* trades
+we already take, it won't rescue the marginal dropped ones. Code exists (`walk_forward_3b`) but is not scored.
+
+### Study verdict — **skipped signals are not recoverably profitable on this data; study CLOSED**
+
+Across the whole program the answer is consistent and honest:
+
+| mechanism | lever | single-split | walk-forward | verdict |
+|---|---|---|---|---|
+| **M0** ceiling | direction (oracle) | ~9× upper bound | — | payoff pinned at 0.74 → win-rate is the only lever; breakeven **57.5%** |
+| **M1** discrete multi-TF votes | direction | — | 56.7% < 57.5% | **STOP** — coin-flip weights OOS |
+| **M2** Kalman trend | direction | +$41k (+43%) ✨ | +$5.6k (+8%), 2/4 | **not confirmed** — single-split over-fit |
+| **M3** vol-regime exits | **payoff** | — | −$8.6k (−12%), 2/4 | **DEAD** — unstable map, no regime edge |
+
+Every mechanism that looked promising deflated under honest across-time testing — exactly the discipline that made
+the ES verdict and l2v3 rejection trustworthy. The root finding stands: **the signals the champion drops are
+genuinely hard to trade** — neither their direction (M1/M2) nor their exits (M3) carry an edge that survives
+walk-forward on the available ~2-year window. No production wiring; golden 6/6 untouched throughout. If a longer
+out-of-sample accrues, M2's one real fold (2026Q2) is the only thread worth re-pulling.
+
+*M3 delivered: `m3_regime` (frozen-tercile regimes, a-priori exit re-scoring, train-only exit map, breakeven
+admission gate) + `m3_walkforward` + `run_m3`; loader gains `vf`/`n_split` + `simulate_one_custom` (additive);
+6 new tests (regime causality, tercile balance, BASE re-sim identity, no-look-ahead, exit-map train-only,
+breakeven gate); golden 6/6 untouched.*

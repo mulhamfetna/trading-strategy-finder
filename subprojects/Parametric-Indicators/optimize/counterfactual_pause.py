@@ -76,7 +76,7 @@ def load_champion(tf: str = "4h"):
     confirm = np.asarray(runner.confirm_mask(d, box, inds, K, src=src, votes=votes))[:n]
     return dict(ctx=ctx, d=d, d1=d1, box=box, n=n, sig=sig, vol_gate=vol_gate, veto=veto,
                 confirm=confirm, params=params, pv=float(config.NQ_POINT_VALUE),
-                bar_td=bar_td, gate_pct=gate_pct, K=K)
+                bar_td=bar_td, gate_pct=gate_pct, K=K, vf=np.asarray(vf)[:n], n_split=int(n_split))
 
 
 def _engine_gate(C):
@@ -99,14 +99,23 @@ def champion_taken_trades(C):
     return fast_backtest(dd, cl, si, _engine_gate(C), md, mh, ml, mc, sls, slh, tp, flip)
 
 
-def simulate_one(C, entry_idx: int):
-    """Simulate the box signal that would enter at `entry_idx`, in ISOLATION: real signals, but a gate that is
-    True at exactly that entry bar. Returns the single completed trade dict, or None if it never closes."""
-    dd, cl, si, md, mh, ml, mc, sls, slh, tp, flip = _bt_args(C)
+def simulate_one_custom(C, entry_idx: int, sls: float, slh: float, tp: float, flip: bool):
+    """Simulate the box signal entering at `entry_idx` in ISOLATION with CUSTOM exit lines (sls/slh/tp) — real
+    signals + real 1-min path, only the exit distances change ⇒ no look-ahead. Returns the trade dict or None."""
+    dd, cl, si, md, mh, ml, mc, _sls, _slh, _tp, _flip = _bt_args(C)
     gate_one = np.zeros(C["n"], dtype=bool)
     gate_one[int(entry_idx)] = True
-    trades = fast_backtest(dd, cl, si, gate_one, md, mh, ml, mc, sls, slh, tp, flip)
+    trades = fast_backtest(dd, cl, si, gate_one, md, mh, ml, mc,
+                           float(sls), float(slh), float(tp), bool(flip))
     return trades[0] if trades else None
+
+
+def simulate_one(C, entry_idx: int):
+    """Simulate the box signal that would enter at `entry_idx`, in ISOLATION with the champion's own exits.
+    Returns the single completed trade dict, or None if it never closes."""
+    p = C["params"]
+    return simulate_one_custom(C, entry_idx, float(p["sl_soft"]), float(p["sl_hard"]),
+                               float(p["tp"]), bool(p["flip"]))
 
 
 def _median_trade_duration_bars(C, taken) -> int:
