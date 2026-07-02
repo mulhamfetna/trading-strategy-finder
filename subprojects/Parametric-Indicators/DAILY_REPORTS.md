@@ -6,6 +6,39 @@ detail. (Generated on request when the user calls "end of day".)
 
 ---
 
+## 2026-07-02
+
+**What did you do today?**
+Today we brought the volatility / signal-fusion research program to a **clean, honest close** and lined up the next
+bet. We finished and rigorously tested the **last idea** in the Kalman study — using the market's volatility
+"regime" to decide how we exit trades — and, like the ideas before it, it looked plausible but **fell apart under
+across-time testing**, so we closed the whole study with a clear verdict: the trades our system currently skips are
+**genuinely hard to trade**, and none of the methods we tried recover them reliably. We then packaged everything
+for the future: a full writeup of every experiment (in both plain-English and technical form), a **single
+self-contained briefing** others can read with no background, and — importantly — a **catalogue of every
+more-advanced method that exists**, hardened with a real, **sourced literature search**, so we have a ready menu to
+revisit later. We also clarified and locked down the **real next opportunity**: fusing in genuinely *new outside
+signals* (a volatility fear-gauge, market breadth, interest rates, options data) to read *market conditions* for
+position sizing and when to sit out — and we mapped exactly which data to get and where to get it. That work is now
+**parked, waiting on the data feed from the team lead**. Finally, we opened a **brand-new idea** and began
+designing it: giving the setups we currently reject a **second chance to enter partway through the 4-hour window**
+if conditions improve — and produced a decision worksheet for sign-off before building.
+
+**What will you do tomorrow?**
+Turn the answers on the "second-chance entry" worksheet into a concrete design and build plan, then implement the
+**first phase** — measuring its effect on our **current best strategy** before any heavier work. In parallel, if
+the outside-signal data arrives, run the cheap first test on it; otherwise keep momentum on the other
+ready-to-build improvements.
+
+**Is there any challenges?**
+The same disciplined difficulty as before: promising ideas keep **shrinking under honest testing** — good hygiene,
+but it means no confirmed new edge yet from the fusion research. The most valuable next step is **blocked on
+external data we don't yet have**. And the new "second-chance entry" idea, while cheap to test on the current
+strategy, will be **more work to fold into the optimizer** — so we're deliberately testing it small first before
+committing to the heavier build.
+
+---
+
 ## 2026-07-01
 
 **What did you do today?**
