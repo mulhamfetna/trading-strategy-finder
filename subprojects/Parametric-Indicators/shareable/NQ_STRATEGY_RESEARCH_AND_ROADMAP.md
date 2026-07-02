@@ -3,6 +3,10 @@
 *A self-contained briefing: what the system is, the research we ran to improve it, what we proved, and what's
 next. No prior context or repository access required. All figures are from the 2025–2026 research window.*
 
+> **Status (2026-07-02):** the Kalman/fusion research (§4) is **complete and closed**. The next workstream —
+> exogenous signal fusion (§5A) — is **waiting on market-data feeds from the team leader** (start with **VIX**).
+> Until those arrive, active development has moved to other features.
+
 ---
 
 ## 1. What the system is (in one breath)

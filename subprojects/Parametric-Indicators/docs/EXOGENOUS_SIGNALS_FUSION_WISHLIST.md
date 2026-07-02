@@ -1,6 +1,11 @@
 # Exogenous Signal-Fusion Wishlist — data to provide + implementation plan
 
-> ⏸️ **PARKED — RETURN TO THIS AFTER THE KALMAN/FUSION STUDY IS CLOSED.**
+> ⏸️ **PROGRESS PINNED 2026-07-02 — PARKED, BLOCKED ON DATA FROM TEAM LEADER.**
+> The gating Kalman/fusion study is **now closed** (M0–M3 complete, verdict recorded). This workstream is the
+> agreed next step but **cannot start until the team leader supplies the exogenous data feeds** (§3 — start with
+> **VIX + VIX3M**). Nothing further to build here until that CSV arrives; work has moved to other features/
+> workstreams. When data lands: pick up at §2 (build the causal loader) → §2.3 one-feature pre-test.
+>
 > This is the **signals** request (corrected): the group of **exogenous, orthogonal market data feeds** I asked the
 > user to provide — VIX / vol term structure, market breadth, rates, options skew/flow — for a **regime/risk state**
 > that feeds the **policy head** (sizing · SL/TP · sit-out), **not** the box entry direction. Resume pointer, not a
