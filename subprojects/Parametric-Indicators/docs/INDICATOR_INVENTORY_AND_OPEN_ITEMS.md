@@ -6,6 +6,9 @@
 > decisions** that still need the user before further indicator work. It is a *resume pointer*, not a finished
 > task. Flagged in `WORKSTREAMS.md` (progress watcher) and in auto-memory.
 >
+> **⚠️ Looking for the external *signals* wishlist (VIX / breadth / rates / options)?** That's a *different*
+> request — see `docs/EXOGENOUS_SIGNALS_FUSION_WISHLIST.md`. This doc is the *technical indicators*, already built.
+>
 > **Origin:** the user asked "you mentioned a group of indicators you wanted me to provide — what were they and
 > how will you implement each?" The exact prior request message predates the current session context and was not
 > recoverable from the transcripts; this report reconstructs the substance from the source of truth
