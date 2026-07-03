@@ -19,7 +19,8 @@ loss ≈ −$3,340 (167-pt stop) ⇒ you must win ~**57.5%** of trades just to b
 |---|---|---|---|
 | **E1** | **Force-stop in-candle trades on a normal entry** (force-close) | Give the proven champion trades priority — a normal entry closes an open rescued trade | ✅ **DONE + OOS-validated** (see Exp. 4–6) |
 | **E2** | **Re-optimize L1 with in-candle enabled** | Let the optimizer re-tune L1's stop/target + `N` + force-close *together*, with drawdown as an objective, so the extra entries come without the drawdown penalty | ✅ **DONE** — feature works but is **dominated by re-tuned exits**; a re-tuned **feature-OFF champion ($166,554)** is the real win (see Exp. 8) |
-| **E3** | **L1 = exact current champion (in-candle OFF); optimize L2's OWN dedicated settings for the in-candle entries** | Keep the proven L1 champion untouched, and route the rescued in-candle (vetoed) entries into **Layer 2** with L2's *own* optimized stop/target/gate — so the rescued trades never disturb L1 and get handling tuned just for them | ⬜ **TODO** (new; aligns with L2 = manager of L1's dropped signals) |
+| **E3a** | **L2 intra-candle entry timing for the vetoed stream** | Enter L2's vetoed candidates mid-candle when L1's veto clears (L2's own exits/N) instead of at the candle close | 🟡 **BUILT + champion-sweep NEGATIVE; l2ic1 optimizer READY (⏸️ paused, launch on server next)** |
+| **E3b** | **L2 rescues its OWN vetoed signals** (L2-as-L1) | Give L2 its own intra-candle rescue on signals L2's own indicators veto | ⬜ TODO (separate future spec) |
 
 **Rule for all optimization experiments (E2, E3):** whenever the in-candle feature is enabled, the **wait window
 `N`** (how many 1-minute bars a vetoed signal may wait for its second chance) is **also a tunable search
@@ -163,6 +164,24 @@ dd_limit 2910 · cd 0 · flip off**. Evaluated via the exact engine, split by ye
 optimizer's 5-fold median-CV metric already favored it ($33,072 vs ~$29k). **Caveat:** 2026 was inside the
 optimizer's CV — a *pure* holdout (re-opt 2025-only → test 2026) is the last gold-standard gate, but this evidence
 is strong. **The $166,554 re-tuned champion is a genuine, robust L1 improvement — recommend promotion.**
+
+### Exp. 10 — E3a: L2 intra-candle entry timing (built + champion-first sweep) ⏸️
+Built (commits up to 033e364): L2 schema (`l2_intracandle`/`l2_intracandle_max_wait`, default off) + `run_l2`
+timing wiring (vetoed candidates enter mid-candle when L1's veto clears, reusing fast_backtest's parity-locked
+intra-candle path + the memoised L1-champion gate) + L2 optimizer `--intracandle` (prefix `l2ic1`, N searchable).
+**17 tests green; L2 parity anchors + golden 6/6 byte-identical (default off).**
+
+**Champion-first combined N-sweep — NEGATIVE:** on the l2v2 champion (tight-exit scalper, SL 6–13 / TP 7.5,
+flip=False), intra-candle timing **collapses L2's contribution** ($25,383 → ~$190–940) and cuts the **combined**
+book **$175,372 → ~$150k** at slightly worse DD ($14,342 → $15,723), for every N. Flip-nuance ruled out. Parallels
+E2: the feature doesn't help on *fixed* champion settings.
+
+**⏸️ PAUSED — resume point:** run the **`l2ic1` optimizer** (fair test: L2's OWN tuned exits *with* the feature) on
+the server. Local 2-trial validation confirmed the chain works (2025/2026 split; ic_gate memoised from L1 champion,
+computed once). Command: `python3 -m optimize.l2.optimize --tf 4h --prefix l2ic1 --intracandle --trials 300`
+(a few setsid workers → Postgres store, like the L1 wshic studies). Compare the `l2ic1` champion's **combined**
+book vs $175,372 / $14,342 DD; the L2 optimizer's 2026 window = OOS. Expectation (per E2 + this sweep): likely
+won't beat baseline, but settles it.
 
 ## Summary so far
 
