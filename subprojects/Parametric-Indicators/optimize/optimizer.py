@@ -73,6 +73,18 @@ def _suggest_indicators(trial, exclude=(), only=(), prefix=""):
         specs.append({"key": key, "enabled": enabled, "mode": meta["mode"], "params": params, "_searched": True})
     return specs
 
+
+def _frozen_specs(seed: dict) -> list:
+    """Champion indicator specs built VERBATIM from a warm-start seed (for --freeze-indicators): every en_<key>
+    + <key>_<param> value fixed, NOT suggested. Same spec format as _suggest_indicators (engine-ready)."""
+    specs = []
+    for key in library.REGISTRY:
+        meta = library.SCHEMA[key]
+        params = {p["name"]: seed.get(f"{key}_{p['name']}", p["default"]) for p in meta["params"]}
+        specs.append({"key": key, "enabled": bool(seed.get(f"en_{key}", False)),
+                      "mode": meta["mode"], "params": params})
+    return specs
+
 _STUDIES = _HERE / "studies"
 _STUDIES.mkdir(exist_ok=True)
 _DB = _STUDIES / "wsh.db"          # legacy SHARED store (one file, all timeframes) — kept for back-compat
@@ -148,32 +160,32 @@ TRIALS_PER_DIM = 100   # empirical norm: wsh4 ran ~5483 trials over 52 dims ≈ 
 CAP_1MIN_MAX = 1440    # max searched max-hold in traded 1-min bars (~1 trading day); 0 = off
 
 
-def search_dims(split_sltp: bool, intracandle: bool = False) -> dict:
+def search_dims(split_sltp: bool, intracandle: bool = False, freeze_indicators: bool = False) -> dict:
     """Breakdown of the tunable search dimensions for the current REGISTRY/SCHEMA.
     base continuous (sl_soft, sl_hard_delta, tp, gate_pct, dd_limit)=5; categorical (flip)=1;
     integer (cooldown, k, cap_1min)=3; one on/off flag per indicator; every indicator param; +6 if split_sltp;
-    +3 if intracandle (veto-entry on/off, wait window N, force-close on/off)."""
-    en_flags = len(library.REGISTRY)
-    ind_params = sum(len(library.SCHEMA[k].get("params", [])) for k in library.REGISTRY)
+    +3 if intracandle. --freeze-indicators drops the indicator flags+params and k (indicator layer fixed)."""
+    en_flags = 0 if freeze_indicators else len(library.REGISTRY)
+    ind_params = 0 if freeze_indicators else sum(len(library.SCHEMA[k].get("params", [])) for k in library.REGISTRY)
     split = 6 if split_sltp else 0
-    d = dict(base_cont=5, base_cat=1, base_int=3, en_flags=en_flags, ind_params=ind_params, split=split,
-             intracandle=(3 if intracandle else 0))
+    d = dict(base_cont=5, base_cat=1, base_int=(2 if freeze_indicators else 3),   # k dropped when frozen
+             en_flags=en_flags, ind_params=ind_params, split=split, intracandle=(3 if intracandle else 0))
     d["total"] = sum(d.values())
     return d
 
 
-def recommended_trials(split_sltp: bool, per_dim: int = TRIALS_PER_DIM, intracandle: bool = False) -> int:
-    """Dimension-proportional trial budget: total search dimensions × per_dim. Grows automatically when
-    indicators, split SL/TP, or the intra-candle dims add dimensions, so sampling density stays roughly constant."""
-    return search_dims(split_sltp, intracandle)["total"] * int(per_dim)
+def recommended_trials(split_sltp: bool, per_dim: int = TRIALS_PER_DIM, intracandle: bool = False,
+                       freeze_indicators: bool = False) -> int:
+    """Dimension-proportional trial budget: total search dimensions × per_dim."""
+    return search_dims(split_sltp, intracandle, freeze_indicators)["total"] * int(per_dim)
 
 
 def print_plan(tf_name: str, split_sltp: bool, per_dim: int = TRIALS_PER_DIM, n_trials: int | None = None,
-               sampler: str = "nsga3", intracandle: bool = False):
+               sampler: str = "nsga3", intracandle: bool = False, freeze_indicators: bool = False):
     """Print the search-space size + recommended (dimension-proportional) trial budget. Used by the
     `--plan` dry-run and before every real launch so the budget is reported and can be accepted."""
-    d = search_dims(split_sltp, intracandle)
-    rec = recommended_trials(split_sltp, per_dim, intracandle)
+    d = search_dims(split_sltp, intracandle, freeze_indicators)
+    rec = recommended_trials(split_sltp, per_dim, intracandle, freeze_indicators)
     print(f"── OPTIMIZER PLAN [{tf_name}] {'SPLIT long/short SL/TP' if split_sltp else 'shared SL/TP'} "
           f"· sampler={sampler} ──", flush=True)
     print(f"   dimensions: base {d['base_cont']}c+{d['base_cat']}cat+{d['base_int']}i = "
@@ -323,7 +335,8 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         split_sltp: bool = False, warm_start: bool = True, sampler: str = "nsga3",
         objective: str = "winrate", exclude_inds: tuple = (), only_inds: tuple = (),
         dd_pnl_cap: float = DD_PNL_CAP, contrib_tokens: tuple = (),
-        contrib_exclude=None, instrument: str = "NQ", intracandle: bool = False) -> dict:
+        contrib_exclude=None, instrument: str = "NQ", intracandle: bool = False,
+        freeze_indicators: bool = False) -> dict:
     # split_sltp (Q3 / E2): when True the optimizer searches SEPARATE long vs short SL/TP (long_*/short_*),
     # widening the space per the user's point-5 goal. Default False ⇒ shared SL/TP ⇒ identical to prior runs.
     # NOTE FOR THE NEXT FULL RUN (wsh5): launch with split_sltp=True to let longs and shorts get their own
@@ -346,6 +359,15 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
           f"bounds sl_soft{b['sl_soft']} sl_hard{b['sl_hard']} tp{b['tp']}; "
           f"indicators on {'1-MINUTE frame' if ind_1min else 'decision TF'}", flush=True)
 
+    frozen_specs = frozen_k = None
+    if freeze_indicators:
+        _fseeds = warm_start_seeds(tf_name, split_sltp, b)
+        if not _fseeds:
+            raise SystemExit("--freeze-indicators needs a champion seed (e.g. wsh4_champions_full.json)")
+        frozen_specs = _frozen_specs(_fseeds[0]); frozen_k = int(_fseeds[0]["k"])
+        print(f"[{tf_name}] --freeze-indicators: champion indicator layer FIXED (k={frozen_k}); "
+              f"searching SL/TP + gate + intra-candle only", flush=True)
+
     def objective(trial: optuna.Trial):
         sl_soft = trial.suggest_float("sl_soft", float(b["sl_soft"][0]), float(b["sl_soft"][1]))
         delta = trial.suggest_float("sl_hard_delta", 0.0, float(b["sl_hard"][1]))
@@ -354,9 +376,13 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         dd_limit = trial.suggest_float("dd_limit", 0.0, _dd_limit_max)
         cooldown = trial.suggest_int("cooldown", 0, cap)
         flip = trial.suggest_categorical("flip", [False, True])
-        specs = [{k: v for k, v in s.items() if k != "_searched"}      # strip the test-hook key before engine use
-                 for s in _suggest_indicators(trial, exclude_inds, only_inds)]   # α: scoped search space
-        k_rule = trial.suggest_int("k", 1, 5)           # clamped to #confirmers by confirm_mask
+        if freeze_indicators:
+            specs = [dict(s) for s in frozen_specs]     # champion indicator layer, fixed (not searched)
+            k_rule = frozen_k
+        else:
+            specs = [{k: v for k, v in s.items() if k != "_searched"}      # strip the test-hook key
+                     for s in _suggest_indicators(trial, exclude_inds, only_inds)]   # α: scoped search space
+            k_rule = trial.suggest_int("k", 1, 5)       # clamped to #confirmers by confirm_mask
         cap_1min = trial.suggest_int("cap_1min", 0, CAP_1MIN_MAX)   # max-hold (traded 1-min bars); 0 = off
         params = dict(sl_soft=sl_soft, sl_hard=sl_soft + delta, tp=tp, gate_pct=gate_pct,
                       dd_limit=dd_limit, cooldown=cooldown, flip=flip, window="full",
@@ -551,6 +577,9 @@ def main() -> int:
     ap.add_argument("--intracandle", action="store_true",
                     help="add the intra-candle vetoed-entry search dims (on/off, wait window N in {30,60,120,240}, "
                          "force-close on/off). Off by default ⇒ existing search space unchanged.")
+    ap.add_argument("--freeze-indicators", action="store_true",
+                    help="FIX the indicator layer (on/off + params + k) at the champion's; search only SL/TP + gate "
+                         "+ intra-candle. Far fewer dims; the intra-candle gate is memoised once. Needs a champion seed.")
     a = ap.parse_args()
     from optimize import instruments as _inst
     if not _inst.is_valid(a.instrument):
@@ -559,7 +588,7 @@ def main() -> int:
     # report the plan (search size + recommended trials) — always, so the budget is visible
     rec = print_plan(a.timeframe, a.split_sltp, a.trials_per_dim,
                      n_trials=(None if a.auto_trials else a.trials), sampler=a.sampler,
-                     intracandle=a.intracandle)
+                     intracandle=a.intracandle, freeze_indicators=a.freeze_indicators)
     if a.plan:
         print("   [--plan] dry run — not launching. Re-run without --plan (optionally --auto-trials) to start.",
               flush=True)
@@ -576,7 +605,8 @@ def main() -> int:
         ind_1min=a.ind_1min, study_prefix=a.study_prefix, split_sltp=a.split_sltp,
         warm_start=not a.no_warm_start, sampler=a.sampler,
         objective=a.objective, exclude_inds=_excl, only_inds=_only, dd_pnl_cap=a.dd_pnl_cap,
-        contrib_tokens=contrib_tokens, instrument=a.instrument, intracandle=a.intracandle)
+        contrib_tokens=contrib_tokens, instrument=a.instrument, intracandle=a.intracandle,
+        freeze_indicators=a.freeze_indicators)
     return 0
 
 
