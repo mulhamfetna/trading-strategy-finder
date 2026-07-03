@@ -26,10 +26,10 @@ import pandas as pd
 # signal/direction encoding
 LONG, SHORT, HOLD = 1, -1, 0
 # exit reason codes
-R_SL_HARD, R_TP_HARD, R_SL_SOFT, R_TP_SOFT, R_TIME_CAP, R_END_OF_DAY = 0, 1, 2, 3, 4, 5
+R_SL_HARD, R_TP_HARD, R_SL_SOFT, R_TP_SOFT, R_TIME_CAP, R_END_OF_DAY, R_FORCE_CLOSE = 0, 1, 2, 3, 4, 5, 6
 REASON_NAME = {R_SL_HARD: "STOP_LOSS_HARD", R_TP_HARD: "TAKE_PROFIT_HARD",
                R_SL_SOFT: "STOP_LOSS_SOFT", R_TP_SOFT: "TAKE_PROFIT_SOFT",
-               R_TIME_CAP: "TIME_CAP", R_END_OF_DAY: "END_OF_DAY"}
+               R_TIME_CAP: "TIME_CAP", R_END_OF_DAY: "END_OF_DAY", R_FORCE_CLOSE: "FORCE_CLOSE"}
 
 
 def signals_to_int(sig_obj: np.ndarray) -> np.ndarray:
@@ -57,7 +57,12 @@ def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
                   short_tp: float | None = None, cap_1min: int = 0,
                   cap_mode: str = "none",
                   eod_target: np.ndarray | None = None,
-                  session_last: np.ndarray | None = None) -> list[dict]:
+                  session_last: np.ndarray | None = None,
+                  intracandle_gate_by_dir: dict | None = None,
+                  intracandle_vol_gate: np.ndarray | None = None,
+                  intracandle_veto_mask: np.ndarray | None = None,
+                  intracandle_max_wait: int = 240,
+                  intracandle_force_close: bool = False) -> list[dict]:
     """Return the list of completed trades (dicts with entry/exit/dir/reason/pnl_points), in order.
     Mirrors engine.SimpleStrategy(...).backtest(...) candidate stream (exit_reason != OPEN).
 
@@ -83,12 +88,37 @@ def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
         d = -raw if flip else raw
         if d == HOLD:
             idx += 1; continue
-        if gate is not None and not gate[idx]:
-            idx += 1; continue
         et = d_dates[idx]
         if blocked_until is not None and et <= blocked_until:
             idx += 1; continue
-        ep = float(d_close[idx - 1])
+
+        _ic_e = -1                       # >=0 => rescued INTRA-CANDLE entry at this global 1-min bar
+        if gate is not None and not gate[idx]:
+            # normal gate blocks. Try an intra-candle rescue of a VETOED, vol-passed directional signal:
+            # scan this candle's 1-min bars for the first bar where the full gate re-opens (within N).
+            if (intracandle_gate_by_dir is not None
+                    and intracandle_veto_mask is not None and idx < len(intracandle_veto_mask)
+                    and intracandle_veto_mask[idx]
+                    and (intracandle_vol_gate is None
+                         or (idx < len(intracandle_vol_gate) and intracandle_vol_gate[idx]))):
+                c0 = int(np.searchsorted(m_dates, d_dates[idx], side="left"))
+                c1 = int(np.searchsorted(m_dates, d_dates[idx + 1], side="left")) if idx + 1 < n else M
+                garr = intracandle_gate_by_dir[d]
+                limit = min(int(intracandle_max_wait), c1 - c0)
+                for o in range(limit):
+                    t = c0 + o
+                    if t < M and garr[t]:
+                        _ic_e = t; break
+            if _ic_e < 0:
+                idx += 1; continue
+
+        if _ic_e >= 0:
+            e = _ic_e; et = m_dates[e]; ep = float(m_close[e])
+        else:
+            ep = float(d_close[idx - 1])
+            e = int(np.searchsorted(m_dates, et, side="left"))    # first 1m bar with Date ≥ entry time
+        if e >= M:
+            break
 
         # lines (absolute point distances); per-FINAL-direction split points (shared when no split set)
         if d == LONG:
@@ -99,10 +129,6 @@ def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
             sls, slh, tpv = S_sls, S_slh, S_tp
             slh_line, tph_line = ep + slh, ep - tpv
             sls_line, tps_line = ep + sls, ep - tpv
-
-        e = int(np.searchsorted(m_dates, et, side="left"))    # first 1m bar with Date ≥ entry time
-        if e >= M:
-            break
         hi, lo, cl = m_high[e:], m_low[e:], m_close[e:]
 
         # candidate first-hit slice indices for the three exit kinds
