@@ -148,30 +148,32 @@ TRIALS_PER_DIM = 100   # empirical norm: wsh4 ran ~5483 trials over 52 dims ≈ 
 CAP_1MIN_MAX = 1440    # max searched max-hold in traded 1-min bars (~1 trading day); 0 = off
 
 
-def search_dims(split_sltp: bool) -> dict:
+def search_dims(split_sltp: bool, intracandle: bool = False) -> dict:
     """Breakdown of the tunable search dimensions for the current REGISTRY/SCHEMA.
     base continuous (sl_soft, sl_hard_delta, tp, gate_pct, dd_limit)=5; categorical (flip)=1;
-    integer (cooldown, k, cap_1min)=3; one on/off flag per indicator; every indicator param; +6 if split_sltp."""
+    integer (cooldown, k, cap_1min)=3; one on/off flag per indicator; every indicator param; +6 if split_sltp;
+    +3 if intracandle (veto-entry on/off, wait window N, force-close on/off)."""
     en_flags = len(library.REGISTRY)
     ind_params = sum(len(library.SCHEMA[k].get("params", [])) for k in library.REGISTRY)
     split = 6 if split_sltp else 0
-    d = dict(base_cont=5, base_cat=1, base_int=3, en_flags=en_flags, ind_params=ind_params, split=split)
+    d = dict(base_cont=5, base_cat=1, base_int=3, en_flags=en_flags, ind_params=ind_params, split=split,
+             intracandle=(3 if intracandle else 0))
     d["total"] = sum(d.values())
     return d
 
 
-def recommended_trials(split_sltp: bool, per_dim: int = TRIALS_PER_DIM) -> int:
+def recommended_trials(split_sltp: bool, per_dim: int = TRIALS_PER_DIM, intracandle: bool = False) -> int:
     """Dimension-proportional trial budget: total search dimensions × per_dim. Grows automatically when
-    indicators or split SL/TP add dimensions, so sampling density stays roughly constant across regimes."""
-    return search_dims(split_sltp)["total"] * int(per_dim)
+    indicators, split SL/TP, or the intra-candle dims add dimensions, so sampling density stays roughly constant."""
+    return search_dims(split_sltp, intracandle)["total"] * int(per_dim)
 
 
 def print_plan(tf_name: str, split_sltp: bool, per_dim: int = TRIALS_PER_DIM, n_trials: int | None = None,
-               sampler: str = "nsga3"):
+               sampler: str = "nsga3", intracandle: bool = False):
     """Print the search-space size + recommended (dimension-proportional) trial budget. Used by the
     `--plan` dry-run and before every real launch so the budget is reported and can be accepted."""
-    d = search_dims(split_sltp)
-    rec = recommended_trials(split_sltp, per_dim)
+    d = search_dims(split_sltp, intracandle)
+    rec = recommended_trials(split_sltp, per_dim, intracandle)
     print(f"── OPTIMIZER PLAN [{tf_name}] {'SPLIT long/short SL/TP' if split_sltp else 'shared SL/TP'} "
           f"· sampler={sampler} ──", flush=True)
     print(f"   dimensions: base {d['base_cont']}c+{d['base_cat']}cat+{d['base_int']}i = "
@@ -321,7 +323,7 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         split_sltp: bool = False, warm_start: bool = True, sampler: str = "nsga3",
         objective: str = "winrate", exclude_inds: tuple = (), only_inds: tuple = (),
         dd_pnl_cap: float = DD_PNL_CAP, contrib_tokens: tuple = (),
-        contrib_exclude=None, instrument: str = "NQ") -> dict:
+        contrib_exclude=None, instrument: str = "NQ", intracandle: bool = False) -> dict:
     # split_sltp (Q3 / E2): when True the optimizer searches SEPARATE long vs short SL/TP (long_*/short_*),
     # widening the space per the user's point-5 goal. Default False ⇒ shared SL/TP ⇒ identical to prior runs.
     # NOTE FOR THE NEXT FULL RUN (wsh5): launch with split_sltp=True to let longs and shorts get their own
@@ -359,6 +361,12 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         params = dict(sl_soft=sl_soft, sl_hard=sl_soft + delta, tp=tp, gate_pct=gate_pct,
                       dd_limit=dd_limit, cooldown=cooldown, flip=flip, window="full",
                       indicators=specs, k=k_rule, ind_1min=ind_1min, cap_1min=cap_1min)
+        if intracandle:
+            # Intra-candle vetoed entry as searchable dims (opt-in): on/off, wait window N, force-close.
+            # Only added when --intracandle ⇒ existing searches keep their exact dimensionality.
+            params["intracandle_veto_entry"] = trial.suggest_categorical("intracandle_veto_entry", [False, True])
+            params["intracandle_max_wait"] = trial.suggest_categorical("intracandle_max_wait", [30, 60, 120, 240])
+            params["intracandle_force_close"] = trial.suggest_categorical("intracandle_force_close", [False, True])
         if split_sltp:                                   # separate long vs short SL/TP (point 5)
             l_ss = trial.suggest_float("long_sl_soft", float(b["sl_soft"][0]), float(b["sl_soft"][1]))
             l_d = trial.suggest_float("long_sl_hard_delta", 0.0, float(b["sl_hard"][1]))
@@ -540,6 +548,9 @@ def main() -> int:
     ap.add_argument("--instrument", default="NQ",
                     help="instrument to optimize (NQ default, or ES). Non-NQ studies/DBs/champions are "
                          "suffixed (_ES) so NQ artifacts are untouched; SL/TP bounds auto-scale by price.")
+    ap.add_argument("--intracandle", action="store_true",
+                    help="add the intra-candle vetoed-entry search dims (on/off, wait window N in {30,60,120,240}, "
+                         "force-close on/off). Off by default ⇒ existing search space unchanged.")
     a = ap.parse_args()
     from optimize import instruments as _inst
     if not _inst.is_valid(a.instrument):
@@ -547,7 +558,8 @@ def main() -> int:
     contrib_tokens = tuple(t.strip() for t in a.contributors.split(",") if t.strip())
     # report the plan (search size + recommended trials) — always, so the budget is visible
     rec = print_plan(a.timeframe, a.split_sltp, a.trials_per_dim,
-                     n_trials=(None if a.auto_trials else a.trials), sampler=a.sampler)
+                     n_trials=(None if a.auto_trials else a.trials), sampler=a.sampler,
+                     intracandle=a.intracandle)
     if a.plan:
         print("   [--plan] dry run — not launching. Re-run without --plan (optionally --auto-trials) to start.",
               flush=True)
@@ -564,7 +576,7 @@ def main() -> int:
         ind_1min=a.ind_1min, study_prefix=a.study_prefix, split_sltp=a.split_sltp,
         warm_start=not a.no_warm_start, sampler=a.sampler,
         objective=a.objective, exclude_inds=_excl, only_inds=_only, dd_pnl_cap=a.dd_pnl_cap,
-        contrib_tokens=contrib_tokens, instrument=a.instrument)
+        contrib_tokens=contrib_tokens, instrument=a.instrument, intracandle=a.intracandle)
     return 0
 
 
