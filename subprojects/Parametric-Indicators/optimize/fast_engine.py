@@ -62,7 +62,8 @@ def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
                   intracandle_vol_gate: np.ndarray | None = None,
                   intracandle_veto_mask: np.ndarray | None = None,
                   intracandle_max_wait: int = 240,
-                  intracandle_force_close: bool = False) -> list[dict]:
+                  intracandle_force_close: bool = False,
+                  intracandle_normal_gate: np.ndarray | None = None) -> list[dict]:
     """Return the list of completed trades (dicts with entry/exit/dir/reason/pnl_points), in order.
     Mirrors engine.SimpleStrategy(...).backtest(...) candidate stream (exit_reason != OPEN).
 
@@ -176,6 +177,34 @@ def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
             if best is None or ti < best[0]:
                 best = cand
             # equal index: keep the earlier-in-`order` (lower rank) = already kept (we only replace on ti<)
+        # FORCE-CLOSE variant: a RESCUED (intra-candle) trade yields to the next qualifying NORMAL entry.
+        # Find the first later decision-bar boundary with a normal entry; if it falls at/before the natural
+        # exit (or the trade would stay OPEN), close the rescued trade at that boundary and let idx re-enter.
+        if intracandle_force_close and _ic_e >= 0:
+            _fcg = intracandle_normal_gate if intracandle_normal_gate is not None else gate  # full champion gate
+            fc_b = -1
+            for b in range(idx + 1, n):
+                rb = sig_int[b - 1]; db = -rb if flip else rb
+                if db == HOLD:
+                    continue
+                if _fcg is not None and not _fcg[b]:
+                    continue
+                fc_b = b; break
+            if fc_b >= 0:
+                be = int(np.searchsorted(m_dates, d_dates[fc_b], side="left"))
+                nat_global = (e + best[0]) if best is not None else (M + 1)
+                if e < be <= nat_global:
+                    fillf = float(d_close[fc_b - 1])
+                    pnlf = (fillf - ep) if d == LONG else (ep - fillf)
+                    trades.append({
+                        "entry_idx": idx, "entry_time": et, "entry_price": ep,
+                        "direction": "long" if d == LONG else "short",
+                        "exit_time": d_dates[fc_b], "exit_price": fillf,
+                        "exit_reason": REASON_NAME[R_FORCE_CLOSE], "pnl_points": float(pnlf),
+                    })
+                    idx = fc_b                                # re-process the boundary as a normal entry
+                    continue
+
         if best is None:
             # no exit before end of data → OPEN; engine drops it. Stop (one position; nothing after).
             break

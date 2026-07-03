@@ -297,6 +297,7 @@ def build_payload(df4, df1, box, vf, n2025, params=None, instrument: str = "NQ")
     ic_n = int((params or {}).get("intracandle_max_wait", 240))
     ic_fc = bool((params or {}).get("intracandle_force_close", False))
     ic_gate_by_dir = None
+    ic_normal_gate = None
     if specs:
         from indicators import library, runner, generate
         try:
@@ -321,6 +322,9 @@ def build_payload(df4, df1, box, vf, n2025, params=None, instrument: str = "NQ")
             src=ind_src, votes=_votes, veto_as_flip=P["veto_as_flip"])
         if ic_on:
             ic_gate_by_dir = runner.intracandle_gate_arrays(d1, inds, k_rule)
+            # full champion gate (vol ∧ ¬veto ∧ confirm) for the force-close "a normal entry qualifies" check
+            ic_normal_gate = np.asarray(gate_used) & np.asarray(
+                runner.confirm_mask(d4, box, inds, k_rule, src=ind_src, votes=_votes))
         if any(i.config.enabled and i.key in ("fvg", "order_block", "structure_trend") for i in inds):
             ctx = runner.market_context(d4)
             gen_report = generate.generate_structures(
@@ -365,7 +369,8 @@ def build_payload(df4, df1, box, vf, n2025, params=None, instrument: str = "NQ")
                                             blocked_log=blocked, veto_as_flip=P["veto_as_flip"],
                                             signals=sig_arr,
                                             intracandle_gate_by_dir=ic_gate_by_dir,
-                                            intracandle_vol_gate=gate)
+                                            intracandle_vol_gate=gate,
+                                            intracandle_normal_gate=ic_normal_gate)
     cand = sorted([t for t in trades if t.get("exit_reason") not in (None, "OPEN")],
                   key=lambda t: pd.Timestamp(t["entry_time"]))
 

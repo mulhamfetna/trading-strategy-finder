@@ -30,10 +30,13 @@ the first 1-min bar where the full gate (`¬veto ∧ ≥K confirms`) re-opens, w
 | version (N=240) | trades | total P/L | vs champion |
 |---|--:|--:|--:|
 | plain (rescued trade blocks normal entries) | 384 | $87,363 | −$54,840 |
-| **force-close** (normal entry closes the rescued trade) | 409 | $109,456 | **−$32,747** |
+| force-close, first cut (buggy ordering) | 409 | $109,456 | −$32,747 |
+| **force-close, corrected** (boundary preempts candle; full-gate normal entry) | **423** | **$143,657** | **+$1,454** |
 
-27 force-closes recovered **~$22k** and *added* trades — confirming that displacing profitable champion trades
-("stealing the seat") was a real chunk of the damage.
+**The corrected force-close is the headline:** ~**2× entries (214 → 423) at slightly ABOVE the champion's P/L**
+($143,657 vs $142,203) — **on the fixed champion params, before any re-optimization.** The "stealing the seat"
+problem was the whole story: giving the proven trades priority turns the feature from −$55k to +$1.5k. (43
+force-closes. In-sample, single champion — DD and OOS still to check; re-optimization is expected to widen it.)
 
 ## Verdict — NOT a fair test yet; do NOT call it dead (correction, 2026-07-03)
 

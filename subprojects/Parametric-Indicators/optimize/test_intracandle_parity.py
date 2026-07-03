@@ -21,7 +21,7 @@ from research.intracandle.champion_run import run_champion_exact  # noqa: E402
 _PV = 20.0
 
 
-def _fast_champion(ic_on, N=240):
+def _fast_champion(ic_on, N=240, force_close=False):
     C = cp.load_champion("4h"); p = C["params"]
     gate = np.asarray(cp._engine_gate(C))                 # vol ∧ ¬veto ∧ confirm (fast bakes confirm in)
     veto = np.asarray(C["veto"]); volg = np.asarray(C["vol_gate"])
@@ -32,7 +32,7 @@ def _fast_champion(ic_on, N=240):
     return fast_backtest(DD, DC, np.asarray(C["sig"]), gate, MD, MH, ML, MC,
                          float(p["sl_soft"]), float(p["sl_hard"]), float(p["tp"]), bool(p["flip"]),
                          intracandle_gate_by_dir=ic, intracandle_vol_gate=volg, intracandle_veto_mask=veto,
-                         intracandle_max_wait=N)
+                         intracandle_max_wait=N, intracandle_force_close=force_close)
 
 
 def _fast_keys(F):
@@ -56,3 +56,11 @@ def test_fast_matches_exact_feature_on():
     E, _ = run_champion_exact("4h", intracandle_veto_entry=True, intracandle_max_wait=240)
     assert len(F) > 214                            # the feature actually rescued entries
     assert _fast_keys(F) == _exact_keys(E)         # fast port matches the exact engine trade-for-trade
+
+
+def test_fast_matches_exact_force_close():
+    F = _fast_champion(ic_on=True, N=240, force_close=True)
+    E, _ = run_champion_exact("4h", intracandle_veto_entry=True, intracandle_max_wait=240,
+                              intracandle_force_close=True)
+    assert any(f["exit_reason"] == "FORCE_CLOSE" for f in F)   # force-close actually fires
+    assert _fast_keys(F) == _exact_keys(E)         # force-close variant matches the exact engine

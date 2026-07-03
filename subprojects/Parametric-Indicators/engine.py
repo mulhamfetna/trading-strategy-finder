@@ -212,6 +212,7 @@ class SimpleStrategy:
         signals: Optional[np.ndarray] = None,
         intracandle_gate_by_dir: Optional[dict] = None,
         intracandle_vol_gate: Optional[np.ndarray] = None,
+        intracandle_normal_gate: Optional[np.ndarray] = None,
     ) -> Tuple[List[Dict], Dict]:
         """Run the simple engine.
 
@@ -385,12 +386,10 @@ class SimpleStrategy:
             # BEFORE the exit walk, so a trade that closes mid-window does not admit an in-trade intra-candle fill.
             flat_at_window_start = open_trade is None
 
-            # Exit walk for a carry-over trade (1-min bars in this new window).
-            _walk_exit_for_4h(idx)
-
-            # FORCE-CLOSE variant (flag-gated): if a RESCUED (intra-candle) trade is still open at this boundary
-            # AND a NORMAL champion entry qualifies here, close the rescued trade at the boundary and free the seat
-            # so the proven normal trade takes priority. Only active alongside the intra-candle feature.
+            # FORCE-CLOSE variant (flag-gated): if a RESCUED (intra-candle) trade is open at this boundary AND a
+            # NORMAL champion entry qualifies here, close the rescued trade at the boundary and free the seat so the
+            # proven normal trade takes priority. Runs BEFORE the exit walk so the boundary preempts the candle's
+            # own 1-min bars (a normal entry at the boundary beats a mid-candle SL/TP of the rescued trade).
             if (_ic_resolver is not None and getattr(self.params, 'intracandle_force_close', False)
                     and open_trade is not None and open_trade.get('ic') and idx >= 1):
                 if signals is not None:
@@ -404,7 +403,10 @@ class SimpleStrategy:
                     _nsig = _stage1_candle_signal(_sc, _br)
                 if flip and _nsig in ('long', 'short'):
                     _nsig = 'short' if _nsig == 'long' else 'long'
-                _ng = (entry_gate is None) or not (0 <= idx < len(entry_gate)) or bool(entry_gate[idx])
+                # "a normal entry qualifies" = the FULL champion gate (vol ∧ ¬veto ∧ confirm). entry_gate here is
+                # only vol ∧ ¬veto (confirm lives in the resolver), so use the passed full gate when available.
+                _ngate = intracandle_normal_gate if intracandle_normal_gate is not None else entry_gate
+                _ng = (_ngate is None) or not (0 <= idx < len(_ngate)) or bool(_ngate[idx])
                 _nin = (_nsig in ('long', 'short')
                         and not (scope == 'long_only' and _nsig != 'long')
                         and not (scope == 'short_only' and _nsig != 'short'))
@@ -415,6 +417,9 @@ class SimpleStrategy:
                     open_trade = None
                     soft_consec_count = 0
                     bars_held = 0
+
+            # Exit walk for a carry-over trade (1-min bars in this new window).
+            _walk_exit_for_4h(idx)
 
             # Entry decision: needs a just-closed predecessor bar (idx >= 1).
             if open_trade is None and idx >= 1:
