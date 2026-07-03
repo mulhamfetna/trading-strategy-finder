@@ -92,7 +92,9 @@
         <div class="fld" title="Exit cap: none · max N traded 1-min bars · end-of-trading-day (full days N min before the 17:00 close, partial days at the session close)."><label>Exit cap mode</label>
           <select id="l1_cap_mode" onchange="capModeToggle('l1')"><option value="none">none</option><option value="bars">max 1-min bars</option><option value="eod">end-of-day</option></select></div>
         <div class="fld" id="l1_cap_bars_fld"><label>Max hold (traded 1-min bars)</label><input id="l1_cap_1min" type="number" step="1" min="0" value="0"></div>
-        <div class="fld" id="l1_cap_eod_fld" style="display:none"><label>Exit N min before full-day close</label><input id="l1_eod_margin_min" type="number" step="1" min="0" value="15"></div></div>
+        <div class="fld" id="l1_cap_eod_fld" style="display:none"><label>Exit N min before full-day close</label><input id="l1_eod_margin_min" type="number" step="1" min="0" value="15"></div>
+        <div class="fld" title="Arm a VETOED (vol-passed) signal and enter mid-candle at the first 1-min bar where the full gate re-opens (no veto AND >=K confirms). Off = byte-identical champion."><label><input id="l1_intracandle_veto_entry" type="checkbox"> In-candle entry (vetoed)</label>
+          <input id="l1_intracandle_max_wait" type="number" step="1" min="1" max="240" value="240" title="Max 1-min bars to wait inside the candle (N)"></div></div>
       <div class="sgroup"><h3>Confirmation layer</h3>
         <div class="fld"><label>K (min confirms)</label><input id="l1_k" type="number" step="1" min="1" value="1"></div></div>
       <div class="sgroup"><h3>Indicators (L1)</h3><div id="l1_indpanel"><div class="hint">loading schema…</div></div></div>
@@ -228,6 +230,8 @@ function collectLayer(pfx){
     sl_soft:+v('sl_soft').value, sl_hard:+v('sl_hard').value, tp:+v('tp').value,
     dd_limit:+v('dd_limit').value, cooldown:+v('cooldown').value, cap_1min:+v('cap_1min').value||0,
     cap_mode:(v('cap_mode')?v('cap_mode').value:'none')||'none', eod_margin_min:+ (v('eod_margin_min')?v('eod_margin_min').value:15)||15,
+    intracandle_veto_entry: !!(v('intracandle_veto_entry') && v('intracandle_veto_entry').checked),
+    intracandle_max_wait: +(v('intracandle_max_wait')?v('intracandle_max_wait').value:240)||240,
     flip:v('flip').value==='true', ind_1min:v('ind_1min').value==='true',
     window:(v('window')?v('window').value:'full')};
   if(v('split') && v('split').value==='true') SPLIT_FIELDS.forEach(f=>{const el=v(f); if(el&&el.value!=='')out[f]=+el.value;});
