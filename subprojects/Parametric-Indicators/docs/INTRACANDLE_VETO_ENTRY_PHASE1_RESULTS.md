@@ -25,17 +25,30 @@ the first 1-min bar where the full gate (`¬veto ∧ ≥K confirms`) re-opens, w
 - **Hold time: not shorter.** Median hold stays ~**6.4h** (~386–402m) — this does **not** move toward
   zero-day-hold; it just adds more multi-hour trades.
 
-## Verdict — NO-GO on the naive "admit-all" version (pre-registered gate not cleared)
+## Force-close variant (normal entry closes an open rescued trade) — recovers part of the loss
 
-Per the design gate (D9: proceed to the optimizer only if added entries clear breakeven at held-or-better payoff),
-**this does not clear it.** The veto was doing real work: the signals it drops are genuinely lower-quality, and
-re-admitting *all* of them — even gated on the veto re-clearing intra-candle — trades below breakeven. This
-matches the pre-registered prior-art evidence (pullback/delayed entry catastrophic on MNQ; delay can destroy edge).
+| version (N=240) | trades | total P/L | vs champion |
+|---|--:|--:|--:|
+| plain (rescued trade blocks normal entries) | 384 | $87,363 | −$54,840 |
+| **force-close** (normal entry closes the rescued trade) | 409 | $109,456 | **−$32,747** |
 
-**The one open thread (user's call):** this test admits **all** vol-passed vetoed signals whose gate re-opens. The
-win% *rises* with N and reaches **57.0% at N=240 — a hair under breakeven** — so a **selective** admission (let the
-optimizer choose *which* vetoed signals / regimes / a higher confirm-K intra-candle, not all) *might* isolate a
-profitable subset. That would be a Phase-2 optimizer question, explicitly NOT auto-triggered by this result.
+27 force-closes recovered **~$22k** and *added* trades — confirming that displacing profitable champion trades
+("stealing the seat") was a real chunk of the damage.
+
+## Verdict — NOT a fair test yet; do NOT call it dead (correction, 2026-07-03)
+
+The above bolts the feature onto the champion's **FIXED** settings — but the champion was optimized **without** this
+feature, so this understates it. **The 57.5% breakeven is not fixed: it is a function of the exits** (win≈$2,400 @
+120pt TP, loss≈$3,340 @ 167pt SL ⇒ 1/(1+0.72)≈57.5%). **Re-optimizing the exits changes the bar** — e.g. a bigger
+target + tighter stop could drop breakeven toward ~40%, at which the already-observed **50–57% win rate becomes
+profitable.** Two levers open under re-optimization: (1) **lower the bar** via re-tuned SL/TP; (2) **raise win% of
+admitted trades** via searched N / force-close / K / which vetoed signals.
+
+**FAIR TEST (Phase 2) — re-optimize L1 with the feature ON, then validate out-of-sample.** Add the feature params
+(`intracandle_veto_entry`, `intracandle_max_wait`, `intracandle_force_close`) to the optimizer search space, run a
+fresh L1 optimization (server), and compare that new champion to the current $153,321/$142,203 champion. Target the
+milestone: **~2× entries at breakeven-or-better**. Only if the *re-optimized* strategy still loses is the feature
+dead. Guardrail: in-sample gains must survive **walk-forward / OOS** (the Kalman + l2v3 lesson).
 
 ## Status
 
