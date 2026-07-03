@@ -43,13 +43,14 @@ def _metrics(trades, base_keys):
     }
 
 
-def sweep(tf="4h", Ns=(30, 60, 120, 240)):
+def sweep(tf="4h", Ns=(30, 60, 120, 240), force_close=False):
     base, base_s = run_champion_exact(tf, intracandle_veto_entry=False)
     base_keys = {t["entry_time"] for t in base}
     base_total = float(sum(t["pnl"] for t in base))
     rows = []
     for N in Ns:
-        more, _ = run_champion_exact(tf, intracandle_veto_entry=True, intracandle_max_wait=N)
+        more, _ = run_champion_exact(tf, intracandle_veto_entry=True, intracandle_max_wait=N,
+                                     intracandle_force_close=force_close)
         m = _metrics(more, base_keys)
         m["N"] = N
         m["entries_added_net"] = m["entries_total"] - len(base)
@@ -69,4 +70,7 @@ def _fmt(rows):
 
 
 if __name__ == "__main__":
-    print(_fmt(sweep()))
+    print("=== PLAIN (rescued trade blocks normal entries) ===")
+    print(_fmt(sweep(force_close=False)))
+    print("\n=== FORCE-CLOSE (normal entry closes an open rescued trade) ===")
+    print(_fmt(sweep(force_close=True)))

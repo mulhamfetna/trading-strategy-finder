@@ -295,6 +295,7 @@ def build_payload(df4, df1, box, vf, n2025, params=None, instrument: str = "NQ")
     # Intra-candle vetoed-entry (Phase 1). Read raw so a preset without the keys ⇒ off ⇒ parity.
     ic_on = bool((params or {}).get("intracandle_veto_entry", False))
     ic_n = int((params or {}).get("intracandle_max_wait", 240))
+    ic_fc = bool((params or {}).get("intracandle_force_close", False))
     ic_gate_by_dir = None
     if specs:
         from indicators import library, runner, generate
@@ -348,7 +349,8 @@ def build_payload(df4, df1, box, vf, n2025, params=None, instrument: str = "NQ")
     sp = SimpleStrategyParams(sl_soft_points=sl_soft, sl_hard_points=sl_hard,
                               tp_hard_points=tp, data_path_4h="", data_path_1min="",
                               box_data_path="", flip_entry_direction=flip,
-                              intracandle_veto_entry=ic_on, intracandle_max_wait=ic_n, **_sp_split)
+                              intracandle_veto_entry=ic_on, intracandle_max_wait=ic_n,
+                              intracandle_force_close=ic_fc, **_sp_split)
     # Step B2 (Axis B): precompute the param-independent Stage-1 signal ONCE (vectorized) and feed it to
     # the engine so it does NOT recompute _stage1_candle_signal + box.loc per decision bar. Byte-identical
     # (optimize.signals.decision_signals ≡ engine._stage1_candle_signal — see tests/test_axisB_signal_equiv.py).

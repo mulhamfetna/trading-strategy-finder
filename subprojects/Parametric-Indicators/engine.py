@@ -58,6 +58,7 @@ ExitReason = Literal[
     'TAKE_PROFIT_SOFT',
     'TIME_CAP',
     'END_OF_DAY',
+    'FORCE_CLOSE',
     'OPEN',
 ]
 
@@ -98,6 +99,7 @@ class SimpleStrategyParams:
     # Intra-candle entry for vetoed signals (Phase 1). OFF => byte-identical (golden-locked).
     intracandle_veto_entry: bool = False   # arm a vetoed (vol-passed) signal, enter mid-candle when the gate re-opens
     intracandle_max_wait:   int  = 240     # max 1-min bars to wait inside the candle (N); 240 ~= one 4h candle
+    intracandle_force_close: bool = False  # variant: a NORMAL entry force-closes an open rescued trade (priority to champion trades)
 
 
 def _stage1_candle_signal(
@@ -386,6 +388,34 @@ class SimpleStrategy:
             # Exit walk for a carry-over trade (1-min bars in this new window).
             _walk_exit_for_4h(idx)
 
+            # FORCE-CLOSE variant (flag-gated): if a RESCUED (intra-candle) trade is still open at this boundary
+            # AND a NORMAL champion entry qualifies here, close the rescued trade at the boundary and free the seat
+            # so the proven normal trade takes priority. Only active alongside the intra-candle feature.
+            if (_ic_resolver is not None and getattr(self.params, 'intracandle_force_close', False)
+                    and open_trade is not None and open_trade.get('ic') and idx >= 1):
+                if signals is not None:
+                    _nsig = signals[idx - 1]
+                else:
+                    _sc = df_4h.iloc[idx - 1]; _st = pd.Timestamp(d4_dates[idx - 1])
+                    try:
+                        _br = box_df_indexed.loc[BoxLookup._candle_to_box_date(_st)]
+                    except KeyError:
+                        _br = None
+                    _nsig = _stage1_candle_signal(_sc, _br)
+                if flip and _nsig in ('long', 'short'):
+                    _nsig = 'short' if _nsig == 'long' else 'long'
+                _ng = (entry_gate is None) or not (0 <= idx < len(entry_gate)) or bool(entry_gate[idx])
+                _nin = (_nsig in ('long', 'short')
+                        and not (scope == 'long_only' and _nsig != 'long')
+                        and not (scope == 'short_only' and _nsig != 'short'))
+                if _nin and _ng:
+                    _finalise(open_trade, ts_new_bar_start, float(d4_close[idx - 1]), 'FORCE_CLOSE',
+                              open_trade['entry_price'], open_trade['direction'], self.NQ_POINT_VALUE)
+                    trades.append(open_trade)
+                    open_trade = None
+                    soft_consec_count = 0
+                    bars_held = 0
+
             # Entry decision: needs a just-closed predecessor bar (idx >= 1).
             if open_trade is None and idx >= 1:
                 if blocked_until is not None and ts_new_bar_start <= blocked_until:
@@ -532,6 +562,7 @@ class SimpleStrategy:
                     'entry_time':   entry_ts,
                     'entry_price':  entry_px,
                     'direction':    edir,
+                    'ic':           bool(ic_entered),          # True = rescued intra-candle entry (for force-close)
                     'veto_flip':    bool(vflip),               # entered reversed because of a veto
                     'sl_soft_line': sl_soft_line,
                     'sl_hard_line': sl_hard_line,
