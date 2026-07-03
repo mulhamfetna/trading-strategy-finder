@@ -55,11 +55,33 @@ so it's well within reach.
 
 ---
 
-## 3. Decisions I still need from you 📝
+## 2.5 Prior-art research — what the evidence says (deep-research pass, 2026-07-03) 🔬
 
-> 🔬 **A prior-art mega-research pass is running** (per the deep-research-first rule) on delayed/intra-candle
-> conditional entry techniques. When it returns, I'll fold its evidence into the recommendations below — so you can
-> decide informed by what's already documented, not just my priors.
+106 agents, 23 sources, 88 claims, 20 confirmed / 5 refuted. **The rigorous evidence is mixed-to-cautionary, and
+some of it is on our exact instrument (MNQ/NQ):**
+
+👶 **Baby version:** other people have tried "wait, then jump in" entries. The careful studies say: **naive
+"wait for a pullback then enter" often backfires** (on micro-Nasdaq it was a disaster — you wait, the move leaves
+without you, 19% win rate). A plain **delay** even wrecked a good signal. BUT the versions that **worked** waited
+for **several conditions to line up at once** (exactly our "no veto AND enough confirms" rule), and **re-taking
+signals you first rejected** *can* help — mostly by making your losers smaller. Bloggers' rosy "confirmation =
+higher win rate" claims mostly **failed fact-checking.**
+
+| Evidence | Verdict for us |
+|---|---|
+| Pullback/retest entry on **MNQ**: 80.7% stop-out, **19.3% win rate** | ❌ **Don't add a pullback wait** (→ D4 = enter immediately) |
+| A **one-bar delay** flipped a good signal from +profit to −loss; intrabar-expansion signals die if you wait | ⚠️ **The delay itself is the risk** → prefer **short** wait windows, measure the decay (→ D7 = sweep N) |
+| Validated winners used **multi-condition armed entry** (≥3 conditions) | ✅ Our **full gate** (`¬veto ∧ ≥K confirms`) is the *good* flavor (→ D1 confirmed) |
+| Re-admitting rejected signals: win 51.4%→54.5%, PnL 2×, mainly **smaller losers**; scales with move size | ✅ Cautious support for the whole idea — **watch loss size, not just win rate** |
+| Blog claims "confirmation greatly improves win rate / 62%-2.8R" | ❌ **Refuted** — ignore |
+
+**Bottom line:** worth a **measured test with tempered expectations** — enter immediately (no pullback), keep the
+wait **short**, and **prove it clears the 57.5% breakeven** before trusting it. This is exactly why we test on the
+champion first.
+
+---
+
+## 3. Decisions I still need from you 📝 (now evidence-informed)
 
 ### D3 — When the gate opens but we're already in a trade 🟥 (the big one)
 👶 **Baby version:** we can only hold **one** trade at a time. Your vetoed signal might get its green light *while
@@ -85,8 +107,8 @@ another trade is still running*. We can't take two at once — so do we **wait o
 👶 **Baby version:** once the light turns green on a 1-minute bar, do we buy **right there** at that bar's price,
 or do we still wait for a small pullback first (the existing "retrace" feature)?
 
-- [ ] **A — Enter immediately** at the qualifying 1-min bar's close *(my recommendation — the champion uses
-  retrace=0 today, so this matches it and is simplest)*.
+- [ ] **A — Enter immediately** at the qualifying 1-min bar's close *(my recommendation — **now evidence-backed**:
+  pullback/retest entries were catastrophic on MNQ (19% win). Matches the champion's retrace=0 and is simplest)*.
 - [ ] **B — Apply retrace on top** — after the gate opens, still wait for the configured pullback before filling
   (stacks the two features; only matters if retrace > 0).
 
@@ -127,8 +149,10 @@ direction**, or could it flip?
 👶 **Baby version:** before we let the optimizer tune `N`, we test on the current champion with a fixed value.
 How long a default? (240 one-minute bars = one full 4-hour candle.)
 
-- [ ] **A — 240 (one full 4h candle)** *(my recommendation — literally "inside the 4-hour candle")*.
-- [ ] **B — 120 (half candle)**   · [ ] **C — 60 (first hour)**   · [ ] **D — other:** `______`
+- [ ] **A — Don't pick one; SWEEP `N ∈ {30, 60, 120, 240}`** in the champion study *(my **updated** recommendation
+  — the evidence shows a delay can let the move exhaust, so short N may win; the sweep shows the decay curve
+  directly rather than guessing)*.
+- [ ] **B — 240 (one full 4h candle)**   · [ ] **C — 60 (first hour)**   · [ ] **D — other:** `______`
 
 > **📝 YOUR DECISION (A/B/C/D):** `__________`
 > **📝 NOTES:** `______________________________________________________________`
