@@ -95,6 +95,45 @@ def _vote_from_1min(ind, ctx_1m, j_idx, box_dir) -> np.ndarray:
     return out
 
 
+def _dirs_1min(ind, ctx_1m):
+    """(cdir1, vdir1) over ALL 1-min bars, warm-up forced to 0. Extracted from _vote_from_1min so the
+    intra-candle gate can read the per-bar directions (which _vote_from_1min otherwise only samples at the
+    decision-bar closes)."""
+    cdir1, vdir1 = ind.directions(ctx_1m)
+    cdir1 = np.asarray(cdir1).copy(); vdir1 = np.asarray(vdir1).copy()
+    w = min(int(ind.warmup_bars()), len(cdir1))
+    if w > 0:
+        cdir1[:w] = 0; vdir1[:w] = 0
+    return cdir1, vdir1
+
+
+def intracandle_gate_arrays(df1, indicators, k):
+    """Per-1-min-bar FULL-gate booleans, one array per direction (+1 long / -1 short):
+        gate[d][t] = (no enabled veto-capable indicator vetoes dir d at 1-min bar t)
+                     AND (# enabled confirm-capable indicators confirming dir d at t >= k_eff)
+    with k_eff = min(k, #confirm-capable-enabled). Causal (each t reads only 1-min data <= t) because the
+    indicator directions are a forward series. Mirrors _vote_from_1min's confirm/veto semantics (a BOTH
+    direction matches either side; warm-up bars force-non-voting)."""
+    from .base import VETO, HOLD, BOTH  # noqa: F401  (BOTH matches either direction)
+    ctx_1m = market_context(df1)
+    n1 = len(df1)
+    confirmers = [i for i in indicators if i.config.enabled and i.config.mode in ("confirm", "both")]
+    vetoers = [i for i in indicators if i.config.enabled and i.config.mode in ("veto", "both")]
+    k_eff = min(int(k), len(confirmers))
+    out = {}
+    for d in (+1, -1):
+        conf = np.zeros(n1, dtype=np.int64)
+        veto = np.zeros(n1, dtype=bool)
+        for ind in confirmers:
+            c, _ = _dirs_1min(ind, ctx_1m)
+            conf += ((c == d) | (c == BOTH)).astype(np.int64)
+        for ind in vetoers:
+            _, v = _dirs_1min(ind, ctx_1m)
+            veto |= ((v == d) | (v == BOTH))
+        out[d] = (~veto) & (conf >= k_eff) if k_eff > 0 else (~veto)
+    return out
+
+
 def _ind_vote(ind, ctx, bdir, src=None) -> np.ndarray:
     """Per-decision-bar vote: decision-TF (ind.vote) when src is None, else 1-minute-sourced."""
     if src is None:

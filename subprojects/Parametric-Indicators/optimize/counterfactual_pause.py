@@ -76,7 +76,8 @@ def load_champion(tf: str = "4h"):
     confirm = np.asarray(runner.confirm_mask(d, box, inds, K, src=src, votes=votes))[:n]
     return dict(ctx=ctx, d=d, d1=d1, box=box, n=n, sig=sig, vol_gate=vol_gate, veto=veto,
                 confirm=confirm, params=params, pv=float(config.NQ_POINT_VALUE),
-                bar_td=bar_td, gate_pct=gate_pct, K=K, vf=np.asarray(vf)[:n], n_split=int(n_split))
+                bar_td=bar_td, gate_pct=gate_pct, K=K, vf=np.asarray(vf)[:n], n_split=int(n_split),
+                indicators=inds)
 
 
 def _engine_gate(C):
