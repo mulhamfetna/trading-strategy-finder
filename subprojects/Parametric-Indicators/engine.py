@@ -95,6 +95,9 @@ class SimpleStrategyParams:
     cap_1min: int = 0   # max hold in 1-min bars; 0 = off. Force-close at the Nth bar's close as TIME_CAP.
     cap_mode: str = "none"        # none | bars | eod. 'eod' = end-of-trading-day exit (END_OF_DAY).
     eod_margin_min: int = 15      # minutes before the 17:00 close to exit on FULL days (eod mode).
+    # Intra-candle entry for vetoed signals (Phase 1). OFF => byte-identical (golden-locked).
+    intracandle_veto_entry: bool = False   # arm a vetoed (vol-passed) signal, enter mid-candle when the gate re-opens
+    intracandle_max_wait:   int  = 240     # max 1-min bars to wait inside the candle (N); 240 ~= one 4h candle
 
 
 def _stage1_candle_signal(
