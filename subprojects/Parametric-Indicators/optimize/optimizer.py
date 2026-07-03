@@ -336,7 +336,7 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         objective: str = "winrate", exclude_inds: tuple = (), only_inds: tuple = (),
         dd_pnl_cap: float = DD_PNL_CAP, contrib_tokens: tuple = (),
         contrib_exclude=None, instrument: str = "NQ", intracandle: bool = False,
-        freeze_indicators: bool = False) -> dict:
+        freeze_indicators: bool = False, intracandle_always_on: bool = False) -> dict:
     # split_sltp (Q3 / E2): when True the optimizer searches SEPARATE long vs short SL/TP (long_*/short_*),
     # widening the space per the user's point-5 goal. Default False ⇒ shared SL/TP ⇒ identical to prior runs.
     # NOTE FOR THE NEXT FULL RUN (wsh5): launch with split_sltp=True to let longs and shorts get their own
@@ -389,8 +389,11 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
                       indicators=specs, k=k_rule, ind_1min=ind_1min, cap_1min=cap_1min)
         if intracandle:
             # Intra-candle vetoed entry as searchable dims (opt-in): on/off, wait window N, force-close.
-            # Only added when --intracandle ⇒ existing searches keep their exact dimensionality.
-            params["intracandle_veto_entry"] = trial.suggest_categorical("intracandle_veto_entry", [False, True])
+            # --intracandle-on FORCES it on every trial (focused test: tune the exits WITH the feature).
+            if intracandle_always_on:
+                params["intracandle_veto_entry"] = True
+            else:
+                params["intracandle_veto_entry"] = trial.suggest_categorical("intracandle_veto_entry", [False, True])
             params["intracandle_max_wait"] = trial.suggest_categorical("intracandle_max_wait", [30, 60, 120, 240])
             params["intracandle_force_close"] = trial.suggest_categorical("intracandle_force_close", [False, True])
         if split_sltp:                                   # separate long vs short SL/TP (point 5)
@@ -577,6 +580,9 @@ def main() -> int:
     ap.add_argument("--intracandle", action="store_true",
                     help="add the intra-candle vetoed-entry search dims (on/off, wait window N in {30,60,120,240}, "
                          "force-close on/off). Off by default ⇒ existing search space unchanged.")
+    ap.add_argument("--intracandle-on", action="store_true",
+                    help="FORCE intra-candle vetoed entry ON every trial (focused test: tune exits WITH the "
+                         "feature). Implies --intracandle; searches N + force-close + exits, not the on/off flag.")
     ap.add_argument("--freeze-indicators", action="store_true",
                     help="FIX the indicator layer (on/off + params + k) at the champion's; search only SL/TP + gate "
                          "+ intra-candle. Far fewer dims; the intra-candle gate is memoised once. Needs a champion seed.")
@@ -588,7 +594,7 @@ def main() -> int:
     # report the plan (search size + recommended trials) — always, so the budget is visible
     rec = print_plan(a.timeframe, a.split_sltp, a.trials_per_dim,
                      n_trials=(None if a.auto_trials else a.trials), sampler=a.sampler,
-                     intracandle=a.intracandle, freeze_indicators=a.freeze_indicators)
+                     intracandle=(a.intracandle or a.intracandle_on), freeze_indicators=a.freeze_indicators)
     if a.plan:
         print("   [--plan] dry run — not launching. Re-run without --plan (optionally --auto-trials) to start.",
               flush=True)
@@ -605,8 +611,9 @@ def main() -> int:
         ind_1min=a.ind_1min, study_prefix=a.study_prefix, split_sltp=a.split_sltp,
         warm_start=not a.no_warm_start, sampler=a.sampler,
         objective=a.objective, exclude_inds=_excl, only_inds=_only, dd_pnl_cap=a.dd_pnl_cap,
-        contrib_tokens=contrib_tokens, instrument=a.instrument, intracandle=a.intracandle,
-        freeze_indicators=a.freeze_indicators)
+        contrib_tokens=contrib_tokens, instrument=a.instrument,
+        intracandle=(a.intracandle or a.intracandle_on),
+        freeze_indicators=a.freeze_indicators, intracandle_always_on=a.intracandle_on)
     return 0
 
 
