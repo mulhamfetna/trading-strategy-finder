@@ -208,7 +208,7 @@
 <script>
 const TH=DB.TH, $=window.$;
 let VIEW='l1';                               // active result tab (default = the L1 champion view)
-const DEFAULT_L1='🏆 wshent1 4h · max-P/L · 36.5/fold · $106.6k · win69';  // dashboard default champion (NQ 4h L1)
+const DEFAULT_L1='🏆 re-tuned 4h champion · $166,554 · 244tr · DD $13,963 · OOS +66% 2026 · exits135/170/120 gate91';  // dashboard default champion (NQ 4h L1) — OOS-validated re-tuned exits, +$24k over the wsh4 champion
 let RUNFLIP={l1:false,l2:false};             // per-layer flip of the LAST run (for the 'entry flipped' badge)
 let _l2res=null;                             // cached residual-mode L2 default (for restoring on mode switch)
 const VIEWS={l1:null, l2:null, combined:null};   // cached payload per view (one Run fills all 3)
@@ -697,8 +697,8 @@ async function refreshL2(){
   $('inst_select').addEventListener('change',reload);
   try{
     await loadConfig($('inst_select').value,$('tf_select').value);
-    // DEFAULT: open on the NQ 4h wshent1 max-P/L champion (L1). Select it into the L1 form so a fresh
-    // load + Run reproduces its value ($106,571) with ZERO manual changes (hard-refresh + server-restart).
+    // DEFAULT: open on the NQ 4h re-tuned champion (L1). Select it into the L1 form so a fresh
+    // load + Run reproduces its value ($166,554 / 244 trades) with ZERO manual changes (hard-refresh + server-restart).
     if($('inst_select').value==='NQ' && $('tf_select').value==='4h' && STORE.l1[DEFAULT_L1]){
       $('l1_strategy').value=DEFAULT_L1; setLayer('l1',STORE.l1[DEFAULT_L1]);
     }
