@@ -49,12 +49,17 @@ so it's well within reach.
 
 | # | Decision | Your answer |
 |---|---|---|
+| **D0** | **On/off control (disableable)** | ✅ **Disableable via a dashboard checkbox placed directly *under the time-cap* control**; **default OFF**. Off ⇒ byte-identical champion (golden-safe). Also a plain engine/param flag so the optimizer can toggle it. |
 | **D1** | **What triggers entry** for an armed vetoed signal | ✅ **Full gate**: enter at the first 1-min bar where **no indicator vetoes AND ≥K confirms** — the exact champion gate, just checked intra-candle. |
 | **D2** | **How long it waits** | ✅ **Tunable max-wait `N` 1-min bars** (also ends early if a new box signal supersedes it). `N` will be optimizer-searchable later. |
 
 ---
 
 ## 3. Decisions I still need from you 📝
+
+> 🔬 **A prior-art mega-research pass is running** (per the deep-research-first rule) on delayed/intra-candle
+> conditional entry techniques. When it returns, I'll fold its evidence into the recommendations below — so you can
+> decide informed by what's already documented, not just my priors.
 
 ### D3 — When the gate opens but we're already in a trade 🟥 (the big one)
 👶 **Baby version:** we can only hold **one** trade at a time. Your vetoed signal might get its green light *while
