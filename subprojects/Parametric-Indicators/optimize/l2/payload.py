@@ -195,6 +195,9 @@ def validate_layer_params(p: dict) -> dict:
         cap_1min=int(num("cap_1min", 0)) if p.get("cap_1min") not in (None, "") else 0,
         cap_mode=(str(p.get("cap_mode") or "none")),
         eod_margin_min=int(num("eod_margin_min", 15)) if p.get("eod_margin_min") not in (None, "") else 15,
+        # E3a: intra-candle entry timing for L2's vetoed stream. Absent/False ⇒ candle-close entry (parity).
+        l2_intracandle=bool(p.get("l2_intracandle", False)),
+        l2_intracandle_max_wait=int(p.get("l2_intracandle_max_wait", 240) or 240),
     )
     # optional split long/short SL/TP overrides — each None => fall back to the shared sl_soft/sl_hard/tp
     # (so the default carries all-None and is byte-identical + the use_frozen round-trip still holds).
