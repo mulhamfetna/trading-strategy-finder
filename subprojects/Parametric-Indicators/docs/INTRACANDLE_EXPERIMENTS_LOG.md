@@ -19,7 +19,7 @@ loss ≈ −$3,340 (167-pt stop) ⇒ you must win ~**57.5%** of trades just to b
 |---|---|---|---|
 | **E1** | **Force-stop in-candle trades on a normal entry** (force-close) | Give the proven champion trades priority — a normal entry closes an open rescued trade | ✅ **DONE + OOS-validated** (see Exp. 4–6) |
 | **E2** | **Re-optimize L1 with in-candle enabled** | Let the optimizer re-tune L1's stop/target + `N` + force-close *together*, with drawdown as an objective, so the extra entries come without the drawdown penalty | ✅ **DONE** — feature works but is **dominated by re-tuned exits**; a re-tuned **feature-OFF champion ($166,554)** is the real win (see Exp. 8) |
-| **E3a** | **L2 intra-candle entry timing for the vetoed stream** | Enter L2's vetoed candidates mid-candle when L1's veto clears (L2's own exits/N) instead of at the candle close | 🟡 **BUILT + champion-sweep NEGATIVE; l2ic1 optimizer READY (⏸️ paused, launch on server next)** |
+| **E3a** | **L2 intra-candle entry timing for the vetoed stream** | Enter L2's vetoed candidates mid-candle when L1's veto clears (L2's own exits/N) instead of at the candle close | ❌ **CLOSED — feature doesn't pay** (l2ic1 combined $162,910 < baseline $175,372, even L2-optimized) |
 | **E3b** | **L2 rescues its OWN vetoed signals** (L2-as-L1) | Give L2 its own intra-candle rescue on signals L2's own indicators veto | ⬜ TODO (separate future spec) |
 
 **Rule for all optimization experiments (E2, E3):** whenever the in-candle feature is enabled, the **wait window
@@ -176,12 +176,22 @@ flip=False), intra-candle timing **collapses L2's contribution** ($25,383 → ~$
 book **$175,372 → ~$150k** at slightly worse DD ($14,342 → $15,723), for every N. Flip-nuance ruled out. Parallels
 E2: the feature doesn't help on *fixed* champion settings.
 
-**⏸️ PAUSED — resume point:** run the **`l2ic1` optimizer** (fair test: L2's OWN tuned exits *with* the feature) on
-the server. Local 2-trial validation confirmed the chain works (2025/2026 split; ic_gate memoised from L1 champion,
-computed once). Command: `python3 -m optimize.l2.optimize --tf 4h --prefix l2ic1 --intracandle --trials 300`
-(a few setsid workers → Postgres store, like the L1 wshic studies). Compare the `l2ic1` champion's **combined**
-book vs $175,372 / $14,342 DD; the L2 optimizer's 2026 window = OOS. Expectation (per E2 + this sweep): likely
-won't beat baseline, but settles it.
+**l2ic1 optimizer (fair test — L2's OWN tuned exits WITH the feature) — DONE, CONFIRMS the feature doesn't pay.**
+Server run (Postgres, 6 setsid workers, 1,500 trials / 890 feasible; ~85% pruned since the intra-candle L2 stream
+is sparse). Best feasible L2 champion (in-sample $16,184 / 8 trades, N=120, re-tuned exits sl94/slH204/tp164),
+evaluated via the anchor-consistent `logbook.run_causal` + `aggregate.combined_boxes`:
+
+| config | combined P/L | combined DD | P/L:DD | L2 contribution |
+|---|--:|--:|--:|--:|
+| baseline (l2v2, feature OFF) | **$175,372** | $14,342 | 12.2 | $25,383 / 34 trades |
+| **l2ic1 (feature ON, L2 re-optimized)** | $162,910 | $12,209 | 13.3 | $12,921 / 12 trades |
+
+**Verdict — E3a CLOSED, feature does not pay.** Even with L2's own optimized exits + tuned N, intra-candle timing
+gives a combined book **−$12,462 below baseline** ($162,910 vs $175,372). It reaches lower DD (marginally better
+ratio 13.3 vs 12.2), but the L2 stream is sparse (12 vs 34 trades) and contributes less than plain candle-close
+entry. Matches E2. **Whole intra-candle arc concludes: the feature adds no value in L1 (E2) or L2 (E3a); the
+bankable win of the workstream is the validated $166,554 re-tuned L1 champion.** Built + tested + default-off +
+golden-safe throughout. E3b (L2 rescues its OWN vetoed signals) remains an untested future idea.
 
 ## Summary so far
 
