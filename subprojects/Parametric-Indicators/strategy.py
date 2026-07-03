@@ -292,6 +292,10 @@ def build_payload(df4, df1, box, vf, n2025, params=None, instrument: str = "NQ")
     entry_resolver = veto_mask = gen_report = None
     gate_used = gate
     attrib = None    # per-entry indicator vote attribution (decision #1/#5)
+    # Intra-candle vetoed-entry (Phase 1). Read raw so a preset without the keys ⇒ off ⇒ parity.
+    ic_on = bool((params or {}).get("intracandle_veto_entry", False))
+    ic_n = int((params or {}).get("intracandle_max_wait", 240))
+    ic_gate_by_dir = None
     if specs:
         from indicators import library, runner, generate
         try:
@@ -314,6 +318,8 @@ def build_payload(df4, df1, box, vf, n2025, params=None, instrument: str = "NQ")
             d4, box, inds, k_rule, base,
             retrace_amount=g_retr, retrace_unit=g_runit, wait_bars=g_wait,
             src=ind_src, votes=_votes, veto_as_flip=P["veto_as_flip"])
+        if ic_on:
+            ic_gate_by_dir = runner.intracandle_gate_arrays(d1, inds, k_rule)
         if any(i.config.enabled and i.key in ("fvg", "order_block", "structure_trend") for i in inds):
             ctx = runner.market_context(d4)
             gen_report = generate.generate_structures(
@@ -341,7 +347,8 @@ def build_payload(df4, df1, box, vf, n2025, params=None, instrument: str = "NQ")
             _sp_split[f"{side}_tp_hard_points"] = P[f"{side}_tp"]
     sp = SimpleStrategyParams(sl_soft_points=sl_soft, sl_hard_points=sl_hard,
                               tp_hard_points=tp, data_path_4h="", data_path_1min="",
-                              box_data_path="", flip_entry_direction=flip, **_sp_split)
+                              box_data_path="", flip_entry_direction=flip,
+                              intracandle_veto_entry=ic_on, intracandle_max_wait=ic_n, **_sp_split)
     # Step B2 (Axis B): precompute the param-independent Stage-1 signal ONCE (vectorized) and feed it to
     # the engine so it does NOT recompute _stage1_candle_signal + box.loc per decision bar. Byte-identical
     # (optimize.signals.decision_signals ≡ engine._stage1_candle_signal — see tests/test_axisB_signal_equiv.py).
@@ -354,7 +361,9 @@ def build_payload(df4, df1, box, vf, n2025, params=None, instrument: str = "NQ")
     trades, _ = SimpleStrategy(sp).backtest(d4, d1, box, entry_gate=gate_used,
                                             entry_resolver=entry_resolver, veto_mask=veto_mask,
                                             blocked_log=blocked, veto_as_flip=P["veto_as_flip"],
-                                            signals=sig_arr)
+                                            signals=sig_arr,
+                                            intracandle_gate_by_dir=ic_gate_by_dir,
+                                            intracandle_vol_gate=gate)
     cand = sorted([t for t in trades if t.get("exit_reason") not in (None, "OPEN")],
                   key=lambda t: pd.Timestamp(t["entry_time"]))
 
