@@ -237,6 +237,22 @@ def run_l2(l1, l2_params: dict, bar_mask=None, exit_mode: str = "l1_priority") -
             intracandle_veto_mask=veto_ic,
             intracandle_vol_gate=veto_ic,                     # True exactly at vetoed IC candidates (vol-passed)
             intracandle_max_wait=int(l2_params.get("l2_intracandle_max_wait", 240)))
+    elif l2_params.get("l2_intracandle_self"):
+        # E3b (cheap probe): rescue L2's OWN vetoed signals mid-candle when L2's OWN veto clears. These bars are
+        # already EXCLUDED from l2_gate (¬veto in eligibility) ⇒ gate=False ⇒ fast_backtest's intra-candle path
+        # picks them up. Uses L2's own indicators for both the veto set and the intra-candle gate (memoised once).
+        from optimize.core import _cached_ic_gate
+        from indicators import library
+        _vg, _vt, _cf, *_ = _nq_components(l1, l2_params)
+        _base = dropped_mask & l1_flat & _vg & _cf
+        if bar_mask is not None:
+            _base = _base & np.asarray(bar_mask, dtype=bool)[:n]
+        self_veto = _base & _vt                               # L2 vol+confirm pass, but L2's own veto fires
+        l2i = library.from_specs([s for s in l2_params.get("indicators", []) if s.get("enabled")])
+        ic_kwargs = dict(
+            intracandle_gate_by_dir=_cached_ic_gate(l1.df1, l2i, int(l2_params.get("k", 1))),
+            intracandle_veto_mask=self_veto, intracandle_vol_gate=self_veto,
+            intracandle_max_wait=int(l2_params.get("l2_intracandle_max_wait", 240)))
 
     _cap_mode = str(l2_params.get("cap_mode") or "none")
     if _cap_mode == "eod":

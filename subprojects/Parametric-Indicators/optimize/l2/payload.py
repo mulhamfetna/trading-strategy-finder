@@ -198,6 +198,8 @@ def validate_layer_params(p: dict) -> dict:
         # E3a: intra-candle entry timing for L2's vetoed stream. Absent/False ⇒ candle-close entry (parity).
         l2_intracandle=bool(p.get("l2_intracandle", False)),
         l2_intracandle_max_wait=int(p.get("l2_intracandle_max_wait", 240) or 240),
+        # E3b (cheap probe): also rescue L2's OWN vetoed signals mid-candle when L2's own veto clears.
+        l2_intracandle_self=bool(p.get("l2_intracandle_self", False)),
     )
     # optional split long/short SL/TP overrides — each None => fall back to the shared sl_soft/sl_hard/tp
     # (so the default carries all-None and is byte-identical + the use_frozen round-trip still holds).

@@ -20,7 +20,7 @@ loss ≈ −$3,340 (167-pt stop) ⇒ you must win ~**57.5%** of trades just to b
 | **E1** | **Force-stop in-candle trades on a normal entry** (force-close) | Give the proven champion trades priority — a normal entry closes an open rescued trade | ✅ **DONE + OOS-validated** (see Exp. 4–6) |
 | **E2** | **Re-optimize L1 with in-candle enabled** | Let the optimizer re-tune L1's stop/target + `N` + force-close *together*, with drawdown as an objective, so the extra entries come without the drawdown penalty | ✅ **DONE** — feature works but is **dominated by re-tuned exits**; a re-tuned **feature-OFF champion ($166,554)** is the real win (see Exp. 8) |
 | **E3a** | **L2 intra-candle entry timing for the vetoed stream** | Enter L2's vetoed candidates mid-candle when L1's veto clears (L2's own exits/N) instead of at the candle close | ❌ **CLOSED — feature doesn't pay** (l2ic1 combined $162,910 < baseline $175,372, even L2-optimized) |
-| **E3b** | **L2 rescues its OWN vetoed signals** (L2-as-L1) | Give L2 its own intra-candle rescue on signals L2's own indicators veto | ⬜ TODO (separate future spec) |
+| **E3b** | **L2 rescues its OWN vetoed signals** (L2-as-L1) | Give L2 its own intra-candle rescue on signals L2's own indicators veto | ❌ **CLOSED (cheap test) — doesn't pay** (adds entries but combined ≤ baseline; best −$694 @N=30) |
 
 **Rule for all optimization experiments (E2, E3):** whenever the in-candle feature is enabled, the **wait window
 `N`** (how many 1-minute bars a vetoed signal may wait for its second chance) is **also a tunable search
@@ -192,6 +192,32 @@ ratio 13.3 vs 12.2), but the L2 stream is sparse (12 vs 34 trades) and contribut
 entry. Matches E2. **Whole intra-candle arc concludes: the feature adds no value in L1 (E2) or L2 (E3a); the
 bankable win of the workstream is the validated $166,554 re-tuned L1 champion.** Built + tested + default-off +
 golden-safe throughout. E3b (L2 rescues its OWN vetoed signals) remains an untested future idea.
+
+### Exp. 11 — E3b (cheap champion-only probe): L2 rescues its OWN vetoed signals — CLOSED, doesn't pay
+Added `l2_intracandle_self` (default off): the signals L2's own indicators veto (already excluded from `l2_gate`)
+are rescued mid-candle via fast_backtest's intra-candle path with L2's OWN veto + ic_gate. Champion-first sweep on
+the l2v2 champion (anchor-consistent `run_causal` + `combined_boxes`):
+
+| config | combined P/L | combined DD | entries | L2 |
+|---|--:|--:|--:|--:|
+| baseline (l2v2) | **$175,372** | $14,342 | 289 | $25,383 / 34 |
+| E3b N=30 | $174,678 | $14,342 | 298 | $24,689 / 43 |
+| E3b N=60 | $174,645 | $14,342 | 301 | $24,656 / 46 |
+| E3b N=120 | $170,983 | $16,612 | 313 | $20,994 / 58 |
+| E3b N=240 | $171,859 | $16,612 | 317 | $21,870 / 62 |
+
+**Verdict:** adds entries (+9…+28) but combined P/L ≤ baseline (best −$694 @N=30) at same-or-worse DD — L2's own
+veto is doing real work; the rescued signals are marginal. Cheap probe only (no optimizer/server; L2 anchor 10/10
+green, default off). **Three-for-three negative** (E2 L1, E3a L2-of-L1-veto, E3b L2-of-own-veto).
+
+## ★★ INTRA-CANDLE WORKSTREAM — CLOSED (2026-07-03)
+The intra-candle vetoed-entry mechanism **adds entries but never adds value** — proven across L1 (E2), L2 for L1's
+vetoed stream (E3a), and L2 for L2's own vetoed stream (E3b). Vetoes are doing real work; rescued signals are
+genuinely marginal. Feature is fully built, tested, **default-off, golden + L2-anchor byte-identical**; leave it
+off. **The bankable win of the entire workstream: the OOS-validated re-tuned L1 champion — $166,554 / 244 trades /
+DD $13,963 (+$24k over the wsh4 champion at same DD, +66% on 2026 OOS) — now wired as a dashboard profile AND the
+NQ 4h default.** Optional untested cousin: advanced-Kalman/fusion backlog (`KALMAN_ADVANCED_VARIANTS_BACKLOG.md`)
+and the parked exogenous-signal fusion (`EXOGENOUS_SIGNALS_FUSION_WISHLIST.md`, blocked on team-lead data).
 
 ## Summary so far
 
