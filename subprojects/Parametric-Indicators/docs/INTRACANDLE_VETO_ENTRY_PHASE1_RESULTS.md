@@ -47,6 +47,19 @@ target + tighter stop could drop breakeven toward ~40%, at which the already-obs
 profitable.** Two levers open under re-optimization: (1) **lower the bar** via re-tuned SL/TP; (2) **raise win% of
 admitted trades** via searched N / force-close / K / which vetoed signals.
 
+## OOS + drawdown check of the corrected force-close (fixed champion params)
+
+| | champion (off) | force-close (on) |
+|---|--:|--:|
+| ALL: n / P/L / maxDD | 214 / $142,203 / $14,082 | 423 / $143,657 / **$24,902** |
+| 2025 (IS): n / P/L / maxDD | 157 / $113,304 / $10,505 | 292 / $109,356 / $22,726 |
+| **2026 (OOS): n / P/L / maxDD** | 57 / $28,899 / $14,082 | **131 / $34,301 / $18,511** |
+
+**OOS verdict:** the feature **holds out-of-sample** — 2026 (unseen) shows **2.3× entries and +19% P/L**
+($34,301 vs $28,899), the opposite of overfitting (IS 2025 was slightly *lower*). **But drawdown roughly doubles**
+(P/L:DD ~10:1 → ~6:1), degrading the ratio L1 is valued for. **Re-optimization's job: keep the 2× entries + P/L
+while controlling DD** (DD as an explicit objective). This justifies Phase 2.
+
 **FAIR TEST (Phase 2) — re-optimize L1 with the feature ON, then validate out-of-sample.** Add the feature params
 (`intracandle_veto_entry`, `intracandle_max_wait`, `intracandle_force_close`) to the optimizer search space, run a
 fresh L1 optimization (server), and compare that new champion to the current $153,321/$142,203 champion. Target the
