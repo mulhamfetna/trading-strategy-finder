@@ -41,7 +41,7 @@ _suggest_contributor = _csearch.suggest_contributor
 
 
 def suggest_l2_params(trial, b: dict, cap: int, contrib_tokens=(),
-                      contrib_exclude=SMC_COMMITTEE_KEYS) -> dict:
+                      contrib_exclude=SMC_COMMITTEE_KEYS, intracandle: bool = False) -> dict:
     """Engine-ready L2 param dict from an Optuna trial — mirrors optimizer.objective's space (shared
     SL/TP; indicators on the 1-minute frame to match the lean L1 regime). `contrib_tokens` (opt-in) adds
     a searchable cross-instrument contributor block + topology; empty ⇒ byte-identical to the prior space.
@@ -65,13 +65,20 @@ def suggest_l2_params(trial, b: dict, cap: int, contrib_tokens=(),
             "contributor_topology", ["separate_and", "merged", "or_boost"])
         params["contributors"] = [_suggest_contributor(trial, tok, exclude_committee=contrib_exclude)
                                    for tok in contrib_tokens]
+    if intracandle:
+        # E3a focused study: force the intra-candle timing ON for L2's vetoed stream and search the wait
+        # window N. Empty/off ⇒ default L2 search space unchanged (byte-identical).
+        params["l2_intracandle"] = True
+        params["l2_intracandle_max_wait"] = trial.suggest_categorical(
+            "l2_intracandle_max_wait", [30, 60, 120, 240])
     return params
 
 
 def run(n_trials: int = 200, tf: str = "4h", study_prefix: str = "l2v1", seed: int = 1,
         min_trades: int = 5, sampler: str = "nsga3", storage_url: str | None = None,
         dd_pnl_cap: float = OPT.DD_PNL_CAP, l1_params: dict | None = None,
-        contrib_tokens=(), contrib_exclude=SMC_COMMITTEE_KEYS, instrument: str = "NQ") -> dict:
+        contrib_tokens=(), contrib_exclude=SMC_COMMITTEE_KEYS, instrument: str = "NQ",
+        intracandle: bool = False) -> dict:
     """NSGA-III search over L2 profiles. Objective = (in-sample L2 P/L, -in-sample max_dd, win-rate)
     with the DD<=dd_pnl_cap*P/L feasibility constraint; OOS (2026) is scored only for the champion.
     `l1_params` (optional) scores L2 on a CANDIDATE L1's residuals (e.g. the wsh6 cap_1min champion)
@@ -90,7 +97,7 @@ def run(n_trials: int = 200, tf: str = "4h", study_prefix: str = "l2v1", seed: i
 
     def objective(trial):
         params = suggest_l2_params(trial, b, cap, contrib_tokens=contrib_tokens,
-                                   contrib_exclude=contrib_exclude)
+                                   contrib_exclude=contrib_exclude, intracandle=intracandle)
         s = score_window(l1, params, *w["in"])
         if s["n"] < min_trades:
             raise optuna.TrialPruned()
@@ -176,6 +183,9 @@ def main() -> int:
                     help="include the slow SMC indicators (ifvg/breaker/...) in the contributor committee "
                          "search (default: EXCLUDED for speed — ~10x slower per trial; PERFORMANCE.md §9)")
     ap.add_argument("--out", default=str(_PI / "optimize" / "results"))
+    ap.add_argument("--intracandle", action="store_true",
+                    help="E3a: force L2 intra-candle entry timing ON for the vetoed stream + search the wait "
+                         "window N. Use with --prefix l2ic1. Off ⇒ default L2 search space unchanged.")
     ap.add_argument("--instrument", default="NQ",
                     help="instrument to optimize L2 on (NQ default, or ES). Non-NQ studies/champions are "
                          "suffixed (_ES); L1 residuals + pv follow the instrument automatically.")
@@ -194,7 +204,8 @@ def main() -> int:
               f"(+ topology) — search space roughly doubles per contributor", flush=True)
     res = run(n_trials=a.trials, tf=a.tf, study_prefix=a.prefix, seed=a.seed,
               min_trades=a.min_trades, sampler=a.sampler, storage_url=a.storage_url, l1_params=l1_params,
-              contrib_tokens=contrib_tokens, contrib_exclude=contrib_exclude, instrument=a.instrument)
+              contrib_tokens=contrib_tokens, contrib_exclude=contrib_exclude, instrument=a.instrument,
+              intracandle=a.intracandle)
     print(f"[l2:{a.tf}] {res['n_trials']} trials · {res['n_feasible']} feasible", flush=True)
     if res["champion"] is not None:
         p = _export_champion(res["champion"], a.tf, a.out, a.prefix,
