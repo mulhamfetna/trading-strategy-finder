@@ -58,6 +58,20 @@ def test_fast_matches_exact_feature_on():
     assert _fast_keys(F) == _exact_keys(E)         # fast port matches the exact engine trade-for-trade
 
 
+def test_cached_ic_gate_matches_runner_and_memoises():
+    # core's memoised gate must equal the parity-locked runner gate (so the optimizer passes correct inputs),
+    # and the per-indicator direction memo must populate (the perf win).
+    from optimize import core
+    C = cp.load_champion("4h")
+    core._IC_DIR_MEMO.clear()
+    g1 = core._cached_ic_gate(C["d1"], C["indicators"], C["K"])
+    g2 = runner.intracandle_gate_arrays(C["d1"], C["indicators"], C["K"])
+    assert np.array_equal(g1[+1], g2[+1]) and np.array_equal(g1[-1], g2[-1])
+    assert len(core._IC_DIR_MEMO) > 0                      # directions cached
+    g3 = core._cached_ic_gate(C["d1"], C["indicators"], C["K"])   # 2nd call reuses the memo
+    assert np.array_equal(g1[+1], g3[+1]) and np.array_equal(g1[-1], g3[-1])
+
+
 def test_fast_matches_exact_force_close():
     F = _fast_champion(ic_on=True, N=240, force_close=True)
     E, _ = run_champion_exact("4h", intracandle_veto_entry=True, intracandle_max_wait=240,
