@@ -18,7 +18,7 @@ loss ≈ −$3,340 (167-pt stop) ⇒ you must win ~**57.5%** of trades just to b
 | # | Experiment | What it tests | Status |
 |---|---|---|---|
 | **E1** | **Force-stop in-candle trades on a normal entry** (force-close) | Give the proven champion trades priority — a normal entry closes an open rescued trade | ✅ **DONE + OOS-validated** (see Exp. 4–6) |
-| **E2** | **Re-optimize L1 with in-candle enabled** | Let the optimizer re-tune L1's stop/target + `N` + force-close *together*, with drawdown as an objective, so the extra entries come without the drawdown penalty | ⏳ **IN PROGRESS** (Phase 2c wiring → 2d server run) |
+| **E2** | **Re-optimize L1 with in-candle enabled** | Let the optimizer re-tune L1's stop/target + `N` + force-close *together*, with drawdown as an objective, so the extra entries come without the drawdown penalty | ✅ **DONE** — feature works but is **dominated by re-tuned exits**; a re-tuned **feature-OFF champion ($166,554)** is the real win (see Exp. 8) |
 | **E3** | **L1 = exact current champion (in-candle OFF); optimize L2's OWN dedicated settings for the in-candle entries** | Keep the proven L1 champion untouched, and route the rescued in-candle (vetoed) entries into **Layer 2** with L2's *own* optimized stop/target/gate — so the rescued trades never disturb L1 and get handling tuned just for them | ⬜ **TODO** (new; aligns with L2 = manager of L1's dropped signals) |
 
 **Rule for all optimization experiments (E2, E3):** whenever the in-candle feature is enabled, the **wait window
@@ -118,6 +118,35 @@ normal optimizer shortcut (compute only at candle boundaries) can't be used, so 
 a full search take days — **Task 2c must cache/speed this up first.**
 
 ---
+
+### Exp. 8 — E2: re-optimize L1 with the feature (server, NQ 4h, indicators frozen at champion)
+**Purpose:** the fair test — let the optimizer re-tune stop/target + `N` + force-close *together*, drawdown as an
+explicit objective (3-obj NSGA-III: max median-fold P/L · min worst-fold DD · max entries; feasibility DD≤25%·P/L;
+5-fold median = built-in cross-validation). **Setup:** `--intracandle --freeze-indicators --ind-1min --objective
+entries` on the AMD server (Postgres), champion indicators held fixed, memoised gate. Two studies:
+
+- **`wshic1` (free on/off search, ~2,100 trials):** the optimizer **AVOIDED the feature** — only **16 of 168**
+  feature-ON trials were DD-feasible (the rescued trades blow the drawdown limit), so the sampler skipped it.
+  **Byproduct win:** the best feature-OFF trial re-tuned the exits to **full P/L $166,554 · DD $13,963 (8%) · ~68
+  med-fold entries** — **+$24k over the $142,203 champion at the SAME drawdown**, purely from better exits.
+- **`wshic2` (feature FORCED on, `--intracandle-on`, ~1,800 trials):** best feasible feature-ON:
+  **$151,287 · DD $20,727 (14%) · ~61 med-fold entries** (or $160,887 at 22% DD). Beats the champion on **P/L +
+  entries**, but at a **worse drawdown ratio** (14–22% vs the champion's 10%), and is **dominated on every axis by
+  the re-tuned feature-OFF champion** ($166,554 at 8%).
+
+| config | full P/L | DD | DD ratio | med-fold entries |
+|---|--:|--:|--:|--:|
+| champion (feature off) | $142,203 | $14,082 | 10% | ~40 |
+| **re-tuned exits, feature OFF (wshic1)** | **$166,554** | **$13,963** | **8%** | **~68** |
+| feature FORCED ON, best-ratio (wshic2) | $151,287 | $20,727 | 14% | ~61 |
+| feature FORCED ON, best-P/L (wshic2) | $160,887 | $35,607 | 22% | ~50 |
+
+**Verdict (E2):** the intra-candle feature **does** increase entries and can increase P/L, but it **worsens the
+profit-to-drawdown ratio** and is **dominated by simply re-optimizing the exits without it.** The real, bankable
+result is the **re-tuned feature-OFF champion: $166,554 at $13,963 DD (~1.7× the entries)** — a genuine L1
+improvement. **Do not ship the feature for L1.** Caveat: in-sample (5-fold median CV, but no 2026 walk-forward yet)
+— OOS-validate the $166,554 champion before promotion. The untested alternative is **E3** (dedicated L2 layer),
+where the feature's drawdown could be isolated instead of polluting L1.
 
 ## Summary so far
 
