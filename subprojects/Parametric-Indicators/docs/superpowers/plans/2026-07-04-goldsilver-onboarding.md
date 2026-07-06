@@ -588,3 +588,48 @@ signature matches its test; `resolve_paths` return `(dec, minute, box)` matches 
 **Box-column check (D1 test):** verified — NQ and GC/SI `_full_data.csv` both carry the same 53 columns
 (including `Date`, `Scraped_At`, `dOpen`… through the W/M target columns), so `test_boxes_present_and_shaped`'s
 exact-equality assertion holds as written. No relaxation needed.
+
+---
+
+## REVISION 2 (2026-07-04) — user-expanded scope: shift ES too + save a reusable pipeline
+
+The user amended scope after approving the design:
+1. **Shift ES as well** (not just GC/SI). ES currently reads its **raw** box; re-point it to a **shifted** box so
+   ALL non-NQ instruments are consistently −1-workday-shifted. **NQ stays raw** (frozen golden anchor — never
+   shifted). Shift set = **{ES, GC, SI}**.
+2. **Save a reusable onboarding pipeline** any future stock follows, with a built-in **STEP 0 human-gate**: before
+   onboarding a new stock, confirm with the user "same pipeline or a modified one?" then follow the chosen path.
+
+### Deltas to the tasks above
+
+- **Generalize, don't hardcode.** Instead of the GC/SI-only `isolated_comex_box_shift.py`, build a config-driven
+  `subprojects/all-stocks-signals/onboard_stock.py` that takes an **instrument spec** and does shift → generate →
+  validate → package for ANY token. The GC/SI-only script in Task 2 above is superseded by this generalized one;
+  its `shift_box`/`generate`/`validate`/`package` bodies are reused verbatim (only the instrument table becomes a
+  parameter). Drive it from a small `ONBOARD` dict covering `ES`, `GC`, `SI`.
+- **Task 1 (data placement):** ES candles + raw box are ALREADY on disk (`ALL_STOCKS/CANDLES/CME/ES_Continuous_Data`,
+  `ALL_STOCKS/BOXS/CME/ES/ES_full_data.csv`). Only GC/SI need placing. ES just needs shifting + re-wiring.
+- **Task 3 (registration) additions:**
+  - `optimize/instruments.py` `TOKENS = ("NQ","ES","GC","SI")`, add GC/SI point values (ES already 50.0).
+  - **Update the existing** `optimize/test_instruments.py::test_tokens_and_point_values` (currently asserts
+    `("NQ","ES")`) → `("NQ","ES","GC","SI")` + GC 100 / SI 5000. (This is the ONLY pre-existing test the change
+    breaks; verified all other ES tests check candle medians/structure, unaffected by a box shift.)
+  - In `all-stocks-signals/instruments.py`, **re-point ES's `box_csv`** from `_box('CME','ES','ES_full_data.csv')`
+    to `_shifted_box('ES')` (same shifted-box helper GC/SI use).
+  - **Rename the stale ES champion:** `optimize/results/wsh4_champions_full_ES.json` →
+    `wsh4_champions_full_ES.stale-rawbox.json` (keep for history) so `instrument_l1_default("ES")` falls back to
+    the scaled-permissive default until ES is re-optimized on the shifted box. Add a one-line note in the status
+    doc that ES's Jun-30 pareto set (`*_wsi_pareto_ES.*`) is now raw-box history, pending re-opt.
+- **New Task 5 — reusable pipeline SOP.** Create `subprojects/all-stocks-signals/NEW_STOCK_ONBOARDING_SOP.md`
+  documenting the exact repeatable steps (place data → `onboard_stock.py` shift+signals → register in both
+  registries → golden 6/6 → optimizer smoke → GATE server campaigns), led by:
+  > **STEP 0 (human-gate):** When a new stock arrives, confirm with the user: *use this same pipeline, or a
+  > modified one?* Do not run until they choose. Default map: box shift = −1 workday; point-value must be
+  > confirmed per contract (full vs micro); NQ is never shifted.
+- **Task 4 (smoke) additions:** also run an ES 1-trial smoke on the shifted box (`--study-prefix es_shift1
+  --instrument ES`) to prove the re-wire; status doc lists ES re-opt among the gated campaigns.
+
+### Revised safety notes
+- Golden stays NQ-only 6/6 (NQ untouched) — unchanged gate.
+- Shifting ES changes ES backtest/optimization results (expected). No ES exact-number test breaks; the stale
+  champion is retired to fallback (documented), not silently served on mismatched data.
