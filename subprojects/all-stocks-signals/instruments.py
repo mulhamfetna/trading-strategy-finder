@@ -43,6 +43,12 @@ def _box(*parts: str) -> str:
     return os.path.join(_ALL, 'BOXS', *parts)
 
 
+def _shifted_box(token: str) -> str:
+    # Non-NQ instruments read the -1-workday-shifted box (written by onboard_stock.py) so the delivered
+    # signals and the backtest use the same box. NQ is never shifted (frozen anchor).
+    return os.path.join(os.path.dirname(__file__), 'shifted_boxes', f'{token}_full_data_shifted.csv')
+
+
 REGISTRY: Dict[str, Instrument] = {
     'NQ': Instrument(
         token='NQ',
@@ -51,7 +57,15 @@ REGISTRY: Dict[str, Instrument] = {
     'ES': Instrument(
         token='ES',
         candle_dir=_cdir('CME', 'ES_Continuous_Data'), candle_prefix='ES',
-        box_csv=_box('CME', 'ES', 'ES_full_data.csv')),
+        box_csv=_shifted_box('ES')),                 # shifted -1 workday (2026-07-06); raw box retired
+    'GC': Instrument(
+        token='GC',
+        candle_dir=_cdir('COMEX', 'GC_Continuous_Data'), candle_prefix='GC',
+        box_csv=_shifted_box('GC')),
+    'SI': Instrument(
+        token='SI',
+        candle_dir=_cdir('COMEX', 'SI_Continuous_Data'), candle_prefix='SI',
+        box_csv=_shifted_box('SI')),
     'QQQ-RTH': Instrument(
         token='QQQ-RTH',
         candle_dir=_cdir('ETF', 'QQQ_Data', 'RTH'), candle_prefix='QQQ_RTH',
