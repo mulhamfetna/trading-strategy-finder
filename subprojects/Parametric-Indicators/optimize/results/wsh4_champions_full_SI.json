@@ -1,0 +1,276 @@
+{
+ "2m": {
+  "median_pnl": 7004.9,
+  "full_pnl": 32642.1,
+  "full_dd": 2881.5,
+  "win": 46.5,
+  "box": {
+   "sl_soft": 0.0,
+   "sl_hard": 0.0,
+   "tp": 0.0,
+   "gate_pct": 97.1,
+   "dd_limit": 7.0,
+   "cooldown": 1,
+   "flip": true,
+   "k": 1,
+   "cap_1min": 458
+  },
+  "indicators": {
+   "bollinger": {
+    "n": 145,
+    "k": 2.0
+   },
+   "breaker": {
+    "swing_l": 19
+   },
+   "keltner": {
+    "n": 167,
+    "m": 1.7
+   },
+   "order_block": {
+    "swing_l": 7
+   },
+   "structure_trend": {
+    "swing_l": 16
+   }
+  }
+ },
+ "5m": {
+  "median_pnl": 6908.3,
+  "full_pnl": 27426.8,
+  "full_dd": 4109.5,
+  "win": 54.9,
+  "box": {
+   "sl_soft": 0.0,
+   "sl_hard": 0.1,
+   "tp": 0.1,
+   "gate_pct": 92.7,
+   "dd_limit": 3.0,
+   "cooldown": 0,
+   "flip": true,
+   "k": 2,
+   "cap_1min": 704
+  },
+  "indicators": {
+   "bollinger": {
+    "n": 135,
+    "k": 2.5
+   },
+   "cci": {
+    "n": 135,
+    "threshold": 145
+   },
+   "fvg": {
+    "lookback": 2
+   },
+   "mfi": {
+    "n": 25,
+    "lower": 40,
+    "upper": 58
+   },
+   "obv": {
+    "slope": 57
+   },
+   "order_block": {
+    "swing_l": 15
+   },
+   "sma_trend": {
+    "fast": 81,
+    "slow": 8
+   },
+   "vwap": {}
+  }
+ },
+ "15m": {
+  "median_pnl": 598.8,
+  "full_pnl": 2629.7,
+  "full_dd": 437.1,
+  "win": 87.8,
+  "box": {
+   "sl_soft": 0.0,
+   "sl_hard": 0.1,
+   "tp": 0.0,
+   "gate_pct": 92.7,
+   "dd_limit": 8.0,
+   "cooldown": 8,
+   "flip": true,
+   "k": 1,
+   "cap_1min": 458
+  },
+  "indicators": {
+   "adx": {
+    "n": 24,
+    "threshold": 10
+   },
+   "bollinger": {
+    "n": 67,
+    "k": 1.0
+   },
+   "cci": {
+    "n": 164,
+    "threshold": 160
+   },
+   "cisd": {},
+   "fvg": {
+    "lookback": 37
+   },
+   "keltner": {
+    "n": 58,
+    "m": 1.5
+   },
+   "macd": {
+    "fast": 31,
+    "slow": 33,
+    "signal": 36
+   },
+   "obv": {
+    "slope": 12
+   },
+   "order_block": {
+    "swing_l": 6
+   },
+   "structure_trend": {
+    "swing_l": 12
+   }
+  }
+ },
+ "1h": {
+  "median_pnl": 2394.3,
+  "full_pnl": 7760.1,
+  "full_dd": 1075.0,
+  "win": 89.8,
+  "box": {
+   "sl_soft": 0.0,
+   "sl_hard": 0.2,
+   "tp": 0.0,
+   "gate_pct": 97.8,
+   "dd_limit": 3.0,
+   "cooldown": 2,
+   "flip": true,
+   "k": 2,
+   "cap_1min": 180
+  },
+  "indicators": {
+   "bollinger": {
+    "n": 77,
+    "k": 2.8
+   },
+   "fvg": {
+    "lookback": 50
+   },
+   "macd": {
+    "fast": 7,
+    "slow": 161,
+    "signal": 91
+   },
+   "obv": {
+    "slope": 130
+   },
+   "order_block": {
+    "swing_l": 20
+   },
+   "rsi": {
+    "n": 81,
+    "lower": 41,
+    "upper": 53
+   },
+   "stochastic": {
+    "n": 64,
+    "d": 15,
+    "lower": 42,
+    "upper": 59
+   },
+   "vwap": {}
+  }
+ },
+ "2h": {
+  "median_pnl": 5779.0,
+  "full_pnl": 31428.0,
+  "full_dd": 6303.7,
+  "win": 69.5,
+  "box": {
+   "sl_soft": 0.2,
+   "sl_hard": 0.2,
+   "tp": 0.1,
+   "gate_pct": 97.0,
+   "dd_limit": 3.0,
+   "cooldown": 1,
+   "flip": false,
+   "k": 2,
+   "cap_1min": 1153
+  },
+  "indicators": {
+   "cci": {
+    "n": 35,
+    "threshold": 145
+   },
+   "cisd": {},
+   "ema_trend": {
+    "fast": 283,
+    "slow": 398
+   },
+   "mfi": {
+    "n": 59,
+    "lower": 21,
+    "upper": 71
+   },
+   "order_block": {
+    "swing_l": 8
+   },
+   "rsi": {
+    "n": 26,
+    "lower": 30,
+    "upper": 83
+   },
+   "vwap": {}
+  }
+ },
+ "4h": {
+  "median_pnl": 5778.4,
+  "full_pnl": 24671.0,
+  "full_dd": 4994.7,
+  "win": 57.9,
+  "box": {
+   "sl_soft": 0.3,
+   "sl_hard": 0.6,
+   "tp": 0.3,
+   "gate_pct": 97.9,
+   "dd_limit": 4.0,
+   "cooldown": 0,
+   "flip": false,
+   "k": 1,
+   "cap_1min": 1341
+  },
+  "indicators": {
+   "breaker": {
+    "swing_l": 18
+   },
+   "cci": {
+    "n": 129,
+    "threshold": 30
+   },
+   "ifvg": {},
+   "mfi": {
+    "n": 24,
+    "lower": 16,
+    "upper": 65
+   },
+   "obv": {
+    "slope": 97
+   },
+   "rsi": {
+    "n": 76,
+    "lower": 45,
+    "upper": 89
+   },
+   "sma_trend": {
+    "fast": 177,
+    "slow": 93
+   },
+   "structure_trend": {
+    "swing_l": 5
+   },
+   "vwap": {}
+  }
+ }
+}
