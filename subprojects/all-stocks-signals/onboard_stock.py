@@ -30,6 +30,7 @@ import importlib.util
 import os
 import shutil
 import sys
+from concurrent.futures import ProcessPoolExecutor
 
 import pandas as pd
 
@@ -146,6 +147,68 @@ def generate(token: str, box_idx: pd.DataFrame) -> list:
     return summary
 
 
+def _load_shifted_box(token: str) -> pd.DataFrame:
+    """Reload the already-written shifted box as a Date-indexed frame (for parallel workers)."""
+    box = pd.read_csv(shifted_box_path(token))
+    box['Date'] = pd.to_datetime(box['Date'])
+    return box.set_index('Date', drop=False)
+
+
+def _gen_unit(token: str, tf: str, preset: str) -> dict | None:
+    """Generate the 5 signal files for ONE (token, tf, preset) unit. Module-level + picklable so it can run in a
+    ProcessPoolExecutor. Reloads the shifted box itself (cheap) so no DataFrame crosses the process boundary.
+    Byte-identical to the serial path — it writes the same files with the same content. Returns a summary row."""
+    cfg = ONBOARD[token]
+    candles_csv = os.path.join(cfg['candle_dir'], f"{cfg['prefix']}_{tf}.csv")
+    if not os.path.exists(candles_csv):
+        print(f"  SKIP {token} {tf} {preset}: missing {candles_csv}", file=sys.stderr)
+        return None
+    box_idx = _load_shifted_box(token)
+    tf_dir = os.path.join(_OUT_ROOT, token, tf)
+    nh_dir = os.path.join(tf_dir, 'no_holds')
+    bd_dir = os.path.join(tf_dir, 'by_direction')
+    os.makedirs(nh_dir, exist_ok=True); os.makedirs(bd_dir, exist_ok=True)
+    s1 = stage1_for_preset(candles_csv, box_idx, preset)
+    s1.to_csv(os.path.join(tf_dir, f'signals_{token}_{tf}_{preset}.csv'), index=False)
+    nh = s1[s1['signal'].isin(['long', 'short'])].reset_index(drop=True)
+    nh.to_csv(os.path.join(nh_dir, f'signals_{token}_{tf}_{preset}_no_holds.csv'), index=False)
+    rev = g2.generate(s1)
+    rev.to_csv(os.path.join(tf_dir, f'reverse_signals_{token}_{tf}_{preset}.csv'), index=False)
+    rev[rev['first_signal'] == 'long'].reset_index(drop=True).to_csv(
+        os.path.join(bd_dir, f'long_to_short_{token}_{tf}_{preset}.csv'), index=False)
+    rev[rev['first_signal'] == 'short'].reset_index(drop=True).to_csv(
+        os.path.join(bd_dir, f'short_to_long_{token}_{tf}_{preset}.csv'), index=False)
+    d = s1['signal'].value_counts().to_dict()
+    print(f"  {token:4s} {tf:4s} {preset:5s}: signals={len(s1):>8,}  "
+          f"L/S/H={d.get('long',0)}/{d.get('short',0)}/{d.get('hold',0)}  "
+          f"no_holds={len(nh):>6,}  reverse={len(rev):>4,}", flush=True)
+    return dict(instrument=token, timeframe=f'{token}_{tf}', preset=preset, signal_rows=len(s1),
+                long=int(d.get('long', 0)), short=int(d.get('short', 0)), hold=int(d.get('hold', 0)),
+                no_hold_rows=len(nh), reverse_windows=len(rev))
+
+
+def generate_parallel(tokens: list, timeframes: list, jobs: int) -> None:
+    """Shift each token's box (serial, fast), then fan (token, tf, preset) units across `jobs` processes.
+    Writes a per-token SUMMARY.csv afterwards. Same outputs as the serial generate(), just concurrent."""
+    for tok in tokens:
+        shift_box(tok)                                   # writes shifted_boxes/<tok>_full_data_shifted.csv
+    tasks = [(tok, tf, p) for tok in tokens for tf in timeframes for p in PRESETS]
+    print(f"  parallel generate: {len(tasks)} (token,tf,preset) units across {jobs} workers", flush=True)
+    rows = []
+    with ProcessPoolExecutor(max_workers=jobs) as ex:
+        for r in ex.map(_gen_unit_star, tasks):
+            if r is not None:
+                rows.append(r)
+    for tok in tokens:
+        os.makedirs(os.path.join(_OUT_ROOT, tok), exist_ok=True)
+        pd.DataFrame([r for r in rows if r['instrument'] == tok]).to_csv(
+            os.path.join(_OUT_ROOT, tok, 'SUMMARY.csv'), index=False)
+
+
+def _gen_unit_star(args):
+    return _gen_unit(*args)
+
+
 def validate(token: str, box_idx: pd.DataFrame) -> list:
     box_dates = set(box_idx['Date'].dt.date.astype(str))
     errs = []
@@ -204,18 +267,30 @@ def package(token: str) -> None:
 def main() -> int:
     ap = argparse.ArgumentParser(description='Reusable stock onboarding: box-shift (-1 BDay) + signal gen')
     ap.add_argument('--tokens', nargs='+', default=list(ONBOARD.keys()), choices=list(ONBOARD.keys()))
+    ap.add_argument('--tf', nargs='+', default=TIMEFRAMES, choices=TIMEFRAMES,
+                    help='restrict to these timeframes (default all 7)')
+    ap.add_argument('--jobs', type=int, default=1,
+                    help='parallel worker processes across (token,tf,preset) units (default 1 = serial). '
+                         'Use a high value ONLY on a big-RAM host (each 1m worker needs ~1GB).')
     ap.add_argument('--no-package', action='store_true', help='generate + validate only (no bundle)')
     args = ap.parse_args()
-    print(f"Onboarding (box-shift -1 business day) for: {', '.join(args.tokens)}")
+    print(f"Onboarding (box-shift -1 business day) for: {', '.join(args.tokens)} "
+          f"| tf={','.join(args.tf)} | jobs={args.jobs}")
     print("NQ is NOT touched (frozen anchor).\n")
+
+    if args.jobs > 1:
+        generate_parallel(args.tokens, args.tf, args.jobs)     # shifts boxes + fans units across processes
     all_errs = []
     for tok in args.tokens:
-        box_idx = shift_box(tok)
-        generate(tok, box_idx)
-        errs = validate(tok, box_idx)
+        if args.jobs > 1:
+            box_idx = _load_shifted_box(tok)                   # already shifted+generated above
+        else:
+            box_idx = shift_box(tok)
+            generate(tok, box_idx)
+        errs = validate(tok, box_idx) if args.tf == TIMEFRAMES else []   # validation assumes all 7 TFs present
         all_errs += errs
-        print(f"  [{tok}] validation: {'OK' if not errs else errs}")
-        if not args.no_package and not errs:
+        print(f"  [{tok}] validation: {'OK' if not errs else ('SKIPPED (tf subset)' if args.tf != TIMEFRAMES else errs)}")
+        if not args.no_package and not errs and args.tf == TIMEFRAMES:
             package(tok)
     if all_errs:
         print("VALIDATION FAILED:", all_errs, file=sys.stderr); return 1

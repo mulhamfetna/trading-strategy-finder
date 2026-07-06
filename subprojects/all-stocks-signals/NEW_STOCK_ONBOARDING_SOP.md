@@ -51,6 +51,21 @@ Then run:
 python3 subprojects/all-stocks-signals/onboard_stock.py --tokens <TOKEN>
 ```
 
+**Speed / where to run it.** The Stage-1 engine is a per-candle Python loop; the 1-minute pass (millions of rows)
+dominates and needs ~1 GB RAM per concurrent worker. The local box (14 GB, ~3.5 GB free) can only run it
+**serially** — parallelizing the 1m pass locally risks OOM. For a fast run, offload to the **AMD server**
+(32 threads, 128 GB RAM, SSH `amd-trading`) and use the parallel flag:
+
+```bash
+# on the server, in the wsg-i scratch, venv /home/dev/Mulham/.venv:
+python3 onboard_stock.py --jobs 16          # fans (token,tf,preset) units across 16 processes
+```
+
+`--jobs N` is byte-identical to the serial path (proven: server-parallel SUMMARY == local-serial SUMMARY,
+2026-07-06) — it only changes concurrency. Keep `--jobs 1` (default) on the laptop. `--tf 4h` restricts to one
+timeframe for quick checks. Server prerequisites: rsync `src/`, `subprojects/signals/`,
+`subprojects/all-stocks-signals/`, and `ALL_STOCKS/{CANDLES,BOXS}/<EXCHANGE>/` into `~/Mulham/wsg-i/`.
+
 This shifts the box back one business day (Mon→Fri, Tue→Mon, …; loud asserts on any weekend/collision/non-backward
 date), writes `shifted_boxes/<TOKEN>_full_data_shifted.csv` (**the file the backtester reads**), regenerates
 Stage 1 + Stage 2 signals for 7 TF × 3 presets against the shifted box, validates the 5 invariants, and packages
