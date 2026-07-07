@@ -69,7 +69,7 @@ _RESULTS = _HERE / "results"
 _REPORTS = _HERE / "reports"
 _RESULTS.mkdir(exist_ok=True); _REPORTS.mkdir(exist_ok=True)
 TFS = ["1m", "2m", "5m", "15m", "1h", "2h", "4h"]
-DD_CAP = 0.25
+DD_CAP = float(os.environ.get("WSH_DD_CAP", "0.25"))   # feasibility gate (full_dd ≤ DD_CAP·full_pnl); env-relaxable
 
 
 def _feasible(t) -> bool:
