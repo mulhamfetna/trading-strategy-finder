@@ -66,6 +66,14 @@ REGISTRY: Dict[str, Instrument] = {
         token='SI',
         candle_dir=_cdir('COMEX', 'SI_Continuous_Data'), candle_prefix='SI',
         box_csv=_shifted_box('SI')),
+    'RTY': Instrument(
+        token='RTY',
+        candle_dir=_cdir('CME', 'RTY_Continuous_Data'), candle_prefix='RTY',
+        box_csv=_shifted_box('RTY')),
+    'YM': Instrument(
+        token='YM',
+        candle_dir=_cdir('CME', 'YM_Continuous_Data'), candle_prefix='YM',
+        box_csv=_shifted_box('YM')),
     'QQQ-RTH': Instrument(
         token='QQQ-RTH',
         candle_dir=_cdir('ETF', 'QQQ_Data', 'RTH'), candle_prefix='QQQ_RTH',

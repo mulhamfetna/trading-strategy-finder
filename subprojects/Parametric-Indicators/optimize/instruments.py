@@ -21,8 +21,8 @@ _RAW = _BASE / TF.RAW_DIR
 _BOX_CSV = config.DATA_ROOT / "full_data" / "NQ_full_data.csv"
 _INST_PATH = _BASE / "subprojects" / "all-stocks-signals" / "instruments.py"
 
-TOKENS: tuple[str, ...] = ("NQ", "ES", "GC", "SI")           # + COMEX metals 2026-07-06; ETFs still deferred
-POINT_VALUE: dict[str, float] = {"NQ": 20.0, "ES": 50.0, "GC": 100.0, "SI": 5000.0}
+TOKENS: tuple[str, ...] = ("NQ", "ES", "GC", "SI", "RTY", "YM")   # + COMEX metals + CME RTY/YM index; ETFs deferred
+POINT_VALUE: dict[str, float] = {"NQ": 20.0, "ES": 50.0, "GC": 100.0, "SI": 5000.0, "RTY": 50.0, "YM": 5.0}
 
 
 def _load_registry():
