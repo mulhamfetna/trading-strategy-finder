@@ -14,107 +14,104 @@ NSGA-III, 3 objectives (median fold P/L ↑, worst-fold maxDD ↓, median win-ra
 
 | TF | complete | feasible | front | med P/L | worst DD | win% | full P/L | DD%·P/L | K | #ind | indicators |
 |---|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|---|
-| 2m | 5351 | 3646 | 110 | $2,988 | $1,090 | 83 | $9,710 | 12% | 4 | 10 | bollinger;cci;cisd;ema_trend;macd;mfi;order_block;rsi;sma_trend;stochastic |
-| 5m | 5181 | 4404 | 38 | $2,680 | $549 | 89 | $11,241 | 4% | 1 | 9 | bollinger;cci;cisd;ema_trend;macd;mfi;sma_trend;stochastic;structure_trend |
-| 15m | 4904 | 3302 | 169 | $4,996 | $1,009 | 56 | $17,666 | 6% | 3 | 8 | cisd;fvg;macd;mfi;order_block;sma_trend;structure_trend;vwap |
-| 1h | 4296 | 2131 | 364 | $7,520 | $4,694 | 75 | $33,112 | 9% | 1 | 5 | bollinger;cci;ema_trend;keltner;stochastic |
-| 2h | 4431 | 3177 | 207 | $4,601 | $562 | 96 | $11,069 | 5% | 1 | 10 | bollinger;breaker;cci;cisd;ema_trend;keltner;mfi;rsi;stochastic;vwap |
-| 4h | 4772 | 2943 | 330 | $21,565 | $5,888 | 66 | $58,418 | 11% | 1 | 7 | adx;ema_trend;ifvg;macd;obv;order_block;sma_trend |
+| 2m | 4679 | 2072 | 131 | $3,832 | $1,448 | 55 | $10,476 | 16% | 3 | 7 | adx;bollinger;breaker;cisd;ema_trend;fvg;obv |
+| 5m | 4565 | 3859 | 93 | $1,989 | $560 | 62 | $7,855 | 10% | 3 | 9 | bollinger;breaker;cci;cisd;ema_trend;fvg;order_block;sma_trend;structure_trend |
+| 15m | 5096 | 3762 | 361 | $2,892 | $761 | 94 | $11,215 | 7% | 3 | 9 | bollinger;cci;cisd;fvg;ifvg;keltner;macd;mfi;rsi |
+| 1h | 5054 | 3614 | 185 | $16,520 | $8,449 | 58 | $61,638 | 14% | 4 | 8 | breaker;fvg;keltner;obv;order_block;rsi;sma_trend;vwap |
+| 2h | 4746 | 3248 | 414 | $17,994 | $6,993 | 40 | $72,777 | 10% | 3 | 6 | bollinger;breaker;order_block;rsi;stochastic;vwap |
+| 4h | 4513 | 2731 | 222 | $15,080 | $8,493 | 62 | $47,434 | 23% | 3 | 7 | breaker;cisd;ema_trend;keltner;macd;order_block;structure_trend |
 
 ## Full champion recipe per timeframe
 
 Everything needed to reproduce each per-TF best hit: the box / risk knobs **and** every enabled indicator's tuned internal parameters. (Disabled indicators omitted; `vwap` has no internal params.)
 
-### 2m  —  median fold P/L $2,988  ·  worst DD $1,090  ·  win 83%  ·  full P/L $9,710 (12% DD)
+### 2m  —  median fold P/L $3,832  ·  worst DD $1,448  ·  win 55%  ·  full P/L $10,476 (16% DD)
 
-- **Box / risk:** softSL `4.1` · hardSL `6.3` · TP `2.2` · vol-gate `75.1%` · dd-breaker `$919` · cooldown `14` · flip `True` · **K=`4`**
+- **Box / risk:** softSL `3.1` · hardSL `8.4` · TP `5.9` · vol-gate `74.2%` · dd-breaker `$966` · cooldown `19` · flip `True` · **K=`3`**
 
 | indicator | role | tuned internal params |
 |---|---|---|
-| **bollinger** | veto | `n=79`, `k=4.0` |
-| **cci** | both | `n=132`, `threshold=220` |
+| **adx** | veto | `n=2`, `threshold=32` |
+| **bollinger** | veto | `n=91`, `k=1.4` |
+| **breaker** | both | `swing_l=5` |
 | **cisd** | both | _(none)_ |
-| **ema_trend** | confirm | `fast=154`, `slow=282` |
-| **macd** | confirm | `fast=2`, `slow=168`, `signal=51` |
-| **mfi** | both | `n=39`, `lower=31`, `upper=71` |
-| **order_block** | both | `swing_l=13` |
-| **rsi** | both | `n=98`, `lower=47`, `upper=70` |
-| **sma_trend** | confirm | `fast=121`, `slow=242` |
-| **stochastic** | both | `n=24`, `d=29`, `lower=48`, `upper=86` |
+| **ema_trend** | confirm | `fast=65`, `slow=292` |
+| **fvg** | both | `lookback=9` |
+| **obv** | confirm | `slope=18` |
 
-### 5m  —  median fold P/L $2,680  ·  worst DD $549  ·  win 89%  ·  full P/L $11,241 (4% DD)
+### 5m  —  median fold P/L $1,989  ·  worst DD $560  ·  win 62%  ·  full P/L $7,855 (10% DD)
 
-- **Box / risk:** softSL `6.2` · hardSL `12.1` · TP `2.3` · vol-gate `67.2%` · dd-breaker `$1,274` · cooldown `19` · flip `True` · **K=`1`**
+- **Box / risk:** softSL `2.3` · hardSL `4.2` · TP `9.6` · vol-gate `55.9%` · dd-breaker `$883` · cooldown `15` · flip `True` · **K=`3`**
 
 | indicator | role | tuned internal params |
 |---|---|---|
-| **bollinger** | veto | `n=9`, `k=2.5` |
-| **cci** | both | `n=151`, `threshold=65` |
+| **bollinger** | veto | `n=9`, `k=0.8` |
+| **breaker** | both | `swing_l=20` |
+| **cci** | both | `n=73`, `threshold=235` |
 | **cisd** | both | _(none)_ |
-| **ema_trend** | confirm | `fast=8`, `slow=324` |
-| **macd** | confirm | `fast=48`, `slow=84`, `signal=62` |
-| **mfi** | both | `n=21`, `lower=29`, `upper=87` |
-| **sma_trend** | confirm | `fast=189`, `slow=45` |
-| **stochastic** | both | `n=66`, `d=49`, `lower=48`, `upper=94` |
-| **structure_trend** | both | `swing_l=17` |
+| **ema_trend** | confirm | `fast=58`, `slow=292` |
+| **fvg** | both | `lookback=12` |
+| **order_block** | both | `swing_l=6` |
+| **sma_trend** | confirm | `fast=355`, `slow=212` |
+| **structure_trend** | both | `swing_l=8` |
 
-### 15m  —  median fold P/L $4,996  ·  worst DD $1,009  ·  win 56%  ·  full P/L $17,666 (6% DD)
+### 15m  —  median fold P/L $2,892  ·  worst DD $761  ·  win 94%  ·  full P/L $11,215 (7% DD)
 
-- **Box / risk:** softSL `3.6` · hardSL `7.7` · TP `15.9` · vol-gate `88.1%` · dd-breaker `$998` · cooldown `4` · flip `False` · **K=`3`**
+- **Box / risk:** softSL `9.2` · hardSL `15.2` · TP `2.6` · vol-gate `83.2%` · dd-breaker `$1,231` · cooldown `13` · flip `True` · **K=`3`**
 
 | indicator | role | tuned internal params |
 |---|---|---|
+| **bollinger** | veto | `n=187`, `k=4.9` |
+| **cci** | both | `n=122`, `threshold=25` |
 | **cisd** | both | _(none)_ |
-| **fvg** | both | `lookback=14` |
-| **macd** | confirm | `fast=43`, `slow=130`, `signal=62` |
-| **mfi** | both | `n=2`, `lower=4`, `upper=74` |
-| **order_block** | both | `swing_l=14` |
-| **sma_trend** | confirm | `fast=371`, `slow=117` |
-| **structure_trend** | both | `swing_l=11` |
-| **vwap** | confirm | _(none)_ |
-
-### 1h  —  median fold P/L $7,520  ·  worst DD $4,694  ·  win 75%  ·  full P/L $33,112 (9% DD)
-
-- **Box / risk:** softSL `18.2` · hardSL `20.3` · TP `11.2` · vol-gate `73.0%` · dd-breaker `$1,205` · cooldown `4` · flip `False` · **K=`1`**
-
-| indicator | role | tuned internal params |
-|---|---|---|
-| **bollinger** | veto | `n=32`, `k=4.0` |
-| **cci** | both | `n=139`, `threshold=300` |
-| **ema_trend** | confirm | `fast=317`, `slow=121` |
-| **keltner** | confirm | `n=184`, `m=1.8` |
-| **stochastic** | both | `n=89`, `d=45`, `lower=7`, `upper=51` |
-
-### 2h  —  median fold P/L $4,601  ·  worst DD $562  ·  win 96%  ·  full P/L $11,069 (5% DD)
-
-- **Box / risk:** softSL `24.6` · hardSL `43.8` · TP `5.9` · vol-gate `83.2%` · dd-breaker `$1,138` · cooldown `3` · flip `True` · **K=`1`**
-
-| indicator | role | tuned internal params |
-|---|---|---|
-| **bollinger** | veto | `n=132`, `k=1.8` |
-| **breaker** | both | `swing_l=19` |
-| **cci** | both | `n=104`, `threshold=160` |
-| **cisd** | both | _(none)_ |
-| **ema_trend** | confirm | `fast=259`, `slow=338` |
-| **keltner** | confirm | `n=149`, `m=2.5` |
-| **mfi** | both | `n=89`, `lower=42`, `upper=98` |
-| **rsi** | both | `n=7`, `lower=24`, `upper=59` |
-| **stochastic** | both | `n=95`, `d=27`, `lower=14`, `upper=98` |
-| **vwap** | confirm | _(none)_ |
-
-### 4h  —  median fold P/L $21,565  ·  worst DD $5,888  ·  win 66%  ·  full P/L $58,418 (11% DD)
-
-- **Box / risk:** softSL `32.5` · hardSL `74.8` · TP `48.1` · vol-gate `72.6%` · dd-breaker `$126` · cooldown `0` · flip `False` · **K=`1`**
-
-| indicator | role | tuned internal params |
-|---|---|---|
-| **adx** | veto | `n=57`, `threshold=6` |
-| **ema_trend** | confirm | `fast=338`, `slow=50` |
+| **fvg** | both | `lookback=9` |
 | **ifvg** | both | _(none)_ |
-| **macd** | confirm | `fast=42`, `slow=82`, `signal=91` |
-| **obv** | confirm | `slope=115` |
-| **order_block** | both | `swing_l=5` |
-| **sma_trend** | confirm | `fast=47`, `slow=32` |
+| **keltner** | confirm | `n=114`, `m=2.6` |
+| **macd** | confirm | `fast=84`, `slow=85`, `signal=43` |
+| **mfi** | both | `n=56`, `lower=47`, `upper=52` |
+| **rsi** | both | `n=50`, `lower=21`, `upper=57` |
+
+### 1h  —  median fold P/L $16,520  ·  worst DD $8,449  ·  win 58%  ·  full P/L $61,638 (14% DD)
+
+- **Box / risk:** softSL `15.9` · hardSL `18.5` · TP `30.6` · vol-gate `78.6%` · dd-breaker `$1,352` · cooldown `1` · flip `False` · **K=`4`**
+
+| indicator | role | tuned internal params |
+|---|---|---|
+| **breaker** | both | `swing_l=14` |
+| **fvg** | both | `lookback=23` |
+| **keltner** | confirm | `n=185`, `m=3.8` |
+| **obv** | confirm | `slope=51` |
+| **order_block** | both | `swing_l=19` |
+| **rsi** | both | `n=88`, `lower=45`, `upper=80` |
+| **sma_trend** | confirm | `fast=142`, `slow=329` |
+| **vwap** | confirm | _(none)_ |
+
+### 2h  —  median fold P/L $17,994  ·  worst DD $6,993  ·  win 40%  ·  full P/L $72,777 (10% DD)
+
+- **Box / risk:** softSL `12.4` · hardSL `18.3` · TP `40.0` · vol-gate `92.2%` · dd-breaker `$674` · cooldown `1` · flip `False` · **K=`3`**
+
+| indicator | role | tuned internal params |
+|---|---|---|
+| **bollinger** | veto | `n=58`, `k=2.8` |
+| **breaker** | both | `swing_l=11` |
+| **order_block** | both | `swing_l=14` |
+| **rsi** | both | `n=99`, `lower=28`, `upper=90` |
+| **stochastic** | both | `n=75`, `d=50`, `lower=20`, `upper=91` |
+| **vwap** | confirm | _(none)_ |
+
+### 4h  —  median fold P/L $15,080  ·  worst DD $8,493  ·  win 62%  ·  full P/L $47,434 (23% DD)
+
+- **Box / risk:** softSL `41.5` · hardSL `93.4` · TP `50.4` · vol-gate `79.3%` · dd-breaker `$937` · cooldown `1` · flip `False` · **K=`3`**
+
+| indicator | role | tuned internal params |
+|---|---|---|
+| **breaker** | both | `swing_l=7` |
+| **cisd** | both | _(none)_ |
+| **ema_trend** | confirm | `fast=377`, `slow=261` |
+| **keltner** | confirm | `n=142`, `m=3.2` |
+| **macd** | confirm | `fast=27`, `slow=153`, `signal=6` |
+| **order_block** | both | `swing_l=18` |
+| **structure_trend** | both | `swing_l=10` |
 
 ## Notes / caveats
 - Per-TF feasible fronts + plots: `optimize/results/<tf>_wsi_pareto.{csv,png}`.
