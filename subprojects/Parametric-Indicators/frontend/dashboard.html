@@ -504,7 +504,7 @@ function renderView(view){
   const ps=H.price.series, es=H.equity.series, vs=H.vol.series, sts=H.state.series, dds=H.drawdown.series;
   ps.candle.setData(D.candles||[]);
   const t0=D.candles&&D.candles.length?D.candles[0].time:0, t1=D.candles&&D.candles.length?D.candles[D.candles.length-1].time:0;
-  const hi=D.candles&&D.candles.length?Math.max(...D.candles.map(c=>c.high)):0;
+  const hi=D.candles&&D.candles.length?D.candles.reduce((m,c)=>c.high>m?c.high:m,-Infinity):0;  // reduce, not spread: heavy-TF candle arrays overflow Math.max(...)'s arg stack
   const shade=[]; (D.l1_spans||[]).forEach(sp=>{shade.push({time:sp.from,value:hi},{time:sp.to,value:hi},{time:sp.to+1});});
   try{ps.shade.setData(dedupe(shade));}catch(e){}
   const L=lineFor(tr); try{ps.tp.setData(dedupe(L.tp));ps.sh.setData(dedupe(L.sh));ps.ss.setData(dedupe(L.ss));}catch(e){}

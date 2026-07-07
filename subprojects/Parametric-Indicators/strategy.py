@@ -314,11 +314,14 @@ def build_payload(df4, df1, box, vf, n2025, params=None, instrument: str = "NQ")
         # warm-up now counts 1-minute candles. (src=None would keep the decision-TF behaviour.)
         # Honor the settings-panel "Indicators on 1-min" toggle: True (default) → indicators read the 1-minute
         # frame; False → src=None keeps decision-TF behaviour. (Was unconditionally 1-min, ignoring the flag.)
-        ind_src = (runner.indicator_source_1min(d4, d1, bar_td)
+        # MEMOISED (perf): reuse the optimizer's _cached_source/_cached_votes so a dashboard Run doesn't rebuild
+        # the (param-independent) 1-minute indicator source from scratch every click — result-neutral, cached
+        # across Runs. Turns ~3-min Runs into sub-second after warmup.
+        from optimize.core import _cached_source, _cached_votes    # noqa: E402 (lazy — avoids import cycle)
+        ind_src = (_cached_source(d4, d1, bar_td)
                    if (params or {}).get("ind_1min", True) else None)
-        # compute each ENABLED indicator's per-decision-bar vote ONCE (skip disabled — they don't
-        # trade) and reuse it for the veto gate, the confirm resolver AND the attribution log.
-        _votes = runner.compute_votes(d4, box, inds, src=ind_src)
+        # each ENABLED indicator's per-decision-bar vote (memoised by slice+config); disabled ⇒ no entry ⇒ neutral.
+        _votes = _cached_votes(d4, d1, box, inds, ind_src, bar_td)
         gate_used, entry_resolver, veto_mask = runner.build_layer(
             d4, box, inds, k_rule, base,
             retrace_amount=g_retr, retrace_unit=g_runit, wait_bars=g_wait,
