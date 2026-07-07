@@ -4,73 +4,84 @@ _Newest on top. High-overview standup: what got done · what's next · challenge
 
 ---
 
-## 2026-07-07 — Gold/Silver/ES onboarding + optimization (and a caught bug)
+## 2026-07-07 — Five new markets onboarded, the frame bug fixed, dashboard shipped as a shared service
+
+_(End-of-day. Supersedes the mid-day paused note: everything that was "for tomorrow" got resolved today.)_
 
 ### ✅ What got done today
 
-- **Onboarded Gold (GC) + Silver (SI) end-to-end**, and re-aligned E-mini S&P (ES):
-  placed the price + box data, shifted every box back one workday, generated all the trading signals,
-  registered them in the backtester + dashboard (they now appear in the dropdown), and wired them into the
-  optimizer. NQ stays untouched (golden 6/6 byte-identical throughout).
-- **Built a reusable onboarding pipeline** (`onboard_stock.py`) + a written procedure (`NEW_STOCK_ONBOARDING_SOP.md`)
-  with a "check with me first" gate, so the next stock follows the same steps. Added a parallel mode (`--jobs`) so
-  signal generation runs in minutes on the server instead of ~1 hour locally (proven byte-identical to serial).
-- **Ran the full optimization for all three** on the AMD server — ~34,200 trials each, 24 workers, ~15 min apiece.
-  Extracted the best settings per timeframe, wired them as dashboard defaults, committed.
-- **Fixed the dashboard dropdown** (Gold/Silver weren't listed) and produced **champion reports as local, single-page PDFs** (one combined + one per instrument).
-- **Found and fully root-caused a critical bug** (below).
+**1. Onboarded five markets end-to-end** — Gold (GC), Silver (SI), and re-aligned E-mini S&P (ES) in the morning,
+then Russell 2000 (RTY) and Dow (YM) in the afternoon. For each: placed the price + box data, shifted every box
+back one workday, generated all the trading signals, registered them in the backtester + dashboard dropdown, and
+wired them into the optimizer. The original Nasdaq (NQ) was never touched — the safety test (golden 6/6) stayed
+byte-identical all day. The dashboard now offers **6 instruments × 6 timeframes = 36 champions**.
 
-### 🔴 The bug (found late, root cause confirmed)
+**2. Built a reusable onboarding pipeline** (`onboard_stock.py` + a written procedure with a "check with me first"
+gate), so the next market follows the same steps. A parallel mode runs signal generation in minutes on the server
+instead of ~1 hour locally, proven to give identical output.
 
-The optimized champions **do not reproduce in the dashboard** — the real engine shows far worse numbers, and all
-looked negative in 2026. Root cause is **not** the optimizer or a math error: the champions were tuned computing
-indicators on the **decision (e.g. 4-hour) timeframe**, but deployment **forces indicators onto the 1-minute
-frame** — a different setting than they were optimized for, so the dashboard takes completely different trades.
-
-Proof (Gold, 4-hour champion): on the frame it was optimized for it makes **$97,950** with a **$7,360** drawdown
-(matches the optimizer exactly); on the wrongly-forced frame it collapses to **$25,740** with a **$26,830**
-drawdown. The champions are good — they're just being *served on the wrong frame*.
+**3. Found, root-caused, AND fixed the critical "wrong-frame" bug.** The optimized settings weren't reproducing in
+the dashboard — because they were tuned reading indicators on the *decision* timeframe (e.g. 4-hour), but the
+dashboard was *forcing* indicators onto the *1-minute* frame. Same settings, wrong frame → completely different
+trades. We chose **Option A: re-run every campaign the correct way (on the 1-minute frame)** on the server, then
+**verified each champion through the real dashboard browser UI** — the on-screen numbers now match the optimizer
+exactly. (Also added a dashboard dropdown to switch 1-min vs decision-frame indicators, defaulting to 1-min.)
 
 ```mermaid
 flowchart LR
-    subgraph OPT["Optimizer (what it tuned)"]
-      A["indicators on 4h frame<br/>ind_1min = FALSE"] --> B["GC 4h champion<br/>$97,889 · $7,360 DD ✅"]
+    subgraph BEFORE["Before (bug)"]
+      A["tuned on 4h frame"] -. "served on 1-min frame" .-> B["GC 4h: $97,889 → $25,740 ❌<br/>doesn't reproduce"]
     end
-    subgraph DASH["Dashboard (what it serves)"]
-      C["forces indicators on 1-min frame<br/>ind_1min = TRUE"] --> D["same champion<br/>$25,740 · $26,830 DD ❌"]
+    subgraph AFTER["After (fixed today)"]
+      C["re-tuned ON the 1-min frame"] --> D["GC 4h: $57,570 on screen<br/>= optimizer, verified in the UI ✅"]
     end
-    B -. "same settings, wrong frame" .-> C
+    BEFORE ==> AFTER
 ```
+
+**4. Fixed the Silver blow-up** — a rounding bug was chopping tiny stop/target prices to zero (a degenerate
+"no-stop" setup that lost ~$119k). Kept full precision → Silver recovered to healthy positive numbers.
+
+**5. Fixed two dashboard defects + made it fast:**
+- A red **"Maximum call stack size exceeded"** banner on heavy timeframes — caused by feeding a huge list of price
+  bars into a function all at once; replaced with a running max. Committed and **pushed to dev**.
+- The dashboard backtest was recomputing everything from scratch each Run; reused the optimizer's cached work →
+  a heavy 2-minute Silver Run went from **~175 seconds to ~3 seconds**, with identical results.
+
+**6. Produced 36 full-dashboard snapshots** (every market × every timeframe) on the server, each verified: **0 error
+banners, 30/30 exact match** to the recorded champions. Fixed a crop problem (the page was only capturing the top
+third) so each snapshot is now the *complete* dashboard, and bundled all 36 into one scrollable PDF contact-sheet.
+
+**7. Shipped the dashboard as a shared service.** It now runs on the server reachable by anyone with server access
+(private/VPN address recommended), **survives logout, and auto-restarts within ~2 seconds if it crashes** (tested
+by killing it live). Added a one-command control script (`dash.sh start|stop|refresh|status|logs`) and a plain-
+language user guide (`docs/DASHBOARD_GUIDE.md`).
 
 ### 🎯 What's next (tomorrow)
 
 ```mermaid
 flowchart TD
-    S["Decide the indicator frame<br/>(1-min regime vs decision-TF)"] --> A["Option A: re-run all 3 campaigns<br/>WITH --ind-1min (server, ~15min each)"]
-    S --> B["Option B: make deployment honor<br/>each champion's own frame"]
-    A --> V["Re-measure 2026 out-of-sample<br/>on the CORRECT frame, per champion"]
-    B --> V
-    V --> Z["Ban degenerate zero-stop configs<br/>(Silver 2m had SL=0/TP=0)"]
-    Z --> R["Regenerate the PDF reports<br/>with TRUE numbers"]
+    A["Decide dashboard access/security<br/>(no login today; reachable on public IP)"] --> A1["bind private-IP only / VPN / simple auth?"]
+    B["Add the heavy-timeframe guard<br/>so a 2m/5m Run can't overload a machine"]
+    C["Resume the entry-increasing work<br/>(intra-candle vetoed-entry, Phase 2)"]
+    D["Optional: optimize RTY/YM deeper<br/>+ deeper-metrics reports"]
 ```
-
-- Also open: a **dashboard guard** so selecting a heavy timeframe can't freeze the machine.
 
 ### ⚠️ Challenges / lessons
 
-- **The box froze once** — backtesting a heavy 2-minute timeframe locally exhausted the 14 GB RAM (OOM). Heavy
-  backtests now go to the server (128 GB). A dashboard guard is queued.
-- **Process miss (owned):** the 2026 out-of-sample / dashboard-reproduction check was explicitly requested, and I
-  deferred it behind finishing the campaigns and building the report — so the wrong-frame champions got committed
-  as defaults and the bug was only caught by chance while making the report. Corrected the working rule:
-  verification runs **immediately per champion**, before anything else moves.
-- Slow link to the server made data pushes/pulls slow (worked around with background transfers).
+- **The verify-immediately rule paid off.** The wrong-frame bug earlier slipped through because verification was
+  deferred; today every re-tuned champion was checked in the live UI *as it landed*, so nothing wrong shipped.
+- **Snapshots were silently cropped** — the dashboard's scrolling area hides its true height, so the screenshot
+  tool only grabbed the visible part. Found by checking the image dimensions, fixed by expanding the page before
+  capture, then re-ran all 36.
+- **Security caveat, flagged not fixed:** the shared dashboard has **no login** and is currently reachable on the
+  public IP. Recommended keeping it on the private network/VPN; the access decision is yours (didn't touch the
+  firewall without a go-ahead).
 
-### 📌 State at pause
-- Committed: onboarding + pipeline + all 3 optimized champions + dropdown fix + reports (commits `e855fa7` →
-  `9c08e70`, branch `stocks-drop-down-backtester-optimizer`). **Not pushed.**
-- Champions are **wrong-frame as deployed** — do not trust the current dashboard defaults or the PDF numbers until
-  the fix + re-measure tomorrow.
+### 📌 State at end of day
+- **Pushed to `dev`** (merge `ec08533`): the heavy-timeframe crash fix + the memoization speed-up.
+- All 6 markets' champions are now **re-tuned on the correct frame and verified in the dashboard UI** — the
+  on-screen numbers are trustworthy again.
+- Dashboard is **live and shared** on the server (`dash.sh status` → HTTP 200), with guide + control script in place.
 
 ## 2026-07-03
 
