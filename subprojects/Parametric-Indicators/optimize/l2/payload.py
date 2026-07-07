@@ -500,7 +500,9 @@ def _layer_from_strategy(sp: dict) -> dict:
         "cap_1min": sp.get("cap_1min", 0) or 0,
         "cap_mode": sp.get("cap_mode", "none") or "none",
         "eod_margin_min": sp.get("eod_margin_min", 15) or 15,
-        "indicators": sp.get("indicators", []), "k": sp.get("k", 1), "ind_1min": True})
+        "indicators": sp.get("indicators", []), "k": sp.get("k", 1),
+        # honor the settings-panel "Indicators on 1-min" dropdown (default True = 1-min frame); was hardcoded True
+        "ind_1min": bool(sp.get("ind_1min", True))})
 
 
 def _serialize_log_row(r) -> dict:

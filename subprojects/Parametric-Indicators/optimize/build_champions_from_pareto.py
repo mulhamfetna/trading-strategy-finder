@@ -63,9 +63,9 @@ def champion_for(tf: str) -> dict | None:
                 params[pname] = caster(v)          # int(...) or float(...) per schema
         inds[key] = params
     box = dict(
-        sl_soft=round(_num(r["sl_soft"]), 2), sl_hard=round(_num(r["sl_hard"]), 2),
-        tp=round(_num(r["tp"]), 2), gate_pct=round(_num(r["gate_pct"]), 2),
-        dd_limit=round(_num(r["dd_limit"]), 2), cooldown=int(_num(r["cooldown"])),
+        sl_soft=round(_num(r["sl_soft"]), 4), sl_hard=round(_num(r["sl_hard"]), 4),
+        tp=round(_num(r["tp"]), 4), gate_pct=round(_num(r["gate_pct"]), 2),
+        dd_limit=round(_num(r["dd_limit"]), 4), cooldown=int(_num(r["cooldown"])),
         flip=str(r["flip"]).strip().lower() == "true", k=int(_num(r["k"])),
         cap_1min=int(_num(r.get("cap_1min")) or 0),       # max-hold cap (0=off); presets._preset → cap_mode='bars'
     )

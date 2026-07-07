@@ -7,9 +7,12 @@ from optimize import data as D
 
 
 def test_tokens_and_point_values():
-    assert I.TOKENS == ("NQ", "ES")
+    assert I.TOKENS == ("NQ", "ES", "GC", "SI", "RTY", "YM")   # + COMEX metals + CME RTY/YM
     assert I.point_value("NQ") == 20.0 and I.point_value("ES") == 50.0
-    assert I.is_valid("NQ") and I.is_valid("ES") and not I.is_valid("QQQ-RTH")
+    assert I.point_value("GC") == 100.0 and I.point_value("SI") == 5000.0
+    assert I.point_value("RTY") == 50.0 and I.point_value("YM") == 5.0
+    assert all(I.is_valid(t) for t in ("NQ", "ES", "GC", "SI", "RTY", "YM"))
+    assert not I.is_valid("QQQ-RTH")
 
 
 def test_resolve_paths_nq_matches_current_data_module():
