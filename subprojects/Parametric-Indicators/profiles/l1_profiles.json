@@ -903,5 +903,607 @@
     "params": {}
    }
   ]
+ },
+ "\ud83c\udfaf wshent1 4h \u00b7 max-entries \u00b7 53/fold \u00b7 $79.4k \u00b7 win60": {
+  "sl_soft": 115.05,
+  "sl_hard": 185.99,
+  "tp": 233.73,
+  "gate_pct": 72.6,
+  "dd_limit": 1301.58,
+  "cooldown": 0,
+  "k": 1,
+  "flip": false,
+  "ind_1min": true,
+  "window": "full",
+  "cap_1min": 200,
+  "cap_mode": "bars",
+  "eod_margin_min": 15,
+  "long_sl_soft": null,
+  "long_sl_hard": null,
+  "long_tp": null,
+  "short_sl_soft": null,
+  "short_sl_hard": null,
+  "short_tp": null,
+  "indicators": [
+   {
+    "key": "ema_trend",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 358,
+     "slow": 120
+    }
+   },
+   {
+    "key": "sma_trend",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "macd",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 80,
+     "slow": 122,
+     "signal": 93
+    }
+   },
+   {
+    "key": "vwap",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "keltner",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "n": 182,
+     "m": 3.1
+    }
+   },
+   {
+    "key": "obv",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "slope": 116
+    }
+   },
+   {
+    "key": "cci",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "rsi",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "stochastic",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "mfi",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "bollinger",
+    "enabled": true,
+    "mode": "veto",
+    "params": {
+     "n": 15,
+     "k": 3.0
+    }
+   },
+   {
+    "key": "adx",
+    "enabled": true,
+    "mode": "veto",
+    "params": {
+     "n": 80,
+     "threshold": 9
+    }
+   },
+   {
+    "key": "structure_trend",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "order_block",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "swing_l": 10
+    }
+   },
+   {
+    "key": "fvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "ifvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "breaker",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "cisd",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   }
+  ]
+ },
+ "\ud83c\udf96 wshent1 4h \u00b7 max-med-P/L \u00b7 29.5/fold \u00b7 $72.8k \u00b7 win75": {
+  "sl_soft": 111.92,
+  "sl_hard": 301.53,
+  "tp": 235.45,
+  "gate_pct": 72.6,
+  "dd_limit": 3442.07,
+  "cooldown": 2,
+  "k": 1,
+  "flip": false,
+  "ind_1min": true,
+  "window": "full",
+  "cap_1min": 200,
+  "cap_mode": "bars",
+  "eod_margin_min": 15,
+  "long_sl_soft": null,
+  "long_sl_hard": null,
+  "long_tp": null,
+  "short_sl_soft": null,
+  "short_sl_hard": null,
+  "short_tp": null,
+  "indicators": [
+   {
+    "key": "ema_trend",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "sma_trend",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "macd",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 80,
+     "slow": 166,
+     "signal": 62
+    }
+   },
+   {
+    "key": "vwap",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "keltner",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "obv",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "slope": 140
+    }
+   },
+   {
+    "key": "cci",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 33,
+     "threshold": 215
+    }
+   },
+   {
+    "key": "rsi",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "stochastic",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "mfi",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 26,
+     "lower": 46,
+     "upper": 77
+    }
+   },
+   {
+    "key": "bollinger",
+    "enabled": true,
+    "mode": "veto",
+    "params": {
+     "n": 54,
+     "k": 4.9
+    }
+   },
+   {
+    "key": "adx",
+    "enabled": true,
+    "mode": "veto",
+    "params": {
+     "n": 80,
+     "threshold": 9
+    }
+   },
+   {
+    "key": "structure_trend",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "order_block",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "swing_l": 11
+    }
+   },
+   {
+    "key": "fvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "ifvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "breaker",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "swing_l": 20
+    }
+   },
+   {
+    "key": "cisd",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   }
+  ]
+ },
+ "\ud83c\udfc6 wshent1 4h \u00b7 max-P/L \u00b7 36.5/fold \u00b7 $106.6k \u00b7 win69": {
+  "sl_soft": 111.92,
+  "sl_hard": 193.05,
+  "tp": 233.73,
+  "gate_pct": 82.71,
+  "dd_limit": 2468.85,
+  "cooldown": 0,
+  "k": 1,
+  "flip": false,
+  "ind_1min": true,
+  "window": "full",
+  "cap_1min": 200,
+  "cap_mode": "bars",
+  "eod_margin_min": 15,
+  "long_sl_soft": null,
+  "long_sl_hard": null,
+  "long_tp": null,
+  "short_sl_soft": null,
+  "short_sl_hard": null,
+  "short_tp": null,
+  "indicators": [
+   {
+    "key": "ema_trend",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 172,
+     "slow": 152
+    }
+   },
+   {
+    "key": "sma_trend",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 28,
+     "slow": 380
+    }
+   },
+   {
+    "key": "macd",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "vwap",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "keltner",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "obv",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "slope": 15
+    }
+   },
+   {
+    "key": "cci",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "rsi",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "stochastic",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "mfi",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 26,
+     "lower": 46,
+     "upper": 77
+    }
+   },
+   {
+    "key": "bollinger",
+    "enabled": true,
+    "mode": "veto",
+    "params": {
+     "n": 54,
+     "k": 3.0
+    }
+   },
+   {
+    "key": "adx",
+    "enabled": true,
+    "mode": "veto",
+    "params": {
+     "n": 80,
+     "threshold": 9
+    }
+   },
+   {
+    "key": "structure_trend",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "order_block",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "swing_l": 10
+    }
+   },
+   {
+    "key": "fvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "ifvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "breaker",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "cisd",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   }
+  ]
+ },
+ "\ud83c\udfc6 re-tuned 4h champion \u00b7 $166,554 \u00b7 244tr \u00b7 DD $13,963 \u00b7 OOS +66% 2026 \u00b7 exits135/170/120 gate91": {
+  "sl_soft": 135.11033567015875,
+  "sl_hard": 170.2677993726058,
+  "tp": 120.2,
+  "gate_pct": 90.92932045442545,
+  "dd_limit": 2910.0708997354004,
+  "cooldown": 0,
+  "flip": false,
+  "k": 1,
+  "ind_1min": true,
+  "cap_1min": 0,
+  "cap_mode": "none",
+  "window": "full",
+  "indicators": [
+   {
+    "key": "ema_trend",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "sma_trend",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 346,
+     "slow": 339
+    }
+   },
+   {
+    "key": "macd",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "vwap",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "keltner",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "n": 40,
+     "m": 5.0
+    }
+   },
+   {
+    "key": "obv",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "slope": 18
+    }
+   },
+   {
+    "key": "cci",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 138,
+     "threshold": 35
+    }
+   },
+   {
+    "key": "rsi",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "stochastic",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "mfi",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 39,
+     "lower": 26,
+     "upper": 87
+    }
+   },
+   {
+    "key": "bollinger",
+    "enabled": true,
+    "mode": "veto",
+    "params": {
+     "n": 45,
+     "k": 4.3
+    }
+   },
+   {
+    "key": "adx",
+    "enabled": false,
+    "mode": "veto",
+    "params": {}
+   },
+   {
+    "key": "structure_trend",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "swing_l": 6
+    }
+   },
+   {
+    "key": "order_block",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "swing_l": 10
+    }
+   },
+   {
+    "key": "fvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "ifvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "breaker",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "cisd",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   }
+  ]
  }
 }

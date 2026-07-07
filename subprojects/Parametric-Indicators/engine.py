@@ -58,6 +58,7 @@ ExitReason = Literal[
     'TAKE_PROFIT_SOFT',
     'TIME_CAP',
     'END_OF_DAY',
+    'FORCE_CLOSE',
     'OPEN',
 ]
 
@@ -95,6 +96,10 @@ class SimpleStrategyParams:
     cap_1min: int = 0   # max hold in 1-min bars; 0 = off. Force-close at the Nth bar's close as TIME_CAP.
     cap_mode: str = "none"        # none | bars | eod. 'eod' = end-of-trading-day exit (END_OF_DAY).
     eod_margin_min: int = 15      # minutes before the 17:00 close to exit on FULL days (eod mode).
+    # Intra-candle entry for vetoed signals (Phase 1). OFF => byte-identical (golden-locked).
+    intracandle_veto_entry: bool = False   # arm a vetoed (vol-passed) signal, enter mid-candle when the gate re-opens
+    intracandle_max_wait:   int  = 240     # max 1-min bars to wait inside the candle (N); 240 ~= one 4h candle
+    intracandle_force_close: bool = False  # variant: a NORMAL entry force-closes an open rescued trade (priority to champion trades)
 
 
 def _stage1_candle_signal(
@@ -205,6 +210,9 @@ class SimpleStrategy:
         blocked_log: Optional[List[Dict]] = None,
         veto_as_flip: bool = False,
         signals: Optional[np.ndarray] = None,
+        intracandle_gate_by_dir: Optional[dict] = None,
+        intracandle_vol_gate: Optional[np.ndarray] = None,
+        intracandle_normal_gate: Optional[np.ndarray] = None,
     ) -> Tuple[List[Dict], Dict]:
         """Run the simple engine.
 
@@ -261,6 +269,14 @@ class SimpleStrategy:
             start_1m = None
             md_arr = mh_arr = ml_arr = mc_arr = None
             eod_target_arr = session_last_arr = None
+
+        # Intra-candle vetoed-entry resolver (Phase 1). Built only when the flag is on AND a gate is supplied
+        # ⇒ flag off / no gate ⇒ _ic_resolver stays None ⇒ every new branch below is skipped ⇒ byte-identical.
+        _ic_resolver = None
+        if getattr(self.params, "intracandle_veto_entry", False) and intracandle_gate_by_dir is not None:
+            from indicators.intracandle import build_resolver
+            _ic_resolver = build_resolver(intracandle_gate_by_dir, min_start=0,
+                                          max_wait=int(getattr(self.params, "intracandle_max_wait", 240)))
 
         trades: List[Dict] = []
         open_trade: Optional[Dict] = None
@@ -366,6 +382,42 @@ class SimpleStrategy:
         for idx in range(len(df_4h)):
             ts_new_bar_start = pd.Timestamp(d4_dates[idx])
 
+            # Intra-candle entry requires being flat for the WHOLE candle (conservative D3): capture flatness
+            # BEFORE the exit walk, so a trade that closes mid-window does not admit an in-trade intra-candle fill.
+            flat_at_window_start = open_trade is None
+
+            # FORCE-CLOSE variant (flag-gated): if a RESCUED (intra-candle) trade is open at this boundary AND a
+            # NORMAL champion entry qualifies here, close the rescued trade at the boundary and free the seat so the
+            # proven normal trade takes priority. Runs BEFORE the exit walk so the boundary preempts the candle's
+            # own 1-min bars (a normal entry at the boundary beats a mid-candle SL/TP of the rescued trade).
+            if (_ic_resolver is not None and getattr(self.params, 'intracandle_force_close', False)
+                    and open_trade is not None and open_trade.get('ic') and idx >= 1):
+                if signals is not None:
+                    _nsig = signals[idx - 1]
+                else:
+                    _sc = df_4h.iloc[idx - 1]; _st = pd.Timestamp(d4_dates[idx - 1])
+                    try:
+                        _br = box_df_indexed.loc[BoxLookup._candle_to_box_date(_st)]
+                    except KeyError:
+                        _br = None
+                    _nsig = _stage1_candle_signal(_sc, _br)
+                if flip and _nsig in ('long', 'short'):
+                    _nsig = 'short' if _nsig == 'long' else 'long'
+                # "a normal entry qualifies" = the FULL champion gate (vol ∧ ¬veto ∧ confirm). entry_gate here is
+                # only vol ∧ ¬veto (confirm lives in the resolver), so use the passed full gate when available.
+                _ngate = intracandle_normal_gate if intracandle_normal_gate is not None else entry_gate
+                _ng = (_ngate is None) or not (0 <= idx < len(_ngate)) or bool(_ngate[idx])
+                _nin = (_nsig in ('long', 'short')
+                        and not (scope == 'long_only' and _nsig != 'long')
+                        and not (scope == 'short_only' and _nsig != 'short'))
+                if _nin and _ng:
+                    _finalise(open_trade, ts_new_bar_start, float(d4_close[idx - 1]), 'FORCE_CLOSE',
+                              open_trade['entry_price'], open_trade['direction'], self.NQ_POINT_VALUE)
+                    trades.append(open_trade)
+                    open_trade = None
+                    soft_consec_count = 0
+                    bars_held = 0
+
             # Exit walk for a carry-over trade (1-min bars in this new window).
             _walk_exit_for_4h(idx)
 
@@ -425,7 +477,31 @@ class SimpleStrategy:
                                         # so a dropped bar here is always the volatility gate.
                                         'reason': 'veto' if (vetoed and not veto_as_flip) else 'vol_gate'})
 
-                if entry_resolver is None:
+                # INTRA-CANDLE vetoed entry (Phase 1, flag-gated). Arm a VETOED, vol-passed, directional signal
+                # and enter mid-candle at the first 1-min bar where the FULL gate (¬veto ∧ ≥K confirms) re-opens.
+                # Conservative D3: only when flat for the whole candle (flat_at_window_start). Self-contained —
+                # no cross-candle carry. _ic_resolver is None when the flag is off ⇒ this block is skipped ⇒ parity.
+                ic_entered = False
+                if (_ic_resolver is not None and flat_at_window_start and start_1m is not None
+                        and signal in ('long', 'short') and vetoed and not veto_as_flip
+                        and not (scope == 'long_only' and signal != 'long')
+                        and not (scope == 'short_only' and signal != 'short')):
+                    _vol_ok = (intracandle_vol_gate is None
+                               or not (0 <= idx < len(intracandle_vol_gate))
+                               or bool(intracandle_vol_gate[idx]))
+                    if _vol_ok:
+                        _se = int(start_1m[idx]); _sl = int(start_1m[idx + 1]) - _se
+                        _hit = _ic_resolver(1 if signal == 'long' else -1, _se, _sl, is_flat=lambda o: True)
+                        if _hit is not None:
+                            _o = _hit[0]
+                            entry_ts = pd.Timestamp(md_arr[_se + _o])
+                            entry_px = float(mc_arr[_se + _o])
+                            edir, sidx, vflip = signal, idx - 1, False
+                            ic_entered = True
+
+                if ic_entered:
+                    pass                                   # entry fields set above; fall through to open the trade
+                elif entry_resolver is None:
                     # ORIGINAL parity path (unchanged behaviour): immediate fill at the signal close.
                     if signal == 'hold':
                         continue
@@ -491,6 +567,7 @@ class SimpleStrategy:
                     'entry_time':   entry_ts,
                     'entry_price':  entry_px,
                     'direction':    edir,
+                    'ic':           bool(ic_entered),          # True = rescued intra-candle entry (for force-close)
                     'veto_flip':    bool(vflip),               # entered reversed because of a veto
                     'sl_soft_line': sl_soft_line,
                     'sl_hard_line': sl_hard_line,

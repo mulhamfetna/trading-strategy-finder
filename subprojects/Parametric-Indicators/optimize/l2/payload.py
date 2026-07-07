@@ -71,18 +71,19 @@ def _build_l1_payload_memo(l1_engine: dict, tf: str, instrument: str = "NQ"):
     return r
 
 
-def _run_causal_memo(l1p: dict, l2p: dict, tf: str, instrument: str = "NQ"):
-    """Memoise logbook.run_causal by (instrument, l1p, l2p, tf) so the unified page's three per-view requests
-    (l2 + combined send identical params) reuse ONE pass instead of recomputing it. The CausalResult is
-    read-only downstream (aggregate/charts only read it), so sharing is safe. Bounded LRU-ish."""
+def _run_causal_memo(l1p: dict, l2p: dict, tf: str, instrument: str = "NQ",
+                     l2_mode: str = "residual", l2_tf: str | None = None):
+    """Memoise logbook.run_causal by (instrument, tf, l2_mode, l2_tf, l1p, l2p) so the unified page's three
+    per-view requests (l2 + combined send identical params) reuse ONE pass instead of recomputing it. The
+    CausalResult is read-only downstream (aggregate/charts only read it), so sharing is safe. Bounded LRU-ish."""
     from optimize.l2 import logbook                       # lazy: logbook imports payload (circular)
-    key = (instrument, tf,
+    key = (instrument, tf, l2_mode, l2_tf,
            hashlib.sha256(json.dumps([l1p, l2p], sort_keys=True, default=str).encode()).hexdigest()[:16])
     r = _CAUSAL_MEMO.get(key)
     if r is None:
         if len(_CAUSAL_MEMO) >= _CAUSAL_MEMO_MAX:
             _CAUSAL_MEMO.pop(next(iter(_CAUSAL_MEMO)))
-        r = _CAUSAL_MEMO[key] = logbook.run_causal(l1p, l2p, tf, instrument)
+        r = _CAUSAL_MEMO[key] = logbook.run_causal(l1p, l2p, tf, instrument, l2_mode=l2_mode, l2_tf=l2_tf)
     return r
 
 # Deterministic anchor profile (no indicators / no vol gate => take every flat dropped signal).
@@ -194,6 +195,11 @@ def validate_layer_params(p: dict) -> dict:
         cap_1min=int(num("cap_1min", 0)) if p.get("cap_1min") not in (None, "") else 0,
         cap_mode=(str(p.get("cap_mode") or "none")),
         eod_margin_min=int(num("eod_margin_min", 15)) if p.get("eod_margin_min") not in (None, "") else 15,
+        # E3a: intra-candle entry timing for L2's vetoed stream. Absent/False ⇒ candle-close entry (parity).
+        l2_intracandle=bool(p.get("l2_intracandle", False)),
+        l2_intracandle_max_wait=int(p.get("l2_intracandle_max_wait", 240) or 240),
+        # E3b (cheap probe): also rescue L2's OWN vetoed signals mid-candle when L2's own veto clears.
+        l2_intracandle_self=bool(p.get("l2_intracandle_self", False)),
     )
     # optional split long/short SL/TP overrides — each None => fall back to the shared sl_soft/sl_hard/tp
     # (so the default carries all-None and is byte-identical + the use_frozen round-trip still holds).
@@ -512,7 +518,8 @@ def _serialize_log_row(r) -> dict:
 
 
 def build_view_payload(l1_params: dict, l2_params: dict, tf: str = "4h", view: str = "combined",
-                       instrument: str = "NQ", l1_engine: dict | None = None) -> dict:
+                       instrument: str = "NQ", l1_engine: dict | None = None,
+                       *, l2_mode: str = "residual", l2_tf: str | None = None) -> dict:
     """Causal log-first payload for one VIEW (l1 | l2 | combined). Boxes are derived from the per-candle
     log (aggregate.*); charts/log/CSV all project the SAME log. Separated views carry only their layer's
     trades; the combined view carries both (the frontend grays the opposite layer).
@@ -526,6 +533,13 @@ def build_view_payload(l1_params: dict, l2_params: dict, tf: str = "4h", view: s
     from optimize import signals as _signals
     if view not in ("l1", "l2", "combined"):
         raise L2ParamError(f"view must be l1|l2|combined (got {view!r})")
+    if l2_mode == "independent":
+        # Multi-timeframe fusion: the master grid is the finer timeframe. We require the PRIMARY (tf) to be
+        # finer-or-equal so the fused log shares the primary's grid (res.n == len(l1.df_dec)) and every
+        # downstream panel (candles/boxes/charts) stays consistent. (Primary = your higher-frequency layer.)
+        if TF.get(tf).bar_td > TF.get(l2_tf or tf).bar_td:
+            raise L2ParamError(f"in independent mode the primary timeframe ({tf}) must be finer-or-equal to "
+                               f"the secondary ({l2_tf}); make the higher-frequency timeframe the primary")
 
     if view == "l1" and l1_engine:
         import strategy                                  # the L1 engine (full feature set)
@@ -546,7 +560,7 @@ def build_view_payload(l1_params: dict, l2_params: dict, tf: str = "4h", view: s
         return base
     l1p = validate_layer_params(l1_params)
     l2p = validate_layer_params(l2_params)
-    res = _run_causal_memo(l1p, l2p, tf, instrument)
+    res = _run_causal_memo(l1p, l2p, tf, instrument, l2_mode, l2_tf)
     # The frozen-lean disk-cached run only exists for NQ-4h; for other TFs/instruments the default L1 is a
     # params dict, so we must always pass params there (run_l1_cached() with no params runs the NQ-4h lean).
     l1 = (run_l1_cached(tf, instrument=instrument)

@@ -73,3 +73,10 @@ Set 4  632742a d16ed49 9d1ada9 c386256 4631815
 - ES L1 numbers are **selection-biased on a 16-mo bull sample, no true OOS** — not yet a deployable claim
   (see Set 3 / `RESEARCH_ES_CHAMPION_VALIDITY.md`).
 - Optional perf follow-up: per-view DOM cache for zero-repaint tab switches (Set 4 §1 note).
+
+## Follow-on capability
+
+- **Multi-timeframe layer fusion** (built on this workstream's per-layer plumbing): run two timeframes of one
+  instrument at once — a primary (priority) layer + a secondary that fills the primary's flat windows, each
+  with its own profile. Opt-in L2 mode; residual default byte-identical (golden untouched). See
+  [`MTF_LAYER_FUSION.md`](MTF_LAYER_FUSION.md).

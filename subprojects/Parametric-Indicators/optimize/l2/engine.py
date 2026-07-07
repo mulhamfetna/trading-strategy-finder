@@ -217,6 +217,43 @@ def run_l2(l1, l2_params: dict, bar_mask=None, exit_mode: str = "l1_priority") -
     if bar_mask is not None:                                  # window L2 to a bar range (in-sample / OOS)
         l2_gate = l2_gate & np.asarray(bar_mask, dtype=bool)[:n]
 
+    # E3a: intra-candle entry timing for the VETOED stream. When on, vetoed candidates enter mid-candle at
+    # the first 1-min bar L1's veto clears (within N) instead of the candle close; vol-gated stream unchanged.
+    # Off/absent ⇒ ic_kwargs empty ⇒ fast_backtest call is byte-identical (parity). Reuses the L1-champion
+    # memoised intra-candle gate + fast_backtest's parity-locked intra-candle path (no new engine code).
+    ic_kwargs = {}
+    if l2_params.get("l2_intracandle"):
+        from optimize.core import _cached_ic_gate
+        from indicators import library
+        veto_reason = np.zeros(n, dtype=bool)
+        for ds in l1.dropped_signals:
+            if ds["reason"] == "veto":
+                veto_reason[int(ds["idx"])] = True
+        veto_ic = l2_gate & veto_reason                       # vetoed candidates → intra-candle timing
+        l2_gate = l2_gate & ~veto_reason                      # vol-gated (+ non-veto) → normal candle-close entry
+        inds = library.from_specs([s for s in l1.params["indicators"] if s.get("enabled")])
+        ic_kwargs = dict(
+            intracandle_gate_by_dir=_cached_ic_gate(l1.df1, inds, int(l1.params["k"])),
+            intracandle_veto_mask=veto_ic,
+            intracandle_vol_gate=veto_ic,                     # True exactly at vetoed IC candidates (vol-passed)
+            intracandle_max_wait=int(l2_params.get("l2_intracandle_max_wait", 240)))
+    elif l2_params.get("l2_intracandle_self"):
+        # E3b (cheap probe): rescue L2's OWN vetoed signals mid-candle when L2's OWN veto clears. These bars are
+        # already EXCLUDED from l2_gate (¬veto in eligibility) ⇒ gate=False ⇒ fast_backtest's intra-candle path
+        # picks them up. Uses L2's own indicators for both the veto set and the intra-candle gate (memoised once).
+        from optimize.core import _cached_ic_gate
+        from indicators import library
+        _vg, _vt, _cf, *_ = _nq_components(l1, l2_params)
+        _base = dropped_mask & l1_flat & _vg & _cf
+        if bar_mask is not None:
+            _base = _base & np.asarray(bar_mask, dtype=bool)[:n]
+        self_veto = _base & _vt                               # L2 vol+confirm pass, but L2's own veto fires
+        l2i = library.from_specs([s for s in l2_params.get("indicators", []) if s.get("enabled")])
+        ic_kwargs = dict(
+            intracandle_gate_by_dir=_cached_ic_gate(l1.df1, l2i, int(l2_params.get("k", 1))),
+            intracandle_veto_mask=self_veto, intracandle_vol_gate=self_veto,
+            intracandle_max_wait=int(l2_params.get("l2_intracandle_max_wait", 240)))
+
     _cap_mode = str(l2_params.get("cap_mode") or "none")
     if _cap_mode == "eod":
         from optimize.trading_days import eod_targets
@@ -231,6 +268,7 @@ def run_l2(l1, l2_params: dict, bar_mask=None, exit_mode: str = "l1_priority") -
         bool(l2_params.get("flip", False)),
         cap_1min=int(l2_params.get("cap_1min", 0) or 0),
         cap_mode=_cap_mode, eod_target=_eod_t, session_last=_eod_sl,
+        **ic_kwargs,
         **{k: l2_params.get(k) for k in ("long_sl_soft", "long_sl_hard", "long_tp",
                                          "short_sl_soft", "short_sl_hard", "short_tp")})
 

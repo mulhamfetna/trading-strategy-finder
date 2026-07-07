@@ -41,11 +41,13 @@ from optimize import signals as _sig  # noqa: E402
 # optimize/l2/contributors/gate.py's module-level caches (incl. a _clear_caches() test seam).
 _SRC_MEMO: dict = {}
 _VOTE_MEMO: dict = {}
+_IC_DIR_MEMO: dict = {}   # per-(1-min slice, indicator) FULL 1-min directions for the intra-candle gate
 
 
 def _clear_caches() -> None:
     _SRC_MEMO.clear()
     _VOTE_MEMO.clear()
+    _IC_DIR_MEMO.clear()
 
 
 def _slice_sig(d, d1, bar_duration):
@@ -134,6 +136,45 @@ def _contributor_gate(d, d1, box, vfw, vf, n_split, gate_ref_vf, gate_pct, param
                                        nq_nconf, parsed, contrib["topology"])
 
 
+def _cached_ic_gate(d1, inds, k):
+    """Per-1-min-bar full-gate arrays {+1,-1} for the intra-candle feature, matching
+    runner.intracandle_gate_arrays but MEMOISED per (1-min slice, indicator, params): the expensive full-1-min
+    SMC direction compute happens once per distinct indicator config, so a search that holds indicators fixed
+    (the E2 case) pays it ONCE across all trials."""
+    from indicators import runner
+    from indicators.base import BOTH
+    base = _ic_slice_sig(d1)
+    confirmers = [i for i in inds if i.config.enabled and i.config.mode in ("confirm", "both")]
+    vetoers = [i for i in inds if i.config.enabled and i.config.mode in ("veto", "both")]
+    k_eff = min(int(k), len(confirmers))
+    n1 = len(d1)
+    ctx1 = [None]
+
+    def dirs(ind):
+        key = (base, ind.key, tuple(sorted(ind.config.params.items())))
+        v = _IC_DIR_MEMO.get(key)
+        if v is None:
+            if ctx1[0] is None:
+                ctx1[0] = runner.market_context(d1)
+            v = runner._dirs_1min(ind, ctx1[0])
+            _IC_DIR_MEMO[key] = v
+        return v
+
+    out = {}
+    for dsign in (+1, -1):
+        conf = np.zeros(n1, dtype=np.int64); veto = np.zeros(n1, dtype=bool)
+        for ind in confirmers:
+            c, _ = dirs(ind); conf += ((c == dsign) | (c == BOTH)).astype(np.int64)
+        for ind in vetoers:
+            _, v = dirs(ind); veto |= ((v == dsign) | (v == BOTH))
+        out[dsign] = (~veto) & (conf >= k_eff) if k_eff > 0 else (~veto)
+    return out
+
+
+def _ic_slice_sig(d1):
+    return (len(d1), str(d1["Date"].iloc[0]) if len(d1) else "", str(d1["Date"].iloc[-1]) if len(d1) else "")
+
+
 def backtest_metrics(
     df_dec: pd.DataFrame,
     df1: pd.DataFrame,
@@ -190,6 +231,7 @@ def backtest_metrics(
     # recompute entirely — it ALREADY encodes vol_gate ∧ ¬veto ∧ confirm≥K, computed once over the full
     # series (so warm-up is correct) and sliced to this window. Default None ⇒ compute exactly as before
     # (parity preserved; golden unaffected).
+    ic_gate_by_dir = ic_vol_gate = ic_veto_mask = ic_normal_gate = None   # intra-candle inputs (None ⇒ off)
     if gate_used is not None:
         gate = np.asarray(gate_used, dtype=bool)[lo:hi]
     elif contrib is not None:
@@ -222,6 +264,13 @@ def backtest_metrics(
                 vmask = runner.veto_mask(d, box, inds, src=src, votes=votes)
                 cmask = runner.confirm_mask(d, box, inds, int(params.get("k", 1)), src=src, votes=votes)
                 gate = base & ~vmask & cmask
+                # Intra-candle vetoed entry (optional). Build the per-1-min gate (memoised) + pass the vol gate
+                # (base), veto mask, and full composite gate. Off/absent ⇒ ic_* stay None ⇒ fast path unchanged.
+                if params.get("intracandle_veto_entry"):
+                    ic_gate_by_dir = _cached_ic_gate(d1, inds, int(params.get("k", 1)))
+                    ic_vol_gate = np.asarray(base, dtype=bool)
+                    ic_veto_mask = np.asarray(vmask, dtype=bool)
+                    ic_normal_gate = np.asarray(gate, dtype=bool)
 
     # precomputed signals (param-independent) sliced to the window; else compute on the slice
     si = sig_int[lo:hi] if sig_int is not None else signals_to_int(_sig.decision_signals(d, box))
@@ -229,7 +278,12 @@ def backtest_metrics(
         d["Date"].to_numpy(), d["Close"].to_numpy(float), si, gate,
         d1["Date"].to_numpy(), d1["High"].to_numpy(float),
         d1["Low"].to_numpy(float), d1["Close"].to_numpy(float),
-        sl_soft, sl_hard, tp, flip, cap_1min=cap_1min, **_split)
+        sl_soft, sl_hard, tp, flip, cap_1min=cap_1min,
+        intracandle_gate_by_dir=ic_gate_by_dir, intracandle_vol_gate=ic_vol_gate,
+        intracandle_veto_mask=ic_veto_mask, intracandle_normal_gate=ic_normal_gate,
+        intracandle_max_wait=int(params.get("intracandle_max_wait", 240)),
+        intracandle_force_close=bool(params.get("intracandle_force_close", False)),
+        **_split)
     # fast_backtest returns completed trades already in entry order (no OPEN trades)
 
     # Global-HWM drawdown breaker overlay (identical math to strategy.build_payload).

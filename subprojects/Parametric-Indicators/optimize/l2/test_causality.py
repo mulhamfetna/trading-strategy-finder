@@ -33,7 +33,7 @@ def test_decisions_depend_only_on_past_bars(monkeypatch):
     d1t = d1[d1["Date"] <= t_cut].copy()
     boxt = box[box["Date"] <= t_cut].copy() if "Date" in box.columns else box
     monkeypatch.setattr(data_mod, "load_inputs",
-                        lambda tf: (d4t, d1t, boxt, vf[:cut], min(n_split, cut)))
+                        lambda tf, instrument="NQ": (d4t, d1t, boxt, vf[:cut], min(n_split, cut)))
     trunc = l1_runner.run_l1("4h")
     trunc_entries = {(int(t["entry_idx"]), t["direction"]) for t in trunc.ledger}
     assert trunc_entries == full_prefix, "a past decision changed when future bars were removed (look-ahead)"

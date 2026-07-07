@@ -27,7 +27,15 @@ do_open() {
   elif command -v open     >/dev/null 2>&1; then open "$URL"     >/dev/null 2>&1 &
   else echo "   open this in your browser → $URL"; fi
 }
-do_stop() { pkill -f "$MATCH" 2>/dev/null && echo "■ stopped dashboard on :$PORT" || echo "· nothing running on :$PORT"; }
+# Kill ANY running dashboard backend, not just one whose cmdline contains "--port $PORT". A stale server
+# started a different way (python3 server.py, a different port, the IDE, a prior session) would otherwise
+# survive `restart` and keep serving OLD code — the #1 cause of "I restarted but the results didn't change".
+BROAD='[s]erver\.py'                              # bracket trick: never matches this script's own cmdline
+do_stop() {
+  if pgrep -f "$BROAD" >/dev/null 2>&1; then
+    pkill -9 -f "$BROAD" 2>/dev/null; sleep 1; echo "■ stopped all server.py backends"
+  else echo "· no server.py backend running"; fi
+}
 
 case "${1:-start}" in
   stop)    do_stop; exit 0 ;;
@@ -45,8 +53,8 @@ fi
 
 # Reached here ⇒ NOT healthy. Clear any wedged/stale server.py still bound to this port (a frozen run can
 # leave one that fails health checks but holds the port → a fresh start would hit 'Address already in use').
-if pgrep -f "$MATCH" >/dev/null 2>&1; then
-  echo "· clearing a stale/wedged server on :$PORT"; pkill -9 -f "$MATCH" 2>/dev/null; sleep 1
+if pgrep -f "$BROAD" >/dev/null 2>&1; then
+  echo "· clearing a stale/wedged server.py before start"; pkill -9 -f "$BROAD" 2>/dev/null; sleep 1
 fi
 
 echo "▶ starting dashboard on :$PORT  (log: $LOG)"

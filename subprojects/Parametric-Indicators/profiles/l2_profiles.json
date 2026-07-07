@@ -1,5 +1,5 @@
 {
- "l2v2 champion (extend) \u00b7 IS +$24.5k / OOS +$0.9k (4h, 7-ind)": {
+ "l2v2 champion (extend) · IS +$24.5k / OOS +$0.9k (4h, 7-ind)": {
   "sl_soft": 110.35287055519004,
   "sl_hard": 178.4093548191584,
   "tp": 57.42856263596016,
@@ -165,5 +165,768 @@
   ],
   "k": 3,
   "ind_1min": true
+ },
+ "🏆 ES 4h champion": {
+  "sl_soft": 25.6,
+  "sl_hard": 26.4,
+  "tp": 33.5,
+  "gate_pct": 84.5,
+  "dd_limit": 462.0,
+  "cooldown": 1,
+  "k": 1,
+  "flip": true,
+  "ind_1min": true,
+  "window": "full",
+  "cap_1min": 871,
+  "cap_mode": "bars",
+  "eod_margin_min": 15,
+  "long_sl_soft": null,
+  "long_sl_hard": null,
+  "long_tp": null,
+  "short_sl_soft": null,
+  "short_sl_hard": null,
+  "short_tp": null,
+  "indicators": [
+   {
+    "key": "ema_trend",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "sma_trend",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 277,
+     "slow": 214
+    }
+   },
+   {
+    "key": "macd",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "vwap",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "keltner",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "n": 58,
+     "m": 3.2
+    }
+   },
+   {
+    "key": "obv",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "cci",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 135,
+     "threshold": 25
+    }
+   },
+   {
+    "key": "rsi",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "stochastic",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "mfi",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 2,
+     "lower": 38,
+     "upper": 63
+    }
+   },
+   {
+    "key": "bollinger",
+    "enabled": true,
+    "mode": "veto",
+    "params": {
+     "n": 198,
+     "k": 4.0
+    }
+   },
+   {
+    "key": "adx",
+    "enabled": true,
+    "mode": "veto",
+    "params": {
+     "n": 36,
+     "threshold": 10
+    }
+   },
+   {
+    "key": "structure_trend",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "order_block",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "swing_l": 12
+    }
+   },
+   {
+    "key": "fvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "ifvg",
+    "enabled": true,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "breaker",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "cisd",
+    "enabled": true,
+    "mode": "both",
+    "params": {}
+   }
+  ]
+ },
+ "🏆 ES 2h champion": {
+  "sl_soft": 25.6,
+  "sl_hard": 27.7,
+  "tp": 30.9,
+  "gate_pct": 97.0,
+  "dd_limit": 480.0,
+  "cooldown": 2,
+  "k": 4,
+  "flip": true,
+  "ind_1min": true,
+  "window": "full",
+  "cap_1min": 114,
+  "cap_mode": "bars",
+  "eod_margin_min": 15,
+  "long_sl_soft": null,
+  "long_sl_hard": null,
+  "long_tp": null,
+  "short_sl_soft": null,
+  "short_sl_hard": null,
+  "short_tp": null,
+  "indicators": [
+   {
+    "key": "ema_trend",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "sma_trend",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 396,
+     "slow": 64
+    }
+   },
+   {
+    "key": "macd",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 19,
+     "slow": 5,
+     "signal": 6
+    }
+   },
+   {
+    "key": "vwap",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "keltner",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "n": 93,
+     "m": 1.1
+    }
+   },
+   {
+    "key": "obv",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "slope": 195
+    }
+   },
+   {
+    "key": "cci",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 142,
+     "threshold": 270
+    }
+   },
+   {
+    "key": "rsi",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 22,
+     "lower": 16,
+     "upper": 80
+    }
+   },
+   {
+    "key": "stochastic",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 49,
+     "d": 29,
+     "lower": 13,
+     "upper": 92
+    }
+   },
+   {
+    "key": "mfi",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 85,
+     "lower": 7,
+     "upper": 87
+    }
+   },
+   {
+    "key": "bollinger",
+    "enabled": false,
+    "mode": "veto",
+    "params": {}
+   },
+   {
+    "key": "adx",
+    "enabled": true,
+    "mode": "veto",
+    "params": {
+     "n": 22,
+     "threshold": 20
+    }
+   },
+   {
+    "key": "structure_trend",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "swing_l": 20
+    }
+   },
+   {
+    "key": "order_block",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "swing_l": 9
+    }
+   },
+   {
+    "key": "fvg",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "lookback": 9
+    }
+   },
+   {
+    "key": "ifvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "breaker",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "cisd",
+    "enabled": true,
+    "mode": "both",
+    "params": {}
+   }
+  ]
+ },
+ "🏆 ES 1h champion": {
+  "sl_soft": 8.4,
+  "sl_hard": 13.8,
+  "tp": 32.6,
+  "gate_pct": 79.9,
+  "dd_limit": 612.0,
+  "cooldown": 1,
+  "k": 5,
+  "flip": true,
+  "ind_1min": true,
+  "window": "full",
+  "cap_1min": 923,
+  "cap_mode": "bars",
+  "eod_margin_min": 15,
+  "long_sl_soft": null,
+  "long_sl_hard": null,
+  "long_tp": null,
+  "short_sl_soft": null,
+  "short_sl_hard": null,
+  "short_tp": null,
+  "indicators": [
+   {
+    "key": "ema_trend",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 305,
+     "slow": 323
+    }
+   },
+   {
+    "key": "sma_trend",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "macd",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "vwap",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "keltner",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "obv",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "cci",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 182,
+     "threshold": 25
+    }
+   },
+   {
+    "key": "rsi",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "stochastic",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "mfi",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 91,
+     "lower": 17,
+     "upper": 84
+    }
+   },
+   {
+    "key": "bollinger",
+    "enabled": false,
+    "mode": "veto",
+    "params": {}
+   },
+   {
+    "key": "adx",
+    "enabled": false,
+    "mode": "veto",
+    "params": {}
+   },
+   {
+    "key": "structure_trend",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "swing_l": 16
+    }
+   },
+   {
+    "key": "order_block",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "swing_l": 11
+    }
+   },
+   {
+    "key": "fvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "ifvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "breaker",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "cisd",
+    "enabled": true,
+    "mode": "both",
+    "params": {}
+   }
+  ]
+ },
+ "🏆 ES 15m champion": {
+  "sl_soft": 7.7,
+  "sl_hard": 13.2,
+  "tp": 15.1,
+  "gate_pct": 40.3,
+  "dd_limit": 661.0,
+  "cooldown": 5,
+  "k": 4,
+  "flip": true,
+  "ind_1min": true,
+  "window": "full",
+  "cap_1min": 109,
+  "cap_mode": "bars",
+  "eod_margin_min": 15,
+  "long_sl_soft": null,
+  "long_sl_hard": null,
+  "long_tp": null,
+  "short_sl_soft": null,
+  "short_sl_hard": null,
+  "short_tp": null,
+  "indicators": [
+   {
+    "key": "ema_trend",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 324,
+     "slow": 292
+    }
+   },
+   {
+    "key": "sma_trend",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "macd",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "vwap",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "keltner",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "obv",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "cci",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 198,
+     "threshold": 150
+    }
+   },
+   {
+    "key": "rsi",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "stochastic",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "mfi",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "bollinger",
+    "enabled": true,
+    "mode": "veto",
+    "params": {
+     "n": 66,
+     "k": 2.9
+    }
+   },
+   {
+    "key": "adx",
+    "enabled": false,
+    "mode": "veto",
+    "params": {}
+   },
+   {
+    "key": "structure_trend",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "swing_l": 9
+    }
+   },
+   {
+    "key": "order_block",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "fvg",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "lookback": 45
+    }
+   },
+   {
+    "key": "ifvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "breaker",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "swing_l": 18
+    }
+   },
+   {
+    "key": "cisd",
+    "enabled": true,
+    "mode": "both",
+    "params": {}
+   }
+  ]
+ },
+ "🏆 ES 5m champion": {
+  "sl_soft": 6.1,
+  "sl_hard": 13.3,
+  "tp": 7.5,
+  "gate_pct": 97.0,
+  "dd_limit": 915.0,
+  "cooldown": 0,
+  "k": 4,
+  "flip": false,
+  "ind_1min": true,
+  "window": "full",
+  "cap_1min": 827,
+  "cap_mode": "bars",
+  "eod_margin_min": 15,
+  "long_sl_soft": null,
+  "long_sl_hard": null,
+  "long_tp": null,
+  "short_sl_soft": null,
+  "short_sl_hard": null,
+  "short_tp": null,
+  "indicators": [
+   {
+    "key": "ema_trend",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 172,
+     "slow": 89
+    }
+   },
+   {
+    "key": "sma_trend",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "macd",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 35,
+     "slow": 59,
+     "signal": 9
+    }
+   },
+   {
+    "key": "vwap",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "keltner",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "obv",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "cci",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 135,
+     "threshold": 150
+    }
+   },
+   {
+    "key": "rsi",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "stochastic",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "mfi",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 57,
+     "lower": 42,
+     "upper": 57
+    }
+   },
+   {
+    "key": "bollinger",
+    "enabled": false,
+    "mode": "veto",
+    "params": {}
+   },
+   {
+    "key": "adx",
+    "enabled": true,
+    "mode": "veto",
+    "params": {
+     "n": 33,
+     "threshold": 6
+    }
+   },
+   {
+    "key": "structure_trend",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "swing_l": 1
+    }
+   },
+   {
+    "key": "order_block",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "swing_l": 15
+    }
+   },
+   {
+    "key": "fvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "ifvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "breaker",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "cisd",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   }
+  ]
  }
 }
