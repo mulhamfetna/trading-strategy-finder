@@ -306,7 +306,10 @@ def build_payload(df4, df1, box, vf, n2025, params=None, instrument: str = "NQ")
         # INDICATORS READ THE 1-MINUTE FRAME: directions are computed on d1 and each decision bar
         # samples its last-closed 1-minute candle (causal). Box trigger/cadence/exits unchanged;
         # warm-up now counts 1-minute candles. (src=None would keep the decision-TF behaviour.)
-        ind_src = runner.indicator_source_1min(d4, d1, bar_td)
+        # Honor the settings-panel "Indicators on 1-min" toggle: True (default) → indicators read the 1-minute
+        # frame; False → src=None keeps decision-TF behaviour. (Was unconditionally 1-min, ignoring the flag.)
+        ind_src = (runner.indicator_source_1min(d4, d1, bar_td)
+                   if (params or {}).get("ind_1min", True) else None)
         # compute each ENABLED indicator's per-decision-bar vote ONCE (skip disabled — they don't
         # trade) and reuse it for the veto gate, the confirm resolver AND the attribution log.
         _votes = runner.compute_votes(d4, box, inds, src=ind_src)
