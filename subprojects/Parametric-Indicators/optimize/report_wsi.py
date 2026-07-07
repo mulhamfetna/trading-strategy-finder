@@ -88,8 +88,10 @@ def _row(t) -> dict:
         median_pnl=round(t.values[0], 1), worst_dd=round(-t.values[1], 1), win=round(t.values[2], 1),
         full_pnl=round(p.get("full_pnl", 0.0), 1), full_dd=round(p.get("full_dd", 0.0), 1),
         dd_pct_of_pnl=round(100 * p.get("full_dd", 0.0) / p.get("full_pnl", 1e-9), 1),
-        sl_soft=round(pr["sl_soft"], 1), sl_hard=round(pr["sl_soft"] + pr["sl_hard_delta"], 1),
-        tp=round(pr["tp"], 1), gate_pct=round(pr["gate_pct"], 1), dd_limit=round(pr["dd_limit"], 0),
+        # 4-decimal precision: harmless for large-value instruments (NQ/GC/ES sl~20-135), ESSENTIAL for silver
+        # whose sl/tp/dd_limit are tiny (~0.05-0.4) — rounding to 1dp turned tp=0.04→0.0 (degenerate zero-stop).
+        sl_soft=round(pr["sl_soft"], 4), sl_hard=round(pr["sl_soft"] + pr["sl_hard_delta"], 4),
+        tp=round(pr["tp"], 4), gate_pct=round(pr["gate_pct"], 2), dd_limit=round(pr["dd_limit"], 4),
         cooldown=pr["cooldown"], flip=pr["flip"], k=pr["k"],
         cap_1min=pr.get("cap_1min", 0),                  # max-hold (traded 1-min bars); 0 = off. SEARCHED →
                                                          # must round-trip or the rebuilt champion mis-exits.
