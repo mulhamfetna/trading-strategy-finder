@@ -1,0 +1,225 @@
+"""WS-H — vectorized backtest (numpy), parity-locked to the verified engine (engine.SimpleStrategy).
+
+WHY: the original engine walks 1-min bars in a Python loop (≈1 core, minutes for 1m). This reproduces
+the EXACT same decisions but resolves each trade's exit with numpy boolean scans (argmax), turning
+minutes into milliseconds — so the whole multi-timeframe search runs locally in seconds.
+
+FAITHFULNESS (must match engine.py exactly — see optimize/test_fast_parity.py):
+  • Entry: at decision bar idx (idx≥1), direction = Stage-1 signal of the JUST-CLOSED bar idx-1
+    (post-flip), entry price = close[idx-1], entry time = date[idx]. Gated by gate[idx]; one position
+    at a time; re-entry only on a decision bar whose date > the last exit time.
+  • Exit (resolved on 1-min, lines are absolute point distances):
+      Single exit model (flip or not): per-bar priority hard-SL > hard-TP > soft-SL.
+        long : SLh low≤ep-slh(fill line) · TPh high≥ep+tp(fill line) · SLs 2 consecutive closes≤ep-sls(fill close)
+        short: mirrored.
+      flip=True only REVERSES the entry direction (d = -raw); the exit logic is identical (matches engine).
+  • "2 consecutive closes" == close past the soft line on bar t AND bar t-1 (the engine's consec≥2,
+    which resets on any non-breach → equivalent to a pairwise AND); fill at the 2nd bar's close.
+  • Same-bar ties resolved by the priority order above. No look-ahead (scan starts at the 1-min bar
+    with Date ≥ entry time).
+"""
+from __future__ import annotations
+
+import numpy as np
+import pandas as pd
+
+# signal/direction encoding
+LONG, SHORT, HOLD = 1, -1, 0
+# exit reason codes
+R_SL_HARD, R_TP_HARD, R_SL_SOFT, R_TP_SOFT, R_TIME_CAP, R_END_OF_DAY, R_FORCE_CLOSE = 0, 1, 2, 3, 4, 5, 6
+REASON_NAME = {R_SL_HARD: "STOP_LOSS_HARD", R_TP_HARD: "TAKE_PROFIT_HARD",
+               R_SL_SOFT: "STOP_LOSS_SOFT", R_TP_SOFT: "TAKE_PROFIT_SOFT",
+               R_TIME_CAP: "TIME_CAP", R_END_OF_DAY: "END_OF_DAY", R_FORCE_CLOSE: "FORCE_CLOSE"}
+
+
+def signals_to_int(sig_obj: np.ndarray) -> np.ndarray:
+    """Map an object array of 'long'/'short'/'hold' to int8 +1/-1/0."""
+    out = np.zeros(len(sig_obj), dtype=np.int8)
+    out[sig_obj == "long"] = LONG
+    out[sig_obj == "short"] = SHORT
+    return out
+
+
+def _first_true(mask: np.ndarray) -> int:
+    """Index of first True in mask, or -1 if none."""
+    if mask.any():
+        return int(np.argmax(mask))
+    return -1
+
+
+def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
+                  gate: np.ndarray | None,
+                  m_dates: np.ndarray, m_high: np.ndarray, m_low: np.ndarray, m_close: np.ndarray,
+                  sl_soft: float, sl_hard: float, tp: float, flip: bool,
+                  long_sl_soft: float | None = None, long_sl_hard: float | None = None,
+                  long_tp: float | None = None,
+                  short_sl_soft: float | None = None, short_sl_hard: float | None = None,
+                  short_tp: float | None = None, cap_1min: int = 0,
+                  cap_mode: str = "none",
+                  eod_target: np.ndarray | None = None,
+                  session_last: np.ndarray | None = None,
+                  intracandle_gate_by_dir: dict | None = None,
+                  intracandle_vol_gate: np.ndarray | None = None,
+                  intracandle_veto_mask: np.ndarray | None = None,
+                  intracandle_max_wait: int = 240,
+                  intracandle_force_close: bool = False,
+                  intracandle_normal_gate: np.ndarray | None = None) -> list[dict]:
+    """Return the list of completed trades (dicts with entry/exit/dir/reason/pnl_points), in order.
+    Mirrors engine.SimpleStrategy(...).backtest(...) candidate stream (exit_reason != OPEN).
+
+    Split SL/TP (Q3 / E2): the optional long_*/short_* args give the FINAL post-flip direction its own
+    sl_soft/sl_hard/tp. Any that is None falls back to the shared sl_soft/sl_hard/tp ⇒ when none are set,
+    long==short==shared ⇒ byte-identical to the pre-split path (locked by test_fast_parity)."""
+    n = len(d_dates)
+    M = len(m_dates)
+    trades: list[dict] = []
+    blocked_until = None  # np.datetime64 of last exit; next entry needs date > this
+    # resolve per-side points ONCE (shared fallback ⇒ identical when no split given)
+    L_sls = sl_soft if long_sl_soft is None else float(long_sl_soft)
+    L_slh = sl_hard if long_sl_hard is None else float(long_sl_hard)
+    L_tp = tp if long_tp is None else float(long_tp)
+    S_sls = sl_soft if short_sl_soft is None else float(short_sl_soft)
+    S_slh = sl_hard if short_sl_hard is None else float(short_sl_hard)
+    S_tp = tp if short_tp is None else float(short_tp)
+
+    idx = 1
+    while idx < n:
+        # entry eligibility (mirror engine): signal from idx-1, post-flip; gate[idx]; not blocked
+        raw = sig_int[idx - 1]
+        d = -raw if flip else raw
+        if d == HOLD:
+            idx += 1; continue
+        et = d_dates[idx]
+        if blocked_until is not None and et <= blocked_until:
+            idx += 1; continue
+
+        _ic_e = -1                       # >=0 => rescued INTRA-CANDLE entry at this global 1-min bar
+        if gate is not None and not gate[idx]:
+            # normal gate blocks. Try an intra-candle rescue of a VETOED, vol-passed directional signal:
+            # scan this candle's 1-min bars for the first bar where the full gate re-opens (within N).
+            if (intracandle_gate_by_dir is not None
+                    and intracandle_veto_mask is not None and idx < len(intracandle_veto_mask)
+                    and intracandle_veto_mask[idx]
+                    and (intracandle_vol_gate is None
+                         or (idx < len(intracandle_vol_gate) and intracandle_vol_gate[idx]))):
+                c0 = int(np.searchsorted(m_dates, d_dates[idx], side="left"))
+                c1 = int(np.searchsorted(m_dates, d_dates[idx + 1], side="left")) if idx + 1 < n else M
+                garr = intracandle_gate_by_dir[d]
+                limit = min(int(intracandle_max_wait), c1 - c0)
+                for o in range(limit):
+                    t = c0 + o
+                    if t < M and garr[t]:
+                        _ic_e = t; break
+            if _ic_e < 0:
+                idx += 1; continue
+
+        if _ic_e >= 0:
+            e = _ic_e; et = m_dates[e]; ep = float(m_close[e])
+        else:
+            ep = float(d_close[idx - 1])
+            e = int(np.searchsorted(m_dates, et, side="left"))    # first 1m bar with Date ≥ entry time
+        if e >= M:
+            break
+
+        # lines (absolute point distances); per-FINAL-direction split points (shared when no split set)
+        if d == LONG:
+            sls, slh, tpv = L_sls, L_slh, L_tp
+            slh_line, tph_line = ep - slh, ep + tpv
+            sls_line, tps_line = ep - sls, ep + tpv           # soft-SL line used; tps_line kept (unused, == hard TP)
+        else:
+            sls, slh, tpv = S_sls, S_slh, S_tp
+            slh_line, tph_line = ep + slh, ep - tpv
+            sls_line, tps_line = ep + sls, ep - tpv
+        hi, lo, cl = m_high[e:], m_low[e:], m_close[e:]
+
+        # candidate first-hit slice indices for the three exit kinds
+        if d == LONG:
+            t_slh = _first_true(lo <= slh_line)
+            t_tph = _first_true(hi >= tph_line)
+            soft_breach = cl <= sls_line   # soft stop-loss (long); flip only reverses entry, not this
+        else:
+            t_slh = _first_true(hi >= slh_line)
+            t_tph = _first_true(lo <= tph_line)
+            soft_breach = cl >= sls_line   # soft stop-loss (short); flip only reverses entry, not this
+        # soft fires at the 2nd of two consecutive breaching closes
+        if soft_breach.size >= 2:
+            pair = soft_breach[1:] & soft_breach[:-1]
+            t_soft = (int(np.argmax(pair)) + 1) if pair.any() else -1
+        else:
+            t_soft = -1
+
+        # assemble candidates with their priority, pick earliest (tie → priority order).
+        # Single exit model regardless of flip: hard-SL > hard-TP > soft-SL on the ENTERED direction.
+        # `flip` only reverses entry (d = -raw above); it no longer swaps "soft" to the TP side.
+        # time cap (max hold): the Nth 1-min bar from entry (bar 1 = slice index 0). Lowest priority.
+        # back-compat: a bare cap_1min (existing tests/golden) is the bars cap.
+        mode = "bars" if (cap_mode == "none" and cap_1min) else cap_mode
+        if mode == "eod" and eod_target is not None:
+            g = int(eod_target[e])
+            if g < 0:
+                t_cap = -1
+            else:
+                if g < e:
+                    g = int(session_last[e])
+                t_cap = (g - e) if 0 <= (g - e) < len(cl) else -1
+            cap_reason = R_END_OF_DAY
+        else:
+            t_cap = (cap_1min - 1) if (cap_1min and 0 <= cap_1min - 1 < len(cl)) else -1
+            cap_reason = R_TIME_CAP
+        order = [(t_slh, R_SL_HARD, slh_line), (t_tph, R_TP_HARD, tph_line),
+                 (t_soft, R_SL_SOFT, None), (t_cap, cap_reason, None)]
+        best = None  # (slice_t, priority_rank, reason, fill)
+        for rank, (ti, reason, line) in enumerate(order):
+            if ti < 0:
+                continue
+            fill = float(cl[ti]) if line is None else float(line)
+            cand = (ti, rank, reason, fill)
+            if best is None or ti < best[0]:
+                best = cand
+            # equal index: keep the earlier-in-`order` (lower rank) = already kept (we only replace on ti<)
+        # FORCE-CLOSE variant: a RESCUED (intra-candle) trade yields to the next qualifying NORMAL entry.
+        # Find the first later decision-bar boundary with a normal entry; if it falls at/before the natural
+        # exit (or the trade would stay OPEN), close the rescued trade at that boundary and let idx re-enter.
+        if intracandle_force_close and _ic_e >= 0:
+            _fcg = intracandle_normal_gate if intracandle_normal_gate is not None else gate  # full champion gate
+            fc_b = -1
+            for b in range(idx + 1, n):
+                rb = sig_int[b - 1]; db = -rb if flip else rb
+                if db == HOLD:
+                    continue
+                if _fcg is not None and not _fcg[b]:
+                    continue
+                fc_b = b; break
+            if fc_b >= 0:
+                be = int(np.searchsorted(m_dates, d_dates[fc_b], side="left"))
+                nat_global = (e + best[0]) if best is not None else (M + 1)
+                if e < be <= nat_global:
+                    fillf = float(d_close[fc_b - 1])
+                    pnlf = (fillf - ep) if d == LONG else (ep - fillf)
+                    trades.append({
+                        "entry_idx": idx, "entry_time": et, "entry_price": ep,
+                        "direction": "long" if d == LONG else "short",
+                        "exit_time": d_dates[fc_b], "exit_price": fillf,
+                        "exit_reason": REASON_NAME[R_FORCE_CLOSE], "pnl_points": float(pnlf),
+                    })
+                    idx = fc_b                                # re-process the boundary as a normal entry
+                    continue
+
+        if best is None:
+            # no exit before end of data → OPEN; engine drops it. Stop (one position; nothing after).
+            break
+
+        ti, _rank, reason, fill = best
+        xt = m_dates[e + ti]
+        pnl_pts = (fill - ep) if d == LONG else (ep - fill)
+        trades.append({
+            "entry_idx": idx, "entry_time": et, "entry_price": ep,
+            "direction": "long" if d == LONG else "short",
+            "exit_time": xt, "exit_price": fill, "exit_reason": REASON_NAME[reason],
+            "pnl_points": float(pnl_pts),
+        })
+        blocked_until = xt
+        # advance to the next decision bar whose date > exit time
+        nxt = int(np.searchsorted(d_dates, xt, side="right"))
+        idx = max(idx + 1, nxt)
+    return trades
