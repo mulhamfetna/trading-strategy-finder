@@ -1,0 +1,270 @@
+{
+ "2m": {
+  "median_pnl": 3831.5,
+  "full_pnl": 10476.3,
+  "full_dd": 1647.7,
+  "win": 54.6,
+  "box": {
+   "sl_soft": 3.1,
+   "sl_hard": 8.4,
+   "tp": 5.9,
+   "gate_pct": 74.2,
+   "dd_limit": 966.0,
+   "cooldown": 19,
+   "flip": true,
+   "k": 3,
+   "cap_1min": 109
+  },
+  "indicators": {
+   "adx": {
+    "n": 2,
+    "threshold": 32
+   },
+   "bollinger": {
+    "n": 91,
+    "k": 1.4
+   },
+   "breaker": {
+    "swing_l": 5
+   },
+   "cisd": {},
+   "ema_trend": {
+    "fast": 65,
+    "slow": 292
+   },
+   "fvg": {
+    "lookback": 9
+   },
+   "obv": {
+    "slope": 18
+   }
+  }
+ },
+ "5m": {
+  "median_pnl": 1989.0,
+  "full_pnl": 7854.8,
+  "full_dd": 769.5,
+  "win": 62.1,
+  "box": {
+   "sl_soft": 2.3,
+   "sl_hard": 4.2,
+   "tp": 9.6,
+   "gate_pct": 55.9,
+   "dd_limit": 883.0,
+   "cooldown": 15,
+   "flip": true,
+   "k": 3,
+   "cap_1min": 109
+  },
+  "indicators": {
+   "bollinger": {
+    "n": 9,
+    "k": 0.8
+   },
+   "breaker": {
+    "swing_l": 20
+   },
+   "cci": {
+    "n": 73,
+    "threshold": 235
+   },
+   "cisd": {},
+   "ema_trend": {
+    "fast": 58,
+    "slow": 292
+   },
+   "fvg": {
+    "lookback": 12
+   },
+   "order_block": {
+    "swing_l": 6
+   },
+   "sma_trend": {
+    "fast": 355,
+    "slow": 212
+   },
+   "structure_trend": {
+    "swing_l": 8
+   }
+  }
+ },
+ "15m": {
+  "median_pnl": 2891.9,
+  "full_pnl": 11214.8,
+  "full_dd": 761.1,
+  "win": 94.1,
+  "box": {
+   "sl_soft": 9.2,
+   "sl_hard": 15.2,
+   "tp": 2.6,
+   "gate_pct": 83.2,
+   "dd_limit": 1231.0,
+   "cooldown": 13,
+   "flip": true,
+   "k": 3,
+   "cap_1min": 1300
+  },
+  "indicators": {
+   "bollinger": {
+    "n": 187,
+    "k": 4.9
+   },
+   "cci": {
+    "n": 122,
+    "threshold": 25
+   },
+   "cisd": {},
+   "fvg": {
+    "lookback": 9
+   },
+   "ifvg": {},
+   "keltner": {
+    "n": 114,
+    "m": 2.6
+   },
+   "macd": {
+    "fast": 84,
+    "slow": 85,
+    "signal": 43
+   },
+   "mfi": {
+    "n": 56,
+    "lower": 47,
+    "upper": 52
+   },
+   "rsi": {
+    "n": 50,
+    "lower": 21,
+    "upper": 57
+   }
+  }
+ },
+ "1h": {
+  "median_pnl": 16520.1,
+  "full_pnl": 61638.5,
+  "full_dd": 8515.0,
+  "win": 57.9,
+  "box": {
+   "sl_soft": 15.9,
+   "sl_hard": 18.5,
+   "tp": 30.6,
+   "gate_pct": 78.6,
+   "dd_limit": 1352.0,
+   "cooldown": 1,
+   "flip": false,
+   "k": 4,
+   "cap_1min": 696
+  },
+  "indicators": {
+   "breaker": {
+    "swing_l": 14
+   },
+   "fvg": {
+    "lookback": 23
+   },
+   "keltner": {
+    "n": 185,
+    "m": 3.8
+   },
+   "obv": {
+    "slope": 51
+   },
+   "order_block": {
+    "swing_l": 19
+   },
+   "rsi": {
+    "n": 88,
+    "lower": 45,
+    "upper": 80
+   },
+   "sma_trend": {
+    "fast": 142,
+    "slow": 329
+   },
+   "vwap": {}
+  }
+ },
+ "2h": {
+  "median_pnl": 17994.0,
+  "full_pnl": 72776.6,
+  "full_dd": 6993.1,
+  "win": 40.2,
+  "box": {
+   "sl_soft": 12.4,
+   "sl_hard": 18.3,
+   "tp": 40.0,
+   "gate_pct": 92.2,
+   "dd_limit": 674.0,
+   "cooldown": 1,
+   "flip": false,
+   "k": 3,
+   "cap_1min": 1362
+  },
+  "indicators": {
+   "bollinger": {
+    "n": 58,
+    "k": 2.8
+   },
+   "breaker": {
+    "swing_l": 11
+   },
+   "order_block": {
+    "swing_l": 14
+   },
+   "rsi": {
+    "n": 99,
+    "lower": 28,
+    "upper": 90
+   },
+   "stochastic": {
+    "n": 75,
+    "d": 50,
+    "lower": 20,
+    "upper": 91
+   },
+   "vwap": {}
+  }
+ },
+ "4h": {
+  "median_pnl": 15079.6,
+  "full_pnl": 47434.2,
+  "full_dd": 10842.8,
+  "win": 62.0,
+  "box": {
+   "sl_soft": 41.5,
+   "sl_hard": 93.4,
+   "tp": 50.4,
+   "gate_pct": 79.3,
+   "dd_limit": 937.0,
+   "cooldown": 1,
+   "flip": false,
+   "k": 3,
+   "cap_1min": 1386
+  },
+  "indicators": {
+   "breaker": {
+    "swing_l": 7
+   },
+   "cisd": {},
+   "ema_trend": {
+    "fast": 377,
+    "slow": 261
+   },
+   "keltner": {
+    "n": 142,
+    "m": 3.2
+   },
+   "macd": {
+    "fast": 27,
+    "slow": 153,
+    "signal": 6
+   },
+   "order_block": {
+    "swing_l": 18
+   },
+   "structure_trend": {
+    "swing_l": 10
+   }
+  }
+ }
+}
