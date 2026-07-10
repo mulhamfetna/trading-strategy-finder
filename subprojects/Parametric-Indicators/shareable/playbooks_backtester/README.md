@@ -4,7 +4,7 @@ A **self-contained, parity-locked backtester** for the box-strategy champions do
 It bundles the **exact causal research engine** the live dashboard runs — so every champion reproduces its
 playbook headline **to the dollar** (verified: 37/37 exact). This is not a re-implementation.
 
-> **37 champions · 36/37 profitable out-of-sample (2026).** Each champion pairs a per-day price
+> **43 champions · 40/43 profitable out-of-sample (2026).** Each champion pairs a per-day price
 > "box" with a K-of-N indicator confirm/veto gate, a max-hold time cap, and a drawdown circuit-breaker,
 > on one instrument + decision timeframe. 1 contract; point value per instrument baked into each champion.
 
@@ -63,6 +63,12 @@ those exactly. OOS = 2026 out-of-sample (held-out year the tuning never saw).
 | `SI_15m` | Silver 15m | $14,600 | $2,780 | 44% | +$2,349 | 8 | 1139 |
 | `SI_5m` | Silver 5m | $28,735 | $3,534 | 43% | +$4,240 | 9 | 1203 |
 | `SI_2m` | Silver 2m | $3,163 | $676 | 69% | +$154 | 7 | 193 |
+| `HG_4h` | Copper 4h | $50,160 | $3,473 | 78% | +$19,200 | 8 | 1393 |
+| `HG_2h` | Copper 2h | $25,535 | $3,880 | 59% | +$14,198 | 6 | 819 |
+| `HG_1h` | Copper 1h | $4,970 | $1,190 | 86% | −$678 | 8 | 1300 |
+| `HG_15m` | Copper 15m | $3,247 | $663 | 45% | +$925 | 6 | 752 |
+| `HG_5m` | Copper 5m | $3,102 | $1,065 | 52% | −$240 | 7 | 544 |
+| `HG_2m` | Copper 2m | $31,787 | $2,038 | 26% | +$13,688 | 7 | 45 |
 | `RTY_4h` | Russell 2000 4h | $32,675 | $4,853 | 50% | +$19,677 | 8 | 992 |
 | `RTY_2h` | Russell 2000 2h | $18,846 | $1,822 | 84% | +$7,580 | 8 | 458 |
 | `RTY_1h` | Russell 2000 1h | $16,032 | $2,928 | 55% | +$6,539 | 6 | 897 |
