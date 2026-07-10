@@ -76,9 +76,15 @@ Stage 1 + Stage 2 signals for 7 TF × 3 presets against the shifted box, validat
 1. `subprojects/all-stocks-signals/instruments.py` — add a `REGISTRY` entry with `box_csv=_shifted_box('<TOKEN>')`.
 2. `subprojects/Parametric-Indicators/optimize/instruments.py` — add `<TOKEN>` to `TOKENS` and its
    `POINT_VALUE`.
-3. Update `optimize/test_instruments.py` (`TOKENS` assertion) + add a resolve/point-value test.
+3. **`subprojects/Parametric-Indicators/frontend/dashboard.html` — add `<option value="<TOKEN>"><TOKEN> (Name)</option>`
+   to `#inst_select`.** ⚠ The dropdown `<option>` list is **hardcoded HTML**, NOT auto-populated from `TOKENS` — a
+   backend token with no `<option>` is invisible in the UI (and `select_option` fails in headless verification).
+   Then `dash.sh refresh` so the served page picks it up. (Discovered onboarding HG 2026-07-08.)
+4. Update `optimize/test_instruments.py` + `test_instruments_comex.py` (`TOKENS` assertion + point-value) + a
+   resolve test.
 
-The dashboard dropdown reads `TOKENS`, so the instrument appears automatically. Until optimized, it backtests with
+The backend accepts the token via `TOKENS`; the dashboard shows it once the `<option>` above is added. Until
+optimized, it backtests with
 the auto **price-scaled permissive default** (`optimize/l2/payload.instrument_l1_default`). If the instrument had a
 prior champion tuned on a DIFFERENT box (e.g. a raw-box champion before a shift), retire it:
 `mv optimize/results/wsh4_champions_full_<TOKEN>.json …_<TOKEN>.stale-<reason>.json` so it falls back to the

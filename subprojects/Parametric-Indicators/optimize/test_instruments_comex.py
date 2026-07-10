@@ -7,17 +7,18 @@ from optimize import instruments as inst
 
 
 def test_tokens_include_comex():
-    assert inst.TOKENS == ("NQ", "ES", "GC", "SI")
+    assert inst.TOKENS == ("NQ", "ES", "GC", "SI", "HG", "RTY", "YM")   # GC/SI/HG COMEX metals + CME RTY/YM
 
 
 def test_point_values():
     assert inst.point_value("GC") == 100.0
     assert inst.point_value("SI") == 5000.0
+    assert inst.point_value("HG") == 25000.0   # Copper, COMEX full (25,000 lbs · $/lb)
 
 
 def test_resolve_paths_use_shifted_box():
-    # GC/SI (and ES) backtester must read the -1-workday-SHIFTED box, not the raw one.
-    for tok in ("GC", "SI"):
+    # GC/SI/HG (and ES) backtester must read the -1-workday-SHIFTED box, not the raw one.
+    for tok in ("GC", "SI", "HG"):
         dec, minute, box = inst.resolve_paths(tok, "4h")
         assert dec.endswith(f"{tok}_4h.csv") and os.path.exists(dec)
         assert minute.endswith(f"{tok}_1m.csv") and os.path.exists(minute)

@@ -62,6 +62,8 @@ ONBOARD = {
                box=_box('COMEX', 'GC', 'GC_full_data.csv')),
     'SI': dict(candle_dir=_cdir('COMEX', 'SI_Continuous_Data'), prefix='SI',
                box=_box('COMEX', 'SI', 'SI_full_data.csv')),
+    'HG': dict(candle_dir=_cdir('COMEX', 'HG_Continuous_Data'), prefix='HG',
+               box=_box('COMEX', 'HG', 'HG_full_data.csv')),
     'RTY': dict(candle_dir=_cdir('CME', 'RTY_Continuous_Data'), prefix='RTY',
                 box=_box('CME', 'RTY', 'RTY_full_data.csv')),
     'YM': dict(candle_dir=_cdir('CME', 'YM_Continuous_Data'), prefix='YM',
