@@ -66,6 +66,10 @@ REGISTRY: Dict[str, Instrument] = {
         token='SI',
         candle_dir=_cdir('COMEX', 'SI_Continuous_Data'), candle_prefix='SI',
         box_csv=_shifted_box('SI')),
+    'HG': Instrument(
+        token='HG',
+        candle_dir=_cdir('COMEX', 'HG_Continuous_Data'), candle_prefix='HG',
+        box_csv=_shifted_box('HG')),                 # Copper, COMEX full (pv 25,000); shifted -1 workday
     'RTY': Instrument(
         token='RTY',
         candle_dir=_cdir('CME', 'RTY_Continuous_Data'), candle_prefix='RTY',
