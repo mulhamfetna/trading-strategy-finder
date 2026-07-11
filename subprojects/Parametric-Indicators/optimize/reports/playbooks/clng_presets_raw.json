@@ -1,0 +1,2114 @@
+[
+ {
+  "inst": "CL",
+  "tf": "4h",
+  "collect": {
+   "indicators": [
+    {
+     "key": "ema_trend",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {
+      "fast": 20,
+      "slow": 50
+     }
+    },
+    {
+     "key": "sma_trend",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {
+      "fast": 50,
+      "slow": 200
+     }
+    },
+    {
+     "key": "macd",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "fast": 60,
+      "slow": 89,
+      "signal": 32
+     }
+    },
+    {
+     "key": "vwap",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {}
+    },
+    {
+     "key": "keltner",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "n": 43,
+      "m": 1.1
+     }
+    },
+    {
+     "key": "obv",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {
+      "slope": 20
+     }
+    },
+    {
+     "key": "cci",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 20,
+      "threshold": 100
+     }
+    },
+    {
+     "key": "rsi",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "lower": 30,
+      "upper": 70
+     }
+    },
+    {
+     "key": "stochastic",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "d": 3,
+      "lower": 20,
+      "upper": 80
+     }
+    },
+    {
+     "key": "mfi",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "lower": 20,
+      "upper": 80
+     }
+    },
+    {
+     "key": "bollinger",
+     "enabled": false,
+     "mode": "veto",
+     "params": {
+      "n": 20,
+      "k": 2
+     }
+    },
+    {
+     "key": "adx",
+     "enabled": false,
+     "mode": "veto",
+     "params": {
+      "n": 14,
+      "threshold": 25
+     }
+    },
+    {
+     "key": "structure_trend",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "order_block",
+     "enabled": true,
+     "mode": "both",
+     "params": {
+      "swing_l": 16
+     }
+    },
+    {
+     "key": "fvg",
+     "enabled": true,
+     "mode": "both",
+     "params": {
+      "lookback": 1
+     }
+    },
+    {
+     "key": "ifvg",
+     "enabled": false,
+     "mode": "both",
+     "params": {}
+    },
+    {
+     "key": "breaker",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "cisd",
+     "enabled": true,
+     "mode": "both",
+     "params": {}
+    }
+   ],
+   "k": 1,
+   "gate_pct": 97.88,
+   "sl_soft": 0.3596,
+   "sl_hard": 0.3906,
+   "tp": 0.5386,
+   "dd_limit": 2.7054,
+   "cooldown": 0,
+   "cap_1min": 1051,
+   "cap_mode": "bars",
+   "eod_margin_min": 15,
+   "intracandle_veto_entry": false,
+   "intracandle_max_wait": 240,
+   "flip": true,
+   "ind_1min": true,
+   "window": "full"
+  }
+ },
+ {
+  "inst": "CL",
+  "tf": "2h",
+  "collect": {
+   "indicators": [
+    {
+     "key": "ema_trend",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {
+      "fast": 20,
+      "slow": 50
+     }
+    },
+    {
+     "key": "sma_trend",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {
+      "fast": 50,
+      "slow": 200
+     }
+    },
+    {
+     "key": "macd",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "fast": 65,
+      "slow": 160,
+      "signal": 32
+     }
+    },
+    {
+     "key": "vwap",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {}
+    },
+    {
+     "key": "keltner",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {
+      "n": 20,
+      "m": 2
+     }
+    },
+    {
+     "key": "obv",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "slope": 92
+     }
+    },
+    {
+     "key": "cci",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 20,
+      "threshold": 100
+     }
+    },
+    {
+     "key": "rsi",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "lower": 30,
+      "upper": 70
+     }
+    },
+    {
+     "key": "stochastic",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "d": 3,
+      "lower": 20,
+      "upper": 80
+     }
+    },
+    {
+     "key": "mfi",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "lower": 20,
+      "upper": 80
+     }
+    },
+    {
+     "key": "bollinger",
+     "enabled": true,
+     "mode": "veto",
+     "params": {
+      "n": 134,
+      "k": 4
+     }
+    },
+    {
+     "key": "adx",
+     "enabled": false,
+     "mode": "veto",
+     "params": {
+      "n": 14,
+      "threshold": 25
+     }
+    },
+    {
+     "key": "structure_trend",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "order_block",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "fvg",
+     "enabled": true,
+     "mode": "both",
+     "params": {
+      "lookback": 25
+     }
+    },
+    {
+     "key": "ifvg",
+     "enabled": false,
+     "mode": "both",
+     "params": {}
+    },
+    {
+     "key": "breaker",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "cisd",
+     "enabled": false,
+     "mode": "both",
+     "params": {}
+    }
+   ],
+   "k": 3,
+   "gate_pct": 96.44,
+   "sl_soft": 0.1824,
+   "sl_hard": 0.2087,
+   "tp": 0.3647,
+   "dd_limit": 10.7706,
+   "cooldown": 0,
+   "cap_1min": 9,
+   "cap_mode": "bars",
+   "eod_margin_min": 15,
+   "intracandle_veto_entry": false,
+   "intracandle_max_wait": 240,
+   "flip": true,
+   "ind_1min": true,
+   "window": "full"
+  }
+ },
+ {
+  "inst": "CL",
+  "tf": "1h",
+  "collect": {
+   "indicators": [
+    {
+     "key": "ema_trend",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "fast": 259,
+      "slow": 22
+     }
+    },
+    {
+     "key": "sma_trend",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {
+      "fast": 50,
+      "slow": 200
+     }
+    },
+    {
+     "key": "macd",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {
+      "fast": 12,
+      "slow": 26,
+      "signal": 9
+     }
+    },
+    {
+     "key": "vwap",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {}
+    },
+    {
+     "key": "keltner",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "n": 162,
+      "m": 2.5
+     }
+    },
+    {
+     "key": "obv",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {
+      "slope": 20
+     }
+    },
+    {
+     "key": "cci",
+     "enabled": true,
+     "mode": "both",
+     "params": {
+      "n": 126,
+      "threshold": 250
+     }
+    },
+    {
+     "key": "rsi",
+     "enabled": true,
+     "mode": "both",
+     "params": {
+      "n": 82,
+      "lower": 26,
+      "upper": 91
+     }
+    },
+    {
+     "key": "stochastic",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "d": 3,
+      "lower": 20,
+      "upper": 80
+     }
+    },
+    {
+     "key": "mfi",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "lower": 20,
+      "upper": 80
+     }
+    },
+    {
+     "key": "bollinger",
+     "enabled": true,
+     "mode": "veto",
+     "params": {
+      "n": 135,
+      "k": 2.5
+     }
+    },
+    {
+     "key": "adx",
+     "enabled": false,
+     "mode": "veto",
+     "params": {
+      "n": 14,
+      "threshold": 25
+     }
+    },
+    {
+     "key": "structure_trend",
+     "enabled": true,
+     "mode": "both",
+     "params": {
+      "swing_l": 15
+     }
+    },
+    {
+     "key": "order_block",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "fvg",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "lookback": 3
+     }
+    },
+    {
+     "key": "ifvg",
+     "enabled": true,
+     "mode": "both",
+     "params": {}
+    },
+    {
+     "key": "breaker",
+     "enabled": true,
+     "mode": "both",
+     "params": {
+      "swing_l": 15
+     }
+    },
+    {
+     "key": "cisd",
+     "enabled": false,
+     "mode": "both",
+     "params": {}
+    }
+   ],
+   "k": 3,
+   "gate_pct": 95.84,
+   "sl_soft": 0.0917,
+   "sl_hard": 0.2585,
+   "tp": 0.2875,
+   "dd_limit": 12.1612,
+   "cooldown": 0,
+   "cap_1min": 9,
+   "cap_mode": "bars",
+   "eod_margin_min": 15,
+   "intracandle_veto_entry": false,
+   "intracandle_max_wait": 240,
+   "flip": true,
+   "ind_1min": true,
+   "window": "full"
+  }
+ },
+ {
+  "inst": "CL",
+  "tf": "15m",
+  "collect": {
+   "indicators": [
+    {
+     "key": "ema_trend",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "fast": 259,
+      "slow": 194
+     }
+    },
+    {
+     "key": "sma_trend",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "fast": 320,
+      "slow": 359
+     }
+    },
+    {
+     "key": "macd",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "fast": 92,
+      "slow": 116,
+      "signal": 40
+     }
+    },
+    {
+     "key": "vwap",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {}
+    },
+    {
+     "key": "keltner",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "n": 72,
+      "m": 3.5
+     }
+    },
+    {
+     "key": "obv",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {
+      "slope": 20
+     }
+    },
+    {
+     "key": "cci",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 20,
+      "threshold": 100
+     }
+    },
+    {
+     "key": "rsi",
+     "enabled": true,
+     "mode": "both",
+     "params": {
+      "n": 62,
+      "lower": 15,
+      "upper": 81
+     }
+    },
+    {
+     "key": "stochastic",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "d": 3,
+      "lower": 20,
+      "upper": 80
+     }
+    },
+    {
+     "key": "mfi",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "lower": 20,
+      "upper": 80
+     }
+    },
+    {
+     "key": "bollinger",
+     "enabled": true,
+     "mode": "veto",
+     "params": {
+      "n": 129,
+      "k": 3.4
+     }
+    },
+    {
+     "key": "adx",
+     "enabled": false,
+     "mode": "veto",
+     "params": {
+      "n": 14,
+      "threshold": 25
+     }
+    },
+    {
+     "key": "structure_trend",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "order_block",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "fvg",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "lookback": 3
+     }
+    },
+    {
+     "key": "ifvg",
+     "enabled": false,
+     "mode": "both",
+     "params": {}
+    },
+    {
+     "key": "breaker",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "cisd",
+     "enabled": false,
+     "mode": "both",
+     "params": {}
+    }
+   ],
+   "k": 2,
+   "gate_pct": 97.88,
+   "sl_soft": 0.0309,
+   "sl_hard": 0.0424,
+   "tp": 0.1476,
+   "dd_limit": 3.2194,
+   "cooldown": 1,
+   "cap_1min": 36,
+   "cap_mode": "bars",
+   "eod_margin_min": 15,
+   "intracandle_veto_entry": false,
+   "intracandle_max_wait": 240,
+   "flip": true,
+   "ind_1min": true,
+   "window": "full"
+  }
+ },
+ {
+  "inst": "CL",
+  "tf": "5m",
+  "collect": {
+   "indicators": [
+    {
+     "key": "ema_trend",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {
+      "fast": 20,
+      "slow": 50
+     }
+    },
+    {
+     "key": "sma_trend",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "fast": 148,
+      "slow": 64
+     }
+    },
+    {
+     "key": "macd",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {
+      "fast": 12,
+      "slow": 26,
+      "signal": 9
+     }
+    },
+    {
+     "key": "vwap",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {}
+    },
+    {
+     "key": "keltner",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {
+      "n": 20,
+      "m": 2
+     }
+    },
+    {
+     "key": "obv",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "slope": 83
+     }
+    },
+    {
+     "key": "cci",
+     "enabled": true,
+     "mode": "both",
+     "params": {
+      "n": 94,
+      "threshold": 215
+     }
+    },
+    {
+     "key": "rsi",
+     "enabled": true,
+     "mode": "both",
+     "params": {
+      "n": 20,
+      "lower": 24,
+      "upper": 62
+     }
+    },
+    {
+     "key": "stochastic",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "d": 3,
+      "lower": 20,
+      "upper": 80
+     }
+    },
+    {
+     "key": "mfi",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "lower": 20,
+      "upper": 80
+     }
+    },
+    {
+     "key": "bollinger",
+     "enabled": false,
+     "mode": "veto",
+     "params": {
+      "n": 20,
+      "k": 2
+     }
+    },
+    {
+     "key": "adx",
+     "enabled": false,
+     "mode": "veto",
+     "params": {
+      "n": 14,
+      "threshold": 25
+     }
+    },
+    {
+     "key": "structure_trend",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "order_block",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "fvg",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "lookback": 3
+     }
+    },
+    {
+     "key": "ifvg",
+     "enabled": false,
+     "mode": "both",
+     "params": {}
+    },
+    {
+     "key": "breaker",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "cisd",
+     "enabled": true,
+     "mode": "both",
+     "params": {}
+    }
+   ],
+   "k": 1,
+   "gate_pct": 65.76,
+   "sl_soft": 0.0629,
+   "sl_hard": 0.0828,
+   "tp": 0.0463,
+   "dd_limit": 6.9163,
+   "cooldown": 3,
+   "cap_1min": 175,
+   "cap_mode": "bars",
+   "eod_margin_min": 15,
+   "intracandle_veto_entry": false,
+   "intracandle_max_wait": 240,
+   "flip": true,
+   "ind_1min": true,
+   "window": "full"
+  }
+ },
+ {
+  "inst": "CL",
+  "tf": "2m",
+  "collect": {
+   "indicators": [
+    {
+     "key": "ema_trend",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "fast": 230,
+      "slow": 12
+     }
+    },
+    {
+     "key": "sma_trend",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "fast": 25,
+      "slow": 355
+     }
+    },
+    {
+     "key": "macd",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "fast": 25,
+      "slow": 133,
+      "signal": 96
+     }
+    },
+    {
+     "key": "vwap",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {}
+    },
+    {
+     "key": "keltner",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {
+      "n": 20,
+      "m": 2
+     }
+    },
+    {
+     "key": "obv",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {
+      "slope": 20
+     }
+    },
+    {
+     "key": "cci",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 20,
+      "threshold": 100
+     }
+    },
+    {
+     "key": "rsi",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "lower": 30,
+      "upper": 70
+     }
+    },
+    {
+     "key": "stochastic",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "d": 3,
+      "lower": 20,
+      "upper": 80
+     }
+    },
+    {
+     "key": "mfi",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "lower": 20,
+      "upper": 80
+     }
+    },
+    {
+     "key": "bollinger",
+     "enabled": false,
+     "mode": "veto",
+     "params": {
+      "n": 20,
+      "k": 2
+     }
+    },
+    {
+     "key": "adx",
+     "enabled": false,
+     "mode": "veto",
+     "params": {
+      "n": 14,
+      "threshold": 25
+     }
+    },
+    {
+     "key": "structure_trend",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "order_block",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "fvg",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "lookback": 3
+     }
+    },
+    {
+     "key": "ifvg",
+     "enabled": false,
+     "mode": "both",
+     "params": {}
+    },
+    {
+     "key": "breaker",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "cisd",
+     "enabled": true,
+     "mode": "both",
+     "params": {}
+    }
+   ],
+   "k": 1,
+   "gate_pct": 91.11,
+   "sl_soft": 0.0303,
+   "sl_hard": 0.0408,
+   "tp": 0.0594,
+   "dd_limit": 0.4723,
+   "cooldown": 1,
+   "cap_1min": 467,
+   "cap_mode": "bars",
+   "eod_margin_min": 15,
+   "intracandle_veto_entry": false,
+   "intracandle_max_wait": 240,
+   "flip": true,
+   "ind_1min": true,
+   "window": "full"
+  }
+ },
+ {
+  "inst": "NG",
+  "tf": "4h",
+  "collect": {
+   "indicators": [
+    {
+     "key": "ema_trend",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {
+      "fast": 20,
+      "slow": 50
+     }
+    },
+    {
+     "key": "sma_trend",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {
+      "fast": 50,
+      "slow": 200
+     }
+    },
+    {
+     "key": "macd",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "fast": 54,
+      "slow": 23,
+      "signal": 25
+     }
+    },
+    {
+     "key": "vwap",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {}
+    },
+    {
+     "key": "keltner",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "n": 21,
+      "m": 3.3
+     }
+    },
+    {
+     "key": "obv",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {
+      "slope": 20
+     }
+    },
+    {
+     "key": "cci",
+     "enabled": true,
+     "mode": "both",
+     "params": {
+      "n": 158,
+      "threshold": 95
+     }
+    },
+    {
+     "key": "rsi",
+     "enabled": true,
+     "mode": "both",
+     "params": {
+      "n": 90,
+      "lower": 4,
+      "upper": 72
+     }
+    },
+    {
+     "key": "stochastic",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "d": 3,
+      "lower": 20,
+      "upper": 80
+     }
+    },
+    {
+     "key": "mfi",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "lower": 20,
+      "upper": 80
+     }
+    },
+    {
+     "key": "bollinger",
+     "enabled": false,
+     "mode": "veto",
+     "params": {
+      "n": 20,
+      "k": 2
+     }
+    },
+    {
+     "key": "adx",
+     "enabled": false,
+     "mode": "veto",
+     "params": {
+      "n": 14,
+      "threshold": 25
+     }
+    },
+    {
+     "key": "structure_trend",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "order_block",
+     "enabled": true,
+     "mode": "both",
+     "params": {
+      "swing_l": 20
+     }
+    },
+    {
+     "key": "fvg",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "lookback": 3
+     }
+    },
+    {
+     "key": "ifvg",
+     "enabled": false,
+     "mode": "both",
+     "params": {}
+    },
+    {
+     "key": "breaker",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "cisd",
+     "enabled": true,
+     "mode": "both",
+     "params": {}
+    }
+   ],
+   "k": 4,
+   "gate_pct": 94.04,
+   "sl_soft": 0.0128,
+   "sl_hard": 0.0331,
+   "tp": 0.0264,
+   "dd_limit": 0.5523,
+   "cooldown": 1,
+   "cap_1min": 458,
+   "cap_mode": "bars",
+   "eod_margin_min": 15,
+   "intracandle_veto_entry": false,
+   "intracandle_max_wait": 240,
+   "flip": true,
+   "ind_1min": true,
+   "window": "full"
+  }
+ },
+ {
+  "inst": "NG",
+  "tf": "2h",
+  "collect": {
+   "indicators": [
+    {
+     "key": "ema_trend",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {
+      "fast": 20,
+      "slow": 50
+     }
+    },
+    {
+     "key": "sma_trend",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "fast": 220,
+      "slow": 347
+     }
+    },
+    {
+     "key": "macd",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {
+      "fast": 12,
+      "slow": 26,
+      "signal": 9
+     }
+    },
+    {
+     "key": "vwap",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {}
+    },
+    {
+     "key": "keltner",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "n": 117,
+      "m": 4.6
+     }
+    },
+    {
+     "key": "obv",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "slope": 104
+     }
+    },
+    {
+     "key": "cci",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 20,
+      "threshold": 100
+     }
+    },
+    {
+     "key": "rsi",
+     "enabled": true,
+     "mode": "both",
+     "params": {
+      "n": 68,
+      "lower": 19,
+      "upper": 88
+     }
+    },
+    {
+     "key": "stochastic",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "d": 3,
+      "lower": 20,
+      "upper": 80
+     }
+    },
+    {
+     "key": "mfi",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "lower": 20,
+      "upper": 80
+     }
+    },
+    {
+     "key": "bollinger",
+     "enabled": false,
+     "mode": "veto",
+     "params": {
+      "n": 20,
+      "k": 2
+     }
+    },
+    {
+     "key": "adx",
+     "enabled": false,
+     "mode": "veto",
+     "params": {
+      "n": 14,
+      "threshold": 25
+     }
+    },
+    {
+     "key": "structure_trend",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "order_block",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "fvg",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "lookback": 3
+     }
+    },
+    {
+     "key": "ifvg",
+     "enabled": false,
+     "mode": "both",
+     "params": {}
+    },
+    {
+     "key": "breaker",
+     "enabled": true,
+     "mode": "both",
+     "params": {
+      "swing_l": 15
+     }
+    },
+    {
+     "key": "cisd",
+     "enabled": true,
+     "mode": "both",
+     "params": {}
+    }
+   ],
+   "k": 2,
+   "gate_pct": 85.56,
+   "sl_soft": 0.013,
+   "sl_hard": 0.0157,
+   "tp": 0.0195,
+   "dd_limit": 0.3144,
+   "cooldown": 0,
+   "cap_1min": 77,
+   "cap_mode": "bars",
+   "eod_margin_min": 15,
+   "intracandle_veto_entry": false,
+   "intracandle_max_wait": 240,
+   "flip": true,
+   "ind_1min": true,
+   "window": "full"
+  }
+ },
+ {
+  "inst": "NG",
+  "tf": "1h",
+  "collect": {
+   "indicators": [
+    {
+     "key": "ema_trend",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {
+      "fast": 20,
+      "slow": 50
+     }
+    },
+    {
+     "key": "sma_trend",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {
+      "fast": 50,
+      "slow": 200
+     }
+    },
+    {
+     "key": "macd",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "fast": 80,
+      "slow": 72,
+      "signal": 13
+     }
+    },
+    {
+     "key": "vwap",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {}
+    },
+    {
+     "key": "keltner",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {
+      "n": 20,
+      "m": 2
+     }
+    },
+    {
+     "key": "obv",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "slope": 167
+     }
+    },
+    {
+     "key": "cci",
+     "enabled": true,
+     "mode": "both",
+     "params": {
+      "n": 57,
+      "threshold": 195
+     }
+    },
+    {
+     "key": "rsi",
+     "enabled": true,
+     "mode": "both",
+     "params": {
+      "n": 95,
+      "lower": 41,
+      "upper": 72
+     }
+    },
+    {
+     "key": "stochastic",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "d": 3,
+      "lower": 20,
+      "upper": 80
+     }
+    },
+    {
+     "key": "mfi",
+     "enabled": true,
+     "mode": "both",
+     "params": {
+      "n": 95,
+      "lower": 18,
+      "upper": 66
+     }
+    },
+    {
+     "key": "bollinger",
+     "enabled": true,
+     "mode": "veto",
+     "params": {
+      "n": 23,
+      "k": 4.2
+     }
+    },
+    {
+     "key": "adx",
+     "enabled": false,
+     "mode": "veto",
+     "params": {
+      "n": 14,
+      "threshold": 25
+     }
+    },
+    {
+     "key": "structure_trend",
+     "enabled": true,
+     "mode": "both",
+     "params": {
+      "swing_l": 12
+     }
+    },
+    {
+     "key": "order_block",
+     "enabled": true,
+     "mode": "both",
+     "params": {
+      "swing_l": 10
+     }
+    },
+    {
+     "key": "fvg",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "lookback": 3
+     }
+    },
+    {
+     "key": "ifvg",
+     "enabled": false,
+     "mode": "both",
+     "params": {}
+    },
+    {
+     "key": "breaker",
+     "enabled": true,
+     "mode": "both",
+     "params": {
+      "swing_l": 7
+     }
+    },
+    {
+     "key": "cisd",
+     "enabled": true,
+     "mode": "both",
+     "params": {}
+    }
+   ],
+   "k": 4,
+   "gate_pct": 96.63,
+   "sl_soft": 0.0096,
+   "sl_hard": 0.0143,
+   "tp": 0.0128,
+   "dd_limit": 0.5998,
+   "cooldown": 0,
+   "cap_1min": 1428,
+   "cap_mode": "bars",
+   "eod_margin_min": 15,
+   "intracandle_veto_entry": false,
+   "intracandle_max_wait": 240,
+   "flip": true,
+   "ind_1min": true,
+   "window": "full"
+  }
+ },
+ {
+  "inst": "NG",
+  "tf": "15m",
+  "collect": {
+   "indicators": [
+    {
+     "key": "ema_trend",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "fast": 68,
+      "slow": 377
+     }
+    },
+    {
+     "key": "sma_trend",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "fast": 303,
+      "slow": 352
+     }
+    },
+    {
+     "key": "macd",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "fast": 85,
+      "slow": 197,
+      "signal": 10
+     }
+    },
+    {
+     "key": "vwap",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {}
+    },
+    {
+     "key": "keltner",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "n": 132,
+      "m": 1.4
+     }
+    },
+    {
+     "key": "obv",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "slope": 22
+     }
+    },
+    {
+     "key": "cci",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 20,
+      "threshold": 100
+     }
+    },
+    {
+     "key": "rsi",
+     "enabled": true,
+     "mode": "both",
+     "params": {
+      "n": 65,
+      "lower": 36,
+      "upper": 75
+     }
+    },
+    {
+     "key": "stochastic",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "d": 3,
+      "lower": 20,
+      "upper": 80
+     }
+    },
+    {
+     "key": "mfi",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "lower": 20,
+      "upper": 80
+     }
+    },
+    {
+     "key": "bollinger",
+     "enabled": false,
+     "mode": "veto",
+     "params": {
+      "n": 20,
+      "k": 2
+     }
+    },
+    {
+     "key": "adx",
+     "enabled": false,
+     "mode": "veto",
+     "params": {
+      "n": 14,
+      "threshold": 25
+     }
+    },
+    {
+     "key": "structure_trend",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "order_block",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "fvg",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "lookback": 3
+     }
+    },
+    {
+     "key": "ifvg",
+     "enabled": false,
+     "mode": "both",
+     "params": {}
+    },
+    {
+     "key": "breaker",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "cisd",
+     "enabled": true,
+     "mode": "both",
+     "params": {}
+    }
+   ],
+   "k": 4,
+   "gate_pct": 78.63,
+   "sl_soft": 0.005,
+   "sl_hard": 0.005,
+   "tp": 0.0055,
+   "dd_limit": 0.2473,
+   "cooldown": 1,
+   "cap_1min": 77,
+   "cap_mode": "bars",
+   "eod_margin_min": 15,
+   "intracandle_veto_entry": false,
+   "intracandle_max_wait": 240,
+   "flip": true,
+   "ind_1min": true,
+   "window": "full"
+  }
+ },
+ {
+  "inst": "NG",
+  "tf": "5m",
+  "collect": {
+   "indicators": [
+    {
+     "key": "ema_trend",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "fast": 83,
+      "slow": 315
+     }
+    },
+    {
+     "key": "sma_trend",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "fast": 279,
+      "slow": 248
+     }
+    },
+    {
+     "key": "macd",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "fast": 100,
+      "slow": 153,
+      "signal": 9
+     }
+    },
+    {
+     "key": "vwap",
+     "enabled": false,
+     "mode": "confirm",
+     "params": {}
+    },
+    {
+     "key": "keltner",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "n": 195,
+      "m": 2
+     }
+    },
+    {
+     "key": "obv",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "slope": 7
+     }
+    },
+    {
+     "key": "cci",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 20,
+      "threshold": 100
+     }
+    },
+    {
+     "key": "rsi",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "lower": 30,
+      "upper": 70
+     }
+    },
+    {
+     "key": "stochastic",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "d": 3,
+      "lower": 20,
+      "upper": 80
+     }
+    },
+    {
+     "key": "mfi",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "lower": 20,
+      "upper": 80
+     }
+    },
+    {
+     "key": "bollinger",
+     "enabled": true,
+     "mode": "veto",
+     "params": {
+      "n": 7,
+      "k": 4
+     }
+    },
+    {
+     "key": "adx",
+     "enabled": false,
+     "mode": "veto",
+     "params": {
+      "n": 14,
+      "threshold": 25
+     }
+    },
+    {
+     "key": "structure_trend",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "order_block",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "fvg",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "lookback": 3
+     }
+    },
+    {
+     "key": "ifvg",
+     "enabled": false,
+     "mode": "both",
+     "params": {}
+    },
+    {
+     "key": "breaker",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "cisd",
+     "enabled": true,
+     "mode": "both",
+     "params": {}
+    }
+   ],
+   "k": 2,
+   "gate_pct": 84.73,
+   "sl_soft": 0.0011,
+   "sl_hard": 0.0011,
+   "tp": 0.0049,
+   "dd_limit": 0.2269,
+   "cooldown": 0,
+   "cap_1min": 939,
+   "cap_mode": "bars",
+   "eod_margin_min": 15,
+   "intracandle_veto_entry": false,
+   "intracandle_max_wait": 240,
+   "flip": true,
+   "ind_1min": true,
+   "window": "full"
+  }
+ },
+ {
+  "inst": "NG",
+  "tf": "2m",
+  "collect": {
+   "indicators": [
+    {
+     "key": "ema_trend",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "fast": 333,
+      "slow": 324
+     }
+    },
+    {
+     "key": "sma_trend",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "fast": 81,
+      "slow": 218
+     }
+    },
+    {
+     "key": "macd",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "fast": 53,
+      "slow": 23,
+      "signal": 68
+     }
+    },
+    {
+     "key": "vwap",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {}
+    },
+    {
+     "key": "keltner",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "n": 114,
+      "m": 2.6
+     }
+    },
+    {
+     "key": "obv",
+     "enabled": true,
+     "mode": "confirm",
+     "params": {
+      "slope": 185
+     }
+    },
+    {
+     "key": "cci",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 20,
+      "threshold": 100
+     }
+    },
+    {
+     "key": "rsi",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "lower": 30,
+      "upper": 70
+     }
+    },
+    {
+     "key": "stochastic",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "d": 3,
+      "lower": 20,
+      "upper": 80
+     }
+    },
+    {
+     "key": "mfi",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "n": 14,
+      "lower": 20,
+      "upper": 80
+     }
+    },
+    {
+     "key": "bollinger",
+     "enabled": false,
+     "mode": "veto",
+     "params": {
+      "n": 20,
+      "k": 2
+     }
+    },
+    {
+     "key": "adx",
+     "enabled": false,
+     "mode": "veto",
+     "params": {
+      "n": 14,
+      "threshold": 25
+     }
+    },
+    {
+     "key": "structure_trend",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "order_block",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "fvg",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "lookback": 3
+     }
+    },
+    {
+     "key": "ifvg",
+     "enabled": false,
+     "mode": "both",
+     "params": {}
+    },
+    {
+     "key": "breaker",
+     "enabled": false,
+     "mode": "both",
+     "params": {
+      "swing_l": 2
+     }
+    },
+    {
+     "key": "cisd",
+     "enabled": true,
+     "mode": "both",
+     "params": {}
+    }
+   ],
+   "k": 1,
+   "gate_pct": 84.3,
+   "sl_soft": 0.0008,
+   "sl_hard": 0.0011,
+   "tp": 0.0029,
+   "dd_limit": 0.615,
+   "cooldown": 0,
+   "cap_1min": 1128,
+   "cap_mode": "bars",
+   "eod_margin_min": 15,
+   "intracandle_veto_entry": false,
+   "intracandle_max_wait": 240,
+   "flip": true,
+   "ind_1min": true,
+   "window": "full"
+  }
+ }
+]

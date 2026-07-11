@@ -7,12 +7,13 @@ from optimize import data as D
 
 
 def test_tokens_and_point_values():
-    assert I.TOKENS == ("NQ", "ES", "GC", "SI", "HG", "RTY", "YM")   # + COMEX metals (GC/SI/HG) + CME RTY/YM
+    assert I.TOKENS == ("NQ", "ES", "GC", "SI", "HG", "CL", "NG", "RTY", "YM")   # COMEX metals + NYMEX energy + CME RTY/YM
     assert I.point_value("NQ") == 20.0 and I.point_value("ES") == 50.0
     assert I.point_value("GC") == 100.0 and I.point_value("SI") == 5000.0
     assert I.point_value("HG") == 25000.0   # Copper, COMEX full (25,000 lbs · $/lb)
+    assert I.point_value("CL") == 1000.0 and I.point_value("NG") == 10000.0   # Crude 1,000 bbl · NatGas 10,000 MMBtu
     assert I.point_value("RTY") == 50.0 and I.point_value("YM") == 5.0
-    assert all(I.is_valid(t) for t in ("NQ", "ES", "GC", "SI", "HG", "RTY", "YM"))
+    assert all(I.is_valid(t) for t in ("NQ", "ES", "GC", "SI", "HG", "CL", "NG", "RTY", "YM"))
     assert not I.is_valid("QQQ-RTH")
 
 

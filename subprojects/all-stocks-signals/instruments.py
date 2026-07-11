@@ -70,6 +70,14 @@ REGISTRY: Dict[str, Instrument] = {
         token='HG',
         candle_dir=_cdir('COMEX', 'HG_Continuous_Data'), candle_prefix='HG',
         box_csv=_shifted_box('HG')),                 # Copper, COMEX full (pv 25,000); shifted -1 workday
+    'CL': Instrument(
+        token='CL',
+        candle_dir=_cdir('NYMEX', 'CL_Continuous_Data'), candle_prefix='CL',
+        box_csv=_shifted_box('CL')),                 # Crude Oil, NYMEX full (pv 1,000); shifted -1 workday
+    'NG': Instrument(
+        token='NG',
+        candle_dir=_cdir('NYMEX', 'NG_Continuous_Data'), candle_prefix='NG',
+        box_csv=_shifted_box('NG')),                 # Natural Gas, NYMEX full (pv 10,000); shifted -1 workday
     'RTY': Instrument(
         token='RTY',
         candle_dir=_cdir('CME', 'RTY_Continuous_Data'), candle_prefix='RTY',

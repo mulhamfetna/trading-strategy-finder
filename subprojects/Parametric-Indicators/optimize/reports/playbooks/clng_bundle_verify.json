@@ -1,0 +1,110 @@
+[
+ {
+  "inst": "CL",
+  "tf": "4h",
+  "bundle": 21760.0,
+  "recorded": 21760.0,
+  "bundle_oos": 2475.0,
+  "recorded_oos": 2475.0,
+  "ok": true
+ },
+ {
+  "inst": "CL",
+  "tf": "2h",
+  "bundle": 10448.0,
+  "recorded": 10448.0,
+  "bundle_oos": 2561.0,
+  "recorded_oos": 2561.0,
+  "ok": true
+ },
+ {
+  "inst": "CL",
+  "tf": "1h",
+  "bundle": 7939.0,
+  "recorded": 7939.0,
+  "bundle_oos": 1436.0,
+  "recorded_oos": 1436.0,
+  "ok": true
+ },
+ {
+  "inst": "CL",
+  "tf": "15m",
+  "bundle": 15852.0,
+  "recorded": 15852.0,
+  "bundle_oos": 5943.0,
+  "recorded_oos": 5943.0,
+  "ok": true
+ },
+ {
+  "inst": "CL",
+  "tf": "5m",
+  "bundle": 4090.0,
+  "recorded": 4090.0,
+  "bundle_oos": 42.0,
+  "recorded_oos": 42.0,
+  "ok": true
+ },
+ {
+  "inst": "CL",
+  "tf": "2m",
+  "bundle": 17775.0,
+  "recorded": 17775.0,
+  "bundle_oos": 4707.0,
+  "recorded_oos": 4707.0,
+  "ok": true
+ },
+ {
+  "inst": "NG",
+  "tf": "4h",
+  "bundle": 17363.0,
+  "recorded": 17363.0,
+  "bundle_oos": 5910.0,
+  "recorded_oos": 5910.0,
+  "ok": true
+ },
+ {
+  "inst": "NG",
+  "tf": "2h",
+  "bundle": 18112.0,
+  "recorded": 18112.0,
+  "bundle_oos": 1733.0,
+  "recorded_oos": 1733.0,
+  "ok": true
+ },
+ {
+  "inst": "NG",
+  "tf": "1h",
+  "bundle": 12086.0,
+  "recorded": 12086.0,
+  "bundle_oos": 6183.0,
+  "recorded_oos": 6183.0,
+  "ok": true
+ },
+ {
+  "inst": "NG",
+  "tf": "15m",
+  "bundle": -1635.0,
+  "recorded": -1635.0,
+  "bundle_oos": -2700.0,
+  "recorded_oos": -2700.0,
+  "ok": true
+ },
+ {
+  "inst": "NG",
+  "tf": "5m",
+  "bundle": 27991.0,
+  "recorded": 27991.0,
+  "bundle_oos": 8502.0,
+  "recorded_oos": 8502.0,
+  "ok": true
+ },
+ {
+  "inst": "NG",
+  "tf": "2m",
+  "bundle": 30294.0,
+  "recorded": 30294.0,
+  "bundle_oos": 10024.0,
+  "recorded_oos": 10024.0,
+  "ok": true
+ }
+]
