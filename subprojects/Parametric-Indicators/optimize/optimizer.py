@@ -508,12 +508,18 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
     # Tier 1: one source of truth for the store URL. WSH_STORAGE_URL (e.g. postgresql://…) overrides the
     # per-TF sqlite path; unset ⇒ the per-TF sqlite file, byte-identical to before. WAL/busy_timeout file
     # hardening applies only to a sqlite file; a served RDB (Postgres) uses MVCC + a connection pool.
-    _url = study_storage.storage_url(db_path)
-    if study_storage.is_sqlite(_url):
-        with sqlite3.connect(db_path) as _c:
-            _c.execute("PRAGMA journal_mode=WAL;")
-            _c.execute("PRAGMA synchronous=NORMAL;")
-    storage = optuna.storages.RDBStorage(url=_url, engine_kwargs=study_storage.engine_kwargs(_url))
+    # Tier 2: WSH_JOURNAL_DIR ⇒ a per-study append-only journal (no shared DB, no contention, in-memory
+    # reads). It is the fix for the measured store wall — see optimize/storage.py. Unset ⇒ RDB as before.
+    if study_storage.journal_dir():
+        storage = study_storage.make_storage(db_path, study_name)
+        print(f"[{tf_name}] trial store = journal ({study_name}.log) — per-study, no shared DB", flush=True)
+    else:
+        _url = study_storage.storage_url(db_path)
+        if study_storage.is_sqlite(_url):
+            with sqlite3.connect(db_path) as _c:
+                _c.execute("PRAGMA journal_mode=WAL;")
+                _c.execute("PRAGMA synchronous=NORMAL;")
+        storage = optuna.storages.RDBStorage(url=_url, engine_kwargs=study_storage.engine_kwargs(_url))
     # Sampler is selectable (P2); default nsga3 reproduces every prior run exactly. The feasibility
     # constraint is passed identically to whichever brain we pick, so swapping it cannot change which
     # trials count as feasible — only WHICH points get sampled.
