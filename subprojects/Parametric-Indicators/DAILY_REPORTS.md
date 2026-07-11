@@ -4,20 +4,29 @@ _Newest on top. High-overview standup: what got done · what's next · challenge
 
 ---
 
-## 2026-07-11 — Oil + Gas onboarded end-to-end; a losing champion caught before it shipped; 9 markets live
+## 2026-07-10 — Oil + Gas onboarded end-to-end; a losing champion caught before it shipped; 9 markets live
 
-_(End-of-day. Nothing left running on the server — the queue is empty for the first time in four days.)_
+_(Closes 10 July, including its overnight campaign. The 12-timeframe search ran through the night and finished
+at 01:06; the champions were extracted and verified first thing on the 11th, so the results are recorded here
+with the day whose work produced them.)_
 
 ### ✅ What got done today
 
 **The headline: two new energy markets went from raw price files to shipped, verified, documented product —
 and one champion the optimizer swore was profitable turned out to lose money, and got caught.**
 
-**WORKSTREAM 1 — finished the Oil + Gas optimization and extracted the champions.**
-The overnight campaign completed at 01:06 — **12 timeframe-searches, 5,700 trials each, ~68,000 backtests
-total**, the same budget every other market got. I pulled the best configuration out of each of the 12
-searches (each one is a "best trade-off" frontier of ~100–400 candidates; the champion is the top pick by the
-conservative cross-validation score).
+**WORKSTREAM 0 — onboarded Crude Oil (CL) and Natural Gas (NG) from scratch.**
+Contract values confirmed with you at the gate (**$1,000/point** for Oil, **$10,000/point** for Gas), price +
+box data placed, boxes shifted back one trading day, all trading signals generated + validated + packaged,
+both markets registered across backtester + dashboard + optimizer, safety test green (**golden 6/6** —
+Nasdaq's numbers unchanged to the byte). Both live in the dashboard, taking the count to **9 markets**. The
+hardcoded-dropdown trap found during Copper was applied **up front** this time instead of being rediscovered.
+
+**WORKSTREAM 1 — ran the optimization and extracted the champions.**
+Launched the 12-timeframe campaign, which ran overnight and completed at 01:06 — **12 searches, 5,700 trials
+each, ~68,000 backtests total**, the same budget every other market got. I pulled the best configuration out
+of each of the 12 searches (each one is a "best trade-off" frontier of ~100–400 candidates; the champion is
+the top pick by the conservative cross-validation score).
 
 **WORKSTREAM 2 — verified all 12 through the real dashboard, and this is where the day earned its keep.**
 Rather than trusting the optimizer's own reported number, I drove the **actual browser dashboard** for every
@@ -78,13 +87,12 @@ number can't be re-formatted back into the text it came from, so this class of e
 **Shipped:** everything merged and pushed to `dev` (`ff79770`), which also carried the Copper bundle commit
 that had been sitting unpushed since the 9th.
 
-### 🎯 What's next (tomorrow)
+### 🎯 What's next
 
-- **Decide the direction.** The onboarding run is complete (9 markets, 55 champions, all verified) — this
-  chapter is closed. The standing priority is back to **increasing entries** toward near-zero-day-hold, on
-  Layer 1 first.
-- **Resume the intra-candle vetoed-entry feature** — it's the live entry-increasing workstream, already
-  validated out-of-sample in Phase 1 and paused at the optimizer-wiring step.
+- **The onboarding chapter is closed** — 9 markets, 55 champions, all verified, nothing queued. The standing
+  priority returns to **increasing entries** toward near-zero-day-hold, on Layer 1 first.
+- **Resume the intra-candle vetoed-entry feature** — the live entry-increasing workstream, already validated
+  out-of-sample in Phase 1 and paused at the optimizer-wiring step.
 - **Investigate the fast-engine divergence properly.** Two markets have now been caught (HG 2m, NG 15m). Right
   now we only find these by verifying each champion by hand. Worth a focused look at *why* the fast engine
   disagrees — if it's systematic, it may be quietly costing us better champions during the search itself.
@@ -96,35 +104,28 @@ that had been sitting unpushed since the 9th.
 - **"Technically positive" is not the same as "profitable."** Crude Oil 5-minute made **+$42** in 2026 while
   exposing you to a **$717** drawdown. The old logic called that a pass. It's noise, not an edge, and now it's
   flagged as such. Small honesty gaps like this are exactly how a suite quietly loses credibility.
-- **Stale hardcoded counts and a swallowed digit both shipped unnoticed.** Two of today's bugs were *already
-  live* before today — the manifest had been wrong since Copper landed. Derived-not-hardcoded, plus a
+- **Stale hardcoded counts and a swallowed digit both shipped unnoticed.** Two of these bugs were *already
+  live* beforehand — the manifest had been wrong since Copper landed. Derived-not-hardcoded, plus a
   self-check, is the actual fix; spotting it by eye is not a strategy.
 
-### 📌 State at end of day
+### 📌 State at close
 - **9 markets live, 55 verified champions, 55 playbooks, one parity-locked shareable bundle** — all pushed to
   `dev` (`ff79770`).
 - **44 deployable · 9 caution · 2 non-feasible · 51 of 55 profitable out-of-sample.**
-- **Nothing running on the server.** No overnight job, nothing to babysit.
-- Loose end: the expanded 2026-07-08 report entry is still uncommitted.
+- **Nothing running on the server.** No job left to babysit.
 
 ---
 
-## 2026-07-09 → 07-10 — Copper finished + Oil/Gas onboarded (not separately reported at the time)
+## 2026-07-09 — Copper (HG) finished end-to-end and added to the shareable bundle
 
-_Recorded here so the work isn't lost — these two days ran into each other around the Copper campaign._
-
-- **Copper (HG) completed end-to-end:** all 6 champions extracted, **UI-verified**, reported, committed and
-  pushed (`dev 8e0f83c`). 4h ($50k), 2h ($26k) and 2m ($32k) deployable. This is where the **first fast-engine
-  divergence** turned up — Copper 2-minute's stored number ($76k) was nothing like the real on-screen figure
-  ($31,787). Also discovered the **dashboard's market dropdown is hardcoded HTML**, not generated from the
-  registry — so a newly-registered market is invisible in the UI until an entry is added by hand. The
-  onboarding checklist was corrected (it had falsely claimed the list was automatic).
+- **Copper completed:** all 6 champions extracted, **UI-verified**, reported, committed and pushed
+  (`dev 8e0f83c`). 4h ($50k), 2h ($26k) and 2m ($32k) deployable.
+- This is where the **first fast-engine divergence** turned up — Copper 2-minute's stored number ($76k) was
+  nothing like the real on-screen figure ($31,787). It set the precedent that caught NG 15m the next day.
+- Also discovered the **dashboard's market dropdown is hardcoded HTML**, not generated from the registry — so a
+  newly-registered market is invisible in the UI until an entry is added by hand. The onboarding checklist was
+  corrected (it had falsely claimed the list was automatic).
 - **Copper added to the shareable bundle** as the 7th market (43 champions).
-- **Oil (CL) + Gas (NG) onboarded through Step 4:** contract values confirmed with you ($1,000 and $10,000 per
-  point), data placed, boxes shifted back one trading day, signals generated + validated + packaged, both
-  registered across backtester + dashboard + optimizer, safety test green (**golden 6/6**), both live in the
-  dashboard — and the hardcoded-dropdown fix applied **up front** this time. Then launched the 12-timeframe
-  optimize campaign that finished overnight into today.
 
 ---
 
