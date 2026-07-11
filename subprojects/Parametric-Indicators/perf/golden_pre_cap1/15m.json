@@ -1,0 +1,38 @@
+{
+ "tf": "15m",
+ "summary": {
+  "pnl": 77098.0,
+  "max_dd": 7889.0,
+  "n_taken": 654,
+  "n_candidates": 654,
+  "win": 48.6,
+  "pf": 1.39,
+  "avg_win": 866.0,
+  "avg_loss": -590.0,
+  "n_locks": 136,
+  "noentry_streak_n": 62,
+  "noentry_streak_days": 1.9
+ },
+ "n_trades": 654,
+ "trades_sha256": "cf7d893e0da4104943c43dcf26c09c88a89e050e7331c3b39fef15d94fa94fc1",
+ "vote_sha256": {
+  "bollinger": "a82c4305fc40f5ba33963015fafe4dcdbadaf123718aaebe5b6fb509f2cbb8ac",
+  "cci": "cc8893f9f5e4237c70cc0774e297ce9fa4991aa15420104d932d3dd2175a2f41",
+  "ema_trend": "71f5f8ed92b50dbe45fd8fd05d3c649301f3a2d169b33702d54dae1952544f65",
+  "keltner": "ba06573fb2b0cc0a64a304fb97021f88b2ecfd8dcbc4af4f08bbb496cd13d3fa",
+  "obv": "b6d36e56580ce0b21560db1cc60a7fa202bfad354ab1f4f5a0999a46d33d666b",
+  "order_block": "6111a8912b56def4a01198beaa7d998cd8ef0fa79f5c50c0a3453db51fa4343b",
+  "sma_trend": "964892871aeb81179d4a5b6e50dc7d2893b8be56123f3008280a59a7ecc5f51a",
+  "stochastic": "fd8a50b6bfd7b6ac4bbc4a2c30012b8c2d1da9dbdef134ddcc8c90eff335f64a"
+ },
+ "indicators_enabled": [
+  "bollinger",
+  "cci",
+  "ema_trend",
+  "keltner",
+  "obv",
+  "order_block",
+  "sma_trend",
+  "stochastic"
+ ]
+}

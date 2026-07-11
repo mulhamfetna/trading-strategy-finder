@@ -365,11 +365,35 @@ def _champion_layer_params(tf: str, entry: dict) -> dict:
     return validate_layer_params(lp)
 
 
+def frozen_lean_params(tf: str = "4h") -> dict:
+    """The FROZEN LEAN ANCHOR — the reference L1 preset, in the layer-param schema.
+
+    This is what `run_l1_cached(tf)` computes when called WITHOUT params, and what its on-disk pickle is
+    keyed on (_l1_cache_file). It is therefore the ONLY preset the frozen fast-path may be used for.
+    It is deliberately NOT the dashboard default any more (see l1_default_params)."""
+    return validate_layer_params(l1_runner._lean_params(tf))
+
+
+def is_frozen_lean(l1p: dict, tf: str, instrument: str = "NQ") -> bool:
+    """True iff this request is EXACTLY the frozen-lean anchor, so the disk-cached L1 run may be reused.
+
+    ⚠️ This used to test `l1p == l1_default_params(tf)`. That was only safe while the 4h default WAS the
+    anchor. Once the 4h default became the deployed champion (2026-07-11), that test would have served
+    the ANCHOR's cached L1 result for a CHAMPION request — silently wrong numbers, no error. The fast
+    path must key off the anchor itself, never off "whatever the default happens to be".
+    """
+    return instrument == "NQ" and tf == "4h" and l1p == frozen_lean_params(tf)
+
+
 def l1_default_params(tf: str = "4h") -> dict:
-    """The 'best L1' preset for a TF, in the layer-param schema the forms speak. 4h = the frozen lean
-    champion (unchanged); other TFs = that TF's deployed champion from wsh4_champions_full.json."""
-    if tf == "4h":
-        return validate_layer_params(l1_runner._lean_params(tf))
+    """The 'best L1' preset for a TF, in the layer-param schema the forms speak: that TF's deployed
+    champion from wsh4_champions_full.json.
+
+    4h used to be hardcoded to the frozen lean anchor, which meant the dashboard COULD NOT SERVE an
+    optimized NQ 4h champion at all — and, worse, a UI verification of NQ 4h silently re-verified the
+    anchor instead of the challenger. Unlocked 2026-07-11 (the cold-start champion is +$80,424 OOS vs the
+    anchor's +$58,029, with less drawdown). The anchor lives on as frozen_lean_params() for the L1 cache.
+    """
     champs = json.loads(_WSH4_CHAMPS.read_text())
     if tf not in champs:
         raise L2ParamError(f"no L1 champion for tf={tf!r} (known: {sorted(champs)})")
@@ -556,7 +580,7 @@ def build_view_payload(l1_params: dict, l2_params: dict, tf: str = "4h", view: s
         base["meta"]["boxes"] = aggregate.boxes_for_layer(res, "L1", bar_secs)   # log-derived (== engine summary)
         base["meta"]["taxonomy"] = taxonomy.taxonomy_l1(res)
         _l1u = (run_l1_cached(tf, instrument=instrument)
-                if (instrument == "NQ" and tf == "4h" and l1p == l1_default_params(tf))
+                if is_frozen_lean(l1p, tf, instrument)
                 else run_l1_cached(tf, params=l1p, instrument=instrument))
         base["meta"]["box_counts"] = _signals.box_fire_stats(_l1u.df_dec, _l1u.box)
         base["meta"]["n"] = res.n
@@ -568,7 +592,7 @@ def build_view_payload(l1_params: dict, l2_params: dict, tf: str = "4h", view: s
     # The frozen-lean disk-cached run only exists for NQ-4h; for other TFs/instruments the default L1 is a
     # params dict, so we must always pass params there (run_l1_cached() with no params runs the NQ-4h lean).
     l1 = (run_l1_cached(tf, instrument=instrument)
-          if (instrument == "NQ" and tf == "4h" and l1p == l1_default_params(tf))
+          if is_frozen_lean(l1p, tf, instrument)
           else run_l1_cached(tf, params=l1p, instrument=instrument))
     ds = dataset.build_dataset(l1)
     bar_secs = int(TF.get(tf).bar_td.total_seconds())
