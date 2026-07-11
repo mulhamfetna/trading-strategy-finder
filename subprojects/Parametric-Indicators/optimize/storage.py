@@ -98,3 +98,22 @@ def engine_kwargs(url: str) -> dict:
     if is_sqlite(url):
         return {"connect_args": {"timeout": 60}}
     return {"pool_size": 32, "max_overflow": 8}
+
+
+# ────────────────────────────────────────────────────────────────────────────────────────────────────
+# REQUIRED POSTGRES TUNING (2026-07-11) — do not lose this when the DB is rebuilt.
+#
+#     ALTER DATABASE wsh SET synchronous_commit = off;
+#
+# Optuna issues ~70 commits PER TRIAL (one per searched param — 59 of them — plus 8 user_attrs and the
+# trial create/complete). With the default synchronous_commit=on, every one of those waits for a WAL
+# fsync, and profiling showed psycopg2 'commit' was **55% of ALL runtime** once the Numba SMC work
+# removed the indicator cost. Turning it off measured **1.68x** solo / 1.14x at 20 workers.
+#
+# This is SAFE. It is NOT `fsync=off` and carries NO corruption risk: Postgres still writes the WAL, it
+# just does not block waiting for the flush. The only exposure is losing the last ~200 ms of committed
+# transactions on a hard crash/power-loss — i.e. a handful of trials out of 5,900, in a store whose
+# campaigns are resumable and whose champions are re-derivable. Trading that for 1.68x is obviously right.
+#
+# Verify with:  docker exec wsh-pg psql -U wsh -d wsh -tAc "show synchronous_commit"
+PG_TUNING_SQL = "ALTER DATABASE wsh SET synchronous_commit = off;"
