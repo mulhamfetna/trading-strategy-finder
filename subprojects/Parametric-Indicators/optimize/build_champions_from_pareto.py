@@ -62,12 +62,18 @@ def champion_for(tf: str) -> dict | None:
             if v is not None:
                 params[pname] = caster(v)          # int(...) or float(...) per schema
         inds[key] = params
+    # Time caps. cap_mode is a STRING (none|bars|eod|both) — never route it through _num(), which coerces
+    # to float. Legacy pareto CSVs have no cap_mode column ⇒ a non-zero cap_1min always meant a bars cap.
+    _cap_n = int(_num(r.get("cap_1min")) or 0)
+    _cap_mode = (r.get("cap_mode") or "").strip() or ("bars" if _cap_n > 0 else "none")
     box = dict(
         sl_soft=round(_num(r["sl_soft"]), 4), sl_hard=round(_num(r["sl_hard"]), 4),
         tp=round(_num(r["tp"]), 4), gate_pct=round(_num(r["gate_pct"]), 2),
         dd_limit=round(_num(r["dd_limit"]), 4), cooldown=int(_num(r["cooldown"])),
         flip=str(r["flip"]).strip().lower() == "true", k=int(_num(r["k"])),
-        cap_1min=int(_num(r.get("cap_1min")) or 0),       # max-hold cap (0=off); presets._preset → cap_mode='bars'
+        # a bars count is meaningless unless the bars cap is armed — zero it so it cannot be misread
+        cap_1min=(_cap_n if _cap_mode in ("bars", "both") else 0),
+        cap_mode=_cap_mode,
     )
     return dict(median_pnl=_num(r["median_pnl"]), full_pnl=_num(r["full_pnl"]),
                 full_dd=_num(r["full_dd"]), win=_num(r["win"]), box=box, indicators=inds)

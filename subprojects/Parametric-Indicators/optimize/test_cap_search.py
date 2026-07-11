@@ -13,18 +13,24 @@ def test_cap_1min_is_a_counted_dimension():
     assert OPT.CAP_1MIN_MAX == 1440
     d = OPT.search_dims(split_sltp=False)
     assert d["base_int"] == 3                      # cooldown, k, cap_1min
+    assert d["base_cat"] == 3                      # flip, en_cap_bars, en_cap_eod
     assert d["total"] == sum(v for k, v in d.items() if k != "total")
     assert OPT.recommended_trials(False, per_dim=200) == d["total"] * 200
 
 
 def test_native_seed_carries_cap_1min():
+    """'Cap off' is now encoded by the en_cap_bars switch, NOT by cap_1min==0. cap_1min is a rectangular
+    dimension searched over 1..MAX and simply ignored when the switch is off, so a seed must carry an
+    IN-RANGE value (0 would be rejected by Optuna as outside the distribution)."""
     b = {"sl_soft": [10, 200], "sl_hard": [0, 400], "tp": [10, 300]}
     box0 = {"sl_soft": 100, "sl_hard": 150, "tp": 120, "gate_pct": 0, "dd_limit": 0,
             "cooldown": 0, "flip": False, "k": 1}
     s0 = OPT._native_seed(box0, {}, split_sltp=False, b=b)
-    assert s0["cap_1min"] == 0                                   # absent → 0 (reproduces prior champ)
+    assert s0["en_cap_bars"] is False                             # no cap on the champion → switch off
+    assert OPT.CAP_1MIN_MIN <= s0["cap_1min"] <= OPT.CAP_1MIN_MAX  # in-range placeholder, unused
     s1 = OPT._native_seed({**box0, "cap_1min": 5000}, {}, split_sltp=False, b=b)
-    assert s1["cap_1min"] == OPT.CAP_1MIN_MAX                    # clamped to bound
+    assert s1["en_cap_bars"] is True                              # legacy bars champion → switch on
+    assert s1["cap_1min"] == OPT.CAP_1MIN_MAX                     # clamped to bound
 
 
 def test_backtest_metrics_honors_cap_1min():

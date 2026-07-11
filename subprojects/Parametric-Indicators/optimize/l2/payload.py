@@ -219,6 +219,10 @@ def validate_layer_params(p: dict) -> dict:
     # back-compat: a bare cap_1min>0 with no explicit mode is the bars cap.
     if out["cap_mode"] == "none" and out["cap_1min"] > 0:
         out["cap_mode"] = "bars"
+    # Reject an unknown cap_mode rather than let it fall through as "no cap" — a typo'd mode silently
+    # disabling the exit cap is exactly the class of failure that ships an unscored champion.
+    if out["cap_mode"] not in ("none", "bars", "eod", "both"):
+        raise L2ParamError(f"cap_mode must be one of none|bars|eod|both (got {out['cap_mode']!r})")
     inds = p.get("indicators", [])
     if not isinstance(inds, list):
         raise L2ParamError("indicators must be a list")
