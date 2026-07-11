@@ -4,6 +4,225 @@ _Newest on top. High-overview standup: what got done · what's next · challenge
 
 ---
 
+## 2026-07-11 — Oil + Gas onboarded end-to-end; a losing champion caught before it shipped; 9 markets live
+
+_(End-of-day. Nothing left running on the server — the queue is empty for the first time in four days.)_
+
+### ✅ What got done today
+
+**The headline: two new energy markets went from raw price files to shipped, verified, documented product —
+and one champion the optimizer swore was profitable turned out to lose money, and got caught.**
+
+**WORKSTREAM 1 — finished the Oil + Gas optimization and extracted the champions.**
+The overnight campaign completed at 01:06 — **12 timeframe-searches, 5,700 trials each, ~68,000 backtests
+total**, the same budget every other market got. I pulled the best configuration out of each of the 12
+searches (each one is a "best trade-off" frontier of ~100–400 candidates; the champion is the top pick by the
+conservative cross-validation score).
+
+**WORKSTREAM 2 — verified all 12 through the real dashboard, and this is where the day earned its keep.**
+Rather than trusting the optimizer's own reported number, I drove the **actual browser dashboard** for every
+champion, twice each (full history + the held-out 2026 year) — **24 real backtests** — and read the exact
+figures off the screen.
+
+**Eleven reproduced. One did not.**
+
+```mermaid
+flowchart LR
+    A["NG 15-minute champion"] --> B["Optimizer's stored number:<br/>+$7,061 profit ✅"]
+    A --> C["Real causal engine, on screen:<br/>−$1,635 LOSS ❌"]
+    C --> D["2026 out-of-sample:<br/>−$2,700 LOSS ❌"]
+    D --> E["REJECTED — shipped flagged<br/>'do not trade', not hidden"]
+```
+
+The optimizer uses a fast approximate engine to search quickly; the dashboard uses the exact causal engine.
+For Natural Gas 15-minute they **disagreed by $8,700 and by sign**. The on-screen figure is the truth. This is
+the **second** time this has happened (Copper 2-minute was the first) — so it is a pattern, not a fluke, and
+the rule "verify every champion through the actual UI" is now load-bearing, not ceremony.
+
+**What the two new markets are actually worth** (real on-screen numbers · worst drawdown · profit in 2026, a
+year the tuning never saw):
+
+| Timeframe | Crude Oil (CL) | Natural Gas (NG) |
+|---|---|---|
+| 4-hour | $21,760 · DD $3,990 · **+$2,475** ✅ | $17,363 · DD $2,086 · **+$5,910** ✅ |
+| 2-hour | $10,448 · DD $1,098 · **+$2,561** ✅ | $18,112 · DD $2,053 · **+$1,733** ✅ |
+| 1-hour | $7,939 · DD $740 · **+$1,436** ✅ | $12,086 · DD $1,132 · **+$6,183** ✅ |
+| 15-min | $15,852 · DD $1,021 · **+$5,943** ⚠ low win | **−$1,635 · LOSES MONEY** ❌ |
+| 5-min | $4,090 · DD $717 · **+$42** ⚠ flat | $27,991 · DD $366 · **+$8,502** ⚠ low win |
+| 2-min | $17,775 · DD $911 · **+$4,707** ✅ | **$30,294 · DD $230 · +$10,024** ✅ best |
+
+**11 of 12 usable.** The standout is **Natural Gas 2-minute**: $30,294 of profit against a worst-ever dip of
+only **$230**, and it still made **+$10,024** in the unseen 2026 year.
+
+**WORKSTREAM 3 — playbooks + the shareable code bundle, extended to 9 markets.**
+- **12 new playbook PDFs** (the suite is now **55**: 9 markets × 6 timeframes + the Gold 4h-indicator variant).
+- Captured each champion's **exact settings** as the dashboard sends them, and added all 12 to the shareable
+  backtester bundle → **55 champions**. Then proved the bundle actually reproduces them: **12/12 exact, matching
+  both the headline profit AND the 2026 figure, to the dollar.**
+
+**WORKSTREAM 4 — four real bugs found and fixed while doing the above** (none of these were on the plan):
+
+```mermaid
+flowchart TD
+    B1["Playbook titles: HG/CL/NG missing from<br/>the name map → rendered bare tickers"] --> F1["fixed + regenerated"]
+    B2["Verdict engine called +$42 profit against a<br/>$717 drawdown 'holds up out-of-sample'"] --> F2["new rule: profit under 10% of drawdown<br/>= FLAT, no demonstrated edge"]
+    B3["README/MANIFEST/INDEX still claimed<br/>'37 champions, 6 markets' — stale since Copper"] --> F3["all counts now derived from the<br/>champion files — cannot drift again"]
+    B4["Regex bug: [+ - −] is a character RANGE<br/>that swallows the digits 0-9"] --> F4["ate the leading digit of EVERY drawdown:<br/>$3,990→$990, NQ 4h $15,491→$5,491<br/>fixed + round-trip self-check added"]
+```
+
+Bug #4 deserves a note: in the pattern `[+-−]`, the hyphen sits between `+` and `−`, which silently turns it
+into a *range* covering every digit. It was quietly corrupting the drawdown column of the shipped manifest —
+including for markets that were already live. The fix comes with a **self-check that fails loudly** if a parsed
+number can't be re-formatted back into the text it came from, so this class of error can't ship again.
+
+**Shipped:** everything merged and pushed to `dev` (`ff79770`), which also carried the Copper bundle commit
+that had been sitting unpushed since the 9th.
+
+### 🎯 What's next (tomorrow)
+
+- **Decide the direction.** The onboarding run is complete (9 markets, 55 champions, all verified) — this
+  chapter is closed. The standing priority is back to **increasing entries** toward near-zero-day-hold, on
+  Layer 1 first.
+- **Resume the intra-candle vetoed-entry feature** — it's the live entry-increasing workstream, already
+  validated out-of-sample in Phase 1 and paused at the optimizer-wiring step.
+- **Investigate the fast-engine divergence properly.** Two markets have now been caught (HG 2m, NG 15m). Right
+  now we only find these by verifying each champion by hand. Worth a focused look at *why* the fast engine
+  disagrees — if it's systematic, it may be quietly costing us better champions during the search itself.
+
+### ⚠️ Challenges / lessons
+
+- **The optimizer's number is not evidence.** NG 15m would have shipped as a deployable default on the
+  optimizer's word alone. Only the browser-UI check exposed it. Two-for-two now — this stays mandatory.
+- **"Technically positive" is not the same as "profitable."** Crude Oil 5-minute made **+$42** in 2026 while
+  exposing you to a **$717** drawdown. The old logic called that a pass. It's noise, not an edge, and now it's
+  flagged as such. Small honesty gaps like this are exactly how a suite quietly loses credibility.
+- **Stale hardcoded counts and a swallowed digit both shipped unnoticed.** Two of today's bugs were *already
+  live* before today — the manifest had been wrong since Copper landed. Derived-not-hardcoded, plus a
+  self-check, is the actual fix; spotting it by eye is not a strategy.
+
+### 📌 State at end of day
+- **9 markets live, 55 verified champions, 55 playbooks, one parity-locked shareable bundle** — all pushed to
+  `dev` (`ff79770`).
+- **44 deployable · 9 caution · 2 non-feasible · 51 of 55 profitable out-of-sample.**
+- **Nothing running on the server.** No overnight job, nothing to babysit.
+- Loose end: the expanded 2026-07-08 report entry is still uncommitted.
+
+---
+
+## 2026-07-09 → 07-10 — Copper finished + Oil/Gas onboarded (not separately reported at the time)
+
+_Recorded here so the work isn't lost — these two days ran into each other around the Copper campaign._
+
+- **Copper (HG) completed end-to-end:** all 6 champions extracted, **UI-verified**, reported, committed and
+  pushed (`dev 8e0f83c`). 4h ($50k), 2h ($26k) and 2m ($32k) deployable. This is where the **first fast-engine
+  divergence** turned up — Copper 2-minute's stored number ($76k) was nothing like the real on-screen figure
+  ($31,787). Also discovered the **dashboard's market dropdown is hardcoded HTML**, not generated from the
+  registry — so a newly-registered market is invisible in the UI until an entry is added by hand. The
+  onboarding checklist was corrected (it had falsely claimed the list was automatic).
+- **Copper added to the shareable bundle** as the 7th market (43 champions).
+- **Oil (CL) + Gas (NG) onboarded through Step 4:** contract values confirmed with you ($1,000 and $10,000 per
+  point), data placed, boxes shifted back one trading day, signals generated + validated + packaged, both
+  registered across backtester + dashboard + optimizer, safety test green (**golden 6/6**), both live in the
+  dashboard — and the hardcoded-dropdown fix applied **up front** this time. Then launched the 12-timeframe
+  optimize campaign that finished overnight into today.
+
+---
+
+## 2026-07-08 — 37 shareable playbooks + a parity backtester, and Copper (HG) onboarded end-to-end
+
+_(End-of-day. The Copper optimize campaign keeps running on the server overnight — it will finish on its own.)_
+
+### ✅ What got done today
+
+Three big workstreams, each with substantial investigation behind it — not just the visible deliverable.
+
+**WORKSTREAM 1 — 37 shareable playbooks (a full investigation, not just "made PDFs").**
+- Wrote and committed a **design spec**, then produced **36 one-page, self-contained PDFs** (every market ×
+  timeframe): plain-language verdict, the exact settings to load, a how-it-trades diagram, the full results
+  table with the **real dashboard screenshot embedded**, the 2026 out-of-sample check, and honest "when NOT to
+  trade" notes. **33 green ("deployable"), 3 "caution," 35 of 36 profitable out-of-sample.**
+- The hard part was **getting the numbers provably right.** I had to run a **server pass driving the live
+  dashboard for all 36 champions × 2 windows (full + 2026)** to capture the exact on-screen figures, and along
+  the way debug three real traps that each cost time: (a) the on-screen headline comes from one internal field
+  (`boxes`), **not** the other (`summary`) they're ~2% apart; (b) the first capture silently returned blanks on
+  heavy timeframes — fixed by reading the dashboard's own memory instead of racing the network; (c) a
+  JavaScript-scope bug in the wait logic. Every headline number was then **verified to match the dashboard to
+  the dollar.**
+- Added a **37th "bonus" playbook** — Gold 4-hour using **4-hour indicators** (the stronger high-timeframe
+  version from our comparison report): **+$97,950 vs the deployed +$57,570, and +$22,310 vs −$540
+  out-of-sample.** This one wasn't served by the dashboard at all, so I had to **reconstruct its champion from
+  the raw optimizer results** and inject it correctly (a fiddly multi-step job — the first two attempts gave
+  $45k and $81k before it reproduced the exact $97,950).
+
+**WORKSTREAM 2 — a shareable code bundle that reproduces every playbook to the dollar.**
+- One **self-contained backtester** (the *exact* causal engine the dashboard runs — not a rewrite) plus **37
+  ready-to-run champion configs**. Anyone drops in their own price files and reproduces each champion's numbers
+  exactly — **verified 37/37, to the dollar, including a clean-room test of the shipped zip.**
+- This was the biggest hidden time-sink: the obvious/simple engine **silently mismatched the newer markets by
+  up to 70%** (they use a "time cap" only the full engine applies). I had to **rebuild the bundle on the
+  correct causal engine, make it portable** (bring-your-own-data folder), and **untangle a heavy dependency**
+  (the causal engine dragged in the whole optimizer/optuna stack — reduced to the one pure function actually
+  needed). **Committed and pushed to `dev`** (merge `0cd3086`) with all the generator/build scripts.
+
+**WORKSTREAM 3 — onboarded a brand-new market, Copper (HG), end-to-end.** Confirmed the contract value with you
+($25,000 per point), placed the price + box data, shifted the box back one trading day, generated all the
+trading signals (validated + packaged), registered Copper in the backtester + dashboard + optimizer, and
+confirmed the safety test (Nasdaq unchanged, "golden 6/6") still passes. **Copper is live in the dashboard.**
+
+```mermaid
+flowchart LR
+    A["Copper data<br/>(candles + box)"] --> B["shift box −1 workday"]
+    B --> C["generate signals<br/>(all 7 timeframes)"]
+    C --> D["register: pv $25,000<br/>backtester + dashboard + optimizer"]
+    D --> E["golden 6/6 ✓<br/>HG live in dropdown"]
+    E --> F["optimize 6 timeframes<br/>(running now)"]
+```
+
+**Then launched Copper's optimization** — the same 5,700-trials-per-timeframe search every other market got,
+plus a data-backed investigation into why it *looked* slow (see Challenges).
+**5 of the 6 timeframes finished today** (the last, 2-minute, is finishing on the server tonight). Best
+Copper champions so far, by the optimizer's conservative cross-validation number (the real full-history
+figure is typically ~2–3× higher — confirmed at verification):
+
+```mermaid
+flowchart TD
+    H4["4h — median $11,945 · 80% win · strong ✅"]
+    H2["2h — median $6,872 · 64% win ✅"]
+    H1["1h — median $4,206 · 38% win · high drawdown ⚠"]
+    H15["15m — median $1,764 · 29% win ⚠"]
+    H5["5m — median $1,661 · 49% win"]
+    H2m["2m — finishing on the server overnight ⏳"]
+```
+
+### 🎯 What's next (tomorrow)
+
+- **Finish Copper:** extract the 6 champions → verify each in the dashboard UI (exact on-screen numbers) →
+  measure 2026 out-of-sample → write the **full dashboard-replica report** for each (not just profitable/not),
+  flagging the weak slots honestly (1h and 15m look high-drawdown / low-win-rate so far).
+- **Commit + push Copper** (registry + champions) to `dev`.
+- Optional: give Copper the same **playbook PDFs** and add it as the **7th market** in the shareable bundle.
+
+### ⚠️ Challenges / lessons
+
+- **I over-estimated the optimize time and corrected it with data.** I first projected 6–10 hours by
+  extrapolating from the slow warm-up phase. In reality the search **prunes and accelerates hard** — exactly
+  as you recalled — so the full 5,700-trial budget runs ~40–60 min per timeframe, and every earlier market ran
+  the *same* 5,700 (confirmed from the trial store). Lesson: don't extrapolate a genetic search's speed from
+  its first few minutes.
+- **The reproducer engine choice mattered a lot.** The simple engine silently mismatched the newer markets by
+  up to 70% because it ignores their time cap; only the full causal engine reproduces them. Worth the rebuild.
+- **Copper's low timeframes look weak** (1h/15m: high drawdown, ~30% win) — likely "caution" slots like
+  Gold-1h / Silver-4h were. Tomorrow's out-of-sample check will confirm.
+
+### 📌 State at end of day
+- **Playbooks + shareable bundle: shipped and pushed to `dev`** (merge `0cd3086`).
+- **Copper onboarded through Step 4** (data, signals, registry, golden 6/6, live in dashboard) — **not yet
+  committed** (holding until champions are verified tomorrow for one clean commit).
+- **Copper optimize: 5/6 timeframes done; 2-minute finishing on the server overnight** (detached — survives
+  logout, no babysitting needed). Studies saved in Postgres (prefix `hg1`).
+
+---
+
 ## 2026-07-07 — Five new markets onboarded, the frame bug fixed, dashboard shipped as a shared service
 
 _(End-of-day. Supersedes the mid-day paused note: everything that was "for tomorrow" got resolved today.)_
