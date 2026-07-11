@@ -12,7 +12,7 @@ DATA YOU PROVIDE  (CSV, one header row; put them all in one folder — default .
   <INST>_<tf>.csv   decision-frame candles   Date,Open,High,Low,Close      (e.g. GC_4h.csv)
   <INST>_1m.csv     1-minute candles         Date,Open,High,Low,Close      (shared exit + indicator frame)
   <INST>_box.csv    per-day box levels       Date,<weekly/monthly level columns>
-  INST ∈ {NQ,ES,GC,SI,RTY,YM}. Non-NQ box files are the −1-workday-shifted boxes (as onboarded).
+  INST ∈ {NQ,ES,GC,SI,HG,CL,NG,RTY,YM}. Non-NQ box files are the −1-workday-shifted boxes (as onboarded).
   Dates are tz-naive 'YYYY-MM-DD HH:MM:SS'.
 
 CHAMPION  (--champion champions/<INST>_<TF>.json) carries the instrument + timeframe + every tuned

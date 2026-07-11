@@ -20,7 +20,8 @@ os.makedirs(OUTDIR, exist_ok=True)
 MERMAID_JS = "/home/dev/Mulham/wsg-i/mermaid.min.js"   # scp'd alongside
 
 NAMES = {"NQ": "Nasdaq-100 (NQ)", "ES": "S&P 500 (ES)", "GC": "Gold (GC)",
-         "SI": "Silver (SI)", "RTY": "Russell 2000 (RTY)", "YM": "Dow (YM)"}
+         "SI": "Silver (SI)", "RTY": "Russell 2000 (RTY)", "YM": "Dow (YM)",
+         "HG": "Copper (HG)", "CL": "Crude Oil (CL)", "NG": "Natural Gas (NG)"}
 TF_LONG = {"4h": "4-hour", "2h": "2-hour", "1h": "1-hour", "15m": "15-minute", "5m": "5-minute", "2m": "2-minute"}
 
 # optional args: [input_json] [slot_filter e.g. GC_4h]  (defaults: full metrics file, all slots)
@@ -76,6 +77,11 @@ def verdict_for(rec):
                dict(fp=fp, fdd=fdd, fw=fw, op=op, rdd=rdd)
     if op is not None and op < 0:
         reasons.append(f"loses money out-of-sample in 2026 ({money(op)})")
+    elif op is not None and fdd and 0 <= op < 0.10 * fdd:
+        # technically positive, but the 2026 profit is dwarfed by the drawdown you must sit through:
+        # that is noise, not a tradeable edge. Say so rather than calling it "holds up".
+        reasons.append(f"essentially flat out-of-sample in 2026 ({money(op)} against a "
+                       f"${fdd:,.0f} drawdown) — no demonstrated edge on unseen data")
     if rdd is not None and rdd < 1:
         reasons.append(f"worst drawdown ({money(-fdd).replace('−','$')}) exceeds total profit — thin risk cushion")
     if fw is not None and fw < 35:

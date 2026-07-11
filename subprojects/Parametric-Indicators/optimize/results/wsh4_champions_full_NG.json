@@ -1,0 +1,268 @@
+{
+ "4h": {
+  "median_pnl": 5739.8,
+  "full_pnl": 17120.2,
+  "full_dd": 2078.2,
+  "win": 52.9,
+  "box": {
+   "sl_soft": 0.0128,
+   "sl_hard": 0.0331,
+   "tp": 0.0264,
+   "gate_pct": 94.04,
+   "dd_limit": 0.5523,
+   "cooldown": 1,
+   "flip": true,
+   "k": 4,
+   "cap_1min": 458
+  },
+  "indicators": {
+   "cci": {
+    "n": 158,
+    "threshold": 95
+   },
+   "cisd": {},
+   "keltner": {
+    "n": 21,
+    "m": 3.3
+   },
+   "macd": {
+    "fast": 54,
+    "slow": 23,
+    "signal": 25
+   },
+   "order_block": {
+    "swing_l": 20
+   },
+   "rsi": {
+    "n": 90,
+    "lower": 4,
+    "upper": 72
+   },
+   "vwap": {}
+  }
+ },
+ "2h": {
+  "median_pnl": 4364.7,
+  "full_pnl": 18802.9,
+  "full_dd": 1757.7,
+  "win": 52.2,
+  "box": {
+   "sl_soft": 0.013,
+   "sl_hard": 0.0157,
+   "tp": 0.0195,
+   "gate_pct": 85.56,
+   "dd_limit": 0.3144,
+   "cooldown": 0,
+   "flip": true,
+   "k": 2,
+   "cap_1min": 77
+  },
+  "indicators": {
+   "breaker": {
+    "swing_l": 15
+   },
+   "cisd": {},
+   "keltner": {
+    "n": 117,
+    "m": 4.6
+   },
+   "obv": {
+    "slope": 104
+   },
+   "rsi": {
+    "n": 68,
+    "lower": 19,
+    "upper": 88
+   },
+   "sma_trend": {
+    "fast": 220,
+    "slow": 347
+   }
+  }
+ },
+ "1h": {
+  "median_pnl": 3622.8,
+  "full_pnl": 12153.4,
+  "full_dd": 1128.4,
+  "win": 64.8,
+  "box": {
+   "sl_soft": 0.0096,
+   "sl_hard": 0.0143,
+   "tp": 0.0128,
+   "gate_pct": 96.63,
+   "dd_limit": 0.5998,
+   "cooldown": 0,
+   "flip": true,
+   "k": 4,
+   "cap_1min": 1428
+  },
+  "indicators": {
+   "bollinger": {
+    "n": 23,
+    "k": 4.2
+   },
+   "breaker": {
+    "swing_l": 7
+   },
+   "cci": {
+    "n": 57,
+    "threshold": 195
+   },
+   "cisd": {},
+   "macd": {
+    "fast": 80,
+    "slow": 72,
+    "signal": 13
+   },
+   "mfi": {
+    "n": 95,
+    "lower": 18,
+    "upper": 66
+   },
+   "obv": {
+    "slope": 167
+   },
+   "order_block": {
+    "swing_l": 10
+   },
+   "rsi": {
+    "n": 95,
+    "lower": 41,
+    "upper": 72
+   },
+   "structure_trend": {
+    "swing_l": 12
+   }
+  }
+ },
+ "15m": {
+  "median_pnl": 2402.0,
+  "full_pnl": 7061.0,
+  "full_dd": 1268.7,
+  "win": 54.3,
+  "box": {
+   "sl_soft": 0.005,
+   "sl_hard": 0.005,
+   "tp": 0.0055,
+   "gate_pct": 78.63,
+   "dd_limit": 0.2473,
+   "cooldown": 1,
+   "flip": true,
+   "k": 4,
+   "cap_1min": 77
+  },
+  "indicators": {
+   "cisd": {},
+   "ema_trend": {
+    "fast": 68,
+    "slow": 377
+   },
+   "keltner": {
+    "n": 132,
+    "m": 1.4
+   },
+   "macd": {
+    "fast": 85,
+    "slow": 197,
+    "signal": 10
+   },
+   "obv": {
+    "slope": 22
+   },
+   "rsi": {
+    "n": 65,
+    "lower": 36,
+    "upper": 75
+   },
+   "sma_trend": {
+    "fast": 303,
+    "slow": 352
+   }
+  }
+ },
+ "5m": {
+  "median_pnl": 5406.6,
+  "full_pnl": 27526.5,
+  "full_dd": 374.7,
+  "win": 29.6,
+  "box": {
+   "sl_soft": 0.0011,
+   "sl_hard": 0.0011,
+   "tp": 0.0049,
+   "gate_pct": 84.73,
+   "dd_limit": 0.2269,
+   "cooldown": 0,
+   "flip": true,
+   "k": 2,
+   "cap_1min": 939
+  },
+  "indicators": {
+   "bollinger": {
+    "n": 7,
+    "k": 4.0
+   },
+   "cisd": {},
+   "ema_trend": {
+    "fast": 83,
+    "slow": 315
+   },
+   "keltner": {
+    "n": 195,
+    "m": 2.0
+   },
+   "macd": {
+    "fast": 100,
+    "slow": 153,
+    "signal": 9
+   },
+   "obv": {
+    "slope": 7
+   },
+   "sma_trend": {
+    "fast": 279,
+    "slow": 248
+   }
+  }
+ },
+ "2m": {
+  "median_pnl": 6662.3,
+  "full_pnl": 32104.8,
+  "full_dd": 224.4,
+  "win": 39.7,
+  "box": {
+   "sl_soft": 0.0008,
+   "sl_hard": 0.0011,
+   "tp": 0.0029,
+   "gate_pct": 84.3,
+   "dd_limit": 0.615,
+   "cooldown": 0,
+   "flip": true,
+   "k": 1,
+   "cap_1min": 1128
+  },
+  "indicators": {
+   "cisd": {},
+   "ema_trend": {
+    "fast": 333,
+    "slow": 324
+   },
+   "keltner": {
+    "n": 114,
+    "m": 2.6
+   },
+   "macd": {
+    "fast": 53,
+    "slow": 23,
+    "signal": 68
+   },
+   "obv": {
+    "slope": 185
+   },
+   "sma_trend": {
+    "fast": 81,
+    "slow": 218
+   },
+   "vwap": {}
+  }
+ }
+}

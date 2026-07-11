@@ -21,8 +21,9 @@ _RAW = _BASE / TF.RAW_DIR
 _BOX_CSV = config.DATA_ROOT / "full_data" / "NQ_full_data.csv"
 _INST_PATH = _BASE / "subprojects" / "all-stocks-signals" / "instruments.py"
 
-TOKENS: tuple[str, ...] = ("NQ", "ES", "GC", "SI", "HG", "RTY", "YM")   # + COMEX metals (GC/SI/HG) + CME RTY/YM; ETFs deferred
-POINT_VALUE: dict[str, float] = {"NQ": 20.0, "ES": 50.0, "GC": 100.0, "SI": 5000.0, "HG": 25000.0, "RTY": 50.0, "YM": 5.0}
+TOKENS: tuple[str, ...] = ("NQ", "ES", "GC", "SI", "HG", "CL", "NG", "RTY", "YM")   # COMEX metals (GC/SI/HG) + NYMEX energy (CL/NG) + CME RTY/YM
+POINT_VALUE: dict[str, float] = {"NQ": 20.0, "ES": 50.0, "GC": 100.0, "SI": 5000.0, "HG": 25000.0,
+                                 "CL": 1000.0, "NG": 10000.0, "RTY": 50.0, "YM": 5.0}
 
 
 def _load_registry():
