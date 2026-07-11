@@ -157,18 +157,50 @@ DD_LIMIT_MAX = 5000.0
 # and the best-found point can regress. We scale trials ∝ dimensions and report the plan for acceptance.
 # ─────────────────────────────────────────────────────────────────────────────────────────────────
 TRIALS_PER_DIM = 100   # empirical norm: wsh4 ran ~5483 trials over 52 dims ≈ 105/dim (wsh5 ≈ 87/dim)
-CAP_1MIN_MAX = 1440    # max searched max-hold in traded 1-min bars (~1 trading day); 0 = off
+CAP_1MIN_MAX = 1440    # max searched max-hold in traded 1-min bars (~1 trading day)
+CAP_1MIN_MIN = 1       # searched only when en_cap_bars is on ⇒ 0 would be a degenerate duplicate of "off"
+
+
+def derive_cap_mode(en_cap_bars: bool, en_cap_eod: bool) -> str:
+    """The two searched cap switches → the engine's `cap_mode` wire value.
+
+    The search asks them the way it asks about indicators — an on/off question each, plus a "how much"
+    (cap_1min) for the bars cap. The engines take a single `cap_mode`, so we encode the 2×2 here:
+
+        bars  eod  → cap_mode
+        off   off  → "none"      no time cap
+        on    off  → "bars"      exit after N traded 1-min bars
+        off   on   → "eod"       exit at end of trading day
+        on    on   → "both"      exit at whichever of the two lands FIRST
+    """
+    if en_cap_bars and en_cap_eod:
+        return "both"
+    if en_cap_bars:
+        return "bars"
+    if en_cap_eod:
+        return "eod"
+    return "none"
+
+
+def _cap_switches(box: dict) -> dict:
+    """Recover the two switches from a champion's box (which speaks cap_mode/cap_1min), so a warm-start
+    seed specifies every searched dimension. Legacy champions carry cap_1min with no cap_mode ⇒ bars."""
+    mode = str(box.get("cap_mode") or "").strip()
+    if not mode:
+        mode = "bars" if int(box.get("cap_1min", 0) or 0) > 0 else "none"
+    return dict(en_cap_bars=mode in ("bars", "both"), en_cap_eod=mode in ("eod", "both"))
 
 
 def search_dims(split_sltp: bool, intracandle: bool = False, freeze_indicators: bool = False) -> dict:
     """Breakdown of the tunable search dimensions for the current REGISTRY/SCHEMA.
-    base continuous (sl_soft, sl_hard_delta, tp, gate_pct, dd_limit)=5; categorical (flip)=1;
+    base continuous (sl_soft, sl_hard_delta, tp, gate_pct, dd_limit)=5;
+    categorical (flip, en_cap_bars, en_cap_eod)=3;
     integer (cooldown, k, cap_1min)=3; one on/off flag per indicator; every indicator param; +6 if split_sltp;
     +3 if intracandle. --freeze-indicators drops the indicator flags+params and k (indicator layer fixed)."""
     en_flags = 0 if freeze_indicators else len(library.REGISTRY)
     ind_params = 0 if freeze_indicators else sum(len(library.SCHEMA[k].get("params", [])) for k in library.REGISTRY)
     split = 6 if split_sltp else 0
-    d = dict(base_cont=5, base_cat=1, base_int=(2 if freeze_indicators else 3),   # k dropped when frozen
+    d = dict(base_cont=5, base_cat=3, base_int=(2 if freeze_indicators else 3),   # k dropped when frozen
              en_flags=en_flags, ind_params=ind_params, split=split, intracandle=(3 if intracandle else 0))
     d["total"] = sum(d.values())
     return d
@@ -255,7 +287,11 @@ def _native_seed(box: dict, inds: dict, split_sltp: bool, b: dict) -> dict:
         gate_pct=clamp(float(box["gate_pct"]), 0.0, 100.0),
         dd_limit=clamp(float(box["dd_limit"]), 0.0, DD_LIMIT_MAX),
         cooldown=int(box["cooldown"]), flip=bool(box["flip"]), k=int(box["k"]),
-        cap_1min=max(0, min(CAP_1MIN_MAX, int(box.get("cap_1min", 0)))),
+        cap_1min=max(1, min(CAP_1MIN_MAX, int(box.get("cap_1min", 0) or 1))),
+        # The two cap switches are searched dimensions, so a seed MUST specify them — an incomplete
+        # enqueued point gets the missing dims sampled at random, which would break the warm-start
+        # guarantee that the front is provably ≥ the prior champion.
+        **_cap_switches(box),
     )
     for key in library.REGISTRY:
         on = key in inds
@@ -383,10 +419,19 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
             specs = [{k: v for k, v in s.items() if k != "_searched"}      # strip the test-hook key
                      for s in _suggest_indicators(trial, exclude_inds, only_inds)]   # α: scoped search space
             k_rule = trial.suggest_int("k", 1, 5)       # clamped to #confirmers by confirm_mask
-        cap_1min = trial.suggest_int("cap_1min", 0, CAP_1MIN_MAX)   # max-hold (traded 1-min bars); 0 = off
+        # Time caps, asked the way the indicators are asked: a yes/no per cap, plus "how much" for the
+        # bars cap. Rectangular space (cap_1min always suggested) so NSGA-III sees a fixed dimension set;
+        # it is simply ignored when the bars cap is off. cap_1min starts at 1 — a 0-bar cap would be a
+        # degenerate re-encoding of "off" and would burn trials on duplicates of en_cap_bars=False.
+        en_cap_bars = trial.suggest_categorical("en_cap_bars", [False, True])
+        en_cap_eod = trial.suggest_categorical("en_cap_eod", [False, True])
+        cap_n = trial.suggest_int("cap_1min", CAP_1MIN_MIN, CAP_1MIN_MAX)
+        cap_1min = cap_n if en_cap_bars else 0
+        cap_mode = derive_cap_mode(en_cap_bars, en_cap_eod)
         params = dict(sl_soft=sl_soft, sl_hard=sl_soft + delta, tp=tp, gate_pct=gate_pct,
                       dd_limit=dd_limit, cooldown=cooldown, flip=flip, window="full",
-                      indicators=specs, k=k_rule, ind_1min=ind_1min, cap_1min=cap_1min)
+                      indicators=specs, k=k_rule, ind_1min=ind_1min,
+                      cap_1min=cap_1min, cap_mode=cap_mode)
         if intracandle:
             # Intra-candle vetoed entry as searchable dims (opt-in): on/off, wait window N, force-close.
             # --intracandle-on FORCES it on every trial (focused test: tune the exits WITH the feature).

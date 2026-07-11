@@ -78,7 +78,19 @@ def _feasible(t) -> bool:
 
 
 def _enabled_inds(p: dict) -> list[str]:
-    return [k[3:] for k, v in p.items() if k.startswith("en_") and v]
+    """Enabled INDICATORS only. Must be pinned to the registry: the search also carries non-indicator
+    `en_*` switches (en_cap_bars / en_cap_eod), and a bare startswith("en_") would harvest those as
+    phantom indicators named "cap_bars"/"cap_eod" — corrupting n_indicators and the rebuilt champion."""
+    return [k[3:] for k, v in p.items() if k.startswith("en_") and v and k[3:] in library.REGISTRY]
+
+
+def _cap_mode_of(pr: dict) -> str:
+    """Trial params → cap_mode wire value. Legacy studies predate the two switches and only searched
+    cap_1min, which always meant a bars cap."""
+    if "en_cap_bars" in pr or "en_cap_eod" in pr:
+        bars, eod = bool(pr.get("en_cap_bars")), bool(pr.get("en_cap_eod"))
+        return ("both" if (bars and eod) else "bars" if bars else "eod" if eod else "none")
+    return "bars" if int(pr.get("cap_1min", 0) or 0) > 0 else "none"
 
 
 def _row(t) -> dict:
@@ -93,8 +105,11 @@ def _row(t) -> dict:
         sl_soft=round(pr["sl_soft"], 4), sl_hard=round(pr["sl_soft"] + pr["sl_hard_delta"], 4),
         tp=round(pr["tp"], 4), gate_pct=round(pr["gate_pct"], 2), dd_limit=round(pr["dd_limit"], 4),
         cooldown=pr["cooldown"], flip=pr["flip"], k=pr["k"],
-        cap_1min=pr.get("cap_1min", 0),                  # max-hold (traded 1-min bars); 0 = off. SEARCHED →
-                                                         # must round-trip or the rebuilt champion mis-exits.
+        # Time caps. BOTH are searched, so both must round-trip or the rebuilt champion mis-exits.
+        # cap_1min is only meaningful when the bars cap is on — zero it out otherwise so a stale
+        # "how many bars" value can never be mistaken for an active cap downstream.
+        cap_1min=(pr.get("cap_1min", 0) if pr.get("en_cap_bars") else 0),
+        cap_mode=_cap_mode_of(pr),                       # none | bars | eod | both
         n_indicators=len(enabled), indicators=";".join(sorted(enabled)),
     )
     # full tuned internals: one column per indicator-param, filled only when that indicator is on
@@ -125,7 +140,8 @@ def export_tf(tf: str):
     rows = [_row(t) for t in front]
     import csv
     cols = ["median_pnl", "worst_dd", "win", "full_pnl", "full_dd", "dd_pct_of_pnl",
-            "sl_soft", "sl_hard", "tp", "gate_pct", "dd_limit", "cooldown", "flip", "k", "cap_1min",
+            "sl_soft", "sl_hard", "tp", "gate_pct", "dd_limit", "cooldown", "flip", "k",
+            "cap_1min", "cap_mode",
             "n_indicators", "indicators"] + _IND_PARAM_COLS
     with open(_RESULTS / f"{tf}_wsi_pareto{_SUF}.csv", "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=cols); w.writeheader(); w.writerows(rows)

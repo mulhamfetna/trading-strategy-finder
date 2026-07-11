@@ -175,7 +175,7 @@ def run_l1(tf: str = "4h", params: dict | None = None, instrument: str = "NQ") -
     engine_gate = vol_gate & ~veto & confirm
     dec_dates = df_dec["Date"].to_numpy()
     _cap_mode = str(params.get("cap_mode") or "none")
-    if _cap_mode == "eod":
+    if _cap_mode in ("eod", "both"):
         from optimize.trading_days import eod_targets
         _eod_t, _eod_sl = eod_targets(df1["Date"].to_numpy(), int(params.get("eod_margin_min", 15) or 15))
     else:
