@@ -8,9 +8,29 @@ from optimize.l2 import l1_runner
 _W = Path(__file__).resolve().parents[1] / "results" / "wsh4_champions_full.json"
 
 
-def test_4h_default_unchanged():
-    # 4h stays the lean champion — byte-identical to the pre-change behavior
-    assert payload.l1_default_params("4h") == payload.validate_layer_params(l1_runner._lean_params("4h"))
+def test_4h_default_is_now_the_champion_not_the_anchor():
+    """UNLOCKED 2026-07-11. 4h used to be hardcoded to the frozen lean anchor, which meant the dashboard
+    could not serve an optimized NQ 4h champion at all — and a UI verification of NQ 4h silently
+    re-verified the anchor instead of the challenger. 4h now reads the champion file like every other TF."""
+    champs = json.loads(_W.read_text())
+    p = payload.l1_default_params("4h")
+    assert p["sl_soft"] == float(champs["4h"]["box"]["sl_soft"])
+    assert p["tp"] == float(champs["4h"]["box"]["tp"])
+    assert p == payload._champion_layer_params("4h", champs["4h"])
+
+
+def test_frozen_lean_anchor_still_exists_and_is_distinct():
+    """The anchor survives as frozen_lean_params() — it is what run_l1_cached(tf) computes with no params
+    and what the on-disk L1 pickle is keyed on. The frozen fast path MUST key off IT, never off the
+    default: otherwise a champion request would be served the anchor's cached L1 result (silently wrong)."""
+    anchor = payload.frozen_lean_params("4h")
+    assert anchor == payload.validate_layer_params(l1_runner._lean_params("4h"))
+    assert payload.is_frozen_lean(anchor, "4h", "NQ") is True
+    # the deployed champion must NOT be mistaken for the anchor
+    assert payload.is_frozen_lean(payload.l1_default_params("4h"), "4h", "NQ") is False
+    # non-NQ / non-4h can never take the frozen path
+    assert payload.is_frozen_lean(anchor, "2h", "NQ") is False
+    assert payload.is_frozen_lean(anchor, "4h", "ES") is False
 
 
 def test_per_tf_default_matches_wsh4_champion():

@@ -50,8 +50,7 @@
    "cooldown": 0,
    "flip": true,
    "k": 3,
-   "cap_1min": 0,
-   "cap_mode": "bars"
+   "cap_1min": 9
   },
   "indicators": {
    "bollinger": {
@@ -132,8 +131,7 @@
    "cooldown": 1,
    "flip": true,
    "k": 2,
-   "cap_1min": 0,
-   "cap_mode": "bars"
+   "cap_1min": 36
   },
   "indicators": {
    "bollinger": {

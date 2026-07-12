@@ -1,0 +1,36 @@
+{
+ "tf": "5m",
+ "summary": {
+  "pnl": 23926.0,
+  "max_dd": 4636.0,
+  "n_taken": 332,
+  "n_candidates": 351,
+  "win": 59.3,
+  "pf": 1.31,
+  "avg_win": 508.0,
+  "avg_loss": -564.0,
+  "n_locks": 1,
+  "noentry_streak_n": 657,
+  "noentry_streak_days": 27.0
+ },
+ "n_trades": 332,
+ "trades_sha256": "e1bb7c2e645059fa21063242b763df7e666197901a3a684e524cabf6f4dd70f0",
+ "vote_sha256": {
+  "adx": "96886cb721ad2fdda6b628cba041d33f94394ec06054e285ac9094766e9d6ffe",
+  "keltner": "0d88342efa62ba8d188fb2cd0d5e7c9acf6eb965716b071d7b55d2447187a80c",
+  "macd": "4b9359e8348932c16ff97dbc15efd1228adfec448b25caae7efe188bd931c3c4",
+  "mfi": "49b941beb7759d040167c96579ff5c064d6bcbceaed8bb5d1272eef2d5b38000",
+  "obv": "56d2739afe920abe4dfcaa1836628e3af8ef585360a1de016f49798a94cc3f47",
+  "stochastic": "c85d751e4795911f8cdfc1b820bfb1b01af15da07c87f88d967bf15cc0d79b92",
+  "vwap": "978083b958e9cbb0f45f6d5befe4f1165025a0a1b3e38fa7cf05bb780070b47b"
+ },
+ "indicators_enabled": [
+  "adx",
+  "keltner",
+  "macd",
+  "mfi",
+  "obv",
+  "stochastic",
+  "vwap"
+ ]
+}

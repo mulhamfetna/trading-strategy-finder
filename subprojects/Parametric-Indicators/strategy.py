@@ -228,10 +228,31 @@ def validate_params(params, instrument: str = "NQ"):
         split[f"{side}_sl_soft"] = None if ss is None else float(ss)
         split[f"{side}_sl_hard"] = None if sh is None else float(sh)
         split[f"{side}_tp"] = None if st is None else float(st)
+    # Time caps (none | bars | eod | both). These used to be DROPPED here, so build_payload ran every
+    # preset uncapped — the legacy chart/golden path silently under-reported any capped champion (the
+    # shareable-bundle work measured mismatches up to −73%). Harmless only while NQ champions were
+    # capless; the 2026-07-11 cold-start champions are not. Absent ⇒ cap_mode 'none' ⇒ unchanged.
+    try:
+        cap_1min = int(params.get("cap_1min") or 0)
+    except (TypeError, ValueError):
+        raise ParamError(f"'cap_1min' must be an integer (got {params.get('cap_1min')!r})")
+    if cap_1min < 0:
+        raise ParamError(f"cap_1min must be ≥ 0 (got {cap_1min}); 0 = bar cap OFF")
+    cap_mode = str(params.get("cap_mode") or "none")
+    if cap_mode == "none" and cap_1min > 0:
+        cap_mode = "bars"                      # back-compat: a bare cap_1min has always meant a bars cap
+    if cap_mode not in ("none", "bars", "eod", "both"):
+        raise ParamError(f"cap_mode must be one of none|bars|eod|both (got {cap_mode!r})")
+    try:
+        eod_margin_min = int(params.get("eod_margin_min") or 15)
+    except (TypeError, ValueError):
+        raise ParamError(f"'eod_margin_min' must be an integer (got {params.get('eod_margin_min')!r})")
+
     return dict(sl_soft=sl_soft, sl_hard=sl_hard, tp=tp, gate_pct=gate_pct, dd_limit=dd_limit,
                 cooldown=int(cooldown), flip=bool(params["flip"]), window=params["window"],
                 timeframe=timeframe, dd_cap=dd_cap, pv=pv, indicators=list(specs), k=k, gen=gen,
                 retrace_amount=retrace_amount, retrace_unit=retrace_unit, wait_bars=wait_bars,
+                cap_1min=cap_1min, cap_mode=cap_mode, eod_margin_min=eod_margin_min,
                 veto_as_flip=bool(params.get("veto_as_flip")), **split)
 
 
@@ -356,9 +377,13 @@ def build_payload(df4, df1, box, vf, n2025, params=None, instrument: str = "NQ")
         if P[f"{side}_sl_hard"] is not None: _sp_split[f"{side}_sl_hard_points"] = P[f"{side}_sl_hard"]
         if P[f"{side}_tp"] is not None:
             _sp_split[f"{side}_tp_hard_points"] = P[f"{side}_tp"]
+    # Time caps must reach the engine, or this path runs every capped champion UNCAPPED (see
+    # validate_params). cap_mode 'none' + cap_1min 0 ⇒ the engine's defaults ⇒ byte-identical to before.
     sp = SimpleStrategyParams(sl_soft_points=sl_soft, sl_hard_points=sl_hard,
                               tp_hard_points=tp, data_path_4h="", data_path_1min="",
                               box_data_path="", flip_entry_direction=flip,
+                              cap_1min=P["cap_1min"], cap_mode=P["cap_mode"],
+                              eod_margin_min=P["eod_margin_min"],
                               intracandle_veto_entry=ic_on, intracandle_max_wait=ic_n,
                               intracandle_force_close=ic_fc, **_sp_split)
     # Step B2 (Axis B): precompute the param-independent Stage-1 signal ONCE (vectorized) and feed it to

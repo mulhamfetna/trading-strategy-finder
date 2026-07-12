@@ -70,7 +70,7 @@ def main() -> int:
         oos_pnl = s.get("pnl_2026")
     else:
         p26 = dict(preset); p26["window"] = "2026"
-        oos_pnl = L2.build_view_payload(p26, {}, tf, "l1", instrument=inst, l1_engine=p26)["meta"]["summary"]["pnl"]
+        oos_pnl = L2.build_view_payload(p26, {}, tf, "l1", instrument=inst, l1_engine=p26)["meta"]["boxes"]["pnl"]
 
     print("\n" + "=" * 70)
     print(f"  {champ.get('label', a.champion)}")

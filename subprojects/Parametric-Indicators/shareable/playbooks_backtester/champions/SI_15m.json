@@ -2,16 +2,16 @@
  "id": "SI_15m",
  "instrument": "SI",
  "timeframe": "15m",
- "label": "Silver (SI) 15m \u00b7 box + 8-indicator gate \u00b7 cap=1139/bars \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 $14,600 full / $2,780 DD / 44.5% win \u00b7 OOS-2026 +$2,349",
+ "label": "Silver (SI) 15m \u00b7 box + 6-indicator gate \u00b7 max-hold 702 bars \u00b7 1-minute-frame indicators \u2014 +$76,579 full / $10,363 DD / 59.5% win \u00b7 OOS-2026 +$18,139 \u00b7 cold-start re-optimization (time-cap model)",
  "preset": {
   "indicators": [
    {
     "key": "ema_trend",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 20,
-     "slow": 50
+     "fast": 119,
+     "slow": 26
     }
    },
    {
@@ -19,8 +19,8 @@
     "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 194,
-     "slow": 325
+     "fast": 308,
+     "slow": 224
     }
    },
    {
@@ -28,9 +28,9 @@
     "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 36,
-     "slow": 12,
-     "signal": 98
+     "fast": 7,
+     "slow": 136,
+     "signal": 81
     }
    },
    {
@@ -58,11 +58,11 @@
    },
    {
     "key": "cci",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "n": 194,
-     "threshold": 265
+     "n": 20,
+     "threshold": 100
     }
    },
    {
@@ -77,23 +77,23 @@
    },
    {
     "key": "stochastic",
-    "enabled": true,
-    "mode": "both",
-    "params": {
-     "n": 93,
-     "d": 6,
-     "lower": 12,
-     "upper": 64
-    }
-   },
-   {
-    "key": "mfi",
     "enabled": false,
     "mode": "both",
     "params": {
      "n": 14,
+     "d": 3,
      "lower": 20,
      "upper": 80
+    }
+   },
+   {
+    "key": "mfi",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 48,
+     "lower": 7,
+     "upper": 63
     }
    },
    {
@@ -101,8 +101,8 @@
     "enabled": true,
     "mode": "veto",
     "params": {
-     "n": 155,
-     "k": 3.1
+     "n": 132,
+     "k": 3.7
     }
    },
    {
@@ -132,10 +132,10 @@
    },
    {
     "key": "fvg",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "lookback": 25
+     "lookback": 3
     }
    },
    {
@@ -146,10 +146,10 @@
    },
    {
     "key": "breaker",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "swing_l": 11
+     "swing_l": 2
     }
    },
    {
@@ -160,13 +160,13 @@
    }
   ],
   "k": 1,
-  "gate_pct": 94.05,
-  "sl_soft": 0.0255,
-  "sl_hard": 0.0479,
-  "tp": 0.0773,
-  "dd_limit": 2.5639,
-  "cooldown": 2,
-  "cap_1min": 1139,
+  "gate_pct": 98.91,
+  "sl_soft": 0.0658,
+  "sl_hard": 0.1006,
+  "tp": 0.0791,
+  "dd_limit": 7.1683,
+  "cooldown": 1,
+  "cap_1min": 702,
   "cap_mode": "bars",
   "eod_margin_min": 15,
   "intracandle_veto_entry": false,

@@ -164,8 +164,10 @@ def run_l1(tf: str = "4h", params: dict | None = None, instrument: str = "NQ") -
         vol_gate = vf[:n] <= gthr
 
     inds = library.from_specs([s for s in params["indicators"] if s.get("enabled")])
-    src = runner.indicator_source_1min(df_dec, df1, bar_td) if params["ind_1min"] else None
-    votes = runner.compute_votes(df_dec, box, inds, src=src)
+    # MEMOISED (perf): same cached 1-min source + votes the optimizer uses — result-neutral, cached across Runs.
+    from optimize.core import _cached_source, _cached_votes    # noqa: E402 (lazy — avoids import cycle)
+    src = _cached_source(df_dec, df1, bar_td) if params["ind_1min"] else None
+    votes = _cached_votes(df_dec, df1, box, inds, src, bar_td)
     veto = np.asarray(runner.veto_mask(df_dec, box, inds, src=src, votes=votes), dtype=bool)[:n]
     confirm = np.asarray(runner.confirm_mask(df_dec, box, inds, int(params["k"]), src=src, votes=votes),
                          dtype=bool)[:n]
@@ -173,7 +175,7 @@ def run_l1(tf: str = "4h", params: dict | None = None, instrument: str = "NQ") -
     engine_gate = vol_gate & ~veto & confirm
     dec_dates = df_dec["Date"].to_numpy()
     _cap_mode = str(params.get("cap_mode") or "none")
-    if _cap_mode == "eod":
+    if _cap_mode in ("eod", "both"):
         from optimize.trading_days import eod_targets
         _eod_t, _eod_sl = eod_targets(df1["Date"].to_numpy(), int(params.get("eod_margin_min", 15) or 15))
     else:

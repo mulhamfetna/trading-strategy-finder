@@ -2,7 +2,7 @@
  "id": "CL_2h",
  "instrument": "CL",
  "timeframe": "2h",
- "label": "Crude Oil (CL) 2h \u00b7 box + 4-indicator gate \u00b7 cap=9/bars \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 +$10,448 full / $1,098 DD / 60.1% win \u00b7 OOS-2026 +$2,561",
+ "label": "Crude Oil (CL) 2h \u00b7 box + 4-indicator gate \u00b7 max-hold 9 bars \u00b7 1-minute-frame indicators \u2014 +$10,448 full / $1,098 DD / 60.1% win \u00b7 OOS-2026 +$3,835 \u00b7 incumbent (held \u2014 beat the challenger out-of-sample)",
  "preset": {
   "indicators": [
    {

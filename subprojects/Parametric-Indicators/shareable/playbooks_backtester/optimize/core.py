@@ -42,12 +42,15 @@ from optimize import signals as _sig  # noqa: E402
 _SRC_MEMO: dict = {}
 _VOTE_MEMO: dict = {}
 _IC_DIR_MEMO: dict = {}   # per-(1-min slice, indicator) FULL 1-min directions for the intra-candle gate
+_EOD_MEMO: dict = {}      # per-(1-min slice, margin) end-of-day target bars — param-independent, so one
+#                           build per fold serves every trial (eod_targets is a Python loop over sessions)
 
 
 def _clear_caches() -> None:
     _SRC_MEMO.clear()
     _VOTE_MEMO.clear()
     _IC_DIR_MEMO.clear()
+    _EOD_MEMO.clear()
 
 
 def _slice_sig(d, d1, bar_duration):
@@ -216,6 +219,10 @@ def backtest_metrics(
     _split = {k: (float(params[k]) if params.get(k) is not None else None) for k in
               ("long_sl_soft", "long_sl_hard", "long_tp", "short_sl_soft", "short_sl_hard", "short_tp")}
     cap_1min = int(params.get("cap_1min", 0) or 0)    # max-hold (traded 1-min bars); 0 = off (bars cap)
+    # Time-cap mode: none | bars | eod | both. This MUST be threaded to fast_backtest below — it used to be
+    # dropped here, so a trial recorded as an EOD champion was in fact SCORED with no EOD cap at all.
+    cap_mode = str(params.get("cap_mode") or "none")
+    eod_margin = int(params.get("eod_margin_min", 15) or 15)
 
     N = len(df_dec)
     lo, hi = {"full": (0, N), "2025": (0, n_split), "2026": (n_split, N)}[window]
@@ -274,11 +281,28 @@ def backtest_metrics(
 
     # precomputed signals (param-independent) sliced to the window; else compute on the slice
     si = sig_int[lo:hi] if sig_int is not None else signals_to_int(_sig.decision_signals(d, box))
+
+    # End-of-day cap targets. eod_targets returns indices INTO THE ARRAY IT IS GIVEN, so it must be built
+    # on the SLICED d1 (the same frame handed to fast_backtest) — building it on the full df1 would point
+    # at the wrong bars. Param-independent given (slice, margin) ⇒ memoised across trials of the same fold.
+    m1_dates = d1["Date"].to_numpy()
+    eod_target = session_last = None
+    if cap_mode in ("eod", "both"):
+        ek = (_slice_sig(d, d1, bar_duration), eod_margin)
+        if ek not in _EOD_MEMO:
+            from optimize.trading_days import eod_targets
+            _EOD_MEMO[ek] = eod_targets(m1_dates, eod_margin)
+        eod_target, session_last = _EOD_MEMO[ek]
+        if eod_target is None:
+            # fast_engine would silently fall back to a bars cap here — refuse instead of mis-scoring.
+            raise ValueError(f"cap_mode={cap_mode!r} requires end-of-day targets, but none could be built")
+
     cand = fast_backtest(
         d["Date"].to_numpy(), d["Close"].to_numpy(float), si, gate,
-        d1["Date"].to_numpy(), d1["High"].to_numpy(float),
+        m1_dates, d1["High"].to_numpy(float),
         d1["Low"].to_numpy(float), d1["Close"].to_numpy(float),
         sl_soft, sl_hard, tp, flip, cap_1min=cap_1min,
+        cap_mode=cap_mode, eod_target=eod_target, session_last=session_last,
         intracandle_gate_by_dir=ic_gate_by_dir, intracandle_vol_gate=ic_vol_gate,
         intracandle_veto_mask=ic_veto_mask, intracandle_normal_gate=ic_normal_gate,
         intracandle_max_wait=int(params.get("intracandle_max_wait", 240)),

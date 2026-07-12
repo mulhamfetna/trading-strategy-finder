@@ -90,7 +90,7 @@
         <div class="fld"><label>Trigger ($)</label><input id="l1_dd_limit" type="number" step="100" value="0"></div>
         <div class="fld"><label>Cooldown (trades)</label><input id="l1_cooldown" type="number" step="1" value="0"></div>
         <div class="fld" title="Exit cap: none · max N traded 1-min bars · end-of-trading-day (full days N min before the 17:00 close, partial days at the session close)."><label>Exit cap mode</label>
-          <select id="l1_cap_mode" onchange="capModeToggle('l1')"><option value="none">none</option><option value="bars">max 1-min bars</option><option value="eod">end-of-day</option></select></div>
+          <select id="l1_cap_mode" onchange="capModeToggle('l1')"><option value="none">none</option><option value="bars">max 1-min bars</option><option value="eod">end-of-day</option><option value="both">both — whichever fires first</option></select></div>
         <div class="fld" id="l1_cap_bars_fld"><label>Max hold (traded 1-min bars)</label><input id="l1_cap_1min" type="number" step="1" min="0" value="0"></div>
         <div class="fld" id="l1_cap_eod_fld" style="display:none"><label>Exit N min before full-day close</label><input id="l1_eod_margin_min" type="number" step="1" min="0" value="15"></div>
         <div class="fld" title="Arm a VETOED (vol-passed) signal and enter mid-candle at the first 1-min bar where the full gate re-opens (no veto AND >=K confirms). Off = byte-identical champion."><label><input id="l1_intracandle_veto_entry" type="checkbox"> In-candle entry (vetoed)</label>
@@ -134,7 +134,7 @@
         <div class="fld"><label>Trigger ($)</label><input id="l2_dd_limit" type="number" step="100" value="0"></div>
         <div class="fld"><label>Cooldown (trades)</label><input id="l2_cooldown" type="number" step="1" value="0"></div>
         <div class="fld" title="Exit cap: none · max N traded 1-min bars · end-of-trading-day (full days N min before the 17:00 close, partial days at the session close)."><label>Exit cap mode</label>
-          <select id="l2_cap_mode" onchange="capModeToggle('l2')"><option value="none">none</option><option value="bars">max 1-min bars</option><option value="eod">end-of-day</option></select></div>
+          <select id="l2_cap_mode" onchange="capModeToggle('l2')"><option value="none">none</option><option value="bars">max 1-min bars</option><option value="eod">end-of-day</option><option value="both">both — whichever fires first</option></select></div>
         <div class="fld" id="l2_cap_bars_fld"><label>Max hold (traded 1-min bars)</label><input id="l2_cap_1min" type="number" step="1" min="0" value="0"></div>
         <div class="fld" id="l2_cap_eod_fld" style="display:none"><label>Exit N min before full-day close</label><input id="l2_eod_margin_min" type="number" step="1" min="0" value="15"></div></div>
       <div class="sgroup"><h3>Confirmation layer</h3>
@@ -223,8 +223,9 @@ function dedupe(a){const m={};(a||[]).forEach(p=>{if(p&&p.value!=null)m[p.time]=
 const LAYER_FIELDS=['sl_soft','sl_hard','tp','gate_pct','dd_limit','cooldown','k','cap_1min','cap_mode','eod_margin_min'];
 const SPLIT_FIELDS=['long_sl_soft','long_sl_hard','long_tp','short_sl_soft','short_sl_hard','short_tp'];
 function capModeToggle(pfx){ const m=$(pfx+'_cap_mode').value;
-  $(pfx+'_cap_bars_fld').style.display = m==='bars' ? '' : 'none';
-  $(pfx+'_cap_eod_fld').style.display  = m==='eod'  ? '' : 'none'; }
+  // 'both' arms BOTH caps (exit at whichever deadline lands first), so it needs BOTH fields.
+  $(pfx+'_cap_bars_fld').style.display = (m==='bars'||m==='both') ? '' : 'none';
+  $(pfx+'_cap_eod_fld').style.display  = (m==='eod' ||m==='both') ? '' : 'none'; }
 function collectLayer(pfx){
   const v=id=>$(pfx+'_'+id), out={indicators:DB.specsOf($(pfx+'_indpanel')), k:+v('k').value||1, gate_pct:+v('gate_pct').value,
     sl_soft:+v('sl_soft').value, sl_hard:+v('sl_hard').value, tp:+v('tp').value,

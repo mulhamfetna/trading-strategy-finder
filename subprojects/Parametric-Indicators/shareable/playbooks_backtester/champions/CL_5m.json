@@ -2,16 +2,16 @@
  "id": "CL_5m",
  "instrument": "CL",
  "timeframe": "5m",
- "label": "Crude Oil (CL) 5m \u00b7 box + 6-indicator gate \u00b7 cap=175/bars \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 +$4,090 full / $717 DD / 71.8% win \u00b7 OOS-2026 +$42",
+ "label": "Crude Oil (CL) 5m \u00b7 box + 5-indicator gate \u00b7 no time cap \u00b7 1-minute-frame indicators \u2014 +$13,692 full / $885 DD / 66.7% win \u00b7 OOS-2026 +$3,139 \u00b7 cold-start re-optimization (time-cap model)",
  "preset": {
   "indicators": [
    {
     "key": "ema_trend",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 20,
-     "slow": 50
+     "fast": 174,
+     "slow": 104
     }
    },
    {
@@ -19,8 +19,8 @@
     "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 148,
-     "slow": 64
+     "fast": 273,
+     "slow": 230
     }
    },
    {
@@ -50,29 +50,29 @@
    },
    {
     "key": "obv",
-    "enabled": true,
+    "enabled": false,
     "mode": "confirm",
     "params": {
-     "slope": 83
+     "slope": 20
     }
    },
    {
     "key": "cci",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "n": 94,
-     "threshold": 215
+     "n": 20,
+     "threshold": 100
     }
    },
    {
     "key": "rsi",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "n": 20,
-     "lower": 24,
-     "upper": 62
+     "n": 14,
+     "lower": 30,
+     "upper": 70
     }
    },
    {
@@ -98,11 +98,11 @@
    },
    {
     "key": "bollinger",
-    "enabled": false,
+    "enabled": true,
     "mode": "veto",
     "params": {
-     "n": 20,
-     "k": 2
+     "n": 146,
+     "k": 3.1
     }
    },
    {
@@ -160,14 +160,14 @@
    }
   ],
   "k": 1,
-  "gate_pct": 65.76,
-  "sl_soft": 0.0629,
-  "sl_hard": 0.0828,
-  "tp": 0.0463,
-  "dd_limit": 6.9163,
-  "cooldown": 3,
-  "cap_1min": 175,
-  "cap_mode": "bars",
+  "gate_pct": 85.8,
+  "sl_soft": 0.0532,
+  "sl_hard": 0.0609,
+  "tp": 0.0396,
+  "dd_limit": 6.0186,
+  "cooldown": 0,
+  "cap_1min": 0,
+  "cap_mode": "none",
   "eod_margin_min": 15,
   "intracandle_veto_entry": false,
   "intracandle_max_wait": 240,

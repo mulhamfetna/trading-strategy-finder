@@ -2,16 +2,16 @@
  "id": "CL_4h",
  "instrument": "CL",
  "timeframe": "4h",
- "label": "Crude Oil (CL) 4h \u00b7 box + 6-indicator gate \u00b7 cap=1051/bars \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 +$21,760 full / $3,990 DD / 47.7% win \u00b7 OOS-2026 +$2,475",
+ "label": "Crude Oil (CL) 4h \u00b7 box + 6-indicator gate \u00b7 no time cap \u00b7 1-minute-frame indicators \u2014 +$21,925 full / $3,487 DD / 63.3% win \u00b7 OOS-2026 +$5,854 \u00b7 cold-start re-optimization (time-cap model)",
  "preset": {
   "indicators": [
    {
     "key": "ema_trend",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 20,
-     "slow": 50
+     "fast": 222,
+     "slow": 377
     }
    },
    {
@@ -28,9 +28,9 @@
     "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 60,
-     "slow": 89,
-     "signal": 32
+     "fast": 13,
+     "slow": 163,
+     "signal": 5
     }
    },
    {
@@ -41,19 +41,19 @@
    },
    {
     "key": "keltner",
-    "enabled": true,
+    "enabled": false,
     "mode": "confirm",
     "params": {
-     "n": 43,
-     "m": 1.1
+     "n": 20,
+     "m": 2
     }
    },
    {
     "key": "obv",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "slope": 20
+     "slope": 4
     }
    },
    {
@@ -124,18 +124,18 @@
    },
    {
     "key": "order_block",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "swing_l": 16
+     "swing_l": 2
     }
    },
    {
     "key": "fvg",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "lookback": 1
+     "lookback": 3
     }
    },
    {
@@ -146,10 +146,10 @@
    },
    {
     "key": "breaker",
-    "enabled": false,
+    "enabled": true,
     "mode": "both",
     "params": {
-     "swing_l": 2
+     "swing_l": 20
     }
    },
    {
@@ -159,15 +159,15 @@
     "params": {}
    }
   ],
-  "k": 1,
-  "gate_pct": 97.88,
-  "sl_soft": 0.3596,
-  "sl_hard": 0.3906,
-  "tp": 0.5386,
-  "dd_limit": 2.7054,
-  "cooldown": 0,
-  "cap_1min": 1051,
-  "cap_mode": "bars",
+  "k": 2,
+  "gate_pct": 95.89,
+  "sl_soft": 0.3565,
+  "sl_hard": 0.6424,
+  "tp": 0.3297,
+  "dd_limit": 13.5387,
+  "cooldown": 1,
+  "cap_1min": 0,
+  "cap_mode": "none",
   "eod_margin_min": 15,
   "intracandle_veto_entry": false,
   "intracandle_max_wait": 240,

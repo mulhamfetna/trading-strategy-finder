@@ -2,7 +2,7 @@
  "id": "YM_1h",
  "instrument": "YM",
  "timeframe": "1h",
- "label": "Dow (YM) 1h \u00b7 box + 8-indicator gate \u00b7 cap=973/bars \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 $28,096 full / $4,045 DD / 64.9% win \u00b7 OOS-2026 +$6,978",
+ "label": "Dow (YM) 1h \u00b7 box + 4-indicator gate \u00b7 end-of-day exit \u00b7 1-minute-frame indicators \u2014 +$47,341 full / $4,490 DD / 49.5% win \u00b7 OOS-2026 +$12,527 \u00b7 cold-start re-optimization (time-cap model)",
  "preset": {
   "indicators": [
    {
@@ -19,8 +19,8 @@
     "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 44,
-     "slow": 329
+     "fast": 170,
+     "slow": 70
     }
    },
    {
@@ -28,9 +28,9 @@
     "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 3,
-     "slow": 104,
-     "signal": 6
+     "fast": 5,
+     "slow": 40,
+     "signal": 77
     }
    },
    {
@@ -50,10 +50,10 @@
    },
    {
     "key": "obv",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "slope": 20
+     "slope": 10
     }
    },
    {
@@ -67,12 +67,12 @@
    },
    {
     "key": "rsi",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "n": 49,
-     "lower": 2,
-     "upper": 57
+     "n": 14,
+     "lower": 30,
+     "upper": 70
     }
    },
    {
@@ -107,27 +107,27 @@
    },
    {
     "key": "adx",
-    "enabled": true,
+    "enabled": false,
     "mode": "veto",
     "params": {
-     "n": 17,
-     "threshold": 15
+     "n": 14,
+     "threshold": 25
     }
    },
    {
     "key": "structure_trend",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "swing_l": 18
+     "swing_l": 2
     }
    },
    {
     "key": "order_block",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "swing_l": 10
+     "swing_l": 2
     }
    },
    {
@@ -135,7 +135,7 @@
     "enabled": true,
     "mode": "both",
     "params": {
-     "lookback": 6
+     "lookback": 18
     }
    },
    {
@@ -154,20 +154,20 @@
    },
    {
     "key": "cisd",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {}
    }
   ],
-  "k": 5,
-  "gate_pct": 82.34,
-  "sl_soft": 117.2494,
-  "sl_hard": 213.0482,
-  "tp": 179.0803,
-  "dd_limit": 5289.581,
-  "cooldown": 5,
-  "cap_1min": 973,
-  "cap_mode": "bars",
+  "k": 2,
+  "gate_pct": 73.24,
+  "sl_soft": 110.4985,
+  "sl_hard": 273.5268,
+  "tp": 231.9237,
+  "dd_limit": 4526.9126,
+  "cooldown": 0,
+  "cap_1min": 0,
+  "cap_mode": "eod",
   "eod_margin_min": 15,
   "intracandle_veto_entry": false,
   "intracandle_max_wait": 240,

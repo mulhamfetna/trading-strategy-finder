@@ -255,7 +255,7 @@ def run_l2(l1, l2_params: dict, bar_mask=None, exit_mode: str = "l1_priority") -
             intracandle_max_wait=int(l2_params.get("l2_intracandle_max_wait", 240)))
 
     _cap_mode = str(l2_params.get("cap_mode") or "none")
-    if _cap_mode == "eod":
+    if _cap_mode in ("eod", "both"):
         from optimize.trading_days import eod_targets
         _eod_t, _eod_sl = eod_targets(d1["Date"].to_numpy(), int(l2_params.get("eod_margin_min", 15) or 15))
     else:

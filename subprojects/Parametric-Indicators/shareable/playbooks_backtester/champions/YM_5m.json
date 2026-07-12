@@ -2,7 +2,7 @@
  "id": "YM_5m",
  "instrument": "YM",
  "timeframe": "5m",
- "label": "Dow (YM) 5m \u00b7 box + 7-indicator gate \u00b7 cap=1037/bars \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 $31,862 full / $5,160 DD / 60.5% win \u00b7 OOS-2026 +$8,732",
+ "label": "Dow (YM) 5m \u00b7 box + 7-indicator gate \u00b7 max-hold 1037 bars \u00b7 1-minute-frame indicators \u2014 +$31,862 full / $5,160 DD / 60.5% win \u00b7 OOS-2026 +$8,732 \u00b7 incumbent (held \u2014 beat the challenger out-of-sample)",
  "preset": {
   "indicators": [
    {

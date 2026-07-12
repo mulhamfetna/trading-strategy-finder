@@ -2,7 +2,7 @@
  "id": "NG_2m",
  "instrument": "NG",
  "timeframe": "2m",
- "label": "Natural Gas (NG) 2m \u00b7 box + 7-indicator gate \u00b7 cap=1128/bars \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 +$30,294 full / $230 DD / 40.2% win \u00b7 OOS-2026 +$10,024",
+ "label": "Natural Gas (NG) 2m \u00b7 box + 7-indicator gate \u00b7 max-hold 1128 bars \u00b7 1-minute-frame indicators \u2014 +$30,294 full / $230 DD / 40.2% win \u00b7 OOS-2026 +$9,758 \u00b7 incumbent (held \u2014 beat the challenger out-of-sample)",
  "preset": {
   "indicators": [
    {

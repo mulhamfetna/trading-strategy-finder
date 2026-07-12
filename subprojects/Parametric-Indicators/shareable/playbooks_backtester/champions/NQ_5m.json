@@ -2,7 +2,7 @@
  "id": "NQ_5m",
  "instrument": "NQ",
  "timeframe": "5m",
- "label": "Nasdaq-100 (NQ) 5m \u00b7 box + 7-indicator gate \u00b7 cap=0 off \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 $23,926 full / $4,636 DD / 59.3% win \u00b7 OOS-2026 +$5,860",
+ "label": "Nasdaq-100 (NQ) 5m \u00b7 box + 7-indicator gate \u00b7 no time cap \u00b7 1-minute-frame indicators \u2014 +$23,926 full / $4,636 DD / 59.3% win \u00b7 OOS-2026 +$5,860 \u00b7 incumbent (held \u2014 beat the challenger out-of-sample)",
  "preset": {
   "indicators": [
    {

@@ -2,35 +2,35 @@
  "id": "HG_5m",
  "instrument": "HG",
  "timeframe": "5m",
- "label": "Copper (HG) 5m \u00b7 box + 7-indicator gate \u00b7 cap=544/bars \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 $3,102 full / $1,065 DD / 51.8% win \u00b7 OOS-2026 -$240",
+ "label": "Copper (HG) 5m \u00b7 box + 7-indicator gate \u00b7 no time cap \u00b7 1-minute-frame indicators \u2014 +$8,977 full / $1,395 DD / 27.0% win \u00b7 OOS-2026 +$3,072 \u00b7 cold-start re-optimization (time-cap model)",
  "preset": {
   "indicators": [
    {
     "key": "ema_trend",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 20,
-     "slow": 50
+     "fast": 344,
+     "slow": 223
     }
    },
    {
     "key": "sma_trend",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 50,
-     "slow": 200
+     "fast": 255,
+     "slow": 308
     }
    },
    {
     "key": "macd",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 12,
-     "slow": 26,
-     "signal": 9
+     "fast": 55,
+     "slow": 12,
+     "signal": 15
     }
    },
    {
@@ -44,25 +44,25 @@
     "enabled": true,
     "mode": "confirm",
     "params": {
-     "n": 57,
-     "m": 0.6
+     "n": 188,
+     "m": 1.4
     }
    },
    {
     "key": "obv",
-    "enabled": true,
+    "enabled": false,
     "mode": "confirm",
     "params": {
-     "slope": 109
+     "slope": 20
     }
    },
    {
     "key": "cci",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "n": 58,
-     "threshold": 290
+     "n": 20,
+     "threshold": 100
     }
    },
    {
@@ -77,13 +77,13 @@
    },
    {
     "key": "stochastic",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "n": 65,
-     "d": 48,
-     "lower": 13,
-     "upper": 91
+     "n": 14,
+     "d": 3,
+     "lower": 20,
+     "upper": 80
     }
    },
    {
@@ -98,11 +98,11 @@
    },
    {
     "key": "bollinger",
-    "enabled": false,
+    "enabled": true,
     "mode": "veto",
     "params": {
-     "n": 20,
-     "k": 2
+     "n": 141,
+     "k": 3.6
     }
    },
    {
@@ -124,10 +124,10 @@
    },
    {
     "key": "order_block",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "swing_l": 14
+     "swing_l": 2
     }
    },
    {
@@ -135,7 +135,7 @@
     "enabled": true,
     "mode": "both",
     "params": {
-     "lookback": 23
+     "lookback": 14
     }
    },
    {
@@ -159,19 +159,19 @@
     "params": {}
    }
   ],
-  "k": 2,
-  "gate_pct": 84.15,
-  "sl_soft": 0.0038,
-  "sl_hard": 0.0048,
-  "tp": 0.0054,
-  "dd_limit": 0.9193,
-  "cooldown": 6,
-  "cap_1min": 544,
-  "cap_mode": "bars",
+  "k": 1,
+  "gate_pct": 89.66,
+  "sl_soft": 0.0014,
+  "sl_hard": 0.0015,
+  "tp": 0.0049,
+  "dd_limit": 0.4994,
+  "cooldown": 3,
+  "cap_1min": 0,
+  "cap_mode": "none",
   "eod_margin_min": 15,
   "intracandle_veto_entry": false,
   "intracandle_max_wait": 240,
-  "flip": false,
+  "flip": true,
   "ind_1min": true,
   "window": "full",
   "timeframe": "5m",

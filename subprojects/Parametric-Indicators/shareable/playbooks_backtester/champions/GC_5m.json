@@ -2,7 +2,7 @@
  "id": "GC_5m",
  "instrument": "GC",
  "timeframe": "5m",
- "label": "Gold (GC) 5m \u00b7 box + 10-indicator gate \u00b7 cap=551/bars \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 $15,130 full / $3,790 DD / 71.3% win \u00b7 OOS-2026 +$5,250",
+ "label": "Gold (GC) 5m \u00b7 box + 12-indicator gate \u00b7 max-hold 556 bars OR end-of-day \u2014 whichever first \u00b7 1-minute-frame indicators \u2014 +$18,126 full / $4,115 DD / 64.8% win \u00b7 OOS-2026 +$7,150 \u00b7 cold-start re-optimization (time-cap model)",
  "preset": {
   "indicators": [
    {
@@ -10,27 +10,27 @@
     "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 353,
-     "slow": 237
+     "fast": 44,
+     "slow": 10
     }
    },
    {
     "key": "sma_trend",
-    "enabled": true,
+    "enabled": false,
     "mode": "confirm",
     "params": {
-     "fast": 317,
-     "slow": 63
+     "fast": 50,
+     "slow": 200
     }
    },
    {
     "key": "macd",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 12,
-     "slow": 26,
-     "signal": 9
+     "fast": 8,
+     "slow": 129,
+     "signal": 63
     }
    },
    {
@@ -44,46 +44,46 @@
     "enabled": true,
     "mode": "confirm",
     "params": {
-     "n": 126,
-     "m": 1.7
+     "n": 125,
+     "m": 4
     }
    },
    {
     "key": "obv",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "slope": 20
+     "slope": 23
     }
    },
    {
     "key": "cci",
-    "enabled": false,
+    "enabled": true,
     "mode": "both",
     "params": {
-     "n": 20,
-     "threshold": 100
+     "n": 15,
+     "threshold": 30
     }
    },
    {
     "key": "rsi",
-    "enabled": false,
+    "enabled": true,
     "mode": "both",
     "params": {
-     "n": 14,
-     "lower": 30,
-     "upper": 70
+     "n": 98,
+     "lower": 37,
+     "upper": 88
     }
    },
    {
     "key": "stochastic",
-    "enabled": false,
+    "enabled": true,
     "mode": "both",
     "params": {
-     "n": 14,
-     "d": 3,
-     "lower": 20,
-     "upper": 80
+     "n": 24,
+     "d": 6,
+     "lower": 4,
+     "upper": 83
     }
    },
    {
@@ -91,18 +91,18 @@
     "enabled": true,
     "mode": "both",
     "params": {
-     "n": 36,
-     "lower": 47,
-     "upper": 96
+     "n": 39,
+     "lower": 31,
+     "upper": 71
     }
    },
    {
     "key": "bollinger",
-    "enabled": false,
+    "enabled": true,
     "mode": "veto",
     "params": {
-     "n": 20,
-     "k": 2
+     "n": 161,
+     "k": 4.3
     }
    },
    {
@@ -110,8 +110,8 @@
     "enabled": true,
     "mode": "veto",
     "params": {
-     "n": 68,
-     "threshold": 9
+     "n": 18,
+     "threshold": 11
     }
    },
    {
@@ -127,20 +127,20 @@
     "enabled": true,
     "mode": "both",
     "params": {
-     "swing_l": 15
+     "swing_l": 5
     }
    },
    {
     "key": "fvg",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "lookback": 47
+     "lookback": 3
     }
    },
    {
     "key": "ifvg",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {}
    },
@@ -149,29 +149,29 @@
     "enabled": true,
     "mode": "both",
     "params": {
-     "swing_l": 1
+     "swing_l": 8
     }
    },
    {
     "key": "cisd",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {}
    }
   ],
-  "k": 2,
-  "gate_pct": 90.4,
-  "sl_soft": 2.6,
-  "sl_hard": 2.8,
-  "tp": 1.5,
-  "dd_limit": 84,
-  "cooldown": 0,
-  "cap_1min": 551,
-  "cap_mode": "bars",
+  "k": 3,
+  "gate_pct": 93.34,
+  "sl_soft": 3.5553,
+  "sl_hard": 7.6525,
+  "tp": 3.9502,
+  "dd_limit": 143.4173,
+  "cooldown": 4,
+  "cap_1min": 556,
+  "cap_mode": "both",
   "eod_margin_min": 15,
   "intracandle_veto_entry": false,
   "intracandle_max_wait": 240,
-  "flip": true,
+  "flip": false,
   "ind_1min": true,
   "window": "full",
   "timeframe": "5m",

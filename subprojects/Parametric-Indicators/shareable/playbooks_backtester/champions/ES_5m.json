@@ -2,7 +2,7 @@
  "id": "ES_5m",
  "instrument": "ES",
  "timeframe": "5m",
- "label": "S&P 500 (ES) 5m \u00b7 box + 9-indicator gate \u00b7 cap=109/bars \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 $7,838 full / $770 DD / 63.8% win \u00b7 OOS-2026 +$262",
+ "label": "S&P 500 (ES) 5m \u00b7 box + 11-indicator gate \u00b7 max-hold 902 bars \u00b7 1-minute-frame indicators \u2014 +$5,598 full / $1,108 DD / 80.5% win \u00b7 OOS-2026 +$2,701 \u00b7 cold-start re-optimization (time-cap model)",
  "preset": {
   "indicators": [
    {
@@ -10,8 +10,8 @@
     "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 58,
-     "slow": 292
+     "fast": 87,
+     "slow": 282
     }
    },
    {
@@ -19,8 +19,8 @@
     "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 355,
-     "slow": 212
+     "fast": 30,
+     "slow": 242
     }
    },
    {
@@ -35,7 +35,7 @@
    },
    {
     "key": "vwap",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {}
    },
@@ -50,10 +50,10 @@
    },
    {
     "key": "obv",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "slope": 20
+     "slope": 164
     }
    },
    {
@@ -61,48 +61,48 @@
     "enabled": true,
     "mode": "both",
     "params": {
-     "n": 73,
-     "threshold": 235
+     "n": 42,
+     "threshold": 220
     }
    },
    {
     "key": "rsi",
-    "enabled": false,
+    "enabled": true,
     "mode": "both",
     "params": {
-     "n": 14,
-     "lower": 30,
-     "upper": 70
+     "n": 94,
+     "lower": 23,
+     "upper": 91
     }
    },
    {
     "key": "stochastic",
-    "enabled": false,
+    "enabled": true,
     "mode": "both",
     "params": {
-     "n": 14,
-     "d": 3,
-     "lower": 20,
-     "upper": 80
+     "n": 24,
+     "d": 6,
+     "lower": 47,
+     "upper": 90
     }
    },
    {
     "key": "mfi",
-    "enabled": false,
+    "enabled": true,
     "mode": "both",
     "params": {
-     "n": 14,
-     "lower": 20,
-     "upper": 80
+     "n": 39,
+     "lower": 9,
+     "upper": 71
     }
    },
    {
     "key": "bollinger",
-    "enabled": true,
+    "enabled": false,
     "mode": "veto",
     "params": {
-     "n": 9,
-     "k": 0.8
+     "n": 20,
+     "k": 2
     }
    },
    {
@@ -116,10 +116,10 @@
    },
    {
     "key": "structure_trend",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "swing_l": 8
+     "swing_l": 2
     }
    },
    {
@@ -127,29 +127,29 @@
     "enabled": true,
     "mode": "both",
     "params": {
-     "swing_l": 6
+     "swing_l": 5
     }
    },
    {
     "key": "fvg",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "lookback": 12
+     "lookback": 3
     }
    },
    {
     "key": "ifvg",
-    "enabled": false,
+    "enabled": true,
     "mode": "both",
     "params": {}
    },
    {
     "key": "breaker",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "swing_l": 20
+     "swing_l": 2
     }
    },
    {
@@ -159,14 +159,14 @@
     "params": {}
    }
   ],
-  "k": 3,
-  "gate_pct": 55.9,
-  "sl_soft": 2.3,
-  "sl_hard": 4.2,
-  "tp": 9.6,
-  "dd_limit": 883,
-  "cooldown": 15,
-  "cap_1min": 109,
+  "k": 2,
+  "gate_pct": 89.48,
+  "sl_soft": 5.9563,
+  "sl_hard": 12.4219,
+  "tp": 2.7659,
+  "dd_limit": 918.503,
+  "cooldown": 11,
+  "cap_1min": 902,
   "cap_mode": "bars",
   "eod_margin_min": 15,
   "intracandle_veto_entry": false,

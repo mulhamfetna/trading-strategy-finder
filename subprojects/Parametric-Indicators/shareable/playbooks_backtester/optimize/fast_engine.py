@@ -151,23 +151,30 @@ def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
         # assemble candidates with their priority, pick earliest (tie → priority order).
         # Single exit model regardless of flip: hard-SL > hard-TP > soft-SL on the ENTERED direction.
         # `flip` only reverses entry (d = -raw above); it no longer swaps "soft" to the TP side.
-        # time cap (max hold): the Nth 1-min bar from entry (bar 1 = slice index 0). Lowest priority.
+        # Time caps (max hold): lowest priority. Two INDEPENDENT deadlines that can both be armed:
+        #   bars — the Nth traded 1-min bar from entry (bar 1 = slice index 0)
+        #   eod  — the session's end-of-trading-day target bar
+        # cap_mode: none | bars | eod | both. "both" ⇒ exit at whichever deadline lands FIRST, matching
+        # engine.py, which applies the two as separate per-bar checks (engine.py:350 then :354) and so
+        # resolves a same-bar tie to the bars cap. We reproduce that tie-break by listing t_bars BEFORE
+        # t_eod in `order` (the selection loop below breaks ties by position).
         # back-compat: a bare cap_1min (existing tests/golden) is the bars cap.
         mode = "bars" if (cap_mode == "none" and cap_1min) else cap_mode
-        if mode == "eod" and eod_target is not None:
+        t_bars = ((cap_1min - 1) if (cap_1min and 0 <= cap_1min - 1 < len(cl)) else -1) \
+            if mode in ("bars", "both") else -1
+        if mode in ("eod", "both") and eod_target is not None:
             g = int(eod_target[e])
             if g < 0:
-                t_cap = -1
+                t_eod = -1
             else:
                 if g < e:
                     g = int(session_last[e])
-                t_cap = (g - e) if 0 <= (g - e) < len(cl) else -1
-            cap_reason = R_END_OF_DAY
+                t_eod = (g - e) if 0 <= (g - e) < len(cl) else -1
         else:
-            t_cap = (cap_1min - 1) if (cap_1min and 0 <= cap_1min - 1 < len(cl)) else -1
-            cap_reason = R_TIME_CAP
+            t_eod = -1
         order = [(t_slh, R_SL_HARD, slh_line), (t_tph, R_TP_HARD, tph_line),
-                 (t_soft, R_SL_SOFT, None), (t_cap, cap_reason, None)]
+                 (t_soft, R_SL_SOFT, None),
+                 (t_bars, R_TIME_CAP, None), (t_eod, R_END_OF_DAY, None)]
         best = None  # (slice_t, priority_rank, reason, fill)
         for rank, (ti, reason, line) in enumerate(order):
             if ti < 0:

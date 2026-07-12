@@ -2,16 +2,16 @@
  "id": "ES_4h",
  "instrument": "ES",
  "timeframe": "4h",
- "label": "S&P 500 (ES) 4h \u00b7 box + 7-indicator gate \u00b7 cap=1386/bars \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 $47,355 full / $10,848 DD / 59.6% win \u00b7 OOS-2026 +$19,815",
+ "label": "S&P 500 (ES) 4h \u00b7 box + 6-indicator gate \u00b7 max-hold 825 bars \u00b7 1-minute-frame indicators \u2014 +$68,168 full / $13,552 DD / 60.7% win \u00b7 OOS-2026 +$28,188 \u00b7 cold-start re-optimization (time-cap model)",
  "preset": {
   "indicators": [
    {
     "key": "ema_trend",
-    "enabled": true,
+    "enabled": false,
     "mode": "confirm",
     "params": {
-     "fast": 377,
-     "slow": 261
+     "fast": 20,
+     "slow": 50
     }
    },
    {
@@ -28,14 +28,14 @@
     "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 27,
-     "slow": 153,
-     "signal": 6
+     "fast": 12,
+     "slow": 27,
+     "signal": 9
     }
    },
    {
     "key": "vwap",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {}
    },
@@ -44,8 +44,8 @@
     "enabled": true,
     "mode": "confirm",
     "params": {
-     "n": 142,
-     "m": 3.2
+     "n": 153,
+     "m": 4.7
     }
    },
    {
@@ -58,11 +58,11 @@
    },
    {
     "key": "cci",
-    "enabled": false,
+    "enabled": true,
     "mode": "both",
     "params": {
-     "n": 20,
-     "threshold": 100
+     "n": 143,
+     "threshold": 200
     }
    },
    {
@@ -88,12 +88,12 @@
    },
    {
     "key": "mfi",
-    "enabled": false,
+    "enabled": true,
     "mode": "both",
     "params": {
-     "n": 14,
-     "lower": 20,
-     "upper": 80
+     "n": 45,
+     "lower": 23,
+     "upper": 70
     }
    },
    {
@@ -124,10 +124,10 @@
    },
    {
     "key": "order_block",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "swing_l": 18
+     "swing_l": 2
     }
    },
    {
@@ -146,27 +146,27 @@
    },
    {
     "key": "breaker",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "swing_l": 7
+     "swing_l": 2
     }
    },
    {
     "key": "cisd",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {}
    }
   ],
-  "k": 3,
-  "gate_pct": 79.3,
-  "sl_soft": 41.5,
-  "sl_hard": 93.4,
-  "tp": 50.4,
-  "dd_limit": 937,
+  "k": 2,
+  "gate_pct": 72.86,
+  "sl_soft": 40.6598,
+  "sl_hard": 88.4833,
+  "tp": 48.6161,
+  "dd_limit": 617.5879,
   "cooldown": 1,
-  "cap_1min": 1386,
+  "cap_1min": 825,
   "cap_mode": "bars",
   "eod_margin_min": 15,
   "intracandle_veto_entry": false,

@@ -5,10 +5,28 @@ wick geometry; structure/golf use closes/bodies per the frozen spec. Order-block
 machine over structure) builds on market_structure and lands in a later increment.
 
 STUBS first (TDD: tests/test_smc.py).
+
+PERFORMANCE (2026-07-11): `breaker_blocks` is a stateful per-bar scan over the 1-MINUTE frame (~1M bars),
+and profiling made it the single hottest function in an optimizer campaign — 0.76 s PER CALL, ~27% of a
+trial's compute once the trial store is taken out. It is Numba-JITted below. The JIT is a pure
+accelerator: `_breaker_blocks_py` remains the reference implementation and `tests/test_smc_numba_parity.py`
+asserts the two agree bit-for-bit on real data across every swing_l. If Numba is missing, the pure-Python
+path is used automatically, so this is a speed-only change with no behavioural surface.
 """
 from __future__ import annotations
 
 import numpy as np
+
+try:                                    # optional accelerator — absent ⇒ pure-Python reference path
+    from numba import njit
+    _HAVE_NUMBA = True
+except ImportError:                     # pragma: no cover
+    _HAVE_NUMBA = False
+
+    def njit(*a, **k):                  # no-op decorator so the module still imports
+        def deco(f):
+            return f
+        return deco if not a else a[0]
 
 
 def fvg(high: np.ndarray, low: np.ndarray):
@@ -269,8 +287,124 @@ def ifvg(high: np.ndarray, low: np.ndarray, close: np.ndarray, signal_at=None) -
     return out
 
 
+@njit(cache=True, nogil=True)
+def _breaker_kernel(o, h, l, c, sh, sl, L, want, use_want):
+    """Numba twin of `_breaker_blocks_py`'s scan. The Python lists become preallocated arrays with a live
+    count, compacted IN ORDER — insertion order is load-bearing: the per-bar signal scans breakers oldest
+    first, a bullish overlap short-circuits (+1 wins), otherwise the LAST overlapping bearish one stands.
+
+    Capacities: at most one bull-OB and one bear-OB are born per bar ⇒ each OB list ≤ n, and every breaker
+    comes from retiring an OB ⇒ cumulative breaker appends ≤ 2n."""
+    n = c.shape[0]
+    out = np.zeros(n, np.int8)
+
+    bull_lo = np.empty(n + 1, np.float64); bull_hi = np.empty(n + 1, np.float64); n_bull = 0
+    bear_lo = np.empty(n + 1, np.float64); bear_hi = np.empty(n + 1, np.float64); n_bear = 0
+    brk_lo = np.empty(2 * n + 2, np.float64)
+    brk_hi = np.empty(2 * n + 2, np.float64)
+    brk_d = np.empty(2 * n + 2, np.int8); n_brk = 0
+
+    swh = 0.0; has_swh = False
+    swl = 0.0; has_swl = False
+    last_down = -1; last_up = -1
+    prev_above = False; prev_below = False
+
+    for t in range(n):
+        p = t - L
+        if p >= 0:
+            if sh[p]:
+                swh = c[p]; has_swh = True
+            if sl[p]:
+                swl = c[p]; has_swl = True
+
+        if has_swh:
+            above = c[t] > swh
+            if above and (not prev_above) and last_down >= 0:
+                a = o[last_down]; b = c[last_down]
+                bull_lo[n_bull] = a if a < b else b
+                bull_hi[n_bull] = a if a > b else b
+                n_bull += 1
+            prev_above = above
+
+        if has_swl:
+            below = c[t] < swl
+            if below and (not prev_below) and last_up >= 0:
+                a = o[last_up]; b = c[last_up]
+                bear_lo[n_bear] = a if a < b else b
+                bear_hi[n_bear] = a if a > b else b
+                n_bear += 1
+            prev_below = below
+
+        # OB → breaker conversion on a close beyond the OB (role + direction flip); stable compaction
+        k = 0
+        for i in range(n_bull):
+            if c[t] < bull_lo[i]:
+                brk_lo[n_brk] = bull_lo[i]; brk_hi[n_brk] = bull_hi[i]; brk_d[n_brk] = -1; n_brk += 1
+            else:
+                bull_lo[k] = bull_lo[i]; bull_hi[k] = bull_hi[i]; k += 1
+        n_bull = k
+
+        k = 0
+        for i in range(n_bear):
+            if c[t] > bear_hi[i]:
+                brk_lo[n_brk] = bear_lo[i]; brk_hi[n_brk] = bear_hi[i]; brk_d[n_brk] = 1; n_brk += 1
+            else:
+                bear_lo[k] = bear_lo[i]; bear_hi[k] = bear_hi[i]; k += 1
+        n_bear = k
+
+        # per-bar breaker reaction signal (overlap), bull preferred
+        if (not use_want) or want[t]:
+            s = np.int8(0)
+            for i in range(n_brk):
+                if l[t] <= brk_hi[i] and h[t] >= brk_lo[i]:
+                    s = brk_d[i]
+                    if brk_d[i] == 1:
+                        break
+            out[t] = s
+
+        # breaker death: price closes back through it
+        k = 0
+        for i in range(n_brk):
+            d = brk_d[i]
+            dead = (d == 1 and c[t] < brk_lo[i]) or (d == -1 and c[t] > brk_hi[i])
+            if not dead:
+                brk_lo[k] = brk_lo[i]; brk_hi[k] = brk_hi[i]; brk_d[k] = d; k += 1
+        n_brk = k
+
+        if c[t] < o[t]:
+            last_down = t
+        elif c[t] > o[t]:
+            last_up = t
+    return out
+
+
 def breaker_blocks(open_, high, low, close, swing_l: int = 2, signal_at=None) -> np.ndarray:
-    """Tradeable BREAKER blocks (causal). An order block that price CLOSES beyond is retired as an OB and
+    """Tradeable BREAKER blocks (causal). See `_breaker_blocks_py` for the full spec — this dispatches to
+    the Numba kernel when available (bit-identical; locked by tests/test_smc_numba_parity.py) and falls
+    back to the pure-Python reference otherwise."""
+    if not _HAVE_NUMBA:
+        return _breaker_blocks_py(open_, high, low, close, swing_l, signal_at)
+    o = np.ascontiguousarray(open_, dtype=np.float64)
+    h = np.ascontiguousarray(high, dtype=np.float64)
+    l = np.ascontiguousarray(low, dtype=np.float64)
+    c = np.ascontiguousarray(close, dtype=np.float64)
+    n = len(c)
+    sh, sl = market_structure(c, swing_l)
+    use_want = signal_at is not None
+    if use_want:
+        want = np.zeros(n, bool)
+        idx = np.asarray(signal_at, dtype=np.intp)
+        want[idx[(idx >= 0) & (idx < n)]] = True
+    else:
+        want = np.zeros(1, bool)          # unused; numba needs a concrete array
+    return _breaker_kernel(o, h, l, c, np.ascontiguousarray(sh), np.ascontiguousarray(sl),
+                           int(swing_l), want, use_want)
+
+
+def _breaker_blocks_py(open_, high, low, close, swing_l: int = 2, signal_at=None) -> np.ndarray:
+    """REFERENCE implementation (pure Python) — the semantics of record.
+
+    Tradeable BREAKER blocks (causal). An order block that price CLOSES beyond is retired as an OB and
     flips role/colour into a breaker, then acts as an ENTRY zone in the FLIPPED direction (locked A9):
       • bullish OB (support) broken by a close BELOW it → BEARISH breaker (resistance / short zone);
       • bearish OB (resistance) broken by a close ABOVE it → BULLISH breaker (support / long zone).

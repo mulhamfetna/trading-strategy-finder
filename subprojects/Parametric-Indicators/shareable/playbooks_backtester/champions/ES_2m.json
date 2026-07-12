@@ -2,7 +2,7 @@
  "id": "ES_2m",
  "instrument": "ES",
  "timeframe": "2m",
- "label": "S&P 500 (ES) 2m \u00b7 box + 7-indicator gate \u00b7 cap=109/bars \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 $12,587 full / $1,648 DD / 53.6% win \u00b7 OOS-2026 +$4,558",
+ "label": "S&P 500 (ES) 2m \u00b7 box + 6-indicator gate \u00b7 max-hold 734 bars \u00b7 1-minute-frame indicators \u2014 +$12,632 full / $1,567 DD / 80.4% win \u00b7 OOS-2026 +$6,913 \u00b7 cold-start re-optimization (time-cap model)",
  "preset": {
   "indicators": [
    {
@@ -10,8 +10,8 @@
     "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 65,
-     "slow": 292
+     "fast": 43,
+     "slow": 180
     }
    },
    {
@@ -25,12 +25,12 @@
    },
    {
     "key": "macd",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 12,
-     "slow": 26,
-     "signal": 9
+     "fast": 61,
+     "slow": 133,
+     "signal": 41
     }
    },
    {
@@ -53,7 +53,7 @@
     "enabled": true,
     "mode": "confirm",
     "params": {
-     "slope": 18
+     "slope": 128
     }
    },
    {
@@ -77,13 +77,13 @@
    },
    {
     "key": "stochastic",
-    "enabled": false,
+    "enabled": true,
     "mode": "both",
     "params": {
-     "n": 14,
-     "d": 3,
-     "lower": 20,
-     "upper": 80
+     "n": 89,
+     "d": 42,
+     "lower": 39,
+     "upper": 73
     }
    },
    {
@@ -98,20 +98,20 @@
    },
    {
     "key": "bollinger",
-    "enabled": true,
+    "enabled": false,
     "mode": "veto",
     "params": {
-     "n": 91,
-     "k": 1.4
+     "n": 20,
+     "k": 2
     }
    },
    {
     "key": "adx",
-    "enabled": true,
+    "enabled": false,
     "mode": "veto",
     "params": {
-     "n": 2,
-     "threshold": 32
+     "n": 14,
+     "threshold": 25
     }
    },
    {
@@ -124,10 +124,10 @@
    },
    {
     "key": "order_block",
-    "enabled": false,
+    "enabled": true,
     "mode": "both",
     "params": {
-     "swing_l": 2
+     "swing_l": 14
     }
    },
    {
@@ -135,7 +135,7 @@
     "enabled": true,
     "mode": "both",
     "params": {
-     "lookback": 9
+     "lookback": 39
     }
    },
    {
@@ -146,27 +146,27 @@
    },
    {
     "key": "breaker",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "swing_l": 5
+     "swing_l": 2
     }
    },
    {
     "key": "cisd",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {}
    }
   ],
-  "k": 3,
-  "gate_pct": 74.2,
-  "sl_soft": 3.1,
-  "sl_hard": 8.4,
-  "tp": 5.9,
-  "dd_limit": 966,
-  "cooldown": 19,
-  "cap_1min": 109,
+  "k": 2,
+  "gate_pct": 93.06,
+  "sl_soft": 3.7799,
+  "sl_hard": 4.5826,
+  "tp": 1.4707,
+  "dd_limit": 1341.3094,
+  "cooldown": 7,
+  "cap_1min": 734,
   "cap_mode": "bars",
   "eod_margin_min": 15,
   "intracandle_veto_entry": false,

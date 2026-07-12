@@ -2,7 +2,7 @@
  "id": "HG_2m",
  "instrument": "HG",
  "timeframe": "2m",
- "label": "Copper (HG) 2m \u00b7 box + 7-indicator gate \u00b7 cap=45/bars \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 $31,787 full / $2,038 DD / 26.1% win \u00b7 OOS-2026 +$13,688",
+ "label": "Copper (HG) 2m \u00b7 box + 7-indicator gate \u00b7 max-hold 45 bars \u00b7 1-minute-frame indicators \u2014 +$31,787 full / $2,038 DD / 26.1% win \u00b7 OOS-2026 +$13,687 \u00b7 incumbent (held \u2014 beat the challenger out-of-sample)",
  "preset": {
   "indicators": [
    {

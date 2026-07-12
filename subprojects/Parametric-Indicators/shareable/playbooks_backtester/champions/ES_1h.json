@@ -2,7 +2,7 @@
  "id": "ES_1h",
  "instrument": "ES",
  "timeframe": "1h",
- "label": "S&P 500 (ES) 1h \u00b7 box + 8-indicator gate \u00b7 cap=696/bars \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 $61,618 full / $8,520 DD / 52.6% win \u00b7 OOS-2026 +$29,035",
+ "label": "S&P 500 (ES) 1h \u00b7 box + 8-indicator gate \u00b7 max-hold 696 bars \u00b7 1-minute-frame indicators \u2014 +$61,618 full / $8,520 DD / 52.6% win \u00b7 OOS-2026 +$28,193 \u00b7 incumbent (held \u2014 beat the challenger out-of-sample)",
  "preset": {
   "indicators": [
    {
