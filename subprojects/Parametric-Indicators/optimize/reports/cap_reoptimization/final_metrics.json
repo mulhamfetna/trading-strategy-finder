@@ -1,0 +1,1784 @@
+[
+ {
+  "inst": "NQ",
+  "tf": "4h",
+  "full": {
+   "boxes": {
+    "pnl": 148670.27200000026,
+    "max_dd": 12284.02399999999,
+    "win": 62.8,
+    "n_taken": 277,
+    "n_candidates": 277,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 148670.27200000026,
+    "max_dd": 12284.02399999999,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 64877.09600000009,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 64877.09600000009,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "NQ",
+  "tf": "2h",
+  "full": {
+   "boxes": {
+    "pnl": 91995.99999999984,
+    "max_dd": 16331.000000000058,
+    "win": 49.6,
+    "n_taken": 262,
+    "n_candidates": 262,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 91995.99999999984,
+    "max_dd": 16331.000000000058,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 19568.99999999994,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 19568.99999999994,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "NQ",
+  "tf": "1h",
+  "full": {
+   "boxes": {
+    "pnl": 77439.20000000377,
+    "max_dd": 9144.471999999878,
+    "win": 52.3,
+    "n_taken": 222,
+    "n_candidates": 222,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 77439.20000000377,
+    "max_dd": 9144.471999999878,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 21943.904000001057,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 21943.904000001057,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "NQ",
+  "tf": "15m",
+  "full": {
+   "boxes": {
+    "pnl": 76231.99999999582,
+    "max_dd": 8089.000000000015,
+    "win": 48.5,
+    "n_taken": 653,
+    "n_candidates": 653,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 76231.99999999582,
+    "max_dd": 8089.000000000015,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 29113.99999999856,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 29113.99999999856,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "NQ",
+  "tf": "5m",
+  "full": {
+   "boxes": {
+    "pnl": 23926.000000005733,
+    "max_dd": 4635.999999999476,
+    "win": 59.3,
+    "n_taken": 332,
+    "n_candidates": 332,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 23926.000000005733,
+    "max_dd": 4635.999999999476,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 5860.000000001455,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 5860.000000001455,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "NQ",
+  "tf": "2m",
+  "full": {
+   "boxes": {
+    "pnl": 29777.000000004846,
+    "max_dd": 3260.999999999767,
+    "win": 64.1,
+    "n_taken": 276,
+    "n_candidates": 276,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 29777.000000004846,
+    "max_dd": 3260.999999999767,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 7816.000000001368,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 7816.000000001368,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "ES",
+  "tf": "4h",
+  "full": {
+   "boxes": {
+    "pnl": 68167.92000000042,
+    "max_dd": 13551.779999999962,
+    "win": 60.7,
+    "n_taken": 145,
+    "n_candidates": 145,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 68167.92000000042,
+    "max_dd": 13551.779999999962,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 28187.96500000012,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 28187.96500000012,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "ES",
+  "tf": "2h",
+  "full": {
+   "boxes": {
+    "pnl": 75692.49999999965,
+    "max_dd": 6992.500000000029,
+    "win": 40.1,
+    "n_taken": 277,
+    "n_candidates": 277,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 75692.49999999965,
+    "max_dd": 6992.500000000029,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 18239.99999999992,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 18239.99999999992,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "ES",
+  "tf": "1h",
+  "full": {
+   "boxes": {
+    "pnl": 61617.50000000137,
+    "max_dd": 8519.999999999982,
+    "win": 52.6,
+    "n_taken": 211,
+    "n_candidates": 211,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 61617.50000000137,
+    "max_dd": 8519.999999999982,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 28192.500000000473,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 28192.500000000473,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "ES",
+  "tf": "15m",
+  "full": {
+   "boxes": {
+    "pnl": 11017.500000002201,
+    "max_dd": 759.9999999999909,
+    "win": 93.8,
+    "n_taken": 128,
+    "n_candidates": 128,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 11017.500000002201,
+    "max_dd": 759.9999999999909,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 1217.5000000004275,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 1217.5000000004275,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "ES",
+  "tf": "5m",
+  "full": {
+   "boxes": {
+    "pnl": 5597.795000001997,
+    "max_dd": 1108.3049999996547,
+    "win": 80.5,
+    "n_taken": 154,
+    "n_candidates": 154,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 5597.795000001997,
+    "max_dd": 1108.3049999996547,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 2700.520000000597,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 2700.520000000597,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "ES",
+  "tf": "2m",
+  "full": {
+   "boxes": {
+    "pnl": 12631.639999996969,
+    "max_dd": 1567.3000000001593,
+    "win": 80.4,
+    "n_taken": 873,
+    "n_candidates": 873,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 12631.639999996969,
+    "max_dd": 1567.3000000001593,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 6912.969999998859,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 6912.969999998859,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "GC",
+  "tf": "4h",
+  "full": {
+   "boxes": {
+    "pnl": 77874.66000000009,
+    "max_dd": 17163.870000000563,
+    "win": 77.3,
+    "n_taken": 251,
+    "n_candidates": 251,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 77874.66000000009,
+    "max_dd": 17163.870000000563,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 11816.169999998692,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 11816.169999998692,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "GC",
+  "tf": "2h",
+  "full": {
+   "boxes": {
+    "pnl": 81156.59999999734,
+    "max_dd": 15648.590000000331,
+    "win": 51.2,
+    "n_taken": 332,
+    "n_candidates": 332,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 81156.59999999734,
+    "max_dd": 15648.590000000331,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 22657.349999999315,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 22657.349999999315,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "GC",
+  "tf": "1h",
+  "full": {
+   "boxes": {
+    "pnl": 86969.15999999865,
+    "max_dd": 21007.140000000174,
+    "win": 45.4,
+    "n_taken": 571,
+    "n_candidates": 571,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 86969.15999999865,
+    "max_dd": 21007.140000000174,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 28740.51999999747,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 28740.51999999747,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "GC",
+  "tf": "15m",
+  "full": {
+   "boxes": {
+    "pnl": 80909.40999998542,
+    "max_dd": 10097.250000000371,
+    "win": 66.7,
+    "n_taken": 2018,
+    "n_candidates": 2018,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 80909.40999998542,
+    "max_dd": 10097.250000000371,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 37285.849999996164,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 37285.849999996164,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "GC",
+  "tf": "5m",
+  "full": {
+   "boxes": {
+    "pnl": 18126.2000000032,
+    "max_dd": 4115.399999999954,
+    "win": 64.8,
+    "n_taken": 210,
+    "n_candidates": 210,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 18126.2000000032,
+    "max_dd": 4115.399999999954,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 7150.150000001031,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 7150.150000001031,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "GC",
+  "tf": "2m",
+  "full": {
+   "boxes": {
+    "pnl": 38638.55999999996,
+    "max_dd": 4576.839999999856,
+    "win": 55.3,
+    "n_taken": 886,
+    "n_candidates": 886,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 38638.55999999996,
+    "max_dd": 4576.839999999856,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 13638.940000000412,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 13638.940000000412,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "SI",
+  "tf": "4h",
+  "full": {
+   "boxes": {
+    "pnl": 21928.00000000032,
+    "max_dd": 7451.999999999967,
+    "win": 29.5,
+    "n_taken": 139,
+    "n_candidates": 139,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 21928.00000000032,
+    "max_dd": 7451.999999999967,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 5111.000000000061,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 5111.000000000061,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "SI",
+  "tf": "2h",
+  "full": {
+   "boxes": {
+    "pnl": 31539.999999999833,
+    "max_dd": 4452.499999999872,
+    "win": 26.5,
+    "n_taken": 291,
+    "n_candidates": 291,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 31539.999999999833,
+    "max_dd": 4452.499999999872,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 5956.999999998761,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 5956.999999998761,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "SI",
+  "tf": "1h",
+  "full": {
+   "boxes": {
+    "pnl": 43984.00000000419,
+    "max_dd": 6378.999999999509,
+    "win": 28.8,
+    "n_taken": 368,
+    "n_candidates": 368,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 43984.00000000419,
+    "max_dd": 6378.999999999509,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 15511.000000001764,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 15511.000000001764,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "SI",
+  "tf": "15m",
+  "full": {
+   "boxes": {
+    "pnl": 76579.49999998434,
+    "max_dd": 10362.500000000276,
+    "win": 59.5,
+    "n_taken": 1790,
+    "n_candidates": 1790,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 76579.49999998434,
+    "max_dd": 10362.500000000276,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 18139.499999994012,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 18139.499999994012,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "SI",
+  "tf": "5m",
+  "full": {
+   "boxes": {
+    "pnl": 88295.99999998677,
+    "max_dd": 2901.0000000000146,
+    "win": 38.0,
+    "n_taken": 3055,
+    "n_candidates": 3055,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 88295.99999998677,
+    "max_dd": 2901.0000000000146,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 18662.99999999168,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 18662.99999999168,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "SI",
+  "tf": "2m",
+  "full": {
+   "boxes": {
+    "pnl": 59880.000000015396,
+    "max_dd": 2306.9999999986176,
+    "win": 36.3,
+    "n_taken": 3531,
+    "n_candidates": 3531,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 59880.000000015396,
+    "max_dd": 2306.9999999986176,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 10451.999999995962,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 10451.999999995962,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "HG",
+  "tf": "4h",
+  "full": {
+   "boxes": {
+    "pnl": 60389.99999999955,
+    "max_dd": 3464.99999999994,
+    "win": 56.2,
+    "n_taken": 242,
+    "n_candidates": 242,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 60389.99999999955,
+    "max_dd": 3464.99999999994,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 22094.99999999981,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 22094.99999999981,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "HG",
+  "tf": "2h",
+  "full": {
+   "boxes": {
+    "pnl": 44977.4999999992,
+    "max_dd": 4052.500000000058,
+    "win": 63.5,
+    "n_taken": 288,
+    "n_candidates": 288,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 44977.4999999992,
+    "max_dd": 4052.500000000058,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 16029.999999999724,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 16029.999999999724,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "HG",
+  "tf": "1h",
+  "full": {
+   "boxes": {
+    "pnl": 27157.499999999996,
+    "max_dd": 3347.49999999992,
+    "win": 69.3,
+    "n_taken": 1030,
+    "n_candidates": 1030,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 27157.499999999996,
+    "max_dd": 3347.49999999992,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 3270.000000000153,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 3270.000000000153,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "HG",
+  "tf": "15m",
+  "full": {
+   "boxes": {
+    "pnl": 41587.50000000538,
+    "max_dd": 2464.9999999995985,
+    "win": 17.1,
+    "n_taken": 2756,
+    "n_candidates": 2756,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 41587.50000000538,
+    "max_dd": 2464.9999999995985,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 11267.500000001473,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 11267.500000001473,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "HG",
+  "tf": "5m",
+  "full": {
+   "boxes": {
+    "pnl": 8977.499999999704,
+    "max_dd": 1395.0000000000737,
+    "win": 27.0,
+    "n_taken": 1591,
+    "n_candidates": 1591,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 8977.499999999704,
+    "max_dd": 1395.0000000000737,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 3072.499999999922,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 3072.499999999922,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "HG",
+  "tf": "2m",
+  "full": {
+   "boxes": {
+    "pnl": 31787.499999988635,
+    "max_dd": 2037.5000000002863,
+    "win": 26.1,
+    "n_taken": 6494,
+    "n_candidates": 6494,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 31787.499999988635,
+    "max_dd": 2037.5000000002863,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 13687.499999995984,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 13687.499999995984,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "CL",
+  "tf": "4h",
+  "full": {
+   "boxes": {
+    "pnl": 21925.100000000613,
+    "max_dd": 3486.899999999963,
+    "win": 63.3,
+    "n_taken": 384,
+    "n_candidates": 384,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 21925.100000000613,
+    "max_dd": 3486.899999999963,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 5853.500000000096,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 5853.500000000096,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "CL",
+  "tf": "2h",
+  "full": {
+   "boxes": {
+    "pnl": 10447.700000000268,
+    "max_dd": 1098.299999999988,
+    "win": 60.1,
+    "n_taken": 391,
+    "n_candidates": 391,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 10447.700000000268,
+    "max_dd": 1098.299999999988,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 3835.2999999999965,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 3835.2999999999965,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "CL",
+  "tf": "1h",
+  "full": {
+   "boxes": {
+    "pnl": 10546.100000000883,
+    "max_dd": 1644.5999999999758,
+    "win": 46.1,
+    "n_taken": 562,
+    "n_candidates": 562,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 10546.100000000883,
+    "max_dd": 1644.5999999999758,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 4809.300000000236,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 4809.300000000236,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "CL",
+  "tf": "15m",
+  "full": {
+   "boxes": {
+    "pnl": 15851.999999997717,
+    "max_dd": 1021.2000000001481,
+    "win": 29.4,
+    "n_taken": 2011,
+    "n_candidates": 2011,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 15851.999999997717,
+    "max_dd": 1021.2000000001481,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 5763.599999999315,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 5763.599999999315,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "CL",
+  "tf": "5m",
+  "full": {
+   "boxes": {
+    "pnl": 13691.69999999594,
+    "max_dd": 885.300000000495,
+    "win": 66.7,
+    "n_taken": 2249,
+    "n_candidates": 2249,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 13691.69999999594,
+    "max_dd": 885.300000000495,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 3139.199999999498,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 3139.199999999498,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "CL",
+  "tf": "2m",
+  "full": {
+   "boxes": {
+    "pnl": 23989.899999996014,
+    "max_dd": 730.2000000001863,
+    "win": 39.7,
+    "n_taken": 4655,
+    "n_candidates": 4655,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 23989.899999996014,
+    "max_dd": 730.2000000001863,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 8008.199999998979,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 8008.199999998979,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "NG",
+  "tf": "4h",
+  "full": {
+   "boxes": {
+    "pnl": 21224.00000000083,
+    "max_dd": 2575.9999999999554,
+    "win": 56.1,
+    "n_taken": 604,
+    "n_candidates": 604,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 21224.00000000083,
+    "max_dd": 2575.9999999999554,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 6910.000000000324,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 6910.000000000324,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "NG",
+  "tf": "2h",
+  "full": {
+   "boxes": {
+    "pnl": 17313.999999999818,
+    "max_dd": 1739.0000000000064,
+    "win": 41.5,
+    "n_taken": 675,
+    "n_candidates": 675,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 17313.999999999818,
+    "max_dd": 1739.0000000000064,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 6112.999999999782,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 6112.999999999782,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "NG",
+  "tf": "1h",
+  "full": {
+   "boxes": {
+    "pnl": 12085.999999999918,
+    "max_dd": 1132.0000000000136,
+    "win": 59.8,
+    "n_taken": 482,
+    "n_candidates": 482,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 12085.999999999918,
+    "max_dd": 1132.0000000000136,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 6182.99999999993,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 6182.99999999993,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "NG",
+  "tf": "15m",
+  "full": {
+   "boxes": {
+    "pnl": -1634.9999999989736,
+    "max_dd": 3059.9999999996758,
+    "win": 46.7,
+    "n_taken": 1665,
+    "n_candidates": 1665,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": -1634.9999999989736,
+    "max_dd": 3059.9999999996758,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": -2774.9999999994875,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": -2774.9999999994875,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "NG",
+  "tf": "5m",
+  "full": {
+   "boxes": {
+    "pnl": 27990.99999999878,
+    "max_dd": 366.0,
+    "win": 30.4,
+    "n_taken": 3859,
+    "n_candidates": 3859,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 27990.99999999878,
+    "max_dd": 366.0,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 7937.999999999493,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 7937.999999999493,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "NG",
+  "tf": "2m",
+  "full": {
+   "boxes": {
+    "pnl": 30293.999999995518,
+    "max_dd": 230.00000000001273,
+    "win": 40.2,
+    "n_taken": 5929,
+    "n_candidates": 5929,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 30293.999999995518,
+    "max_dd": 230.00000000001273,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 9757.999999997961,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 9757.999999997961,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "RTY",
+  "tf": "4h",
+  "full": {
+   "boxes": {
+    "pnl": 36687.7900000002,
+    "max_dd": 9091.94000000002,
+    "win": 48.8,
+    "n_taken": 297,
+    "n_candidates": 297,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 36687.7900000002,
+    "max_dd": 9091.94000000002,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 23872.20999999997,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 23872.20999999997,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "RTY",
+  "tf": "2h",
+  "full": {
+   "boxes": {
+    "pnl": 18845.760000001465,
+    "max_dd": 1821.579999999949,
+    "win": 83.8,
+    "n_taken": 340,
+    "n_candidates": 340,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 18845.760000001465,
+    "max_dd": 1821.579999999949,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 7416.665000000536,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 7416.665000000536,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "RTY",
+  "tf": "1h",
+  "full": {
+   "boxes": {
+    "pnl": 16032.105000000673,
+    "max_dd": 2927.544999999918,
+    "win": 55.0,
+    "n_taken": 180,
+    "n_candidates": 180,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 16032.105000000673,
+    "max_dd": 2927.544999999918,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 6539.1250000003765,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 6539.1250000003765,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "RTY",
+  "tf": "15m",
+  "full": {
+   "boxes": {
+    "pnl": 10697.480000000633,
+    "max_dd": 1350.7649999999103,
+    "win": 53.6,
+    "n_taken": 112,
+    "n_candidates": 112,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 10697.480000000633,
+    "max_dd": 1350.7649999999103,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 3899.635000000171,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 3899.635000000171,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "RTY",
+  "tf": "5m",
+  "full": {
+   "boxes": {
+    "pnl": 21200.82999999464,
+    "max_dd": 2144.735000000306,
+    "win": 59.8,
+    "n_taken": 1416,
+    "n_candidates": 1416,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 21200.82999999464,
+    "max_dd": 2144.735000000306,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 6483.92499999818,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 6483.92499999818,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "RTY",
+  "tf": "2m",
+  "full": {
+   "boxes": {
+    "pnl": 3648.93499999979,
+    "max_dd": 830.6499999999915,
+    "win": 61.4,
+    "n_taken": 249,
+    "n_candidates": 249,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 3648.93499999979,
+    "max_dd": 830.6499999999915,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 1627.3549999999204,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 1627.3549999999204,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "YM",
+  "tf": "4h",
+  "full": {
+   "boxes": {
+    "pnl": 51916.73600000013,
+    "max_dd": 9125.684000000037,
+    "win": 56.4,
+    "n_taken": 188,
+    "n_candidates": 188,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 51916.73600000013,
+    "max_dd": 9125.684000000037,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 34920.55600000014,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 34920.55600000014,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "YM",
+  "tf": "2h",
+  "full": {
+   "boxes": {
+    "pnl": 20573.313500000186,
+    "max_dd": 1434.0400000000227,
+    "win": 77.8,
+    "n_taken": 36,
+    "n_candidates": 36,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 20573.313500000186,
+    "max_dd": 1434.0400000000227,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 11110.644000000102,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 11110.644000000102,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "YM",
+  "tf": "1h",
+  "full": {
+   "boxes": {
+    "pnl": 47341.16399999966,
+    "max_dd": 4490.381500000003,
+    "win": 49.5,
+    "n_taken": 297,
+    "n_candidates": 297,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 47341.16399999966,
+    "max_dd": 4490.381500000003,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 12526.64749999989,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 12526.64749999989,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "YM",
+  "tf": "15m",
+  "full": {
+   "boxes": {
+    "pnl": 16406.792000001078,
+    "max_dd": 1508.8274999999703,
+    "win": 67.8,
+    "n_taken": 230,
+    "n_candidates": 230,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 16406.792000001078,
+    "max_dd": 1508.8274999999703,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 3511.2570000003325,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 3511.2570000003325,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "YM",
+  "tf": "5m",
+  "full": {
+   "boxes": {
+    "pnl": 31861.8669999914,
+    "max_dd": 5159.939000001068,
+    "win": 60.5,
+    "n_taken": 1424,
+    "n_candidates": 1424,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 31861.8669999914,
+    "max_dd": 5159.939000001068,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 8732.281999996812,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 8732.281999996812,
+    "n_taken": 0
+   }
+  }
+ },
+ {
+  "inst": "YM",
+  "tf": "2m",
+  "full": {
+   "boxes": {
+    "pnl": 28716.014499989687,
+    "max_dd": 2383.3645000001707,
+    "win": 59.0,
+    "n_taken": 1094,
+    "n_candidates": 1094,
+    "pf": null,
+    "payoff": null,
+    "exposure": 100.0,
+    "n_locks": 0
+   },
+   "summary": {
+    "pnl": 28716.014499989687,
+    "max_dd": 2383.3645000001707,
+    "avg_win": 0,
+    "avg_loss": 0
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 10533.404999996128,
+    "n_taken": 0
+   },
+   "summary": {
+    "pnl": 10533.404999996128,
+    "n_taken": 0
+   }
+  }
+ }
+]

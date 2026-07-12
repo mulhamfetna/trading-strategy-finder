@@ -2,7 +2,7 @@
  "id": "RTY_1h",
  "instrument": "RTY",
  "timeframe": "1h",
- "label": "Russell 2000 (RTY) 1h \u00b7 box + 6-indicator gate \u00b7 cap=897/bars \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 $16,032 full / $2,928 DD / 55.0% win \u00b7 OOS-2026 +$6,539",
+ "label": "Russell 2000 (RTY) 1h \u00b7 box + 6-indicator gate \u00b7 max-hold 897 bars \u00b7 1-minute-frame indicators \u2014 +$16,032 full / $2,928 DD / 55.0% win \u00b7 OOS-2026 +$6,539 \u00b7 incumbent (held \u2014 beat the challenger out-of-sample)",
  "preset": {
   "indicators": [
    {

@@ -2,40 +2,40 @@
  "id": "CL_2m",
  "instrument": "CL",
  "timeframe": "2m",
- "label": "Crude Oil (CL) 2m \u00b7 box + 5-indicator gate \u00b7 cap=467/bars \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 +$17,775 full / $911 DD / 45.6% win \u00b7 OOS-2026 +$4,707",
+ "label": "Crude Oil (CL) 2m \u00b7 box + 0-indicator gate \u00b7 max-hold 412 bars OR end-of-day \u2014 whichever first \u00b7 1-minute-frame indicators \u2014 +$23,990 full / $730 DD / 39.7% win \u00b7 OOS-2026 +$8,008 \u00b7 cold-start re-optimization (time-cap model)",
  "preset": {
   "indicators": [
    {
     "key": "ema_trend",
-    "enabled": true,
+    "enabled": false,
     "mode": "confirm",
     "params": {
-     "fast": 230,
-     "slow": 12
+     "fast": 20,
+     "slow": 50
     }
    },
    {
     "key": "sma_trend",
-    "enabled": true,
+    "enabled": false,
     "mode": "confirm",
     "params": {
-     "fast": 25,
-     "slow": 355
+     "fast": 50,
+     "slow": 200
     }
    },
    {
     "key": "macd",
-    "enabled": true,
+    "enabled": false,
     "mode": "confirm",
     "params": {
-     "fast": 25,
-     "slow": 133,
-     "signal": 96
+     "fast": 12,
+     "slow": 26,
+     "signal": 9
     }
    },
    {
     "key": "vwap",
-    "enabled": true,
+    "enabled": false,
     "mode": "confirm",
     "params": {}
    },
@@ -154,20 +154,20 @@
    },
    {
     "key": "cisd",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {}
    }
   ],
-  "k": 1,
-  "gate_pct": 91.11,
-  "sl_soft": 0.0303,
-  "sl_hard": 0.0408,
-  "tp": 0.0594,
-  "dd_limit": 0.4723,
-  "cooldown": 1,
-  "cap_1min": 467,
-  "cap_mode": "bars",
+  "k": 2,
+  "gate_pct": 92.41,
+  "sl_soft": 0.0304,
+  "sl_hard": 0.0305,
+  "tp": 0.0596,
+  "dd_limit": 6.5702,
+  "cooldown": 0,
+  "cap_1min": 412,
+  "cap_mode": "both",
   "eod_margin_min": 15,
   "intracandle_veto_entry": false,
   "intracandle_max_wait": 240,

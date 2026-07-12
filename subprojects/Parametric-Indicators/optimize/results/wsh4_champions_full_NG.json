@@ -1,43 +1,41 @@
 {
  "4h": {
-  "median_pnl": 5739.8,
-  "full_pnl": 17120.2,
-  "full_dd": 2078.2,
-  "win": 52.9,
+  "median_pnl": 6691.3,
+  "full_pnl": 25128.2,
+  "full_dd": 2564.1,
+  "win": 59.8,
   "box": {
-   "sl_soft": 0.0128,
-   "sl_hard": 0.0331,
-   "tp": 0.0264,
-   "gate_pct": 94.04,
-   "dd_limit": 0.5523,
+   "sl_soft": 0.0205,
+   "sl_hard": 0.022,
+   "tp": 0.0228,
+   "gate_pct": 94.38,
+   "dd_limit": 0.2973,
    "cooldown": 1,
    "flip": true,
-   "k": 4,
-   "cap_1min": 0,
-   "cap_mode": "bars"
+   "k": 3,
+   "cap_1min": 1031,
+   "cap_mode": "both"
   },
   "indicators": {
    "cci": {
-    "n": 158,
-    "threshold": 95
+    "n": 149,
+    "threshold": 20
    },
    "cisd": {},
    "keltner": {
-    "n": 21,
-    "m": 3.3
+    "n": 163,
+    "m": 2.7
    },
    "macd": {
-    "fast": 54,
-    "slow": 23,
-    "signal": 25
+    "fast": 50,
+    "slow": 122,
+    "signal": 70
+   },
+   "obv": {
+    "slope": 95
    },
    "order_block": {
     "swing_l": 20
-   },
-   "rsi": {
-    "n": 90,
-    "lower": 4,
-    "upper": 72
    },
    "vwap": {}
   }
@@ -99,8 +97,7 @@
    "cooldown": 0,
    "flip": true,
    "k": 4,
-   "cap_1min": 0,
-   "cap_mode": "bars"
+   "cap_1min": 1428
   },
   "indicators": {
    "bollinger": {
@@ -155,8 +152,7 @@
    "cooldown": 1,
    "flip": true,
    "k": 4,
-   "cap_1min": 0,
-   "cap_mode": "bars"
+   "cap_1min": 77
   },
   "indicators": {
    "cisd": {},
@@ -201,8 +197,7 @@
    "cooldown": 0,
    "flip": true,
    "k": 2,
-   "cap_1min": 0,
-   "cap_mode": "bars"
+   "cap_1min": 939
   },
   "indicators": {
    "bollinger": {
@@ -246,8 +241,7 @@
    "cooldown": 0,
    "flip": true,
    "k": 1,
-   "cap_1min": 0,
-   "cap_mode": "bars"
+   "cap_1min": 1128
   },
   "indicators": {
    "cisd": {},

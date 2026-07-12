@@ -2,7 +2,7 @@
  "id": "NG_15m",
  "instrument": "NG",
  "timeframe": "15m",
- "label": "Natural Gas (NG) 15m \u00b7 box + 7-indicator gate \u00b7 cap=77/bars \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 -$1,635 full / $3,060 DD / 46.7% win \u00b7 OOS-2026 -$2,700  \u26a0\ufe0f DO NOT TRADE \u2014 loses money in-sample AND out-of-sample",
+ "label": "Natural Gas (NG) 15m \u00b7 box + 7-indicator gate \u00b7 max-hold 77 bars \u00b7 1-minute-frame indicators \u2014 -$1,635 full / $3,060 DD / 46.7% win \u00b7 OOS-2026 -$2,775 \u00b7 incumbent (held \u2014 beat the challenger out-of-sample)  ** DO NOT TRADE \u2014 loses money in-sample AND out-of-sample",
  "preset": {
   "indicators": [
    {

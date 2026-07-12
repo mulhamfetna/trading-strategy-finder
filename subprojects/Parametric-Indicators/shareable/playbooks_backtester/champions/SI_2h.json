@@ -2,7 +2,7 @@
  "id": "SI_2h",
  "instrument": "SI",
  "timeframe": "2h",
- "label": "Silver (SI) 2h \u00b7 box + 6-indicator gate \u00b7 cap=921/bars \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 $45,451 full / $10,789 DD / 58.8% win \u00b7 OOS-2026 +$394",
+ "label": "Silver (SI) 2h \u00b7 box + 7-indicator gate \u00b7 max-hold 660 bars \u00b7 1-minute-frame indicators \u2014 +$31,540 full / $4,452 DD / 26.5% win \u00b7 OOS-2026 +$5,957 \u00b7 cold-start re-optimization (time-cap model)",
  "preset": {
   "indicators": [
    {
@@ -16,21 +16,21 @@
    },
    {
     "key": "sma_trend",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 50,
-     "slow": 200
+     "fast": 188,
+     "slow": 164
     }
    },
    {
     "key": "macd",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 12,
-     "slow": 26,
-     "signal": 9
+     "fast": 14,
+     "slow": 61,
+     "signal": 62
     }
    },
    {
@@ -53,7 +53,7 @@
     "enabled": true,
     "mode": "confirm",
     "params": {
-     "slope": 190
+     "slope": 12
     }
    },
    {
@@ -67,12 +67,12 @@
    },
    {
     "key": "rsi",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "n": 64,
-     "lower": 25,
-     "upper": 95
+     "n": 14,
+     "lower": 30,
+     "upper": 70
     }
    },
    {
@@ -88,21 +88,21 @@
    },
    {
     "key": "mfi",
-    "enabled": false,
+    "enabled": true,
     "mode": "both",
     "params": {
-     "n": 14,
-     "lower": 20,
-     "upper": 80
+     "n": 49,
+     "lower": 48,
+     "upper": 84
     }
    },
    {
     "key": "bollinger",
-    "enabled": true,
+    "enabled": false,
     "mode": "veto",
     "params": {
-     "n": 18,
-     "k": 3
+     "n": 20,
+     "k": 2
     }
    },
    {
@@ -132,10 +132,10 @@
    },
    {
     "key": "fvg",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "lookback": 35
+     "lookback": 3
     }
    },
    {
@@ -146,10 +146,10 @@
    },
    {
     "key": "breaker",
-    "enabled": false,
+    "enabled": true,
     "mode": "both",
     "params": {
-     "swing_l": 2
+     "swing_l": 15
     }
    },
    {
@@ -159,14 +159,14 @@
     "params": {}
    }
   ],
-  "k": 4,
-  "gate_pct": 98.58,
-  "sl_soft": 0.1856,
-  "sl_hard": 0.2497,
-  "tp": 0.247,
-  "dd_limit": 9.2408,
-  "cooldown": 0,
-  "cap_1min": 921,
+  "k": 1,
+  "gate_pct": 98.79,
+  "sl_soft": 0.0539,
+  "sl_hard": 0.0614,
+  "tp": 0.2625,
+  "dd_limit": 4.647,
+  "cooldown": 1,
+  "cap_1min": 660,
   "cap_mode": "bars",
   "eod_margin_min": 15,
   "intracandle_veto_entry": false,

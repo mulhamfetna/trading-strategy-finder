@@ -2,7 +2,7 @@
  "id": "ES_15m",
  "instrument": "ES",
  "timeframe": "15m",
- "label": "S&P 500 (ES) 15m \u00b7 box + 9-indicator gate \u00b7 cap=1300/bars \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 $11,018 full / $760 DD / 93.8% win \u00b7 OOS-2026 +$1,218",
+ "label": "S&P 500 (ES) 15m \u00b7 box + 9-indicator gate \u00b7 max-hold 1300 bars \u00b7 1-minute-frame indicators \u2014 +$11,018 full / $760 DD / 93.8% win \u00b7 OOS-2026 +$1,218 \u00b7 incumbent (held \u2014 beat the challenger out-of-sample)",
  "preset": {
   "indicators": [
    {

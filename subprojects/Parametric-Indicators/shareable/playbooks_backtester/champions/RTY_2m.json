@@ -2,35 +2,35 @@
  "id": "RTY_2m",
  "instrument": "RTY",
  "timeframe": "2m",
- "label": "Russell 2000 (RTY) 2m \u00b7 box + 6-indicator gate \u00b7 cap=597/bars \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 $2,082 full / $457 DD / 66.7% win \u00b7 OOS-2026 +$1,546",
+ "label": "Russell 2000 (RTY) 2m \u00b7 box + 10-indicator gate \u00b7 max-hold 472 bars \u00b7 1-minute-frame indicators \u2014 +$3,649 full / $831 DD / 61.4% win \u00b7 OOS-2026 +$1,627 \u00b7 cold-start re-optimization (time-cap model)",
  "preset": {
   "indicators": [
    {
     "key": "ema_trend",
-    "enabled": true,
+    "enabled": false,
     "mode": "confirm",
     "params": {
-     "fast": 390,
-     "slow": 383
+     "fast": 20,
+     "slow": 50
     }
    },
    {
     "key": "sma_trend",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 50,
-     "slow": 200
+     "fast": 317,
+     "slow": 344
     }
    },
    {
     "key": "macd",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 12,
-     "slow": 26,
-     "signal": 9
+     "fast": 84,
+     "slow": 129,
+     "signal": 54
     }
    },
    {
@@ -41,19 +41,19 @@
    },
    {
     "key": "keltner",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "n": 20,
-     "m": 2
+     "n": 157,
+     "m": 3.1
     }
    },
    {
     "key": "obv",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "slope": 20
+     "slope": 93
     }
    },
    {
@@ -61,8 +61,8 @@
     "enabled": true,
     "mode": "both",
     "params": {
-     "n": 25,
-     "threshold": 220
+     "n": 102,
+     "threshold": 65
     }
    },
    {
@@ -70,9 +70,9 @@
     "enabled": true,
     "mode": "both",
     "params": {
-     "n": 32,
-     "lower": 1,
-     "upper": 69
+     "n": 10,
+     "lower": 28,
+     "upper": 88
     }
    },
    {
@@ -116,40 +116,40 @@
    },
    {
     "key": "structure_trend",
-    "enabled": false,
+    "enabled": true,
     "mode": "both",
     "params": {
-     "swing_l": 2
+     "swing_l": 18
     }
    },
    {
     "key": "order_block",
-    "enabled": false,
+    "enabled": true,
     "mode": "both",
     "params": {
-     "swing_l": 2
+     "swing_l": 14
     }
    },
    {
     "key": "fvg",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "lookback": 15
+     "lookback": 3
     }
    },
    {
     "key": "ifvg",
-    "enabled": false,
+    "enabled": true,
     "mode": "both",
     "params": {}
    },
    {
     "key": "breaker",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "swing_l": 1
+     "swing_l": 2
     }
    },
    {
@@ -159,14 +159,14 @@
     "params": {}
    }
   ],
-  "k": 1,
-  "gate_pct": 40.34,
-  "sl_soft": 1.2263,
-  "sl_hard": 3.2276,
-  "tp": 1.4643,
-  "dd_limit": 361.36,
-  "cooldown": 25,
-  "cap_1min": 597,
+  "k": 3,
+  "gate_pct": 62.91,
+  "sl_soft": 1.1397,
+  "sl_hard": 2.4714,
+  "tp": 1.5753,
+  "dd_limit": 350.696,
+  "cooldown": 1,
+  "cap_1min": 472,
   "cap_mode": "bars",
   "eod_margin_min": 15,
   "intracandle_veto_entry": false,

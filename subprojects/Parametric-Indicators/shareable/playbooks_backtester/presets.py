@@ -172,15 +172,18 @@ def _preset(timeframe: str, box: dict, inds_on: dict) -> dict:
     if any(box.get(k) is not None for k in _SPLIT):
         for k in _SPLIT:
             p[k] = box.get(k)
-    # Optional exit cap (cap_1min bars cap / cap_mode). Absent ⇒ omitted ⇒ no cap (existing presets
-    # unchanged). A bars cap sets cap_mode='bars' so the dashboard applies it; 'eod' carries the margin.
+    # Optional exit caps. Absent ⇒ omitted ⇒ no cap (existing presets unchanged).
+    #   bars → cap_1min (how many traded 1-min bars)
+    #   eod  → end-of-trading-day exit, carries eod_margin_min
+    #   both → BOTH armed ⇒ exit at whichever lands first (needs cap_1min AND the margin)
+    # A bare cap_1min with no cap_mode is the legacy bars cap.
     if box.get("cap_mode"):
         p["cap_mode"] = box["cap_mode"]
-        if box["cap_mode"] == "eod":
+        if box["cap_mode"] in ("eod", "both"):
             p["eod_margin_min"] = int(box.get("eod_margin_min", 15) or 15)
     if box.get("cap_1min"):
         p["cap_1min"] = int(box["cap_1min"])
-        p.setdefault("cap_mode", "bars")
+        p.setdefault("cap_mode", "bars")     # legacy: bare cap_1min ⇒ bars (never downgrades an explicit mode)
     return p
 
 

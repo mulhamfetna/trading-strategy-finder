@@ -2,7 +2,7 @@
  "id": "RTY_15m",
  "instrument": "RTY",
  "timeframe": "15m",
- "label": "Russell 2000 (RTY) 15m \u00b7 box + 11-indicator gate \u00b7 cap=45/bars \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 $3,980 full / $590 DD / 80.6% win \u00b7 OOS-2026 +$1,090",
+ "label": "Russell 2000 (RTY) 15m \u00b7 box + 7-indicator gate \u00b7 no time cap \u00b7 1-minute-frame indicators \u2014 +$10,697 full / $1,351 DD / 53.6% win \u00b7 OOS-2026 +$3,900 \u00b7 cold-start re-optimization (time-cap model)",
  "preset": {
   "indicators": [
    {
@@ -16,11 +16,11 @@
    },
    {
     "key": "sma_trend",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 50,
-     "slow": 200
+     "fast": 98,
+     "slow": 70
     }
    },
    {
@@ -29,8 +29,8 @@
     "mode": "confirm",
     "params": {
      "fast": 27,
-     "slow": 23,
-     "signal": 6
+     "slow": 42,
+     "signal": 60
     }
    },
    {
@@ -44,35 +44,35 @@
     "enabled": true,
     "mode": "confirm",
     "params": {
-     "n": 59,
-     "m": 3.9
+     "n": 103,
+     "m": 5
     }
    },
    {
     "key": "obv",
-    "enabled": true,
+    "enabled": false,
     "mode": "confirm",
     "params": {
-     "slope": 103
+     "slope": 20
     }
    },
    {
     "key": "cci",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "n": 142,
-     "threshold": 145
+     "n": 20,
+     "threshold": 100
     }
    },
    {
     "key": "rsi",
-    "enabled": false,
+    "enabled": true,
     "mode": "both",
     "params": {
-     "n": 14,
-     "lower": 30,
-     "upper": 70
+     "n": 90,
+     "lower": 17,
+     "upper": 54
     }
    },
    {
@@ -80,38 +80,38 @@
     "enabled": true,
     "mode": "both",
     "params": {
-     "n": 35,
-     "d": 9,
-     "lower": 14,
-     "upper": 85
+     "n": 31,
+     "d": 28,
+     "lower": 12,
+     "upper": 62
     }
    },
    {
     "key": "mfi",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "n": 85,
-     "lower": 4,
-     "upper": 84
+     "n": 14,
+     "lower": 20,
+     "upper": 80
     }
    },
    {
     "key": "bollinger",
-    "enabled": true,
+    "enabled": false,
     "mode": "veto",
     "params": {
-     "n": 27,
+     "n": 20,
      "k": 2
     }
    },
    {
     "key": "adx",
-    "enabled": true,
+    "enabled": false,
     "mode": "veto",
     "params": {
-     "n": 25,
-     "threshold": 15
+     "n": 14,
+     "threshold": 25
     }
    },
    {
@@ -127,7 +127,7 @@
     "enabled": true,
     "mode": "both",
     "params": {
-     "swing_l": 10
+     "swing_l": 19
     }
    },
    {
@@ -146,10 +146,10 @@
    },
    {
     "key": "breaker",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "swing_l": 7
+     "swing_l": 2
     }
    },
    {
@@ -159,15 +159,15 @@
     "params": {}
    }
   ],
-  "k": 1,
-  "gate_pct": 80.88,
-  "sl_soft": 3.7535,
-  "sl_hard": 7.8095,
-  "tp": 2.2998,
-  "dd_limit": 349.3896,
-  "cooldown": 10,
-  "cap_1min": 45,
-  "cap_mode": "bars",
+  "k": 4,
+  "gate_pct": 78.3,
+  "sl_soft": 2.99,
+  "sl_hard": 3.0017,
+  "tp": 6.1673,
+  "dd_limit": 476.9774,
+  "cooldown": 1,
+  "cap_1min": 0,
+  "cap_mode": "none",
   "eod_margin_min": 15,
   "intracandle_veto_entry": false,
   "intracandle_max_wait": 240,

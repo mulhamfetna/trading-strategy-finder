@@ -94,8 +94,10 @@ class SimpleStrategyParams:
     short_sl_hard_points: Optional[float] = None
     short_tp_hard_points: Optional[float] = None
     cap_1min: int = 0   # max hold in 1-min bars; 0 = off. Force-close at the Nth bar's close as TIME_CAP.
-    cap_mode: str = "none"        # none | bars | eod. 'eod' = end-of-trading-day exit (END_OF_DAY).
-    eod_margin_min: int = 15      # minutes before the 17:00 close to exit on FULL days (eod mode).
+    cap_mode: str = "none"        # none | bars | eod | both. 'eod' = end-of-trading-day exit (END_OF_DAY);
+    #                               'both' = bars AND eod armed together ⇒ exit at whichever lands FIRST
+    #                               (same-bar tie ⇒ TIME_CAP, since the bar cap is checked first).
+    eod_margin_min: int = 15      # minutes before the 17:00 close to exit on FULL days (eod/both mode).
     # Intra-candle entry for vetoed signals (Phase 1). OFF => byte-identical (golden-locked).
     intracandle_veto_entry: bool = False   # arm a vetoed (vol-passed) signal, enter mid-candle when the gate re-opens
     intracandle_max_wait:   int  = 240     # max 1-min bars to wait inside the candle (N); 240 ~= one 4h candle
@@ -260,7 +262,7 @@ class SimpleStrategy:
             mh_arr = df_1min['High'].to_numpy(dtype=float)
             ml_arr = df_1min['Low'].to_numpy(dtype=float)
             mc_arr = df_1min['Close'].to_numpy(dtype=float)
-            if self.params.cap_mode == "eod":
+            if self.params.cap_mode in ("eod", "both"):
                 from optimize.trading_days import eod_targets
                 eod_target_arr, session_last_arr = eod_targets(md_arr, self.params.eod_margin_min)
             else:
@@ -347,11 +349,17 @@ class SimpleStrategy:
                             exit_reason, fill = 'STOP_LOSS_SOFT', m_close
 
                 # time cap (max hold): lowest priority — only if no SL/TP/soft fired this bar.
-                if exit_reason is None and cap > 0 and bars_held >= cap:
+                # Armed for cap_mode none (bare cap_1min, back-compat) / bars / both — NOT for eod-only,
+                # where the bar cap must stay silent even if cap_1min carries a stale value (fast_engine
+                # has always ignored it there; this makes the exact engine agree).
+                if (exit_reason is None and cap > 0 and bars_held >= cap
+                        and self.params.cap_mode != "eod"):
                     exit_reason, fill, resets_counter = 'TIME_CAP', m_close, True
 
                 # end-of-day cap: same lowest priority — force-close at the session's EOD target bar.
-                if (exit_reason is None and self.params.cap_mode == "eod"
+                # Under "both" this runs only when the bar cap did not already fire this bar ⇒ a same-bar
+                # tie resolves to TIME_CAP (fast_engine mirrors this by ordering t_bars before t_eod).
+                if (exit_reason is None and self.params.cap_mode in ("eod", "both")
                         and eod_target_arr is not None):
                     e0 = open_trade['entry_e']
                     eg = int(eod_target_arr[e0])

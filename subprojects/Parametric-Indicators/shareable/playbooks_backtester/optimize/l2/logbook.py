@@ -197,7 +197,7 @@ def run_causal(l1_params: dict, l2_params: dict, tf: str = "4h", instrument: str
         return _run_causal_independent(l1p, l2p, tf, instrument, l2_tf or tf)
     # frozen default → cached oracle; else custom L1 (memoised by hash inside run_l1_cached). The frozen
     # disk-cached run exists only for NQ-4h; other TFs/instruments are param dicts → always pass params.
-    use_frozen = (instrument == "NQ" and tf == "4h" and l1p == payload.l1_default_params(tf))
+    use_frozen = payload.is_frozen_lean(l1p, tf, instrument)
     l1 = (payload.run_l1_cached(tf, instrument=instrument) if use_frozen
           else payload.run_l1_cached(tf, params=l1p, instrument=instrument))
     res = engine.run_l2(l1, l2p)                                   # l1_priority + force-close (the oracle)

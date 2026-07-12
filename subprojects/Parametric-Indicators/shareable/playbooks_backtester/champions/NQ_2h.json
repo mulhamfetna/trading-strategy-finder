@@ -2,7 +2,7 @@
  "id": "NQ_2h",
  "instrument": "NQ",
  "timeframe": "2h",
- "label": "Nasdaq-100 (NQ) 2h \u00b7 box + 8-indicator gate \u00b7 cap=0 off \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 $91,996 full / $16,331 DD / 49.6% win \u00b7 OOS-2026 +$19,569",
+ "label": "Nasdaq-100 (NQ) 2h \u00b7 box + 8-indicator gate \u00b7 no time cap \u00b7 1-minute-frame indicators \u2014 +$91,996 full / $16,331 DD / 49.6% win \u00b7 OOS-2026 +$19,569 \u00b7 incumbent (held \u2014 beat the challenger out-of-sample)",
  "preset": {
   "indicators": [
    {

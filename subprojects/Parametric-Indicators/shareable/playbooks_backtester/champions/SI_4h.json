@@ -2,7 +2,7 @@
  "id": "SI_4h",
  "instrument": "SI",
  "timeframe": "4h",
- "label": "Silver (SI) 4h \u00b7 box + 6-indicator gate \u00b7 cap=1377/bars \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 $21,928 full / $7,452 DD / 29.5% win \u00b7 OOS-2026 +$6,935",
+ "label": "Silver (SI) 4h \u00b7 box + 6-indicator gate \u00b7 max-hold 1377 bars \u00b7 1-minute-frame indicators \u2014 +$21,928 full / $7,452 DD / 29.5% win \u00b7 OOS-2026 +$5,111 \u00b7 incumbent (held \u2014 beat the challenger out-of-sample)",
  "preset": {
   "indicators": [
    {

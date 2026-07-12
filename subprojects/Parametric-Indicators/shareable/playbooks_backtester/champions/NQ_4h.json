@@ -2,7 +2,7 @@
  "id": "NQ_4h",
  "instrument": "NQ",
  "timeframe": "4h",
- "label": "Nasdaq-100 (NQ) 4h \u00b7 box + 3-indicator gate \u00b7 cap=0 off \u00b7 1-minute-frame indicators (ind_1min=true) \u2014 $149,989 full / $15,491 DD / 67.8% win \u00b7 OOS-2026 +$58,029",
+ "label": "Nasdaq-100 (NQ) 4h \u00b7 box + 8-indicator gate \u00b7 max-hold 451 bars \u00b7 1-minute-frame indicators \u2014 +$148,670 full / $12,284 DD / 62.8% win \u00b7 OOS-2026 +$64,877 \u00b7 cold-start re-optimization (time-cap model)",
  "preset": {
   "indicators": [
    {
@@ -25,44 +25,44 @@
    },
    {
     "key": "macd",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "fast": 12,
-     "slow": 26,
-     "signal": 9
+     "fast": 58,
+     "slow": 167,
+     "signal": 30
     }
    },
    {
     "key": "vwap",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {}
    },
    {
     "key": "keltner",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "n": 20,
-     "m": 2
+     "n": 84,
+     "m": 2.7
     }
    },
    {
     "key": "obv",
-    "enabled": false,
+    "enabled": true,
     "mode": "confirm",
     "params": {
-     "slope": 20
+     "slope": 120
     }
    },
    {
     "key": "cci",
-    "enabled": true,
+    "enabled": false,
     "mode": "both",
     "params": {
-     "n": 138,
-     "threshold": 35
+     "n": 20,
+     "threshold": 100
     }
    },
    {
@@ -88,21 +88,21 @@
    },
    {
     "key": "mfi",
-    "enabled": false,
+    "enabled": true,
     "mode": "both",
     "params": {
-     "n": 14,
-     "lower": 20,
-     "upper": 80
+     "n": 64,
+     "lower": 4,
+     "upper": 92
     }
    },
    {
     "key": "bollinger",
-    "enabled": false,
+    "enabled": true,
     "mode": "veto",
     "params": {
-     "n": 20,
-     "k": 2
+     "n": 132,
+     "k": 4.4
     }
    },
    {
@@ -127,7 +127,7 @@
     "enabled": true,
     "mode": "both",
     "params": {
-     "swing_l": 10
+     "swing_l": 12
     }
    },
    {
@@ -160,14 +160,14 @@
    }
   ],
   "k": 1,
-  "gate_pct": 86.9,
-  "sl_soft": 149.8,
-  "sl_hard": 167.1,
-  "tp": 120.2,
-  "dd_limit": 4747,
-  "cooldown": 0,
-  "cap_1min": 0,
-  "cap_mode": "none",
+  "gate_pct": 89.66,
+  "sl_soft": 128.577,
+  "sl_hard": 151.4424,
+  "tp": 125.5612,
+  "dd_limit": 4119.4948,
+  "cooldown": 1,
+  "cap_1min": 451,
+  "cap_mode": "bars",
   "eod_margin_min": 15,
   "intracandle_veto_entry": false,
   "intracandle_max_wait": 240,
