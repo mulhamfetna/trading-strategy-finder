@@ -370,3 +370,78 @@ EODHD's storage terms were **not** in the verified claim set and must be confirm
 their data.
 
 **Time-sensitivity:** all pricing is 2026-current and must be reconfirmed at purchase.
+
+---
+
+# Milestone 1 — RESULT: the veto window FAILED its null test. Not shipped.
+
+**Date:** 2026-07-12. Measured on NQ, 2025-01-01 → 2026-05-19 (~16.5 months, 103 three-star events).
+
+## The verdict
+
+| Timeframe | Baseline P/L | With veto | Delta | Fake-calendar delta (mean ± sd) | p-value | Verdict |
+|---|---|---|---|---|---|---|
+| 4h | $42,187 | $42,217 | **+$30** | +$573 ± $4,568 | **0.548** | fails |
+| 15m | $4,239 | $5,904 | **+$1,665** | +$998 ± $1,075 | **0.290** | fails |
+| 5m | $693 | $1,245 | **+$552** | +$614 ± $3,055 | **0.290** | fails |
+
+The bar was p < 0.05. Nothing came close. **The veto window is not shipped.**
+
+## Why it failed — the finding that matters
+
+**The fake calendars help too.** On 15m, a *randomly placed* calendar improves P/L by **+$998 on
+average** — versus the real calendar's +$1,665. Randomly flattening trades makes this strategy money.
+So whatever small gain the real veto shows is not evidence that news matters; it is evidence that
+**this champion holds its losers slightly too long**, and *any* excuse to cut them early helps a bit.
+That is a fact about our stop placement, not about the world. Exactly the failure mode the null test
+was built to catch, caught.
+
+**And the root cause is structural: the strategy is ALREADY FLAT for 77% of releases.**
+
+- Median hold time: **1.4 hours.**
+- Of 103 releases, a position was open for only **24** of them (23%).
+- The force-exit therefore fires on just **3–4% of trades** (7/265 on 4h, 19/488 on 15m, 21/600 on 5m).
+
+The whole premise — *"don't hold naked through a release"* — quietly assumed we often hold through
+releases. **We don't.** There is almost nothing for the veto to protect.
+
+## Two structural traps found along the way
+
+**The 4h test bed was meaningless, and that was our error.** 4h decision bars land at 02:00 / 06:00 /
+10:00 / 14:00 / 18:00 / 22:00. Releases land at 08:30 and 14:00. So **08:30 — which is 91 of our 103
+events (88%) — can never coincide with a 4h bar.** Only the twelve FOMC statements at 14:00 can. The
+4h entry-veto touched 11 bars out of 2,119 and removed **one trade out of 209**. A 12-minute window
+against a 240-minute bar is nearly a no-op. Same for 1h (08:30 is not on the hour). Only 15m/5m/2m can
+see these releases at all.
+
+**Statistical power is very low regardless.** With only ~20 affected trades, this test could not have
+detected a modest real effect even if one existed. Read the result as *"no evidence of an effect,
+and positive evidence that the mechanism is trade-cutting rather than news"* — not as proof that news
+never matters.
+
+## What DID hold up
+
+- **The calendar is real and correct.** The release minute runs **8.32× a normal minute**, and the
+  spike lands exactly on offset 0 — which validates every FRED release id and every Eastern clock time.
+- **There is NO pre-release volatility ramp** (spec §5.1 assumed one). Offsets −6..−1 sit at
+  0.78×–1.34× baseline; at two minutes out the market is *quieter* than average. Traders stand aside
+  and wait. **The measured window is pre=0, post=12.**
+- Both engines wired, golden 6/6 byte-identical when off, trade-for-trade parity when on.
+- Infrastructure (calendar, envelope, masks, null test) is reusable by every later head.
+
+## What this kills, and what it opens
+
+**Kills Head 1 (veto).** No evidence, and no mechanism — we are already flat.
+
+**Wounds Head 2 (widen-and-hold).** It targets the same 3–4% of trades, and the pre-release turbulence
+it was meant to ride *does not exist*.
+
+**Opens Head 4 (surprise entry) — and inverts the argument for it.** The very fact that sank the veto
+is an argument *for* the entry head: **we are flat during 77% of releases, and those are moments the
+market moves 8.3× a normal minute.** We are standing aside during the most violent, most
+information-rich minutes of the month. That is an entry opportunity, not a risk to hide from — and it
+matches the standing project direction (increase entries).
+
+**Caveat, unchanged:** Head 4 needs point-in-time consensus + first-print actuals (paid), and with
+~103 events it carries the highest overfitting risk of any head. Its kill criterion must be agreed
+BEFORE it is built.
