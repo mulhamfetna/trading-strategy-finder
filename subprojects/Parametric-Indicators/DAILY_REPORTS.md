@@ -4,6 +4,205 @@ _Newest on top. High-overview standup: what got done · what's next · challenge
 
 ---
 
+## 2026-07-12 — PARTIAL (day in progress) — the numbers were wrong; found out why, fixed it, redid everything
+
+_Running entry. Will be completed at end of day._
+
+### ✅ What got done so far
+
+**The short version: yesterday's headline was built on bad data. Today we found out why, fixed the cause, and
+recomputed the whole thing. The real answer turned out to be *better*, not worse — but only because we went
+looking.**
+
+**1 — Discovered that every out-of-sample number this project has ever reported was wrong.**
+
+The "out-of-sample" figure is the one that matters: it's how a strategy performed in 2026, a year the tuning
+never saw. It's the only honest test we have. And it was being measured **with the exit rule switched off.**
+
+The engine that produced it silently discarded the "time cap" — the rule that says *close this trade after N
+minutes* or *close it before the day ends*. So trades were allowed to run **past the deadline the strategy
+actually enforces**, and the profit that came from those phantom extra minutes was counted.
+
+Every non-Nasdaq champion has a time cap. So this contaminated **both sides** of yesterday's comparison — the
+old champions *and* the new ones — by different amounts. Which means yesterday's verdicts weren't merely
+inflated; they were **decided on the wrong numbers.**
+
+```mermaid
+flowchart LR
+    A["2026 out-of-sample number"] --> B["read from meta.summary"]
+    B --> C["produced by build_payload"]
+    C --> D["which DROPPED the time cap"]
+    D --> E["trades ran past their deadline<br/>=> profit overstated"]
+```
+
+Concretely: the old Nasdaq 4-hour champion's out-of-sample was reported as **+$58,029**. The truth is
+**+$28,899** — overstated by more than double.
+
+**2 — Found a second bug, and this one was mine.**
+
+While fixing the first, a champion's numbers changed *for no reason*: Crude Oil 2-hour re-measured at **$4,201**
+having verified at **$10,448** that same morning. That shouldn't be possible.
+
+Cause: a change I made yesterday tested for a setting that **doesn't exist in older studies**. Every champion
+trained before yesterday therefore looked to the code like it had *no time cap*, and the cap was **silently
+deleted** from it. A routine re-extraction then rewrote the **live, deployed champion files** through that bug —
+turning a 9-minute-max-hold strategy into an unlimited-hold one, with the same profit figure still printed
+beside it.
+
+**48 of our 54 champions have a time cap.** This was not a corner case; it was nearly the whole suite. Restored
+the true champions from version control and pinned the fix with tests.
+
+**3 — Two more bugs, both of which were reaching users.**
+
+- **The dashboard couldn't express the new "both" exit rule.** Its dropdown had three options; a champion using
+  "both" fell back to "none", and the backend then ran it as bar-cap-only. **15 champions use "both"** — so
+  pressing Run in the browser was executing *a different strategy than the one on file.*
+- **The shareable bundle priced Copper, Oil and Gas as if they were the Nasdaq.** Its contract-value table listed
+  only six markets and quietly defaulted the rest. Copper 15-minute reported **$33** instead of **$41,588** —
+  wrong by a factor of 1,250.
+
+**4 — Unlocked the Nasdaq 4-hour slot.** It was hardcoded to a frozen reference strategy and *ignored the
+champion file entirely* — so the dashboard could never serve an optimized 4-hour champion, and "verifying" that
+slot silently re-verified the old one. (The giveaway: its verified numbers came back byte-identical to the
+incumbent's.) Unlocking it required care — an internal cache is keyed to that frozen reference, and a naive
+change would have served the *old* strategy's cached results under the *new* strategy's name.
+
+**5 — Recomputed all 108 champions (both sides of every slot) on the fixed engine and re-decided every one.**
+
+### 📊 The corrected result
+
+| | 2026 out-of-sample (the held-out year) |
+|---|---|
+| Previous suite | **+$426,236** |
+| **New suite** | **+$695,886** |
+| **Gain** | **+$269,651 (+63%)** |
+
+**36 new champions adopted · 16 incumbents held · 2 rejected.** Ten verdicts flipped once the numbers were
+honest. The corrected gain is **larger** than yesterday's inflated claim (+52%) — because the *old* champions'
+numbers were inflated even more than the new ones'.
+
+**Gold is now perfect — all six timeframes adopted.** Gold 15-minute went from **+$1,410 → +$37,286**
+out-of-sample. Dow 4-hour, using the brand-new "both" rule: **+$12,641 → +$34,921**. Three slots that were
+*losing* money out-of-sample are now profitable.
+
+### 📦 Delivered
+
+- **54 playbook PDFs** regenerated on the corrected numbers (45 deployable · 8 caution · 1 do-not-trade).
+- **Shareable bundle rebuilt — all 54 reproduce to the dollar**, headline *and* out-of-sample.
+- **Slimmed the bundle**: it had been shipping 8 stale internal files (one literally named "stale") in a folder
+  called `results/` — anyone opening it would reasonably have read them as the champions. Proved nothing needed
+  them, removed them. 311 KB → 208 KB.
+- **New combined deliverable**: `BOX_STRATEGY_CHAMPIONS_2026-07-12.zip` (29 MB) — the 54 PDFs *and* the 54
+  runnable configs *and* the engine, in one package. This didn't exist; the reports and the code had always
+  lived apart.
+- Mega-report rewritten, **opening with the correction rather than burying it**.
+
+### ⚠️ Challenges / lessons
+
+- **The bug that matters most is the one that doesn't raise an error.** Not one of today's four failures threw an
+  exception. They all just quietly produced a *plausible wrong number*. The only thing that caught them was
+  cross-checking the same champion two different ways and refusing to explain away a discrepancy.
+- **I introduced one of them.** A one-line assumption — that a setting present in new studies exists in old ones
+  — silently deleted the exit rule from 48 champions. Caught only because a number moved that had no reason to.
+- **A stale cache hid a fix for an hour.** The point-value repair looked like it hadn't worked; in fact the
+  engine was reloading results computed *before* it. The cache key doesn't include the contract value. Now
+  written down: **clear the cache after anything that changes how profit is computed.**
+
+### 🎯 Still to do today
+
+- Decide whether the 29 MB combined zip gets committed (the PDFs are already in version control, so it would
+  duplicate ~30 MB) or stays a build artifact.
+- **Open item:** Nasdaq 1-hour — the chart engine and the trading engine disagree on that one champion
+  ($80,339 vs $77,439). The trading-engine number is what ships and what the bundle reproduces, but the
+  disagreement is unexplained.
+
+---
+
+## 2026-07-11 — Taught the optimizer to search the exit rule; made it 2.5× faster; re-optimized all 54 slots
+
+_(Full day. The 54-campaign run finished in the evening; its results were corrected the following morning — see
+the 07-12 entry.)_
+
+### ✅ What got done today
+
+Four workstreams, each substantial.
+
+**WORKSTREAM 1 — the optimizer had never once searched the end-of-day exit rule.**
+
+Every strategy needs to know when to give up on a trade. We had two possible rules: *close after N minutes*, and
+*close before the market shuts*. The optimizer had **only ever tried the first one.** The second — never, not
+once, in the entire history of this project. The code silently forced the first rule on and moved on.
+
+Rebuilt the exit rule as **two independent questions**, the same way we ask about indicators:
+
+```mermaid
+flowchart TD
+    Q1["Use a max-hold time limit?"] -->|yes| N["How many minutes?"]
+    Q2["Force-close before the market shuts?"]
+    N --> M{"both switched on?"}
+    Q2 --> M
+    M -->|time limit only| B["close after N minutes"]
+    M -->|market-close only| E["close at end of day"]
+    M -->|BOTH| BO["close at whichever comes FIRST<br/>(brand new — didn't exist)"]
+    M -->|neither| NO["no time limit"]
+```
+
+**The "both" rule is genuinely new** — the engine couldn't do it before.
+
+**The bug that would have wasted the entire run.** Before launching, I traced how a trial gets scored — and found
+the scorer **never received the exit rule at all.** The optimizer would have faithfully recorded "this champion
+closes at end of day" while **scoring it with no exit rule whatsoever.** Every "end-of-day champion" would have
+been fiction. Silent — no error, no warning. Caught it before launch; without that, the 6-hour campaign would
+have produced 54 meaningless champions.
+
+Also found the two engines **already disagreed** in exactly the corner we wanted to search — one applied both
+exit rules, the other ignored the time limit whenever end-of-day was on. Nobody noticed because the only test
+covering it ran with the time limit switched off.
+
+**WORKSTREAM 2 — made the whole system 2.5× faster, by measuring instead of guessing.**
+
+You asked whether it was time for the GPU. I profiled it rather than opine — and the answer was **no, and here's
+the proof**: the actual backtest engine was **3% of runtime**. A GPU could have made it infinitely fast and saved
+3%.
+
+| Change | Result | Verdict |
+|---|---|---|
+| **Compile the slowest indicator to machine code** | **112.9× faster**, output bit-identical | ✅ shipped — it went from 20.4s to 0.18s per call |
+| Swap the results database | 0.8–0.9× — *slower* | ❌ **rejected on evidence** |
+| Stop the database waiting on disk after every write | **1.68×** | ✅ shipped |
+| Tune how many jobs run at once | 20 is optimal; 26 and 30 are *worse* | ✅ measured |
+
+**Aggregate: 2,286 → 5,703 trials/minute (2.5×)**, with the safety check still byte-identical. Notably I
+**proposed the database swap myself and then killed it** when the numbers came back — it made things slower.
+
+**WORKSTREAM 3 — ran the campaign.** All 9 markets × 6 timeframes = **54 searches, 5,900 trials each ≈ 319,000
+backtests**, 20 jobs in parallel, cold start (no head start from the old champions). **5 hours 59 minutes**, zero
+failures.
+
+**WORKSTREAM 4 — extracted, verified, and reported.** Pulled all 54 champions, checked each one through the real
+dashboard, and shipped a full report. **The optimizer lied twice more** — Natural Gas 2-minute claimed +$20,853
+and actually **loses $2,275**; it would have replaced our best gas champion with a money-loser. Both rejected.
+
+*(A separate strand also progressed: the fundamental-analysis design spec and its first milestone plan.)*
+
+### ⚠️ Challenges / lessons
+
+- **"Is it time for the GPU?" deserved a measurement, not an opinion.** The engine was 3% of runtime. The real
+  costs were an indicator written as a slow loop, and a database being asked to wait on the disk 70 times per
+  trial. Both fixed for a fraction of a GPU project's effort.
+- **I proposed a fix, measured it, and rejected my own idea.** The database swap was slower. It ships disabled.
+- **I overloaded your machine.** I ran the heavy test suite locally — twice, stacked — and put the box into
+  thrash. Killed it, and the rule is now recorded: the test suite is *real compute*, it runs on the server.
+- **I made you wait blind.** Ten-minute blocking waits with nothing on screen. Built a live status dashboard and
+  a rule: never wait silently.
+
+### 📌 State at end of day
+- Time-cap search shipped; 54 champions optimized and reported (**+52% claimed** — *this figure was corrected
+  the next morning to +63% once a deeper bug was found; see the 07-12 entry*).
+- System 2.5× faster, safety check green.
+
+---
+
 ## 2026-07-10 — Oil + Gas onboarded end-to-end; a losing champion caught before it shipped; 9 markets live
 
 _(Closes 10 July, including its overnight campaign. The 12-timeframe search ran through the night and finished
