@@ -445,3 +445,91 @@ matches the standing project direction (increase entries).
 **Caveat, unchanged:** Head 4 needs point-in-time consensus + first-print actuals (paid), and with
 ~103 events it carries the highest overfitting risk of any head. Its kill criterion must be agreed
 BEFORE it is built.
+
+---
+
+# WORKSTREAM CLOSE-OUT — 2026-07-12
+
+## The one-line answer
+
+**Scheduled US macro releases are priced efficiently by NQ. All three exploitation routes were tested
+honestly and all three are dead. No vendor data was purchased, and none is recommended.**
+
+## What was tested, and how each died
+
+```mermaid
+graph TD
+    CAL["Validated calendar<br/>103 three-star US releases<br/>8.32x volatility spike, exactly on the print"]
+
+    CAL --> H1["HEAD 1 — VETO<br/>timing, defensive"]
+    CAL --> H2["HEAD 2 — REACTION<br/>timing + price, offensive"]
+    CAL --> H3["HEAD 3 — SURPRISE<br/>timing + CONTENT"]
+
+    H1 --> D1["DEAD<br/>p = 0.29-0.55<br/>already flat for 77% of releases;<br/>FAKE calendars help just as much"]
+    H2 --> D2["DEAD<br/>0 of 30 cells significant<br/>the apparent 'fade' edge is ordinary<br/>NQ mean-reversion — fakes show it too"]
+    H3 --> D3["DEAD<br/>corr -0.43 in 2025 → -0.01 in 2026<br/>sign FLIPPED at 2 of 4 horizons<br/>a Fed regime, not an edge"]
+
+    D1 --> V["VERDICT<br/>reliably VIOLENT · reliably UNPREDICTABLE<br/>= an efficient market"]
+    D2 --> V
+    D3 --> V
+
+    style D1 fill:#5c1a1a,color:#fff
+    style D2 fill:#5c1a1a,color:#fff
+    style D3 fill:#5c1a1a,color:#fff
+    style V fill:#3a3a1a,color:#fff
+    style CAL fill:#2d5016,color:#fff
+```
+
+### Head 3 is the one worth remembering
+
+It **passed** in-sample: correlation **−0.322** pooled (p = 0.021 vs a shuffled-surprise null), and
+**−0.432** on 2025 alone. The sign was economically coherent — a better-than-expected number was
+bearish for NQ, the classic "good news is bad news" hawkish-Fed regime. Significant, plausible,
+mechanistic.
+
+Out of sample it **evaporated**: 2026 correlations of −0.011 / +0.159 / +0.125 / −0.021 — the sign
+**flipped at two of four horizons** — and the frozen 2025 rule lost money at every horizon in 2026
+(−2.8 to −6.4 bp/trade, hit rate 32–41%).
+
+Not a power problem. The effect is *gone*. **"Good news is bad news" is a property of a Fed regime,
+not a law of markets.** The kill criterion was written down before the test ran; that is the only
+reason this was killed instead of shipped.
+
+## Why it is efficient — and the hypothesis this does NOT touch
+
+The releases are unexploitable **precisely because they are scheduled.** Everyone knows a number lands
+at 08:30 on a published date. The market has already positioned. Our own envelope shows it directly:
+the market goes **QUIET** before a print (0.78×–1.34× baseline at −6..−1 minutes), then explodes 8.32×
+at the print and re-prices within ~12 minutes. That is textbook efficient absorption of *anticipated*
+information.
+
+**That argument does not extend to UNSCHEDULED news** — the second source in the original scope (world
+leaders on social media), never tested. An unscheduled statement has no pre-positioning, no consensus
+to price against, and no "everyone is waiting" quiet period. The efficient-market logic that killed
+the calendar actually *predicts* that unscheduled news could behave differently.
+
+**But the honest caveats stand, and they are the ones from §3:** unscheduled text carries the
+timestamp-revision trap (3.1), reverse causality (3.2), survivorship of deleted posts, and worse event
+scarcity than the calendar — and the deep-research pass returned **zero verified timestamped sources**
+for it. It is the harder path with the worse data, and nothing here has made it easier.
+
+## What survived and is worth keeping
+
+- **The validated calendar** (`optimize/fundamentals/us_high_impact.csv`, 103 events). Proven correct:
+  the volatility spike lands exactly on the print. Reusable by anything.
+- **ALFRED point-in-time first prints** (`alfred.py`). Free, official. 2025 payrolls were revised by
+  801k–1,032k jobs after the fact — point-in-time integrity is not paranoia.
+- **The measured envelope**: no pre-release ramp; the storm is (pre=0, post=12).
+- **Both engines wired**, `news_veto` off by default, **golden 6/6 byte-identical**, full engine↔
+  fast_engine parity. The feature is inert and harmless where it sits.
+- **The null-test harness** — the most valuable artifact here. It caught **three** mirages:
+  a $72k "fade" edge that was just NQ mean-reversion, a veto whose gains random calendars matched,
+  and a p=0.021 surprise signal with a good story that was a dead regime.
+
+## Recommendation
+
+**Do not buy vendor consensus data.** The counter-argument — that a real economist consensus is a
+cleaner yardstick than our statistical one, and a noisy yardstick can destabilise a true relationship —
+is fair but now has to carry all the weight. We have no free evidence that content predicts direction
+*stably*, and the one relationship found flipped sign inside twelve months. A better ruler does not
+help when the thing being measured keeps moving.
