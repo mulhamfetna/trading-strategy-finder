@@ -105,13 +105,23 @@ def release_window_mask(df_dec: pd.DataFrame, cal: pd.DataFrame,
 
 
 def news_exit_targets(df1: pd.DataFrame, cal: pd.DataFrame, pre_min: int) -> np.ndarray:
-    """int64[len(df1)] — for each 1-min bar, the index of the NEXT window-open at or after it, or -1.
+    """int64[len(df1)] — for each 1-min bar, the index of the next FORCE-EXIT bar, or -1.
 
-    The engines force-flatten AT the window open, not inside it: once the storm has started we are
-    already too late. -1 means 'no release ahead of this bar' => no forced exit.
+    THE EXIT BAR IS THE LAST BAR **BEFORE** THE WINDOW OPENS, NOT THE WINDOW-OPEN BAR ITSELF.
 
-    Mirrors the shape of optimize/trading_days.py::eod_targets, which is the template this whole
-    feature follows.
+    Why this matters enormously. The measured window is (pre=0, post=12): the release minute itself
+    runs 8.32x a normal minute. "Be flat during the storm" therefore REQUIRES exiting before minute
+    0. If we exited AT minute 0 we would eat the entire 8.32x spike bar on the way out and would
+    never have been flat during the window at all -- the veto would look worthless for a reason that
+    has nothing to do with whether news matters.
+
+    THIS IS NOT LOOK-AHEAD. The release SCHEDULE is public months in advance -- that is the whole
+    premise of the milestone. At 08:29 we legitimately know a number lands at 08:30. Knowing WHAT
+    the number will be would be look-ahead; knowing THAT it is coming is reading a calendar.
+    (Contrast trading_days.eod_targets, whose target IS the exit bar for the same reason: the 17:00
+    close is also known in advance.)
+
+    -1 means 'no release ahead of this bar' => no forced exit. Empty calendar => all -1 (identity).
     """
     n = len(df1)
     tgt = np.full(n, -1, dtype=np.int64)
@@ -120,16 +130,20 @@ def news_exit_targets(df1: pd.DataFrame, cal: pd.DataFrame, pre_min: int) -> np.
 
     m = df1["Date"].to_numpy(dtype="datetime64[ns]")
     starts, _ = _window_edges(cal, pre_min, 0)
-    # first 1-min bar at or after each window open
+
+    # first 1-min bar at or after each window open ...
     open_idx = np.searchsorted(m, starts, side="left")
-    open_idx = np.unique(open_idx[(open_idx >= 0) & (open_idx < n)])
-    if len(open_idx) == 0:
+    # ... then step back one bar: that is the last bar we can still act on, and it is the bar whose
+    # close we exit at.
+    exit_idx = open_idx - 1
+    exit_idx = np.unique(exit_idx[(exit_idx >= 0) & (exit_idx < n)])
+    if len(exit_idx) == 0:
         return tgt
 
-    # for every bar, the next window-open at or after it
-    pos = np.searchsorted(open_idx, np.arange(n), side="left")
-    valid = pos < len(open_idx)
-    tgt[valid] = open_idx[pos[valid]]
+    # for every bar, the next force-exit bar at or after it
+    pos = np.searchsorted(exit_idx, np.arange(n), side="left")
+    valid = pos < len(exit_idx)
+    tgt[valid] = exit_idx[pos[valid]]
     return tgt
 
 

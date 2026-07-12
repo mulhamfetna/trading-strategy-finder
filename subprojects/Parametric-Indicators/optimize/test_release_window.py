@@ -138,3 +138,34 @@ def test_exit_targets_are_all_minus_one_for_an_empty_calendar():
     empty = pd.DataFrame({"Date": pd.to_datetime([]), "event": [], "agency": []})
     tgt = W.news_exit_targets(df1, empty, pre_min=5)
     assert (tgt == -1).all(), "identity default: no releases => no forced exits"
+
+
+def test_the_exit_bar_lands_STRICTLY_BEFORE_the_release():
+    """The single most important property of the force-exit, pinned.
+
+    With the measured window (pre=0) the release minute itself is 8.32x a normal minute. If the exit
+    fired ON the release bar we would eat that whole spike on the way out and would never have been
+    flat during the storm -- the veto would look worthless for reasons unrelated to news.
+
+    So every force-exit bar must be STRICTLY EARLIER than its release minute. This is causal: the
+    release SCHEDULE is public months ahead, so acting at 08:29 on a known 08:30 print is reading a
+    calendar, not seeing the future.
+    """
+    _, df1 = _bundle()
+    cal = rc.load_calendar()
+    tgt = W.news_exit_targets(df1, cal, pre_min=0)
+
+    minute = df1["Date"]
+    exit_bars = np.unique(tgt[tgt >= 0])
+    exit_times = set(minute.iloc[exit_bars])
+    release_times = set(cal["Date"])
+
+    assert not (exit_times & release_times), \
+        "a force-exit landed ON a release minute — it would eat the 8.32x spike"
+
+    # and each exit bar must be exactly one 1-min bar before a release that exists in the data
+    hit = 0
+    for e in exit_bars:
+        if minute.iloc[e] + pd.Timedelta(minutes=1) in release_times:
+            hit += 1
+    assert hit > 50, f"only {hit} exit bars sit one minute before a release; expected most of them"
