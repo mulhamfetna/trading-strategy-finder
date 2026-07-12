@@ -16,11 +16,14 @@ import pandas as pd
 
 CALENDAR_CSV = Path(__file__).parent / "us_high_impact.csv"
 
-# Every three-star US release lands on one of exactly three Eastern clock times:
+# Every release we can authoritatively source lands on one of exactly two Eastern clock times:
 #   08:30 - BLS (payrolls, CPI, PPI), BEA (GDP, PCE), Census (retail sales)
-#   10:00 - ISM (manufacturing, services)
 #   14:00 - Federal Reserve (FOMC statement)
-VALID_TIMES = {"08:30", "10:00", "14:00"}
+#
+# 10:00 (ISM manufacturing / services) is a KNOWN GAP: FRED does not carry ISM (it is proprietary),
+# and we refuse to rule-derive its dates. See the note in fetch_calendar.py. If ISM is ever sourced
+# properly, add "10:00" here.
+VALID_TIMES = {"08:30", "14:00"}
 
 
 def load_calendar(path: str | None = None) -> pd.DataFrame:
