@@ -59,6 +59,7 @@ ExitReason = Literal[
     'TIME_CAP',
     'END_OF_DAY',
     'FORCE_CLOSE',
+    'NEWS_VETO',
     'OPEN',
 ]
 
@@ -98,6 +99,15 @@ class SimpleStrategyParams:
     #                               'both' = bars AND eod armed together ⇒ exit at whichever lands FIRST
     #                               (same-bar tie ⇒ TIME_CAP, since the bar cap is checked first).
     eod_margin_min: int = 15      # minutes before the 17:00 close to exit on FULL days (eod/both mode).
+    # News veto (fundamental analysis, milestone 1). OFF => byte-identical (golden-locked).
+    # Stand aside around scheduled high-impact US releases: block new entries inside the window, and
+    # force-flatten an open trade that is NOT already comfortably in profit on the last bar BEFORE the
+    # release lands (NEWS_VETO). The window was MEASURED, not chosen: the release minute runs 8.32x a
+    # normal minute and the market is CALM beforehand, so pre=0 / post=12. See optimize/fundamentals/.
+    news_veto: bool = False
+    news_pre_min: int = 0         # minutes before the release the window opens (measured: 0)
+    news_post_min: int = 12       # minutes after  the release the window closes (measured: 12)
+    news_profit_exempt_mult: float = 1.0   # survive the window iff open profit >= this * stop distance
     # Intra-candle entry for vetoed signals (Phase 1). OFF => byte-identical (golden-locked).
     intracandle_veto_entry: bool = False   # arm a vetoed (vol-passed) signal, enter mid-candle when the gate re-opens
     intracandle_max_wait:   int  = 240     # max 1-min bars to wait inside the candle (N); 240 ~= one 4h candle
@@ -267,8 +277,18 @@ class SimpleStrategy:
                 eod_target_arr, session_last_arr = eod_targets(md_arr, self.params.eod_margin_min)
             else:
                 eod_target_arr = session_last_arr = None
+            # News-veto force-exit targets, built on the SAME 1-min frame the exit walk indexes into
+            # (same sharp edge as eod_targets: the indices are into THIS array).
+            if self.params.news_veto:
+                from optimize.fundamentals import release_calendar as _rc
+                from optimize.fundamentals import window as _w
+                news_target_arr = _w.news_exit_targets(
+                    pd.DataFrame({"Date": md_arr}), _rc.load_calendar(), self.params.news_pre_min)
+            else:
+                news_target_arr = None
         else:
             start_1m = None
+            news_target_arr = None
             md_arr = mh_arr = ml_arr = mc_arr = None
             eod_target_arr = session_last_arr = None
 
@@ -347,6 +367,28 @@ class SimpleStrategy:
                         resets_counter = False
                         if soft_consec_count >= 2:
                             exit_reason, fill = 'STOP_LOSS_SOFT', m_close
+
+                # NEWS_VETO: force-flatten on the last bar BEFORE a scheduled high-impact release,
+                # unless already comfortably in profit. Runs only if no SL/TP/soft fired this bar ⇒ a
+                # same-bar tie resolves to the price exit (the market got there first, inside the bar).
+                # Checked BEFORE the time caps ⇒ a same-bar tie against those resolves to NEWS_VETO.
+                # fast_engine mirrors both by ordering t_news after the price exits and before t_bars.
+                #
+                # news_target_arr[t] is the next force-exit bar at or after t (GLOBAL 1-min index); it
+                # already points at the bar BEFORE the release, so we never eat the 8.32x release spike
+                # (optimize/fundamentals/window.py::news_exit_targets explains why that is causal).
+                # `sl_dist` is the hard-stop distance in points — the unit "comfortably in profit" is
+                # measured in. Point-in-time check, not a running tally: the engine has no unrealized
+                # P/L, and only a point check is expressible in fast_engine's vectorized model.
+                if (exit_reason is None and news_target_arr is not None):
+                    w = int(news_target_arr[t])
+                    if w == t:                                    # the force-exit bar is THIS bar
+                        sl_dist = abs(ep - open_trade['sl_hard_line'])
+                        profit = (m_close - ep) if d == 'long' else (ep - m_close)
+                        exempt = (sl_dist > 0
+                                  and profit >= self.params.news_profit_exempt_mult * sl_dist)
+                        if not exempt:
+                            exit_reason, fill, resets_counter = 'NEWS_VETO', m_close, True
 
                 # time cap (max hold): lowest priority — only if no SL/TP/soft fired this bar.
                 # Armed for cap_mode none (bare cap_1min, back-compat) / bars / both — NOT for eod-only,
