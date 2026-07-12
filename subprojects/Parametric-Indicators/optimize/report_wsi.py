@@ -106,9 +106,17 @@ def _row(t) -> dict:
         tp=round(pr["tp"], 4), gate_pct=round(pr["gate_pct"], 2), dd_limit=round(pr["dd_limit"], 4),
         cooldown=pr["cooldown"], flip=pr["flip"], k=pr["k"],
         # Time caps. BOTH are searched, so both must round-trip or the rebuilt champion mis-exits.
-        # cap_1min is only meaningful when the bars cap is on — zero it out otherwise so a stale
-        # "how many bars" value can never be mistaken for an active cap downstream.
-        cap_1min=(pr.get("cap_1min", 0) if pr.get("en_cap_bars") else 0),
+        # cap_1min is only meaningful when a BAR cap is armed — zero it otherwise so a stale "how many
+        # bars" value cannot be mistaken for an active cap downstream.
+        #
+        # ⚠️ DERIVE "is the bar cap armed?" FROM _cap_mode_of(), NEVER from `pr.get("en_cap_bars")`.
+        # LEGACY studies (wsh4/hg1/cl1/ng1 …) predate the two cap switches and carry NO en_cap_bars param,
+        # so a truthiness test on it is False for every one of them — which silently STRIPS THE CAP off
+        # every legacy champion (cap_1min 9 → 0). That corrupted the deployed CL/NG champions when their
+        # pareto CSVs were regenerated. _cap_mode_of() already handles the legacy fallback (a non-zero
+        # cap_1min with no switches always meant a bars cap).
+        cap_1min=(int(pr.get("cap_1min", 0) or 0)
+                  if _cap_mode_of(pr) in ("bars", "both") else 0),
         cap_mode=_cap_mode_of(pr),                       # none | bars | eod | both
         n_indicators=len(enabled), indicators=";".join(sorted(enabled)),
     )
