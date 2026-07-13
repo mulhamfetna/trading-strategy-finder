@@ -1,5 +1,23 @@
 #!/usr/bin/env bash
-# run_dashboard.sh — one-click launch of the unified L1 · L2 · Combined dashboard.
+# run_dashboard.sh — LOCAL dashboard launcher.
+#
+# ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+# │  ⚠️  THE LOCAL DASHBOARD IS FROZEN. IT IS NOT THE LIVE ONE. DO NOT TRUST ITS NUMBERS.            │
+# │                                                                                                  │
+# │  The live, maintained dashboard runs on the AMD SERVER as a supervised shared service:           │
+# │       private / VPN :  http://192.168.50.62:8200/                                                 │
+# │       public        :  http://78.89.209.212:8200/                                                 │
+# │       manage it     :  ssh amd-trading '~/Mulham/wsg-i/dash.sh {status|refresh}'                  │
+# │                                                                                                  │
+# │  WHY THIS ONE IS FROZEN:                                                                          │
+# │   • It runs on a 12-core / 14 GB laptop. Selecting a 2-minute or 5-minute timeframe has already   │
+# │     OOM-frozen that machine once. Heavy timeframes are SERVER-ONLY.                               │
+# │   • It is not refreshed when champions change, so it can silently serve an OLD champion set —     │
+# │     the most dangerous failure mode we have, because the numbers still look plausible.            │
+# │                                                                                                  │
+# │  If you really need it (light timeframes only, and you accept the numbers may be stale):          │
+# │       LOCAL_DASHBOARD_OK=1 ./run_dashboard.sh                                                     │
+# └──────────────────────────────────────────────────────────────────────────────────────────────────┘
 #
 #   ./run_dashboard.sh            start (if not already running) + open it in your browser
 #   ./run_dashboard.sh stop       stop the dashboard server
@@ -14,6 +32,41 @@
 # absolute dir of this script = the Parametric-Indicators project (portable: works under bash and zsh)
 HERE="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]:-$0}")")" && pwd)"
 cd "$HERE" || { echo "cannot cd to $HERE"; exit 1; }
+
+# ── FROZEN GUARD ────────────────────────────────────────────────────────────────────────────────────
+# Starting the local dashboard requires an explicit opt-in. `stop`/`status` are always allowed.
+case "${1:-start}" in
+  stop|status) ;;
+  *)
+    if [ "${LOCAL_DASHBOARD_OK:-0}" != "1" ]; then
+      cat <<'FROZEN'
+
+  ╔════════════════════════════════════════════════════════════════════════════════════╗
+  ║  ⚠️  THE LOCAL DASHBOARD IS FROZEN — NOT LAUNCHING                                  ║
+  ╚════════════════════════════════════════════════════════════════════════════════════╝
+
+  This is NOT the live dashboard. Its champion set is not kept in sync, so it can serve an
+  OLD champion and still look completely plausible. And heavy timeframes (2m / 5m) have
+  OOM-frozen this machine before — those are server-only.
+
+  ▶ USE THE LIVE ONE (on the AMD server, always current):
+
+        private / VPN :  http://192.168.50.62:8200/
+        public        :  http://78.89.209.212:8200/
+
+        status/restart:  ssh amd-trading '~/Mulham/wsg-i/dash.sh status'
+                         ssh amd-trading '~/Mulham/wsg-i/dash.sh refresh'
+
+  ▶ If you understand the above and still want the local one (light timeframes only):
+
+        LOCAL_DASHBOARD_OK=1 ./run_dashboard.sh
+
+FROZEN
+      exit 2
+    fi
+    echo "⚠️  LOCAL DASHBOARD (FROZEN) — numbers may be stale; heavy timeframes may OOM this box."
+    ;;
+esac
 
 PORT="${PORT:-8200}"
 PY="${PYTHON:-python3}"
