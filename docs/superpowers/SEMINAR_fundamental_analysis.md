@@ -5,6 +5,8 @@ every number from our own data.**
 
 Date: 2026-07-12 · Branch `fundamental-analysis`, merged to `dev` (`7b6a184`) · Nothing shipped
 
+> 🇸🇦 النسخة العربية: [`SEMINAR_fundamental_analysis_AR.md`](SEMINAR_fundamental_analysis_AR.md)
+
 ---
 
 ## How to read this document
