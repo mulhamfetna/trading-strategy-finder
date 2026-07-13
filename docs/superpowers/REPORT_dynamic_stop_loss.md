@@ -5,6 +5,8 @@ Every measurement, every number, every citation, every mistake.**
 
 Date: 2026-07-13 · Tasks #2 and #3 · Branch `fundamental-analysis`
 Commits: `9371842` (excursion tracker) · `1bb9089` (counterfactual)
+
+> 🇸🇦 النسخة العربية: [`REPORT_dynamic_stop_loss_AR.md`](REPORT_dynamic_stop_loss_AR.md)
 Code: `engine.py` · `optimize/fast_engine.py` · `optimize/test_excursions.py` ·
 `optimize/fundamentals/study_excursions.py` · `study_stop_counterfactual.py`
 
