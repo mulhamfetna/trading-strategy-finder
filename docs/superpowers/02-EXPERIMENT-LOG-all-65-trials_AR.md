@@ -5,7 +5,7 @@
 
 الفرع `fundamental-analysis` · التقارير في `docs/superpowers/`
 
-> 🇬🇧 النسخة الإنجليزية: [`REPORT_complete_experiment_log.md`](REPORT_complete_experiment_log.md)
+> 🇬🇧 النسخة الإنجليزية: [`02-EXPERIMENT-LOG-all-65-trials.md`](02-EXPERIMENT-LOG-all-65-trials.md)
 
 ---
 

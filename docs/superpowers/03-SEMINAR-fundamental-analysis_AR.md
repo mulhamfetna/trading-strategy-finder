@@ -4,7 +4,7 @@
 
 التاريخ: 2026-07-12 · الفرع `fundamental-analysis`، مدموج في `dev` (`7b6a184`) · **لم يُشحن شيء**
 
-> 🇬🇧 النسخة الإنجليزية: [`SEMINAR_fundamental_analysis.md`](SEMINAR_fundamental_analysis.md)
+> 🇬🇧 النسخة الإنجليزية: [`03-SEMINAR-fundamental-analysis.md`](03-SEMINAR-fundamental-analysis.md)
 
 ---
 

@@ -5,7 +5,7 @@ Nothing omitted, including the failures, the retractions, and the self-inflicted
 
 Branch `fundamental-analysis` · Reports in `docs/superpowers/`
 
-> 🇸🇦 النسخة العربية: [`REPORT_complete_experiment_log_AR.md`](REPORT_complete_experiment_log_AR.md)
+> 🇸🇦 النسخة العربية: [`02-EXPERIMENT-LOG-all-65-trials_AR.md`](02-EXPERIMENT-LOG-all-65-trials_AR.md)
 
 ---
 

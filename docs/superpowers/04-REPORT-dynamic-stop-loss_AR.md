@@ -6,7 +6,7 @@
 التاريخ: 2026-07-13 · المهمّتان #2 و #3 · الفرع `fundamental-analysis`
 الإيداعات: `9371842` (متتبّع الانحراف) · `1bb9089` (السيناريو المضاد)
 
-> 🇬🇧 النسخة الإنجليزية: [`REPORT_dynamic_stop_loss.md`](REPORT_dynamic_stop_loss.md)
+> 🇬🇧 النسخة الإنجليزية: [`04-REPORT-dynamic-stop-loss.md`](04-REPORT-dynamic-stop-loss.md)
 
 ---
 
