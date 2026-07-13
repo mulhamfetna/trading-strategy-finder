@@ -9,6 +9,97 @@ Date: 2026-07-12 · Branch `fundamental-analysis`, merged to `dev` (`7b6a184`) �
 
 ---
 
+# 🚨 CORRECTION — 2026-07-13. READ THIS FIRST.
+
+**This seminar teaches a negative result with confidence it has not earned. I wrote it, and I was
+wrong to be that certain.**
+
+## The mistake
+
+The whole document argues that scheduled US macro news is **"priced in"** — and it does so on
+**52 to 103 events.** The out-of-sample "death" of the surprise signal rested on **28 events.**
+
+**I never asked the most basic question of all: was the study big enough to detect anything?**
+
+**It was not.**
+
+| True effect size | **Power we actually had (n=52)** | Events needed for 80% power |
+|---|---|---|
+| r = 0.10 | **10%** | 783 |
+| **r = 0.11 — the size we actually measured** | **12%** | **647** |
+| r = 0.20 | 29% | 194 |
+
+> **🍼 In plain words**
+>
+> **"Power" means: if the effect is really there, what's the chance our test would spot it?**
+>
+> **Ours was 12%.** That means **even if news genuinely moves the market exactly as we hoped, our test
+> would have MISSED it 88 times out of 100.**
+>
+> Imagine testing whether a coin is biased — by flipping it four times. You get 2 heads and 2 tails and
+> announce "the coin is fair." **You haven't shown the coin is fair. You've shown you didn't flip it
+> enough.** That is what this seminar did.
+
+**And there is a detail that makes it worse:** when we finally tested whether the surprise predicts the
+*size* of the move, the answer came back **positive on all four independent measures** (+0.105, +0.121,
++0.105, +0.107) — the same sign, every time — and every single one was reported as "not significant."
+
+**At 12% power, "not significant" means almost nothing.**
+
+## So what is the honest verdict?
+
+> ### NOT: *"Scheduled news does not work."*
+> ### BUT: *"We cannot tell with sixteen months of price data."*
+
+## The bottleneck — and it is NOT what this seminar blamed
+
+This document blames the *market* (efficiency). **The real constraint is our own dataset.**
+
+**It is not the calendar.** FRED has decades of releases, for free. **It is our price data:
+2025-01-01 → 2026-05-19. Sixteen and a half months.**
+
+| Price history | Releases | Power |
+|---|---|---|
+| **What we had** | **52** | **12%** ❌ |
+| + 2024 (complete, sitting unused on disk) | ~100 | 19% |
+| 5 years | 188 | 32% |
+| 10 years | 376 | 57% |
+| **Back to ~2009** | **640** | **80%** ✅ |
+
+**And we don't need continuous history** — only ±60-minute windows around each release. About **78,000
+bars** for 650 events. A small, cheap acquisition.
+
+## What in this seminar still stands
+
+**Everything that is a MEASUREMENT still stands.** Everything that is an INFERENCE about whether news
+works does not.
+
+| ✅ **Still true** | ❌ **Retracted** |
+|---|---|
+| The calendar is validated — 8.32× spike lands exactly on the print | "The surprise signal is dead" |
+| The market is **calm** before a release (0.78× at −2 min) | "Scheduled US macro is priced in" |
+| **The lockup does not leak** (verified 2026-07-13) | "Do not buy vendor consensus data" *(suspended)* |
+| The veto is structurally near-useless — we're already flat for **77%** of releases | |
+| 4-hour bars **cannot see** an 08:30 release | |
+| The "$72k fade edge" is ordinary NQ mean-reversion — the fakes reproduce it | |
+
+## 🎓 The lesson — and it is the most important one in this entire document
+
+**I was rigorous about multiple comparisons. I was rigorous about out-of-sample validation. I built a
+null-test harness and used it to catch three mirages. And then I never once asked whether the sample
+was big enough to see anything at all.**
+
+> **A NULL TEST tells you whether an effect you FOUND is real.**
+>
+> **A POWER ANALYSIS tells you whether you could have FOUND it in the first place.**
+>
+> **We ran the first and skipped the second. Both are mandatory. Neither substitutes for the other.**
+
+**Read the rest of this seminar for the method, the traps, and the engineering — all of that is sound
+and worth learning. But read its conclusion as "unproven", not as "disproven."**
+
+---
+
 ## How to read this document
 
 Every section has two voices:

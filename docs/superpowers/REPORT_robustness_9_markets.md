@@ -6,6 +6,33 @@
 Date: 2026-07-13 · Task #1 · Branch `fundamental-analysis`
 Code: `optimize/fundamentals/robustness.py` · `robustness2.py` · Commit `c443cde`
 
+> ## 🚨 CORRECTION — 2026-07-13 (later the same day)
+>
+> **This report's headline conclusion — "nothing survives Bonferroni, so the negative result holds" —
+> is itself UNDERPOWERED, and the Bonferroni correction made it worse.**
+>
+> A power analysis (`optimize/fundamentals/power_analysis.py`) shows that with **52 releases** we had
+> **12% power** to detect the effect size we actually measured (r ≈ 0.11). To reach 80% power we would
+> need **647 releases.**
+>
+> **Bonferroni over 36 tests drops the threshold to p < 0.0014.** Our power to clear *that* bar with
+> 52 events is **effectively zero** — for *any* realistic effect size. So "0 of 36 survive Bonferroni"
+> was **guaranteed in advance by the sample size**, no matter what the truth is. It is not evidence.
+>
+> **What still stands in this report:**
+> - ✅ The **effective-markets** finding (NQ/ES/RTY/YM are 0.95 correlated → ~3.2 independent markets,
+>   not 9). That is a fact about the correlation matrix and is unaffected by power.
+> - ✅ The correction that "dead" was too strong a word.
+> - ✅ The methodological point that a bootstrap ≠ a hypothesis test.
+> - ✅ **SILVER** as an open question — and it now looks *more* interesting, not less: its full-sample
+>   p = 0.007 was achieved *despite* 12% power, and it **strengthened out-of-sample** (−0.140 → −0.500).
+>
+> **What is retracted:** "the cross-market signal does not clear the bar." **We could never have cleared
+> that bar with this sample.** The honest statement is *"we cannot tell."*
+>
+> **The fix is more price history, not more statistics.** See the correction block in
+> `docs/superpowers/specs/2026-07-11-fundamental-analysis-design.md`.
+
 ---
 
 ## 0. The challenge, and why it was the right one

@@ -448,7 +448,86 @@ BEFORE it is built.
 
 ---
 
-# WORKSTREAM CLOSE-OUT — 2026-07-12
+# 🚨 CORRECTION — 2026-07-13: THE CLOSE-OUT BELOW WAS UNDERPOWERED. RE-OPENED.
+
+**Read this before you read anything below it. The close-out that follows overstates its confidence,
+and I am the one who overstated it.**
+
+## What was wrong
+
+The close-out declares that scheduled US macro news is **"priced in"** and closes the workstream on a
+negative result. **That verdict rested on 52–103 events.** The surprise head's out-of-sample "death"
+rested on **28 events.**
+
+**We never asked whether the study was large enough to detect anything at all.** It was not.
+
+## The power analysis (`optimize/fundamentals/power_analysis.py`)
+
+| True effect | **Power we had (n=52)** | Events needed for 80% power |
+|---|---|---|
+| r = 0.10 | **10%** | 783 |
+| **r = 0.11 — the effect we actually measured** | **12%** | **647** |
+| r = 0.20 | 29% | 194 |
+| r = 0.30 | 58% | 85 |
+
+**We had 12% power. We had 8% of the sample required.**
+
+**Even if the effect were entirely real, we would have failed to detect it 88% of the time.**
+
+And the pattern study's magnitude signal came back **POSITIVE on all four independent measures**
+(+0.105, +0.121, +0.105, +0.107) — a consistent sign, every one "not significant."
+**At 12% power, "not significant" is not evidence of absence. It is a study too small to see.**
+
+## What the honest verdict actually is
+
+> **NOT "scheduled news does not work."**
+>
+> **"We cannot tell with sixteen months of price data."**
+
+## The bottleneck, and it is fixable
+
+**It is NOT the calendar** — FRED has decades of releases, free. **It is our price data:**
+2025-01-01 → 2026-05-19.
+
+| Price history | Releases | Power at r=0.11 |
+|---|---|---|
+| **What we had** | **52** | **12%** ❌ |
+| + 2024 (complete, sitting UNUSED in `data/2024_data/`) | ~100 | 19% |
+| 5 years | 188 | 32% |
+| 10 years | 376 | 57% |
+| **Back to ~2009** | **640** | **80%** ✅ |
+
+**And we do not need continuous history.** These studies need only ±60-minute windows around each
+release — roughly **78,000 bars** for 650 events. A small, cheap acquisition, not seventeen years of
+continuous futures data.
+
+## What still stands, and what does not
+
+| Claim | Status |
+|---|---|
+| The calendar is validated (8.32× spike exactly on the print) | ✅ **STANDS** — that is a measurement, not an inference |
+| The market is CALM before a release (0.78× at −2 min) | ✅ **STANDS** — measured |
+| **The 08:30 lockup does NOT leak** (07:45–08:28 ≈ ordinary days) | ✅ **STANDS** — verified 2026-07-13 |
+| The veto is structurally near-useless (already flat for 77% of releases) | ✅ **STANDS** — that is an arithmetic fact about our holding period, not a statistical inference |
+| The 4h timeframe cannot see 08:30 releases | ✅ **STANDS** — arithmetic |
+| The "$72k fade edge" is ordinary NQ mean-reversion (fakes reproduce it) | ✅ **STANDS** — the fake-calendar control is valid regardless of power |
+| **"The surprise signal is dead"** | ❌ **RETRACTED — UNDERPOWERED.** 28 out-of-sample events |
+| **"Scheduled US macro is priced in"** | ❌ **RETRACTED — UNDERPOWERED.** We cannot tell |
+| **"Do not buy vendor consensus data"** | ⚠️ **SUSPENDED.** The argument rested on the retracted verdict |
+
+## The lesson, recorded
+
+**I was rigorous about multiple comparisons, out-of-sample validation, and null tests — and then never
+once asked whether the sample was large enough to see anything.** That is a basic omission and it is
+the same class of error this whole document exists to guard against. **A null test tells you whether an
+effect you found is real. A POWER analysis tells you whether you could have found it at all. We ran the
+first and skipped the second.**
+
+**Both are mandatory. Neither substitutes for the other.**
+
+---
+
+# WORKSTREAM CLOSE-OUT — 2026-07-12 *(SUPERSEDED — read the correction above)*
 
 ## The one-line answer
 
