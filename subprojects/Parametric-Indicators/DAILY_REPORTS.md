@@ -4,11 +4,21 @@ _Newest on top. High-overview standup: what got done · what's next · challenge
 
 ---
 
-## 2026-07-12 — PARTIAL (day in progress) — the numbers were wrong; found out why, fixed it, redid everything
+## 2026-07-12 — Two workstreams: the numbers were wrong (fixed, redone), and news trading was tested and killed
 
-_Running entry. Will be completed at end of day._
+**Two independent streams ran today.**
 
-### ✅ What got done so far
+- **Workstream A — Optimizer / champions.** Yesterday's headline was built on bad data. Found out why, fixed
+  the cause, recomputed all 108 champions. The real answer turned out *better*, not worse.
+- **Workstream B — Fundamental analysis (news).** A brand-new workstream, taken from a blank branch to a
+  final verdict in one day. **Result: negative. Scheduled US macro news is already priced in. Nothing shipped,
+  $0 spent.**
+
+---
+
+# WORKSTREAM A — the numbers were wrong; found out why, fixed it, redid everything
+
+### ✅ What got done
 
 **The short version: yesterday's headline was built on bad data. Today we found out why, fixed the cause, and
 recomputed the whole thing. The real answer turned out to be *better*, not worse — but only because we went
@@ -108,13 +118,153 @@ out-of-sample. Dow 4-hour, using the brand-new "both" rule: **+$12,641 → +$34,
   engine was reloading results computed *before* it. The cache key doesn't include the contract value. Now
   written down: **clear the cache after anything that changes how profit is computed.**
 
-### 🎯 Still to do today
+### 🎯 Open items (Workstream A)
 
 - Decide whether the 29 MB combined zip gets committed (the PDFs are already in version control, so it would
   duplicate ~30 MB) or stays a build artifact.
 - **Open item:** Nasdaq 1-hour — the chart engine and the trading engine disagree on that one champion
   ($80,339 vs $77,439). The trading-engine number is what ships and what the bundle reproduces, but the
   disagreement is unexplained.
+
+---
+
+# WORKSTREAM B — Fundamental analysis: built it, tested it three ways, killed it
+
+**A new workstream, from an empty branch to a final verdict in a single day. The answer is NO, and that is a
+result worth having.**
+
+### 🧭 The question
+
+Our robot reads only price. It doesn't know that at 08:30 the US publishes the jobs report — the biggest
+scheduled market event of the month. **Would telling it about the news make money?**
+
+### ✅ What got done
+
+**1 — Built a release calendar that proves its own correctness.**
+
+103 high-impact US events (jobs, inflation, producer prices, retail sales, GDP, the Fed's inflation gauge, and
+the Fed's rate decisions), 2025-01-01 → 2026-06-30.
+
+Three traps found on the way in:
+
+- **The official source blocks robots.** The Bureau of Labor Statistics returns "403 Forbidden" to every
+  automated fetch, even one pretending to be a browser. Cannot be scraped, at all.
+- **The schedule itself had been revised** — the one thing I had confidently written could *not* be revised.
+  The **2025 and 2026 government shutdowns rescheduled releases.** Building from the *planned* dates would
+  have had us standing aside on quiet days and trading blind into the real ones. Solved by using FRED's
+  `release/dates` API, which records when each statistic **actually came out**.
+- **A guessed ID returned nothing** (retail sales), and a three-line guard **refused to write a partial
+  calendar** rather than silently omit 16 events.
+
+**Then the calendar graded its own homework.** If our timestamps are right, the market should explode
+*exactly* on them. It does:
+
+| Minutes from release | −2 | −1 | **0 (the print)** | +1 | +12 | +25 |
+|---|---|---|---|---|---|---|
+| **Volatility vs a normal minute** | **0.78×** | 1.34× | **8.32×** | 3.03× | 1.62× | 1.13× |
+
+**8.32×, landing precisely on the predicted minute.** No wrong ID or timezone bug could produce that. The
+calendar is correct, and we didn't have to trust anyone to know it.
+
+**2 — A finding that killed one of our own planned features.**
+
+Look at the minutes *before* the release: **0.78× at two minutes out — QUIETER than an ordinary minute.**
+
+The plan assumed *"before, during and after the news there is high volatility."* **There is no pre-release
+turbulence.** The market goes dead still and waits. So the planned "widen the stop to survive the run-up" idea
+was designed to solve **a problem that does not exist.** Measured window: **0 minutes before, 12 after.**
+
+**3 — Wired it into both engines, provably breaking nothing.**
+
+- **Golden 6/6 byte-identical** with the feature off — all six timeframes produce *exactly* the numbers they
+  did before, to the cent.
+- **Engine ↔ fast-engine parity: 11/11, zero mismatches.**
+- 27 new tests, all green.
+
+Two nasty surprises in our own code: the parameter **named `veto_mask` does not actually veto** (the real
+blocker is the composite entry gate), and **there is no running profit figure anywhere** in the engine.
+
+### 📊 The results — three ideas, three honest deaths
+
+```mermaid
+flowchart TD
+    Q["Can we profit from<br/>scheduled US news?"]
+    Q --> A1["1. Hide from it<br/>(get out before the print)"]
+    Q --> A2["2. Follow the reaction<br/>(jump the way it jumps)"]
+    Q --> A3["3. Read the number<br/>(was it better than expected?)"]
+    A1 --> R1["DEAD — p = 0.29 to 0.55"]
+    A2 --> R2["DEAD — 0 of 30 tests"]
+    A3 --> R3["DEAD — real in 2025,<br/>GONE in 2026"]
+    R1 --> V["SCHEDULED NEWS IS PRICED IN<br/>Reliably VIOLENT · reliably UNPREDICTABLE"]
+    R2 --> V
+    R3 --> V
+```
+
+**Idea 1 — the veto (get out before the storm).**
+
+| Timeframe | Before | After | Change | **A FAKE calendar scored** |
+|---|---|---|---|---|
+| 4h | $42,187 | $42,217 | +$30 | +$573 |
+| 15m | $4,239 | $5,904 | +$1,665 | **+$998** |
+| 5m | $693 | $1,245 | +$552 | +$614 |
+
+The +$1,665 looks like a win — until you see that a calendar of **completely invented dates** earned +$998.
+**Randomly cutting trades makes this strategy money.** That's a fact about our stop placement, not about news.
+
+**And the root cause is structural:** median hold is **1.4 hours**, so the robot was **already flat for 77% of
+all releases**. The veto touched **3–4% of trades**. *We built an umbrella for a man already indoors.*
+
+**Idea 2 — ride the reaction.** 0 of 30 combinations significant. It *looked* like there was a **$72,170 edge**
+in fading the move — but the **fake calendars showed the same thing.** It's ordinary Nasdaq mean-reversion,
+present on any random day. Not news. **The null test caught a $72k mirage.**
+
+**Idea 3 — read the number (the one that nearly fooled us).** Using free point-in-time data (ALFRED), we found:
+
+- **In-sample: correlation −0.43 on 2025, p = 0.021.** Statistically significant.
+- **And a perfect economic story**: a *better*-than-expected jobs number made the Nasdaq *fall* — the textbook
+  "good news is bad news" hawkish-Fed effect.
+- **Out-of-sample (2026): it evaporated.** Correlation ≈ 0, **the sign flipped at two of four horizons**, and
+  the frozen rule **lost money at every horizon** (hit rate 32–41% — worse than a coin flip).
+
+**That was a Fed regime, not an edge.** The only reason it wasn't shipped is that the kill criterion was
+**written down before the test ran.**
+
+### 📦 Delivered
+
+- **A validated 103-event release calendar** + free point-in-time first prints (`alfred.py`).
+- **The null-test harness** — the most valuable thing built today. It caught **three** separate mirages.
+- Both engines wired, feature **OFF by default**, golden 6/6 byte-identical. Merged to `dev` (`7b6a184`).
+- Full close-out in the spec, plus a **seminar-style walkthrough** (`docs/superpowers/SEMINAR_fundamental_analysis.md`)
+  explaining every step in plain language *and* technically, built around the real NQ bars of the 2025-03-07
+  jobs print.
+
+### ⚠️ Challenges / lessons (Workstream B)
+
+- **I nearly ran the whole test on the wrong timeframe.** 4-hour bars land at 02:00/06:00/10:00/14:00/18:00/22:00.
+  Releases land at **08:30**. So **88% of our events can never coincide with a 4h bar** — the feature was
+  effectively switched *off* while I measured whether it worked. *Like testing a drug on patients who never took
+  it.* One line (`mask.sum()` = 11 of 2,119) would have caught it instantly.
+- **I built the defensive feature first, and that was the wrong instinct.** The goal was always to *trade* the
+  volatility, not hide from it. Corrected mid-stream — and the data then agreed, by eliminating everything else.
+- **The strategy's holding period is the real constraint.** Flat for 77% of releases ⇒ **no** feature keyed to
+  release *timing* can ever move the needle. If news is to matter, the strategy must be designed to be **in** the
+  market at those moments. That's an entry problem, not a risk problem.
+- **A significant p-value plus a good story is exactly what gets people killed.** −0.43 with a textbook Fed
+  explanation, and it was worthless. Only the pre-declared kill criterion saved us.
+- Tripped the server's `fail2ban` by opening a new SSH connection per command (fixed with multiplexing), and
+  broke the first golden run with an over-aggressive `rsync` exclude that dropped the champion definitions.
+
+---
+
+## 🔭 Tomorrow (both workstreams)
+
+- **A:** settle the Nasdaq 1-hour engine disagreement ($80,339 vs $77,439) and decide the fate of the 29 MB zip.
+- **B:** the workstream is **closed**. The one door still open is **UNSCHEDULED news** (world-leader posts) —
+  untested, and *untouched by the efficiency argument*: releases are unexploitable **precisely because they are
+  scheduled** and everyone has already positioned. A surprise statement has no pre-positioning and no consensus
+  to price against. But it is the harder path — the research pass found **zero** verified timestamped sources.
+- **Recommendation on record: do NOT buy vendor consensus data.** No free evidence supports it, and the one
+  relationship we found flipped sign inside twelve months.
 
 ---
 

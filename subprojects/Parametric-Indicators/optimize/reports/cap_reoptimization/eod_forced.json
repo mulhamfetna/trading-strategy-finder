@@ -1,0 +1,3404 @@
+[
+ {
+  "inst": "NQ",
+  "tf": "4h",
+  "cap_mode": "bars",
+  "cap_1min": 451,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 148670.27200000026,
+    "max_dd": 12284.02399999999,
+    "win": 62.8,
+    "n_taken": 277,
+    "n_candidates": 277,
+    "exposure": 100.0,
+    "pf": 1.79,
+    "payoff": 1.06,
+    "n_locks": 76,
+    "avg_win": 1938.0,
+    "avg_loss": -1830.0
+   },
+   "oos2026": {
+    "pnl": 64877.09600000009,
+    "max_dd": 12284.02399999999,
+    "win": 69.1,
+    "n_taken": 81,
+    "n_candidates": 81,
+    "exposure": 100.0,
+    "pf": 2.27,
+    "payoff": 1.02,
+    "n_locks": 18,
+    "avg_win": 2068.0,
+    "avg_loss": -2037.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 126071.88000000024,
+    "max_dd": 13220.175999999992,
+    "win": 59.8,
+    "n_taken": 286,
+    "n_candidates": 286,
+    "exposure": 100.0,
+    "pf": 1.64,
+    "payoff": 1.1,
+    "n_locks": 75,
+    "avg_win": 1889.0,
+    "avg_loss": -1713.0
+   },
+   "oos2026": {
+    "pnl": 56089.64800000009,
+    "max_dd": 12284.02399999999,
+    "win": 67.9,
+    "n_taken": 84,
+    "n_candidates": 84,
+    "exposure": 100.0,
+    "pf": 1.98,
+    "payoff": 0.94,
+    "n_locks": 21,
+    "avg_win": 1985.0,
+    "avg_loss": -2114.0
+   }
+  }
+ },
+ {
+  "inst": "NQ",
+  "tf": "2h",
+  "cap_mode": "none",
+  "cap_1min": 0,
+  "forced_mode": "eod",
+  "as_deployed": {
+   "full": {
+    "pnl": 91995.99999999984,
+    "max_dd": 16331.000000000058,
+    "win": 49.6,
+    "n_taken": 262,
+    "n_candidates": 262,
+    "exposure": 100.0,
+    "pf": 1.39,
+    "payoff": 1.41,
+    "n_locks": 137,
+    "avg_win": 2540.0,
+    "avg_loss": -1868.0
+   },
+   "oos2026": {
+    "pnl": 19568.99999999994,
+    "max_dd": 9720.0,
+    "win": 47.9,
+    "n_taken": 73,
+    "n_candidates": 73,
+    "exposure": 100.0,
+    "pf": 1.28,
+    "payoff": 1.39,
+    "n_locks": 21,
+    "avg_win": 2540.0,
+    "avg_loss": -1946.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 63645.99999999984,
+    "max_dd": 20005.000000000073,
+    "win": 50.5,
+    "n_taken": 275,
+    "n_candidates": 275,
+    "exposure": 100.0,
+    "pf": 1.3,
+    "payoff": 1.27,
+    "n_locks": 159,
+    "avg_win": 2062.0,
+    "avg_loss": -1636.0
+   },
+   "oos2026": {
+    "pnl": 12193.999999999942,
+    "max_dd": 15319.000000000015,
+    "win": 50.0,
+    "n_taken": 76,
+    "n_candidates": 76,
+    "exposure": 100.0,
+    "pf": 1.19,
+    "payoff": 1.19,
+    "n_locks": 40,
+    "avg_win": 2204.0,
+    "avg_loss": -1836.0
+   }
+  }
+ },
+ {
+  "inst": "NQ",
+  "tf": "1h",
+  "cap_mode": "none",
+  "cap_1min": 0,
+  "forced_mode": "eod",
+  "as_deployed": {
+   "full": {
+    "pnl": 77439.20000000377,
+    "max_dd": 9144.471999999878,
+    "win": 52.3,
+    "n_taken": 222,
+    "n_candidates": 253,
+    "exposure": 87.7,
+    "pf": 1.67,
+    "payoff": 1.53,
+    "n_locks": 32,
+    "avg_win": 1660.0,
+    "avg_loss": -1112.0
+   },
+   "oos2026": {
+    "pnl": 21943.904000001057,
+    "max_dd": 8494.527999999846,
+    "win": 53.3,
+    "n_taken": 60,
+    "n_candidates": 77,
+    "exposure": 77.9,
+    "pf": 1.7,
+    "payoff": 1.49,
+    "n_locks": 17,
+    "avg_win": 1660.0,
+    "avg_loss": -1171.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 66795.09600000325,
+    "max_dd": 10354.471999999878,
+    "win": 52.1,
+    "n_taken": 217,
+    "n_candidates": 256,
+    "exposure": 84.8,
+    "pf": 1.63,
+    "payoff": 1.5,
+    "n_locks": 39,
+    "avg_win": 1521.0,
+    "avg_loss": -1035.0
+   },
+   "oos2026": {
+    "pnl": 23318.960000001025,
+    "max_dd": 8784.639999999781,
+    "win": 53.8,
+    "n_taken": 65,
+    "n_candidates": 78,
+    "exposure": 83.3,
+    "pf": 1.76,
+    "payoff": 1.51,
+    "n_locks": 14,
+    "avg_win": 1549.0,
+    "avg_loss": -1091.0
+   }
+  }
+ },
+ {
+  "inst": "NQ",
+  "tf": "15m",
+  "cap_mode": "none",
+  "cap_1min": 0,
+  "forced_mode": "eod",
+  "as_deployed": {
+   "full": {
+    "pnl": 76231.99999999582,
+    "max_dd": 8089.000000000015,
+    "win": 48.5,
+    "n_taken": 653,
+    "n_candidates": 653,
+    "exposure": 100.0,
+    "pf": 1.38,
+    "payoff": 1.47,
+    "n_locks": 144,
+    "avg_win": 866.0,
+    "avg_loss": -580.0
+   },
+   "oos2026": {
+    "pnl": 29113.99999999856,
+    "max_dd": 5065.0,
+    "win": 50.0,
+    "n_taken": 214,
+    "n_candidates": 214,
+    "exposure": 100.0,
+    "pf": 1.46,
+    "payoff": 1.46,
+    "n_locks": 7,
+    "avg_win": 866.0,
+    "avg_loss": -599.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 72440.99999999598,
+    "max_dd": 9391.000000000276,
+    "win": 48.4,
+    "n_taken": 655,
+    "n_candidates": 655,
+    "exposure": 100.0,
+    "pf": 1.37,
+    "payoff": 1.46,
+    "n_locks": 177,
+    "avg_win": 846.0,
+    "avg_loss": -567.0
+   },
+   "oos2026": {
+    "pnl": 30397.999999998574,
+    "max_dd": 5065.0,
+    "win": 50.5,
+    "n_taken": 216,
+    "n_candidates": 216,
+    "exposure": 100.0,
+    "pf": 1.49,
+    "payoff": 1.46,
+    "n_locks": 7,
+    "avg_win": 847.0,
+    "avg_loss": -574.0
+   }
+  }
+ },
+ {
+  "inst": "NQ",
+  "tf": "5m",
+  "cap_mode": "none",
+  "cap_1min": 0,
+  "forced_mode": "eod",
+  "as_deployed": {
+   "full": {
+    "pnl": 23926.000000005733,
+    "max_dd": 4635.999999999476,
+    "win": 59.3,
+    "n_taken": 332,
+    "n_candidates": 351,
+    "exposure": 94.6,
+    "pf": 1.31,
+    "payoff": 0.9,
+    "n_locks": 1,
+    "avg_win": 508.0,
+    "avg_loss": -577.0
+   },
+   "oos2026": {
+    "pnl": 5860.000000001455,
+    "max_dd": 4025.9999999999127,
+    "win": 59.5,
+    "n_taken": 84,
+    "n_candidates": 84,
+    "exposure": 100.0,
+    "pf": 1.3,
+    "payoff": 0.88,
+    "n_locks": 0,
+    "avg_win": 508.0,
+    "avg_loss": -585.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 12574.00000000387,
+    "max_dd": 5279.999999999563,
+    "win": 56.9,
+    "n_taken": 239,
+    "n_candidates": 353,
+    "exposure": 67.7,
+    "pf": 1.23,
+    "payoff": 0.93,
+    "n_locks": 6,
+    "avg_win": 501.0,
+    "avg_loss": -557.0
+   },
+   "oos2026": {
+    "pnl": 4966.000000001368,
+    "max_dd": 4140.999999999622,
+    "win": 57.6,
+    "n_taken": 85,
+    "n_candidates": 85,
+    "exposure": 100.0,
+    "pf": 1.26,
+    "payoff": 0.92,
+    "n_locks": 0,
+    "avg_win": 499.0,
+    "avg_loss": -541.0
+   }
+  }
+ },
+ {
+  "inst": "NQ",
+  "tf": "2m",
+  "cap_mode": "none",
+  "cap_1min": 0,
+  "forced_mode": "eod",
+  "as_deployed": {
+   "full": {
+    "pnl": 29777.000000004846,
+    "max_dd": 3260.999999999767,
+    "win": 64.1,
+    "n_taken": 276,
+    "n_candidates": 276,
+    "exposure": 100.0,
+    "pf": 1.77,
+    "payoff": 0.99,
+    "n_locks": 0,
+    "avg_win": 388.0,
+    "avg_loss": -411.0
+   },
+   "oos2026": {
+    "pnl": 7816.000000001368,
+    "max_dd": 2275.0,
+    "win": 62.2,
+    "n_taken": 82,
+    "n_candidates": 82,
+    "exposure": 100.0,
+    "pf": 1.65,
+    "payoff": 1.0,
+    "n_locks": 0,
+    "avg_win": 388.0,
+    "avg_loss": -414.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 29511.000000004715,
+    "max_dd": 3197.9999999999563,
+    "win": 64.5,
+    "n_taken": 276,
+    "n_candidates": 276,
+    "exposure": 100.0,
+    "pf": 1.78,
+    "payoff": 0.97,
+    "n_locks": 0,
+    "avg_win": 383.0,
+    "avg_loss": -406.0
+   },
+   "oos2026": {
+    "pnl": 7488.000000001339,
+    "max_dd": 2275.0,
+    "win": 62.2,
+    "n_taken": 82,
+    "n_candidates": 82,
+    "exposure": 100.0,
+    "pf": 1.63,
+    "payoff": 0.99,
+    "n_locks": 0,
+    "avg_win": 388.0,
+    "avg_loss": -414.0
+   }
+  }
+ },
+ {
+  "inst": "ES",
+  "tf": "4h",
+  "cap_mode": "bars",
+  "cap_1min": 825,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 68167.92000000042,
+    "max_dd": 13551.779999999962,
+    "win": 60.7,
+    "n_taken": 145,
+    "n_candidates": 145,
+    "exposure": 100.0,
+    "pf": 2.01,
+    "payoff": 1.28,
+    "n_locks": 89,
+    "avg_win": 1541.0,
+    "avg_loss": -1205.0
+   },
+   "oos2026": {
+    "pnl": 28187.96500000012,
+    "max_dd": 2500.0,
+    "win": 71.4,
+    "n_taken": 35,
+    "n_candidates": 35,
+    "exposure": 100.0,
+    "pf": 3.64,
+    "payoff": 1.46,
+    "n_locks": 9,
+    "avg_win": 1554.0,
+    "avg_loss": -1066.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 62333.98000000033,
+    "max_dd": 11101.779999999962,
+    "win": 60.7,
+    "n_taken": 150,
+    "n_candidates": 150,
+    "exposure": 100.0,
+    "pf": 2.02,
+    "payoff": 1.26,
+    "n_locks": 81,
+    "avg_win": 1359.0,
+    "avg_loss": -1075.0
+   },
+   "oos2026": {
+    "pnl": 24201.355000000098,
+    "max_dd": 2412.5,
+    "win": 69.4,
+    "n_taken": 36,
+    "n_candidates": 36,
+    "exposure": 100.0,
+    "pf": 3.16,
+    "payoff": 1.39,
+    "n_locks": 12,
+    "avg_win": 1417.0,
+    "avg_loss": -1019.0
+   }
+  }
+ },
+ {
+  "inst": "ES",
+  "tf": "2h",
+  "cap_mode": "bars",
+  "cap_1min": 1362,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 75692.49999999965,
+    "max_dd": 6992.500000000029,
+    "win": 40.1,
+    "n_taken": 277,
+    "n_candidates": 277,
+    "exposure": 100.0,
+    "pf": 1.61,
+    "payoff": 2.41,
+    "n_locks": 186,
+    "avg_win": 1779.0,
+    "avg_loss": -761.0
+   },
+   "oos2026": {
+    "pnl": 18239.99999999992,
+    "max_dd": 6992.500000000018,
+    "win": 36.7,
+    "n_taken": 79,
+    "n_candidates": 79,
+    "exposure": 100.0,
+    "pf": 1.49,
+    "payoff": 2.56,
+    "n_locks": 58,
+    "avg_win": 1888.0,
+    "avg_loss": -792.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 54054.9999999997,
+    "max_dd": 8835.000000000036,
+    "win": 41.6,
+    "n_taken": 286,
+    "n_candidates": 286,
+    "exposure": 100.0,
+    "pf": 1.48,
+    "payoff": 2.06,
+    "n_locks": 196,
+    "avg_win": 1346.0,
+    "avg_loss": -667.0
+   },
+   "oos2026": {
+    "pnl": 12317.499999999927,
+    "max_dd": 6917.500000000018,
+    "win": 40.7,
+    "n_taken": 81,
+    "n_candidates": 81,
+    "exposure": 100.0,
+    "pf": 1.35,
+    "payoff": 1.97,
+    "n_locks": 60,
+    "avg_win": 1352.0,
+    "avg_loss": -712.0
+   }
+  }
+ },
+ {
+  "inst": "ES",
+  "tf": "1h",
+  "cap_mode": "bars",
+  "cap_1min": 696,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 61617.50000000137,
+    "max_dd": 8519.999999999982,
+    "win": 52.6,
+    "n_taken": 211,
+    "n_candidates": 211,
+    "exposure": 100.0,
+    "pf": 1.79,
+    "payoff": 1.6,
+    "n_locks": 72,
+    "avg_win": 1225.0,
+    "avg_loss": -826.0
+   },
+   "oos2026": {
+    "pnl": 28192.500000000473,
+    "max_dd": 3575.0,
+    "win": 62.5,
+    "n_taken": 56,
+    "n_candidates": 56,
+    "exposure": 100.0,
+    "pf": 2.61,
+    "payoff": 1.57,
+    "n_locks": 11,
+    "avg_win": 1307.0,
+    "avg_loss": -887.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 60595.000000001346,
+    "max_dd": 8519.999999999982,
+    "win": 52.2,
+    "n_taken": 224,
+    "n_candidates": 224,
+    "exposure": 100.0,
+    "pf": 1.79,
+    "payoff": 1.64,
+    "n_locks": 75,
+    "avg_win": 1145.0,
+    "avg_loss": -748.0
+   },
+   "oos2026": {
+    "pnl": 31072.50000000049,
+    "max_dd": 3575.0,
+    "win": 63.8,
+    "n_taken": 58,
+    "n_candidates": 58,
+    "exposure": 100.0,
+    "pf": 2.96,
+    "payoff": 1.68,
+    "n_locks": 9,
+    "avg_win": 1269.0,
+    "avg_loss": -789.0
+   }
+  }
+ },
+ {
+  "inst": "ES",
+  "tf": "15m",
+  "cap_mode": "bars",
+  "cap_1min": 1300,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 11017.500000002201,
+    "max_dd": 759.9999999999909,
+    "win": 93.8,
+    "n_taken": 128,
+    "n_candidates": 128,
+    "exposure": 100.0,
+    "pf": 3.4,
+    "payoff": 0.23,
+    "n_locks": 0,
+    "avg_win": 130.0,
+    "avg_loss": -541.0
+   },
+   "oos2026": {
+    "pnl": 1217.5000000004275,
+    "max_dd": 759.9999999999909,
+    "win": 88.5,
+    "n_taken": 26,
+    "n_candidates": 26,
+    "exposure": 100.0,
+    "pf": 1.69,
+    "payoff": 0.22,
+    "n_locks": 0,
+    "avg_win": 130.0,
+    "avg_loss": -512.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 9947.500000002037,
+    "max_dd": 794.9999999999363,
+    "win": 90.6,
+    "n_taken": 128,
+    "n_candidates": 128,
+    "exposure": 100.0,
+    "pf": 3.1,
+    "payoff": 0.29,
+    "n_locks": 0,
+    "avg_win": 130.0,
+    "avg_loss": -541.0
+   },
+   "oos2026": {
+    "pnl": 890.0000000003729,
+    "max_dd": 794.9999999999363,
+    "win": 84.6,
+    "n_taken": 26,
+    "n_candidates": 26,
+    "exposure": 100.0,
+    "pf": 1.5,
+    "payoff": 0.2,
+    "n_locks": 0,
+    "avg_win": 130.0,
+    "avg_loss": -512.0
+   }
+  }
+ },
+ {
+  "inst": "ES",
+  "tf": "5m",
+  "cap_mode": "bars",
+  "cap_1min": 902,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 5597.795000001997,
+    "max_dd": 1108.3049999996547,
+    "win": 80.5,
+    "n_taken": 154,
+    "n_candidates": 224,
+    "exposure": 68.8,
+    "pf": 1.48,
+    "payoff": 0.36,
+    "n_locks": 7,
+    "avg_win": 138.0,
+    "avg_loss": -369.0
+   },
+   "oos2026": {
+    "pnl": 2700.520000000597,
+    "max_dd": 1064.009999999962,
+    "win": 86.4,
+    "n_taken": 44,
+    "n_candidates": 64,
+    "exposure": 68.8,
+    "pf": 2.06,
+    "payoff": 0.32,
+    "n_locks": 2,
+    "avg_win": 138.0,
+    "avg_loss": -353.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 5203.935000001866,
+    "max_dd": 1144.2149999996218,
+    "win": 80.0,
+    "n_taken": 145,
+    "n_candidates": 225,
+    "exposure": 64.4,
+    "pf": 1.48,
+    "payoff": 0.37,
+    "n_locks": 8,
+    "avg_win": 136.0,
+    "avg_loss": -378.0
+   },
+   "oos2026": {
+    "pnl": 2700.520000000597,
+    "max_dd": 1064.009999999962,
+    "win": 86.4,
+    "n_taken": 44,
+    "n_candidates": 64,
+    "exposure": 68.8,
+    "pf": 2.06,
+    "payoff": 0.32,
+    "n_locks": 2,
+    "avg_win": 138.0,
+    "avg_loss": -353.0
+   }
+  }
+ },
+ {
+  "inst": "ES",
+  "tf": "2m",
+  "cap_mode": "bars",
+  "cap_1min": 734,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 12631.639999996969,
+    "max_dd": 1567.3000000001593,
+    "win": 80.4,
+    "n_taken": 873,
+    "n_candidates": 975,
+    "exposure": 89.5,
+    "pf": 1.32,
+    "payoff": 0.32,
+    "n_locks": 17,
+    "avg_win": 74.0,
+    "avg_loss": -227.0
+   },
+   "oos2026": {
+    "pnl": 6912.969999998859,
+    "max_dd": 786.4999999999782,
+    "win": 83.9,
+    "n_taken": 279,
+    "n_candidates": 279,
+    "exposure": 100.0,
+    "pf": 1.67,
+    "payoff": 0.32,
+    "n_locks": 0,
+    "avg_win": 74.0,
+    "avg_loss": -228.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 13345.544999996855,
+    "max_dd": 1649.725000000035,
+    "win": 80.4,
+    "n_taken": 899,
+    "n_candidates": 977,
+    "exposure": 92.0,
+    "pf": 1.34,
+    "payoff": 0.33,
+    "n_locks": 13,
+    "avg_win": 74.0,
+    "avg_loss": -226.0
+   },
+   "oos2026": {
+    "pnl": 6753.399999998874,
+    "max_dd": 786.4999999999782,
+    "win": 83.5,
+    "n_taken": 279,
+    "n_candidates": 279,
+    "exposure": 100.0,
+    "pf": 1.65,
+    "payoff": 0.33,
+    "n_locks": 0,
+    "avg_win": 74.0,
+    "avg_loss": -228.0
+   }
+  }
+ },
+ {
+  "inst": "GC",
+  "tf": "4h",
+  "cap_mode": "none",
+  "cap_1min": 0,
+  "forced_mode": "eod",
+  "as_deployed": {
+   "full": {
+    "pnl": 77874.66000000009,
+    "max_dd": 17163.870000000563,
+    "win": 77.3,
+    "n_taken": 251,
+    "n_candidates": 251,
+    "exposure": 100.0,
+    "pf": 1.51,
+    "payoff": 0.44,
+    "n_locks": 163,
+    "avg_win": 1184.0,
+    "avg_loss": -2663.0
+   },
+   "oos2026": {
+    "pnl": 11816.169999998692,
+    "max_dd": 17163.870000000497,
+    "win": 73.6,
+    "n_taken": 72,
+    "n_candidates": 72,
+    "exposure": 100.0,
+    "pf": 1.23,
+    "payoff": 0.44,
+    "n_locks": 60,
+    "avg_win": 1184.0,
+    "avg_loss": -2681.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 50640.72999999967,
+    "max_dd": 19450.54999999993,
+    "win": 69.7,
+    "n_taken": 261,
+    "n_candidates": 261,
+    "exposure": 100.0,
+    "pf": 1.35,
+    "payoff": 0.58,
+    "n_locks": 197,
+    "avg_win": 1082.0,
+    "avg_loss": -1852.0
+   },
+   "oos2026": {
+    "pnl": 12480.609999998796,
+    "max_dd": 14973.32000000024,
+    "win": 69.4,
+    "n_taken": 72,
+    "n_candidates": 72,
+    "exposure": 100.0,
+    "pf": 1.27,
+    "payoff": 0.56,
+    "n_locks": 59,
+    "avg_win": 1175.0,
+    "avg_loss": -2102.0
+   }
+  }
+ },
+ {
+  "inst": "GC",
+  "tf": "2h",
+  "cap_mode": "none",
+  "cap_1min": 0,
+  "forced_mode": "eod",
+  "as_deployed": {
+   "full": {
+    "pnl": 81156.59999999734,
+    "max_dd": 15648.590000000331,
+    "win": 51.2,
+    "n_taken": 332,
+    "n_candidates": 332,
+    "exposure": 100.0,
+    "pf": 1.38,
+    "payoff": 1.31,
+    "n_locks": 257,
+    "avg_win": 1746.0,
+    "avg_loss": -1331.0
+   },
+   "oos2026": {
+    "pnl": 22657.349999999315,
+    "max_dd": 15648.590000000331,
+    "win": 51.7,
+    "n_taken": 87,
+    "n_candidates": 87,
+    "exposure": 100.0,
+    "pf": 1.41,
+    "payoff": 1.31,
+    "n_locks": 66,
+    "avg_win": 1746.0,
+    "avg_loss": -1331.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 52882.69999999761,
+    "max_dd": 13385.89000000029,
+    "win": 50.9,
+    "n_taken": 340,
+    "n_candidates": 340,
+    "exposure": 100.0,
+    "pf": 1.27,
+    "payoff": 1.22,
+    "n_locks": 280,
+    "avg_win": 1475.0,
+    "avg_loss": -1063.0
+   },
+   "oos2026": {
+    "pnl": 20047.55999999943,
+    "max_dd": 13385.89000000029,
+    "win": 52.9,
+    "n_taken": 87,
+    "n_candidates": 87,
+    "exposure": 100.0,
+    "pf": 1.39,
+    "payoff": 1.24,
+    "n_locks": 64,
+    "avg_win": 1648.0,
+    "avg_loss": -1212.0
+   }
+  }
+ },
+ {
+  "inst": "GC",
+  "tf": "1h",
+  "cap_mode": "eod",
+  "cap_1min": 0,
+  "forced_mode": "eod",
+  "as_deployed": {
+   "full": {
+    "pnl": 86969.15999999865,
+    "max_dd": 21007.140000000174,
+    "win": 45.4,
+    "n_taken": 571,
+    "n_candidates": 571,
+    "exposure": 100.0,
+    "pf": 1.26,
+    "payoff": 1.52,
+    "n_locks": 465,
+    "avg_win": 1627.0,
+    "avg_loss": -1045.0
+   },
+   "oos2026": {
+    "pnl": 28740.51999999747,
+    "max_dd": 21007.140000000247,
+    "win": 44.6,
+    "n_taken": 204,
+    "n_candidates": 204,
+    "exposure": 100.0,
+    "pf": 1.22,
+    "payoff": 1.52,
+    "n_locks": 164,
+    "avg_win": 1774.0,
+    "avg_loss": -1105.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 86969.15999999865,
+    "max_dd": 21007.140000000174,
+    "win": 45.4,
+    "n_taken": 571,
+    "n_candidates": 571,
+    "exposure": 100.0,
+    "pf": 1.26,
+    "payoff": 1.52,
+    "n_locks": 465,
+    "avg_win": 1627.0,
+    "avg_loss": -1045.0
+   },
+   "oos2026": {
+    "pnl": 28740.51999999747,
+    "max_dd": 21007.140000000247,
+    "win": 44.6,
+    "n_taken": 204,
+    "n_candidates": 204,
+    "exposure": 100.0,
+    "pf": 1.22,
+    "payoff": 1.52,
+    "n_locks": 164,
+    "avg_win": 1774.0,
+    "avg_loss": -1105.0
+   }
+  }
+ },
+ {
+  "inst": "GC",
+  "tf": "15m",
+  "cap_mode": "none",
+  "cap_1min": 0,
+  "forced_mode": "eod",
+  "as_deployed": {
+   "full": {
+    "pnl": 80909.40999998542,
+    "max_dd": 10097.250000000371,
+    "win": 66.7,
+    "n_taken": 2018,
+    "n_candidates": 2018,
+    "exposure": 100.0,
+    "pf": 1.17,
+    "payoff": 0.58,
+    "n_locks": 1656,
+    "avg_win": 416.0,
+    "avg_loss": -720.0
+   },
+   "oos2026": {
+    "pnl": 37285.849999996164,
+    "max_dd": 7583.119999999781,
+    "win": 68.2,
+    "n_taken": 784,
+    "n_candidates": 784,
+    "exposure": 100.0,
+    "pf": 1.2,
+    "payoff": 0.56,
+    "n_locks": 617,
+    "avg_win": 416.0,
+    "avg_loss": -753.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 79447.48999998605,
+    "max_dd": 9767.250000000335,
+    "win": 66.0,
+    "n_taken": 2037,
+    "n_candidates": 2037,
+    "exposure": 100.0,
+    "pf": 1.17,
+    "payoff": 0.6,
+    "n_locks": 1677,
+    "avg_win": 409.0,
+    "avg_loss": -689.0
+   },
+   "oos2026": {
+    "pnl": 36109.32999999627,
+    "max_dd": 7583.119999999781,
+    "win": 67.7,
+    "n_taken": 786,
+    "n_candidates": 786,
+    "exposure": 100.0,
+    "pf": 1.2,
+    "payoff": 0.57,
+    "n_locks": 623,
+    "avg_win": 412.0,
+    "avg_loss": -733.0
+   }
+  }
+ },
+ {
+  "inst": "GC",
+  "tf": "5m",
+  "cap_mode": "both",
+  "cap_1min": 556,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 18126.2000000032,
+    "max_dd": 4115.399999999954,
+    "win": 64.8,
+    "n_taken": 210,
+    "n_candidates": 614,
+    "exposure": 34.2,
+    "pf": 1.51,
+    "payoff": 0.82,
+    "n_locks": 135,
+    "avg_win": 390.0,
+    "avg_loss": -476.0
+   },
+   "oos2026": {
+    "pnl": 7150.150000001031,
+    "max_dd": 4115.399999999954,
+    "win": 69.2,
+    "n_taken": 65,
+    "n_candidates": 187,
+    "exposure": 34.8,
+    "pf": 1.67,
+    "payoff": 0.74,
+    "n_locks": 41,
+    "avg_win": 388.0,
+    "avg_loss": -504.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 18126.2000000032,
+    "max_dd": 4115.399999999954,
+    "win": 64.8,
+    "n_taken": 210,
+    "n_candidates": 614,
+    "exposure": 34.2,
+    "pf": 1.51,
+    "payoff": 0.82,
+    "n_locks": 135,
+    "avg_win": 390.0,
+    "avg_loss": -476.0
+   },
+   "oos2026": {
+    "pnl": 7150.150000001031,
+    "max_dd": 4115.399999999954,
+    "win": 69.2,
+    "n_taken": 65,
+    "n_candidates": 187,
+    "exposure": 34.8,
+    "pf": 1.67,
+    "payoff": 0.74,
+    "n_locks": 41,
+    "avg_win": 388.0,
+    "avg_loss": -504.0
+   }
+  }
+ },
+ {
+  "inst": "GC",
+  "tf": "2m",
+  "cap_mode": "both",
+  "cap_1min": 589,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 38638.55999999996,
+    "max_dd": 4576.839999999856,
+    "win": 55.3,
+    "n_taken": 886,
+    "n_candidates": 886,
+    "exposure": 100.0,
+    "pf": 1.28,
+    "payoff": 1.03,
+    "n_locks": 509,
+    "avg_win": 362.0,
+    "avg_loss": -350.0
+   },
+   "oos2026": {
+    "pnl": 13638.940000000412,
+    "max_dd": 3824.699999999939,
+    "win": 56.6,
+    "n_taken": 288,
+    "n_candidates": 288,
+    "exposure": 100.0,
+    "pf": 1.29,
+    "payoff": 0.99,
+    "n_locks": 165,
+    "avg_win": 364.0,
+    "avg_loss": -371.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 38638.55999999996,
+    "max_dd": 4576.839999999856,
+    "win": 55.3,
+    "n_taken": 886,
+    "n_candidates": 886,
+    "exposure": 100.0,
+    "pf": 1.28,
+    "payoff": 1.03,
+    "n_locks": 509,
+    "avg_win": 362.0,
+    "avg_loss": -350.0
+   },
+   "oos2026": {
+    "pnl": 13638.940000000412,
+    "max_dd": 3824.699999999939,
+    "win": 56.6,
+    "n_taken": 288,
+    "n_candidates": 288,
+    "exposure": 100.0,
+    "pf": 1.29,
+    "payoff": 0.99,
+    "n_locks": 165,
+    "avg_win": 364.0,
+    "avg_loss": -371.0
+   }
+  }
+ },
+ {
+  "inst": "SI",
+  "tf": "4h",
+  "cap_mode": "bars",
+  "cap_1min": 1377,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 21928.00000000032,
+    "max_dd": 7451.999999999967,
+    "win": 29.5,
+    "n_taken": 139,
+    "n_candidates": 139,
+    "exposure": 100.0,
+    "pf": 1.41,
+    "payoff": 3.38,
+    "n_locks": 117,
+    "avg_win": 1824.0,
+    "avg_loss": -539.0
+   },
+   "oos2026": {
+    "pnl": 5111.000000000061,
+    "max_dd": 5290.500000000123,
+    "win": 40.0,
+    "n_taken": 20,
+    "n_candidates": 20,
+    "exposure": 100.0,
+    "pf": 1.54,
+    "payoff": 2.31,
+    "n_locks": 14,
+    "avg_win": 1824.0,
+    "avg_loss": -790.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 25405.00000000023,
+    "max_dd": 7451.999999999967,
+    "win": 33.8,
+    "n_taken": 139,
+    "n_candidates": 139,
+    "exposure": 100.0,
+    "pf": 1.52,
+    "payoff": 2.95,
+    "n_locks": 111,
+    "avg_win": 1582.0,
+    "avg_loss": -536.0
+   },
+   "oos2026": {
+    "pnl": 5111.000000000061,
+    "max_dd": 5290.500000000123,
+    "win": 40.0,
+    "n_taken": 20,
+    "n_candidates": 20,
+    "exposure": 100.0,
+    "pf": 1.54,
+    "payoff": 2.31,
+    "n_locks": 14,
+    "avg_win": 1824.0,
+    "avg_loss": -790.0
+   }
+  }
+ },
+ {
+  "inst": "SI",
+  "tf": "2h",
+  "cap_mode": "bars",
+  "cap_1min": 660,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 31539.999999999833,
+    "max_dd": 4452.499999999872,
+    "win": 26.5,
+    "n_taken": 291,
+    "n_candidates": 291,
+    "exposure": 100.0,
+    "pf": 1.48,
+    "payoff": 4.12,
+    "n_locks": 245,
+    "avg_win": 1273.0,
+    "avg_loss": -306.0
+   },
+   "oos2026": {
+    "pnl": 5956.999999998761,
+    "max_dd": 3906.5000000005093,
+    "win": 24.6,
+    "n_taken": 65,
+    "n_candidates": 65,
+    "exposure": 100.0,
+    "pf": 1.4,
+    "payoff": 4.28,
+    "n_locks": 54,
+    "avg_win": 1312.0,
+    "avg_loss": -306.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 30144.49999999964,
+    "max_dd": 4882.999999999916,
+    "win": 29.7,
+    "n_taken": 293,
+    "n_candidates": 293,
+    "exposure": 100.0,
+    "pf": 1.48,
+    "payoff": 3.49,
+    "n_locks": 245,
+    "avg_win": 1030.0,
+    "avg_loss": -303.0
+   },
+   "oos2026": {
+    "pnl": 5956.999999998761,
+    "max_dd": 3906.5000000005093,
+    "win": 24.6,
+    "n_taken": 65,
+    "n_candidates": 65,
+    "exposure": 100.0,
+    "pf": 1.4,
+    "payoff": 4.28,
+    "n_locks": 54,
+    "avg_win": 1312.0,
+    "avg_loss": -306.0
+   }
+  }
+ },
+ {
+  "inst": "SI",
+  "tf": "1h",
+  "cap_mode": "eod",
+  "cap_1min": 0,
+  "forced_mode": "eod",
+  "as_deployed": {
+   "full": {
+    "pnl": 43984.00000000419,
+    "max_dd": 6378.999999999509,
+    "win": 28.8,
+    "n_taken": 368,
+    "n_candidates": 368,
+    "exposure": 100.0,
+    "pf": 1.61,
+    "payoff": 3.95,
+    "n_locks": 315,
+    "avg_win": 1148.0,
+    "avg_loss": -280.0
+   },
+   "oos2026": {
+    "pnl": 15511.000000001764,
+    "max_dd": 6378.999999999522,
+    "win": 26.5,
+    "n_taken": 132,
+    "n_candidates": 132,
+    "exposure": 100.0,
+    "pf": 1.57,
+    "payoff": 4.34,
+    "n_locks": 114,
+    "avg_win": 1235.0,
+    "avg_loss": -282.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 43984.00000000419,
+    "max_dd": 6378.999999999509,
+    "win": 28.8,
+    "n_taken": 368,
+    "n_candidates": 368,
+    "exposure": 100.0,
+    "pf": 1.61,
+    "payoff": 3.95,
+    "n_locks": 315,
+    "avg_win": 1148.0,
+    "avg_loss": -280.0
+   },
+   "oos2026": {
+    "pnl": 15511.000000001764,
+    "max_dd": 6378.999999999522,
+    "win": 26.5,
+    "n_taken": 132,
+    "n_candidates": 132,
+    "exposure": 100.0,
+    "pf": 1.57,
+    "payoff": 4.34,
+    "n_locks": 114,
+    "avg_win": 1235.0,
+    "avg_loss": -282.0
+   }
+  }
+ },
+ {
+  "inst": "SI",
+  "tf": "15m",
+  "cap_mode": "bars",
+  "cap_1min": 702,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 76579.49999998434,
+    "max_dd": 10362.500000000276,
+    "win": 59.5,
+    "n_taken": 1790,
+    "n_candidates": 1790,
+    "exposure": 100.0,
+    "pf": 1.22,
+    "payoff": 0.83,
+    "n_locks": 1528,
+    "avg_win": 396.0,
+    "avg_loss": -472.0
+   },
+   "oos2026": {
+    "pnl": 18139.499999994012,
+    "max_dd": 10362.500000000284,
+    "win": 58.9,
+    "n_taken": 616,
+    "n_candidates": 616,
+    "exposure": 100.0,
+    "pf": 1.14,
+    "payoff": 0.8,
+    "n_locks": 534,
+    "avg_win": 396.0,
+    "avg_loss": -495.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 70963.99999998456,
+    "max_dd": 10362.500000000276,
+    "win": 59.1,
+    "n_taken": 1795,
+    "n_candidates": 1795,
+    "exposure": 100.0,
+    "pf": 1.21,
+    "payoff": 0.83,
+    "n_locks": 1547,
+    "avg_win": 392.0,
+    "avg_loss": -465.0
+   },
+   "oos2026": {
+    "pnl": 17893.99999999396,
+    "max_dd": 10362.500000000284,
+    "win": 58.9,
+    "n_taken": 616,
+    "n_candidates": 616,
+    "exposure": 100.0,
+    "pf": 1.14,
+    "payoff": 0.8,
+    "n_locks": 534,
+    "avg_win": 394.0,
+    "avg_loss": -491.0
+   }
+  }
+ },
+ {
+  "inst": "SI",
+  "tf": "5m",
+  "cap_mode": "bars",
+  "cap_1min": 820,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 88295.99999998677,
+    "max_dd": 2901.0000000000146,
+    "win": 38.0,
+    "n_taken": 3055,
+    "n_candidates": 3055,
+    "exposure": 100.0,
+    "pf": 1.31,
+    "payoff": 2.13,
+    "n_locks": 2583,
+    "avg_win": 324.0,
+    "avg_loss": -152.0
+   },
+   "oos2026": {
+    "pnl": 18662.99999999168,
+    "max_dd": 2745.000000000753,
+    "win": 37.3,
+    "n_taken": 751,
+    "n_candidates": 751,
+    "exposure": 100.0,
+    "pf": 1.26,
+    "payoff": 2.12,
+    "n_locks": 645,
+    "avg_win": 324.0,
+    "avg_loss": -153.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 87948.99999998693,
+    "max_dd": 2745.0000000006694,
+    "win": 38.2,
+    "n_taken": 3063,
+    "n_candidates": 3063,
+    "exposure": 100.0,
+    "pf": 1.31,
+    "payoff": 2.11,
+    "n_locks": 2589,
+    "avg_win": 319.0,
+    "avg_loss": -152.0
+   },
+   "oos2026": {
+    "pnl": 18715.999999991735,
+    "max_dd": 2745.000000000753,
+    "win": 37.3,
+    "n_taken": 751,
+    "n_candidates": 751,
+    "exposure": 100.0,
+    "pf": 1.26,
+    "payoff": 2.12,
+    "n_locks": 645,
+    "avg_win": 324.0,
+    "avg_loss": -153.0
+   }
+  }
+ },
+ {
+  "inst": "SI",
+  "tf": "2m",
+  "cap_mode": "none",
+  "cap_1min": 0,
+  "forced_mode": "eod",
+  "as_deployed": {
+   "full": {
+    "pnl": 59880.000000015396,
+    "max_dd": 2306.9999999986176,
+    "win": 36.3,
+    "n_taken": 3531,
+    "n_candidates": 3531,
+    "exposure": 100.0,
+    "pf": 1.26,
+    "payoff": 2.22,
+    "n_locks": 3112,
+    "avg_win": 225.0,
+    "avg_loss": -101.0
+   },
+   "oos2026": {
+    "pnl": 10451.999999995962,
+    "max_dd": 1072.500000000433,
+    "win": 41.3,
+    "n_taken": 312,
+    "n_candidates": 312,
+    "exposure": 100.0,
+    "pf": 1.56,
+    "payoff": 2.22,
+    "n_locks": 242,
+    "avg_win": 225.0,
+    "avg_loss": -102.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 58514.000000015294,
+    "max_dd": 2275.999999998694,
+    "win": 36.3,
+    "n_taken": 3540,
+    "n_candidates": 3540,
+    "exposure": 100.0,
+    "pf": 1.26,
+    "payoff": 2.2,
+    "n_locks": 3129,
+    "avg_win": 223.0,
+    "avg_loss": -101.0
+   },
+   "oos2026": {
+    "pnl": 10303.499999995936,
+    "max_dd": 1072.500000000433,
+    "win": 41.3,
+    "n_taken": 312,
+    "n_candidates": 312,
+    "exposure": 100.0,
+    "pf": 1.56,
+    "payoff": 2.21,
+    "n_locks": 240,
+    "avg_win": 224.0,
+    "avg_loss": -101.0
+   }
+  }
+ },
+ {
+  "inst": "HG",
+  "tf": "4h",
+  "cap_mode": "none",
+  "cap_1min": 0,
+  "forced_mode": "eod",
+  "as_deployed": {
+   "full": {
+    "pnl": 60389.99999999955,
+    "max_dd": 3464.99999999994,
+    "win": 56.2,
+    "n_taken": 242,
+    "n_candidates": 242,
+    "exposure": 100.0,
+    "pf": 1.97,
+    "payoff": 1.54,
+    "n_locks": 150,
+    "avg_win": 900.0,
+    "avg_loss": -585.0
+   },
+   "oos2026": {
+    "pnl": 22094.99999999981,
+    "max_dd": 2924.9999999999636,
+    "win": 58.2,
+    "n_taken": 79,
+    "n_candidates": 79,
+    "exposure": 100.0,
+    "pf": 2.14,
+    "payoff": 1.54,
+    "n_locks": 45,
+    "avg_win": 900.0,
+    "avg_loss": -585.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 51202.499999999636,
+    "max_dd": 4077.4999999999563,
+    "win": 56.6,
+    "n_taken": 251,
+    "n_candidates": 251,
+    "exposure": 100.0,
+    "pf": 1.9,
+    "payoff": 1.46,
+    "n_locks": 164,
+    "avg_win": 761.0,
+    "avg_loss": -519.0
+   },
+   "oos2026": {
+    "pnl": 20224.999999999847,
+    "max_dd": 2639.999999999978,
+    "win": 59.3,
+    "n_taken": 81,
+    "n_candidates": 81,
+    "exposure": 100.0,
+    "pf": 2.11,
+    "payoff": 1.45,
+    "n_locks": 47,
+    "avg_win": 804.0,
+    "avg_loss": -551.0
+   }
+  }
+ },
+ {
+  "inst": "HG",
+  "tf": "2h",
+  "cap_mode": "eod",
+  "cap_1min": 0,
+  "forced_mode": "eod",
+  "as_deployed": {
+   "full": {
+    "pnl": 44977.4999999992,
+    "max_dd": 4052.500000000058,
+    "win": 63.5,
+    "n_taken": 288,
+    "n_candidates": 288,
+    "exposure": 100.0,
+    "pf": 1.93,
+    "payoff": 1.11,
+    "n_locks": 178,
+    "avg_win": 502.0,
+    "avg_loss": -451.0
+   },
+   "oos2026": {
+    "pnl": 16029.999999999724,
+    "max_dd": 4052.5000000000587,
+    "win": 67.7,
+    "n_taken": 93,
+    "n_candidates": 93,
+    "exposure": 100.0,
+    "pf": 2.04,
+    "payoff": 0.97,
+    "n_locks": 55,
+    "avg_win": 510.0,
+    "avg_loss": -500.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 44977.4999999992,
+    "max_dd": 4052.500000000058,
+    "win": 63.5,
+    "n_taken": 288,
+    "n_candidates": 288,
+    "exposure": 100.0,
+    "pf": 1.93,
+    "payoff": 1.11,
+    "n_locks": 178,
+    "avg_win": 502.0,
+    "avg_loss": -451.0
+   },
+   "oos2026": {
+    "pnl": 16029.999999999724,
+    "max_dd": 4052.5000000000587,
+    "win": 67.7,
+    "n_taken": 93,
+    "n_candidates": 93,
+    "exposure": 100.0,
+    "pf": 2.04,
+    "payoff": 0.97,
+    "n_locks": 55,
+    "avg_win": 510.0,
+    "avg_loss": -500.0
+   }
+  }
+ },
+ {
+  "inst": "HG",
+  "tf": "1h",
+  "cap_mode": "none",
+  "cap_1min": 0,
+  "forced_mode": "eod",
+  "as_deployed": {
+   "full": {
+    "pnl": 27157.499999999996,
+    "max_dd": 3347.49999999992,
+    "win": 69.3,
+    "n_taken": 1030,
+    "n_candidates": 1030,
+    "exposure": 100.0,
+    "pf": 1.26,
+    "payoff": 0.56,
+    "n_locks": 821,
+    "avg_win": 182.0,
+    "avg_loss": -326.0
+   },
+   "oos2026": {
+    "pnl": 3270.000000000153,
+    "max_dd": 3347.4999999998936,
+    "win": 66.1,
+    "n_taken": 336,
+    "n_candidates": 336,
+    "exposure": 100.0,
+    "pf": 1.09,
+    "payoff": 0.56,
+    "n_locks": 291,
+    "avg_win": 182.0,
+    "avg_loss": -327.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 25997.50000000006,
+    "max_dd": 3429.9999999999054,
+    "win": 68.8,
+    "n_taken": 1031,
+    "n_candidates": 1031,
+    "exposure": 100.0,
+    "pf": 1.25,
+    "payoff": 0.57,
+    "n_locks": 824,
+    "avg_win": 180.0,
+    "avg_loss": -320.0
+   },
+   "oos2026": {
+    "pnl": 3197.5000000001655,
+    "max_dd": 3429.999999999879,
+    "win": 65.8,
+    "n_taken": 336,
+    "n_candidates": 336,
+    "exposure": 100.0,
+    "pf": 1.09,
+    "payoff": 0.56,
+    "n_locks": 290,
+    "avg_win": 182.0,
+    "avg_loss": -323.0
+   }
+  }
+ },
+ {
+  "inst": "HG",
+  "tf": "15m",
+  "cap_mode": "both",
+  "cap_1min": 110,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 41587.50000000538,
+    "max_dd": 2464.9999999995985,
+    "win": 17.1,
+    "n_taken": 2756,
+    "n_candidates": 2756,
+    "exposure": 100.0,
+    "pf": 1.46,
+    "payoff": 7.07,
+    "n_locks": 2525,
+    "avg_win": 288.0,
+    "avg_loss": -40.0
+   },
+   "oos2026": {
+    "pnl": 11267.500000001473,
+    "max_dd": 1287.4999999997435,
+    "win": 17.0,
+    "n_taken": 743,
+    "n_candidates": 743,
+    "exposure": 100.0,
+    "pf": 1.46,
+    "payoff": 7.14,
+    "n_locks": 684,
+    "avg_win": 284.0,
+    "avg_loss": -40.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 41587.50000000538,
+    "max_dd": 2464.9999999995985,
+    "win": 17.1,
+    "n_taken": 2756,
+    "n_candidates": 2756,
+    "exposure": 100.0,
+    "pf": 1.46,
+    "payoff": 7.07,
+    "n_locks": 2525,
+    "avg_win": 288.0,
+    "avg_loss": -40.0
+   },
+   "oos2026": {
+    "pnl": 11267.500000001473,
+    "max_dd": 1287.4999999997435,
+    "win": 17.0,
+    "n_taken": 743,
+    "n_candidates": 743,
+    "exposure": 100.0,
+    "pf": 1.46,
+    "payoff": 7.14,
+    "n_locks": 684,
+    "avg_win": 284.0,
+    "avg_loss": -40.0
+   }
+  }
+ },
+ {
+  "inst": "HG",
+  "tf": "5m",
+  "cap_mode": "none",
+  "cap_1min": 0,
+  "forced_mode": "eod",
+  "as_deployed": {
+   "full": {
+    "pnl": 8977.499999999704,
+    "max_dd": 1395.0000000000737,
+    "win": 27.0,
+    "n_taken": 1591,
+    "n_candidates": 4513,
+    "exposure": 35.3,
+    "pf": 1.21,
+    "payoff": 3.27,
+    "n_locks": 1462,
+    "avg_win": 122.0,
+    "avg_loss": -38.0
+   },
+   "oos2026": {
+    "pnl": 3072.499999999922,
+    "max_dd": 725.0000000000424,
+    "win": 27.5,
+    "n_taken": 477,
+    "n_candidates": 1335,
+    "exposure": 35.7,
+    "pf": 1.24,
+    "payoff": 3.27,
+    "n_locks": 430,
+    "avg_win": 122.0,
+    "avg_loss": -38.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 3937.4999999996135,
+    "max_dd": 1837.5000000001974,
+    "win": 25.1,
+    "n_taken": 1555,
+    "n_candidates": 4519,
+    "exposure": 34.4,
+    "pf": 1.09,
+    "payoff": 3.24,
+    "n_locks": 1483,
+    "avg_win": 121.0,
+    "avg_loss": -38.0
+   },
+   "oos2026": {
+    "pnl": 3639.999999999931,
+    "max_dd": 772.5000000000427,
+    "win": 28.3,
+    "n_taken": 481,
+    "n_candidates": 1335,
+    "exposure": 36.0,
+    "pf": 1.28,
+    "payoff": 3.25,
+    "n_locks": 428,
+    "avg_win": 122.0,
+    "avg_loss": -37.0
+   }
+  }
+ },
+ {
+  "inst": "HG",
+  "tf": "2m",
+  "cap_mode": "bars",
+  "cap_1min": 45,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 31787.499999988635,
+    "max_dd": 2037.5000000002863,
+    "win": 26.1,
+    "n_taken": 6494,
+    "n_candidates": 6494,
+    "exposure": 100.0,
+    "pf": 1.18,
+    "payoff": 3.33,
+    "n_locks": 6047,
+    "avg_win": 125.0,
+    "avg_loss": -37.0
+   },
+   "oos2026": {
+    "pnl": 13687.499999995984,
+    "max_dd": 1862.500000000446,
+    "win": 26.8,
+    "n_taken": 2287,
+    "n_candidates": 2287,
+    "exposure": 100.0,
+    "pf": 1.22,
+    "payoff": 3.33,
+    "n_locks": 2108,
+    "avg_win": 125.0,
+    "avg_loss": -38.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 31337.499999988635,
+    "max_dd": 2037.5000000002863,
+    "win": 26.2,
+    "n_taken": 6498,
+    "n_candidates": 6498,
+    "exposure": 100.0,
+    "pf": 1.17,
+    "payoff": 3.31,
+    "n_locks": 6051,
+    "avg_win": 124.0,
+    "avg_loss": -37.0
+   },
+   "oos2026": {
+    "pnl": 13537.499999995978,
+    "max_dd": 1800.0000000004366,
+    "win": 26.8,
+    "n_taken": 2287,
+    "n_candidates": 2287,
+    "exposure": 100.0,
+    "pf": 1.22,
+    "payoff": 3.32,
+    "n_locks": 2108,
+    "avg_win": 124.0,
+    "avg_loss": -37.0
+   }
+  }
+ },
+ {
+  "inst": "CL",
+  "tf": "4h",
+  "cap_mode": "none",
+  "cap_1min": 0,
+  "forced_mode": "eod",
+  "as_deployed": {
+   "full": {
+    "pnl": 21925.100000000613,
+    "max_dd": 3486.899999999963,
+    "win": 63.3,
+    "n_taken": 384,
+    "n_candidates": 384,
+    "exposure": 100.0,
+    "pf": 1.38,
+    "payoff": 0.8,
+    "n_locks": 300,
+    "avg_win": 330.0,
+    "avg_loss": -413.0
+   },
+   "oos2026": {
+    "pnl": 5853.500000000096,
+    "max_dd": 2290.900000000014,
+    "win": 64.7,
+    "n_taken": 85,
+    "n_candidates": 85,
+    "exposure": 100.0,
+    "pf": 1.48,
+    "payoff": 0.81,
+    "n_locks": 63,
+    "avg_win": 330.0,
+    "avg_loss": -409.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 17517.70000000061,
+    "max_dd": 3205.099999999966,
+    "win": 61.5,
+    "n_taken": 392,
+    "n_candidates": 392,
+    "exposure": 100.0,
+    "pf": 1.32,
+    "payoff": 0.81,
+    "n_locks": 314,
+    "avg_win": 303.0,
+    "avg_loss": -372.0
+   },
+   "oos2026": {
+    "pnl": 6503.800000000098,
+    "max_dd": 1630.6000000000076,
+    "win": 65.9,
+    "n_taken": 85,
+    "n_candidates": 85,
+    "exposure": 100.0,
+    "pf": 1.55,
+    "payoff": 0.81,
+    "n_locks": 62,
+    "avg_win": 325.0,
+    "avg_loss": -404.0
+   }
+  }
+ },
+ {
+  "inst": "CL",
+  "tf": "2h",
+  "cap_mode": "bars",
+  "cap_1min": 9,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 10447.700000000268,
+    "max_dd": 1098.299999999988,
+    "win": 60.1,
+    "n_taken": 391,
+    "n_candidates": 391,
+    "exposure": 100.0,
+    "pf": 1.74,
+    "payoff": 1.04,
+    "n_locks": 285,
+    "avg_win": 131.0,
+    "avg_loss": -98.0
+   },
+   "oos2026": {
+    "pnl": 3835.2999999999965,
+    "max_dd": 507.399999999976,
+    "win": 67.7,
+    "n_taken": 65,
+    "n_candidates": 65,
+    "exposure": 100.0,
+    "pf": 3.01,
+    "payoff": 1.23,
+    "n_locks": 32,
+    "avg_win": 159.0,
+    "avg_loss": -121.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 10447.700000000268,
+    "max_dd": 1098.299999999988,
+    "win": 60.1,
+    "n_taken": 391,
+    "n_candidates": 391,
+    "exposure": 100.0,
+    "pf": 1.74,
+    "payoff": 1.04,
+    "n_locks": 285,
+    "avg_win": 131.0,
+    "avg_loss": -98.0
+   },
+   "oos2026": {
+    "pnl": 3835.2999999999965,
+    "max_dd": 507.399999999976,
+    "win": 67.7,
+    "n_taken": 65,
+    "n_candidates": 65,
+    "exposure": 100.0,
+    "pf": 3.01,
+    "payoff": 1.23,
+    "n_locks": 32,
+    "avg_win": 159.0,
+    "avg_loss": -121.0
+   }
+  }
+ },
+ {
+  "inst": "CL",
+  "tf": "1h",
+  "cap_mode": "both",
+  "cap_1min": 995,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 10546.100000000883,
+    "max_dd": 1644.5999999999758,
+    "win": 46.1,
+    "n_taken": 562,
+    "n_candidates": 562,
+    "exposure": 100.0,
+    "pf": 1.33,
+    "payoff": 1.54,
+    "n_locks": 469,
+    "avg_win": 164.0,
+    "avg_loss": -111.0
+   },
+   "oos2026": {
+    "pnl": 4809.300000000236,
+    "max_dd": 1052.1999999999712,
+    "win": 53.1,
+    "n_taken": 130,
+    "n_candidates": 130,
+    "exposure": 100.0,
+    "pf": 1.7,
+    "payoff": 1.5,
+    "n_locks": 90,
+    "avg_win": 169.0,
+    "avg_loss": -118.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 10546.100000000883,
+    "max_dd": 1644.5999999999758,
+    "win": 46.1,
+    "n_taken": 562,
+    "n_candidates": 562,
+    "exposure": 100.0,
+    "pf": 1.33,
+    "payoff": 1.54,
+    "n_locks": 469,
+    "avg_win": 164.0,
+    "avg_loss": -111.0
+   },
+   "oos2026": {
+    "pnl": 4809.300000000236,
+    "max_dd": 1052.1999999999712,
+    "win": 53.1,
+    "n_taken": 130,
+    "n_candidates": 130,
+    "exposure": 100.0,
+    "pf": 1.7,
+    "payoff": 1.5,
+    "n_locks": 90,
+    "avg_win": 169.0,
+    "avg_loss": -118.0
+   }
+  }
+ },
+ {
+  "inst": "CL",
+  "tf": "15m",
+  "cap_mode": "bars",
+  "cap_1min": 36,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 15851.999999997717,
+    "max_dd": 1021.2000000001481,
+    "win": 29.4,
+    "n_taken": 2011,
+    "n_candidates": 2011,
+    "exposure": 100.0,
+    "pf": 1.27,
+    "payoff": 3.02,
+    "n_locks": 1792,
+    "avg_win": 128.0,
+    "avg_loss": -42.0
+   },
+   "oos2026": {
+    "pnl": 5763.599999999315,
+    "max_dd": 832.0000000000291,
+    "win": 29.2,
+    "n_taken": 566,
+    "n_candidates": 566,
+    "exposure": 100.0,
+    "pf": 1.34,
+    "payoff": 3.25,
+    "n_locks": 480,
+    "avg_win": 138.0,
+    "avg_loss": -42.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 15925.199999997736,
+    "max_dd": 954.4000000000542,
+    "win": 29.6,
+    "n_taken": 2012,
+    "n_candidates": 2012,
+    "exposure": 100.0,
+    "pf": 1.27,
+    "payoff": 3.0,
+    "n_locks": 1792,
+    "avg_win": 127.0,
+    "avg_loss": -42.0
+   },
+   "oos2026": {
+    "pnl": 5495.599999999321,
+    "max_dd": 809.2000000000289,
+    "win": 29.2,
+    "n_taken": 566,
+    "n_candidates": 566,
+    "exposure": 100.0,
+    "pf": 1.33,
+    "payoff": 3.22,
+    "n_locks": 486,
+    "avg_win": 137.0,
+    "avg_loss": -42.0
+   }
+  }
+ },
+ {
+  "inst": "CL",
+  "tf": "5m",
+  "cap_mode": "none",
+  "cap_1min": 0,
+  "forced_mode": "eod",
+  "as_deployed": {
+   "full": {
+    "pnl": 13691.69999999594,
+    "max_dd": 885.300000000495,
+    "win": 66.7,
+    "n_taken": 2249,
+    "n_candidates": 2249,
+    "exposure": 100.0,
+    "pf": 1.3,
+    "payoff": 0.65,
+    "n_locks": 1784,
+    "avg_win": 40.0,
+    "avg_loss": -61.0
+   },
+   "oos2026": {
+    "pnl": 3139.199999999498,
+    "max_dd": 593.4000000002698,
+    "win": 66.9,
+    "n_taken": 498,
+    "n_candidates": 498,
+    "exposure": 100.0,
+    "pf": 1.31,
+    "payoff": 0.65,
+    "n_locks": 380,
+    "avg_win": 40.0,
+    "avg_loss": -61.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 13485.69999999598,
+    "max_dd": 991.7000000008584,
+    "win": 66.4,
+    "n_taken": 2253,
+    "n_candidates": 2253,
+    "exposure": 100.0,
+    "pf": 1.3,
+    "payoff": 0.65,
+    "n_locks": 1793,
+    "avg_win": 39.0,
+    "avg_loss": -60.0
+   },
+   "oos2026": {
+    "pnl": 3059.599999999499,
+    "max_dd": 593.4000000002698,
+    "win": 66.7,
+    "n_taken": 499,
+    "n_candidates": 499,
+    "exposure": 100.0,
+    "pf": 1.3,
+    "payoff": 0.65,
+    "n_locks": 386,
+    "avg_win": 40.0,
+    "avg_loss": -61.0
+   }
+  }
+ },
+ {
+  "inst": "CL",
+  "tf": "2m",
+  "cap_mode": "both",
+  "cap_1min": 412,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 23989.899999996014,
+    "max_dd": 730.2000000001863,
+    "win": 39.7,
+    "n_taken": 4655,
+    "n_candidates": 4655,
+    "exposure": 100.0,
+    "pf": 1.28,
+    "payoff": 1.94,
+    "n_locks": 3937,
+    "avg_win": 59.0,
+    "avg_loss": -30.0
+   },
+   "oos2026": {
+    "pnl": 8008.199999998979,
+    "max_dd": 504.80000000010114,
+    "win": 40.6,
+    "n_taken": 1314,
+    "n_candidates": 1314,
+    "exposure": 100.0,
+    "pf": 1.34,
+    "payoff": 1.95,
+    "n_locks": 1072,
+    "avg_win": 59.0,
+    "avg_loss": -30.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 23989.899999996014,
+    "max_dd": 730.2000000001863,
+    "win": 39.7,
+    "n_taken": 4655,
+    "n_candidates": 4655,
+    "exposure": 100.0,
+    "pf": 1.28,
+    "payoff": 1.94,
+    "n_locks": 3937,
+    "avg_win": 59.0,
+    "avg_loss": -30.0
+   },
+   "oos2026": {
+    "pnl": 8008.199999998979,
+    "max_dd": 504.80000000010114,
+    "win": 40.6,
+    "n_taken": 1314,
+    "n_candidates": 1314,
+    "exposure": 100.0,
+    "pf": 1.34,
+    "payoff": 1.95,
+    "n_locks": 1072,
+    "avg_win": 59.0,
+    "avg_loss": -30.0
+   }
+  }
+ },
+ {
+  "inst": "NG",
+  "tf": "4h",
+  "cap_mode": "both",
+  "cap_1min": 1031,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 21224.00000000083,
+    "max_dd": 2575.9999999999554,
+    "win": 56.1,
+    "n_taken": 604,
+    "n_candidates": 604,
+    "exposure": 100.0,
+    "pf": 1.38,
+    "payoff": 1.07,
+    "n_locks": 452,
+    "avg_win": 226.0,
+    "avg_loss": -211.0
+   },
+   "oos2026": {
+    "pnl": 6910.000000000324,
+    "max_dd": 1531.9999999999836,
+    "win": 55.7,
+    "n_taken": 203,
+    "n_candidates": 203,
+    "exposure": 100.0,
+    "pf": 1.37,
+    "payoff": 1.07,
+    "n_locks": 148,
+    "avg_win": 225.0,
+    "avg_loss": -210.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 21224.00000000083,
+    "max_dd": 2575.9999999999554,
+    "win": 56.1,
+    "n_taken": 604,
+    "n_candidates": 604,
+    "exposure": 100.0,
+    "pf": 1.38,
+    "payoff": 1.07,
+    "n_locks": 452,
+    "avg_win": 226.0,
+    "avg_loss": -211.0
+   },
+   "oos2026": {
+    "pnl": 6910.000000000324,
+    "max_dd": 1531.9999999999836,
+    "win": 55.7,
+    "n_taken": 203,
+    "n_candidates": 203,
+    "exposure": 100.0,
+    "pf": 1.37,
+    "payoff": 1.07,
+    "n_locks": 148,
+    "avg_win": 225.0,
+    "avg_loss": -210.0
+   }
+  }
+ },
+ {
+  "inst": "NG",
+  "tf": "2h",
+  "cap_mode": "bars",
+  "cap_1min": 940,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 17313.999999999818,
+    "max_dd": 1739.0000000000064,
+    "win": 41.5,
+    "n_taken": 675,
+    "n_candidates": 675,
+    "exposure": 100.0,
+    "pf": 1.47,
+    "payoff": 2.08,
+    "n_locks": 528,
+    "avg_win": 193.0,
+    "avg_loss": -93.0
+   },
+   "oos2026": {
+    "pnl": 6112.999999999782,
+    "max_dd": 1422.000000000046,
+    "win": 42.8,
+    "n_taken": 208,
+    "n_candidates": 208,
+    "exposure": 100.0,
+    "pf": 1.55,
+    "payoff": 2.08,
+    "n_locks": 161,
+    "avg_win": 193.0,
+    "avg_loss": -93.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 17442.99999999983,
+    "max_dd": 1739.0000000000064,
+    "win": 42.4,
+    "n_taken": 675,
+    "n_candidates": 675,
+    "exposure": 100.0,
+    "pf": 1.49,
+    "payoff": 2.01,
+    "n_locks": 523,
+    "avg_win": 180.0,
+    "avg_loss": -91.0
+   },
+   "oos2026": {
+    "pnl": 5965.999999999796,
+    "max_dd": 1378.0000000000227,
+    "win": 44.2,
+    "n_taken": 208,
+    "n_candidates": 208,
+    "exposure": 100.0,
+    "pf": 1.56,
+    "payoff": 1.95,
+    "n_locks": 160,
+    "avg_win": 181.0,
+    "avg_loss": -92.0
+   }
+  }
+ },
+ {
+  "inst": "NG",
+  "tf": "1h",
+  "cap_mode": "bars",
+  "cap_1min": 1428,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 12085.999999999918,
+    "max_dd": 1132.0000000000136,
+    "win": 59.8,
+    "n_taken": 482,
+    "n_candidates": 482,
+    "exposure": 100.0,
+    "pf": 1.49,
+    "payoff": 1.0,
+    "n_locks": 365,
+    "avg_win": 128.0,
+    "avg_loss": -130.0
+   },
+   "oos2026": {
+    "pnl": 6182.99999999993,
+    "max_dd": 820.0,
+    "win": 65.8,
+    "n_taken": 152,
+    "n_candidates": 152,
+    "exposure": 100.0,
+    "pf": 1.93,
+    "payoff": 1.01,
+    "n_locks": 96,
+    "avg_win": 128.0,
+    "avg_loss": -130.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 11667.99999999991,
+    "max_dd": 1142.0000000000218,
+    "win": 59.1,
+    "n_taken": 482,
+    "n_candidates": 482,
+    "exposure": 100.0,
+    "pf": 1.48,
+    "payoff": 1.02,
+    "n_locks": 366,
+    "avg_win": 125.0,
+    "avg_loss": -129.0
+   },
+   "oos2026": {
+    "pnl": 5710.999999999929,
+    "max_dd": 790.0000000000032,
+    "win": 64.5,
+    "n_taken": 152,
+    "n_candidates": 152,
+    "exposure": 100.0,
+    "pf": 1.86,
+    "payoff": 1.02,
+    "n_locks": 99,
+    "avg_win": 128.0,
+    "avg_loss": -126.0
+   }
+  }
+ },
+ {
+  "inst": "NG",
+  "tf": "15m",
+  "cap_mode": "bars",
+  "cap_1min": 77,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": -1634.9999999989736,
+    "max_dd": 3059.9999999996758,
+    "win": 46.7,
+    "n_taken": 1665,
+    "n_candidates": 1665,
+    "exposure": 100.0,
+    "pf": 0.96,
+    "payoff": 1.1,
+    "n_locks": 1623,
+    "avg_win": 55.0,
+    "avg_loss": -50.0
+   },
+   "oos2026": {
+    "pnl": -2774.9999999994875,
+    "max_dd": 3059.9999999996858,
+    "win": 43.1,
+    "n_taken": 598,
+    "n_candidates": 598,
+    "exposure": 100.0,
+    "pf": 0.84,
+    "payoff": 1.1,
+    "n_locks": 588,
+    "avg_win": 55.0,
+    "avg_loss": -50.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": -1349.9999999989752,
+    "max_dd": 3074.9999999996753,
+    "win": 46.9,
+    "n_taken": 1666,
+    "n_candidates": 1666,
+    "exposure": 100.0,
+    "pf": 0.97,
+    "payoff": 1.09,
+    "n_locks": 1616,
+    "avg_win": 54.0,
+    "avg_loss": -50.0
+   },
+   "oos2026": {
+    "pnl": -2764.999999999493,
+    "max_dd": 3074.9999999996853,
+    "win": 43.3,
+    "n_taken": 598,
+    "n_candidates": 598,
+    "exposure": 100.0,
+    "pf": 0.84,
+    "payoff": 1.09,
+    "n_locks": 589,
+    "avg_win": 54.0,
+    "avg_loss": -50.0
+   }
+  }
+ },
+ {
+  "inst": "NG",
+  "tf": "5m",
+  "cap_mode": "bars",
+  "cap_1min": 939,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 27990.99999999878,
+    "max_dd": 366.0,
+    "win": 30.4,
+    "n_taken": 3859,
+    "n_candidates": 3859,
+    "exposure": 100.0,
+    "pf": 1.95,
+    "payoff": 4.45,
+    "n_locks": 3010,
+    "avg_win": 49.0,
+    "avg_loss": -11.0
+   },
+   "oos2026": {
+    "pnl": 7937.999999999493,
+    "max_dd": 366.0000000000464,
+    "win": 28.0,
+    "n_taken": 1362,
+    "n_candidates": 1362,
+    "exposure": 100.0,
+    "pf": 1.74,
+    "payoff": 4.45,
+    "n_locks": 1109,
+    "avg_win": 49.0,
+    "avg_loss": -11.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 28038.9999999988,
+    "max_dd": 366.0,
+    "win": 30.5,
+    "n_taken": 3864,
+    "n_candidates": 3864,
+    "exposure": 100.0,
+    "pf": 1.95,
+    "payoff": 4.44,
+    "n_locks": 3011,
+    "avg_win": 49.0,
+    "avg_loss": -11.0
+   },
+   "oos2026": {
+    "pnl": 7939.999999999497,
+    "max_dd": 366.0000000000464,
+    "win": 28.2,
+    "n_taken": 1364,
+    "n_candidates": 1364,
+    "exposure": 100.0,
+    "pf": 1.74,
+    "payoff": 4.43,
+    "n_locks": 1112,
+    "avg_win": 49.0,
+    "avg_loss": -11.0
+   }
+  }
+ },
+ {
+  "inst": "NG",
+  "tf": "2m",
+  "cap_mode": "bars",
+  "cap_1min": 1128,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 30293.999999995518,
+    "max_dd": 230.00000000001273,
+    "win": 40.2,
+    "n_taken": 5929,
+    "n_candidates": 5929,
+    "exposure": 100.0,
+    "pf": 1.78,
+    "payoff": 2.64,
+    "n_locks": 4412,
+    "avg_win": 29.0,
+    "avg_loss": -11.0
+   },
+   "oos2026": {
+    "pnl": 9757.999999997961,
+    "max_dd": 197.00000000004275,
+    "win": 39.0,
+    "n_taken": 2113,
+    "n_candidates": 2113,
+    "exposure": 100.0,
+    "pf": 1.69,
+    "payoff": 2.64,
+    "n_locks": 1618,
+    "avg_win": 29.0,
+    "avg_loss": -11.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 30287.99999999553,
+    "max_dd": 230.00000000001273,
+    "win": 40.2,
+    "n_taken": 5929,
+    "n_candidates": 5929,
+    "exposure": 100.0,
+    "pf": 1.78,
+    "payoff": 2.64,
+    "n_locks": 4413,
+    "avg_win": 29.0,
+    "avg_loss": -11.0
+   },
+   "oos2026": {
+    "pnl": 9757.999999997961,
+    "max_dd": 197.00000000004275,
+    "win": 39.0,
+    "n_taken": 2113,
+    "n_candidates": 2113,
+    "exposure": 100.0,
+    "pf": 1.69,
+    "payoff": 2.64,
+    "n_locks": 1618,
+    "avg_win": 29.0,
+    "avg_loss": -11.0
+   }
+  }
+ },
+ {
+  "inst": "RTY",
+  "tf": "4h",
+  "cap_mode": "both",
+  "cap_1min": 941,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 36687.7900000002,
+    "max_dd": 9091.94000000002,
+    "win": 48.8,
+    "n_taken": 297,
+    "n_candidates": 297,
+    "exposure": 100.0,
+    "pf": 1.52,
+    "payoff": 1.59,
+    "n_locks": 220,
+    "avg_win": 743.0,
+    "avg_loss": -468.0
+   },
+   "oos2026": {
+    "pnl": 23872.20999999997,
+    "max_dd": 3469.999999999982,
+    "win": 53.8,
+    "n_taken": 104,
+    "n_candidates": 104,
+    "exposure": 100.0,
+    "pf": 2.05,
+    "payoff": 1.76,
+    "n_locks": 57,
+    "avg_win": 833.0,
+    "avg_loss": -474.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 36687.7900000002,
+    "max_dd": 9091.94000000002,
+    "win": 48.8,
+    "n_taken": 297,
+    "n_candidates": 297,
+    "exposure": 100.0,
+    "pf": 1.52,
+    "payoff": 1.59,
+    "n_locks": 220,
+    "avg_win": 743.0,
+    "avg_loss": -468.0
+   },
+   "oos2026": {
+    "pnl": 23872.20999999997,
+    "max_dd": 3469.999999999982,
+    "win": 53.8,
+    "n_taken": 104,
+    "n_candidates": 104,
+    "exposure": 100.0,
+    "pf": 2.05,
+    "payoff": 1.76,
+    "n_locks": 57,
+    "avg_win": 833.0,
+    "avg_loss": -474.0
+   }
+  }
+ },
+ {
+  "inst": "RTY",
+  "tf": "2h",
+  "cap_mode": "bars",
+  "cap_1min": 458,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 18845.760000001465,
+    "max_dd": 1821.579999999949,
+    "win": 83.8,
+    "n_taken": 340,
+    "n_candidates": 340,
+    "exposure": 100.0,
+    "pf": 1.72,
+    "payoff": 0.33,
+    "n_locks": 120,
+    "avg_win": 158.0,
+    "avg_loss": -551.0
+   },
+   "oos2026": {
+    "pnl": 7416.665000000536,
+    "max_dd": 1025.0,
+    "win": 86.2,
+    "n_taken": 109,
+    "n_candidates": 109,
+    "exposure": 100.0,
+    "pf": 1.99,
+    "payoff": 0.32,
+    "n_locks": 28,
+    "avg_win": 158.0,
+    "avg_loss": -594.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 18238.790000001347,
+    "max_dd": 1564.9349999999458,
+    "win": 82.1,
+    "n_taken": 340,
+    "n_candidates": 340,
+    "exposure": 100.0,
+    "pf": 1.73,
+    "payoff": 0.38,
+    "n_locks": 110,
+    "avg_win": 156.0,
+    "avg_loss": -392.0
+   },
+   "oos2026": {
+    "pnl": 6561.535000000504,
+    "max_dd": 1120.0000000000045,
+    "win": 84.4,
+    "n_taken": 109,
+    "n_candidates": 109,
+    "exposure": 100.0,
+    "pf": 1.86,
+    "payoff": 0.34,
+    "n_locks": 31,
+    "avg_win": 154.0,
+    "avg_loss": -490.0
+   }
+  }
+ },
+ {
+  "inst": "RTY",
+  "tf": "1h",
+  "cap_mode": "bars",
+  "cap_1min": 897,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 16032.105000000673,
+    "max_dd": 2927.544999999918,
+    "win": 55.0,
+    "n_taken": 180,
+    "n_candidates": 303,
+    "exposure": 59.4,
+    "pf": 1.49,
+    "payoff": 1.22,
+    "n_locks": 124,
+    "avg_win": 485.0,
+    "avg_loss": -399.0
+   },
+   "oos2026": {
+    "pnl": 6539.1250000003765,
+    "max_dd": 2927.544999999918,
+    "win": 54.5,
+    "n_taken": 77,
+    "n_candidates": 134,
+    "exposure": 57.5,
+    "pf": 1.45,
+    "payoff": 1.21,
+    "n_locks": 58,
+    "avg_win": 490.0,
+    "avg_loss": -411.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 7226.655000000574,
+    "max_dd": 4296.809999999892,
+    "win": 50.0,
+    "n_taken": 172,
+    "n_candidates": 306,
+    "exposure": 56.2,
+    "pf": 1.21,
+    "payoff": 1.21,
+    "n_locks": 134,
+    "avg_win": 441.0,
+    "avg_loss": -380.0
+   },
+   "oos2026": {
+    "pnl": -1728.9049999997133,
+    "max_dd": 4296.809999999891,
+    "win": 42.0,
+    "n_taken": 69,
+    "n_candidates": 135,
+    "exposure": 51.1,
+    "pf": 0.89,
+    "payoff": 1.23,
+    "n_locks": 66,
+    "avg_win": 454.0,
+    "avg_loss": -402.0
+   }
+  }
+ },
+ {
+  "inst": "RTY",
+  "tf": "15m",
+  "cap_mode": "none",
+  "cap_1min": 0,
+  "forced_mode": "eod",
+  "as_deployed": {
+   "full": {
+    "pnl": 10697.480000000633,
+    "max_dd": 1350.7649999999103,
+    "win": 53.6,
+    "n_taken": 112,
+    "n_candidates": 112,
+    "exposure": 100.0,
+    "pf": 2.37,
+    "payoff": 2.05,
+    "n_locks": 22,
+    "avg_win": 308.0,
+    "avg_loss": -150.0
+   },
+   "oos2026": {
+    "pnl": 3899.635000000171,
+    "max_dd": 300.16999999998006,
+    "win": 62.1,
+    "n_taken": 29,
+    "n_candidates": 29,
+    "exposure": 100.0,
+    "pf": 3.36,
+    "payoff": 2.05,
+    "n_locks": 0,
+    "avg_win": 308.0,
+    "avg_loss": -150.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 10699.455000000638,
+    "max_dd": 1190.6799999999294,
+    "win": 54.5,
+    "n_taken": 112,
+    "n_candidates": 112,
+    "exposure": 100.0,
+    "pf": 2.42,
+    "payoff": 2.02,
+    "n_locks": 19,
+    "avg_win": 308.0,
+    "avg_loss": -142.0
+   },
+   "oos2026": {
+    "pnl": 3621.270000000186,
+    "max_dd": 300.16999999998006,
+    "win": 62.1,
+    "n_taken": 29,
+    "n_candidates": 29,
+    "exposure": 100.0,
+    "pf": 3.19,
+    "payoff": 1.95,
+    "n_locks": 0,
+    "avg_win": 308.0,
+    "avg_loss": -142.0
+   }
+  }
+ },
+ {
+  "inst": "RTY",
+  "tf": "5m",
+  "cap_mode": "bars",
+  "cap_1min": 255,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 21200.82999999464,
+    "max_dd": 2144.735000000306,
+    "win": 59.8,
+    "n_taken": 1416,
+    "n_candidates": 1416,
+    "exposure": 100.0,
+    "pf": 1.25,
+    "payoff": 0.84,
+    "n_locks": 859,
+    "avg_win": 123.0,
+    "avg_loss": -147.0
+   },
+   "oos2026": {
+    "pnl": 6483.92499999818,
+    "max_dd": 1365.9500000002936,
+    "win": 59.6,
+    "n_taken": 480,
+    "n_candidates": 480,
+    "exposure": 100.0,
+    "pf": 1.22,
+    "payoff": 0.83,
+    "n_locks": 284,
+    "avg_win": 124.0,
+    "avg_loss": -149.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 21648.169999994912,
+    "max_dd": 1913.8850000002749,
+    "win": 59.5,
+    "n_taken": 1431,
+    "n_candidates": 1431,
+    "exposure": 100.0,
+    "pf": 1.26,
+    "payoff": 0.85,
+    "n_locks": 857,
+    "avg_win": 121.0,
+    "avg_loss": -142.0
+   },
+   "oos2026": {
+    "pnl": 5753.574999998341,
+    "max_dd": 1365.9500000002936,
+    "win": 58.8,
+    "n_taken": 483,
+    "n_candidates": 483,
+    "exposure": 100.0,
+    "pf": 1.2,
+    "payoff": 0.83,
+    "n_locks": 301,
+    "avg_win": 122.0,
+    "avg_loss": -146.0
+   }
+  }
+ },
+ {
+  "inst": "RTY",
+  "tf": "2m",
+  "cap_mode": "bars",
+  "cap_1min": 472,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 3648.93499999979,
+    "max_dd": 830.6499999999915,
+    "win": 61.4,
+    "n_taken": 249,
+    "n_candidates": 249,
+    "exposure": 100.0,
+    "pf": 1.43,
+    "payoff": 0.9,
+    "n_locks": 41,
+    "avg_win": 79.0,
+    "avg_loss": -87.0
+   },
+   "oos2026": {
+    "pnl": 1627.3549999999204,
+    "max_dd": 430.7099999999991,
+    "win": 67.1,
+    "n_taken": 73,
+    "n_candidates": 73,
+    "exposure": 100.0,
+    "pf": 1.73,
+    "payoff": 0.85,
+    "n_locks": 5,
+    "avg_win": 79.0,
+    "avg_loss": -91.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 4010.879999999804,
+    "max_dd": 830.6499999999915,
+    "win": 61.8,
+    "n_taken": 251,
+    "n_candidates": 251,
+    "exposure": 100.0,
+    "pf": 1.5,
+    "payoff": 0.92,
+    "n_locks": 36,
+    "avg_win": 78.0,
+    "avg_loss": -85.0
+   },
+   "oos2026": {
+    "pnl": 1790.7299999999395,
+    "max_dd": 317.13999999999487,
+    "win": 66.7,
+    "n_taken": 75,
+    "n_candidates": 75,
+    "exposure": 100.0,
+    "pf": 1.88,
+    "payoff": 0.9,
+    "n_locks": 0,
+    "avg_win": 78.0,
+    "avg_loss": -86.0
+   }
+  }
+ },
+ {
+  "inst": "YM",
+  "tf": "4h",
+  "cap_mode": "both",
+  "cap_1min": 719,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 51916.73600000013,
+    "max_dd": 9125.684000000037,
+    "win": 56.4,
+    "n_taken": 188,
+    "n_candidates": 188,
+    "exposure": 100.0,
+    "pf": 1.74,
+    "payoff": 1.35,
+    "n_locks": 36,
+    "avg_win": 1152.0,
+    "avg_loss": -856.0
+   },
+   "oos2026": {
+    "pnl": 34920.55600000014,
+    "max_dd": 3561.9320000000153,
+    "win": 68.8,
+    "n_taken": 64,
+    "n_candidates": 64,
+    "exposure": 100.0,
+    "pf": 2.78,
+    "payoff": 1.26,
+    "n_locks": 0,
+    "avg_win": 1240.0,
+    "avg_loss": -983.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 51916.73600000013,
+    "max_dd": 9125.684000000037,
+    "win": 56.4,
+    "n_taken": 188,
+    "n_candidates": 188,
+    "exposure": 100.0,
+    "pf": 1.74,
+    "payoff": 1.35,
+    "n_locks": 36,
+    "avg_win": 1152.0,
+    "avg_loss": -856.0
+   },
+   "oos2026": {
+    "pnl": 34920.55600000014,
+    "max_dd": 3561.9320000000153,
+    "win": 68.8,
+    "n_taken": 64,
+    "n_candidates": 64,
+    "exposure": 100.0,
+    "pf": 2.78,
+    "payoff": 1.26,
+    "n_locks": 0,
+    "avg_win": 1240.0,
+    "avg_loss": -983.0
+   }
+  }
+ },
+ {
+  "inst": "YM",
+  "tf": "2h",
+  "cap_mode": "eod",
+  "cap_1min": 0,
+  "forced_mode": "eod",
+  "as_deployed": {
+   "full": {
+    "pnl": 20573.313500000186,
+    "max_dd": 1434.0400000000227,
+    "win": 77.8,
+    "n_taken": 36,
+    "n_candidates": 36,
+    "exposure": 100.0,
+    "pf": 3.96,
+    "payoff": 1.13,
+    "n_locks": 0,
+    "avg_win": 1147.0,
+    "avg_loss": -803.0
+   },
+   "oos2026": {
+    "pnl": 11110.644000000102,
+    "max_dd": 974.5200000000114,
+    "win": 85.7,
+    "n_taken": 14,
+    "n_candidates": 14,
+    "exposure": 100.0,
+    "pf": 6.7,
+    "payoff": 1.12,
+    "n_locks": 0,
+    "avg_win": 1421.0,
+    "avg_loss": -975.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 20573.313500000186,
+    "max_dd": 1434.0400000000227,
+    "win": 77.8,
+    "n_taken": 36,
+    "n_candidates": 36,
+    "exposure": 100.0,
+    "pf": 3.96,
+    "payoff": 1.13,
+    "n_locks": 0,
+    "avg_win": 1147.0,
+    "avg_loss": -803.0
+   },
+   "oos2026": {
+    "pnl": 11110.644000000102,
+    "max_dd": 974.5200000000114,
+    "win": 85.7,
+    "n_taken": 14,
+    "n_candidates": 14,
+    "exposure": 100.0,
+    "pf": 6.7,
+    "payoff": 1.12,
+    "n_locks": 0,
+    "avg_win": 1421.0,
+    "avg_loss": -975.0
+   }
+  }
+ },
+ {
+  "inst": "YM",
+  "tf": "1h",
+  "cap_mode": "eod",
+  "cap_1min": 0,
+  "forced_mode": "eod",
+  "as_deployed": {
+   "full": {
+    "pnl": 47341.16399999966,
+    "max_dd": 4490.381500000003,
+    "win": 49.5,
+    "n_taken": 297,
+    "n_candidates": 297,
+    "exposure": 100.0,
+    "pf": 1.53,
+    "payoff": 1.54,
+    "n_locks": 0,
+    "avg_win": 941.0,
+    "avg_loss": -628.0
+   },
+   "oos2026": {
+    "pnl": 12526.64749999989,
+    "max_dd": 4490.381500000003,
+    "win": 45.1,
+    "n_taken": 91,
+    "n_candidates": 91,
+    "exposure": 100.0,
+    "pf": 1.42,
+    "payoff": 1.69,
+    "n_locks": 0,
+    "avg_win": 979.0,
+    "avg_loss": -658.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 47341.16399999966,
+    "max_dd": 4490.381500000003,
+    "win": 49.5,
+    "n_taken": 297,
+    "n_candidates": 297,
+    "exposure": 100.0,
+    "pf": 1.53,
+    "payoff": 1.54,
+    "n_locks": 0,
+    "avg_win": 941.0,
+    "avg_loss": -628.0
+   },
+   "oos2026": {
+    "pnl": 12526.64749999989,
+    "max_dd": 4490.381500000003,
+    "win": 45.1,
+    "n_taken": 91,
+    "n_candidates": 91,
+    "exposure": 100.0,
+    "pf": 1.42,
+    "payoff": 1.69,
+    "n_locks": 0,
+    "avg_win": 979.0,
+    "avg_loss": -658.0
+   }
+  }
+ },
+ {
+  "inst": "YM",
+  "tf": "15m",
+  "cap_mode": "none",
+  "cap_1min": 0,
+  "forced_mode": "eod",
+  "as_deployed": {
+   "full": {
+    "pnl": 16406.792000001078,
+    "max_dd": 1508.8274999999703,
+    "win": 67.8,
+    "n_taken": 230,
+    "n_candidates": 230,
+    "exposure": 100.0,
+    "pf": 1.79,
+    "payoff": 0.85,
+    "n_locks": 0,
+    "avg_win": 239.0,
+    "avg_loss": -285.0
+   },
+   "oos2026": {
+    "pnl": 3511.2570000003325,
+    "max_dd": 1508.8274999999703,
+    "win": 63.9,
+    "n_taken": 72,
+    "n_candidates": 72,
+    "exposure": 100.0,
+    "pf": 1.47,
+    "payoff": 0.83,
+    "n_locks": 0,
+    "avg_win": 239.0,
+    "avg_loss": -301.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 16212.490000001053,
+    "max_dd": 1268.8274999999703,
+    "win": 67.1,
+    "n_taken": 231,
+    "n_candidates": 231,
+    "exposure": 100.0,
+    "pf": 1.8,
+    "payoff": 0.87,
+    "n_locks": 0,
+    "avg_win": 227.0,
+    "avg_loss": -274.0
+   },
+   "oos2026": {
+    "pnl": 3562.681500000326,
+    "max_dd": 1268.8274999999703,
+    "win": 63.9,
+    "n_taken": 72,
+    "n_candidates": 72,
+    "exposure": 100.0,
+    "pf": 1.49,
+    "payoff": 0.84,
+    "n_locks": 0,
+    "avg_win": 223.0,
+    "avg_loss": -284.0
+   }
+  }
+ },
+ {
+  "inst": "YM",
+  "tf": "5m",
+  "cap_mode": "bars",
+  "cap_1min": 1037,
+  "forced_mode": "both",
+  "as_deployed": {
+   "full": {
+    "pnl": 31861.8669999914,
+    "max_dd": 5159.939000001068,
+    "win": 60.5,
+    "n_taken": 1424,
+    "n_candidates": 1424,
+    "exposure": 100.0,
+    "pf": 1.19,
+    "payoff": 0.78,
+    "n_locks": 0,
+    "avg_win": 230.0,
+    "avg_loss": -295.0
+   },
+   "oos2026": {
+    "pnl": 8732.281999996812,
+    "max_dd": 3788.8415000003806,
+    "win": 59.7,
+    "n_taken": 539,
+    "n_candidates": 539,
+    "exposure": 100.0,
+    "pf": 1.13,
+    "payoff": 0.76,
+    "n_locks": 0,
+    "avg_win": 230.0,
+    "avg_loss": -302.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 28095.358999991622,
+    "max_dd": 5270.55750000156,
+    "win": 60.0,
+    "n_taken": 1435,
+    "n_candidates": 1435,
+    "exposure": 100.0,
+    "pf": 1.17,
+    "payoff": 0.78,
+    "n_locks": 0,
+    "avg_win": 225.0,
+    "avg_loss": -291.0
+   },
+   "oos2026": {
+    "pnl": 6866.045999996895,
+    "max_dd": 3943.3710000003703,
+    "win": 59.0,
+    "n_taken": 541,
+    "n_candidates": 541,
+    "exposure": 100.0,
+    "pf": 1.1,
+    "payoff": 0.77,
+    "n_locks": 0,
+    "avg_win": 225.0,
+    "avg_loss": -294.0
+   }
+  }
+ },
+ {
+  "inst": "YM",
+  "tf": "2m",
+  "cap_mode": "none",
+  "cap_1min": 0,
+  "forced_mode": "eod",
+  "as_deployed": {
+   "full": {
+    "pnl": 28716.014499989687,
+    "max_dd": 2383.3645000001707,
+    "win": 59.0,
+    "n_taken": 1094,
+    "n_candidates": 1094,
+    "exposure": 100.0,
+    "pf": 1.36,
+    "payoff": 0.94,
+    "n_locks": 0,
+    "avg_win": 170.0,
+    "avg_loss": -181.0
+   },
+   "oos2026": {
+    "pnl": 10533.404999996128,
+    "max_dd": 2383.3645000001707,
+    "win": 58.7,
+    "n_taken": 412,
+    "n_candidates": 412,
+    "exposure": 100.0,
+    "pf": 1.35,
+    "payoff": 0.94,
+    "n_locks": 0,
+    "avg_win": 170.0,
+    "avg_loss": -184.0
+   }
+  },
+  "eod_forced": {
+   "full": {
+    "pnl": 28355.180999989898,
+    "max_dd": 2383.3645000001707,
+    "win": 59.1,
+    "n_taken": 1110,
+    "n_candidates": 1110,
+    "exposure": 100.0,
+    "pf": 1.35,
+    "payoff": 0.93,
+    "n_locks": 0,
+    "avg_win": 165.0,
+    "avg_loss": -176.0
+   },
+   "oos2026": {
+    "pnl": 9420.968999996257,
+    "max_dd": 2383.3645000001707,
+    "win": 58.2,
+    "n_taken": 414,
+    "n_candidates": 414,
+    "exposure": 100.0,
+    "pf": 1.31,
+    "payoff": 0.94,
+    "n_locks": 0,
+    "avg_win": 166.0,
+    "avg_loss": -181.0
+   }
+  }
+ }
+]

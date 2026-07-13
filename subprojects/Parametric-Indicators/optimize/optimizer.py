@@ -191,7 +191,8 @@ def _cap_switches(box: dict) -> dict:
     return dict(en_cap_bars=mode in ("bars", "both"), en_cap_eod=mode in ("eod", "both"))
 
 
-def search_dims(split_sltp: bool, intracandle: bool = False, freeze_indicators: bool = False) -> dict:
+def search_dims(split_sltp: bool, intracandle: bool = False, freeze_indicators: bool = False,
+                force_eod: bool = False) -> dict:
     """Breakdown of the tunable search dimensions for the current REGISTRY/SCHEMA.
     base continuous (sl_soft, sl_hard_delta, tp, gate_pct, dd_limit)=5;
     categorical (flip, en_cap_bars, en_cap_eod)=3;
@@ -200,24 +201,28 @@ def search_dims(split_sltp: bool, intracandle: bool = False, freeze_indicators: 
     en_flags = 0 if freeze_indicators else len(library.REGISTRY)
     ind_params = 0 if freeze_indicators else sum(len(library.SCHEMA[k].get("params", [])) for k in library.REGISTRY)
     split = 6 if split_sltp else 0
-    d = dict(base_cont=5, base_cat=3, base_int=(2 if freeze_indicators else 3),   # k dropped when frozen
+    # base_cat = flip + en_cap_bars + en_cap_eod. --force-eod pins en_cap_eod ON ⇒ it is no longer
+    # SEARCHED, so it stops being a dimension (and the trial budget shrinks accordingly).
+    d = dict(base_cont=5, base_cat=(2 if force_eod else 3),
+             base_int=(2 if freeze_indicators else 3),   # k dropped when frozen
              en_flags=en_flags, ind_params=ind_params, split=split, intracandle=(3 if intracandle else 0))
     d["total"] = sum(d.values())
     return d
 
 
 def recommended_trials(split_sltp: bool, per_dim: int = TRIALS_PER_DIM, intracandle: bool = False,
-                       freeze_indicators: bool = False) -> int:
+                       freeze_indicators: bool = False, force_eod: bool = False) -> int:
     """Dimension-proportional trial budget: total search dimensions × per_dim."""
-    return search_dims(split_sltp, intracandle, freeze_indicators)["total"] * int(per_dim)
+    return search_dims(split_sltp, intracandle, freeze_indicators, force_eod)["total"] * int(per_dim)
 
 
 def print_plan(tf_name: str, split_sltp: bool, per_dim: int = TRIALS_PER_DIM, n_trials: int | None = None,
-               sampler: str = "nsga3", intracandle: bool = False, freeze_indicators: bool = False):
+               sampler: str = "nsga3", intracandle: bool = False, freeze_indicators: bool = False,
+               force_eod: bool = False):
     """Print the search-space size + recommended (dimension-proportional) trial budget. Used by the
     `--plan` dry-run and before every real launch so the budget is reported and can be accepted."""
-    d = search_dims(split_sltp, intracandle, freeze_indicators)
-    rec = recommended_trials(split_sltp, per_dim, intracandle, freeze_indicators)
+    d = search_dims(split_sltp, intracandle, freeze_indicators, force_eod)
+    rec = recommended_trials(split_sltp, per_dim, intracandle, freeze_indicators, force_eod)
     print(f"── OPTIMIZER PLAN [{tf_name}] {'SPLIT long/short SL/TP' if split_sltp else 'shared SL/TP'} "
           f"· sampler={sampler} ──", flush=True)
     print(f"   dimensions: base {d['base_cont']}c+{d['base_cat']}cat+{d['base_int']}i = "
@@ -372,7 +377,8 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         objective: str = "winrate", exclude_inds: tuple = (), only_inds: tuple = (),
         dd_pnl_cap: float = DD_PNL_CAP, contrib_tokens: tuple = (),
         contrib_exclude=None, instrument: str = "NQ", intracandle: bool = False,
-        freeze_indicators: bool = False, intracandle_always_on: bool = False) -> dict:
+        freeze_indicators: bool = False, intracandle_always_on: bool = False,
+        force_eod: bool = False) -> dict:
     # split_sltp (Q3 / E2): when True the optimizer searches SEPARATE long vs short SL/TP (long_*/short_*),
     # widening the space per the user's point-5 goal. Default False ⇒ shared SL/TP ⇒ identical to prior runs.
     # NOTE FOR THE NEXT FULL RUN (wsh5): launch with split_sltp=True to let longs and shorts get their own
@@ -424,7 +430,11 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         # it is simply ignored when the bars cap is off. cap_1min starts at 1 — a 0-bar cap would be a
         # degenerate re-encoding of "off" and would burn trials on duplicates of en_cap_bars=False.
         en_cap_bars = trial.suggest_categorical("en_cap_bars", [False, True])
-        en_cap_eod = trial.suggest_categorical("en_cap_eod", [False, True])
+        # --force-eod: NEVER hold overnight. Pinned ON, not searched — so every champion is TUNED
+        # for the bell (its stops/targets/indicator gate adapt to the shorter horizon) rather than
+        # having the rule bolted onto a strategy optimized to hold overnight. Measured: bolting it on
+        # afterwards costs −$40,429 OOS across the suite; tuning FOR it should recover much of that.
+        en_cap_eod = True if force_eod else trial.suggest_categorical("en_cap_eod", [False, True])
         cap_n = trial.suggest_int("cap_1min", CAP_1MIN_MIN, CAP_1MIN_MAX)
         cap_1min = cap_n if en_cap_bars else 0
         cap_mode = derive_cap_mode(en_cap_bars, en_cap_eod)
@@ -588,6 +598,12 @@ def main() -> int:
     ap.add_argument("--ind-1min", action="store_true",
                     help="indicators read the 1-minute frame (sampled at each decision bar's last "
                          "closed minute) instead of the decision timeframe")
+    ap.add_argument("--force-eod", action="store_true",
+                    help="NEVER hold overnight: pin the end-of-day close ON for every trial "
+                         "(it stops being a searched dimension). Each champion is then TUNED for "
+                         "the bell — its stops/targets/indicator gate adapt to the shorter "
+                         "horizon — instead of having the rule bolted onto a strategy optimized "
+                         "to hold overnight (measured cost of bolting it on: −$40,429 OOS).")
     ap.add_argument("--study-prefix", default="wsh3",
                     help="study name prefix (use a fresh one, e.g. wsh4, for a new regime so it "
                          "doesn't mix with prior trials)")
@@ -645,7 +661,8 @@ def main() -> int:
     # report the plan (search size + recommended trials) — always, so the budget is visible
     rec = print_plan(a.timeframe, a.split_sltp, a.trials_per_dim,
                      n_trials=(None if a.auto_trials else a.trials), sampler=a.sampler,
-                     intracandle=(a.intracandle or a.intracandle_on), freeze_indicators=a.freeze_indicators)
+                     intracandle=(a.intracandle or a.intracandle_on), freeze_indicators=a.freeze_indicators,
+                     force_eod=a.force_eod)
     if a.plan:
         print("   [--plan] dry run — not launching. Re-run without --plan (optionally --auto-trials) to start.",
               flush=True)
@@ -664,7 +681,8 @@ def main() -> int:
         objective=a.objective, exclude_inds=_excl, only_inds=_only, dd_pnl_cap=a.dd_pnl_cap,
         contrib_tokens=contrib_tokens, instrument=a.instrument,
         intracandle=(a.intracandle or a.intracandle_on),
-        freeze_indicators=a.freeze_indicators, intracandle_always_on=a.intracandle_on)
+        freeze_indicators=a.freeze_indicators, intracandle_always_on=a.intracandle_on,
+        force_eod=a.force_eod)
     return 0
 
 
