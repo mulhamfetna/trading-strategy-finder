@@ -39,9 +39,34 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from optimize import data                                    # noqa: E402
 from optimize.fundamentals import release_calendar as rc     # noqa: E402
+from optimize.fundamentals.extended_data import load_1m_extended   # noqa: E402
 from optimize.fundamentals.study_surprise import build_surprises   # noqa: E402
 
 H = 30          # minutes of post-release path we study
+
+
+def _frame(extended: bool):
+    """The 1-minute price frame. --extended folds in 2024, which roughly DOUBLES the sample.
+
+    The engine's own data loading is untouched (golden-locked); this is research-only.
+    """
+    if extended:
+        return load_1m_extended("NQ")
+    _, df1, *_ = data.load_inputs("4h")
+    return df1
+
+
+def power_for(r: float, n: int) -> float:
+    """If the effect is REALLY r, what is the chance a sample of n would DETECT it (alpha=0.05)?
+
+    Reported alongside every null from now on. A null at low power is not evidence of absence — it is
+    a study too small to see. See docs/superpowers/REPORT_underpowered_retraction.md.
+    """
+    from scipy import stats
+    if n <= 3 or r == 0:
+        return 0.0
+    zr = 0.5 * np.log((1 + abs(r)) / (1 - abs(r)))
+    return float(stats.norm.sf(stats.norm.ppf(0.975) - zr * np.sqrt(n - 3)))
 
 
 def paths_for(df1: pd.DataFrame, sur: pd.DataFrame, h: int = H):
@@ -65,19 +90,23 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--tf", default="4h")
     ap.add_argument("--n-shuffle", type=int, default=3000)
+    ap.add_argument("--extended", action="store_true",
+                    help="fold in 2024 (roughly DOUBLES the sample)")
     a = ap.parse_args()
     rng = np.random.default_rng(0)
 
-    _, df1, *_ = data.load_inputs(a.tf)
+    df1 = _frame(a.extended)
+    print(f"\nprice frame: {df1['Date'].iloc[0]} -> {df1['Date'].iloc[-1]}  "
+          f"({len(df1):,} bars){'   [EXTENDED: 2024 folded in]' if a.extended else ''}")
     sur = build_surprises(rc.load_calendar())
     P, z, dates = paths_for(df1, sur)
     n = len(z)
-    print(f"\n{n} releases with a causal surprise and a full {H}-minute path\n")
+    print(f"{n} releases with a causal surprise and a full {H}-minute path\n")
 
     # ================================================================ Q1 MAGNITUDE
-    print("=" * 78)
+    print("=" * 88)
     print("Q1 — MAGNITUDE: does a BIGGER surprise produce a BIGGER move? (no direction needed)")
-    print("=" * 78)
+    print("=" * 88)
     absz = np.abs(z)
     for label, mag in [
         ("|move| at +5 min", np.abs(P[:, 4])),
@@ -87,8 +116,12 @@ def main() -> int:
     ]:
         c = float(np.corrcoef(absz, mag)[0, 1])
         p = perm_p(lambda s: np.corrcoef(np.abs(s), mag)[0, 1], z, rng, a.n_shuffle, c)
-        star = "  <<< SIGNIFICANT" if p < 0.05 else ""
-        print(f"  corr(|surprise|, {label:<22}) = {c:>+6.3f}   p = {p:>5.3f}{star}")
+        # POWER, reported alongside every result from now on. A null at low power is not evidence of
+        # absence — see docs/superpowers/REPORT_underpowered_retraction.md
+        pw = power_for(c, n)
+        star = "  <<< SIGNIFICANT" if p < 0.05 else ("  (underpowered — cannot tell)" if pw < 0.5 else "")
+        print(f"  corr(|surprise|, {label:<22}) = {c:>+6.3f}   p = {p:>5.3f}   "
+              f"power = {100*pw:>3.0f}%{star}")
     print()
     print("  A positive, significant value here would mean: we cannot predict WHICH WAY it moves,")
     print("  but we CAN predict HOW FAR. That is a volatility trade, not a directional one — and the")

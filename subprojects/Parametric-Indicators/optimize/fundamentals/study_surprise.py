@@ -112,9 +112,17 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--tf", default="4h")
     ap.add_argument("--n-shuffle", type=int, default=2000)
+    ap.add_argument("--extended", action="store_true",
+                    help="fold in 2024 (roughly DOUBLES the sample)")
     a = ap.parse_args()
 
-    _, df1, *_ = data.load_inputs(a.tf)
+    if a.extended:
+        from optimize.fundamentals.extended_data import load_1m_extended
+        df1 = load_1m_extended("NQ")
+        print(f"[EXTENDED] price frame {df1['Date'].iloc[0]} -> {df1['Date'].iloc[-1]} "
+              f"({len(df1):,} bars)")
+    else:
+        _, df1, *_ = data.load_inputs(a.tf)
     cal = rc.load_calendar()
 
     print("Pulling ALFRED first-print vintages (one per release)...\n")
