@@ -33,38 +33,28 @@
 HERE="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]:-$0}")")" && pwd)"
 cd "$HERE" || { echo "cannot cd to $HERE"; exit 1; }
 
-# ── FROZEN GUARD ────────────────────────────────────────────────────────────────────────────────────
-# Starting the local dashboard requires an explicit opt-in. `stop`/`status` are always allowed.
+# ── FROZEN BANNER ───────────────────────────────────────────────────────────────────────────────────
+# This is a FLAG, not a gate: it starts normally, but says loudly what it is. `stop`/`status` stay quiet.
 case "${1:-start}" in
   stop|status) ;;
   *)
-    if [ "${LOCAL_DASHBOARD_OK:-0}" != "1" ]; then
-      cat <<'FROZEN'
+    cat <<'FROZEN'
 
   ╔════════════════════════════════════════════════════════════════════════════════════╗
-  ║  ⚠️  THE LOCAL DASHBOARD IS FROZEN — NOT LAUNCHING                                  ║
+  ║  ⚠️  LOCAL DASHBOARD — FROZEN COPY (not the live one)                               ║
   ╚════════════════════════════════════════════════════════════════════════════════════╝
 
-  This is NOT the live dashboard. Its champion set is not kept in sync, so it can serve an
-  OLD champion and still look completely plausible. And heavy timeframes (2m / 5m) have
-  OOM-frozen this machine before — those are server-only.
+   • Its champion set is NOT auto-synced with the server, so it can serve an OLD champion
+     and still look completely plausible. Re-sync before trusting a number.
+   • Heavy timeframes (2m / 5m) have OOM-frozen this 14 GB box before — prefer the server
+     for those.
 
-  ▶ USE THE LIVE ONE (on the AMD server, always current):
+   LIVE (always current):  http://192.168.50.62:8200/   ·   http://78.89.209.212:8200/
+                           ssh amd-trading '~/Mulham/wsg-i/dash.sh status'
 
-        private / VPN :  http://192.168.50.62:8200/
-        public        :  http://78.89.209.212:8200/
-
-        status/restart:  ssh amd-trading '~/Mulham/wsg-i/dash.sh status'
-                         ssh amd-trading '~/Mulham/wsg-i/dash.sh refresh'
-
-  ▶ If you understand the above and still want the local one (light timeframes only):
-
-        LOCAL_DASHBOARD_OK=1 ./run_dashboard.sh
+   Starting the local copy anyway...
 
 FROZEN
-      exit 2
-    fi
-    echo "⚠️  LOCAL DASHBOARD (FROZEN) — numbers may be stale; heavy timeframes may OOM this box."
     ;;
 esac
 
