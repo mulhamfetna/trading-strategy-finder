@@ -67,7 +67,8 @@ def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
                   intracandle_force_close: bool = False,
                   intracandle_normal_gate: np.ndarray | None = None,
                   news_target: np.ndarray | None = None,
-                  news_profit_exempt_mult: float = 1.0) -> list[dict]:
+                  news_profit_exempt_mult: float = 1.0,
+                  track_excursions: bool = False) -> list[dict]:
     """Return the list of completed trades (dicts with entry/exit/dir/reason/pnl_points), in order.
     Mirrors engine.SimpleStrategy(...).backtest(...) candidate stream (exit_reason != OPEN).
 
@@ -77,6 +78,7 @@ def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
     n = len(d_dates)
     M = len(m_dates)
     trades: list[dict] = []
+    exc_bounds: list[tuple[int, int]] = []   # (entry, exit) 1-min indices — only when track_excursions
     blocked_until = None  # np.datetime64 of last exit; next entry needs date > this
     # resolve per-side points ONCE (shared fallback ⇒ identical when no split given)
     L_sls = sl_soft if long_sl_soft is None else float(long_sl_soft)
@@ -230,12 +232,19 @@ def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
                 if e < be <= nat_global:
                     fillf = float(d_close[fc_b - 1])
                     pnlf = (fillf - ep) if d == LONG else (ep - fillf)
-                    trades.append({
+                    recf = {
                         "entry_idx": idx, "entry_time": et, "entry_price": ep,
                         "direction": "long" if d == LONG else "short",
                         "exit_time": d_dates[fc_b], "exit_price": fillf,
                         "exit_reason": REASON_NAME[R_FORCE_CLOSE], "pnl_points": float(pnlf),
-                    })
+                    }
+                    if track_excursions:
+                        # MUST record bounds here too: _apply_excursions zips trades against
+                        # exc_bounds, so a trade appended without bounds would silently misalign
+                        # EVERY subsequent trade's MFE/MAE.
+                        exc_bounds.append((e, max(be - 1, e)))
+                        recf["bars_1m"] = int(max(be - 1, e) - e + 1)
+                    trades.append(recf)
                     idx = fc_b                                # re-process the boundary as a normal entry
                     continue
 
@@ -246,14 +255,72 @@ def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
         ti, _rank, reason, fill = best
         xt = m_dates[e + ti]
         pnl_pts = (fill - ep) if d == LONG else (ep - fill)
-        trades.append({
+        rec = {
             "entry_idx": idx, "entry_time": et, "entry_price": ep,
             "direction": "long" if d == LONG else "short",
             "exit_time": xt, "exit_price": fill, "exit_reason": REASON_NAME[reason],
             "pnl_points": float(pnl_pts),
-        })
+        }
+        if track_excursions:
+            # Record only the trade's 1-min bounds (two cheap ints). The actual MFE/MAE is computed
+            # for EVERY trade at once after the loop — see _apply_excursions. Doing it per-trade cost
+            # ~20% CPU, and profiling showed the arithmetic was only 0.8 ms of that: the rest was pure
+            # NUMPY DISPATCH OVERHEAD, ~6 tiny numpy calls x 265 trades. One batched call kills it.
+            exc_bounds.append((e, e + ti))
+            rec["bars_1m"] = int(ti + 1)           # how long it lived, in 1-min bars
+        trades.append(rec)
         blocked_until = xt
         # advance to the next decision bar whose date > exit time
         nxt = int(np.searchsorted(d_dates, xt, side="right"))
         idx = max(idx + 1, nxt)
+
+    if track_excursions:
+        _apply_excursions(trades, exc_bounds, m_high, m_low)
     return trades
+
+
+def _apply_excursions(trades: list[dict], bounds: list[tuple[int, int]],
+                      m_high: np.ndarray, m_low: np.ndarray) -> None:
+    """Compute MFE/MAE for EVERY trade in ONE pair of numpy calls, then stamp them in place.
+
+    MFE — Maximum Favourable Excursion: the best unrealized profit the trade ever saw while open.
+    MAE — Maximum Adverse  Excursion: the worst unrealized loss it ever saw while open.
+    Both in POINTS, signed from the trade's own view (MFE >= 0, MAE <= 0), so longs and shorts compare.
+
+    WHY reduceat. Doing `hi[:ti+1].max()` per trade cost ~20% CPU — and profiling showed the actual
+    arithmetic was only 0.8 ms of it. The rest was numpy's per-call dispatch overhead on tiny arrays.
+    np.maximum.reduceat does all segment maxima in a SINGLE call.
+
+    THE INTERLEAVE TRICK. reduceat(arr, idx) reduces the segments [idx[0],idx[1]), [idx[1],idx[2]), …
+    So we lay the bounds out as [start0, end0+1, start1, end1+1, …]. The EVEN results are the trades;
+    the ODD ones are the gaps between trades, and we throw them away. Trades never overlap (one
+    position at a time), so the bounds are non-decreasing, which is what reduceat requires.
+    """
+    if not bounds:
+        return
+    if len(bounds) != len(trades):
+        # A trade was appended without recording its bounds. zip() would silently truncate and
+        # mis-assign every excursion after it — a wrong number that looks plausible. Refuse.
+        raise AssertionError(
+            f"excursion bounds ({len(bounds)}) != trades ({len(trades)}) — a trade-append path is "
+            "missing its exc_bounds.append(). Every MFE/MAE after it would be wrong."
+        )
+    n = len(m_high)
+    b = np.empty(2 * len(bounds), dtype=np.int64)
+    b[0::2] = [s for s, _ in bounds]
+    b[1::2] = [e + 1 for _, e in bounds]
+    np.clip(b, 0, n - 1, out=b)
+
+    seg_hi = np.maximum.reduceat(m_high, b)[0::2]     # one call, all trades
+    seg_lo = np.minimum.reduceat(m_low, b)[0::2]
+
+    for tr, hi_, lo_ in zip(trades, seg_hi, seg_lo):
+        ep = tr["entry_price"]
+        if tr["direction"] == "long":
+            mfe, mae = hi_ - ep, lo_ - ep
+        else:
+            mfe, mae = ep - lo_, ep - hi_
+        # Clamp: a gap through the entry price could otherwise flip a sign. The invariants
+        # MFE >= 0 >= MAE must hold unconditionally — downstream logic depends on them.
+        tr["mfe_points"] = max(float(mfe), 0.0)
+        tr["mae_points"] = min(float(mae), 0.0)

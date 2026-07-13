@@ -108,6 +108,11 @@ class SimpleStrategyParams:
     news_pre_min: int = 0         # minutes before the release the window opens (measured: 0)
     news_post_min: int = 12       # minutes after  the release the window closes (measured: 12)
     news_profit_exempt_mult: float = 1.0   # survive the window iff open profit >= this * stop distance
+    # Excursion tracking (live unrealized-P/L observation). OFF => byte-identical (golden-locked):
+    # the trade dict gains NO new keys, so the golden trade-ledger hash cannot move. Purely
+    # observational — it can never change an entry, an exit, or a P/L. Prerequisite for the dynamic
+    # stop-loss, which must know how far a trade went FOR us before it went against us.
+    track_excursions: bool = False
     # Intra-candle entry for vetoed signals (Phase 1). OFF => byte-identical (golden-locked).
     intracandle_veto_entry: bool = False   # arm a vetoed (vol-passed) signal, enter mid-candle when the gate re-opens
     intracandle_max_wait:   int  = 240     # max 1-min bars to wait inside the candle (N); 240 ~= one 4h candle
@@ -305,6 +310,11 @@ class SimpleStrategy:
         blocked_until: Optional[pd.Timestamp] = None
         soft_consec_count: int = 0   # consecutive 1-min closes past the active soft line
         bars_held: int = 0           # 1-min bars at/after entry on the open trade (for the time cap)
+        # Excursion tracking (opt-in, params.track_excursions). The running extremes the OPEN trade has
+        # reached. They must live out here, not in the exit walk: the walk is re-entered once per
+        # decision bar, so a trade spanning several bars would otherwise reset its own history.
+        run_hi: float = float('-inf')
+        run_lo: float = float('inf')
         armed: Optional[Dict] = None  # carry-mode (entry_resolver) armed-but-unfilled setup
         scope = self.params.direction_scope
         flip = self.params.flip_entry_direction
@@ -318,7 +328,7 @@ class SimpleStrategy:
             """Walk 1-min bars belonging to df_4h[idx] looking for an exit on the currently open
             trade. Single exit model regardless of `flip`: hard-SL > hard-TP > soft-SL on the
             ENTERED direction. `flip` only reverses entry direction (see entry logic below)."""
-            nonlocal open_trade, blocked_until, soft_consec_count, bars_held
+            nonlocal open_trade, blocked_until, soft_consec_count, bars_held, run_hi, run_lo
             if open_trade is None or start_1m is None:
                 return
             lo = int(start_1m[idx])
@@ -339,6 +349,15 @@ class SimpleStrategy:
                 m_high  = float(mh_arr[t])
                 m_low   = float(ml_arr[t])
                 m_close = float(mc_arr[t])
+
+                # Excursion tracking: the running extremes reached while this trade is open. Updated
+                # BEFORE the exit checks, so the exit bar itself is included — mirrors fast_engine,
+                # which slices hi[:ti+1] (inclusive of the exit bar).
+                if self.params.track_excursions:
+                    if m_high > run_hi:
+                        run_hi = m_high
+                    if m_low < run_lo:
+                        run_lo = m_low
 
                 exit_reason: Optional[ExitReason] = None
                 fill: Optional[float] = None
@@ -414,10 +433,13 @@ class SimpleStrategy:
                 if exit_reason is not None and fill is not None:
                     sub_ts = pd.Timestamp(md_arr[t])                   # materialise the exit timestamp
                     _finalise(open_trade, sub_ts, fill, exit_reason, ep, d, pv)
+                    if self.params.track_excursions:                    # THE main exit path
+                        _stamp_excursions(open_trade, run_hi, run_lo, bars_held)
                     trades.append(open_trade)
                     blocked_until = sub_ts
                     open_trade = None
                     soft_consec_count = 0
+                    run_hi, run_lo = float('-inf'), float('inf')
                     return
                 if resets_counter:
                     soft_consec_count = 0
@@ -463,10 +485,13 @@ class SimpleStrategy:
                 if _nin and _ng:
                     _finalise(open_trade, ts_new_bar_start, float(d4_close[idx - 1]), 'FORCE_CLOSE',
                               open_trade['entry_price'], open_trade['direction'], self.NQ_POINT_VALUE)
+                    if self.params.track_excursions:
+                        _stamp_excursions(open_trade, run_hi, run_lo, bars_held)
                     trades.append(open_trade)
                     open_trade = None
                     soft_consec_count = 0
                     bars_held = 0
+                    run_hi, run_lo = float('-inf'), float('inf')
 
             # Exit walk for a carry-over trade (1-min bars in this new window).
             _walk_exit_for_4h(idx)
@@ -644,6 +669,30 @@ class SimpleStrategy:
             'open_trade': None if trades and trades[-1]['exit_reason'] != 'OPEN' else open_trade,
         }
         return trades, final_state
+
+
+def _stamp_excursions(trade: Dict, run_hi: float, run_lo: float, bars: int) -> None:
+    """Stamp MFE / MAE on a trade dict in place. Opt-in (params.track_excursions).
+
+    MFE — Maximum Favourable Excursion: the BEST unrealized profit this trade ever saw while open.
+    MAE — Maximum Adverse  Excursion: the WORST unrealized loss it ever saw while open.
+
+    Both in POINTS, signed from the trade's own point of view (MFE >= 0, MAE <= 0), so a long and a
+    short are directly comparable. Clamped, so a gap through the entry can never violate the sign
+    invariants. fast_engine computes the identical quantities over hi[:ti+1] / lo[:ti+1].
+
+    Why this matters: the engine has never known how a trade was doing WHILE OPEN — P/L existed only
+    at exit. That made "was this stop-out a real move, or did we give back a winner?" unanswerable,
+    and the dynamic stop-loss (Task #3) impossible to even express.
+    """
+    ep = float(trade['entry_price'])
+    if trade['direction'] == 'long':
+        mfe, mae = run_hi - ep, run_lo - ep
+    else:
+        mfe, mae = ep - run_lo, ep - run_hi
+    trade['mfe_points'] = max(float(mfe), 0.0)
+    trade['mae_points'] = min(float(mae), 0.0)
+    trade['bars_1m'] = int(bars)
 
 
 def _finalise(
