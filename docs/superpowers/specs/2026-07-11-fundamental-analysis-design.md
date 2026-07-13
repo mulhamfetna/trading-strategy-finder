@@ -370,3 +370,166 @@ EODHD's storage terms were **not** in the verified claim set and must be confirm
 their data.
 
 **Time-sensitivity:** all pricing is 2026-current and must be reconfirmed at purchase.
+
+---
+
+# Milestone 1 — RESULT: the veto window FAILED its null test. Not shipped.
+
+**Date:** 2026-07-12. Measured on NQ, 2025-01-01 → 2026-05-19 (~16.5 months, 103 three-star events).
+
+## The verdict
+
+| Timeframe | Baseline P/L | With veto | Delta | Fake-calendar delta (mean ± sd) | p-value | Verdict |
+|---|---|---|---|---|---|---|
+| 4h | $42,187 | $42,217 | **+$30** | +$573 ± $4,568 | **0.548** | fails |
+| 15m | $4,239 | $5,904 | **+$1,665** | +$998 ± $1,075 | **0.290** | fails |
+| 5m | $693 | $1,245 | **+$552** | +$614 ± $3,055 | **0.290** | fails |
+
+The bar was p < 0.05. Nothing came close. **The veto window is not shipped.**
+
+## Why it failed — the finding that matters
+
+**The fake calendars help too.** On 15m, a *randomly placed* calendar improves P/L by **+$998 on
+average** — versus the real calendar's +$1,665. Randomly flattening trades makes this strategy money.
+So whatever small gain the real veto shows is not evidence that news matters; it is evidence that
+**this champion holds its losers slightly too long**, and *any* excuse to cut them early helps a bit.
+That is a fact about our stop placement, not about the world. Exactly the failure mode the null test
+was built to catch, caught.
+
+**And the root cause is structural: the strategy is ALREADY FLAT for 77% of releases.**
+
+- Median hold time: **1.4 hours.**
+- Of 103 releases, a position was open for only **24** of them (23%).
+- The force-exit therefore fires on just **3–4% of trades** (7/265 on 4h, 19/488 on 15m, 21/600 on 5m).
+
+The whole premise — *"don't hold naked through a release"* — quietly assumed we often hold through
+releases. **We don't.** There is almost nothing for the veto to protect.
+
+## Two structural traps found along the way
+
+**The 4h test bed was meaningless, and that was our error.** 4h decision bars land at 02:00 / 06:00 /
+10:00 / 14:00 / 18:00 / 22:00. Releases land at 08:30 and 14:00. So **08:30 — which is 91 of our 103
+events (88%) — can never coincide with a 4h bar.** Only the twelve FOMC statements at 14:00 can. The
+4h entry-veto touched 11 bars out of 2,119 and removed **one trade out of 209**. A 12-minute window
+against a 240-minute bar is nearly a no-op. Same for 1h (08:30 is not on the hour). Only 15m/5m/2m can
+see these releases at all.
+
+**Statistical power is very low regardless.** With only ~20 affected trades, this test could not have
+detected a modest real effect even if one existed. Read the result as *"no evidence of an effect,
+and positive evidence that the mechanism is trade-cutting rather than news"* — not as proof that news
+never matters.
+
+## What DID hold up
+
+- **The calendar is real and correct.** The release minute runs **8.32× a normal minute**, and the
+  spike lands exactly on offset 0 — which validates every FRED release id and every Eastern clock time.
+- **There is NO pre-release volatility ramp** (spec §5.1 assumed one). Offsets −6..−1 sit at
+  0.78×–1.34× baseline; at two minutes out the market is *quieter* than average. Traders stand aside
+  and wait. **The measured window is pre=0, post=12.**
+- Both engines wired, golden 6/6 byte-identical when off, trade-for-trade parity when on.
+- Infrastructure (calendar, envelope, masks, null test) is reusable by every later head.
+
+## What this kills, and what it opens
+
+**Kills Head 1 (veto).** No evidence, and no mechanism — we are already flat.
+
+**Wounds Head 2 (widen-and-hold).** It targets the same 3–4% of trades, and the pre-release turbulence
+it was meant to ride *does not exist*.
+
+**Opens Head 4 (surprise entry) — and inverts the argument for it.** The very fact that sank the veto
+is an argument *for* the entry head: **we are flat during 77% of releases, and those are moments the
+market moves 8.3× a normal minute.** We are standing aside during the most violent, most
+information-rich minutes of the month. That is an entry opportunity, not a risk to hide from — and it
+matches the standing project direction (increase entries).
+
+**Caveat, unchanged:** Head 4 needs point-in-time consensus + first-print actuals (paid), and with
+~103 events it carries the highest overfitting risk of any head. Its kill criterion must be agreed
+BEFORE it is built.
+
+---
+
+# WORKSTREAM CLOSE-OUT — 2026-07-12
+
+## The one-line answer
+
+**Scheduled US macro releases are priced efficiently by NQ. All three exploitation routes were tested
+honestly and all three are dead. No vendor data was purchased, and none is recommended.**
+
+## What was tested, and how each died
+
+```mermaid
+graph TD
+    CAL["Validated calendar<br/>103 three-star US releases<br/>8.32x volatility spike, exactly on the print"]
+
+    CAL --> H1["HEAD 1 — VETO<br/>timing, defensive"]
+    CAL --> H2["HEAD 2 — REACTION<br/>timing + price, offensive"]
+    CAL --> H3["HEAD 3 — SURPRISE<br/>timing + CONTENT"]
+
+    H1 --> D1["DEAD<br/>p = 0.29-0.55<br/>already flat for 77% of releases;<br/>FAKE calendars help just as much"]
+    H2 --> D2["DEAD<br/>0 of 30 cells significant<br/>the apparent 'fade' edge is ordinary<br/>NQ mean-reversion — fakes show it too"]
+    H3 --> D3["DEAD<br/>corr -0.43 in 2025 → -0.01 in 2026<br/>sign FLIPPED at 2 of 4 horizons<br/>a Fed regime, not an edge"]
+
+    D1 --> V["VERDICT<br/>reliably VIOLENT · reliably UNPREDICTABLE<br/>= an efficient market"]
+    D2 --> V
+    D3 --> V
+
+    style D1 fill:#5c1a1a,color:#fff
+    style D2 fill:#5c1a1a,color:#fff
+    style D3 fill:#5c1a1a,color:#fff
+    style V fill:#3a3a1a,color:#fff
+    style CAL fill:#2d5016,color:#fff
+```
+
+### Head 3 is the one worth remembering
+
+It **passed** in-sample: correlation **−0.322** pooled (p = 0.021 vs a shuffled-surprise null), and
+**−0.432** on 2025 alone. The sign was economically coherent — a better-than-expected number was
+bearish for NQ, the classic "good news is bad news" hawkish-Fed regime. Significant, plausible,
+mechanistic.
+
+Out of sample it **evaporated**: 2026 correlations of −0.011 / +0.159 / +0.125 / −0.021 — the sign
+**flipped at two of four horizons** — and the frozen 2025 rule lost money at every horizon in 2026
+(−2.8 to −6.4 bp/trade, hit rate 32–41%).
+
+Not a power problem. The effect is *gone*. **"Good news is bad news" is a property of a Fed regime,
+not a law of markets.** The kill criterion was written down before the test ran; that is the only
+reason this was killed instead of shipped.
+
+## Why it is efficient — and the hypothesis this does NOT touch
+
+The releases are unexploitable **precisely because they are scheduled.** Everyone knows a number lands
+at 08:30 on a published date. The market has already positioned. Our own envelope shows it directly:
+the market goes **QUIET** before a print (0.78×–1.34× baseline at −6..−1 minutes), then explodes 8.32×
+at the print and re-prices within ~12 minutes. That is textbook efficient absorption of *anticipated*
+information.
+
+**That argument does not extend to UNSCHEDULED news** — the second source in the original scope (world
+leaders on social media), never tested. An unscheduled statement has no pre-positioning, no consensus
+to price against, and no "everyone is waiting" quiet period. The efficient-market logic that killed
+the calendar actually *predicts* that unscheduled news could behave differently.
+
+**But the honest caveats stand, and they are the ones from §3:** unscheduled text carries the
+timestamp-revision trap (3.1), reverse causality (3.2), survivorship of deleted posts, and worse event
+scarcity than the calendar — and the deep-research pass returned **zero verified timestamped sources**
+for it. It is the harder path with the worse data, and nothing here has made it easier.
+
+## What survived and is worth keeping
+
+- **The validated calendar** (`optimize/fundamentals/us_high_impact.csv`, 103 events). Proven correct:
+  the volatility spike lands exactly on the print. Reusable by anything.
+- **ALFRED point-in-time first prints** (`alfred.py`). Free, official. 2025 payrolls were revised by
+  801k–1,032k jobs after the fact — point-in-time integrity is not paranoia.
+- **The measured envelope**: no pre-release ramp; the storm is (pre=0, post=12).
+- **Both engines wired**, `news_veto` off by default, **golden 6/6 byte-identical**, full engine↔
+  fast_engine parity. The feature is inert and harmless where it sits.
+- **The null-test harness** — the most valuable artifact here. It caught **three** mirages:
+  a $72k "fade" edge that was just NQ mean-reversion, a veto whose gains random calendars matched,
+  and a p=0.021 surprise signal with a good story that was a dead regime.
+
+## Recommendation
+
+**Do not buy vendor consensus data.** The counter-argument — that a real economist consensus is a
+cleaner yardstick than our statistical one, and a noisy yardstick can destabilise a true relationship —
+is fair but now has to carry all the weight. We have no free evidence that content predicts direction
+*stably*, and the one relationship found flipped sign inside twelve months. A better ruler does not
+help when the thing being measured keeps moving.

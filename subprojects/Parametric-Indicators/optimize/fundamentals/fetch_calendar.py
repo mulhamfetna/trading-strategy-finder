@@ -25,6 +25,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import urllib.request
 from pathlib import Path
 
@@ -34,16 +35,34 @@ FRED = "https://api.stlouisfed.org/fred/release/dates"
 FOMC_JSON = "https://www.federalreserve.gov/json/calendar.json"
 
 # (fred_release_id, event slug, agency, Eastern release time)
+#
+# Every id here was verified against https://api.stlouisfed.org/fred/releases and returns a non-zero
+# date count for 2025-01-01..2026-06-30. Do not guess ids — the build refuses to write a partial
+# calendar precisely so that a wrong id cannot pass silently.
 RELEASES = [
     (50,  "nonfarm_payrolls",  "BLS",    "08:30"),
     (10,  "cpi",               "BLS",    "08:30"),
     (46,  "ppi",               "BLS",    "08:30"),
     (53,  "gdp",               "BEA",    "08:30"),
     (54,  "pce",               "BEA",    "08:30"),
-    (8,   "retail_sales",      "Census", "08:30"),
-    (175, "ism_manufacturing", "ISM",    "10:00"),
-    (176, "ism_services",      "ISM",    "10:00"),
+    (9,   "retail_sales",      "Census", "08:30"),   # "Advance Monthly Sales for Retail and Food
+                                                     #  Services". NOT id 8 — that returns nothing.
 ]
+
+# KNOWN GAP — ISM (Manufacturing PMI, Services PMI), both 10:00 ET.
+#
+# FRED does NOT carry ISM. It is a private organization and its PMI data is proprietary, so the
+# St. Louis Fed does not host the series (searching "ISM" there returns unrelated state leading
+# indexes). There is therefore NO authoritative recorded-date source for ISM in our free stack.
+#
+# We deliberately do NOT rule-derive the dates (1st / 3rd business day of the month). Rule-derived
+# dates are exactly the class of unverified, assumed data this design exists to avoid — the whole
+# reason we use FRED instead of a schedule is that the 2025/2026 shutdowns proved schedules lie.
+#
+# Consequence: the calendar contains no 10:00 events, so the veto never fires at 10:00.
+# window.py's envelope measurement includes a diagnostic that reports whether 10:00 on ISM-shaped
+# days IS in fact unusually volatile — i.e. whether this gap is costing us anything. If it is,
+# source ISM properly (paid feed) rather than guessing its dates.
 
 _UA = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
                      "(KHTML, like Gecko) Chrome/126.0 Safari/537.36"}
@@ -52,7 +71,9 @@ _UA = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
 def _get_json(url: str) -> dict:
     req = urllib.request.Request(url, headers=_UA)
     with urllib.request.urlopen(req, timeout=30) as r:
-        return json.loads(r.read().decode())
+        # utf-8-sig: the Fed's calendar.json is served with a UTF-8 byte-order mark, which plain
+        # utf-8 decoding chokes on. Harmless for FRED, which has no BOM.
+        return json.loads(r.read().decode("utf-8-sig"))
 
 
 def fetch_fred_dates(release_id: int, start: str, end: str, api_key: str) -> list[str]:
@@ -65,17 +86,36 @@ def fetch_fred_dates(release_id: int, start: str, end: str, api_key: str) -> lis
 
 
 def fetch_fomc_dates(start: str, end: str) -> list[str]:
-    """FOMC statement days. The Fed's JSON calendar marks multi-day meetings; the statement lands on
-    the LAST day, at 14:00 ET."""
+    """FOMC rate-decision STATEMENT days (14:00 ET), from the Fed's own JSON calendar.
+
+    The feed's `events` list carries three distinct FOMC entries, and they are NOT equal:
+
+      * "FOMC Meeting"          2:00 p.m.  -- the rate decision statement.  <-- the three-star event
+      * "FOMC Press Conference" 2:30 p.m.  -- genuinely high-impact, but the feed only lists these
+                                              from 2025-09 onward, so including them would leave
+                                              holes in the first two-thirds of our window. EXCLUDED.
+      * "FOMC Minutes"          2:00 p.m.  -- released ~3 weeks after the meeting; moves markets far
+                                              less than the statement. Not three-star. EXCLUDED.
+
+    Titles in the feed carry inconsistent case and stray leading spaces ("FOMC meeting",
+    " FOMC Minutes"), so match on a normalized title. `days` is the meeting's LAST day (the day the
+    statement lands); it is occasionally a range, so take the max.
+    """
     payload = _get_json(FOMC_JSON)
     out = []
-    for m in payload.get("mc", []):
-        days = m.get("days") or []
-        if not days:
+    for e in payload.get("events", []):
+        if e.get("type") != "FOMC":
             continue
-        last = f"{m['year']}-{int(m['month']):02d}-{int(max(days)):02d}"
-        if start <= last <= end:
-            out.append(last)
+        if (e.get("title") or "").strip().lower() != "fomc meeting":
+            continue
+        month = (e.get("month") or "").strip()            # "YYYY-MM"
+        days = str(e.get("days") or "").strip()           # "29"  or occasionally "28-29"
+        if not month or not days:
+            continue
+        last_day = max(int(d) for d in re.findall(r"\d+", days))
+        stamp = f"{month}-{last_day:02d}"
+        if start <= stamp <= end:
+            out.append(stamp)
     return sorted(set(out))
 
 

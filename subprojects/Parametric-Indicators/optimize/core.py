@@ -44,6 +44,38 @@ _VOTE_MEMO: dict = {}
 _IC_DIR_MEMO: dict = {}   # per-(1-min slice, indicator) FULL 1-min directions for the intra-candle gate
 _EOD_MEMO: dict = {}      # per-(1-min slice, margin) end-of-day target bars — param-independent, so one
 #                           build per fold serves every trial (eod_targets is a Python loop over sessions)
+_NEWS_MASK_MEMO: dict = {}  # per-(decision slice, pre, post, calendar) release-window ENTRY-BLOCK mask
+_NEWS_TGT_MEMO: dict = {}   # per-(1-min slice, pre, calendar) NEWS_VETO force-EXIT target bars
+
+
+def _news_calendar(params: dict):
+    """The release calendar this run should use.
+
+    `_news_calendar_override` lets the null test (optimize/fundamentals/run_nulltest.py) swap in a FAKE
+    calendar without touching the committed CSV. Absent ⇒ the real one.
+    """
+    cal = params.get("_news_calendar_override")
+    if cal is None:
+        from optimize.fundamentals import release_calendar as _rc
+        cal = _rc.load_calendar()
+    return cal
+
+
+def _news_window_mask(params: dict, d):
+    """bool[len(d)] where a NEW ENTRY must be blocked, or None when the news veto is off.
+
+    None ⇒ the caller leaves `gate` untouched ⇒ byte-identical to pre-feature (golden-locked).
+    """
+    if not params.get("news_veto"):
+        return None
+    pre = int(params.get("news_pre_min", 0))
+    post = int(params.get("news_post_min", 12))
+    key = (len(d), str(d["Date"].iloc[0]), str(d["Date"].iloc[-1]), pre, post,
+           id(params.get("_news_calendar_override")))
+    if key not in _NEWS_MASK_MEMO:
+        from optimize.fundamentals import window as _w
+        _NEWS_MASK_MEMO[key] = _w.release_window_mask(d, _news_calendar(params), pre, post)
+    return _NEWS_MASK_MEMO[key]
 
 
 def _clear_caches() -> None:
@@ -51,6 +83,8 @@ def _clear_caches() -> None:
     _VOTE_MEMO.clear()
     _IC_DIR_MEMO.clear()
     _EOD_MEMO.clear()
+    _NEWS_MASK_MEMO.clear()
+    _NEWS_TGT_MEMO.clear()
 
 
 def _slice_sig(d, d1, bar_duration):
@@ -271,6 +305,11 @@ def backtest_metrics(
                 vmask = runner.veto_mask(d, box, inds, src=src, votes=votes)
                 cmask = runner.confirm_mask(d, box, inds, int(params.get("k", 1)), src=src, votes=votes)
                 gate = base & ~vmask & cmask
+                # News veto: a scheduled high-impact release can only ever REMOVE eligibility. Absent /
+                # off ⇒ _news_window_mask returns None ⇒ gate untouched ⇒ byte-identical (golden-locked).
+                nmask = _news_window_mask(params, d)
+                if nmask is not None:
+                    gate = gate & ~nmask
                 # Intra-candle vetoed entry (optional). Build the per-1-min gate (memoised) + pass the vol gate
                 # (base), veto mask, and full composite gate. Off/absent ⇒ ic_* stay None ⇒ fast path unchanged.
                 if params.get("intracandle_veto_entry"):
@@ -286,6 +325,20 @@ def backtest_metrics(
     # on the SLICED d1 (the same frame handed to fast_backtest) — building it on the full df1 would point
     # at the wrong bars. Param-independent given (slice, margin) ⇒ memoised across trials of the same fold.
     m1_dates = d1["Date"].to_numpy()
+
+    # News-veto force-exit targets. Same sharp edge as eod_targets: news_exit_targets returns indices
+    # INTO THE ARRAY IT IS GIVEN, so it must be built on the SLICED d1 (the frame handed to
+    # fast_backtest), not the full df1. Param-independent given (slice, pre) ⇒ memoised across trials.
+    news_target = None
+    if params.get("news_veto"):
+        nk = (_slice_sig(d, d1, bar_duration), int(params.get("news_pre_min", 0)),
+              id(params.get("_news_calendar_override")))
+        if nk not in _NEWS_TGT_MEMO:
+            from optimize.fundamentals import window as _w
+            _NEWS_TGT_MEMO[nk] = _w.news_exit_targets(
+                d1, _news_calendar(params), int(params.get("news_pre_min", 0)))
+        news_target = _NEWS_TGT_MEMO[nk]
+
     eod_target = session_last = None
     if cap_mode in ("eod", "both"):
         ek = (_slice_sig(d, d1, bar_duration), eod_margin)
@@ -307,6 +360,8 @@ def backtest_metrics(
         intracandle_veto_mask=ic_veto_mask, intracandle_normal_gate=ic_normal_gate,
         intracandle_max_wait=int(params.get("intracandle_max_wait", 240)),
         intracandle_force_close=bool(params.get("intracandle_force_close", False)),
+        news_target=news_target,
+        news_profit_exempt_mult=float(params.get("news_profit_exempt_mult", 1.0)),
         **_split)
     # fast_backtest returns completed trades already in entry order (no OPEN trades)
 

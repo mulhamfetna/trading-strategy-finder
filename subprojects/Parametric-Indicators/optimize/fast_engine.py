@@ -27,9 +27,11 @@ import pandas as pd
 LONG, SHORT, HOLD = 1, -1, 0
 # exit reason codes
 R_SL_HARD, R_TP_HARD, R_SL_SOFT, R_TP_SOFT, R_TIME_CAP, R_END_OF_DAY, R_FORCE_CLOSE = 0, 1, 2, 3, 4, 5, 6
+R_NEWS_VETO = 7
 REASON_NAME = {R_SL_HARD: "STOP_LOSS_HARD", R_TP_HARD: "TAKE_PROFIT_HARD",
                R_SL_SOFT: "STOP_LOSS_SOFT", R_TP_SOFT: "TAKE_PROFIT_SOFT",
-               R_TIME_CAP: "TIME_CAP", R_END_OF_DAY: "END_OF_DAY", R_FORCE_CLOSE: "FORCE_CLOSE"}
+               R_TIME_CAP: "TIME_CAP", R_END_OF_DAY: "END_OF_DAY", R_FORCE_CLOSE: "FORCE_CLOSE",
+               R_NEWS_VETO: "NEWS_VETO"}
 
 
 def signals_to_int(sig_obj: np.ndarray) -> np.ndarray:
@@ -63,7 +65,9 @@ def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
                   intracandle_veto_mask: np.ndarray | None = None,
                   intracandle_max_wait: int = 240,
                   intracandle_force_close: bool = False,
-                  intracandle_normal_gate: np.ndarray | None = None) -> list[dict]:
+                  intracandle_normal_gate: np.ndarray | None = None,
+                  news_target: np.ndarray | None = None,
+                  news_profit_exempt_mult: float = 1.0) -> list[dict]:
     """Return the list of completed trades (dicts with entry/exit/dir/reason/pnl_points), in order.
     Mirrors engine.SimpleStrategy(...).backtest(...) candidate stream (exit_reason != OPEN).
 
@@ -172,8 +176,31 @@ def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
                 t_eod = (g - e) if 0 <= (g - e) < len(cl) else -1
         else:
             t_eod = -1
+        # NEWS_VETO — force-flatten on the last bar BEFORE a scheduled high-impact release, unless the
+        # trade is already comfortably in profit. news_target[e] is the next force-exit bar (GLOBAL
+        # index) at or after the entry bar; it already points at the bar BEFORE the release, so we do
+        # not eat the 8.32x release spike (see optimize/fundamentals/window.py::news_exit_targets).
+        #
+        # `slh` is the hard-stop DISTANCE in points (slh_line = ep -/+ slh), so it is the natural unit
+        # for "comfortably in profit": exempt iff open profit >= mult * one stop's worth of risk.
+        # Evaluated at the single exit bar, not as a running tally — the engine has no unrealized P/L,
+        # and a point-in-time check is all the vectorized model can express. engine.py mirrors this.
+        t_news = -1
+        if news_target is not None:
+            g = int(news_target[e])
+            if g >= 0 and 0 <= (g - e) < len(cl):
+                ti = g - e
+                px = float(cl[ti])
+                profit = (px - ep) if d == LONG else (ep - px)
+                if not (slh > 0 and profit >= news_profit_exempt_mult * slh):
+                    t_news = ti
+
+        # Same-bar tie-breaks, by position in `order`: the price exits win over NEWS_VETO (the market
+        # got there first, inside the bar), and NEWS_VETO wins over the time caps. engine.py mirrors
+        # this by checking the price exits first, then NEWS_VETO, then the bars/eod caps.
         order = [(t_slh, R_SL_HARD, slh_line), (t_tph, R_TP_HARD, tph_line),
                  (t_soft, R_SL_SOFT, None),
+                 (t_news, R_NEWS_VETO, None),
                  (t_bars, R_TIME_CAP, None), (t_eod, R_END_OF_DAY, None)]
         best = None  # (slice_t, priority_rank, reason, fill)
         for rank, (ti, reason, line) in enumerate(order):
