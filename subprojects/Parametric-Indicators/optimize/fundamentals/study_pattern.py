@@ -56,17 +56,41 @@ def _frame(extended: bool):
     return df1
 
 
-def power_for(r: float, n: int) -> float:
-    """If the effect is REALLY r, what is the chance a sample of n would DETECT it (alpha=0.05)?
+# MINIMUM EFFECT OF INTEREST — declared UP FRONT, not chosen after seeing the data.
+#
+# This is the smallest correlation that would actually be worth acting on. Power MUST be computed
+# against THIS, never against the effect you happened to observe.
+#
+# WHY THIS MATTERS AND WHY I GOT IT WRONG ONCE: an earlier version reported power for the OBSERVED r.
+# So when the observed effect was ~0, it printed "8% power — underpowered", which READS as "we could
+# not see anything" when the truth was "we looked with a perfect instrument and there is nothing there".
+# That is circular and it inverts the meaning of the result. Power against a PRE-DECLARED effect is the
+# only version that carries information.
+MEI = 0.15
 
-    Reported alongside every null from now on. A null at low power is not evidence of absence — it is
-    a study too small to see. See docs/superpowers/REPORT_underpowered_retraction.md.
-    """
+
+def power_for(r: float, n: int) -> float:
+    """If the true effect is r, what is the chance a sample of n DETECTS it (alpha=0.05, two-sided)?"""
     from scipy import stats
     if n <= 3 or r == 0:
         return 0.0
     zr = 0.5 * np.log((1 + abs(r)) / (1 - abs(r)))
     return float(stats.norm.sf(stats.norm.ppf(0.975) - zr * np.sqrt(n - 3)))
+
+
+def verdict(p: float, n: int, mei: float = MEI) -> str:
+    """The honest one-word reading of a result, given the power we ACTUALLY had.
+
+      significant                  -> we found something
+      not significant, HIGH power  -> REAL NEGATIVE. We looked properly. There is nothing there.
+      not significant, LOW power   -> INCONCLUSIVE. Our instrument was blind. Says nothing.
+    """
+    pw = power_for(mei, n)
+    if p < 0.05:
+        return "  <<< SIGNIFICANT"
+    if pw >= 0.80:
+        return f"  REAL NEGATIVE (power {100*pw:.0f}% to see r={mei})"
+    return f"  INCONCLUSIVE (only {100*pw:.0f}% power to see r={mei})"
 
 
 def paths_for(df1: pd.DataFrame, sur: pd.DataFrame, h: int = H):
@@ -101,7 +125,13 @@ def main() -> int:
     sur = build_surprises(rc.load_calendar())
     P, z, dates = paths_for(df1, sur)
     n = len(z)
-    print(f"{n} releases with a causal surprise and a full {H}-minute path\n")
+    print(f"{n} releases with a causal surprise and a full {H}-minute path")
+    print(f"POWER: with n={n} we have {100*power_for(MEI, n):.0f}% chance of detecting an effect of "
+          f"r={MEI} (the pre-declared minimum worth acting on).")
+    if power_for(MEI, n) >= 0.80:
+        print("       ⇒ A NULL HERE IS A REAL NEGATIVE. We can see; there is nothing to see.\n")
+    else:
+        print("       ⇒ A NULL HERE IS INCONCLUSIVE. Our instrument is blind. Do not conclude.\n")
 
     # ================================================================ Q1 MAGNITUDE
     print("=" * 88)
@@ -116,12 +146,9 @@ def main() -> int:
     ]:
         c = float(np.corrcoef(absz, mag)[0, 1])
         p = perm_p(lambda s: np.corrcoef(np.abs(s), mag)[0, 1], z, rng, a.n_shuffle, c)
-        # POWER, reported alongside every result from now on. A null at low power is not evidence of
-        # absence — see docs/superpowers/REPORT_underpowered_retraction.md
-        pw = power_for(c, n)
-        star = "  <<< SIGNIFICANT" if p < 0.05 else ("  (underpowered — cannot tell)" if pw < 0.5 else "")
-        print(f"  corr(|surprise|, {label:<22}) = {c:>+6.3f}   p = {p:>5.3f}   "
-              f"power = {100*pw:>3.0f}%{star}")
+        # Power is computed against the PRE-DECLARED minimum effect of interest (MEI), never against
+        # the observed effect — see the note on `MEI` above. This is what makes a null informative.
+        print(f"  corr(|surprise|, {label:<22}) = {c:>+6.3f}   p = {p:>5.3f}{verdict(p, n)}")
     print()
     print("  A positive, significant value here would mean: we cannot predict WHICH WAY it moves,")
     print("  but we CAN predict HOW FAR. That is a volatility trade, not a directional one — and the")

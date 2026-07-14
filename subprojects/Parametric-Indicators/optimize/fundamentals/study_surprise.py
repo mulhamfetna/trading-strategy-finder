@@ -64,8 +64,31 @@ LOOKBACK = 6          # months of prior changes used to form the naive expectati
 HS = [5, 15, 30, 60]  # minutes held after the print
 
 
-def build_surprises(cal: pd.DataFrame, lookback: int = LOOKBACK) -> pd.DataFrame:
-    """One row per release we can price: (Date, event, actual, expected, surprise_z)."""
+_CACHE = Path(__file__).parent / "surprises_cache.csv"
+
+
+def build_surprises(cal: pd.DataFrame, lookback: int = LOOKBACK,
+                    use_cache: bool = True) -> pd.DataFrame:
+    """One row per release we can price: (Date, event, actual, expected, surprise_z).
+
+    CACHED. Building this from scratch pulls one ALFRED point-in-time vintage PER RELEASE — ~1,150 API
+    calls over 17 years, roughly ten minutes. And the answers are IMMUTABLE: a point-in-time vintage is,
+    by definition, what the number was on a date that has already passed. It cannot change. So we cache
+    it to disk and only refetch when the calendar grows.
+
+    Pass use_cache=False to force a rebuild.
+    """
+    if use_cache and _CACHE.exists():
+        c = pd.read_csv(_CACHE, parse_dates=["Date"])
+        # Only trust the cache if it covers the calendar we were handed.
+        if len(c) and c["Date"].max() >= cal["Date"].max() - pd.Timedelta(days=45) \
+                and c["Date"].min() <= cal["Date"].min() + pd.Timedelta(days=45):
+            print(f"  [cache] {len(c)} surprises loaded from {_CACHE.name} "
+                  f"({c['Date'].min().date()} -> {c['Date'].max().date()})")
+            return c
+        print(f"  [cache] stale (covers {c['Date'].min().date()}..{c['Date'].max().date()}, "
+              f"calendar needs {cal['Date'].min().date()}..{cal['Date'].max().date()}) — rebuilding")
+
     rows = []
     for event, (sid, kind) in SERIES.items():
         ev = cal[cal["event"] == event].sort_values("Date")
@@ -94,7 +117,12 @@ def build_surprises(cal: pd.DataFrame, lookback: int = LOOKBACK) -> pd.DataFrame
         d["surprise_z"] = d["raw_surprise"] / sd
         rows.append(d.dropna(subset=["surprise_z"]))
         print(f"  {event:<18} {sid:<10} {len(d):>3} releases")
-    return pd.concat(rows).sort_values("Date").reset_index(drop=True) if rows else pd.DataFrame()
+    if not rows:
+        return pd.DataFrame()
+    out = pd.concat(rows).sort_values("Date").reset_index(drop=True)
+    out.to_csv(_CACHE, index=False)          # immutable by construction — safe to cache forever
+    print(f"  [cache] wrote {len(out)} surprises -> {_CACHE.name}")
+    return out
 
 
 def outcomes(df1: pd.DataFrame, sur: pd.DataFrame, h: int) -> tuple[np.ndarray, np.ndarray]:
