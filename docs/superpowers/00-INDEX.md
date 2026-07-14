@@ -1,9 +1,31 @@
-# 00 — INDEX · Session Reports, 2026-07-11 → 07-13
+# 00 — INDEX · Session Reports, 2026-07-11 → 07-14
 
-**Start here.** Eight documents, two workstreams, 65 experiments. This page tells you what to read,
+**Start here.** Nine documents, two workstreams, 65+ experiments. This page tells you what to read,
 in what order, and what decisions are waiting on you.
 
 Branch: `fundamental-analysis` · Author: Claude (Opus 4.8) · Reviewer: Mulham Fetna
+
+---
+
+## 🔄 UPDATE — 2026-07-14: THE QUESTION IS SETTLED
+
+**On 07-13 I retracted the news verdict for having only 12% statistical power, and said the bottleneck
+was our price history. You supplied 17 years of it. I re-ran everything.**
+
+| | |
+|---|---|
+| **Sample** | 52–117 releases → **871 releases** (2010–2026, 5.45M 1-min bars) |
+| **Power** | 12–18% → **99.4%** |
+| **The answer** | **Unchanged — and now EARNED.** Scheduled US macro is **priced in.** |
+| **The one survivor (magnitude)** | ❌ **DEAD.** +0.187 at n=117 → **−0.018 at n=871.** It was **2025 being the luckiest of 17 years.** |
+| **Cost** | **$0** |
+
+**→ Read [`06-VERDICT-at-full-power.md`](06-VERDICT-at-full-power.md).** It supersedes the "⭐ PROMISING"
+and "we cannot tell" rows below, both of which are now **obsolete**.
+
+⚠️ **But one thread cuts the other way:** 1-second data shows the 08:30 head-fake that stops you out can
+last **two seconds** — and the **entire stop-loss verdict was measured on 1-minute bars, which cannot see
+that.** **Task #11** re-tests it. See report 06, Part 9.
 
 ---
 
@@ -14,10 +36,11 @@ Branch: `fundamental-analysis` · Author: Claude (Opus 4.8) · Reviewer: Mulham 
 | **What we set out to do** | Add **fundamental analysis** (news) to the trading system, and build a **dynamic stop-loss** |
 | **What we shipped to production** | **NOTHING.** Both features are built, tested, and **OFF by default.** Golden 6/6 byte-identical. **Zero risk to the live system.** |
 | **What we spent on data** | **$0** |
-| **The big mistake** | I closed the news workstream declaring *"news is priced in"* — **on a study with 12% statistical power.** That verdict is **RETRACTED**. |
-| **The one thing that survived** | **Bigger surprise ⇒ bigger move.** A *volatility* signal, not a directional one. Significant, positive in all 3 years, **not yet proven**. |
-| **The thing that is genuinely dead** | The **dynamic stop-loss**. Killed by our own data, a theorem, and the two most rigorous papers in the field — all agreeing. |
-| **What we need** | **More price history.** That is the entire bottleneck. |
+| **The big mistake** | I closed the news workstream declaring *"news is priced in"* — **on a study with 12% statistical power.** That verdict was **RETRACTED** on 07-13… |
+| **…and then re-earned** | **On 07-14, at 871 releases and 99% power, the same verdict came back — properly this time.** See **06**. |
+| **The one thing that "survived"** | **Bigger surprise ⇒ bigger move.** ❌ **It did not survive.** **−0.018 at full power.** It was a lucky year. |
+| **The thing that is genuinely dead** | The **dynamic stop-loss** — ⚠️ **but see Task #11.** It was measured on 1-min bars and may be a **resolution artifact**. |
+| **What we needed** | **More price history.** ✅ **Got it. It settled the question.** |
 
 ---
 
@@ -31,8 +54,9 @@ Branch: `fundamental-analysis` · Author: Claude (Opus 4.8) · Reviewer: Mulham 
 | **03** | [`03-SEMINAR-fundamental-analysis.md`](03-SEMINAR-fundamental-analysis.md) | **Teaching doc.** Every step, plain language + technical | 39 min | [AR](03-SEMINAR-fundamental-analysis_AR.md) |
 | **04** | [`04-REPORT-dynamic-stop-loss.md`](04-REPORT-dynamic-stop-loss.md) | The stop-loss investigation, candle → theorem | 39 min | [AR](04-REPORT-dynamic-stop-loss_AR.md) |
 | **05** | [`05-REPORT-robustness-9-markets.md`](05-REPORT-robustness-9-markets.md) | Re-testing every result across 9 markets | 20 min | |
-| **06** | [`specs/2026-07-11-fundamental-analysis-design.md`](specs/2026-07-11-fundamental-analysis-design.md) | The original design + the correction block | 27 min | |
-| **07** | [`plans/2026-07-11-fa-milestone1-veto-window.md`](plans/2026-07-11-fa-milestone1-veto-window.md) | The implementation plan (executed) | 42 min | |
+| **06** | [**`06-VERDICT-at-full-power.md`**](06-VERDICT-at-full-power.md) | 🆕 **THE ANSWER.** 17 years, 871 releases, 99% power | **22 min** | |
+| **07** | [`specs/2026-07-11-fundamental-analysis-design.md`](specs/2026-07-11-fundamental-analysis-design.md) | The original design + the correction block | 27 min | |
+| **08** | [`plans/2026-07-11-fa-milestone1-veto-window.md`](plans/2026-07-11-fa-milestone1-veto-window.md) | The implementation plan (executed) | 42 min | |
 
 ---
 
@@ -72,30 +96,39 @@ The seminar teaches the method. The retraction shows where the method failed. Th
 | Post-stop price is a **fair random walk** | Recovery = gambler's ruin, deviation **+0.34 pp** | 04 |
 | **We give back winners** | **$145,640.** 42% of losers were once **+20 pts up** | 04 |
 
-### ⭐ PROMISING — not proven, worth pursuing
+### ⭐ STILL OPEN — genuinely undecided
 
 | Finding | Evidence | Doc |
 |---|---|---|
-| **Bigger surprise ⇒ bigger move** | **+0.187 (p=0.044)** · **+0.206 (p=0.027)** at n=117. **Positive in ALL 3 years. Never flips sign.** | 02 · 01 |
-| **Silver** | p = **0.007** — the strongest of 36 cells — and it **STRENGTHENED out-of-sample** (−0.140 → −0.500) | 05 |
+| **Silver** | p = **0.007** — the strongest of 36 cells — and it **STRENGTHENED out-of-sample** (−0.140 → −0.500). **Still 1 cell of 36.** **Pre-register or drop.** | 05 |
+| ⚠️ **1-second resolution** | The 08:30 head-fake that stops you out can last **2 seconds**. The **stop-loss verdict was measured on 1-min bars, which cannot see that.** | **06** · 04 |
 
 ### ❌ DEAD — tested, failed, on adequate evidence
 
 | Idea | Why | Doc |
 |---|---|---|
+| **Trade the direction** | **−0.004** at n=870, sign-hit **49.3%**. ~**99% power.** The −0.43 "hawkish-Fed" story was **noise** | **06** |
+| **Trade the magnitude** ~~⭐~~ | ❌ **THE SURVIVOR DIED.** **+0.187** (n=117) → **−0.018** (n=871). It was **2025 being the luckiest of 17 years** | **06** |
+| **Trade the persistence** | **48.2%** — a coin flip | **06** |
+| **Trade the shape** | **p = 0.880** — the surprise does not pick the path shape | **06** |
 | **The news veto** (stand aside) | We're **already flat for 77%** of releases. And **fake calendars help just as much** | 02 · 03 |
 | **Trade the reaction** | 0/30 significant. The **"$72,170 edge"** is ordinary NQ mean-reversion — **the fakes reproduce it** | 02 · 03 |
-| **Trade the direction** | Real in 2025 (−0.43), **gone in 2026. Sign FLIPPED.** A Fed regime, not an edge | 02 · 03 |
-| **The dynamic stop-loss** | Post-stop is a **martingale**. Doob's theorem + Osler + Kaminski-Lo + Liaudinskas — **all agree** | 04 |
+| **The dynamic stop-loss** | Post-stop is a **martingale**. Doob + Osler + Kaminski-Lo + Liaudinskas. ⚠️ **BUT: 1-min bars. See Task #11** | 04 · **06** |
 
-### ⚠️ RETRACTED — I claimed this and was wrong
+### ♻️ RETRACTED on 07-13 → **RE-INSTATED on 07-14**
 
-| Claim | Why it fell |
-|---|---|
-| **"Scheduled US macro is priced in"** | **12% statistical power.** We needed 647 events; we had 52 |
-| "The surprise signal is dead" | 28 out-of-sample events |
-| "Nothing survives Bonferroni" | Guaranteed by sample size, **not** by the market |
-| "Don't buy vendor consensus data" | **SUSPENDED** — rested on the retracted verdict |
+**The retraction was correct. And then the data arrived and the verdict came back — properly earned.**
+
+| Claim | Retracted because | **Now** |
+|---|---|---|
+| **"Scheduled US macro is priced in"** | 12% power. Needed 647 events; had 52 | ✅ **RE-CONFIRMED.** **871 events, 99% power** |
+| "The surprise signal is dead" | 28 out-of-sample events | ✅ **RE-CONFIRMED** at n=870 |
+| "Nothing survives Bonferroni" | Guaranteed by sample size, not the market | ✅ **RE-CONFIRMED** — and now it *means* something |
+| "Don't buy vendor consensus data" | Rested on the retracted verdict | ✅ **RE-INSTATED.** See 06 Part 10 |
+
+> **Same sentences. Completely different standing.** On 07-13 they were guesses in lab coats and were
+> correctly withdrawn. On 07-14 they are measurements. **A correct conclusion reached by an invalid
+> method is not knowledge — it is luck.**
 
 ---
 
@@ -116,13 +149,13 @@ The seminar teaches the method. The retraction shows where the method failed. Th
 
 ## ✋ DECISIONS WAITING ON YOU
 
-| # | Decision | Context | My recommendation |
+| # | Decision | Context | Status |
 |---|---|---|---|
-| **D1** | **Buy more price history?** | We need **~650 releases** for a real answer; we have **117**. And we only need **±60-min windows** — about **78,000 bars**, one-sixth the size of a single file we already own. **Small, cheap, and it settles the question.** | ✅ **YES.** This is the whole bottleneck. |
-| **D2** | **Pursue the magnitude signal?** | Bigger surprise ⇒ bigger move. Positive all 3 years, never flips. If it holds, it's a **risk/sizing** signal — *"big surprise ⇒ widen stops, size differently"* — **not** a directional bet. | ⭐ **Yes, but gated on D1.** |
-| **D3** | **Test silver?** | p=0.007 **despite** 12% power, and it **strengthened** out-of-sample. But it is 1 cell of 36 — being the best of 36 is what luck produces. | ⚠️ **Pre-register or drop.** Do not fish. |
-| **D4** | **Buy vendor consensus data?** | Our "expected" is a *statistical* guess, not the market's. A bad yardstick attenuates a real signal. | ⏸️ **NOT YET.** Settle D1 first — it's free. |
-| **D5** | **What's next on the queue?** | 4 tasks remain (see below) | Start with **#4** — cheap, safe, removes a live trap |
+| **D1** | **Get more price history?** | We needed ~650 releases; we had 117. | ✅ **DONE — and it settled the question.** 17 years, 871 releases, **$0**. |
+| **D2** | **Pursue the magnitude signal?** | Bigger surprise ⇒ bigger move. | ❌ **DEAD.** **−0.018 at n=871.** It was **2025 being the luckiest of 17 years.** No action. |
+| **D3** | **Test silver?** | p=0.007 **despite** 12% power, and it **strengthened** out-of-sample. But it is 1 cell of 36 — being the best of 36 is what luck produces. | ⚠️ **STILL YOURS.** **Pre-register a test or drop it explicitly.** Do not fish. |
+| **D4** | **Buy vendor consensus data?** | Our "expected" is a *statistical* guess, not the market's. | ❌ **NO.** Consensus would have to carry **100%** of the edge alone. Bar is now very high — see 06 Part 10. |
+| **D5** | **What's next on the queue?** | 4 tasks remain (see below) | ⚠️ **Task #11.** It is the only live thread that could **overturn a shipped verdict**. |
 
 ---
 
@@ -130,10 +163,13 @@ The seminar teaches the method. The retraction shows where the method failed. Th
 
 | # | Task | Why it matters |
 |---|---|---|
+| **11** | ⚠️ **RE-TEST the stop-loss at 1-SECOND resolution** | **The highest-stakes open item.** The martingale verdict (report 04) ran on **1-minute bars**, which **structurally cannot** tell a real adverse move from a **2-second liquidity sweep**. It may be a **resolution artifact**. **Kill criterion declared in advance.** |
 | **4** | **Rename the `veto_mask` trap + document the real blocking logic** | The parameter **named `veto_mask` does not veto.** It nearly made me build a feature that silently did nothing. **Cheap, safe, zero behaviour change.** |
 | **5** | **Trading-session windows** (Asia / London / NY, overlaps, gaps) | The 09:30 NY open contaminated our news study — session structure **matters and is currently invisible** to the system |
-| **6** | **Is 1-minute data too coarse for news?** | The 08:30 bar went **down 46 pts AND up 141 pts in the same minute.** An OHLC candle **cannot tell you the order.** This may be *why* the reaction study found nothing |
 | **7** | **Fit our own probability distribution** | Returns are certainly not Gaussian. Correct tail probabilities directly inform **stop placement and sizing** |
+
+**✅ Closed since the last index:** #6 (*is 1-min too coarse for news?* — **YES, provably**; it is what
+raised Task #11), #10 (*fold in 2024* — **superseded**: we got 17 years, not 1).
 
 ---
 

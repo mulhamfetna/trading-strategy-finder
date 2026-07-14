@@ -65,6 +65,16 @@ HS = [5, 15, 30, 60]  # minutes held after the print
 
 
 _CACHE = Path(__file__).parent / "surprises_cache.csv"
+_CACHE_SIG = Path(__file__).parent / "surprises_cache.sig"
+
+
+def _calendar_signature(cal: pd.DataFrame) -> str:
+    """A fingerprint of the calendar that PRODUCED a cache.
+
+    The cache is valid iff it was built from THIS calendar. Anything else is a guess.
+    """
+    ev = "|".join(f"{e}:{int((cal['event'] == e).sum())}" for e in sorted(SERIES))
+    return f"n={len(cal)} {cal['Date'].min()} -> {cal['Date'].max()} {ev}"
 
 
 def build_surprises(cal: pd.DataFrame, lookback: int = LOOKBACK,
@@ -78,16 +88,27 @@ def build_surprises(cal: pd.DataFrame, lookback: int = LOOKBACK,
 
     Pass use_cache=False to force a rebuild.
     """
-    if use_cache and _CACHE.exists():
-        c = pd.read_csv(_CACHE, parse_dates=["Date"])
-        # Only trust the cache if it covers the calendar we were handed.
-        if len(c) and c["Date"].max() >= cal["Date"].max() - pd.Timedelta(days=45) \
-                and c["Date"].min() <= cal["Date"].min() + pd.Timedelta(days=45):
-            print(f"  [cache] {len(c)} surprises loaded from {_CACHE.name} "
-                  f"({c['Date'].min().date()} -> {c['Date'].max().date()})")
+    sig = _calendar_signature(cal)
+    if use_cache and _CACHE.exists() and _CACHE_SIG.exists():
+        # VALID IFF IT WAS BUILT FROM THIS EXACT CALENDAR.
+        #
+        # The previous check compared the cache's DATE SPAN against the calendar's, and it could never
+        # pass. The calendar legitimately contains releases the cache can never hold: FUTURE scheduled
+        # dates (out to 2026-12-09 — no vintage exists yet, and no price either) and releases from before
+        # our price history begins. So the cache's span is ALWAYS narrower than the calendar's, the check
+        # always said "stale", and 945 ALFRED fetches were re-run on every single invocation while the
+        # log cheerfully printed "rebuilding" as though that were normal.
+        #
+        # A cache that never hits is not a cache. Fingerprint the calendar instead: identical calendar =>
+        # identical vintages (a point-in-time vintage is immutable by definition), so the cache is exact.
+        if _CACHE_SIG.read_text().strip() == sig:
+            c = pd.read_csv(_CACHE, parse_dates=["Date"])
+            print(f"  [cache] HIT — {len(c)} surprises from {_CACHE.name} "
+                  f"({c['Date'].min().date()} -> {c['Date'].max().date()}); skipping ALFRED entirely")
             return c
-        print(f"  [cache] stale (covers {c['Date'].min().date()}..{c['Date'].max().date()}, "
-              f"calendar needs {cal['Date'].min().date()}..{cal['Date'].max().date()}) — rebuilding")
+        print(f"  [cache] MISS — the calendar changed since this cache was built. Rebuilding.")
+        print(f"          cached: {_CACHE_SIG.read_text().strip()}")
+        print(f"          now:    {sig}")
 
     import time as _t
     rows = []
@@ -143,6 +164,7 @@ def build_surprises(cal: pd.DataFrame, lookback: int = LOOKBACK,
         return pd.DataFrame()
     out = pd.concat(rows).sort_values("Date").reset_index(drop=True)
     out.to_csv(_CACHE, index=False)          # immutable by construction — safe to cache forever
+    _CACHE_SIG.write_text(sig)               # ...but ONLY for the calendar that produced it
     print(f"  [cache] wrote {len(out)} surprises -> {_CACHE.name}")
     return out
 

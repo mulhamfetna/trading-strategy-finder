@@ -8,6 +8,31 @@ Code: `optimize/fundamentals/power_analysis.py` · `study_pattern.py` · `study_
 
 ---
 
+> # 🔄 SEQUEL — 2026-07-14: THE QUESTION HAS SINCE BEEN SETTLED
+>
+> **This report is still correct, and you should still read it. But it is no longer the last word.**
+>
+> This report ends by saying: ***"We cannot tell with 16 months of price data. The bottleneck is our
+> price history — not the market. Get more."***
+>
+> **We got more. 16 months became 17 years.** Everything here was re-run at **871 releases** and
+> **99% power**.
+>
+> | Claim in THIS report | What happened at full power |
+> |---|---|
+> | *"We cannot tell whether news is priced in"* | ✅ **Now we can.** It **IS** priced in. **Same verdict, properly earned.** |
+> | ⭐ *"The magnitude signal survived — bigger surprise ⇒ bigger move (+0.187, positive all 3 years)"* | ❌ **DEAD. −0.018 at n=871.** It was **2025 being the luckiest of 17 years** (see 06, Part 5) |
+> | *"Vendor consensus data: SUSPENDED, cannot judge"* | ❌ **Do not buy it.** The bar is now very high |
+> | *"Silver: p=0.007, deserves a pre-registered test"* | ⚠️ **STILL TRUE. STILL OPEN.** |
+>
+> **→ [`06-VERDICT-at-full-power.md`](06-VERDICT-at-full-power.md)**
+>
+> **The retraction was still right.** A correct conclusion reached by an invalid method is not knowledge
+> — it is luck, and luck does not survive contact with the next dataset. **Part 5 below — "the signal I
+> dismissed" — is now itself retracted.** Leaving it visible, rather than editing it away, is the point.
+
+---
+
 ## TABLE OF CONTENTS
 
 | Part | |
@@ -207,6 +232,23 @@ applied the **Bonferroni correction** — divide the significance threshold by t
 ---
 
 # PART 5 — The signal I dismissed
+
+> ## ❌ **THIS PART IS NOW ITSELF RETRACTED (2026-07-14)**
+>
+> **Everything below was written in good faith and is a fair reading of what n=117 showed. It was still
+> wrong.**
+>
+> At **n = 871** the magnitude signal is **−0.018** (p = 0.347). All four measures collapsed to zero; two
+> went faintly negative. **Year by year, the correlation bounces ±0.15 at random and averages +0.027 —
+> nothing. Our 16 months landed on 2025: +0.281, the highest of seventeen years.**
+>
+> **I did not "throw away the one thing that works." There was nothing to throw away.** The consistency
+> across four measures that I found so persuasive below is simply what happens when four measures of the
+> *same* quantity are computed on the *same* lucky year — they are not four independent votes, they are
+> **one vote counted four times.** *(That is a fifth mistake, and I did not spot it at the time.)*
+>
+> **→ [`06-VERDICT-at-full-power.md`](06-VERDICT-at-full-power.md), Part 5.** Left standing below,
+> unedited, because deleting it would hide the mechanism.
 
 The pattern study asked: **does a bigger surprise produce a bigger move?** (No direction needed — just
 magnitude. This is a volatility trade, and crucially, **the efficient-market argument does not forbid
