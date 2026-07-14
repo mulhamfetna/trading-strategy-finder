@@ -1,0 +1,23 @@
+[EXTENDED] price frame 2010-06-06 18:00:00 -> 2026-07-12 19:59:00 (5,452,534 bars)
+  [calendar] 1208 events  2010-01-08 -> 2026-12-09
+Pulling ALFRED first-print vintages (one per release)...
+
+  nonfarm_payrolls   PAYEMS     196 releases
+  cpi                CPIAUCSL   202 releases
+  ppi                PPIFIS     144 releases
+  retail_sales       RSAFS      169 releases
+  pce                PCEPI      190 releases
+  [cache] wrote 881 surprises -> surprises_cache.csv
+
+881 priced releases with a causal surprise
+
+   h    n |    corr  sign-hit |    shuffled corr |      p
+--------------------------------------------------------------
+   5  870 |  -0.004     49.3% |   0.019 ± 0.028 |  0.807
+  15  870 |  -0.011     49.7% |   0.020 ± 0.026 |  0.549
+  30  870 |  -0.009     50.6% |   0.021 ± 0.028 |  0.595
+  60  870 |  +0.024     51.7% |   0.022 ± 0.028 |  0.291
+
+VERDICT: no link between the surprise and the move. A statistical expectation carries
+         no signal, so the paid consensus would have to carry ALL of it alone.
+         That is a much higher bar — decide deliberately before spending.
