@@ -81,3 +81,56 @@ def test_edges():
     assert math.isnan(_sig(float("nan")))
     assert math.isinf(_sig(float("inf")))
     assert _sig(-0.0008091912403781283) == pytest.approx(-0.0008091912403781283, rel=1e-9)
+
+
+# ── the end-to-end test, which is the one that would actually have caught this ──────────────────────
+# The unit tests above passed while the bug was still live, because the rounding existed in TWO places:
+# report_wsi wrote the pareto CSV, and build_champions_from_pareto re-rounded it back down to 4 dp on the
+# way into the champion JSON. Fixing one and testing the helper in isolation proved nothing. Test the
+# PIPELINE — csv -> champion — or you are testing a function, not the thing that ships.
+
+def test_pipeline_csv_to_champion_preserves_precision(tmp_path, monkeypatch):
+    """A real pareto CSV goes through the real champion_for() and comes back as a champion box.
+
+    This is the test that would have caught the bug. The isolated _sig() tests above all PASSED while the
+    champion on disk was still corrupt, because a second round(x, 4) sat downstream in this very function.
+    """
+    import csv
+
+    import optimize.build_champions_from_pareto as B
+
+    true_sl = 0.0008091912403781283       # the NG 5m values that flipped the sign
+    true_tp = 0.003925881552422834
+    true_dd = 0.0035520951848387813
+    true_gate = 98.80210665435305
+
+    row = {"tf": "5m", "median_pnl": "1", "full_pnl": "1", "full_dd": "1", "win": "50",
+           "sl_soft": repr(true_sl), "sl_hard": repr(true_sl * 1.25), "tp": repr(true_tp),
+           "gate_pct": repr(true_gate), "dd_limit": repr(true_dd), "cooldown": "1",
+           "flip": "False", "k": "1", "cap_1min": "0", "cap_mode": "eod",
+           "n_indicators": "0", "indicators": ""}
+
+    monkeypatch.setattr(B, "_RESULTS", tmp_path)
+    monkeypatch.setattr(B, "_SUF", "_NG")
+    with open(tmp_path / "5m_wsi_pareto_NG.csv", "w", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=list(row)); w.writeheader(); w.writerow(row)
+
+    box = B.champion_for("5m")["box"]           # the REAL extraction path, end to end
+
+    assert box["sl_soft"] == pytest.approx(true_sl, rel=1e-9), (
+        f"champion on disk carries {box['sl_soft']!r}, not {true_sl!r} — something re-rounded it")
+    assert box["tp"] == pytest.approx(true_tp, rel=1e-9)
+    assert box["dd_limit"] == pytest.approx(true_dd, rel=1e-9)
+    assert box["gate_pct"] == pytest.approx(true_gate, rel=1e-9)
+
+
+def test_no_module_persists_a_price_param_with_fixed_decimals():
+    """Guard against a THIRD copy of the bug appearing. round(x, 4) on a price param is always wrong."""
+    import pathlib
+    import re
+    bad = []
+    for f in ("optimize/report_wsi.py", "optimize/build_champions_from_pareto.py"):
+        src = pathlib.Path(f).read_text()
+        for m in re.finditer(r"round\(\s*[^,()]*\b(sl_soft|sl_hard|tp|dd_limit|gate_pct)\b[^,()]*,\s*\d+\s*\)", src):
+            bad.append(f"{f}: {m.group(0)}")
+    assert not bad, "price params must be persisted with _sig(), not round(x, N):\n  " + "\n  ".join(bad)

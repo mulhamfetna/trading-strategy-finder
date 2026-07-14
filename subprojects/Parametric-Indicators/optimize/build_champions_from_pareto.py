@@ -25,6 +25,7 @@ from pathlib import Path
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE.parent))
 from indicators import library  # noqa: E402
+from optimize.report_wsi import _sig  # noqa: E402  — ONE definition of "how we persist a price param"
 
 _RESULTS = _HERE / "results"
 _DEFAULT_TFS = ["4h", "2h", "1h", "15m", "5m", "2m"]
@@ -67,9 +68,15 @@ def champion_for(tf: str) -> dict | None:
     _cap_n = int(_num(r.get("cap_1min")) or 0)
     _cap_mode = (r.get("cap_mode") or "").strip() or ("bars" if _cap_n > 0 else "none")
     box = dict(
-        sl_soft=round(_num(r["sl_soft"]), 4), sl_hard=round(_num(r["sl_hard"]), 4),
-        tp=round(_num(r["tp"]), 4), gate_pct=round(_num(r["gate_pct"]), 2),
-        dd_limit=round(_num(r["dd_limit"]), 4), cooldown=int(_num(r["cooldown"])),
+        # ⚠️ SIGNIFICANT DIGITS, NEVER DECIMAL PLACES — and note this was the SECOND copy of that bug.
+        # report_wsi wrote the pareto CSV with round(x, 4); this re-rounded the CSV back down to 4 dp, so
+        # fixing report_wsi alone changed nothing. Price scales here span four orders of magnitude (Dow
+        # $44,452, natural gas $3.57), so 4 dp leaves ONE significant digit on an NG stop of 0.0008 — a 1.1%
+        # distortion that flipped NG 5m from +$38,079 to -$1,714 and had us blaming the optimizer for lying.
+        # _sig is imported, not re-implemented, so a third copy cannot drift out of step with the other two.
+        sl_soft=_sig(_num(r["sl_soft"])), sl_hard=_sig(_num(r["sl_hard"])),
+        tp=_sig(_num(r["tp"])), gate_pct=_sig(_num(r["gate_pct"])),
+        dd_limit=_sig(_num(r["dd_limit"])), cooldown=int(_num(r["cooldown"])),
         flip=str(r["flip"]).strip().lower() == "true", k=int(_num(r["k"])),
         # a bars count is meaningless unless the bars cap is armed — zero it so it cannot be misread
         cap_1min=(_cap_n if _cap_mode in ("bars", "both") else 0),
