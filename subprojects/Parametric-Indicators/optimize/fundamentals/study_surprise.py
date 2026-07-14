@@ -89,15 +89,37 @@ def build_surprises(cal: pd.DataFrame, lookback: int = LOOKBACK,
         print(f"  [cache] stale (covers {c['Date'].min().date()}..{c['Date'].max().date()}, "
               f"calendar needs {cal['Date'].min().date()}..{cal['Date'].max().date()}) — rebuilding")
 
+    import time as _t
     rows = []
+    total = sum(int((cal["event"] == e).sum()) for e in SERIES)
+    done = 0
+    errors = 0
+    t0 = _t.time()
+    print(f"  [fetch] {total} ALFRED point-in-time vintages to pull "
+          f"(one per release — this is the slow part)", flush=True)
+
     for event, (sid, kind) in SERIES.items():
         ev = cal[cal["event"] == event].sort_values("Date")
         raw = []
         for ts in ev["Date"]:
+            done += 1
+            # PROGRESS — every 25 vintages, with a rate and an ETA.
+            #
+            # WHY flush=True MATTERS: Python BUFFERS stdout when it is redirected to a file. Without
+            # the flush, a 10-minute run writes an EMPTY log and looks indistinguishable from a hang.
+            # That is a silent failure by construction, and it bit us on 2026-07-14.
+            if done % 25 == 0 or done == total:
+                el = _t.time() - t0
+                rate = done / el if el > 0 else 0
+                eta = (total - done) / rate if rate > 0 else 0
+                print(f"  [fetch] {done:>5}/{total}  ({100*done/total:>5.1f}%)  "
+                      f"{rate:>5.1f}/s  eta {eta/60:>5.1f} min  errors={errors}", flush=True)
             try:
                 v = alfred.vintage(sid, ts.strftime("%Y-%m-%d"))
             except Exception as e:                       # noqa: BLE001
-                print(f"  ! {event} {ts.date()}: {e}")
+                errors += 1
+                if errors <= 5 or errors % 50 == 0:      # don't drown the log in identical errors
+                    print(f"  ! {event} {ts.date()}: {e}   (error {errors})", flush=True)
                 continue
             chg = v.diff() if kind == "diff" else v.pct_change() * 100.0
             chg = chg.dropna()
