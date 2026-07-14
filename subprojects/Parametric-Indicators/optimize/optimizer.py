@@ -483,6 +483,14 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
                                 tf.bar_td, sig_int=sig_int, contrib=_contrib, pv=pv)
         full_pnl = float(full["pnl"]); full_dd = float(full["max_dd"])
         dec_pause = float(full.get("max_no_entry_days_decision", full.get("max_no_entry_days", 0.0)))
+        # ⚠️ RECORD THE EXIT RULE THIS TRIAL WAS SCORED WITH. Do not make anything downstream re-derive it
+        # from trial.params: Optuna only stores params it was asked to SUGGEST, and --force-eod PINS
+        # en_cap_eod instead of suggesting it — so it is simply absent from params, and a re-derivation
+        # reads it as OFF. That silently strips the end-of-day close off every champion of a forced-EOD
+        # run: the strategy written to disk holds overnight while the one that actually won closed at the
+        # bell. Recording the resolved values here makes the extractor read the truth instead of guessing.
+        trial.set_user_attr("cap_mode", cap_mode)
+        trial.set_user_attr("cap_1min", cap_1min)
         trial.set_user_attr("worst_dd", worst_dd)
         trial.set_user_attr("median_pnl", r["median_pnl"])
         trial.set_user_attr("median_win", med_win)

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import pickle
 import sys
 import tempfile
@@ -355,6 +356,49 @@ def save_l1_profile(name: str, preset: dict) -> dict:
 _TF_SET = ("4h", "2h", "1h", "15m", "5m", "2m")          # the decision TFs (1m excluded — not in the champion sweep)
 _WSH4_CHAMPS = Path(__file__).resolve().parents[1] / "results" / "wsh4_champions_full.json"
 
+# ── CHAMPION SETS ───────────────────────────────────────────────────────────────────────────────────
+# The dashboard can serve MORE THAN ONE champion set, side by side, so a fresh optimizer campaign can be
+# driven through the real UI *without* overwriting the strategies that are currently deployed and verified.
+#
+# WHY THIS EXISTS. Deploying a champion straight from the optimizer has burned us repeatedly: the
+# optimizer's fast engine is an approximation and has claimed profits on strategies the causal engine says
+# LOSE money (HG 2m; NG 15m twice; NG 2m). A set therefore carries a `verified` flag, and the UI must say
+# out loud when what you are looking at has not yet been confirmed by the causal engine.
+#
+# Files follow the optimizer's own naming: <prefix>_champions_full[_<INST>].json in optimize/results/
+# (NQ is the unsuffixed one).
+CHAMPION_SETS = {
+    # THE DEPLOYED SET: best-per-slot, decided on the held-out 2026 year. 32 slots kept their old champion,
+    # 19 took the cold-start forced-end-of-day champion, 3 took the bolt-on (old champion + bell close).
+    # Forcing the bell close on EVERY slot was measured and is WORSE than doing nothing (+$621k vs +$696k
+    # on 2026) — the win comes from choosing per slot, not from the rule.
+    "best": {"prefix": "best", "verified": True,
+             "label": "best-per-slot (2026-decided) — DEPLOYED"},
+    # The previous deployed set, kept selectable so this deploy is reversible from the dropdown.
+    "deployed": {"prefix": "wsh4", "verified": True,
+                 "label": "previous set (time-cap re-optimization)"},
+    # The raw forced-end-of-day campaign, whole. Loses to best-per-slot; kept for comparison.
+    "eod1": {"prefix": "eod1", "verified": True,
+             "label": "forced end-of-day, cold start (all 54)"},
+}
+# Which set the dashboard serves by default.
+DEFAULT_CHAMPION_SET = os.getenv("WSH_CHAMPION_SET", "best")
+
+
+def champion_set(name: str | None = None) -> str:
+    """Resolve a champion-set name, falling back to the deployed set for anything unknown."""
+    n = (name or DEFAULT_CHAMPION_SET or "best").strip()
+    return n if n in CHAMPION_SETS else "best"
+
+
+def available_champion_sets() -> list[dict]:
+    """The sets that actually have champion files on disk — for the UI to offer."""
+    out = []
+    for name, spec in CHAMPION_SETS.items():
+        if _instrument_champions_path("NQ", name).exists():
+            out.append({"name": name, "label": spec["label"], "verified": spec["verified"]})
+    return out
+
 
 def _champion_layer_params(tf: str, entry: dict) -> dict:
     """Engine-ready L1 layer params from a {box, indicators} champion entry. L1 champions run on the
@@ -385,18 +429,20 @@ def is_frozen_lean(l1p: dict, tf: str, instrument: str = "NQ") -> bool:
     return instrument == "NQ" and tf == "4h" and l1p == frozen_lean_params(tf)
 
 
-def l1_default_params(tf: str = "4h") -> dict:
-    """The 'best L1' preset for a TF, in the layer-param schema the forms speak: that TF's deployed
-    champion from wsh4_champions_full.json.
+def l1_default_params(tf: str = "4h", cset: str | None = None) -> dict:
+    """The 'best L1' preset for a TF, in the layer-param schema the forms speak: that TF's champion from
+    the requested set (default: the DEPLOYED, verified one).
 
     4h used to be hardcoded to the frozen lean anchor, which meant the dashboard COULD NOT SERVE an
     optimized NQ 4h champion at all — and, worse, a UI verification of NQ 4h silently re-verified the
     anchor instead of the challenger. Unlocked 2026-07-11 (the cold-start champion is +$80,424 OOS vs the
     anchor's +$58,029, with less drawdown). The anchor lives on as frozen_lean_params() for the L1 cache.
     """
-    champs = json.loads(_WSH4_CHAMPS.read_text())
+    cf = _instrument_champions_path("NQ", cset)
+    champs = json.loads(cf.read_text())
     if tf not in champs:
-        raise L2ParamError(f"no L1 champion for tf={tf!r} (known: {sorted(champs)})")
+        raise L2ParamError(f"no L1 champion for tf={tf!r} in set {champion_set(cset)!r} "
+                           f"(known: {sorted(champs)})")
     return _champion_layer_params(tf, champs[tf])
 
 
@@ -420,19 +466,20 @@ def _scaled_permissive(instrument: str) -> dict:
     return validate_layer_params(p)
 
 
-def _instrument_champions_path(instrument: str) -> Path:
-    """Per-instrument optimized-champions file (same naming the optimizer writes). NQ uses _WSH4_CHAMPS."""
+def _instrument_champions_path(instrument: str, cset: str | None = None) -> Path:
+    """Per-instrument champions file for a set (same naming the optimizer writes). NQ is unsuffixed."""
+    prefix = CHAMPION_SETS[champion_set(cset)]["prefix"]
     suf = "" if instrument == "NQ" else f"_{instrument}"
-    return _WSH4_CHAMPS.with_name(f"wsh4_champions_full{suf}.json")
+    return _WSH4_CHAMPS.with_name(f"{prefix}_champions_full{suf}.json")
 
 
-def instrument_l1_default(instrument: str = "NQ", tf: str = "4h") -> dict:
-    """L1 default for an instrument. NQ → the real per-TF champion (unchanged). Non-NQ → that instrument's
-    OPTIMIZED champion (results/wsh4_champions_full_<INST>.json) when present for the TF, else the
-    price-scaled permissive default."""
+def instrument_l1_default(instrument: str = "NQ", tf: str = "4h", cset: str | None = None) -> dict:
+    """L1 default for an instrument, from the requested champion set. NQ → the real per-TF champion.
+    Non-NQ → that instrument's OPTIMIZED champion when the set has one for this TF, else the price-scaled
+    permissive default."""
     if instrument == "NQ":
-        return l1_default_params(tf)
-    cf = _instrument_champions_path(instrument)
+        return l1_default_params(tf, cset)
+    cf = _instrument_champions_path(instrument, cset)
     if cf.exists():
         try:
             champs = json.loads(cf.read_text())

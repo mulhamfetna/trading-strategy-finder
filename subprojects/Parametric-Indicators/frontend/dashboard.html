@@ -48,6 +48,14 @@
       <div class="fld"><label title="instrument — switches the candles/boxes/economics (shared by both layers)">Instrument</label>
         <select id="inst_select"><option value="NQ" selected>NQ</option><option value="ES">ES</option><option value="GC">GC (Gold)</option><option value="SI">SI (Silver)</option><option value="HG">HG (Copper)</option><option value="CL">CL (Crude Oil)</option><option value="NG">NG (Nat Gas)</option><option value="RTY">RTY (Russell 2000)</option><option value="YM">YM (Dow)</option></select></div>
       <div class="hint">stock is shared by both layers · each layer picks its own timeframe below</div>
+      <div class="fld"><label title="which champion set to load as the defaults">Champion set</label>
+        <select id="champ_set"><option value="best" selected>best-per-slot (2026-decided) — DEPLOYED</option></select></div>
+      <div id="champ_warn" class="hint" style="display:none;color:#b45309;font-weight:600;border:1px solid
+        #f59e0b;border-radius:4px;padding:4px 6px;background:#fffbeb">
+        ⚠️ UNVERIFIED champion set. These come straight from the optimizer, whose fast engine is an
+        approximation and has claimed profits on strategies the causal engine says LOSE money. Press Run to
+        measure them properly — the on-screen numbers are the causal truth, the optimizer's are not.
+      </div>
     </div>
     <div class="navtabs">
       <div class="navtab l1 on" id="tab_l1" data-pane="l1">🍃 L1 settings</div>
@@ -625,9 +633,21 @@ async function saveLayer(pfx){
 
 // fetch + apply the per-(instrument,TF) config (L1/L2 defaults, profiles, indicator panels). Re-callable on switch.
 async function loadConfig(inst, tf){
-  const r=await fetch('/api/combined_config?instrument='+encodeURIComponent(inst)+'&tf='+encodeURIComponent(tf));
+  const cs=($('champ_set')||{}).value||'deployed';
+  const r=await fetch('/api/combined_config?instrument='+encodeURIComponent(inst)+'&tf='+encodeURIComponent(tf)
+                      +'&champion_set='+encodeURIComponent(cs));
   if(!r.ok) throw new Error('config HTTP '+r.status);
   const c=await r.json();
+  // populate the champion-set picker from what the server actually has on disk (once), and shout when the
+  // active set has not been confirmed by the causal engine.
+  const sel=$('champ_set');
+  if(sel && (c.champion_sets||[]).length && sel.options.length!==c.champion_sets.length){
+    const keep=sel.value;
+    sel.innerHTML=c.champion_sets.map(s=>'<option value="'+s.name+'">'+s.label+'</option>').join('');
+    sel.value=c.champion_sets.some(s=>s.name===keep)?keep:(c.champion_set||'deployed');
+  }
+  const warn=$('champ_warn');
+  if(warn) warn.style.display=(c.champion_set_verified===false)?'block':'none';
   DB.buildPanel($('l1_indpanel'),c.indicator_schema,DB.markDirty);
   DB.buildPanel($('l2_indpanel'),c.indicator_schema,DB.markDirty);
   DB.buildPanel($('l2_es_indpanel'),c.indicator_schema,DB.markDirty);
@@ -696,6 +716,7 @@ async function refreshL2(){
     catch(e){ DB.showErr('config reload failed: '+e.message); } };
   $('tf_select').addEventListener('change',reload);
   $('inst_select').addEventListener('change',reload);
+  if($('champ_set')) $('champ_set').addEventListener('change',reload);
   try{
     await loadConfig($('inst_select').value,$('tf_select').value);
     // DEFAULT: open on the NQ 4h re-tuned champion (L1). Select it into the L1 form so a fresh

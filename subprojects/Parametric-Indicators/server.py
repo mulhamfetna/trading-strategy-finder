@@ -115,25 +115,32 @@ class H(BaseHTTPRequestHandler):
                 return self._send(400, json.dumps({"error": f"unknown tf {tf!r}; known {list(l2payload._TF_SET)}"}))
             if not _inst.is_valid(inst):
                 return self._send(400, json.dumps({"error": f"unknown instrument {inst!r}; known {list(_inst.TOKENS)}"}))
+            # Which champion SET to serve. Unknown/absent → the deployed, verified one (never guess upward).
+            cset = l2payload.champion_set(q.get("champion_set", [None])[0])
+            cspec = l2payload.CHAMPION_SETS[cset]
             # non-NQ: distinguish an OPTIMIZED champion (champions file has this tf) from the scaled-permissive fallback
             _nonnq_champ = False
             if inst != "NQ":
-                _cf = l2payload._instrument_champions_path(inst)
+                _cf = l2payload._instrument_champions_path(inst, cset)
                 try:
                     _nonnq_champ = _cf.exists() and tf in json.loads(_cf.read_text())
                 except Exception:
                     _nonnq_champ = False
-            l1_label = ("🍃 WS lean 4h champion" if (inst == "NQ" and tf == "4h")
-                        else f"🏆 WS champion {tf}" if inst == "NQ"
+            l1_label = (f"🏆 WS champion {tf}" if inst == "NQ"
                         else f"🏆 {inst} champion {tf}" if _nonnq_champ
                         else f"⚙ {inst} permissive (scaled) {tf}")
+            # Say it out loud when the numbers on screen come from a set the causal engine has not confirmed.
+            if not cspec["verified"]:
+                l1_label = f"⚠️ UNVERIFIED · {l1_label}"
             return self._send(200, json.dumps({
                 "indicator_schema": library.schema(),
-                "l1_default": l2payload.instrument_l1_default(inst, tf),
+                "l1_default": l2payload.instrument_l1_default(inst, tf, cset),
                 "l2_default": l2payload.instrument_l2_default(inst),
                 "l1_profiles": l2payload.load_l1_profiles(),
                 "l2_profiles": l2payload.load_l2_profiles(),
                 "tf": tf, "instrument": inst, "point_value": _inst.point_value(inst),
+                "champion_set": cset, "champion_sets": l2payload.available_champion_sets(),
+                "champion_set_verified": cspec["verified"], "champion_set_label": cspec["label"],
                 "l1_label": l1_label, "l2_label": "🔁 L2 (extend champion)"}))
         if path == "/api/causal_log.csv":
             # full per-candle causal log as CSV (the `layer` column lets L1/L2 be separated downstream).

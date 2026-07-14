@@ -13,8 +13,18 @@ import base64, html, json, os, re, sys
 
 BASE = os.path.expanduser("~/Mulham/wsg-i")
 REPO = os.path.join(BASE, "Parametric-Indicators")
-SNAPS = os.path.join(BASE, "snapshots")
-OUTDIR = os.path.join(BASE, "playbooks")
+
+# Which champion SET these playbooks describe. Everything that varies per set — the settings file, the
+# embedded dashboard snapshots, the output dir — is derived from it, so a playbook can never pair one set's
+# text with another set's screenshot. (It already did once: the shipped PDFs carried 07-07 snapshots of
+# STALE champions next to correct text, which is worse than no screenshot — the reader trusts the picture.)
+SET = os.getenv("WSH_CHAMP_SET", "wsh4")                  # wsh4 = deployed · eod1 = forced end-of-day
+# The build date was hardcoded ("2026-07-08"), so every rebuild kept claiming the same stale date on the
+# page. Stamp it for real; a playbook that misdates itself is a playbook you cannot audit later.
+GEN_DATE = os.getenv("WSH_GEN_DATE") or __import__("datetime").date.today().isoformat()
+_SFX = "" if SET == "wsh4" else f"_{SET}"
+SNAPS = os.path.join(BASE, f"snapshots{_SFX}")
+OUTDIR = os.path.join(BASE, f"playbooks{_SFX}")
 os.makedirs(OUTDIR, exist_ok=True)
 
 MERMAID_JS = "/home/dev/Mulham/wsg-i/mermaid.min.js"   # scp'd alongside
@@ -33,8 +43,8 @@ if _FILTER:
 _champ_cache = {}
 def champ(inst):
     if inst not in _champ_cache:
-        fn = "wsh4_champions_full.json" if inst == "NQ" else f"wsh4_champions_full_{inst}.json"
-        p = os.path.join(REPO, "optimize/results", fn)
+        suf = "" if inst == "NQ" else f"_{inst}"          # NQ is the unsuffixed file, as the optimizer writes it
+        p = os.path.join(REPO, "optimize/results", f"{SET}_champions_full{suf}.json")
         _champ_cache[inst] = json.load(open(p)) if os.path.exists(p) else {}
     return _champ_cache[inst]
 
@@ -293,9 +303,9 @@ def build_html(rec):
 
       <div class='foot'>
         Instrument {esc(inst)} · timeframe {esc(tf)} · champion source
-        <span class='mono'>{esc('wsh4_champions_full' + ('' if inst=='NQ' else '_'+inst) + '.json')}</span> ·
+        <span class='mono'>{esc(SET + '_champions_full' + ('' if inst=='NQ' else '_'+inst) + '.json')}</span> ·
         numbers captured from the live dashboard ({esc(split) or 'in-sample/OOS split at 2026'}) ·
-        generated 2026-07-08.<br/>
+        generated {esc(GEN_DATE)}.<br/>
         Mulham Fetna · contact@mulhamfetna.com · ORCID 0009-0006-4432-798X · github.com/mulhamfetna
       </div>
     </div>
