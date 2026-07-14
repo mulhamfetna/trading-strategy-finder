@@ -100,8 +100,18 @@ def main() -> int:
         # --- the progress line the script itself emits -------------------------------------------
         prog = R(f"grep -oE '\\[fetch\\][^\\n]*' {a.log} 2>/dev/null | tail -1").strip()
 
-        # --- SANITY: does the reported sample size look right? ------------------------------------
-        m = re.search(r"(\d+)\s+(?:priced )?releases", R(f"grep -aE 'releases' {a.log} 2>/dev/null"))
+        # --- SANITY: does the FINAL reported sample size look right? -------------------------------
+        #
+        # ⚠️ ONLY the FINAL, AUTHORITATIVE count. Never an intermediate progress line.
+        #
+        # The first version of this matched ANY line containing "releases" — including the per-series
+        # progress lines ("nonfarm_payrolls PAYEMS 196 releases"). It fired 🚨 WRONG-SAMPLE while the run
+        # was 26% through fetching, and then EXITED, leaving the job unmonitored.
+        #
+        # A watchdog that cries wolf is WORSE than no watchdog: it trains you to ignore it. So this only
+        # matches the study's own terminal summary line, and nothing else.
+        FINAL = r"(\d+)\s+(?:priced\s+)?releases\s+with\s+a\s+causal"
+        m = re.search(FINAL, R(f"grep -aE 'releases with a causal' {a.log} 2>/dev/null"))
         n_rep = int(m.group(1)) if m else 0
 
         status, why = "RUNNING", ""
@@ -117,9 +127,11 @@ def main() -> int:
             status, why = "⚠️ SLOW", f"running {el/60:.0f} min (expected < {a.max_min:.0f})"
 
         # THE MOST IMPORTANT CHECK: a run that "succeeds" on the wrong sample.
+        # Fires ONLY once the study has printed its final count (n_rep > 0 means the terminal summary
+        # line exists). While it is still fetching, n_rep is 0 and this stays silent — as it must.
         if a.expect_min and n_rep and n_rep < a.expect_min:
             status = "🚨 WRONG-SAMPLE"
-            why = (f"reports only {n_rep} samples, expected >= {a.expect_min}. "
+            why = (f"final count is only {n_rep}, expected >= {a.expect_min}. "
                    f"THE RUN IS PRODUCING A PLAUSIBLE ANSWER FROM THE WRONG DATA.")
 
         line = (f"[{el/60:>5.1f}m] {status:<15} log={size/1024:>7.1f}KB  quiet={quiet:>4.0f}s  "
