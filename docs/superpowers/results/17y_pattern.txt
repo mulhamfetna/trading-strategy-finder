@@ -1,19 +1,18 @@
 
 price frame: 2010-06-06 18:00:00 -> 2026-07-12 19:59:00  (5,452,534 bars)   [EXTENDED: 2024 folded in]
-  nonfarm_payrolls   PAYEMS     197 releases
-  cpi                CPIAUCSL   202 releases
-  ppi                PPIFIS     144 releases
-  retail_sales       RSAFS      169 releases
-  pce                PCEPI      190 releases
+  [calendar] 1208 events  2010-01-08 -> 2026-12-09
+  [cache] HIT — 882 surprises from surprises_cache.csv (2010-04-14 -> 2026-07-02); skipping ALFRED entirely
 871 releases with a causal surprise and a full 30-minute path
+POWER: with n=871 we have 99% chance of detecting an effect of r=0.15 (the pre-declared minimum worth acting on).
+       ⇒ A NULL HERE IS A REAL NEGATIVE. We can see; there is nothing to see.
 
 ========================================================================================
 Q1 — MAGNITUDE: does a BIGGER surprise produce a BIGGER move? (no direction needed)
 ========================================================================================
-  corr(|surprise|, |move| at +5 min      ) = -0.018   p = 0.347   power =   8%  (underpowered — cannot tell)
-  corr(|surprise|, |move| at +30 min     ) = -0.011   p = 0.676   power =   5%  (underpowered — cannot tell)
-  corr(|surprise|, path RANGE (max-min)  ) = -0.015   p = 0.712   power =   6%  (underpowered — cannot tell)
-  corr(|surprise|, path VOLATILITY (std) ) = -0.015   p = 0.678   power =   7%  (underpowered — cannot tell)
+  corr(|surprise|, |move| at +5 min      ) = -0.018   p = 0.347  REAL NEGATIVE (power 99% to see r=0.15)
+  corr(|surprise|, |move| at +30 min     ) = -0.011   p = 0.676  REAL NEGATIVE (power 99% to see r=0.15)
+  corr(|surprise|, path RANGE (max-min)  ) = -0.015   p = 0.712  REAL NEGATIVE (power 99% to see r=0.15)
+  corr(|surprise|, path VOLATILITY (std) ) = -0.015   p = 0.678  REAL NEGATIVE (power 99% to see r=0.15)
 
   A positive, significant value here would mean: we cannot predict WHICH WAY it moves,
   but we CAN predict HOW FAR. That is a volatility trade, not a directional one — and the

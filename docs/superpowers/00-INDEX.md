@@ -23,9 +23,12 @@ was our price history. You supplied 17 years of it. I re-ran everything.**
 **→ Read [`06-VERDICT-at-full-power.md`](06-VERDICT-at-full-power.md).** It supersedes the "⭐ PROMISING"
 and "we cannot tell" rows below, both of which are now **obsolete**.
 
-⚠️ **But one thread cuts the other way:** 1-second data shows the 08:30 head-fake that stops you out can
-last **two seconds** — and the **entire stop-loss verdict was measured on 1-minute bars, which cannot see
-that.** **Task #11** re-tests it. See report 06, Part 9.
+✅ **And the one thread that could have cut the other way has been chased down and CLOSED.** 1-second data
+confirms the stop-out really is a two-second head-fake — **94% of our stop-outs are swept, median 1 second
+beyond the stop.** The resolution complaint was **correct**. **And the stop-loss verdict STANDS anyway:**
+the best tradeable delay rule earns **+$80/trade against a ±$1,600 swing (p = 0.452)**, and two-thirds of
+even *that* is just "the stop is too tight." **Seeing the sweep more clearly does not make it profitable
+to sit through.** See report 06, Part 9.
 
 ---
 
@@ -113,7 +116,7 @@ The seminar teaches the method. The retraction shows where the method failed. Th
 | **Trade the shape** | **p = 0.880** — the surprise does not pick the path shape | **06** |
 | **The news veto** (stand aside) | We're **already flat for 77%** of releases. And **fake calendars help just as much** | 02 · 03 |
 | **Trade the reaction** | 0/30 significant. The **"$72,170 edge"** is ordinary NQ mean-reversion — **the fakes reproduce it** | 02 · 03 |
-| **The dynamic stop-loss** | Post-stop is a **martingale**. Doob + Osler + Kaminski-Lo + Liaudinskas. ⚠️ **BUT: 1-min bars. See Task #11** | 04 · **06** |
+| **The dynamic stop-loss** | Post-stop is a **martingale**. Doob + Osler + Kaminski-Lo + Liaudinskas — **and now CONFIRMED at 1-SECOND resolution.** 94% of stop-outs ARE two-second sweeps (the resolution complaint was right!) — and the best tradeable rule is still **+$80/trade vs a ±$1,600 swing, p=0.452.** Seeing the sweep does not make it profitable to sit through | 04 · **06** |
 
 ### ♻️ RETRACTED on 07-13 → **RE-INSTATED on 07-14**
 
@@ -163,13 +166,15 @@ The seminar teaches the method. The retraction shows where the method failed. Th
 
 | # | Task | Why it matters |
 |---|---|---|
-| **11** | ⚠️ **RE-TEST the stop-loss at 1-SECOND resolution** | **The highest-stakes open item.** The martingale verdict (report 04) ran on **1-minute bars**, which **structurally cannot** tell a real adverse move from a **2-second liquidity sweep**. It may be a **resolution artifact**. **Kill criterion declared in advance.** |
-| **4** | **Rename the `veto_mask` trap + document the real blocking logic** | The parameter **named `veto_mask` does not veto.** It nearly made me build a feature that silently did nothing. **Cheap, safe, zero behaviour change.** |
+| **4** | **Rename the `veto_mask` trap + document the real blocking logic** | The parameter **named `veto_mask` does not veto.** It nearly made me build a feature that silently did nothing. **Cheap, safe, zero behaviour change.** **Start here.** |
 | **5** | **Trading-session windows** (Asia / London / NY, overlaps, gaps) | The 09:30 NY open contaminated our news study — session structure **matters and is currently invisible** to the system |
-| **7** | **Fit our own probability distribution** | Returns are certainly not Gaussian. Correct tail probabilities directly inform **stop placement and sizing** |
+| **7** | **Fit our own probability distribution** | Returns are certainly not Gaussian. Correct tail probabilities directly inform **stop placement and sizing**. **Now better motivated than ever:** the per-trade spread on a stop-out is **80 points** — that fat tail is exactly what defeats every edge we've measured |
+| **D3** | **Silver: pre-register a test, or drop it** | The **last open statistical thread.** p=0.007 despite 12% power, strengthened out-of-sample — but 1 cell of 36. **Do not leave it hanging.** |
 
-**✅ Closed since the last index:** #6 (*is 1-min too coarse for news?* — **YES, provably**; it is what
-raised Task #11), #10 (*fold in 2024* — **superseded**: we got 17 years, not 1).
+**✅ Closed since the last index:** **#11** (*1-second stop-loss re-test* — **the verdict HELD**; sweeps
+are 94% real but worth **+$80/trade against a ±$1,600 swing, p=0.452**), **#6** (*is 1-min too coarse for
+news?* — **YES, provably**), **#10** (*fold in 2024* — **superseded**: we got 17 years, not 1),
+**#12/#13/#14** (ALFRED retry + cache; the per-year table; the inverted power labels).
 
 ---
 

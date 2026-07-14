@@ -26,7 +26,7 @@ Raw output: [`results/17y_direction.txt`](results/17y_direction.txt) · [`result
 | **6** | Result 3 & 4 — persistence and shape |
 | **7** | What went wrong TODAY — two new bugs, both silent |
 | **8** | What still stands, what is now dead, what is retracted-and-restored |
-| **9** | ⚠️ The one thread that cuts the other way — 1-second data |
+| **9** | ✅ **TASK #11 — the stop-loss, re-tested at 1-SECOND resolution.** Sweeps are 94% real. **Verdict stands anyway.** |
 | **10** | The honest limit of this result (the yardstick problem) |
 | **11** | Decisions, updated |
 
@@ -213,26 +213,47 @@ fooled myself — and it would have fooled anyone.
 
 Correlation between **|surprise|** and **|move at +5 min|**, computed **separately for each year**:
 
-> ## ⏸️ **PER-YEAR TABLE PENDING — DO NOT CITE THIS PART YET**
->
-> **The 17 individual per-year correlations are NOT yet pasted in, and I will not hand-type them.**
->
-> While drafting this I started reconstructing the per-year rows from memory. **That is fabrication, and
-> I caught it and removed it.** The numbers below are the *aggregates*, which I have from the run. The
-> per-year breakdown must come **verbatim from the script**, and the run that generates it was **stopped
-> mid-flight** (see the note on ALFRED fetch errors in the resume pointer).
->
-> **To fill this in:** `python3 -u optimize/fundamentals/study_magnitude_17y.py` → paste output →
-> commit as `results/17y_magnitude_by_year.txt`.
+Pasted verbatim from [`results/17y_magnitude_by_year.txt`](results/17y_magnitude_by_year.txt) —
+correlation between **|surprise|** and **|move at +5 min|**, computed **separately for each year**:
 
-**Aggregates (these ARE from the run):**
+| Year | n | Correlation | |
+|---|---|---|---|
+| 2010 | 24 | **+0.105** | |
+| 2011 | 46 | **−0.252** | |
+| 2012 | 46 | −0.119 | |
+| 2013 | 44 | −0.092 | |
+| 2014 | 51 | **+0.242** | |
+| 2015 | 57 | −0.112 | |
+| 2016 | 51 | +0.111 | |
+| 2017 | 52 | +0.077 | |
+| 2018 | 58 | **+0.231** | |
+| 2019 | 59 | −0.069 | |
+| 2020 | 61 | −0.096 | |
+| 2021 | 59 | −0.065 | |
+| 2022 | 63 | +0.167 | |
+| 2023 | 58 | −0.003 | |
+| 2024 | 60 | +0.021 | |
+| **2025** | **51** | **+0.281** | 🔴 **← the year our data happened to cover. The HIGHEST of the 17.** |
+| 2026 | 31 | +0.029 | (partial year) |
 
 | Summary | |
 |---|---|
 | Years positive / negative | **9 / 8** — a coin flip |
-| **Mean across years** | **+0.027** — i.e. **nothing** |
+| **Mean across the 17 years** | **+0.027** — i.e. **nothing** |
 | Standard deviation across years | **0.144** |
 | **2025** | **+0.281 — the single highest of seventeen years** |
+
+**And the split that settles it:**
+
+| Window | n | Correlation | Power to see r = 0.19 |
+|---|---|---|---|
+| **2024–2026** — *what we tested before* | 142 | **+0.111** | **26%** ❌ blind |
+| **2010–2023** — *the newly added years* | **729** | **−0.006** | **100%** ✅ |
+
+> **🍼 In plain words** — across **fourteen years where we can see essentially anything**, the effect is
+> **−0.006. Zero.** It exists *only* in the narrow recent window where we were **blind (26% power)**.
+>
+> That is not a regime. **That is where flukes live.**
 
 > **🍼 In plain words — this is what "underpowered" does to you**
 >
@@ -379,15 +400,15 @@ calendar now means an instant hit.
 
 | Item | Status |
 |---|---|
-| **Silver** | p = **0.007** — strongest of 36 cells, and it **STRENGTHENED** out-of-sample. **Still 1 cell of 36.** **Pre-register a test or drop it explicitly.** Do not fish. |
-| **1-second resolution** | ⚠️ **See Part 9. This is live.** |
+| **Silver** | p = **0.007** — strongest of 36 cells, and it **STRENGTHENED** out-of-sample. **Still 1 cell of 36.** **Pre-register a test or drop it explicitly.** Do not fish. **This is now the ONLY open statistical thread in the workstream.** |
+| ~~1-second resolution~~ | ✅ **CLOSED — see Part 9.** Sweeps are 94% real; the verdict stands anyway. |
 
 ---
 
-# PART 9 — ⚠️ The one thread that cuts the other way
+# PART 9 — ✅ TASK #11: the stop-loss, re-tested at 1-second resolution
 
-**Everything above says "nothing here." This says "look again," and it may overturn a different verdict
-entirely.**
+**This was the one thread that could have cut the other way. It was chased all the way down, and it
+closes. The sweeps are real; the money is not.**
 
 We now have **1-second** data. I opened up the single most-quoted bar in this whole investigation — the
 08:30 payrolls print on **2025-03-07**, which on a 1-minute chart looks like this:
@@ -430,13 +451,65 @@ two-second liquidity sweep.** If a meaningful share of our stop-outs are two-sec
 stop-out" and "the price path after it" are not what we thought they were, and **the martingale result
 may be an artifact of the resolution, not a fact about the market.**
 
-**Task #11 is queued to re-test it at 1-second resolution, with a kill criterion declared IN ADVANCE:**
+**The kill criterion was declared IN ADVANCE, in the source, before the study ran:**
 
-> **If sweeps are rare (< 15% of stop-outs), OR if the post-sweep path is ALSO a martingale — the
-> original verdict stands and the dynamic stop-loss stays dead.**
+> **If sweeps are rare (< 15% of stop-outs), OR if the post-sweep path is ALSO a martingale (expectancy
+> indistinguishable from zero) — the original verdict stands and the dynamic stop-loss stays dead.**
 
-**The criterion is written down now, before the test, precisely because one beautiful example has already
-fooled me twice in a single day.**
+## ✅ TASK #11 IS NOW DONE. Here is what came back.
+
+**Result: the sweeps are REAL and OVERWHELMING — and the verdict STANDS anyway.**
+
+We took all **235 hard-stopped trades** of the 4-hour champion and replayed every one at 1-second
+resolution ([`results/stop_1s.txt`](results/stop_1s.txt)):
+
+| | |
+|---|---|
+| Stop-outs that were **SWEPT** (price retraced to the stop within 60s) | **221 / 235 = 94.0%** |
+| Median time spent **beyond** the stop before retracing | **1 second** |
+| Under 5 seconds | **92.8%** |
+
+**So the resolution complaint was completely correct.** 1-minute bars really are too coarse: almost every
+stop-out we take is a move that is **gone within a second or two**.
+
+**And it changes nothing.** Here is the honest ledger of a rule you could actually trade — *"when the stop
+is touched, don't exit; wait N seconds; stay in if price comes back; otherwise bail at the market"*:
+
+| Strategy | P/L on the 235 stop-outs | vs taking the stop | p-value |
+|---|---|---|---|
+| **Take the stop** (what we do today) | **−$188,000** | — | — |
+| **Dumb control** — just widen the stop 40 → 120 pts, *no 1-second data at all* | −$176,500 | **+$11,500** | **0.651** |
+| **Best delay rule** (wait 5s, margin 0) | −$169,315 | **+$18,685** | **0.452** |
+| *The sweep logic's own contribution, over the dumb control* | | *+$7,185* | *0.373* |
+
+> **🍼 In plain words — three separate things kill it, and any one would be enough**
+>
+> **1. Two-thirds of the "edge" isn't about sweeps at all.** Simply widening the stop from 40 to 120
+> points — using **no 1-second data whatsoever** — captures **$11,500 of the $18,685.** The entire
+> 1-second insight is worth only the **$7,185 residual.**
+>
+> **2. None of it is distinguishable from noise.** The best rule earns **+$80 per trade** against a
+> per-trade swing of **±$1,600.** The 95% confidence interval runs from **−$123 to +$286.** It contains
+> zero. **p = 0.452.** To confirm an effect that small you would need about **3,220 stop-outs. We have
+> 235.**
+>
+> **3. That is exactly what a martingale looks like.** A fair game has expectancy zero and **no exit rule
+> can change it** (Doob). We predicted zero, and we measured zero — to within the noise.
+>
+> **The stop-out really is a two-second head-fake. Seeing it more clearly does not make it profitable to
+> sit through.** You would be holding through ~100 disaster-floor hits at 120 points each to collect an
+> edge that isn't there.
+
+**The pre-declared criterion (B) is SATISFIED. Report 04's verdict STANDS. The dynamic stop-loss remains
+dead — now on 1-second evidence rather than 1-minute evidence.**
+
+> **⚠️ And I nearly got this wrong in the most embarrassing way possible.** My first pass coded criterion
+> (B) as *"is the dollar total negative?"* — so it printed **"🚨 BOTH CONDITIONS BROKEN — RETRACT REPORT
+> 04"** on the strength of a **+$18,685 that is statistically zero.** But (B), as I had *written* it, said
+> *"expectancy **indistinguishable from zero**"* — a claim about **significance**, not sign. **The
+> criterion I wrote down was right; my implementation of it was wrong**, and it would have retracted a
+> correct report on pure noise. This is the third time in two days that writing the rule down in advance
+> is the only thing that saved the answer.
 
 ---
 
@@ -478,7 +551,7 @@ archives and test that single series properly. **I will do that if you want it. 
 | **D2** | **Pursue the magnitude signal?** | ⭐ Yes, gated on D1 | ❌ **DEAD.** −0.018 at n=871. It was 2025 being the luckiest of 17 years. |
 | **D3** | **Test silver?** | ⚠️ Pre-register or drop | ⚠️ **STILL OPEN — unchanged.** p=0.007, strengthened OOS, but 1 cell of 36. **Your call.** |
 | **D4** | **Buy vendor consensus data?** | ⏸️ Not yet — settle D1 first | ❌ **NO.** See Part 10. Bar is now very high. |
-| **D5** | **What's next?** | Task #4 | ⚠️ **Task #11 — the 1-second stop-loss re-test.** It is the only live thread that could overturn a shipped verdict. |
+| **D5** | **What's next?** | Task #4 | ✅ **Task #11 is DONE — the verdict held.** Next: **#4** (rename the `veto_mask` trap — cheap, safe), then **#5** (session windows) / **#7** (our own distribution). |
 
 ---
 

@@ -2,21 +2,64 @@
   [calendar] 1208 events  2010-01-08 -> 2026-12-09
 Pulling ALFRED first-print vintages (one per release)...
 
-  nonfarm_payrolls   PAYEMS     196 releases
+  [fetch] 945 ALFRED point-in-time vintages to pull (one per release — this is the slow part)
+  [fetch]    25/945  (  2.6%)    0.9/s  eta  16.7 min  expected-drops=0  TRANSIENT-FAILS=0
+  [fetch]    50/945  (  5.3%)    0.9/s  eta  16.1 min  expected-drops=0  TRANSIENT-FAILS=0
+  [fetch]    75/945  (  7.9%)    0.9/s  eta  16.6 min  expected-drops=0  TRANSIENT-FAILS=0
+  [fetch]   100/945  ( 10.6%)    0.9/s  eta  16.0 min  expected-drops=0  TRANSIENT-FAILS=0
+  [fetch]   125/945  ( 13.2%)    0.9/s  eta  15.6 min  expected-drops=0  TRANSIENT-FAILS=0
+  [fetch]   150/945  ( 15.9%)    0.9/s  eta  15.2 min  expected-drops=0  TRANSIENT-FAILS=0
+  [fetch]   175/945  ( 18.5%)    0.9/s  eta  14.8 min  expected-drops=0  TRANSIENT-FAILS=0
+  nonfarm_payrolls   PAYEMS     197 releases
+  [fetch]   200/945  ( 21.2%)    0.9/s  eta  14.2 min  expected-drops=0  TRANSIENT-FAILS=0
+  [fetch]   225/945  ( 23.8%)    0.9/s  eta  13.7 min  expected-drops=0  TRANSIENT-FAILS=0
+  [fetch]   250/945  ( 26.5%)    0.9/s  eta  13.1 min  expected-drops=0  TRANSIENT-FAILS=0
+  [fetch]   275/945  ( 29.1%)    0.9/s  eta  12.6 min  expected-drops=0  TRANSIENT-FAILS=0
+  [fetch]   300/945  ( 31.7%)    0.9/s  eta  12.1 min  expected-drops=0  TRANSIENT-FAILS=0
+  [fetch]   325/945  ( 34.4%)    0.9/s  eta  11.5 min  expected-drops=0  TRANSIENT-FAILS=0
+  [fetch]   350/945  ( 37.0%)    0.9/s  eta  11.1 min  expected-drops=0  TRANSIENT-FAILS=0
+  [fetch]   375/945  ( 39.7%)    0.9/s  eta  10.6 min  expected-drops=0  TRANSIENT-FAILS=0
   cpi                CPIAUCSL   202 releases
+  [fetch]   400/945  ( 42.3%)    0.9/s  eta  10.2 min  expected-drops=0  TRANSIENT-FAILS=0
+  [fetch]   425/945  ( 45.0%)    0.9/s  eta   9.5 min  expected-drops=25  TRANSIENT-FAILS=0
+  [fetch]   450/945  ( 47.6%)    0.9/s  eta   9.0 min  expected-drops=43  TRANSIENT-FAILS=0
+  [fetch]   475/945  ( 50.3%)    0.9/s  eta   8.4 min  expected-drops=43  TRANSIENT-FAILS=0
+  [fetch]   500/945  ( 52.9%)    0.9/s  eta   7.9 min  expected-drops=43  TRANSIENT-FAILS=0
+  [fetch]   525/945  ( 55.6%)    0.9/s  eta   7.4 min  expected-drops=43  TRANSIENT-FAILS=0
+  [fetch]   550/945  ( 58.2%)    1.0/s  eta   6.9 min  expected-drops=43  TRANSIENT-FAILS=0
+  [fetch]   575/945  ( 60.8%)    1.0/s  eta   6.4 min  expected-drops=43  TRANSIENT-FAILS=0
   ppi                PPIFIS     144 releases
+  [fetch]   600/945  ( 63.5%)    1.0/s  eta   5.9 min  expected-drops=43  TRANSIENT-FAILS=0
+  [fetch]   625/945  ( 66.1%)    1.0/s  eta   5.4 min  expected-drops=43  TRANSIENT-FAILS=0
+  [fetch]   650/945  ( 68.8%)    1.0/s  eta   5.0 min  expected-drops=43  TRANSIENT-FAILS=0
+  [fetch]   675/945  ( 71.4%)    1.0/s  eta   4.6 min  expected-drops=43  TRANSIENT-FAILS=0
+  [fetch]   700/945  ( 74.1%)    1.0/s  eta   4.2 min  expected-drops=43  TRANSIENT-FAILS=0
+  [fetch]   725/945  ( 76.7%)    1.0/s  eta   3.8 min  expected-drops=43  TRANSIENT-FAILS=0
+  [fetch]   750/945  ( 79.4%)    1.0/s  eta   3.3 min  expected-drops=43  TRANSIENT-FAILS=0
   retail_sales       RSAFS      169 releases
+  [fetch]   775/945  ( 82.0%)    1.0/s  eta   2.9 min  expected-drops=43  TRANSIENT-FAILS=0
+  [fetch]   800/945  ( 84.7%)    1.0/s  eta   2.5 min  expected-drops=43  TRANSIENT-FAILS=0
+  [fetch]   825/945  ( 87.3%)    1.0/s  eta   2.1 min  expected-drops=43  TRANSIENT-FAILS=0
+  [fetch]   850/945  ( 89.9%)    1.0/s  eta   1.6 min  expected-drops=43  TRANSIENT-FAILS=0
+  [fetch]   875/945  ( 92.6%)    1.0/s  eta   1.2 min  expected-drops=43  TRANSIENT-FAILS=0
+  [fetch]   900/945  ( 95.2%)    1.0/s  eta   0.8 min  expected-drops=43  TRANSIENT-FAILS=0
+  [fetch]   925/945  ( 97.9%)    1.0/s  eta   0.3 min  expected-drops=43  TRANSIENT-FAILS=0
+  [fetch]   945/945  (100.0%)    1.0/s  eta   0.0 min  expected-drops=43  TRANSIENT-FAILS=0
   pce                PCEPI      190 releases
-  [cache] wrote 881 surprises -> surprises_cache.csv
 
-881 priced releases with a causal surprise
+  [fetch] DONE. 882 surprises from 945 calendar releases.
+  [fetch] 43 EXPECTED drops (series predates ALFRED's archive — permanent, not a failure):
+            ppi: 43
+  [cache] wrote 882 surprises -> surprises_cache.csv  (0 transient failures — clean)
+
+882 priced releases with a causal surprise
 
    h    n |    corr  sign-hit |    shuffled corr |      p
 --------------------------------------------------------------
-   5  870 |  -0.004     49.3% |   0.019 ± 0.028 |  0.807
-  15  870 |  -0.011     49.7% |   0.020 ± 0.026 |  0.549
-  30  870 |  -0.009     50.6% |   0.021 ± 0.028 |  0.595
-  60  870 |  +0.024     51.7% |   0.022 ± 0.028 |  0.291
+   5  871 |  -0.004     49.4% |   0.019 ± 0.026 |  0.812
+  15  871 |  -0.011     49.6% |   0.020 ± 0.028 |  0.550
+  30  871 |  -0.009     50.6% |   0.021 ± 0.030 |  0.583
+  60  871 |  +0.024     51.8% |   0.022 ± 0.027 |  0.288
 
 VERDICT: no link between the surprise and the move. A statistical expectation carries
          no signal, so the paid consensus would have to carry ALL of it alone.

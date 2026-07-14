@@ -25,8 +25,10 @@ Verified before writing this (2026-07-13):
 from __future__ import annotations
 
 import os
+import time as _time
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 _ROOT = Path(os.environ.get("WSH_DATA_BASE", "/mnt/data/projects/trading"))
@@ -121,6 +123,120 @@ def load_1s(start=None, end=None) -> pd.DataFrame:
     d = d.rename(columns={"datetime": "Date", "open": "Open", "high": "High",
                           "low": "Low", "close": "Close", "volume": "Volume"})
     return d[["Date", "Open", "High", "Low", "Close", "Volume"]].sort_values("Date").reset_index(drop=True)
+
+
+_SEEK_SAFETY = 1 << 20          # 1 MB rewind — see the note at the end of _seek_to_timestamp
+
+
+def _seek_to_timestamp(path: Path, target: str) -> int:
+    """Byte offset of the first COMPLETE line whose timestamp >= `target`. Binary search over the file.
+
+    The 1-second file is 7.3 GB and sorted by time. Task #11 only wants 2025-2026 — about the last 15%.
+    Streaming the 2010-2024 prefix just to discard it is ~120M rows of pure waste. Since ISO-8601 sorts
+    lexicographically, we can binary-search the raw BYTES and seek straight to the data we want.
+
+    Returns 0 if the target precedes the whole file.
+    """
+    size = path.stat().st_size
+    with path.open("rb") as f:
+        f.readline()                                   # header
+        lo, hi = f.tell(), size
+        while lo < hi:
+            mid = (lo + hi) // 2
+            f.seek(mid)
+            f.readline()                               # discard the partial line we landed inside
+            pos = f.tell()
+            line = f.readline()
+            if not line:                               # ran off the end
+                hi = mid
+                continue
+            ts = line.split(b",", 1)[0].decode()
+            if ts < target:
+                lo = pos + len(line)
+            else:
+                hi = mid
+
+        # BACK OFF, ON PURPOSE. The search can land one line LATE (it converges on a byte, and the line
+        # boundary nearest that byte may be past the target). Landing late SILENTLY DROPS BARS, and the
+        # obvious assert (`first_ts >= target`) is satisfied by exactly that failure — so it would ship.
+        #
+        # Landing EARLY is free: the window mask discards anything before the first window anyway. So we
+        # rewind a safe margin and re-align to the next complete line. Wrong-but-early beats right-but-
+        # fragile.
+        f.seek(max(0, lo - _SEEK_SAFETY))
+        if lo > _SEEK_SAFETY:
+            f.readline()                               # re-align to a complete line
+        return f.tell()
+
+
+def load_1s_windows(windows, chunksize: int = 4_000_000, verbose: bool = True) -> pd.DataFrame:
+    """Many small 1-second windows, in ONE pass over the 7.3 GB / 142M-row file.
+
+    `windows` = iterable of (start, end) timestamps, inclusive. Returns every 1-second bar falling in
+    ANY of them, deduplicated and sorted.
+
+    WHY THIS EXISTS. load_1s() re-scans the entire file per call. Task #11 needs a window around EVERY
+    stopped trade — hundreds of them — and hundreds of full 7.3 GB scans is not a study, it's a heater.
+    This does one pass, no matter how many windows.
+
+    THE TRICK: the `datetime` column is ISO-8601, and ISO-8601 sorts LEXICOGRAPHICALLY the same way it
+    sorts chronologically. So we can locate window boundaries with a string searchsorted and never parse
+    the 142M timestamps we are going to throw away — we parse only the few thousand rows we keep.
+    """
+    if not _16Y_SECONDS.exists():
+        raise FileNotFoundError(f"1-second file not found: {_16Y_SECONDS}")
+
+    w = sorted((pd.Timestamp(s), pd.Timestamp(e)) for s, e in windows)
+    if not w:
+        return pd.DataFrame(columns=["Date", "Open", "High", "Low", "Close", "Volume"])
+    s_str = np.array([s.strftime("%Y-%m-%d %H:%M:%S") for s, _ in w])
+    e_str = np.array([e.strftime("%Y-%m-%d %H:%M:%S") for _, e in w])
+    lo, hi = min(s_str), max(e_str)                     # numpy's max() has no loop for <U19 dtype
+
+    keep, seen, t0 = [], 0, _time.time()
+    off = _seek_to_timestamp(_16Y_SECONDS, lo)
+    if verbose:
+        pct = 100 * off / _16Y_SECONDS.stat().st_size
+        print(f"    [1s] seeking to {lo} -> byte {off:,} ({pct:.1f}% into the file); "
+              f"skipping the {pct:.0f}% before it entirely", flush=True)
+
+    fh = _16Y_SECONDS.open("r")
+    fh.seek(off)
+    reader = pd.read_csv(fh, chunksize=chunksize, dtype={"datetime": str},
+                         names=["datetime", "open", "high", "low", "close", "volume"], header=None)
+    for i, ch in enumerate(reader):
+        t = ch["datetime"].to_numpy()
+        seen += len(t)
+        if t[-1] < lo:                                  # entirely before the first window
+            continue
+        if t[0] > hi:                                   # past the last window — the file is sorted, stop
+            break
+        a = np.searchsorted(t, s_str, side="left")
+        b = np.searchsorted(t, e_str, side="right")
+        mask = np.zeros(len(t), dtype=bool)
+        for x, y in zip(a, b):
+            if y > x:
+                mask[x:y] = True
+        if mask.any():
+            keep.append(ch[mask])
+        if verbose and i % 5 == 0:
+            el = _time.time() - t0
+            print(f"    [1s] scanned {seen/1e6:>6.1f}M rows  kept {sum(len(k) for k in keep):>7,}  "
+                  f"{el:>5.0f}s", flush=True)
+    fh.close()
+
+    if not keep:
+        return pd.DataFrame(columns=["Date", "Open", "High", "Low", "Close", "Volume"])
+    d = pd.concat(keep, ignore_index=True)
+    d["datetime"] = pd.to_datetime(d["datetime"])       # parse ONLY the rows we kept
+    d = d.rename(columns={"datetime": "Date", "open": "Open", "high": "High",
+                          "low": "Low", "close": "Close", "volume": "Volume"})
+    d = d[["Date", "Open", "High", "Low", "Close", "Volume"]]
+    d = d.drop_duplicates(subset=["Date"]).sort_values("Date").reset_index(drop=True)
+    if verbose:
+        print(f"    [1s] done: {len(d):,} bars across {len(w)} windows "
+              f"in {_time.time()-t0:.0f}s (one pass)", flush=True)
+    return d
 
 
 def span(df: pd.DataFrame) -> str:
