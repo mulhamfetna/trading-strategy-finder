@@ -357,29 +357,35 @@ _TF_SET = ("4h", "2h", "1h", "15m", "5m", "2m")          # the decision TFs (1m 
 _WSH4_CHAMPS = Path(__file__).resolve().parents[1] / "results" / "wsh4_champions_full.json"
 
 # ── CHAMPION SETS ───────────────────────────────────────────────────────────────────────────────────
-# The dashboard can serve MORE THAN ONE champion set, side by side, so a fresh optimizer campaign can be
-# driven through the real UI *without* overwriting the strategies that are currently deployed and verified.
+# The dashboard serves several champion sets side by side, so a fresh optimizer campaign can be driven
+# through the real UI *without* overwriting what is deployed — and so a deploy can be reverted from a
+# dropdown rather than a git restore.
 #
-# WHY THIS EXISTS. Deploying a champion straight from the optimizer has burned us repeatedly: the
-# optimizer's fast engine is an approximation and has claimed profits on strategies the causal engine says
-# LOSE money (HG 2m; NG 15m twice; NG 2m). A set therefore carries a `verified` flag, and the UI must say
-# out loud when what you are looking at has not yet been confirmed by the causal engine.
+# ⚠️ EVERY SET LISTED HERE MUST BE EXTRACTED WITH SIGNIFICANT-DIGIT PRECISION.
+# The original wsh4_* / eod1_* files were persisted with round(x, 4) — four DECIMAL places. Prices here
+# span four orders of magnitude (the Dow trades near $44,000, natural gas near $3.57), so four decimals
+# leaves a natural-gas stop of 0.0008 with a SINGLE significant digit. On NG 5m that 1.1% distortion moved
+# the P/L by $39,793 and FLIPPED ITS SIGN, and it got 10 of the 54 head-to-head verdicts wrong. Those files
+# are retired; the sets below are the re-extracted (…p = precise) ones. Never point a set at wsh4_*/eod1_*.
 #
-# Files follow the optimizer's own naming: <prefix>_champions_full[_<INST>].json in optimize/results/
-# (NQ is the unsuffixed one).
+# For the record: the optimizer's fast engine was NOT at fault. Every "engine disagreement" we chased
+# (NG 5m/2m/2h/15m, HG 2m/15m, SI 5m, CL 15m — exactly the four lowest-priced markets) was this bug.
+#
+# Files follow the optimizer's naming: <prefix>_champions_full[_<INST>].json (NQ is the unsuffixed one).
 CHAMPION_SETS = {
-    # THE DEPLOYED SET: best-per-slot, decided on the held-out 2026 year. 32 slots kept their old champion,
-    # 19 took the cold-start forced-end-of-day champion, 3 took the bolt-on (old champion + bell close).
-    # Forcing the bell close on EVERY slot was measured and is WORSE than doing nothing (+$621k vs +$696k
-    # on 2026) — the win comes from choosing per slot, not from the rule.
+    # THE DEPLOYED SET — best of three candidates per slot, decided on the held-out 2026 year:
+    #   29 slots kept the incumbent · 24 took the forced-end-of-day champion · 1 took the bolt-on.
+    #   2026 out-of-sample: +$840,037 vs +$638,462 for the incumbents (+31.6%). UI-verified 31/31.
+    # KEY FINDING: forcing the bell close on EVERY slot is WORSE than doing nothing (+$631,999 vs
+    # +$638,462). The gain comes from choosing per slot, not from the rule.
     "best": {"prefix": "best", "verified": True,
              "label": "best-per-slot (2026-decided) — DEPLOYED"},
-    # The previous deployed set, kept selectable so this deploy is reversible from the dropdown.
-    "deployed": {"prefix": "wsh4", "verified": True,
-                 "label": "previous set (time-cap re-optimization)"},
-    # The raw forced-end-of-day campaign, whole. Loses to best-per-slot; kept for comparison.
-    "eod1": {"prefix": "eod1", "verified": True,
-             "label": "forced end-of-day, cold start (all 54)"},
+    # The incumbents, re-extracted at full precision. Selectable so the deploy is one dropdown to revert.
+    "incumbent": {"prefix": "cap1p", "verified": True,
+                  "label": "incumbents (time-cap re-optimization)"},
+    # The forced-end-of-day campaign, whole. Loses to best-per-slot; kept for comparison.
+    "eod": {"prefix": "eod1p", "verified": True,
+            "label": "forced end-of-day, cold start (all 54)"},
 }
 # Which set the dashboard serves by default.
 DEFAULT_CHAMPION_SET = os.getenv("WSH_CHAMPION_SET", "best")
