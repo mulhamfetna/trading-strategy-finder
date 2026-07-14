@@ -88,7 +88,16 @@ def main() -> int:
     while True:
         el = time.time() - t0
         size = as_int(R(f"stat -c %s {a.log} 2>/dev/null"))
-        alive = bool(R(f"pgrep -f '{a.pattern}' 2>/dev/null").strip()) if a.pattern else True
+
+        # SELF-MATCH GUARD. `pgrep -f study_surprise` ALSO matches this watchdog, because the pattern is
+        # sitting right there in our own command line (`--pattern study_surprise`). Without the filter the
+        # watchdog sees itself, concludes the job is alive, and happily reports RUNNING forever — long
+        # after the job it was supposed to be guarding has died. A watchdog that can never report death is
+        # not a watchdog. (This bit me three times on 2026-07-14, once fatally: a `pgrep -f rerun_all`
+        # matched the watchdog's own `--log .../rerun_all.log` argument and I reported "✅ CHAIN IS
+        # RUNNING" for a chain that had never launched.)
+        alive = (bool(R(f"pgrep -af '{a.pattern}' 2>/dev/null | grep -v watchdog.py").strip())
+                 if a.pattern else True)
         tail = R(f"grep -vE '^\\s*!' {a.log} 2>/dev/null | tail -3")
         nerr = as_int(R(f"grep -cE '{'|'.join(FAIL_MARKERS)}' {a.log} 2>/dev/null"))
         nhttp = as_int(R(f"grep -c 'HTTP Error' {a.log} 2>/dev/null"))
