@@ -48,4 +48,15 @@ def load_calendar(path: str | None = None) -> pd.DataFrame:
             f"unexpected release time(s) {sorted(bad)} — expected {sorted(VALID_TIMES)}. "
             "This is almost certainly a timezone bug in the calendar build."
         )
+
+    # ANNOUNCE THE SPAN, LOUDLY, on every load.
+    #
+    # WHY: on 2026-07-14 an rsync of the CODE directory silently overwrote this file — a GENERATED
+    # ARTIFACT that happens to live beside the code — replacing a 1,208-event calendar (2010-2026) with
+    # a 177-event one (2024-2026). A study then ran on 122 releases instead of 871 and produced a
+    # completely different answer, and nothing complained. The result LOOKED fine.
+    #
+    # A study silently running on the wrong sample is the most dangerous failure mode in this project.
+    # So the calendar now says out loud what it is, every single time it is loaded.
+    print(f"  [calendar] {len(df)} events  {df['Date'].min().date()} -> {df['Date'].max().date()}")
     return df
