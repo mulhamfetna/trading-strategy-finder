@@ -47,6 +47,21 @@ def sh(cmd: str) -> str:
         return ""
 
 
+def as_int(s: str) -> int:
+    """First integer in the output, or 0.
+
+    `grep -c` PRINTS "0" and ALSO exits non-zero when it finds nothing — so a `|| echo 0` fallback
+    fires as well and you get "0\\n0", which int() rejects. Parse defensively rather than trust the
+    shell to behave.
+    """
+    for tok in (s or "").split():
+        try:
+            return int(tok)
+        except ValueError:
+            continue
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--log", required=True, help="the log file to watch")
@@ -72,11 +87,11 @@ def main() -> int:
 
     while True:
         el = time.time() - t0
-        size = int(R(f"stat -c %s {a.log} 2>/dev/null || echo 0").strip() or 0)
+        size = as_int(R(f"stat -c %s {a.log} 2>/dev/null"))
         alive = bool(R(f"pgrep -f '{a.pattern}' 2>/dev/null").strip()) if a.pattern else True
         tail = R(f"grep -vE '^\\s*!' {a.log} 2>/dev/null | tail -3")
-        nerr = int(R(f"grep -cE '{'|'.join(FAIL_MARKERS)}' {a.log} 2>/dev/null || echo 0").strip() or 0)
-        nhttp = int(R(f"grep -c 'HTTP Error' {a.log} 2>/dev/null || echo 0").strip() or 0)
+        nerr = as_int(R(f"grep -cE '{'|'.join(FAIL_MARKERS)}' {a.log} 2>/dev/null"))
+        nhttp = as_int(R(f"grep -c 'HTTP Error' {a.log} 2>/dev/null"))
 
         if size != last_size:
             last_size, last_growth = size, time.time()
