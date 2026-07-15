@@ -32,12 +32,21 @@ Two-thirds of even that is just *"the stop is too tight"* (a dumb 40→120 widen
 
 ---
 
+## ✅ CLOSED 2026-07-14 PM
+
+- **#4 — `veto_mask` rename** (`a1017a2`). Engine param → `veto_vote_mask`; it does NOT block (`entry_gate`
+  is the sole blocking array; the veto is folded in upstream). Docstring documents the trap. Golden 6/6
+  byte-identical, integration test passes. `runner.veto_mask` (the correctly-named METHOD) untouched.
+- **D3 — silver** (`880679e`). Pre-registered test (`study_silver.py`); **no long silver history exists**,
+  so a powered test is impossible. Passed 3/3 pre-declared criteria but the raw headline died under the
+  17-year surprise ruler and the survivor is a suppressor-prone partial at 12% power in the fluke window.
+  → **Not dropped, not confirmed: FROZEN forward test.** Re-run once ~6-12 mo of new silver data exist.
+  Full writeup: report 06 Part 12.
+
 ## ➡️ WHAT TO DO NEXT (in order)
 
 | # | Task | Why |
 |---|---|---|
-| **4** | **Rename the `veto_mask` trap** + document the real blocking logic | The parameter **named `veto_mask` does not veto** — the real blocker is the composite `entry_gate` (`engine.py:520`, `fast_engine.py:97`). It nearly made me build a feature that silently did nothing. **Cheap, safe, zero behaviour change. Start here.** |
-| **D3** | **Silver: pre-register a test, or drop it explicitly** | **The last open statistical thread.** p=0.007 *despite* 12% power, and it **strengthened** out-of-sample — but it is **1 cell of 36**, and being the best of 36 is what luck produces. **Do not leave it hanging, and do not fish.** |
 | **5** | **Trading-session windows** (Asia / London / NY, overlaps, gaps) | The 09:30 NY open contaminated the news study. Session structure is currently **invisible** to the system. |
 | **7** | **Fit our own probability distribution** | **Now better motivated than ever:** the per-trade spread on a stop-out is **80 points**. That fat tail is precisely what defeated every edge we measured — a +4 pt/trade effect needs ~3,220 samples to see. Correct tail probabilities feed **stop placement and sizing** directly. |
 
