@@ -371,6 +371,14 @@ graph TD
 
 ## 7. The one loose end I refuse to bury: SILVER
 
+> **🔄 RESOLVED 2026-07-14 → see [`06-VERDICT-at-full-power.md`](06-VERDICT-at-full-power.md) Part 12.**
+> The `p=0.007, −0.360` headline below was measured with the **old surprise definition**. Under the
+> improved 17-year surprise ruler (the same one that turned NQ magnitude +0.187 into −0.018) silver's raw
+> full-sample correlation falls to **−0.173 (p=0.123, not significant)**. A pre-registered,
+> gold-controlled, 4/4-quarter-stable residual **survives** (partial −0.258, p=0.026), so silver is **not
+> dropped** — but at 12% power inside the fluke window it is **not confirmed** either. Status: **frozen
+> forward test.** The numbers below are retained as the original record.
+
 | | |
 |---|---|
 | Full-sample correlation | **−0.360** |

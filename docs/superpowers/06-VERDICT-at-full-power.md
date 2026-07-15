@@ -29,6 +29,7 @@ Raw output: [`results/17y_direction.txt`](results/17y_direction.txt) · [`result
 | **9** | ✅ **TASK #11 — the stop-loss, re-tested at 1-SECOND resolution.** Sweeps are 94% real. **Verdict stands anyway.** |
 | **10** | The honest limit of this result (the yardstick problem) |
 | **11** | Decisions, updated |
+| **12** | ✅ **D3 — SILVER, pre-registered and resolved.** Not dropped, not confirmed: a **frozen forward test.** |
 
 ---
 
@@ -549,9 +550,86 @@ archives and test that single series properly. **I will do that if you want it. 
 |---|---|---|---|
 | **D1** | **Get more price history?** | ✅ YES — the whole bottleneck | ✅ **DONE. And it settled the question.** 17 years, $0. |
 | **D2** | **Pursue the magnitude signal?** | ⭐ Yes, gated on D1 | ❌ **DEAD.** −0.018 at n=871. It was 2025 being the luckiest of 17 years. |
-| **D3** | **Test silver?** | ⚠️ Pre-register or drop | ⚠️ **STILL OPEN — unchanged.** p=0.007, strengthened OOS, but 1 cell of 36. **Your call.** |
+| **D3** | **Test silver?** | ⚠️ Pre-register or drop | ✅ **RESOLVED — see Part 12.** Pre-registered, tested. **Not dropped, not confirmed:** a *frozen forward test*. The raw headline weakened (−0.360 → −0.173, ns) but a gold-controlled, 4/4-quarter-stable residual survives. |
 | **D4** | **Buy vendor consensus data?** | ⏸️ Not yet — settle D1 first | ❌ **NO.** See Part 10. Bar is now very high. |
-| **D5** | **What's next?** | Task #4 | ✅ **Task #11 is DONE — the verdict held.** Next: **#4** (rename the `veto_mask` trap — cheap, safe), then **#5** (session windows) / **#7** (our own distribution). |
+| **D5** | **What's next?** | Task #4 | ✅ **Task #11 + #4 + D3 all DONE.** Next: **#5** (session windows) / **#7** (our own distribution). |
+
+---
+
+# PART 12 — ✅ D3: SILVER, pre-registered and resolved
+
+**The last open statistical thread. Tested against a criterion declared before the run. The result is
+neither "it's real" nor "it's dead" — it is the honest middle: a frozen forward test.**
+
+Raw output: [`results/silver_d3.txt`](results/silver_d3.txt) · code:
+`optimize/fundamentals/study_silver.py`.
+
+## The setup, and the hard constraint
+
+Silver was the one loose end of the 9-market study (report 05): surprise→return at h=5 was **−0.360,
+p=0.007** — the strongest of all 36 cells — and, uniquely, it **strengthened out-of-sample** (2025 −0.140
+→ 2026 −0.500). I refused to bury it or chase it, and logged a pre-registered test.
+
+**The hard constraint, discovered while building the test:** there is **no long silver history.** The
+17-year frame that settled NQ is NQ only. Silver exists **only for 2025-01-01 → 2026-07-02** — the same
+~18-month window this very report just proved is where flukes live. **So the powered test that killed the
+NQ magnitude signal is impossible for silver.** We cannot confirm it. We can only try to *kill* it with
+what we have, and if it survives, freeze a forward test.
+
+## The pre-registered criterion (declared in the source, before the run)
+
+> Silver **stays alive** only if **all three** hold; it is **dropped** if it fails any:
+> 1. **Enough events** — 2026 out-of-sample n ≥ 25.
+> 2. **Independent of gold** — silver is 0.85-correlated with gold, and *gold showed the same OOS move.*
+>    So the partial correlation `r(surprise, silver | gold)` must itself be significant (shuffle p<0.05).
+>    If silver is just gold in a costume, this collapses to zero.
+> 3. **Stable** — negative in ≥ 3 of 4 chronological quarters.
+
+## What came back — and it surprised me
+
+| Criterion | Result | |
+|---|---|---|
+| **(1) Enough events** | 2026 OOS **n = 30** ≥ 25 | ✅ PASS |
+| **(2) Independent of gold** | raw `corr(surprise, SI)` = **−0.173 (p=0.123, ns)**; `corr(surprise, GC)` = −0.058; **partial `corr(surprise, SI\|GC)` = −0.258, p=0.026** | ✅ PASS |
+| **(3) Stable** | quarters: −0.153, −0.070, −0.226, **−0.382** — negative **4/4**, and *monotonically strengthening* | ✅ PASS |
+
+**I expected silver to be "gold in a costume" and die on criterion (2). It did the opposite.** Gold's own
+correlation with the surprise is basically nothing (−0.058); silver reacts *more*, and controlling for
+gold **sharpens** silver's signal rather than erasing it. All three criteria passed.
+
+## But here is everything that says "do not get excited"
+
+> **🍼 In plain words — three big caveats, and I am not burying any of them**
+>
+> **1. The raw headline died under the better ruler.** Report 05's *"−0.360, p=0.007, strongest of 36"*
+> was measured with the **old surprise definition.** Under the improved 17-year expanding-baseline
+> surprise — the *same correction that turned NQ magnitude +0.187 into −0.018* — silver's raw full-sample
+> correlation is **−0.173, p=0.123: not significant.** The famous headline is stale.
+>
+> **2. What survives is a partial correlation on 0.88-collinear data.** Silver and gold move together at
+> **0.88.** Partialling one out of the other can *inflate* correlations (a "suppressor" effect). The
+> −0.258 is real arithmetic and clears its shuffle null, but a partial corr between two near-identical
+> series at n=81 deserves genuine suspicion, not a victory lap.
+>
+> **3. The power is 12%, and the signal lives in the recent window.** The 2026 slice is **n=30 at 12%
+> power.** And the quarterly pattern *concentrates* in the later quarters — exactly the "it only exists
+> recently" shape that, for NQ magnitude, turned out to be a fluke of the window. We have **no way to
+> tell those apart** without data we do not have.
+
+## The verdict
+
+**Silver is NOT dropped** — it passed a criterion set *before* the run, and I will not move the goalposts
+just because the result surprised me (that is the exact sin this workstream exists to avoid). **But it is
+NOT confirmed either** — the raw signal is gone under the better ruler, and what remains is a suppressor-
+prone partial at 12% power inside the fluke window.
+
+**Correct status: FROZEN, pending forward data.** The protocol is locked: **silver only, h=5, the frozen
+rule applied to new data past 2026-07-02 that we have not yet seen.** No re-slicing, no other cells, and
+**nothing gets built on it.** When ~6-12 more months of silver data exist, run the frozen test once. Until
+then this is a marker, not a feature.
+
+> This is the disciplined resolution of a 1-of-36 finding: **you cannot confirm it here, but you also do
+> not get to dismiss it after it passed the bar you set. You freeze it and you wait.**
 
 ---
 

@@ -100,12 +100,11 @@ The seminar teaches the method. The retraction shows where the method failed. Th
 | Post-stop price is a **fair random walk** | Recovery = gambler's ruin, deviation **+0.34 pp** | 04 |
 | **We give back winners** | **$145,640.** 42% of losers were once **+20 pts up** | 04 |
 
-### ⭐ STILL OPEN — genuinely undecided
+### ❄️ FROZEN — pre-registered, awaiting data (nothing else is open)
 
-| Finding | Evidence | Doc |
+| Finding | Status | Doc |
 |---|---|---|
-| **Silver** | p = **0.007** — the strongest of 36 cells — and it **STRENGTHENED out-of-sample** (−0.140 → −0.500). **Still 1 cell of 36.** **Pre-register or drop.** | 05 |
-| ⚠️ **1-second resolution** | The 08:30 head-fake that stops you out can last **2 seconds**. The **stop-loss verdict was measured on 1-min bars, which cannot see that.** | **06** · 04 |
+| **Silver** | ✅ **D3 RESOLVED — frozen forward test.** Passed a pre-registered gold-controlled + 4/4-quarter-stability test, so **not dropped** — but the raw headline **died under the 17-year surprise ruler** (−0.360→−0.173, ns) and what survives is a suppressor-prone partial at 12% power **inside the fluke window**, so **not confirmed.** Protocol frozen: silver only, h=5, new data past 2026-07-02. **Build nothing.** | **06 Part 12** · 05 |
 
 ### ❌ DEAD — tested, failed, on adequate evidence
 
@@ -157,7 +156,7 @@ The seminar teaches the method. The retraction shows where the method failed. Th
 |---|---|---|---|
 | **D1** | **Get more price history?** | We needed ~650 releases; we had 117. | ✅ **DONE — and it settled the question.** 17 years, 871 releases, **$0**. |
 | **D2** | **Pursue the magnitude signal?** | Bigger surprise ⇒ bigger move. | ❌ **DEAD.** **−0.018 at n=871.** It was **2025 being the luckiest of 17 years.** No action. |
-| **D3** | **Test silver?** | p=0.007 **despite** 12% power, and it **strengthened** out-of-sample. But it is 1 cell of 36 — being the best of 36 is what luck produces. | ⚠️ **STILL YOURS.** **Pre-register a test or drop it explicitly.** Do not fish. |
+| **D3** | **Test silver?** | p=0.007 **despite** 12% power, and it **strengthened** out-of-sample. But it is 1 cell of 36 — being the best of 36 is what luck produces. | ✅ **RESOLVED — Part 12.** Pre-registered & tested. **Not dropped, not confirmed → frozen forward test.** No build. |
 | **D4** | **Buy vendor consensus data?** | Our "expected" is a *statistical* guess, not the market's. | ❌ **NO.** Consensus would have to carry **100%** of the edge alone. Bar is now very high — see 06 Part 10. |
 | **D5** | **What's next on the queue?** | 4 tasks remain (see below) | ⚠️ **Task #11.** It is the only live thread that could **overturn a shipped verdict**. |
 
@@ -170,7 +169,7 @@ The seminar teaches the method. The retraction shows where the method failed. Th
 | **4** | **Rename the `veto_mask` trap + document the real blocking logic** | The parameter **named `veto_mask` does not veto.** It nearly made me build a feature that silently did nothing. **Cheap, safe, zero behaviour change.** **Start here.** |
 | **5** | **Trading-session windows** (Asia / London / NY, overlaps, gaps) | The 09:30 NY open contaminated our news study — session structure **matters and is currently invisible** to the system |
 | **7** | **Fit our own probability distribution** | Returns are certainly not Gaussian. Correct tail probabilities directly inform **stop placement and sizing**. **Now better motivated than ever:** the per-trade spread on a stop-out is **80 points** — that fat tail is exactly what defeats every edge we've measured |
-| **D3** | **Silver: pre-register a test, or drop it** | The **last open statistical thread.** p=0.007 despite 12% power, strengthened out-of-sample — but 1 cell of 36. **Do not leave it hanging.** |
+| ~~**D3**~~ | ~~Silver: pre-register a test, or drop it~~ | ✅ **DONE — Part 12.** Frozen forward test. Re-run `study_silver.py` once ~6-12 mo of new silver data exist. |
 
 **✅ Closed since the last index:** **#11** (*1-second stop-loss re-test* — **the verdict HELD**; sweeps
 are 94% real but worth **+$80/trade against a ±$1,600 swing, p=0.452**), **#6** (*is 1-min too coarse for
