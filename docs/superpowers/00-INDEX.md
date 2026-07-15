@@ -52,6 +52,7 @@ to sit through.** See report 06, Part 9.
 | # | Document | What it is | Time | 🇸🇦 |
 |---|---|---|---|---|
 | **00** | **`00-INDEX.md`** | ← you are here | 5 min | |
+| **▸** | [**`PROGRESS-2026-07-14.md`**](PROGRESS-2026-07-14.md) | 🆕 **Team-leader standup** — what closed today, in one page | 4 min | |
 | **01** | [`01-RETRACTION-verdict-withdrawn.md`](01-RETRACTION-verdict-withdrawn.md) | **🚨 READ FIRST.** I was wrong, here is exactly how | **17 min** | |
 | **02** | [`02-EXPERIMENT-LOG-all-65-trials.md`](02-EXPERIMENT-LOG-all-65-trials.md) | **The complete record.** All 65 trials, every number | 39 min | [AR](02-EXPERIMENT-LOG-all-65-trials_AR.md) |
 | **03** | [`03-SEMINAR-fundamental-analysis.md`](03-SEMINAR-fundamental-analysis.md) | **Teaching doc.** Every step, plain language + technical | 39 min | [AR](03-SEMINAR-fundamental-analysis_AR.md) |
