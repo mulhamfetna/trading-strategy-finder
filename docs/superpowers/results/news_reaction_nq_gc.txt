@@ -1,0 +1,52 @@
+  [calendar] 1208 events  2010-01-08 -> 2026-12-09
+NQ: 2025-01-01 18:00:00 -> 2026-05-19 19:59:00  (486,969 1-min)  matched 85 of 1145 08:30 releases
+GC: 2025-01-01 18:00:00 -> 2026-07-02 19:59:00  (530,917 1-min)  matched 91 of 1145 08:30 releases
+
+==============================================================================
+REACTION PROFILE — |1-min return| around the 08:30 release, x a normal minute
+==============================================================================
+ offset   clock |       NQ |       GC
+     -2   08:28 |    0.76x |    1.09x
+     -1   08:29 |    1.36x |    1.03x
+      0   08:30 |    8.57x |    7.22x   <== release minute
+      1   08:31 |    2.95x |    2.85x
+      2   08:32 |    2.53x |    2.23x
+      3   08:33 |    2.58x |    2.27x
+      4   08:34 |    2.20x |    2.04x
+      5   08:35 |    1.92x |    1.91x
+
+==============================================================================
+HEAD-TO-HEAD at the release minute
+==============================================================================
+  NQ spike: 8.57x normal    GC spike: 7.22x normal    GC/NQ = 0.84
+  => GOLD DOES react to US macro releases (strongly).
+
+==============================================================================
+DIRECTIONAL TILT at the release minute — is there a systematic sign? (underpowered: 2025-2026)
+==============================================================================
+  NQ: mean signed return  +6.89 bp   up 60.0%   bootstrap p=0.020   <-- tilt?
+  GC: mean signed return  +4.87 bp   up 53.8%   bootstrap p=0.110   (no directional tilt — as expected)
+  NOTE: n≈91 on 2025-2026 only. A directional GC claim here is UNDERPOWERED and
+  frozen/pre-registered — the silver lesson. The |move| spike above is a real measurement; the
+  SIGN is not yet decidable without long GC history.
+
+==============================================================================
+PER-EVENT-TYPE reaction (which announcements move GC most?) — |move| x normal at release min
+==============================================================================
+  NQ:
+     cpi                n= 16   18.52x
+     gdp                n= 10    2.42x
+     nonfarm_payrolls   n= 14   11.04x
+     pce                n= 14    4.07x
+     ppi                n= 14    9.91x
+     retail_sales       n= 17    3.41x
+  GC:
+     cpi                n= 17   11.32x
+     gdp                n= 10    3.59x
+     nonfarm_payrolls   n= 15   14.26x
+     pce                n= 16    3.72x
+     ppi                n= 15    5.62x
+     retail_sales       n= 18    3.93x
+
+MEASUREMENT — the |move| spike is real regardless of sample; SIGN/direction on GC is frozen.
+Next (A2/B): per-event-type PATH patterns, and news-conditional trade decisions (close/enter/assist).
