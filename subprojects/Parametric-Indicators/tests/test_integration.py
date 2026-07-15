@@ -175,7 +175,7 @@ def test_veto_mask_aborts_armed_entry(inputs):
     never = lambda idx, d, s, sidx, ts, sub: None  # never fills
     veto_all = np.ones(len(df4), dtype=bool)
     trades, _ = SimpleStrategy(_sp()).backtest(df4, df1, box, entry_gate=vg,
-                                               entry_resolver=never, veto_mask=veto_all)
+                                               entry_resolver=never, veto_vote_mask=veto_all)
     assert [t for t in trades if t.get("exit_reason") not in (None, "OPEN")] == []
 
 

@@ -223,7 +223,7 @@ class SimpleStrategy:
         tp_mult: Optional[np.ndarray] = None,
         entry_gate: Optional[np.ndarray] = None,
         entry_resolver=None,
-        veto_mask: Optional[np.ndarray] = None,
+        veto_vote_mask: Optional[np.ndarray] = None,   # was `veto_mask` — a trap name; see WHAT BLOCKS below
         blocked_log: Optional[List[Dict]] = None,
         veto_as_flip: bool = False,
         signals: Optional[np.ndarray] = None,
@@ -233,12 +233,38 @@ class SimpleStrategy:
     ) -> Tuple[List[Dict], Dict]:
         """Run the simple engine.
 
+        ═══════════════════════════════════════════════════════════════════════════════════════════════
+        WHAT ACTUALLY BLOCKS AN ENTRY — read this before adding any "veto"-like feature.
+        ═══════════════════════════════════════════════════════════════════════════════════════════════
+        There is EXACTLY ONE array that stops a new trade opening on a decision bar: `entry_gate`.
+        The entry path is `if not entry_gate[idx]: continue`. That is the whole blocking mechanism.
+
+        `veto_vote_mask` DOES NOT BLOCK ANYTHING. It is the per-decision-bar VETO VOTE from the indicator
+        layer, and the engine reads it ONLY to:
+            • classify WHY a bar was dropped, for `blocked_log` ('veto' vs 'vol_gate') — diagnostic only;
+            • arm the intra-candle vetoed-entry rescue (Phase 1);
+            • decide which entries to REVERSE under `veto_as_flip`;
+            • abort/re-arm a carried setup in the live carry resolver.
+        The veto is ALREADY folded into `entry_gate` upstream — `runner.build_layer` returns
+        `gate = vol_gate ∧ ¬veto_mask`, and THAT gate is what arrives here as `entry_gate`. So the two
+        arrays must be kept CONSISTENT by the caller; passing a `veto_vote_mask` without the matching
+        exclusion already baked into `entry_gate` does NOTHING (except in `veto_as_flip` mode, where the
+        gate is deliberately vol-only and vetoed bars stay eligible so they can be reversed).
+
+        ⚠️  THIS IS A TRAP THAT ALREADY BIT US. The parameter used to be named `veto_mask`, and during the
+        news-veto work the obvious-looking move — "pass a veto_mask to stand aside on release bars" —
+        silently did nothing, because the mask was never in `entry_gate`. To stand a bar aside you must
+        remove it from `entry_gate` (see `optimize/core._news_window_mask` → `gate = gate & ~nmask`).
+        The rename to `veto_vote_mask` exists so the name can no longer imply a blocking power it lacks.
+
         ADAPTIVE-CLONE additions (absent from the original src engine):
           - sl_tp_mult: optional per-4h-bar array; multiplies all four SL/TP
             distances at entry (scaling all four preserves ordering constraints).
             None or 1.0 => identical to the original.
           - entry_gate: optional per-4h-bar bool array; if entry_gate[idx] is
             False, no new trade opens on that bar. None => identical to original.
+          - veto_vote_mask: per-bar indicator veto VOTE. NON-BLOCKING — used for logging / intra-candle
+            rescue / veto_as_flip / carry-abort only. See the block above.
         When both are None the clone is behaviourally identical to the original
         (verified by tests/test_clone_parity.py).
 
@@ -320,7 +346,7 @@ class SimpleStrategy:
         flip = self.params.flip_entry_direction
         # veto_as_flip: a vetoed (but otherwise eligible) signal ENTERS THE OPPOSITE direction
         # instead of being dropped. The caller passes a vol-only entry_gate in this mode (so vetoed
-        # bars are not pre-filtered) plus the veto_mask used here to decide which entries to reverse.
+        # bars are not pre-filtered) plus the veto_vote_mask used here to decide which entries to reverse.
         def _opp(d):
             return 'short' if d == 'long' else 'long'
 
@@ -538,7 +564,7 @@ class SimpleStrategy:
 
                 # gate (vol etc.) matches the original: only blocks when set, in-range, and False.
                 gated = (entry_gate is None) or not (0 <= idx < len(entry_gate)) or bool(entry_gate[idx])
-                vetoed = (veto_mask is not None) and (0 <= idx < len(veto_mask)) and bool(veto_mask[idx])
+                vetoed = (veto_vote_mask is not None) and (0 <= idx < len(veto_vote_mask)) and bool(veto_vote_mask[idx])
 
                 # DIAGNOSTIC ONLY (no effect on trades): record fresh in-scope directional signals
                 # that the composite gate dropped, so the caller can LOG them instead of silently
