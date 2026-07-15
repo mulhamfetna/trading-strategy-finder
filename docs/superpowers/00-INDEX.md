@@ -52,6 +52,7 @@ to sit through.** See report 06, Part 9.
 | # | Document | What it is | Time | 🇸🇦 |
 |---|---|---|---|---|
 | **00** | **`00-INDEX.md`** | ← you are here | 5 min | |
+| **★** | [**`MASTER-STATUS-2026-07-14.md`**](MASTER-STATUS-2026-07-14.md) | 🆕 **READ AFTER THIS** — all workstreams, every discovery, every open thread, one page in | 10 min | |
 | **▸** | [**`PROGRESS-2026-07-14.md`**](PROGRESS-2026-07-14.md) | 🆕 **Team-leader standup** — what closed today, in one page | 4 min | |
 | **▸** | [**`ENGINEERING-NOTE-what-blocks-an-entry.md`**](ENGINEERING-NOTE-what-blocks-an-entry.md) | 🆕 **Engine discovery (#4)** — the ONE thing that blocks a trade, and the `veto_mask` trap | 6 min | |
 | **▸** | [**`SESSION-00-WORKSTREAM-REPORT.md`**](SESSION-00-WORKSTREAM-REPORT.md) | 🆕 **#5 COMPLETE** — the whole session-windows workstream in one detailed report (research→S1→S3→verdict) | 15 min | |

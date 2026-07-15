@@ -1,4 +1,12 @@
-# ▶️ RESUME POINTER — updated 2026-07-14 (everything that was blocking is now CLOSED)
+# ▶️ RESUME POINTER — updated 2026-07-14
+
+> **📌 For the full current state across ALL workstreams, read
+> [`MASTER-STATUS-2026-07-14.md`](MASTER-STATUS-2026-07-14.md) first — it supersedes this file's
+> workstream summaries.** This pointer is kept for the server/infra details and the standing rules.
+>
+> **Latest state:** FA closed (priced in), stop-loss closed (dead at 1s), #4 done, **#5 answered**
+> (session = risk-not-edge), silver + Asia-cell frozen, **#7 research done — D1 (fit per-trade P&L) is the
+> queued next step, but the user is about to narrow the #7 research with new information.**
 
 **Read this first when picking the workstream back up.**
 

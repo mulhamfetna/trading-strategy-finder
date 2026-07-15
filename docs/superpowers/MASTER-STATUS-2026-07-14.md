@@ -1,0 +1,168 @@
+# MASTER STATUS — 2026-07-14 · all workstreams, one page in, full detail below
+
+**The single reference for everything in flight on the `fundamental-analysis` branch: every workstream,
+every experiment, every research pass, every discovery, and every open thread — as of the end of
+2026-07-14. Read this to know where we stand before the next pivot.**
+
+Branch: `fundamental-analysis` (pinned worktree, **not** merged, isolated from the parallel `dev` agents) ·
+Author: Claude (Opus 4.8) · Reviewer: Mulham Fetna · **$0 spent** · production untouched (golden 6/6).
+
+---
+
+## PART 0 — THE GREAT PICTURE
+
+> **🍼 In one paragraph** — Over this session we asked three big questions and answered them honestly: does
+> scheduled news move our market predictably (**no** — priced in, proven at full power), can we improve the
+> stop-loss (**no** — it's a fair game even at 1-second resolution), and does trading-session structure
+> give us an edge (**no entry edge**, but a real *risk* pattern worth using for sizing). Along the way one
+> thing kept killing every apparent edge: **a huge, fat per-trade loss tail** — an ±$1,600 swing that makes
+> an $80/trade "edge" statistically invisible. So the current workstream (**#7**) is aimed squarely at that
+> tail: characterize it properly so future stop and sizing decisions rest on real probabilities. We just
+> finished the research phase for it. **You are about to narrow that research with new information.**
+
+| Workstream | State | The one-line verdict |
+|---|---|---|
+| **Fundamental analysis** (news) | ✅ **CLOSED** | Scheduled US macro is **priced in** — earned at 882 releases / 99% power |
+| **Dynamic stop-loss** (#3, #11) | ✅ **CLOSED** | Dead. A martingale even at 1-second resolution; 94% of stop-outs are 2-second sweeps but chasing them doesn't pay |
+| **`veto_mask` trap** (#4) | ✅ **DONE** | Renamed + documented; only `entry_gate` blocks; golden 6/6 byte-identical |
+| **Session windows** (#5) | ✅ **ANSWERED** | Real in the tape & in our *risk*, not a tradeable *entry* edge |
+| **Silver** (D3) | ❄️ **FROZEN** | Passed a pre-registered test but unconfirmable now — frozen forward test |
+| **Own distribution** (#7) | 🔬 **RESEARCH DONE, data phase next** | The EVT/GARCH tail-fitting recipe is in hand; D1 (fit per-trade P&L) is queued |
+
+---
+
+## PART 1 — WORKSTREAM DETAIL
+
+### 1. Fundamental analysis — CLOSED (priced in, earned)
+
+**The arc:** retracted on 07-13 for 12% power → re-earned on **17 years / n=882 / ~100% power.**
+
+| Route | Full-power result |
+|---|---|
+| Direction | **−0.004** (sign-hit 49.3%) — coin flip |
+| Magnitude | **−0.018** — the "survivor" died; it was 2025 being the luckiest of 17 years (17-yr mean +0.027) |
+| Persistence | 48.2% — coin flip |
+| Shape | p = 0.880 — the surprise doesn't pick the path shape |
+
+**Key discovery:** the improved 17-year surprise ruler corrected the whole thing — the same mechanism that
+turned magnitude +0.187 into −0.018. **Reports 00–06.** The retraction was the mechanism *working*: it
+predicted "get more data and it resolves," and it did.
+
+### 2. Dynamic stop-loss — CLOSED (dead, confirmed at 1-second)
+
+Report 04 said post-stop price is a fair martingale on 1-min bars. **Task #11 re-tested at 1-second:**
+**94% of stop-outs are real 2-second sweeps** (the resolution complaint was correct!) — and the best
+tradeable delay rule still earns only **+$80/trade against a ±$1,600 swing (p=0.452)**, two-thirds of which
+is just "the stop is too tight." Verdict stands. **Report 06 Part 9.**
+
+### 3. The `veto_mask` trap — DONE (#4)
+
+The engine parameter named `veto_mask` **did not block anything** — `entry_gate` is the sole blocking
+array; the veto is folded in upstream. Renamed → `veto_vote_mask`, documented the real blocking logic,
+golden 6/6 byte-identical. **`ENGINEERING-NOTE-what-blocks-an-entry.md`.**
+
+### 4. Session windows — ANSWERED (#5)
+
+Research-first separated real from folklore, then two on-data tests:
+
+- **S1** (17y NQ): the U-shape is real (open/lunch **1.94×**, matches literature); RTH is 2–4× louder than
+  overnight; **the London–NY "overlap" is a non-event for NQ (1.00×)** — FX folklore, not index fact.
+- **S3** (642 champion trades): our **RISK** inherits the session shape (**stop-out 55.6% RTH-morning vs
+  15.7% Asia**, mechanistic) but our **EDGE does not** (RTH-vs-overnight p=0.147; 3/5 sessions flip sign
+  across halves; only the 22:00/Asia cell holds — a silver-style frozen 1-of-6).
+
+**Two deliverables banked:** the confound-control per-minute multipliers (S1) and the session-dependent
+stop-out rate → session-aware stop sizing (S3). **No entry filter built. SESSION-00 (consolidated) + 01–03.**
+
+### 5. Own distribution — RESEARCH DONE (#7)
+
+The verified recipe: filter volatility with a GARCH, fit the rare-large-loss tail on the residuals via
+**EVT (peaks-over-threshold + Generalized Pareto)**, fit the two tails **asymmetrically** (loss heavier),
+model per-trade P&L as a **3-mode mixture** (winner / loser / heavy tail); the **GH skew-t** is the unique
+one-heavy-one-light-tail law that matches our stop-capped-gain / heavy-loss P&L. **Two gaps flagged:**
+(a) all sources are daily/hourly — intraday tails are *heavier*, must re-estimate on our data; (b) the
+sizing/Kelly decision layer is thinly covered, needs its own research pass. **DIST-01.**
+
+---
+
+## PART 2 — EVERY DISCOVERY, IN ONE LIST
+
+**Findings that STAND (measurements / robust):**
+- Scheduled US macro is priced in — direction, magnitude, persistence, shape all null at ~100% power.
+- The dynamic stop-loss is a martingale — even at 1-second resolution.
+- 94% of stop-outs are genuine ~2-second liquidity sweeps (1-min bars really are too coarse to see them).
+- The calendar self-validates: an 8.3× volatility spike lands on the exact 08:30 ET minute.
+- **Timezone triple-confirmed US Eastern** — news and candles share the timezone; no mismatch (the hazard raised and disproved).
+- The intraday U-shape is real on our tape (open/lunch 1.94×); the London–NY overlap is a non-event for NQ.
+- Our champion's stop-out RATE is strongly session-dependent (56%→16%) — a mechanistic consequence of the volatility shape.
+- Only `entry_gate` blocks an entry; "veto" params are non-blocking hints.
+
+**Things that DIED under scrutiny:**
+- The magnitude "survivor" (+0.187 → −0.018 at full power).
+- The 2025 "hawkish-Fed" direction story (−0.43 → −0.004).
+- The dynamic stop-loss (dead on 1-min AND 1-second).
+- A broad session entry edge (3/5 sessions flip sign).
+- Session folklore: the 2–3am equity-premium trade, the post-lunch effect, the London-session GMM edge (flipped with a 1-bar delay).
+
+**FROZEN (pre-registered, unconfirmable now — re-test on future/long data, build nothing):**
+- **Silver** (D3): gold-controlled partial −0.258, 4/4 quarters, but raw died under the better ruler; 1-of-36, fluke window.
+- **The 22:00/Asia entry cell** (S3): +$364/trade stable both halves, but 1-of-6, n=89, fluke window.
+
+**The THROUGH-LINE that motivates #7:** every apparent edge in this project — news, stop-loss, session —
+was killed by the **fat per-trade loss tail** (an ~80-point / ±$1,600 per-trade swing). An $80/trade
+effect needs ~3,200 trades to confirm against that tail. **#7 exists to characterize that tail.**
+
+---
+
+## PART 3 — THE DISCIPLINE (why these answers are trustworthy)
+
+Every conclusion this session was gated by rules that are now standing law, each learned by getting it
+wrong at least once:
+
+| Rule | Learned from |
+|---|---|
+| No **negative** result without a **power analysis** | The 12%-power retraction |
+| No **positive** result without a **dumb control** + a **noise check** | The $18,685 stop-loss "edge" that was $80/trade |
+| **Pre-register** the criterion — and **implement the one you wrote** | Two verdicts that tested a different contrast than declared |
+| Research **first**, on-data **second** | The deep-research-first rule (#5, #7) |
+| **Never hand-type** a number — paste from the run | Nearly reconstructing a 17-row table from memory |
+| Every long run gets a **watchdog** + live log; never wait blind | The empty-log silent failure |
+
+**Self-corrections caught this session:** a healthy run killed over a misread error count; a results file
+with inverted power labels; a cache that never hit; a sweep detector that was true-by-construction; two
+verdicts testing the wrong contrast; a timezone guard with the wrong landmark. All caught, all fixed, all
+documented.
+
+---
+
+## PART 4 — OPEN THREADS & WHAT'S QUEUED
+
+| Item | Status |
+|---|---|
+| **#7 · D1** — fit the champion's per-trade P&L as a mixture | **queued (recommended next)** |
+| #7 · D2 — tail index of NQ 1-min per session | after D1 |
+| #7 · D3 — McNeil–Frey conditional (GARCH→GPD) tail | after D2 |
+| #7 · D4 — decisions (stop/sizing); **sizing half needs its own research pass** | gated |
+| **Silver** — re-run `study_silver.py` on future data | frozen |
+| **Asia cell** — re-test on future/long data | frozen |
+| **Task #15** — `test_intracandle_parity` fails 3/4 on server (pre-existing, separate default-OFF workstream; golden passes) | flagged, not this workstream |
+
+**⏳ Awaiting your input:** you said you'll feed new information to **narrow the #7 research.** This document
+is the clean baseline for that. Nothing is mid-run; the tree is committed and consistent.
+
+---
+
+## PART 5 — INFRASTRUCTURE & REPRODUCE
+
+**Server layout (each study has its own data base):**
+- FA / 17-year studies: `WSH_DATA_BASE=/home/dev/Mulham`
+- Engine studies (champion trades): `WSH_DATA_BASE=/home/dev/Mulham/wsg-h`
+- Multi-market (SI/GC/…): `WSH_DATA_BASE=/home/dev/Mulham/wsg-i/ALL_STOCKS`
+- FRED key: `~/.config/fred/api_key` (mode 600, outside the repo)
+
+**Key tools built this session:** `study_stop_1s.py`, `study_session_shape.py`, `study_session_edge.py`,
+`study_silver.py`, `verify_timezone.py`, `watchdog.py`, `extended_data.load_1s_windows` (one-pass 7.3 GB
+reader). **The 17-year frame is STUDY-ONLY** — the engine must never load it.
+
+**Reading guide:** `00-INDEX.md` → this file → the workstream you care about (06 news · 04+06 stop-loss ·
+SESSION-00 sessions · DIST-01 distribution). Resume pointer: `RESUME-HERE.md`.
