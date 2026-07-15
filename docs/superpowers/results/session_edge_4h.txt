@@ -1,0 +1,72 @@
+
+NQ 4h champion  ·  642 trades  ·  $20/pt  ·  total P/L $44,035
+per-trade: mean $+69  sd $962  win 41.9%
+
+============================================================================================
+ENTRY-HOUR DISTRIBUTION (confirms the natural experiment — a 4h strategy enters at 4h boundaries)
+============================================================================================
+  02:00 ET (Europe         off-hours): n=  66  P/L $      8,465  $   +128/trade  win  43.9%  stop  22.7%
+  06:00 ET (Europe         off-hours): n=  91  P/L $    -12,750  $   -140/trade  win  30.8%  stop  38.5%
+  10:00 ET (RTH-morning          RTH): n= 153  P/L $      4,175  $    +27/trade  win  41.2%  stop  55.6%
+  14:00 ET (RTH-afternoon        RTH): n= 132  P/L $     -2,105  $    -16/trade  win  37.9%  stop  43.2%
+  18:00 ET (Globex-eve     off-hours): n= 111  P/L $     13,830  $   +125/trade  win  44.1%  stop  26.1%
+  22:00 ET (Asia           off-hours): n=  89  P/L $     32,420  $   +364/trade  win  56.2%  stop  15.7%
+
+============================================================================================
+BY SESSION
+============================================================================================
+  session              n     total P/L    $/trade    win%   stop%      worst
+  Asia                89 $     32,420 $    +364   56.2%   15.7% $     -800
+  Globex-eve         111 $     13,830 $    +125   44.1%   26.1% $     -800
+  RTH-morning        153 $      4,175 $     +27   41.2%   55.6% $     -800
+  RTH-afternoon      132 $     -2,105 $     -16   37.9%   43.2% $     -800
+  Europe             157 $     -4,285 $     -27   36.3%   31.8% $     -800
+
+============================================================================================
+THE SPLIT — RTH-entry (10:00, 14:00) vs OFF-HOURS-entry (02/06/18/22)
+============================================================================================
+  RTH-entry    n= 285  total $      2,070  $     +7/trade  win  39.6%  stop  49.8%
+  off-hours    n= 357  total $     41,965  $   +118/trade  win  43.7%  stop  26.1%
+
+  RTH minus off-hours: $-110 per trade
+
+============================================================================================
+IS IT REAL? — null test + noise check (mandatory)
+============================================================================================
+  per-session $/trade spread: observed $392   shuffled 202 +/- 76   p = 0.014
+  RTH-vs-off-hours $/trade: $-110   95% CI [$-258, $+38]   p = 0.147
+  per-trade sd $962 — an $110 gap on that spread needs ~597 trades to confirm; we have 642.
+
+============================================================================================
+TEMPORAL STABILITY — does the per-session ranking hold in BOTH halves? (the real decider)
+============================================================================================
+  session           1st half $/trade  2nd half $/trade
+  Europe                       -168             +105   <-- SIGN FLIP
+  Globex-eve                   +265              +22
+  Asia                         +352             +377
+  RTH-afternoon                 +83             -151   <-- SIGN FLIP
+  RTH-morning                   +88              -35   <-- SIGN FLIP
+
+  correlation of per-session $/trade, 1st half vs 2nd half: +0.414
+  sessions that KEEP their sign across halves: 2/5 (the correlation can be carried by ONE stable cell while the rest is noise)
+  (a real BROAD session pattern keeps most signs; a few-cell fluke keeps only 1-2)
+
+============================================================================================
+VERDICT — against the criterion declared before the run (+ the confound it missed)
+============================================================================================
+  (a) per-session $/trade differs significantly (permutation, selection-aware): YES (p=0.014)
+  (b) but the clean RTH-vs-overnight axis: NOT sig (p=0.147) — the pattern is idiosyncratic HOURS, not a clean session story
+  (c) BROAD stability: only 2/5 sessions keep their sign across halves => NOT a broad pattern — carried by 1-2 cells
+
+  ROBUST finding (not an artifact): STOP-OUT RATE is strongly session-dependent — RTH-morning
+  56% vs Asia 16% — a direct consequence of S1's volatility shape. That
+  feeds session-aware STOP SIZING (an endorsed filter use), not entry selection.
+
+  ❌ A BROAD session ENTRY edge is NOT supported: 3/5 sessions
+     flip sign between halves, and the clean RTH-vs-overnight axis is not significant. The
+     omnibus p=0.014 is carried by a SINGLE stable cell — the 22:00/Asia entry
+     (+$364/trade, both halves). That is the SILVER situation: 1 of 6
+     windows, n=89, in the 2025-2026 fluke window, on an OPTIMIZED champion, with no
+     long history to confirm. => a FROZEN observation, not a filter to build. And acting on
+     it would REMOVE entries (against the increase-entries goal). STOP at S3 for P/L.
+     Carry forward ONLY the robust stop-out-rate finding into future sizing work.
