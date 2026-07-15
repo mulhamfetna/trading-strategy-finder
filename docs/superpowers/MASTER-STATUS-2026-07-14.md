@@ -7,6 +7,14 @@ every experiment, every research pass, every discovery, and every open thread �
 Branch: `fundamental-analysis` (pinned worktree, **not** merged, isolated from the parallel `dev` agents) ·
 Author: Claude (Opus 4.8) · Reviewer: Mulham Fetna · **$0 spent** · production untouched (golden 6/6).
 
+> **🔄 NEW DIRECTION (2026-07-14 PM) — the news workstream is RE-OPENED, narrowed + expanded.** Scope cut
+> to **NQ + GC only** (drop the other 7 from future dev). Goal moves from *prediction* (answered: news is
+> priced in) to *DECISION*: close / enter / **assist (scale-in after a loss)** on news, and **content →
+> repeatable pattern → rule**. Plan: [`plans/2026-07-14-fa-v2-nq-gc-decisions.md`](plans/2026-07-14-fa-v2-nq-gc-decisions.md).
+> ⚠️ the "assist" idea is a martingale — tested, not assumed. GC has only 2025-2026 data (fluke-window,
+> like silver). **#7 (distribution) continues in parallel — the fat tail is exactly what the assist idea
+> multiplies.**
+
 ---
 
 ## PART 0 — THE GREAT PICTURE
