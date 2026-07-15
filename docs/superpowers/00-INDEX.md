@@ -54,6 +54,7 @@ to sit through.** See report 06, Part 9.
 | **00** | **`00-INDEX.md`** | ← you are here | 5 min | |
 | **▸** | [**`PROGRESS-2026-07-14.md`**](PROGRESS-2026-07-14.md) | 🆕 **Team-leader standup** — what closed today, in one page | 4 min | |
 | **▸** | [**`ENGINEERING-NOTE-what-blocks-an-entry.md`**](ENGINEERING-NOTE-what-blocks-an-entry.md) | 🆕 **Engine discovery (#4)** — the ONE thing that blocks a trade, and the `veto_mask` trap | 6 min | |
+| **▸** | [**`SESSION-00-WORKSTREAM-REPORT.md`**](SESSION-00-WORKSTREAM-REPORT.md) | 🆕 **#5 COMPLETE** — the whole session-windows workstream in one detailed report (research→S1→S3→verdict) | 15 min | |
 | **▸** | [**`SESSION-01-RESEARCH-real-vs-folklore.md`**](SESSION-01-RESEARCH-real-vs-folklore.md) | 🆕 **#5 kickoff** — deep-research on session windows: what's REAL vs FOLKLORE, + the on-data test list | 12 min | |
 | **▸** | [**`SESSION-02-S1-our-session-shape.md`**](SESSION-02-S1-our-session-shape.md) | 🆕 **#5 · S1** — our own session shape measured (17y NQ): U-shape confirmed (1.94×), overlap is a non-event, tz triple-confirmed | 8 min | |
 | **▸** | [**`SESSION-03-S3-does-our-edge-have-a-shape.md`**](SESSION-03-S3-does-our-edge-have-a-shape.md) | 🆕 **#5 · S3** — our RISK inherits the session shape (stop-out 56%→16%), our EDGE does not. No entry filter; sizing yes. #5 answered | 8 min | |
