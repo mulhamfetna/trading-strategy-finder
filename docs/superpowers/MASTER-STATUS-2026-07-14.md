@@ -37,7 +37,7 @@ Author: Claude (Opus 4.8) · Reviewer: Mulham Fetna · **$0 spent** · productio
 | **Silver** (D3) | ❄️ **FROZEN** | Passed a pre-registered test but unconfirmable now — frozen forward test |
 | **Own distribution** (#7) | ✅ **COMPLETE** | Trade P&L truncated (stop works); raw returns fat (α≈3); **vol-scaled stop REJECTED** (gambler's ruin) → keep fixed stop. Open: fat-tail-aware *sizing*. [`DIST-00`](DIST-00-WORKSTREAM-REPORT.md) |
 | **News v2 → decisions** (NQ+GC) | ✅ **ANSWERED** | Gold reacts (NFP>CPI); close/enter negligible/no-edge; **assist REJECTED** (belief backwards); content→pattern = **volatility not direction**. [`FAV2-00`](FAV2-00-WORKSTREAM-REPORT.md) |
-| **Fat-tail-aware sizing** (#17) | 🔬 **IN PROGRESS** | Research done (fractional Kelly recipe). Z1: full Kelly = 2.5% (CI [0.3%,4.4%]), 5m/2m≈0 → size small (~quarter-Kelly). Next: Z2 tail haircut, Z3 vol-target, Z4 PnL:DD |
+| **Fat-tail-aware sizing** (#17) | 🔬 **CORE ANSWERED** | Research + Z1 (full Kelly 2.5%, CI [0.3%,4.4%]) + Z2 (drawdown binds not ruin) → **risk ~0.6–1.2% (quarter-half Kelly), edge-champs only, hard cap.** Refinements left: Z3 (vol-target), Z4 (PnL:DD) |
 
 ---
 
