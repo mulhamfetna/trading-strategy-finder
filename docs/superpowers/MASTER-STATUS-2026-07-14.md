@@ -95,7 +95,14 @@ kurtosis −1.82** (negative = *light* tails); **bimodal** (~40% win@+60 / ~37% 
 tail" is really a **bimodal win/lose spread** (~$960) — a near-binary payoff, not a heavy tail. **The stop
 truncates the fat-tailed return process** — which is *why* keep-the-stop (04/06) and never-assist (B3) are
 both right. The genuine fat tail lives in **raw returns** (gap/slippage that could blow *through* the stop
-live) → EVT moves there (D2/D3). **Next: D2** (raw-return tail index per session).
+live) → EVT moves there.
+
+**D2 (DIST-03) — the raw-return tail, confirmed and quantified:** excess kurtosis **+98.6** (vs D1's
+−1.82), tail index **α ≈ 3** (the inverse-cubic law, heavier than daily), loss/gain ~symmetric intraday.
+🔴 **Counterintuitive:** the tail is *heavier* **overnight** (α≈2.5) than **RTH** (α≈3.4–4.9) — thin
+liquidity → rare but proportionally violent gaps. So **two risks point at opposite sessions**: everyday
+stop-out rate worst in RTH (S3), catastrophic tail-shape worst overnight (D2). (α is scale-free *shape*;
+the absolute per-session magnitude comes from D3.) **Next: D3** (McNeil–Frey GARCH→GPD conditional tail).
 
 ---
 
