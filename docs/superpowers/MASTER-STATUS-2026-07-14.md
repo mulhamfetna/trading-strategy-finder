@@ -35,7 +35,7 @@ Author: Claude (Opus 4.8) · Reviewer: Mulham Fetna · **$0 spent** · productio
 | **`veto_mask` trap** (#4) | ✅ **DONE** | Renamed + documented; only `entry_gate` blocks; golden 6/6 byte-identical |
 | **Session windows** (#5) | ✅ **ANSWERED** | Real in the tape & in our *risk*, not a tradeable *entry* edge |
 | **Silver** (D3) | ❄️ **FROZEN** | Passed a pre-registered test but unconfirmable now — frozen forward test |
-| **Own distribution** (#7) | 🔬 **RESEARCH DONE, data phase next** | The EVT/GARCH tail-fitting recipe is in hand; D1 (fit per-trade P&L) is queued |
+| **Own distribution** (#7) | ✅ **COMPLETE** | Trade P&L truncated (stop works); raw returns fat (α≈3); **vol-scaled stop REJECTED** (gambler's ruin) → keep fixed stop. Open: fat-tail-aware *sizing*. [`DIST-00`](DIST-00-WORKSTREAM-REPORT.md) |
 | **News v2 → decisions** (NQ+GC) | 🔬 **IN PROGRESS** | A1: gold reacts 7.2× (NFP>CPI). Research: close-on-news real, enter no-edge, **assist=ruin**. B1: close-on-news negligible (~1% coverage). Next: B3 (assist test), A2 (patterns) |
 
 ---
