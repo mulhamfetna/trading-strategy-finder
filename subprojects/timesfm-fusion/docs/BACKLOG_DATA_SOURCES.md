@@ -46,12 +46,21 @@ All three produce a *regime* feature (risk-on/off, positioning, concentration) �
 prior-art said actually works (regime-gated participation), and complementary to the (failed) TimesFM
 vol-band. #4 also directly probes our own NQ-vs-ES volatility-asymmetry finding.
 
-## ⛔ Blockers to resolve with the user before starting
-- Which of these do you have a **paid subscription / API key** for? (drives what's actually acquirable)
-- **Paste the two X-thread contents** (they're auth-walled) so I can extract the idea to test.
-- This program is really its **own workstream** (exogenous data → regime signals). Per the one-workstream-
-  one-branch convention it should get its own branch/worktree — **say the word and I'll create it** (I won't
-  auto-create per your standing rule).
+## STATUS UPDATE (2026-07-15, user reply)
+- **No API subscriptions right now** → every paid/subscription/API-gated source (barchart, koyfin, seekingalpha,
+  macromicro, finviz-Elite, etfdb-paid) is **PARKED until a subscription/key exists**. Do not attempt scraping.
+- **What's actionable NOW without any subscription:**
+  - **#4 companiesmarketcap — NQ concentration** (free/derivable from public rankings or our own constituent data). Task #108.
+  - **stockanalysis.com** has a lenient free tier/API — low-priority but possible.
+  - **The two X threads (received → `x.md`)**: both = **HMM / Markov regime detection**. Extracted to
+    [X_THREADS_EXTRACT.md](X_THREADS_EXTRACT.md); this needs **zero external data** (our own price series) → the
+    single most-actionable item. Task **#110**.
+- Recommended order given no API: **#110 HMM regime detection → #108 NQ concentration**, then the paid sources
+  when access is available.
+
+## Scope / branch note
+This data program (exogenous signals → regime state) is really its **own workstream** feeding exogenous-signals-
+fusion. Per one-workstream-one-branch it should get its own branch/worktree — **I won't auto-create** (standing rule); say the word.
 
 ## Tasks created: #106 (finviz breadth), #107 (barchart COT/flow), #108 (companiesmarketcap concentration),
 #109 (characterize the rest + the two X threads once content provided).
