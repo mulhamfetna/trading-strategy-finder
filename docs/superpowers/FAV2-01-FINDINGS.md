@@ -148,9 +148,64 @@ own 17 years of data. **The honest, safety-critical answer is no.**
 
 ---
 
-## → Next
+---
 
-- **A2** — per-event-type PATH patterns on NQ (17y, powered): the *volatility* pattern is likely
-  repeatable (spike + decay from A1); the *directional* pattern is a coin flip (17y). Short windows,
-  variance-robust tests, data-snooping correction (FAV2-02).
-- **B2** deprioritized (no documented edge for NQ/GC).
+## A2 — CONTENT → PATTERN → RULE: is there a repeatable per-event pattern? ✅ YES (volatility), ❌ NO (direction)
+
+**The user's core idea:** "the news said a certain announcement → price did a repeated pattern → save it as
+a rule." Tested per event type on 17-year NQ (144–194 occurrences each — well above the ~20–50 the
+literature requires), with a Bonferroni bar (p<0.010 over 5 events) and variance-aware tests (FAV2-02).
+Raw: [`results/event_patterns_nq.txt`](results/event_patterns_nq.txt).
+
+### The VOLATILITY pattern is REAL, event-specific, and saveable
+
+Mean |move| as a multiple of a normal minute — a consistent spike-then-decay, sized by event:
+
+| Event | n | +0 (release) | +1 | +5 | +30 |
+|---|---|---|---|---|---|
+| **Nonfarm payrolls** | 191 | **13.6×** | 4.2× | 3.3× | 2.0× |
+| **CPI** | 194 | **12.3×** | 3.3× | 2.2× | 1.7× |
+| PPI | 180 | 5.4× | 2.1× | 1.4× | 1.3× |
+| GDP | 194 | 4.1× | 2.2× | 1.7× | 1.4× |
+| Retail sales | 164 | 4.1× | 2.4× | 1.6× | 1.3× |
+| PCE | 183 | 3.5× | 2.3× | 1.4× | 1.2× |
+
+**This is a genuinely saveable rule** — each announcement has a repeatable *magnitude and decay*: NFP and
+CPI detonate (~13×), the rest are milder (~4×), and all fade to near-baseline within ~30 min. (On 17 years
+NFP edges CPI; the 2025–2026-only A1 had CPI louder — a reminder that the short window over-weighted one
+sample.) But it is a **volatility rule**: it tells you **how big and how long**, not **which way**.
+
+### The DIRECTIONAL pattern does NOT exist
+
+| Event | mean +30 ($) | % up | boot p | sign p |
+|---|---|---|---|---|
+| CPI | +$36 | 57.2% | 0.79 | 0.052 |
+| NFP | +$30 | 55.0% | 0.71 | 0.19 |
+| PPI | −$54 | 43.9% | 0.31 | 0.12 |
+| (GDP / PCE / retail) | small | 47–54% | >0.3 | >0.3 |
+
+**No event clears the Bonferroni bar.** Not one reliably pushes price one way — every announcement is a
+coin flip at +30 min. This confirms the 17-year pooled direction null (−0.004) at the per-event level:
+*"the announcement said X, so price went **up/down**"* is **not supported by 17 years of data.**
+
+> **🍼 In plain words** — you *can* save a rule from the content, but it's a rule about **risk, not
+> direction**: "an NFP print produces a ~13× volatility burst that fades over ~30 minutes." That is
+> genuinely useful — for **stop-width, sizing, straddles, or sitting out the burst** — and it feeds #7
+> (the tail/distribution is event-conditional) and the session work (risk is predictable, direction is
+> not). But there is **no saveable rule that says which way to bet.** The volatility is the signal; the
+> direction is the coin flip — the same lesson this whole project keeps arriving at.
+
+**Verdict A2:** ✅ a real, event-specific **volatility** pattern (saveable → risk/sizing/straddle rules);
+❌ **no directional** pattern (all coin flips at full power + Bonferroni). GC per-event patterns remain
+**frozen** (2025–2026 only — the silver bottleneck).
+
+---
+
+## → Remaining / open
+
+- **B2** (enter-on-release) — deprioritized; research found no edge for NQ/GC.
+- **GC per-event / directional** — frozen pending **long GC history** (the open data decision).
+- **Task #16** — assess the user-supplied external data sources (barchart, macromicro, koyfin, finviz, +2 X
+  threads) for pullable point-in-time/historical data.
+- **Cross-workstream:** the event-conditional volatility pattern (A2) feeds **#7** (event-conditional tail)
+  and session-aware **stop sizing** (#5 S3). The volatility is the reusable signal.
