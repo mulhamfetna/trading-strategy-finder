@@ -108,11 +108,16 @@ Narrowed scope (NQ+GC), goal moved from *prediction* → *decision*. Plan:
   cost); **enter-on-news** has no edge for NQ/GC; **the "assist" (scale-in after a loss) is condemned by
   convergent, uncontested ruin mathematics** — no evidence price recovers after a news loss; test the narrow
   recovery-edge question only, default reject.
-- **B1** ✅ — close-on-news is **mechanistically sound but negligible**: champions are open across an 08:30
-  release only ~1% of the time (short holds), so there is almost nothing to de-risk. Not worth building.
-- **Next:** **B3** (the assist recovery-edge test — pre-declared kill), then **A2** (per-event-type
-  vol-pattern on NQ 17y). **B2 deprioritized.** GC directional/per-event work is frozen (2025-2026 only —
-  the silver bottleneck) pending long GC history.
+- **B1** ✅ — close-on-news **sound but negligible**: champions open across a release only ~1% of the time.
+- **B3** ✅ — **the ASSIST is REJECTED** (17y, L=20/40/80): no recovery edge (p≈0.7), the "skyrocket" rate
+  *falls* with loss size (61%→45%→22% — the belief is backwards), tail −$3k to −$9k at double size. Do NOT
+  build — averaging-down-into-ruin, confirmed on our own data.
+- **A2** ✅ — content→pattern→rule = a **VOLATILITY rule, not directional**: repeatable per-event spike-decay
+  (NFP 13.6×, CPI 12.3×), but direction is a coin flip at full power (Bonferroni). Feeds #7 + session sizing.
+- **Consolidated:** [`FAV2-00-WORKSTREAM-REPORT.md`](FAV2-00-WORKSTREAM-REPORT.md). **News is a VOLATILITY
+  event, not direction or recovery.** B2 deprioritized; GC directional/per-event frozen (long GC history
+  needed); task #16 (data sources) open. **→ Next: #7 · D1** (fit per-trade P&L — the fat tail that killed
+  the assist and every edge).
 - ⏳ **Task #16** — assess user-supplied external data sources (barchart, macromicro, koyfin, finviz, +2 X
   threads) for pullable point-in-time/historical data vs UI-only.
 
