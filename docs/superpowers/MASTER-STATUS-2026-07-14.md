@@ -36,6 +36,7 @@ Author: Claude (Opus 4.8) · Reviewer: Mulham Fetna · **$0 spent** · productio
 | **Session windows** (#5) | ✅ **ANSWERED** | Real in the tape & in our *risk*, not a tradeable *entry* edge |
 | **Silver** (D3) | ❄️ **FROZEN** | Passed a pre-registered test but unconfirmable now — frozen forward test |
 | **Own distribution** (#7) | 🔬 **RESEARCH DONE, data phase next** | The EVT/GARCH tail-fitting recipe is in hand; D1 (fit per-trade P&L) is queued |
+| **News v2 → decisions** (NQ+GC) | 🔬 **IN PROGRESS** | A1: gold reacts 7.2× (NFP>CPI). Research: close-on-news real, enter no-edge, **assist=ruin**. B1: close-on-news negligible (~1% coverage). Next: B3 (assist test), A2 (patterns) |
 
 ---
 
@@ -90,6 +91,30 @@ model per-trade P&L as a **3-mode mixture** (winner / loser / heavy tail); the *
 one-heavy-one-light-tail law that matches our stop-capped-gain / heavy-loss P&L. **Two gaps flagged:**
 (a) all sources are daily/hourly — intraday tails are *heavier*, must re-estimate on our data; (b) the
 sizing/Kelly decision layer is thinly covered, needs its own research pass. **DIST-01.**
+
+---
+
+### 6. News v2 → trading DECISIONS, NQ + GC — IN PROGRESS (re-opened 2026-07-15)
+
+Narrowed scope (NQ+GC), goal moved from *prediction* → *decision*. Plan:
+[`plans/2026-07-14-fa-v2-nq-gc-decisions.md`](plans/2026-07-14-fa-v2-nq-gc-decisions.md); running findings:
+[`FAV2-01-FINDINGS.md`](FAV2-01-FINDINGS.md); decision research:
+[`FAV2-02-RESEARCH-decisions-real-vs-dangerous.md`](FAV2-02-RESEARCH-decisions-real-vs-dangerous.md).
+
+- **A1** ✅ — **gold reacts strongly** to US macro (7.2× a normal minute, vs NQ 8.6×), same spike shape,
+  but weights events differently: **NQ↔CPI (18.5×), GC↔NFP (14.3×)** — economically sensible (different
+  channels). Directional tilt is fluke-window noise, not chased. Gold is a real, *different* news instrument.
+- **Decision research** ✅ — asymmetric verdict: **close-on-news** has a real mechanism (contested net of
+  cost); **enter-on-news** has no edge for NQ/GC; **the "assist" (scale-in after a loss) is condemned by
+  convergent, uncontested ruin mathematics** — no evidence price recovers after a news loss; test the narrow
+  recovery-edge question only, default reject.
+- **B1** ✅ — close-on-news is **mechanistically sound but negligible**: champions are open across an 08:30
+  release only ~1% of the time (short holds), so there is almost nothing to de-risk. Not worth building.
+- **Next:** **B3** (the assist recovery-edge test — pre-declared kill), then **A2** (per-event-type
+  vol-pattern on NQ 17y). **B2 deprioritized.** GC directional/per-event work is frozen (2025-2026 only —
+  the silver bottleneck) pending long GC history.
+- ⏳ **Task #16** — assess user-supplied external data sources (barchart, macromicro, koyfin, finviz, +2 X
+  threads) for pullable point-in-time/historical data vs UI-only.
 
 ---
 
