@@ -1,0 +1,44 @@
+
+NQ champions — per-trade P&L shape (points; $20/pt)
+
+    tf     n    mean      sd   skew  exkurt     min     max |   %@TP  %@stop %beyond-stop
+    4h   642    +3.4    48.1  +0.32   -1.89     -40     +60 |  41.9%   36.6%         0.0%
+    2h   616    +2.3    47.4  +0.39   -1.84     -40     +60 |  40.3%   29.7%         0.0%
+    1h  1157    +2.9    48.0  +0.34   -1.87     -40     +60 |  41.4%   36.0%         0.0%
+   15m  1685    +1.6    47.9  +0.39   -1.83     -40     +60 |  40.1%   38.1%         0.0%
+    5m   988    -0.1    47.0  +0.49   -1.75     -40     +60 |  37.9%   31.7%         0.0%
+    2m  2268    +0.1    47.7  +0.45   -1.78     -40     +60 |  38.8%   41.5%         0.0%
+
+  POOLED n=7356  mean +1.3  sd 47.7  skew +0.41  excess-kurtosis -1.82  (Gaussian would be 0/0)
+
+============================================================================================
+IS THE PER-TRADE P&L FAT-TAILED, OR TRUNCATED BY THE STOP?
+============================================================================================
+  representative hard stop: 40 pts
+  trades with a loss WORSE than the stop: 0 of 7356 (0.00%)
+  loss distribution: n=4431  mean -37.4  1st%ile -40  0.1%ile -40 pts
+
+============================================================================================
+DOES A GAUSSIAN UNDER-STATE OUR TAIL? (the reason not to assume normal)
+============================================================================================
+   5.0% worst-loss quantile:  empirical     -40 pts ($    -800)   Gaussian     -77 pts   ok
+   1.0% worst-loss quantile:  empirical     -40 pts ($    -800)   Gaussian    -110 pts   ok
+   0.5% worst-loss quantile:  empirical     -40 pts ($    -800)   Gaussian    -122 pts   ok
+   0.1% worst-loss quantile:  empirical     -40 pts ($    -800)   Gaussian    -146 pts   ok
+
+============================================================================================
+EVT — Generalized Pareto fit to the LOSS tail (peaks-over-threshold), xi as a range
+============================================================================================
+   threshold %ile  n exceed  xi (shape)  beta (scale)
+             80%  too few exceedances (0)
+             90%  too few exceedances (0)
+             95%  too few exceedances (0)
+  (xi < 0 => the loss tail is BOUNDED — the stop truncates it; xi > 0 => genuinely heavy)
+
+============================================================================================
+READ
+============================================================================================
+  This tells us whether our risk is a TRUNCATED distribution (stop caps the loss; the '±$1,600
+  swing' is really the winner/loser SPREAD, not a fat tail) or a genuine FAT TAIL (gaps/slippage
+  push losses past the stop). Next (D2/D3): tail index of RAW 1-min NQ per session (the McNeil-
+  Frey GARCH->GPD machinery), and condition on the event-volatility state from A2.
