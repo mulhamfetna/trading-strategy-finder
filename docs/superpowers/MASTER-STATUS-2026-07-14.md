@@ -102,7 +102,15 @@ live) → EVT moves there.
 🔴 **Counterintuitive:** the tail is *heavier* **overnight** (α≈2.5) than **RTH** (α≈3.4–4.9) — thin
 liquidity → rare but proportionally violent gaps. So **two risks point at opposite sessions**: everyday
 stop-out rate worst in RTH (S3), catastrophic tail-shape worst overnight (D2). (α is scale-free *shape*;
-the absolute per-session magnitude comes from D3.) **Next: D3** (McNeil–Frey GARCH→GPD conditional tail).
+the absolute per-session magnitude comes from D3.)
+
+**D3 (DIST-04) — the conditional tail, the actionable payoff:** McNeil–Frey (EWMA vol filter → GPD on
+residuals). De-clustering cuts the tail but not all (kurtosis +98.6→+54.6, ξ=+0.32; deep tail ~3× a
+Gaussian). **The 40-pt stop's safety is regime-conditional:** 99.9% 1-min move = 2.6pt (quiet) → 90pt (very
+loud) → 164pt (extreme) — a single minute can blow *through* the stop when loud. **Resolves the D2
+paradox:** RTH has higher *absolute* blow-through (19.7% of bars vs overnight 3.3%) — scale beats shape.
+**Deliverable = a VOL-SCALED (constant-σ) stop/size**, not a fixed 40 pts. **Next: D4** (build + test the
+vol-scaled stop on the champion ledgers; golden gate protects production).
 
 ---
 
