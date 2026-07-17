@@ -62,7 +62,8 @@ to sit through.** See report 06, Part 9.
 | **▸** | [**`DIST-01-RESEARCH-tail-fitting-recipe.md`**](DIST-01-RESEARCH-tail-fitting-recipe.md) | 🆕 **#7 kickoff** — deep-research on fitting the fat tail: the EVT/GARCH recipe, the pitfalls, + the on-data plan | 12 min | |
 | **▸** | [**`DIST-02-D1-per-trade-pnl-is-truncated.md`**](DIST-02-D1-per-trade-pnl-is-truncated.md) | 🆕 **#7 · D1** — per-trade P&L is TRUNCATED (bounded, bimodal, light tails) — the stop caps the fat tail | 7 min | |
 | **▸** | [**`DIST-03-D2-raw-return-tail-index.md`**](DIST-03-D2-raw-return-tail-index.md) | 🆕 **#7 · D2** — raw-return tail index α≈3 (genuinely fat); HEAVIER overnight than RTH | 7 min | |
-| **▸** | [**`DIST-04-D3-conditional-tail.md`**](DIST-04-D3-conditional-tail.md) | 🆕 **#7 · D3** — conditional tail: the 40-pt stop's safety is regime-dependent → vol-scaled stop (the deliverable) | 8 min | |
+| **▸** | [**`DIST-04-D3-conditional-tail.md`**](DIST-04-D3-conditional-tail.md) | 🆕 **#7 · D3** — conditional tail: the 40-pt stop's safety is regime-dependent → vol-scaled stop (proposed) | 8 min | |
+| **▸** | [**`DIST-05-D4-vol-scaled-stop-rejected.md`**](DIST-05-D4-vol-scaled-stop-rejected.md) | 🆕 **#7 · D4** — vol-scaled stop REJECTED: the fixed stop/TP is already regime-invariant (gambler's ruin). Keep it | 7 min | |
 | **▸** | [**`plans/2026-07-14-fa-v2-nq-gc-decisions.md`**](plans/2026-07-14-fa-v2-nq-gc-decisions.md) | 🆕 **FA-v2 PLAN** — news re-opened, NQ+GC only, prediction→decision (close/enter/assist) | 8 min | |
 | **▸** | [**`FAV2-00-WORKSTREAM-REPORT.md`**](FAV2-00-WORKSTREAM-REPORT.md) | 🆕 **FA-v2 COMPLETE** — news→decisions on NQ+GC, one report: gold, close, enter, **assist rejected**, content=vol-not-direction | 12 min | |
 | **▸** | [**`FAV2-01-FINDINGS.md`**](FAV2-01-FINDINGS.md) | 🆕 **FA-v2 detail** — A1 (gold reacts) · B1 (close negligible) · B3 (assist rejected) · A2 (vol pattern) | 10 min | |

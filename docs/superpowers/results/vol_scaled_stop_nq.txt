@@ -1,0 +1,56 @@
+===== TF=1h =====
+
+NQ 1h · 1157 entries · EWMA sigma_pts median 6.9 (10th 3.3 / 90th 11.7) · k=5.8 => sigma-stop = 5.8*sigma, median 40 pts
+
+========================================================================================
+stop rule         total P/L   $/trade   win%  stop%   tp%  cap%    worst      sd
+----------------------------------------------------------------------------------------
+  FIXED-40     $     87,440 $     +76  43.8%  56.2% 43.7%  0.1% $   -800 $992
+  sigma-scaled $     89,132 $     +77  43.1%  56.9% 43.0%  0.2% $ -2,051 $1,011
+
+========================================================================================
+THE REAL QUESTION — is the stop-out rate EQUALIZED across regimes? (the point of constant-sigma)
+========================================================================================
+  regime       n |  FIXED-40 stop% |  sigma-scaled stop%
+  quiet      382 |           55.5% |               69.1%
+  normal     393 |           56.5% |               56.0%
+  loud       382 |           56.5% |               45.5%
+
+========================================================================================
+READ (honest)
+========================================================================================
+  The point of the sigma-stop is CONSISTENCY: a constant stop-out probability across regimes,
+  vs the fixed stop whose stop% swings by regime (tight & often-hit when loud, ~never-hit when
+  quiet). If the fixed stop% column swings a lot and the sigma column is flat, the sigma-stop
+  delivers consistent risk. P/L may be SIMILAR-or-worse in the BACKTEST (D1: the backtest caps
+  losses at the stop, so a wider loud-regime sigma-stop just books bigger losses) — the real
+  sigma-stop win is LIVE (no blow-through fills, consistent sizing), which a clean-fill backtest
+  cannot show. Do NOT adopt on backtest P/L alone; adopt for risk consistency + live gap safety.
+===== TF=15m =====
+
+NQ 15m · 1684 entries · EWMA sigma_pts median 7.4 (10th 3.8 / 90th 11.8) · k=5.4 => sigma-stop = 5.4*sigma, median 40 pts
+
+========================================================================================
+stop rule         total P/L   $/trade   win%  stop%   tp%  cap%    worst      sd
+----------------------------------------------------------------------------------------
+  FIXED-40     $     49,840 $     +30  41.5%  58.5% 41.4%  0.1% $   -800 $985
+  sigma-scaled $     46,242 $     +27  40.9%  59.1% 40.9%  0.1% $ -1,814 $1,007
+
+========================================================================================
+THE REAL QUESTION — is the stop-out rate EQUALIZED across regimes? (the point of constant-sigma)
+========================================================================================
+  regime       n |  FIXED-40 stop% |  sigma-scaled stop%
+  quiet      556 |           59.4% |               69.6%
+  normal     572 |           57.9% |               57.5%
+  loud       556 |           58.3% |               50.2%
+
+========================================================================================
+READ (honest)
+========================================================================================
+  The point of the sigma-stop is CONSISTENCY: a constant stop-out probability across regimes,
+  vs the fixed stop whose stop% swings by regime (tight & often-hit when loud, ~never-hit when
+  quiet). If the fixed stop% column swings a lot and the sigma column is flat, the sigma-stop
+  delivers consistent risk. P/L may be SIMILAR-or-worse in the BACKTEST (D1: the backtest caps
+  losses at the stop, so a wider loud-regime sigma-stop just books bigger losses) — the real
+  sigma-stop win is LIVE (no blow-through fills, consistent sizing), which a clean-fill backtest
+  cannot show. Do NOT adopt on backtest P/L alone; adopt for risk consistency + live gap safety.
