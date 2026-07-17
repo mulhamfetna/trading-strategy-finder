@@ -104,12 +104,52 @@ thin). **Close-on-news is mechanistically sound and practically negligible for o
 
 ---
 
+---
+
+## B3 — THE "ASSIST" (scale-in after a loss): ❌ REJECTED, robustly
+
+**The flagship idea, and the riskiest.** Hypothesis: *after a loss near news, price skyrockets, so add a
+second contract and wait for both to recover.* The decisive test on 17-year NQ (full power): the added
+contract is just a fresh position entered **at the loss point**, so its expected return **is** the whole
+question. Does it pay after a **news** loss, and better than a matched **non-news** loss (dumb control)?
+Raw: [`results/assist_nq_L40.txt`](results/assist_nq_L40.txt).
+
+### Result: no edge at any loss threshold — and the belief is falsified
+
+| Loss trigger | Added-contract E[return] after a NEWS loss | vs non-news control | "skyrocket" rate |
+|---|---|---|---|
+| **L = 20 pts** | +$66/trade (p=0.39) | +$112 (p=0.24) | **61%** |
+| **L = 40 pts** | +$45/trade (p=0.71) | +$212 (p=0.21) | **45%** |
+| **L = 80 pts** | −$54/trade (p=0.76) | +$97 (p=0.75) | **22–33%** |
+
+> **🍼 In plain words — three findings, all fatal to the idea:**
+>
+> **1. The added contract has no edge.** After a news loss, the second contract's expected return is
+> **indistinguishable from zero** at every threshold (p = 0.39 / 0.71 / 0.76), and **never significantly
+> better than the same dip away from news** (the news-minus-control p-values are all > 0.2). It is a
+> *fair-or-negative bet* — exactly the martingale our stop-loss study already found. The news condition
+> does **not** rescue it.
+>
+> **2. The belief is backwards.** The "skyrocket" rate — the chance the added contract gains L within an
+> hour — **falls as the loss deepens: 61% → 45% → 22%.** So the *deeper* the loss, the *less* likely the
+> recovery. The premise "after a *certain* loss it will skyrocket" is the opposite of what 17 years show.
+> What feels like "it always comes back" is confirmation bias: you remember the recoveries and forget the
+> −$4,290 losses.
+>
+> **3. The tail is the account-killer.** A single added contract's *worst* outcomes run **−$3,300 to
+> −$9,040**, with a per-trade sd of ~$1,200–2,200. The assist takes that at **double size**, at the exact
+> moment you're already losing. This is the fat tail (#7) and the 1-second sweep, weaponized against you.
+
+**Verdict B3:** ⛔ **REJECTED. Do not build the assist.** There is no positive, control-beating,
+news-conditional recovery edge at any loss threshold; the recovery probability *decreases* with loss size;
+and averaging down doubles exposure to the fat tail that has defeated every edge in this project. This is
+the averaging-down-into-ruin the research (FAV2-02) and the math (Whelan/Taleb) warn of, confirmed on our
+own 17 years of data. **The honest, safety-critical answer is no.**
+
+---
+
 ## → Next
 
-- **B3 (the "assist" recovery-edge test)** — the one the user most wants answered. Pre-declared: does a
-  loss **following a news event** recover better than a matched **non-news** loss? Our non-news stop study
-  found a *fair* game; the research says averaging-down is a route to ruin. **Default = reject; test the
-  narrow question honestly; never build without a proven positive edge.**
 - **A2** — per-event-type PATH patterns on NQ (17y, powered): the *volatility* pattern is likely
   repeatable (spike + decay from A1); the *directional* pattern is a coin flip (17y). Short windows,
   variance-robust tests, data-snooping correction (FAV2-02).
