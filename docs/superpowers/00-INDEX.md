@@ -68,6 +68,7 @@ to sit through.** See report 06, Part 9.
 | **▸** | [**`SIZE-01-RESEARCH-fractional-kelly.md`**](SIZE-01-RESEARCH-fractional-kelly.md) | 🆕 **Sizing kickoff** — deep-research on fractional Kelly / risk-of-ruin under fat tails; the recipe | 9 min | |
 | **▸** | [**`SIZE-02-Z1-kelly-on-our-ledger.md`**](SIZE-02-Z1-kelly-on-our-ledger.md) | 🆕 **Sizing · Z1** — full Kelly on our ledger = 2.5% (CI [0.3%,4.4%]); 5m/2m ≈0; size small | 6 min | |
 | **▸** | [**`SIZE-03-Z2-ruin-and-gap-haircut.md`**](SIZE-03-Z2-ruin-and-gap-haircut.md) | 🆕 **Sizing · Z2** — drawdown binds not ruin → risk ~0.6–1.2% (quarter-half Kelly), edge-champs only, hard cap | 7 min | |
+| **▸** | [**`SIZE-04-Z3-vol-targeting.md`**](SIZE-04-Z3-vol-targeting.md) | 🆕 **Sizing · Z3** — vol-targeting contracts PROMISING (Sharpe 3.2→3.9, both halves) but in-sample → needs OOS, don't adopt | 6 min | |
 | **▸** | [**`plans/2026-07-14-fa-v2-nq-gc-decisions.md`**](plans/2026-07-14-fa-v2-nq-gc-decisions.md) | 🆕 **FA-v2 PLAN** — news re-opened, NQ+GC only, prediction→decision (close/enter/assist) | 8 min | |
 | **▸** | [**`FAV2-00-WORKSTREAM-REPORT.md`**](FAV2-00-WORKSTREAM-REPORT.md) | 🆕 **FA-v2 COMPLETE** — news→decisions on NQ+GC, one report: gold, close, enter, **assist rejected**, content=vol-not-direction | 12 min | |
 | **▸** | [**`FAV2-01-FINDINGS.md`**](FAV2-01-FINDINGS.md) | 🆕 **FA-v2 detail** — A1 (gold reacts) · B1 (close negligible) · B3 (assist rejected) · A2 (vol pattern) | 10 min | |

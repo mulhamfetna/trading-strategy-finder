@@ -1,0 +1,28 @@
+
+NQ edge-champions · 4099 trades · median sigma 6.8 pts · corr(pnl, sigma) = -0.021
+  vol-target is LEVERAGE-MATCHED (mean weight = 1) so totals are comparable; a turnover cost of
+  ~0.1pt per unit size change is charged to vol-target (it rebalances every trade).
+
+  method                total(pts)  maxDD(pts)   Sharpe~  return/DD
+------------------------------------------------------------------
+  FIXED                       9772        1761      3.19       5.55
+  VOL-TARGET (matched)       14022        1865      4.01       7.52
+  VOL-TARGET − costs         13790        1878      3.94       7.34
+
+==================================================================
+ROBUSTNESS — Sharpe by chronological half (does the vol-target edge persist?)
+==================================================================
+  half      FIXED Sharpe  VOL-TGT Sharpe     edge
+  1st               3.48            4.04    +0.55
+  2nd               1.02            1.39    +0.37
+
+==================================================================
+READ
+==================================================================
+  corr(pnl, sigma) = -0.021 — ~zero, so there is NO vol-conditional edge to exploit.
+  With no vol-edge, any leverage-matched Sharpe gain is a variance-shaping/sample artifact, not
+  a durable edge. Vol-target held its Sharpe edge in BOTH halves.
+  Plus vol-target rebalances every trade (mean |size change| 57%) — real turnover cost the FIXED method avoids.
+  Verdict guidance: adopt vol-target ONLY if its Sharpe edge is (a) present after leverage-match,
+  (b) stable across halves, and (c) survives costs — AND ideally backed by corr(pnl,sigma)<0.
+  Otherwise keep FIXED (the fixed-point stop already normalizes risk, D4). Next: Z4 (PnL:DD).
