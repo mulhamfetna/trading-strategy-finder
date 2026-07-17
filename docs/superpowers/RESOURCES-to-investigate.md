@@ -1,52 +1,71 @@
-# RESOURCES TO INVESTIGATE — external data / signal sources
+# RESOURCES — assessment of external data / signal sources (task #16, DONE)
 
-**Supplied by the user 2026-07-15 for deep investigation as potential data/signal sources for the FA-v2
-(NQ + GC news → decision) workstream. Task #16.** Do not treat any of these as adopted yet — each needs a
-real assessment of what it provides, cost, historical depth, and how (or whether) we can pull it
-programmatically.
+**Assessed 2026-07-15 via a targeted research pass (105 agents, 24/25 claims verified). The user supplied 8
+sites + 2 X threads; the question was strictly: does each provide FREE, PROGRAMMATICALLY-PULLABLE data with
+POINT-IN-TIME / historical-intraday / release-timestamp value — or is it just a dashboard? Bottom line:
+none of the 8 solves our scarce need, Barchart is the one worth pursuing (and is a candidate for the long
+GC history we keep hitting as a bottleneck), and the real point-in-time leads are OFF the list.**
 
 ---
 
-## The list
+## ⚡ THE 60-SECOND VERSION
 
-| # | URL | What it appears to be | The questions to answer |
+| | |
+|---|---|
+| **The scarce thing (ALFRED-style point-in-time macro)** | **None of the 8 listed sites has it.** FRED/ALFRED remains our best free source, unchallenged. |
+| **The one worth pursuing** | **Barchart** — its OnDemand `getHistory` API gives historical **intraday minute/tick OHLCV for NQ *and GC*** + a historical macro calendar. **PAID, sales-gated** (no published free tier/price). |
+| **The direct link to our open work** | Barchart's historical intraday **GC** OHLCV is a **candidate source for the long GC history** that would unfreeze the GC news/distribution work *and* give Z3's vol-targeting its OOS home. |
+| **The real point-in-time leads (OFF the user's list)** | **Trading Economics** (paid, documented PIT calendar — the ALFRED-equivalent) and **FXMacroData** (free-ish, unproven — validate against ALFRED). |
+
+---
+
+## Per-site verdicts
+
+| Site | What it offers | Access | Verdict |
 |---|---|---|---|
-| 1 | https://www.barchart.com/ | Market data — futures, options, equities, technicals, economic calendar | Does it give **historical intraday** futures data (NQ/GC) and a **historical economic calendar with release times**? Free tier limits? API? |
-| 2 | https://en.macromicro.me/ | Macro-economic charts / indicators / dashboards | **Point-in-time** macro series? Anything FRED/ALFRED doesn't have? Export/API? |
-| 3 | https://www.koyfin.com/ | Financial analytics dashboards (Bloomberg-lite) | Historical macro + market data depth; API vs UI-only; cost |
-| 4 | https://companiesmarketcap.com/ | Market-cap rankings | Likely low relevance to NQ/GC futures news — confirm and probably drop |
-| 5 | https://etfdb.com/ | ETF database / screener | Relevant only if we use ETF proxies (SPY/GLD) for longer history — worth checking GLD/QQQ history |
-| 6 | https://seekingalpha.com/ | Analysis / news / sentiment | **News sentiment / event coverage** — could feed "content of the news"; is there structured/historical access or is it article-only? |
-| 7 | https://stockanalysis.com/ | Stock fundamentals / data | Mostly equities fundamentals — relevance to NQ/GC macro news is limited; confirm |
-| 8 | https://finviz.com/ | Screener / heatmap / news feed | News feed + a macro calendar; scrape-friendly? historical? |
-| 9 | https://x.com/antpalkin/status/2072774690834153532 | X/Twitter thread | Review for method/ideas — summarize the claim, check if it's testable on our data, flag if folklore |
-| 10 | https://x.com/ruujss/status/2074503360208884204 | X/Twitter thread | Same — summarize, assess, do NOT adopt untested |
+| **barchart.com** | Historical **intraday minute/tick/EOD OHLCV + open interest for NQ/GC**; `getCmdtyCalendar` = historical *revised/actual* US econ calendar | `getHistory` OnDemand API — **PAID, key-gated, no published free tier**; legacy free endpoint discontinued | ✅ **PURSUE (paid).** The one genuinely useful pull source; **candidate for long GC history.** Not ALFRED-vintage. Caveats: 1000-record cap; interval mode omits settlement price. |
+| **koyfin.com** | Macro + market analytics dashboards | **No API** ("we're in the analytics business"); UI table/chart exports only | ❌ **UI-only, redundant with FRED.** Drop for a pipeline. |
+| **finviz.com** | Screener/heatmap/news; **no** econ calendar / intraday / historical | Free = unofficial scraper (**ToS risk**); Elite (paid) = CSV/JSON export API but **equities-screener only** | ❌ **Not aligned** with NQ/GC-intraday + macro-vintage need. |
+| **etfdb.com** | ETF screener snapshots + holdings weightings | Unofficial scraper only; **no price-history time series** | ❌ **Useless as QQQ/GLD proxy history** (no OHLCV). (API Ninjas ETF likewise.) |
+| **companiesmarketcap.com** | Market-cap rankings | — | ❌ **Drop** (prior; irrelevant to NQ/GC futures/macro). *Not formally verified.* |
+| **en.macromicro.me** | Macro charts/dashboards | — | ⚠️ **UNASSESSED** (no verified claims). Prior: likely UI-only / FRED-redundant. |
+| **seekingalpha.com** | News/analysis/sentiment | — | ⚠️ **UNASSESSED.** Prior: article/paywall, no structured historical-sentiment API. |
+| **stockanalysis.com** | Fundamentals/quotes | — | ⚠️ **UNASSESSED** (genuine open question — has a free API; intraday/macro relevance unknown). |
+
+**The 2 X threads** (antpalkin, ruujss): not fetched (X is auth-walled for research agents). They appear to
+concern **regime detection (HMM / Jump Model)** — which a *parallel agent is already working on another
+branch* (`research-regime-hmm`, per the shared memory). **No action here** — do not duplicate that work;
+treat the threads as that workstream's input, not this one's.
 
 ---
 
-## What "deeply investigate" means here (the assessment criteria)
+## Off-list leads for the POINT-IN-TIME need (the valuable surprise)
 
-For each source, the deliverable answers:
+| Source | Point-in-time? | Access | Note |
+|---|---|---|---|
+| **Trading Economics** | ✅ **Documented PIT calendar** — events "exactly as they appeared on a specific date, before revisions" (`calendar/.../{initDate}/{endDate}`) | **Paid** Developer tier, no confirmed free tier; JSON/CSV | **The strongest lead for a true ALFRED-equivalent** with release timestamps. Vendor self-described (no independent vintage audit). |
+| **FXMacroData** | ⚠️ Markets ALFRED-like `known_at` PIT store; **free USD macro** (no key, ~100 req/day, last 365 days), full history paid | Documented REST/Python/WebSocket/GraphQL | **Unproven** — validate against ALFRED before trusting; sub-second-timestamp claim was **refuted**. |
+| **FMP** | ❌ release-timestamped calendar but **no vintage** | Free ~250 calls/day | Useful for *timing*, redundant-ish for *values* vs FRED; does **not** solve PIT. |
 
-1. **What signal/data does it actually provide** that is relevant to NQ/GC and to news-content decisions?
-2. **Free vs paid**, and the free-tier limits.
-3. **Historical depth** — critically, does it offer **point-in-time / first-print** macro data (like
-   ALFRED) or a **historical intraday economic calendar with exact release timestamps**? That is the
-   scarce, valuable thing (it is what let us do the 17-year NQ study). UI-only sites that can't be pulled
-   programmatically are low value for a systematic pipeline.
-4. **Programmatic access** — official API, documented endpoints, or scrape-only (and terms-of-service).
-5. **Verdict:** genuinely useful data source / idea worth testing / UI-convenience-only / drop.
+---
 
-## Discipline (do NOT skip)
+## Recommendation (and the link to the GC decision)
 
-- The two X threads are **claims, not evidence.** Summarize and test on our own data before believing —
-  the same standard that killed the session-timing folklore and the London GMM edge. A viral trading
-  thread is exactly the kind of thing that looks great and dies with a 1-bar entry delay.
-- Prefer sources offering **historical, point-in-time, programmatically-pullable** data. Our whole
-  advantage came from ALFRED first-print vintages + a 17-year tape; a pretty dashboard we can't query adds
-  little to a systematic study.
-- Watch for **survivorship / hindsight** in any "here's the pattern" content from social media.
+1. **Keep FRED/ALFRED as the point-in-time backbone.** Nothing on the list beats it for free; it's why the
+   17-year NQ study was possible.
+2. **The actionable item is the long-GC-history bottleneck.** Two of our workstreams are frozen or
+   OOS-blocked purely for lack of long GC 1-minute data (the GC news/distribution studies; Z3's vol-targeting
+   OOS). **Barchart `getHistory` is a concrete candidate** to supply historical intraday GC OHLCV — worth a
+   pricing enquiry (it's sales-gated, so cost is unknown until you ask).
+3. **If you later want a paid PIT macro calendar** (to replace our hand-built FRED-`release/dates` +
+   hardcoded-times calendar with vendor timestamps), **Trading Economics** is the lead — but our current free
+   calendar already validated itself (the 8.3× spike on the exact minute), so this is a nice-to-have, not a
+   need.
+4. **Drop:** koyfin, finviz, etfdb, companiesmarketcap for our purposes. **Optional follow-up:**
+   stockanalysis.com (free API — worth a 10-minute check) and macromicro.me, if you specifically want them
+   assessed; low priority.
 
-**Recommended handling:** fold this into the FA-v2 research sequence — after the current news-decision
-research pass lands, run a targeted assessment (likely a short web-research pass over these specific
-sources) and produce a real-vs-useful table, then pull whatever passes into the data layer.
+**Net for the project:** the assessment doesn't hand us a free new data source, but it **names Barchart as a
+paid path to the long GC history** — the single unlock for the largest block of remaining work — and
+identifies Trading Economics as the paid ALFRED-equivalent if ever needed. The point-in-time discipline that
+made this project rigorous (FRED/ALFRED) has no free peer among the sites listed.
