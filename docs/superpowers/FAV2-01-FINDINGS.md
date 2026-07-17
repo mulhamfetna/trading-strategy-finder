@@ -72,8 +72,45 @@ here is why I'm not chasing it:**
 weighting (NQ↔CPI, GC↔NFP). The **direction** remains undecided/frozen (the |move| is real; the sign is
 fluke-window noise). GC directional work needs **long GC history** — the silver bottleneck.
 
-### → Next
-- **A2** — per-event-type PATH patterns on NQ (17y, powered) and GC (2025–2026, frozen): does CPI produce
-  a repeatable *shape* we can save as a rule? (The user's "content → pattern → rule.")
-- **B1/B2/B3** — news-conditional trade decisions (close / enter / **assist**), gated by the incoming
-  research pass on gold reaction, news position-management, and the scale-in/martingale evidence.
+---
+
+## B1 — CLOSE AN OPEN POSITION BEFORE A RELEASE? (the one with a real mechanism) ✅ tested
+
+**Question (from FAV2-02):** the research says trimming into a news vol-burst gives up variance, not
+return (Moreira–Muir) — is it worth it on our ledgers? The clean, **cost-neutral** test: for every
+champion trade open across an 08:30 release, compare holding through vs closing at 08:29 (moving the exit,
+adding no round-trip). Raw: [`results/close_on_news_nq.txt`](results/close_on_news_nq.txt).
+
+### Result: the mechanism holds, but there is almost nothing to bite on
+
+| NQ champion | Trades open across an 08:30 release | Give-up (P/L 08:29→exit) | p |
+|---|---|---|---|
+| 4h | **2 of 642 (0.3%)** | too few to test | — |
+| 1h | **13 of 1157 (1.1%)** | +$349/trade (sd $981) | 0.217 |
+| 15m | **17 of 1685 (1.0%)** | +$98/trade (sd $910) | 0.664 |
+
+> **🍼 In plain words** — the mechanism is real: on the trades that *do* ride through a release, holding
+> through earns **~nothing on average** (give-up indistinguishable from zero) while carrying a large
+> per-trade swing (~$900 sd). So closing before news *would* be a free variance reduction. **But our
+> champions are open across a release only ~1% of the time** — their hold times are short, so they're
+> almost never live at 08:30. There is essentially **nothing to de-risk.** This is the same structural
+> fact that made the news-veto "already flat for 77% of releases" — quantified for the decision framing.
+
+**Verdict B1:** ✅ mechanism confirmed, ❌ **not worth building** — it touches ~1% of trades, and the
+samples (n=2/13/17) are far too small to claim even the modest benefit reliably. Two caveats: the give-up
+*point estimates* are slightly **positive** (holding through may even earn a little), and this is NQ only
+(GC needs its champion preset, but has the same short-hold structure so the coverage will be just as
+thin). **Close-on-news is mechanistically sound and practically negligible for our strategy.**
+
+---
+
+## → Next
+
+- **B3 (the "assist" recovery-edge test)** — the one the user most wants answered. Pre-declared: does a
+  loss **following a news event** recover better than a matched **non-news** loss? Our non-news stop study
+  found a *fair* game; the research says averaging-down is a route to ruin. **Default = reject; test the
+  narrow question honestly; never build without a proven positive edge.**
+- **A2** — per-event-type PATH patterns on NQ (17y, powered): the *volatility* pattern is likely
+  repeatable (spike + decay from A1); the *directional* pattern is a coin flip (17y). Short windows,
+  variance-robust tests, data-snooping correction (FAV2-02).
+- **B2** deprioritized (no documented edge for NQ/GC).
