@@ -12,10 +12,9 @@ Runs through the standard reporting system (template on the timesfm branch:
 | # | Stage | What we did | Result | Doc |
 |---|-------|-------------|--------|-----|
 | 1 | **Prior-art** | Web sweep + the X-thread framework | **GO.** Regime-switching helps OOS (Nystrup 2402.05272, 1990–2023, costs+delays). **Jump Model beats HMM** (Sharpe 0.51→0.78). Filtered-not-smoothed causality. Regime = slow/daily state. | [PRIOR_ART.md](PRIOR_ART.md) |
-| 2 | **Repro/baseline** | fit HMM + Jump Model on daily NQ (causal), label fusion trades by live regime | _in progress_ | REPRO.md (tbd) |
-| 3 | Dumb control | vs realized-vol tercile / trend-vol quadrant; HMM vs JM | _pending_ | — |
-| 4 | Robustness | per-year / CPCV / filtered-only / random-regime control | _pending_ | — |
-| 5 | Verdict | regime → policy (size/sit-out) | _pending_ | — |
+| 2 | **Repro/baseline** | causal HMM (filtered) on daily NQ, label fusion trades | **Strategy is VOL-SEEKING** — best Ret/DD in the most turbulent regime; calmest is the only loser. Sitting out high-vol HURTS. | [REPRO.md](REPRO.md) |
+| 3–4 | **Dumb-control + robustness** | inverted policy (sit-out calm) w/ random-regime control + per-year; JM penalty grid | HMM sit-out-calm **weak** (5.89, beats 81% random, hurts 2026); JM **penalty-sensitive 4.15–7.30 = overfitting** | [ROBUSTNESS.md](ROBUSTNESS.md) |
+| 5 | **Verdict** | — | **NO-GO for this strategy** (no durable regime edge) — but a valuable *diagnostic*: explains the TimesFM NO-GO (edge lives in high vol). | [ROBUSTNESS.md](ROBUSTNESS.md) |
 
 ## Discoveries banked (running)
 1. **Jump Model > HMM** for regime detection (persistence + Sharpe) — don't default to the X-thread's HMM.
