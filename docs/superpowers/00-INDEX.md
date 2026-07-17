@@ -60,6 +60,10 @@ to sit through.** See report 06, Part 9.
 | **▸** | [**`SESSION-02-S1-our-session-shape.md`**](SESSION-02-S1-our-session-shape.md) | 🆕 **#5 · S1** — our own session shape measured (17y NQ): U-shape confirmed (1.94×), overlap is a non-event, tz triple-confirmed | 8 min | |
 | **▸** | [**`SESSION-03-S3-does-our-edge-have-a-shape.md`**](SESSION-03-S3-does-our-edge-have-a-shape.md) | 🆕 **#5 · S3** — our RISK inherits the session shape (stop-out 56%→16%), our EDGE does not. No entry filter; sizing yes. #5 answered | 8 min | |
 | **▸** | [**`DIST-01-RESEARCH-tail-fitting-recipe.md`**](DIST-01-RESEARCH-tail-fitting-recipe.md) | 🆕 **#7 kickoff** — deep-research on fitting the fat tail: the EVT/GARCH recipe, the pitfalls, + the on-data plan | 12 min | |
+| **▸** | [**`plans/2026-07-14-fa-v2-nq-gc-decisions.md`**](plans/2026-07-14-fa-v2-nq-gc-decisions.md) | 🆕 **FA-v2 PLAN** — news re-opened, NQ+GC only, prediction→decision (close/enter/assist) | 8 min | |
+| **▸** | [**`FAV2-01-FINDINGS.md`**](FAV2-01-FINDINGS.md) | 🆕 **FA-v2 · A1** — gold reacts strongly (7.2×), weights NFP over CPI (running findings log) | 6 min | |
+| **▸** | [**`FAV2-02-RESEARCH-decisions-real-vs-dangerous.md`**](FAV2-02-RESEARCH-decisions-real-vs-dangerous.md) | 🆕 **FA-v2 research** — close-on-news real, enter-on-news no edge, **ASSIST = route to ruin** | 10 min | |
+| **▸** | [**`RESOURCES-to-investigate.md`**](RESOURCES-to-investigate.md) | 🆕 external data/signal sources to assess (task #16) | 3 min | |
 | **01** | [`01-RETRACTION-verdict-withdrawn.md`](01-RETRACTION-verdict-withdrawn.md) | **🚨 READ FIRST.** I was wrong, here is exactly how | **17 min** | |
 | **02** | [`02-EXPERIMENT-LOG-all-65-trials.md`](02-EXPERIMENT-LOG-all-65-trials.md) | **The complete record.** All 65 trials, every number | 39 min | [AR](02-EXPERIMENT-LOG-all-65-trials_AR.md) |
 | **03** | [`03-SEMINAR-fundamental-analysis.md`](03-SEMINAR-fundamental-analysis.md) | **Teaching doc.** Every step, plain language + technical | 39 min | [AR](03-SEMINAR-fundamental-analysis_AR.md) |
