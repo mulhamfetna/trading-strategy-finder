@@ -1,0 +1,38 @@
+
+NQ 17y · EWMA(lambda=0.97) conditional-vol filter · 5,313,926 standardized residuals
+  raw returns excess-kurtosis +98.6  ->  standardized residuals excess-kurtosis +54.6
+  (de-clustering removes MUCH of the fat tail, but the residual is STILL fat — as the research
+   predicted: volatility clustering explains part, not all, of the tail.)
+
+============================================================================================
+RESIDUAL TAIL — GPD on |z| (both sides) + the deep quantiles used to scale the tail move
+============================================================================================
+  GPD @ 99.0%:  xi=+0.316 (heavy)  beta=0.824  n_exc=53140
+  GPD @ 99.5%:  xi=+0.343 (heavy)  beta=0.987  n_exc=26570
+  |z| quantiles:  99%=3.21  99.9%=5.94  99.99%=11.97  (a Gaussian would be 2.58 / 3.29 / 3.89)
+
+============================================================================================
+ABSOLUTE 1-MINUTE TAIL MOVE BY REGIME (points) — z_q x sigma_pts, and vs the 40-pt stop
+============================================================================================
+  regime (vol pctile)         1sd(pts)  99% move  99.9% move   99.99%
+  quiet (10th)                     0.4       1.4        2.6      5.3
+  normal (50th)                    1.5       4.8        8.9     18.0
+  loud (90th)                      6.4      20.4       37.8     76.0
+  very loud (99th)                15.3      49.0       90.6    182.6   <= a single 1-min move can BLOW THROUGH the 40-pt stop
+  extreme (99.9th)                27.5      88.4      163.6    329.5   <= a single 1-min move can BLOW THROUGH the 40-pt stop
+
+============================================================================================
+BY SESSION — the 99.9% conditional 1-min move (points); blow-through fraction vs 40-pt stop
+============================================================================================
+  RTH (loud)           median 99.9% move   13.4 pts   90th   55.7 pts   blow-through 19.7% of bars
+  OVERNIGHT (quiet)    median 99.9% move    7.3 pts   90th   24.2 pts   blow-through  3.3% of bars
+  ALL                  median 99.9% move    8.9 pts   90th   37.8 pts   blow-through  8.9% of bars
+
+============================================================================================
+READ
+============================================================================================
+  This is the number a stop must respect: in a QUIET regime a 40-pt stop is many sigma away
+  (safe); in a LOUD/EVENT regime a single 1-min move can exceed it (blow-through). The stop's
+  real safety is CONDITIONAL on the vol state — so stop distance / size should scale with the
+  EWMA sigma (and the A2 event-volatility burst). Next: D4 = turn this into a concrete
+  vol-scaled stop-distance / sizing rule (the Kelly half still needs its own research).
