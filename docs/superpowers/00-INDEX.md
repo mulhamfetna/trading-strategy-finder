@@ -60,6 +60,7 @@ to sit through.** See report 06, Part 9.
 | **▸** | [**`SESSION-02-S1-our-session-shape.md`**](SESSION-02-S1-our-session-shape.md) | 🆕 **#5 · S1** — our own session shape measured (17y NQ): U-shape confirmed (1.94×), overlap is a non-event, tz triple-confirmed | 8 min | |
 | **▸** | [**`SESSION-03-S3-does-our-edge-have-a-shape.md`**](SESSION-03-S3-does-our-edge-have-a-shape.md) | 🆕 **#5 · S3** — our RISK inherits the session shape (stop-out 56%→16%), our EDGE does not. No entry filter; sizing yes. #5 answered | 8 min | |
 | **▸** | [**`DIST-01-RESEARCH-tail-fitting-recipe.md`**](DIST-01-RESEARCH-tail-fitting-recipe.md) | 🆕 **#7 kickoff** — deep-research on fitting the fat tail: the EVT/GARCH recipe, the pitfalls, + the on-data plan | 12 min | |
+| **▸** | [**`DIST-02-D1-per-trade-pnl-is-truncated.md`**](DIST-02-D1-per-trade-pnl-is-truncated.md) | 🆕 **#7 · D1** — per-trade P&L is TRUNCATED (bounded, bimodal, light tails) — the stop caps the fat tail | 7 min | |
 | **▸** | [**`plans/2026-07-14-fa-v2-nq-gc-decisions.md`**](plans/2026-07-14-fa-v2-nq-gc-decisions.md) | 🆕 **FA-v2 PLAN** — news re-opened, NQ+GC only, prediction→decision (close/enter/assist) | 8 min | |
 | **▸** | [**`FAV2-00-WORKSTREAM-REPORT.md`**](FAV2-00-WORKSTREAM-REPORT.md) | 🆕 **FA-v2 COMPLETE** — news→decisions on NQ+GC, one report: gold, close, enter, **assist rejected**, content=vol-not-direction | 12 min | |
 | **▸** | [**`FAV2-01-FINDINGS.md`**](FAV2-01-FINDINGS.md) | 🆕 **FA-v2 detail** — A1 (gold reacts) · B1 (close negligible) · B3 (assist rejected) · A2 (vol pattern) | 10 min | |

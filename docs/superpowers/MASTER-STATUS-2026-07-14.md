@@ -83,14 +83,19 @@ Research-first separated real from folklore, then two on-data tests:
 **Two deliverables banked:** the confound-control per-minute multipliers (S1) and the session-dependent
 stop-out rate → session-aware stop sizing (S3). **No entry filter built. SESSION-00 (consolidated) + 01–03.**
 
-### 5. Own distribution — RESEARCH DONE (#7)
+### 5. Own distribution — RESEARCH DONE + D1 DONE (#7)
 
-The verified recipe: filter volatility with a GARCH, fit the rare-large-loss tail on the residuals via
-**EVT (peaks-over-threshold + Generalized Pareto)**, fit the two tails **asymmetrically** (loss heavier),
-model per-trade P&L as a **3-mode mixture** (winner / loser / heavy tail); the **GH skew-t** is the unique
-one-heavy-one-light-tail law that matches our stop-capped-gain / heavy-loss P&L. **Two gaps flagged:**
-(a) all sources are daily/hourly — intraday tails are *heavier*, must re-estimate on our data; (b) the
-sizing/Kelly decision layer is thinly covered, needs its own research pass. **DIST-01.**
+The verified recipe (**DIST-01**): GARCH-filter, fit the rare-large-loss tail on residuals via **EVT
+(peaks-over-threshold + Generalized Pareto)**, asymmetric tails, **McNeil–Frey** conditional; all sources
+are daily/hourly so re-estimate on our data.
+
+**D1 (DIST-02) — a plan-correcting discovery:** the champion's **per-trade P&L is TRUNCATED, not
+fat-tailed.** Bounded [−40,+60] on every TF; **0 of 7,356 trades** lose more than the stop; **excess
+kurtosis −1.82** (negative = *light* tails); **bimodal** (~40% win@+60 / ~37% lose@−40). The "±$1,600 fat
+tail" is really a **bimodal win/lose spread** (~$960) — a near-binary payoff, not a heavy tail. **The stop
+truncates the fat-tailed return process** — which is *why* keep-the-stop (04/06) and never-assist (B3) are
+both right. The genuine fat tail lives in **raw returns** (gap/slippage that could blow *through* the stop
+live) → EVT moves there (D2/D3). **Next: D2** (raw-return tail index per session).
 
 ---
 
