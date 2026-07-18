@@ -1,0 +1,20 @@
+[
+ {
+  "name": "NQ_regime_sizing",
+  "inst": "NQ",
+  "tf": "1h+4h fusion (combined book)",
+  "kind": "sizing overlay (not an entry strategy)",
+  "status": "EXPERIMENTAL CANDIDATE",
+  "flat_pnl": 151872,
+  "flat_dd": 27508,
+  "flat_ret_dd": 5.52,
+  "overlay_pnl_equal_risk": 162228,
+  "overlay_dd": 27508,
+  "overlay_ret_dd": 5.90,
+  "delta_equal_risk": 10356,
+  "trades": 539,
+  "enabled_by_default": false,
+  "reproduces_to_the_dollar": true,
+  "label": "Nasdaq-100 (NQ) regime volatility size-ramp — size WITH volatility on a vol-seeking strategy — +$10,356 (+6.8%) at EQUAL risk (max-DD held $27,508) · beats 96% of random regime->size maps · helps 4/5 purged folds · ⚠ dollar magnitude UNCONFIRMED (bootstrap 90% CI [-$21k,+$61k] includes zero)"
+ }
+]

@@ -93,3 +93,5 @@ subprojects/meta-prophet/server/server.env
 # TimesFM workstream: never commit model weights / venv / pyc
 subprojects/timesfm-fusion/**/__pycache__/
 subprojects/timesfm-fusion/.venv/
+# winner bundle: ship the sources, not the built artifacts
+subprojects/Parametric-Indicators/shareable/regime_sizing_overlay_bundle.zip
