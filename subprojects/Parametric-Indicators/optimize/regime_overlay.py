@@ -14,10 +14,24 @@ most turbulent hi), then normalized so max-drawdown matches the flat book (equal
 from __future__ import annotations
 
 import csv
+from datetime import datetime, timezone
 from pathlib import Path
 
 _REGIME_CSV = Path(__file__).resolve().parents[2] / "regime-edge" / "data" / "nq_daily_regime.csv"
 _CACHE = None
+
+
+def _day(t):
+    """Log rows carry `time` as a Unix EPOCH int (not a date string) — map it to the naive YYYY-MM-DD the
+    regime artifact is keyed on. Accepts a date-ish string too."""
+    if t is None:
+        return ""
+    try:
+        if isinstance(t, (int, float)) or (isinstance(t, str) and t.strip().isdigit()):
+            return datetime.fromtimestamp(float(t), tz=timezone.utc).strftime("%Y-%m-%d")
+    except Exception:
+        return ""
+    return str(t)[:10]
 
 
 def _regime_map():
@@ -73,8 +87,7 @@ def overlay_from_log(log, lo: float = 0.5, hi: float = 1.5, instrument: str = "N
             if pnl is None:
                 continue
             pnl = float(pnl)
-            day = str(t)[:10] if t else ""
-            r = rmap.get(day)
+            r = rmap.get(_day(t))
             flat.append(pnl)
             if r is None:
                 scaled.append(pnl)
