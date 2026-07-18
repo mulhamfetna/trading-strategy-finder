@@ -4,6 +4,181 @@ _Newest on top. High-overview standup: what got done · what's next · challenge
 
 ---
 
+## 2026-07-18 — Progress packaged for review; the GC-data path corrected (in-house, not paid)
+
+_A short, wrap-up day. Everything since 07-14 pulled into one review page, and one earlier recommendation
+corrected after the user pushed back on it._
+
+### ✅ What got done
+- **A single progress-review page for you** — [`PROGRESS-DISCUSSION-2026-07-18.md`](../../docs/superpowers/PROGRESS-DISCUSSION-2026-07-18.md):
+  the whole scorecard (6 workstreams), the four discoveries that matter, what the discipline *prevented*
+  (7 plausible ideas killed before they could ship), and the four decisions that are yours to make.
+- **Corrected the long-GC-history recommendation.** I had written that getting 16 years of gold data needs a
+  **paid Barchart** purchase. You challenged that ("don't you have all the data down to 1-second on the
+  server?"). You were right and I over-complicated it: the server already holds the **Databento source** that
+  produced the 17 GB `NQ.csv` **plus a generic assembler** (`main_futures_seconds.py`) that builds
+  1-second continuous candles for *any* market. Long GC history is a **download-and-assemble in-house**, not a
+  vendor purchase. Fixed the two docs that carried the wrong framing (commit `5f9220a`); opened **task #18**
+  for the assemble step.
+- **Verified the data claim before correcting it:** only NQ has 2010 history on the server; every other
+  market (GC, SI, CL, NG, HG, ES, RTY, YM) starts 2025-01-01. NQ was the only 2010 download because the news
+  study was NQ-focused at the time.
+
+### 🎯 Tomorrow / next
+- **GC 2010 raw is on the way from you.** The moment it lands: run the assembler → GC gets the same 16-year,
+  1-second frame NQ has → the frozen GC studies (news direction + distribution), the vol-targeting OOS test,
+  and the silver forward test all become powered. (task #18)
+- Backfilled these daily standups (07-13 → today) — the log was last closed on 07-12.
+
+### ⚠️ Challenges / lessons
+- **I recommended spending money on data we already own the pipeline for.** Caught only because you
+  questioned it. Lesson logged: check the in-house pipeline before naming a paid vendor as "the path."
+
+---
+
+## 2026-07-17 — Three workstreams answered in one day: news decisions, our own distribution, and position sizing
+
+_The heaviest day of the stretch. The "assist after a loss" idea was tested and rejected, our trade P&L was
+fitted to a real distribution, and the "how big to bet" question was closed._
+
+### ✅ What got done
+**News → trading decisions (NQ + GC, "FA-v2"):**
+- **The "assist" is REJECTED — and the belief behind it is backwards.** The idea was: after a trade goes far
+  enough into a loss, buy a *second* contract because "it'll skyrocket back." On 17 years of NQ, the recovery
+  rate **falls** as the loss deepens (61% → 45% → 22%). Scaling into a loser is not a hidden edge; it's a
+  route to ruin. (task, B3)
+- **Close-on-news:** mechanically sound but negligible — our champions have a trade open across a release only
+  ~1% of the time, so there's almost nothing to act on. (B1)
+- **Content → pattern → rule** turns out to be a **volatility** rule, not a **direction** rule: a given
+  announcement reliably produces a *bigger move*, but not a predictable *way*. (A2)
+
+**Our own probability distribution (#7):**
+- **Per-trade P&L is truncated, not fat-tailed** — the fixed stop caps the downside, so realized trade
+  outcomes are bounded and bimodal (7,356 NQ trades). (D1)
+- **Raw 1-minute returns *are* genuinely fat** (tail index α≈3), and heavier overnight than in regular hours.
+  The stop is what converts that fat tail into a bounded trade result. (D2/D3)
+- **A volatility-scaled stop is REJECTED** — the fixed stop/TP is already regime-invariant (gambler's-ruin
+  scale-invariance). (D4) → **keep the fixed stop.**
+
+**Position sizing (#17):**
+- Full-Kelly on our own ledger works out to **2.5% of capital per trade** — but the confidence interval is
+  wide ([0.3%, 4.4%]), and **drawdown, not literal ruin, is the binding constraint** (Z1/Z2).
+- **Recommendation: risk ~quarter-to-half Kelly (≈0.6–1.2% per trade), edge-champions only, hard cap.** (Z4,
+  workstream closed.)
+- **Vol-targeting the contract count** looked *promising* (Sharpe 3.2 → 3.9, in both halves) but it's
+  in-sample and unexplained — parked for an out-of-sample test. (Z3)
+
+### 🎯 Tomorrow / next
+- Package all of this into one review page for you (done 07-18).
+- The one thing blocking the parked threads (GC direction, vol-targeting OOS) is long GC history.
+
+### ⚠️ Challenges / lessons
+- **My Z4 prediction was wrong** — I predicted the reward-to-drawdown ratio would clearly favor small bets;
+  it's actually flat from half- to full-Kelly. Flagged the correction; the real reason to bet small is the
+  *fragile, single-window edge estimate*, not the ratio.
+
+---
+
+## 2026-07-16 — Quiet day (no commits on this branch)
+
+No work landed on the `fundamental-analysis` branch. (Parallel workstreams on other branches, run by other
+agents, are logged separately.)
+
+---
+
+## 2026-07-15 — Housekeeping closed, sessions answered, two new workstreams opened
+
+_Cleared the last loose ends from the news verdict, answered the trading-session question, and launched the
+two workstreams that would dominate 07-17._
+
+### ✅ What got done
+- **The `veto_mask` trap renamed and documented (#4).** An engine parameter named `veto_mask` did **not**
+  actually block entries (only `entry_gate` does) — a genuine footgun. Renamed to `veto_vote_mask`, added a
+  "what actually blocks an entry" note, **golden 6/6 byte-identical** (zero behaviour change).
+- **Silver resolved (D3) — frozen, not dropped.** Its p=0.007 was the one surviving news cell, but it rests
+  on 12% power and 1 cell of 36. Pre-registered a forward test and **froze it** pending new data — neither
+  believed nor discarded.
+- **Trading-session windows answered (#5).** Sessions are real in the *tape* (the classic intraday U-shape)
+  and in our *risk* (stop-outs 56% in regular hours vs 16% in the Asia session) — but **not a tradeable
+  entry edge**, and the London–NY overlap is a non-event for NQ. → **a sizing input, not an entry filter.**
+- **Two new workstreams opened:** news-v2 (news → *decisions*, NQ+GC only, per your new rules) and our-own-
+  distribution (#7), each started with a deep research pass first.
+- **Gold reacts to US macro (7.2×)** and weights events differently than NQ (jobs-channel vs Nasdaq's
+  inflation-channel) — first FA-v2 result. (A1)
+- **A single MASTER-STATUS baseline** written so every thread is visible in one place.
+
+### 🎯 Tomorrow / next
+- Work the news-decisions questions (close / enter / assist) and the distribution fit.
+
+### ⚠️ Challenges / lessons
+- Nothing broke today — this was the "pay down the debt and set up the next sprint" day.
+
+---
+
+## 2026-07-14 — The verdict, re-earned *properly*: 99% power on 17 years, and every silent bug caught
+
+_The turnaround from 07-13's retraction. Wired in the full 16-year frame, and the "priced in" answer came
+back — this time with the statistical power to actually mean it._ Full write-up:
+[`PROGRESS-2026-07-14.md`](../../docs/superpowers/PROGRESS-2026-07-14.md).
+
+### ✅ What got done
+- **Wired in the 16-year frame (2010–2026)** and it validated 100% against the old data. Sample went from
+  ~117 releases to **882** — enough to reach **99% statistical power**.
+- **Both headline signals are dead at full power** — direction −0.004, magnitude −0.018, persistence 48%,
+  shape p=0.88. "Scheduled US macro news is priced in" is now **earned, not guessed.**
+- **The "magnitude survivor" is noise.** It was +0.187 on the tiny sample → **−0.018 on 17 years.** Broken
+  down by year: flat at 100% power on 2010–2023; the apparent signal lived only in 2024–2026 where we were
+  underpowered. **2025 was simply the luckiest of 17 years.**
+- **Task #11 — stop-loss re-tested at 1-second resolution.** 94% of stop-outs *are* two-second sweeps (the
+  resolution complaint was right!), but chasing them earns +$80/trade against a ±$1,600 swing (p=0.45). The
+  fixed-stop verdict **stands.**
+- **Reliability fixes (#12):** the "44 ALFRED errors" were 43 expected + 1 real 502; retried and recovered,
+  and the cache now refuses to persist holes. Built a live **watchdog** to catch silent failures.
+
+### 🎯 Tomorrow / next
+- Housekeeping (#4 veto rename, D3 silver), then open sessions (#5) and distribution (#7).
+
+### ⚠️ Challenges / lessons (six mistakes, all caught)
+1. **Killed a healthy run** by misreading an error counter. 2. **A results file said the opposite of the
+result** (inverted power labels). 3. **A cache that never hit.** 4. **A sweep detector true by construction.**
+5. **A verdict that tested the wrong contrast.** 6. **Nearly hand-typed a 17-row table from memory.**
+**Through-line:** every safeguard that saved me was declared *before* the run — pre-set effect size, dumb
+control, noise check, written kill criterion.
+
+---
+
+## 2026-07-13 — I retracted my own verdict: "priced in" was underpowered (12%). Workstream re-opened.
+
+_The most important day for the right reasons. Yesterday's clean "news is priced in, done" verdict was
+withdrawn — not because it was wrong, but because I couldn't yet prove it. The honest move was to re-open._
+
+### ✅ What got done
+- **RETRACTED the 07-12 "priced in" verdict.** A power analysis showed the test had only **12% power** — it
+  could not have detected a real effect even if one existed. A null result at 12% power says nothing. The
+  workstream was **re-opened**, not closed.
+- **The signal I dismissed came back significant** once 2024 was folded in — exactly what "underpowered"
+  predicts. This is *why* the retraction was necessary.
+- **Dynamic stop-loss, refuted two ways:** a live unrealized-P/L (MFE/MAE) tracker was added to both engines
+  and it showed the post-stop price path is a **fair random walk** — "ignore the stop" is EV-neutral. (tasks
+  #2, #3)
+- **Robustness pass:** re-ran across 9 markets + bootstrap — a *partial* correction to the "dead" verdict.
+- **A lot of write-up:** a numbered report system + master index; the complete 65-trial experiment log; a
+  seminar-style walkthrough; the stop-loss investigation report — each with an **Arabic edition**.
+- **Two integrity fixes:** playbooks stopped printing fabricated metrics (real trade counts now), and the
+  fragile local dashboard was flagged **FROZEN** so it can't be started by accident.
+
+### 🎯 Tomorrow / next
+- Get the **full 17-year frame** so the verdict can be settled at real power (done 07-14).
+
+### ⚠️ Challenges / lessons
+- **The core lesson of the whole workstream:** never report a negative result without a **power analysis** — a
+  null test tells you whether an effect you *found* is real; power tells you whether you could have found it at
+  all. I ran the first and skipped the second, and nearly shipped a confident verdict on 12% power.
+- An **unnoticed branch switch** had split the reports across `dev` and `fundamental-analysis`; merged them
+  back together and re-pinned the workstream to its own worktree.
+
+---
+
 ## 2026-07-12 — Two workstreams: the numbers were wrong (fixed, redone), and news trading was tested and killed
 
 **Two independent streams ran today.**
