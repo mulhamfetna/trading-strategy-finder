@@ -3,8 +3,17 @@
 **Assessed 2026-07-15 via a targeted research pass (105 agents, 24/25 claims verified). The user supplied 8
 sites + 2 X threads; the question was strictly: does each provide FREE, PROGRAMMATICALLY-PULLABLE data with
 POINT-IN-TIME / historical-intraday / release-timestamp value — or is it just a dashboard? Bottom line:
-none of the 8 solves our scarce need, Barchart is the one worth pursuing (and is a candidate for the long
-GC history we keep hitting as a bottleneck), and the real point-in-time leads are OFF the list.**
+none of the 8 solves our scarce need, and the real point-in-time leads are OFF the list.**
+
+> **⚠️ CORRECTION (2026-07-18).** An earlier version of this doc named **Barchart** as the candidate source
+> for the long **GC** history that unfreezes the GC news/distribution work. **That framing was wrong and is
+> retracted.** The server already has the Databento source that produced the 17 GB `NQ.csv` **and** a
+> *generic* assembler (`/home/dev/Mulham/data_2010_1s/main_futures_seconds.py`) that builds 1-second
+> continuous candles for **any** market. Long GC history is therefore a **download-from-Databento +
+> assemble**, using tooling we already own — **not** a paid Barchart acquisition. Barchart remains a
+> theoretically valid *alternative* intraday source, but it is not needed and is no longer the recommended
+> path. (Verified: no GC 2010 file exists on the server or in the local zips; every non-NQ market starts
+> 2025-01-01.)
 
 ---
 
@@ -13,8 +22,8 @@ GC history we keep hitting as a bottleneck), and the real point-in-time leads ar
 | | |
 |---|---|
 | **The scarce thing (ALFRED-style point-in-time macro)** | **None of the 8 listed sites has it.** FRED/ALFRED remains our best free source, unchallenged. |
-| **The one worth pursuing** | **Barchart** — its OnDemand `getHistory` API gives historical **intraday minute/tick OHLCV for NQ *and GC*** + a historical macro calendar. **PAID, sales-gated** (no published free tier/price). |
-| **The direct link to our open work** | Barchart's historical intraday **GC** OHLCV is a **candidate source for the long GC history** that would unfreeze the GC news/distribution work *and* give Z3's vol-targeting its OOS home. |
+| **Long GC history (the real bottleneck)** | **Already solvable in-house** — pull GC 2010 raw from the same Databento source that produced `NQ.csv`, run the existing generic assembler. No purchase. *(corrected 2026-07-18; supersedes the Barchart lead below)* |
+| **Barchart (listed site)** | Its OnDemand `getHistory` API gives historical **intraday minute/tick OHLCV for NQ *and GC*** + a historical macro calendar. **PAID, sales-gated.** A valid alternative, but **not needed** given the in-house Databento pipeline. |
 | **The real point-in-time leads (OFF the user's list)** | **Trading Economics** (paid, documented PIT calendar — the ALFRED-equivalent) and **FXMacroData** (free-ish, unproven — validate against ALFRED). |
 
 ---
@@ -23,7 +32,7 @@ GC history we keep hitting as a bottleneck), and the real point-in-time leads ar
 
 | Site | What it offers | Access | Verdict |
 |---|---|---|---|
-| **barchart.com** | Historical **intraday minute/tick/EOD OHLCV + open interest for NQ/GC**; `getCmdtyCalendar` = historical *revised/actual* US econ calendar | `getHistory` OnDemand API — **PAID, key-gated, no published free tier**; legacy free endpoint discontinued | ✅ **PURSUE (paid).** The one genuinely useful pull source; **candidate for long GC history.** Not ALFRED-vintage. Caveats: 1000-record cap; interval mode omits settlement price. |
+| **barchart.com** | Historical **intraday minute/tick/EOD OHLCV + open interest for NQ/GC**; `getCmdtyCalendar` = historical *revised/actual* US econ calendar | `getHistory` OnDemand API — **PAID, key-gated, no published free tier**; legacy free endpoint discontinued | ⚠️ **NOT NEEDED for GC history** *(corrected 2026-07-18 — the in-house Databento pipeline supplies it)*. Valid paid alternative only. Not ALFRED-vintage. Caveats: 1000-record cap; interval mode omits settlement price. |
 | **koyfin.com** | Macro + market analytics dashboards | **No API** ("we're in the analytics business"); UI table/chart exports only | ❌ **UI-only, redundant with FRED.** Drop for a pipeline. |
 | **finviz.com** | Screener/heatmap/news; **no** econ calendar / intraday / historical | Free = unofficial scraper (**ToS risk**); Elite (paid) = CSV/JSON export API but **equities-screener only** | ❌ **Not aligned** with NQ/GC-intraday + macro-vintage need. |
 | **etfdb.com** | ETF screener snapshots + holdings weightings | Unofficial scraper only; **no price-history time series** | ❌ **Useless as QQQ/GLD proxy history** (no OHLCV). (API Ninjas ETF likewise.) |
@@ -55,8 +64,10 @@ treat the threads as that workstream's input, not this one's.
    17-year NQ study was possible.
 2. **The actionable item is the long-GC-history bottleneck.** Two of our workstreams are frozen or
    OOS-blocked purely for lack of long GC 1-minute data (the GC news/distribution studies; Z3's vol-targeting
-   OOS). **Barchart `getHistory` is a concrete candidate** to supply historical intraday GC OHLCV — worth a
-   pricing enquiry (it's sales-gated, so cost is unknown until you ask).
+   OOS). **The fix is in-house, not a purchase** *(corrected 2026-07-18)*: pull GC 2010 raw from the same
+   Databento source that produced `NQ.csv` and run the existing generic assembler
+   (`main_futures_seconds.py`) — identical treatment to how NQ got its 17-year 1-second frame. Barchart
+   `getHistory` is only a fallback if that source is unavailable.
 3. **If you later want a paid PIT macro calendar** (to replace our hand-built FRED-`release/dates` +
    hardcoded-times calendar with vendor timestamps), **Trading Economics** is the lead — but our current free
    calendar already validated itself (the 8.3× spike on the exact minute), so this is a nice-to-have, not a

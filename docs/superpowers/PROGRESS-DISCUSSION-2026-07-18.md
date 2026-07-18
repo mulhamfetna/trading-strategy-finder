@@ -67,7 +67,7 @@ the wrong contrast; a wrong Z4 prediction. All caught, corrected, documented.
 
 | # | Decision | Context | My recommendation |
 |---|---|---|---|
-| **D-A** | **Acquire long GC history?** | The single bottleneck. Frozen: GC news + GC distribution. Blocked: Z3 vol-targeting's OOS test, the silver forward test. **Barchart `getHistory` (paid, sales-gated) is the concrete lead** (task #16). | ✅ **Yes — get a Barchart quote.** It unblocks the largest remaining block of real work. |
+| **D-A** | **Assemble long GC history from the existing pipeline** *(corrected 2026-07-18)* | The single bottleneck. Frozen: GC news + GC distribution. Blocked: Z3 vol-targeting's OOS test, the silver forward test. **NOT a paid acquisition** — the server already has the Databento source that produced `NQ.csv` and a *generic* assembler (`main_futures_seconds.py`) that turns any market's raw dump into 1-second continuous candles. NQ was chosen for the 2010 download because the news study was NQ-only; GC/all others are 2025-2026 only. | ✅ **Download GC 2010 raw from the same Databento source, drop it on the server, run the assembler.** Barchart is NOT needed. Same recipe extends to SI/CL/etc. |
 | **D-B** | **Adopt the sizing recommendation?** | Risk ~quarter-to-half Kelly (0.6–1.2%/trade), edge-champs only, hard cap. Well-supported but rests on a fluke-window edge and modeled (not live) gap fills. | ⏸️ **Paper-adopt as a risk *ceiling*; don't leverage up.** Confirm the edge OOS before real capital moves. |
 | **D-C** | **Vol-targeting contracts?** | Promising in-sample (Sharpe 3.2→3.9, both halves) but unexplained (corr≈0), turnover-heavy, in-sample. | ⏸️ **Hold for OOS** — needs D-A (GC) or a longer frame first. |
 | **D-D** | **Silver forward test?** | Frozen pre-registered test; needs data past 2026-07-02. | ⏸️ **Re-run `study_silver.py` when new data exists.** No action now. |
@@ -84,8 +84,15 @@ design works (gambler's-ruin scale-invariance, the stop truncating the fat tail)
 
 **The binding constraint on further progress is data, not analysis.** Almost every remaining thread — GC
 direction, GC distribution, vol-targeting OOS, silver — is frozen for one reason: **we only have long
-history for NQ.** The 17-year NQ frame is what turned guesses into 99%-power answers; the same acquisition
-for GC (via Barchart or similar) is the highest-leverage next step.
+history for NQ.** The 17-year NQ frame is what turned guesses into 99%-power answers.
+
+**Correction (2026-07-18):** getting the same long frame for GC is **not** a paid vendor purchase. The
+server already holds the Databento source that produced `NQ.csv` and a *generic* assembler
+(`/home/dev/Mulham/data_2010_1s/main_futures_seconds.py`) that builds 1-second continuous candles for any
+market. NQ was the only 2010 market assembled because the news study was NQ-focused at download time. The
+highest-leverage next step is simply: **pull GC 2010 raw from that same Databento source and run the
+assembler** — a download-and-assemble, not a Barchart quote. (Verified: no GC 2010 file exists on the
+server or in the local zips; every non-NQ market starts 2025-01-01.)
 
 **What I'd genuinely value your steer on:** (a) whether to pursue the GC data (D-A), (b) whether the sizing
 recommendation is directionally what you want before I refine it further, and (c) whether there's a *new*
