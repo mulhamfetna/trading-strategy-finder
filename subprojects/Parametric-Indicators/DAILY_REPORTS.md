@@ -4,6 +4,12 @@ _Newest on top. High-overview standup: what got done · what's next · challenge
 
 ---
 
+_Scope note: entries from 2026-07-13 onward cover the **`fundamental-analysis` workstream only** (this
+agent's branch). Parallel workstreams on other branches — the precision-bug/best-set deploy and the regime-
+research programs (TimesFM, HMM, Chronos-2, regime-edge) — are logged by their own agents elsewhere._
+
+---
+
 ## 2026-07-18 — Progress packaged for review; the GC-data path corrected (in-house, not paid)
 
 _A short, wrap-up day. Everything since 07-14 pulled into one review page, and one earlier recommendation
