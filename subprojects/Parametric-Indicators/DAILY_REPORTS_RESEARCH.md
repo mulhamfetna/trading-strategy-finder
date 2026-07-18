@@ -7,156 +7,238 @@ _Newest on top. High-overview standup: what got done · what's next · challenge
 > branch/worktree so they never collide:
 > - **Agent A — Optimizer / Champions** (mainline `dev`): optimization, new-market onboarding, playbooks,
 >   the shareable bundle, cap re-optimization, champion-set/best-per-slot work. → logs in **`DAILY_REPORTS.md`**.
-> - **Agent B — Research** (this file; isolated `research-*` branches): the deep-research-first studies —
->   Kalman, fundamental analysis, session-windows (#5), own-distribution/tail (#7), the TimesFM & Chronos-2
->   volatility-model tests, regime detection (HMM/Jump-Model), and the regime-edge program. → logs **here**.
+> - **Agent B — Research** (this file; `research-*` + `fundamental-analysis` branches): the deep-research-first
+>   studies — fundamental analysis / news (fa-v2), own-distribution & tail risk (#7), session-windows (#5),
+>   position-sizing / Kelly (#17), external-data sourcing (#16/#18), the TimesFM & Chronos-2 volatility-model
+>   tests, regime detection (HMM/Jump-Model), and the regime-edge program. → logs **here**.
 >
 > Kept in a **separate file** so the two agents never conflict on a shared log. Nothing in the research
-> branches is merged/deployed unless explicitly promoted. (Prior research days — Kalman 07-01, fundamental
-> analysis / #5 / #7 through ~07-14 — were folded into Agent A's `DAILY_REPORTS.md` before this split; from
-> 07-15 on, Agent B logs here.)
+> branches is merged/deployed unless explicitly promoted. Prior research (Kalman 07-01 … news up to 07-12) was
+> folded into Agent A's file before this split; **Agent B logs here from 07-13 on** (last shared entry: 07-12).
 
 ---
 
-## 2026-07-18 — The volatility-model line closed (3 methods agree), and the one thing that *does* work: size **with** volatility
-
-**Today finished the volatility-signal investigation and found the single actionable result of the whole arc.**
+## 2026-07-18 — The volatility-model line closed (3 methods agree); the one thing that works is: size **with** volatility
 
 ### ✅ What got done today
 
-**1 — Chronos-2 (the strongest TimesFM successor) was tested and it fails identically.** We fed our fusion
-strategy's trade log through Amazon's Chronos-2 forecast — a newer, richer foundation model (21 uncertainty
-bands vs TimesFM's 10) — used the same way: skip trades when the model says the near future is very
-uncertain. It **hurt**, exactly like TimesFM: risk-adjusted return 5.52 → 4.63, the worst drawdown completely
-untouched, worse than removing trades at *random*. The two models' "uncertainty" readings correlate 0.71 —
-they're measuring the same thing, so the richer model buys nothing.
+**1 — Chronos-2 (the strongest TimesFM successor) tested → fails identically.** Fed our fusion book through
+Amazon's Chronos-2 (richer foundation model, 21 uncertainty bands vs TimesFM's 10), used as a "skip the
+uncertain trades" filter. It **hurt**: risk-adjusted return 5.52 → 4.63, worst drawdown untouched, worse than
+random. Its uncertainty reading correlates 0.71 with TimesFM's — same thing, so the richer model buys nothing.
 
-**2 — That closes the whole question.** Three independent methods now agree — TimesFM, Chronos-2, and the
-Hidden-Markov regime model — that **filtering our strategy by volatility does not help**, because the strategy
-is **vol-seeking**: it earns its money precisely *in* turbulent markets. So I **closed three more planned
-model experiments** (TiRex, Moirai-2, Toto-2) as expected-negatives rather than burn compute re-proving it.
+**2 — That closes the whole question (3 methods agree).** TimesFM, Chronos-2, and the HMM/Jump-Model regime
+all say the same: **filtering by volatility does not help — the strategy is vol-seeking**, it earns *in*
+turbulence. Closed three more planned model experiments (TiRex, Moirai-2, Toto-2) as expected-negatives.
 
 ```mermaid
 flowchart TD
-    A["Skip the uncertain / high-volatility trades?"] --> B["TimesFM band → NO"]
-    A --> C["Chronos-2 band → NO (identical)"]
-    A --> D["HMM / Jump-Model regime → NO"]
-    B & C & D --> E["Because the strategy is VOL-SEEKING:<br/>its edge LIVES in high volatility"]
-    E --> F["So don't AVOID volatility — LEAN INTO it"]
+    A["Skip the uncertain / high-vol trades?"] --> B["TimesFM → NO"]
+    A --> C["Chronos-2 → NO (identical)"]
+    A --> D["HMM / Jump-Model → NO"]
+    B & C & D --> E["Strategy is VOL-SEEKING — edge LIVES in high volatility"]
+    E --> F["Don't AVOID volatility — LEAN INTO it (size up)"]
 ```
 
-**3 — Ran the three mechanism-based redirects, one by one.** Instead of "avoid volatility", tested the
-directions that still have a real mechanism:
-- **NQ concentration** (are gains driven by a few mega-caps, or broad?) — a genuinely *non-volatility* signal,
-  sourced free from Yahoo Finance. Showed a clean gradient (the strategy earns best when mega-caps dominate)
-  but did **not** beat a random-label control on our one year of trades. **Suggestive, not proven.**
-- **Sizing, not vetoing** — ⭐ **the winner.** Keep every trade, but size **bigger** in turbulent regimes
-  (where we earn) and **smaller** in calm ones. Risk-adjusted return **5.52 → 5.90**, more profit, **beats
-  95% of random sizings, and helps all three years.** And the textbook move — *inverse*-volatility sizing —
-  actually **hurt** (4.06), because it shrinks exactly the trades we make money on.
-- **Gate a volatility-*hurt* strategy** — built a quick mean-reversion baseline to test the flip side, but on
-  the Nasdaq a naive fade just loses money (no edge to protect). **Inconclusive** — needs our real second-layer
-  book.
+**3 — Ran the 3 mechanism-based redirects, one by one (regime-edge program).**
+- **NQ concentration** (mega-caps-driven vs broad; free from Yahoo) — clean gradient (earns best when mega-caps
+  dominate) but fails a random-label control on one year. **Suggestive, not proven.**
+- **Sizing, not vetoing** — ⭐ **the winner.** Keep every trade, size bigger in turbulent regimes / smaller in
+  calm. Return/DD **5.52 → 5.90**, beats **95%** of random sizings, helps **all 3 years**. Textbook
+  *inverse*-vol sizing **hurts** (4.06) — it shrinks our best trades.
+- **Gate a vol-hurt strategy** — a naive NQ mean-reversion just loses money (no edge to protect).
+  **Inconclusive**; needs the real L2 book.
+
+**4 — Data-sourcing correction (#16/#18):** fixed the record on long gold history — it's an **in-house
+Databento assemble**, not paid Barchart.
 
 ### 🎯 What's next
-- Promote the **sizing** result properly: choose the size ramp *out-of-sample*, re-test on a longer trade
-  history, and cap absolute drawdown — then wire it into the L1/L2 policy.
-- Optional: a cleaner concentration test; run the vol-hurt test on the real L2 book; push the research
-  branches + a cross-workstream summary for the team.
+Promote the **sizing** result (choose the ramp out-of-sample, longer book, cap absolute drawdown → wire into
+L1/L2 policy); optional cleaner concentration test / vol-hurt on the real L2 book; push branches + a
+cross-workstream summary.
 
 ### ⚠️ Challenges / lessons
-- **A negative result, tripled, is still worth a lot** — proving vol-filtering is dead across three methods
-  stops us (and future me) from chasing every new forecasting model as a fix.
-- **The constructive flip only appeared by asking the opposite question.** Every "avoid volatility" test
-  failed; inverting it to "lean into volatility" is what finally beat a control.
-- Everything here is still **one year of live trades** (our box levels only exist 2024→). The sizing win is
-  promising but borderline; it needs a longer book before it's trusted.
+- A negative result proven three ways is worth a lot — it stops us chasing every new forecasting model.
+- The constructive win only appeared by **inverting the question** (lean into vol, not avoid it).
+- Still **one year of live trades** (box levels only exist 2024→); the sizing win is promising but borderline.
 
 ---
 
-## 2026-07-17 — A teammate's "+$50k AI edge" reproduced to the dollar — then died out-of-sample; and the reason why
+## 2026-07-17 — The heavy day: TimesFM died out-of-sample, and the tail / news / sizing studies all closed
 
-**Took a foundation-model trading claim from raw files to a rigorous verdict, and discovered *why* it fails.**
+### ✅ What got done today (six threads)
 
-### ✅ What got done today
+**1 — TimesFM: reproduced to the dollar, then NO-GO.** Reproduced the teammate's +$20.7k exactly; it beat every
+cheap volatility proxy (dumb control passed) — but extended to a second year with honest out-of-sample tuning
+it **collapsed** (hurt every year, drawdown untouched, no better than random). **A single-regime artifact.**
 
-**1 — Fact-checked a teammate's TimesFM result and reproduced it exactly.** The brief said a Google
-time-series AI model added **+$50k profit and cut drawdown to $12k** on our Nasdaq strategy. Checking the
-actual files, the documented figure is **+$20.7k / drawdown $10.4k** — the +$50k wasn't supported (flagged and
-corrected). Then reproduced the real number **to the dollar** on the server, and independently re-verified the
-causal logic (no peeking at the future).
+**2 — Regime detection (from your X-thread) → the *why*.** A Hidden Markov Model showed the strategy earns
+**best in the most turbulent regime** (Return/DD 4.15) and loses only in the calmest (−0.17): **it's
+vol-seeking.** That explains the TimesFM failure. The regime as a *veto* was also NO-GO (the fancier Jump Model
+over-fit), but the diagnosis is the prize.
 
-**2 — Passed the "dumb control", then *failed* the honesty test that matters.** The AI beat every cheap
-volatility proxy (plain ATR, realized vol) on the original sample — so it wasn't trivially replaceable. But
-extending the test from one 16-month **bull** window to a second year, with the strategy tuned honestly
-out-of-sample, it **collapsed**: it hurt every year, left the worst drawdown untouched, and its trade
-selection became no better than random. **Verdict: NO-GO — a single-regime artifact, not a durable edge.**
+**3 — Own-distribution & tail study (#7) → COMPLETE, keep the fixed stop.**
+- D1: our per-trade P&L is **truncated, not fat-tailed** — the stop caps the tail (7,356 NQ trades).
+- D2: raw returns are genuinely fat (tail index α≈3), and **heavier overnight than during the day**.
+- D3: the 40-point stop's safety is **regime-dependent** (conditional EVT / McNeil-Frey).
+- D4: a volatility-scaled stop is **REJECTED** — the fixed stop/TP is already regime-invariant (scaling it
+  courts gambler's ruin). **Verdict: keep the fixed stop.**
 
-**3 — Opened a regime-detection study from your X-thread and found the real explanation.** Fit a Hidden Markov
-Model to label each day's market regime (calm → turbulent), then looked at where our strategy makes money:
+**4 — Fundamental analysis v2 (news) → ANSWERED: news is a *volatility* event, not a direction/recovery edge.**
+Close-on-news is mechanistically sound but **negligible** (champions are ~1% in a position across a release);
+entering on news has **no directional edge**; the "assist" (scale in after a loss) is **REJECTED** on 17 years
+— the belief was backwards. The tradeable content of news is a *volatility* rule, not a directional one.
 
-```mermaid
-flowchart LR
-    A["Calmest regime"] -->|"Return/DD −0.17 (loses)"| B["Most turbulent regime"]
-    B -->|"Return/DD 4.15 (best!)"| C["⇒ the strategy is VOL-SEEKING"]
-    C --> D["A high-volatility veto REMOVES its best trades<br/>⇒ why TimesFM failed"]
-```
+**5 — Position sizing / Kelly (#17) → workstream CLOSED.** Full Kelly on our ledger is ~**2.5%** (CI
+[0.3%, 4.4%]); the binding constraint is **drawdown, not ruin**, so the answer is **a quarter-to-half Kelly**,
+capped (Z1 Kelly → Z2 tail/gap haircut → Z4 + SIZE-00 = sizing fraction closed). Along the way, Z3:
+volatility-targeting the contract count looks **promising** (Sharpe 3.2 → 3.9, both halves) but is
+**in-sample** → flagged for OOS.
 
-The strategy earns **best** in the most turbulent regime and **loses** only in the calmest — so any
-"skip-the-uncertain-trades" rule strips out the good trades. That single finding explains the whole TimesFM
-result. The regime model as a *veto* was also a NO-GO (and the fancier Jump Model over-fit), but the
-*diagnosis* is gold.
+**6 — External-data sourcing (#16) → assessment DONE.** Surveyed macro-data providers: **none beat free
+FRED/ALFRED**; Barchart is the (paid) path to long gold history. (Corrected 07-18: long gold is actually an
+in-house Databento assemble.)
 
-**4 — Built the reusable machinery.** A standardized 5-stage reporting system (prior-art → reproduce →
-dumb-control → robustness → verdict) so every future idea runs the same gauntlet, plus two vetted backlogs
-(recent foundation-model successors; external data sources).
-
-*(Also progressed the parallel tail-risk (#7) and news-trading (fa-v2) research threads to their verdicts.)*
+Plus: built the standardized 5-stage reporting system + two experiment backlogs; extracted the X-thread HMM
+idea; kept the cross-workstream MASTER-STATUS doc current as each thread closed.
 
 ### 🎯 What's next
-- Test the best successor model (Chronos-2) to close the "did we try the strongest tool?" question.
-- Turn the vol-seeking diagnosis into a constructive test (sizing, not veto).
+Test the best successor model (Chronos-2); turn the vol-seeking diagnosis into a constructive sizing test;
+the #17 vol-targeting result needs an out-of-sample confirmation.
 
 ### ⚠️ Challenges / lessons
-- **Verify, don't trust — even your own intermediate numbers.** Caught a subtle bug where the volatility gate,
-  re-created fresh per trade, never accumulated history and silently vetoed *nothing*; only reproducing a known
-  number flagged it.
-- **A cache keyed on the wrong thing hides real changes.** Extending the data appeared to do nothing until I
-  cleared a results cache that keys on strategy parameters, not on the underlying data.
-- **n=1 is the recurring enemy** — our box levels only exist from 2024, so every test is one regime deep.
+- **Verify, don't trust — even your own numbers.** Caught a volatility-gate bug (a fresh object per trade never
+  built history → vetoed nothing) only by reproducing a known figure.
+- **A cache keyed on parameters, not data, hid a fix** — cleared it and the data-extension finally took.
+- Two separate studies (tail #7, news fa-v2) reached the same shape: **the interesting thing about our edge is
+  volatility, not direction** — foreshadowing today's (07-18) conclusion.
 
 ---
 
-## 2026-07-15 — Three research threads opened deep-research-first; a foundation-model claim taken in for testing
+## 2026-07-16 — (light day — work committed on the 17th)
 
-**A "research-first" day: every new thread started with a prior-art mining pass before touching our data.**
+No research commits landed on 2026-07-16. The volatility-distribution (#7) completion, the fundamental-analysis
+decisions, and the TimesFM/regime results spanned the 16th–17th and were committed on **07-17** (above). No
+separate standup for the 16th.
+
+---
+
+## 2026-07-15 — Five threads advanced in one day: session-windows closed, tail + TimesFM opened, news re-opened, an engine trap fixed
 
 ### ✅ What got done today
 
-**1 — Opened the TimesFM volatility-model investigation.** A teammate shared a foundation-model result
-claiming a large profit boost on our Nasdaq strategy. Rather than take it at face value, I vendored the code
-and data into an isolated research branch, fact-checked the claim against the actual files (the headline was
-overstated), and ran the mandatory deep-research prior-art pass: 25 sourced findings, whose upshot was that
-these models are weak at *direction* but their *uncertainty* might be a usable volatility signal — with **no
-published precedent** for using it as a trade filter, so the burden of proof was ours.
+**1 — Session-windows (#5) → COMPLETE.** Measured our own intraday shape on 17 years of Nasdaq data: the
+classic **U-shape is confirmed**, but the famous London–NY overlap is a **non-event** for us. Key finding: our
+**risk** inherits the session shape (stop-outs cluster by time of day) but our **edge does not** — so **no
+entry-time filter**, though it argues for time-of-day **sizing**. Consolidated report; workstream closed.
 
-**2 — Ran deep-research passes for two more threads.** Session-windows (#5 — does time-of-day carry a
-tradeable edge?) and own-distribution / tail-risk (#7 — how fat are our per-trade losses, really?). Each
-started from an online prior-art sweep, then a concrete on-our-data test plan — the standing rule that every
-workstream begins research-first.
+**2 — Own-distribution / tail (#7) → opened.** Deep-research prior-art pass produced the EVT/GARCH recipe
+(extreme-value theory + volatility model) and a concrete on-our-data plan for measuring how fat our losses are.
+
+**3 — TimesFM volatility-model → opened.** Vendored a teammate's foundation-model result into an isolated
+branch, fact-checked the claim against the files (**documented +$20.7k, not the quoted +$50k**), ran the
+mandatory prior-art pass (25 sourced findings; no published precedent for the band-as-filter idea).
+
+**4 — Fundamental analysis v2 (news) → re-opened** on a tighter design (NQ + gold only; decisions =
+close/enter/assist; content→pattern→rule). First result **A1: gold reacts strongly to US macro (7.2×** the
+quiet-day move) and weights events differently than the Nasdaq.
+
+**5 — Engine hygiene + a frozen forward test.** Renamed a genuinely dangerous name — the misleadingly-titled
+`veto_mask` → `veto_vote_mask` (#4) — and documented what *actually* blocks an entry. Pre-registered and
+**froze** the silver test (D3) as a forward test (not dropped, not confirmed — pinned so it can't be
+cherry-picked later).
 
 ```mermaid
 flowchart LR
     A["New research thread"] --> B["Deep-research prior-art sweep"]
-    B --> C["On-OUR-data test plan"]
+    B --> C["On-OUR-17-years test"]
     C --> D["Reproduce → dumb-control → robustness → verdict"]
 ```
 
 ### 🎯 What's next
-- Reproduce the TimesFM number on the server and put it through the full gauntlet.
+Reproduce the TimesFM number on the server and put it through the full gauntlet; execute the #7 tail plan.
 
 ### ⚠️ Challenges / lessons
-- **The brief's number didn't match the source files.** Catching that on day one (documented +$20.7k, not the
-  quoted +$50k) set the honest baseline for everything that followed.
-- A web-research rate limit interrupted the adversarial-verification stage; salvaged the sourced findings and
-  queued the verification rather than block.
+- **The brief's number didn't match the source files** (+$20.7k documented, +$50k quoted) — caught day one.
+- A web-research rate limit interrupted adversarial verification; salvaged the findings and queued the rest.
+
+---
+
+## 2026-07-14 — Fundamental analysis settled properly on 16 years: BOTH signals dead, news IS priced in; and the stop-outs are real 1-second sweeps
+
+### ✅ What got done today
+
+**1 — Settled the retraction with real statistical power — BOTH signals dead.** The news verdict had been
+*retracted* on 07-13 because the test had only **12% power**, and a partial re-correction had made a signal look
+significant again. Wired in the full **16-year frame (2010–2026, validated 100% against the old data)** and
+re-ran at ~**99% power (n=882 releases)**: **both the direction and the magnitude signals are dead — "scheduled
+US macro is priced in" is RE-CONFIRMED, properly.** Direction −0.004, magnitude −0.018, persistence 48.2%,
+shape p=0.880. The figure that had looked like a survivor was **2025 being the single luckiest of the years**,
+not an edge.
+
+```mermaid
+flowchart LR
+    A["07-13: 'news magnitude edge?'"] -->|"only 12% power → retracted"| B["Re-test on 17y, n=882, 99% power"]
+    B --> C["Priced in: dir −0.004, mag −0.018, shape p=0.88"]
+    C --> D["The 'survivor' was 2025 = luckiest of 17 years"]
+```
+
+**2 — Stop-loss forensics (TASK #11) → the sweeps are real, and the verdict still stands.** Investigated whether
+our stop-outs are genuine or microstructure noise: **94% of stop-outs are 1-second sweeps (median duration 1
+second)** — price spikes through the stop and comes right back. Even so, the **stop-loss verdict STANDS**: the
+per-trade edge from a wider stop is dwarfed by the swing it exposes. Closed the task.
+
+**3 — Two silent bugs caught mid-rerun, and data-integrity hardened.** The 17-year write-up caught **two more
+silent bugs** (wrong numbers, no error thrown). The macro calendar now **announces its date-span on every
+load**, after an rsync had silently halved a study's data without any error, and a **watchdog** was added — the
+kind of quiet corruption that invalidates a result.
+
+### 🎯 What's next
+Close out #4 (veto_mask rename) and the silver test; open the next studies — session-windows (#5) and
+own-distribution / tail (#7).
+
+### ⚠️ Challenges / lessons
+- **Never report a negative without a power analysis.** The 07-13 retraction happened because the first test
+  couldn't have detected the effect even if it existed; only the 16-year, ~99%-power re-run was conclusive.
+- **A silent data-halving nearly shipped a wrong answer**, and two more no-error bugs surfaced in the rerun —
+  hence the calendar now self-reports its span and a watchdog guards the data.
+
+---
+
+## 2026-07-13 — The retraction: a power analysis caught my own overconfidence; and the dynamic-stop premise was refuted
+
+### ✅ What got done today
+
+**1 — Retracted the "news is priced in" verdict — it was underpowered.** A power analysis showed the test
+behind the confident "priced in" conclusion had only **12% power** — it could not have detected the effect even
+if it were real. **Retracted the verdict and re-opened the workstream**, and wrote up *how every safeguard I'd
+built still failed to catch it*. Then folding in 2024 and re-testing across 9 markets with a bootstrap gave a
+**partial correction** — the signal dismissed at 12% power came back *apparently* significant. (Definitively
+re-settled the next day on the full 16-year frame: it was 2025 luck.)
+
+```mermaid
+flowchart LR
+    A["07-12: 'news is priced in' ✅"] -->|"power = 12% → can't conclude"| B["RETRACT + re-open"]
+    B --> C["fold in 2024, 9-market bootstrap"]
+    C -->|"looks significant again"| D["07-14: re-test at full power → dead (2025 luck)"]
+```
+
+**2 — Dynamic stop-loss study → the premise is refuted.** Added live unrealized-P/L tracking (how far each
+trade runs for/against you — MFE/MAE) to **both** engines, then measured the **post-stop price path: it's a
+fair random walk.** After a stop-out, price is equally likely to go either way — so a blanket "ignore the stop
+and hold" rule is **EV-neutral**, not a hidden edge. Complete report, "from the candle to the theorem."
+
+**3 — Data prep + reporting.** Wrote the formal download spec and the **1,208 macro-release timestamps** for the
+seconds-level extraction (which powered the next day's 1-second-sweep finding). Produced a **complete
+experiment log (all 65 trials, every number and verdict)**, a numbering system + master index, and Arabic
+editions of the reports.
+
+### 🎯 What's next
+Re-settle the news question at full power on the long data frame (→ 07-14); mine the seconds data for the
+stop-out microstructure (→ 07-14 #11).
+
+### ⚠️ Challenges / lessons
+- **A confident *positive* can be a low-power artifact.** The retraction is the headline: my own safeguards
+  passed a result that a power analysis then invalidated. Power analysis is now mandatory before any verdict.
+- **An unnoticed branch switch had split the reports** — merged `dev` back into the research branch to reunite
+  them.
