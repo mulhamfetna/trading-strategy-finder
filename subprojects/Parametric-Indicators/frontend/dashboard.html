@@ -440,11 +440,11 @@ function _txL2(t){ return (
 function regimeSizingCard(rs){
   if(!rs || !rs.overlay) return '';
   const m = n => (n==null? '—' : '$'+Math.round(n).toLocaleString());
-  const d = rs.delta_equal_risk, sign = d>=0?'+':'';
-  return `<div class="box" style="border:1px solid #c77d0a;background:#fdf3e2">
+  const d = rs.delta_equal_risk, sign = d>=0?'+':'−';   // NEVER drop the minus: a loss must read as a loss
+  return `<div class="box" style="grid-column:1/-1;border:1px solid #c77d0a;background:#fdf3e2;color:#5b3c05">
     <h3 style="color:#8a5a06">⚗️ Regime size-ramp <span style="font-weight:400">— EXPERIMENTAL CANDIDATE</span></h3>
     <div style="font-size:11px;color:#8a5a06;margin:-4px 0 8px">${rs.note}</div>
-    <table><tbody>
+    <table style="width:100%;color:#5b3c05"><tbody>
       <tr><td>flat book</td><td style="text-align:right">${m(rs.flat.pnl)} · DD ${m(rs.flat.dd)} · Ret/DD ${rs.flat.ret_dd??'—'}</td></tr>
       <tr><td>with overlay <i>(equal risk)</i></td><td style="text-align:right"><b>${m(rs.overlay.pnl)}</b> · DD ${m(rs.overlay.dd)} · Ret/DD <b>${rs.overlay.ret_dd??'—'}</b></td></tr>
       <tr><td>Δ profit at equal risk</td><td style="text-align:right;color:${d>=0?'#3a9d5d':'#d1495b'}"><b>${sign}${m(Math.abs(d)).replace('$','$')}</b></td></tr>
