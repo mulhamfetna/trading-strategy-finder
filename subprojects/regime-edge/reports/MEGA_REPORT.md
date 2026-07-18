@@ -19,7 +19,7 @@ each survived a **dumb-control + a random-shuffle control** before being believe
 | `research-timesfm-fusion` | Does a TimesFM "uncertainty" filter help? | ❌ **NO-GO** | Real on one bull year, **dies out-of-sample** |
 | `research-regime-hmm` | Detect the regime and filter by it? | ❌ **NO-GO** (great **diagnosis**) | The strategy is **vol-seeking** — the reason everything else failed |
 | `research-chronos2` | Does the best successor model (Chronos-2) help? | ❌ **NO-GO** | **Identical** failure — 3 methods now agree |
-| `research-regime-edge` | Use the regime to **size**, not veto? | ✅ **WINNER** | **Size WITH volatility → +$10.4k at equal risk** |
+| `research-regime-edge` | Use the regime to **size**, not veto? | 🟡 **QUALIFIED WINNER** | **Size WITH volatility** — signal real, dollar magnitude unconfirmed at n=1 |
 
 **The through-line:** three separate methods (TimesFM, Chronos-2, HMM) each proved you cannot *avoid*
 volatility here — because the edge **lives** in volatility. The constructive flip — *lean into* it by sizing
@@ -90,6 +90,12 @@ independently corroborated on the L2 layer. And the textbook move — *inverse*-
 
 ![The winner: size with volatility](figures/fig_sizing.png)
 
+> **⚠️ Second-round test qualifies this.** A block-bootstrap of the dollar uplift gives a 90% CI of
+> **[−$21k, +$61k]** — it **includes zero** (P(positive)=70%); a purged 5-fold CV helps in **4/5** folds. So the
+> *signal is real* (the regime ordering matters — 96% vs random, 4/5 folds, sound mechanism) but the
+> **dollar magnitude is not statistically confirmed on one year of trades.** Treat as a **candidate**, not a
+> proven +$10.4k. See `docs/SECOND_TEST.md`.
+
 ### 4b. NQ concentration — a clean negative
 A genuinely non-volatility signal (are gains driven by a few mega-caps or broad?), sourced free from Yahoo.
 A first look showed a gradient, but the **proper significance test killed it**: high-vs-low per-trade P&L
@@ -120,8 +126,10 @@ so the book's max-drawdown stays within the flat risk budget.
 - **Not uniform per-layer** — deploy on the combined book (robust there); re-derive the ramp per layer if ever
   applied per layer.
 
-**Next (proposed):** a second confirmation pass, then wire the ramp into the L1/L2 policy **behind a flag** and
-verify on the dashboard/backtester, then merge as the latest research winner.
+**Second confirmation pass: DONE — it qualified the result** (`docs/SECOND_TEST.md`): the dollar uplift's 90%
+CI includes zero, so **deploy as an EXPERIMENTAL candidate behind a flag, NOT as a confirmed winner** that
+changes defaults. What would upgrade it to confirmed: a **longer, bear-inclusive book** (the 2010–23 box
+levels we don't yet have).
 
 *Figures rendered from the verified server results (`make_figures.py`). Each branch's full evidence — prior-art,
 reproduction, dumb-control, robustness — lives in that branch's `docs/`.*
