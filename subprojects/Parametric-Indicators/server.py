@@ -246,6 +246,17 @@ class H(BaseHTTPRequestHandler):
                 out = l2payload.build_view_payload(l1lay, {}, body.get("timeframe", "4h"), "l1",
                                                    instrument=body.get("instrument", "NQ"), l1_engine=body)
                 out["meta"]["run_ms"] = round((time.time() - t0) * 1000)
+                # EXPERIMENTAL regime size-ramp overlay — OFF by default, ADDITIVE only (never mutates any
+                # existing number; failures are swallowed so the endpoint is unaffected). Candidate, not an edge.
+                if body.get("regime_sizing"):
+                    try:
+                        from optimize import regime_overlay
+                        ov = regime_overlay.overlay_from_log(out["log"],
+                                                             instrument=body.get("instrument", "NQ"))
+                        if ov:
+                            out["meta"]["regime_sizing"] = ov
+                    except Exception:
+                        pass
                 _stamp_causal(out["log"], "l1", l1lay,
                               "PERMISSIVE-internal (L1-view projection — its L2 rows are a no-gate "
                               "throwaway, NOT a real combined L2)", body.get("timeframe", "4h"))
