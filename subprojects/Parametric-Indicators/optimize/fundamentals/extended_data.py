@@ -116,15 +116,18 @@ def load_1m_extended(instrument: str = "NQ") -> pd.DataFrame:
     return df
 
 
-def load_1s(start=None, end=None) -> pd.DataFrame:
-    """1-SECOND NQ bars (7.8 GB file — ALWAYS pass a window, never load it whole).
+def load_1s(start=None, end=None, instrument: str = "NQ") -> pd.DataFrame:
+    """1-SECOND bars (multi-GB file — ALWAYS pass a window, never load it whole).
 
     This is what answers Task #6: the 2025-03-07 payrolls bar went DOWN 46 points and UP 141 points
     inside the same minute, and a 1-minute OHLC candle cannot tell you the ORDER. Seconds can.
+
+    `instrument` selects the market (NQ 7.8 GB, GC 5.4 GB since 2026-07-19).
     """
-    if not _16Y_SECONDS.exists():
-        raise FileNotFoundError(f"1-second file not found: {_16Y_SECONDS}")
-    it = pd.read_csv(_16Y_SECONDS, parse_dates=["datetime"], chunksize=2_000_000)
+    sec = sixteen_year_path(instrument, "1s")
+    if not sec.exists():
+        raise FileNotFoundError(f"1-second file not found: {sec}")
+    it = pd.read_csv(sec, parse_dates=["datetime"], chunksize=2_000_000)
     keep = []
     for ch in it:
         if start is not None:
@@ -185,7 +188,8 @@ def _seek_to_timestamp(path: Path, target: str) -> int:
         return f.tell()
 
 
-def load_1s_windows(windows, chunksize: int = 4_000_000, verbose: bool = True) -> pd.DataFrame:
+def load_1s_windows(windows, chunksize: int = 4_000_000, verbose: bool = True,
+                    instrument: str = "NQ") -> pd.DataFrame:
     """Many small 1-second windows, in ONE pass over the 7.3 GB / 142M-row file.
 
     `windows` = iterable of (start, end) timestamps, inclusive. Returns every 1-second bar falling in
@@ -199,8 +203,9 @@ def load_1s_windows(windows, chunksize: int = 4_000_000, verbose: bool = True) -
     sorts chronologically. So we can locate window boundaries with a string searchsorted and never parse
     the 142M timestamps we are going to throw away — we parse only the few thousand rows we keep.
     """
-    if not _16Y_SECONDS.exists():
-        raise FileNotFoundError(f"1-second file not found: {_16Y_SECONDS}")
+    sec = sixteen_year_path(instrument, "1s")
+    if not sec.exists():
+        raise FileNotFoundError(f"1-second file not found: {sec}")
 
     w = sorted((pd.Timestamp(s), pd.Timestamp(e)) for s, e in windows)
     if not w:
@@ -210,13 +215,13 @@ def load_1s_windows(windows, chunksize: int = 4_000_000, verbose: bool = True) -
     lo, hi = min(s_str), max(e_str)                     # numpy's max() has no loop for <U19 dtype
 
     keep, seen, t0 = [], 0, _time.time()
-    off = _seek_to_timestamp(_16Y_SECONDS, lo)
+    off = _seek_to_timestamp(sec, lo)
     if verbose:
-        pct = 100 * off / _16Y_SECONDS.stat().st_size
-        print(f"    [1s] seeking to {lo} -> byte {off:,} ({pct:.1f}% into the file); "
+        pct = 100 * off / sec.stat().st_size
+        print(f"    [1s] {instrument}: seeking to {lo} -> byte {off:,} ({pct:.1f}% into the file); "
               f"skipping the {pct:.0f}% before it entirely", flush=True)
 
-    fh = _16Y_SECONDS.open("r")
+    fh = sec.open("r")
     fh.seek(off)
     reader = pd.read_csv(fh, chunksize=chunksize, dtype={"datetime": str},
                          names=["datetime", "open", "high", "low", "close", "volume"], header=None)
