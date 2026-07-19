@@ -82,27 +82,30 @@ def load_1m_extended(instrument: str = "NQ") -> pd.DataFrame:
     """The longest 1-minute NQ history available, in the SAME shape the engine's loader produces:
     columns ['Date','Open','High','Low','Close','Volume'], tz-naive US-Eastern wall-clock, sorted.
 
-    Prefers the 16-year frame (2010->2026). Falls back to 2024+2025+2026 if it is absent, and to the
-    engine's own loader for any non-NQ instrument.
+    Prefers the assembled 16-year frame (2010->2026) for ANY instrument that has one — NQ since
+    2026-07-13, GC since 2026-07-19. Falls back to the 2024+2025+2026 stitch (NQ only, which is the
+    only instrument those legacy files exist for), then to the engine's own loader.
 
     ⚠️ THE ENGINE MUST NEVER USE THIS. Lengthening the engine's price history would change n_split and
     the volatility-percentile gate, and therefore EVERY champion. optimize/data.py stays untouched and
     the golden 6/6 stay byte-identical. This is research only.
     """
-    if instrument != "NQ":
-        from optimize import data as _d
-        _, df1, *_ = _d.load_inputs("4h", instrument=instrument)
-        return df1
+    long_frame = sixteen_year_path(instrument, "1m")
 
-    if _16Y.exists():
-        df = _read(_16Y)
-    else:
+    if long_frame.exists():
+        df = _read(long_frame)
+    elif instrument == "NQ":
+        # The legacy 2024+2025+2026 stitch exists for NQ only.
         frames = [_read(p) for p in (_2024, _MAIN) if p.exists()]
         if not frames:
             from optimize import data as _d
             _, df1, *_ = _d.load_inputs("4h", instrument="NQ")
             return df1
         df = pd.concat(frames, ignore_index=True)
+    else:
+        from optimize import data as _d
+        _, df1, *_ = _d.load_inputs("4h", instrument=instrument)
+        return df1
 
     df = df.sort_values("Date").reset_index(drop=True)
 
