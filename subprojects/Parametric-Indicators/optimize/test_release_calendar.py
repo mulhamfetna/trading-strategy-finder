@@ -36,10 +36,21 @@ def test_release_times_are_only_the_three_known_clock_times():
 
 
 def test_event_count_is_plausible():
-    # ~9 recurring releases over ~17 months. Far fewer means a fetch silently failed;
+    # ~9 recurring high-impact releases per month. Far fewer means a fetch silently failed;
     # far more means two-star events leaked in.
+    #
+    # Scaled to the calendar's OWN span rather than a hardcoded count: this guard was written for a
+    # 17-MONTH calendar (bound 100..260) and went stale the moment the fundamental-analysis workstream
+    # extended it to 17 YEARS (1,208 events, 2010->2026). Deriving the band from the span keeps the
+    # original intent — catch a silent fetch hole or a two-star leak — without breaking on every
+    # legitimate extension.
     cal = rc.load_calendar()
-    assert 100 <= len(cal) <= 260, f"got {len(cal)} events"
+    span_months = (cal["Date"].max() - cal["Date"].min()).days / 30.44
+    per_month = len(cal) / span_months
+    assert 3.0 <= per_month <= 15.0, (
+        f"got {len(cal)} events over {span_months:.1f} months = {per_month:.2f}/month "
+        f"(expected ~9/month; too few => a fetch silently failed, too many => two-star events leaked in)"
+    )
 
 
 def test_payrolls_is_present_and_at_0830():

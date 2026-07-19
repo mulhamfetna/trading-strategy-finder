@@ -54,8 +54,21 @@ _2024 = _DATA / "2024_data" / "NQ_1m_2024.csv"
 # ✅ VALIDATED 2026-07-14: on the 486,969-bar overlap with the engine's file (2025-01-01 -> 2026-05-19)
 #    it is 100.000% IDENTICAL on open/high/low/close/volume. Zero missing bars, zero extra, max abs
 #    difference 0.0000. Same source, same conventions. Safe to build on.
-_16Y = Path("/home/dev/Mulham/data_2010_1s/NQ_Continuous_Data/NQ_1m.csv")
-_16Y_SECONDS = Path("/home/dev/Mulham/data_2010_1s/NQ_Continuous_Data/NQ_1s.csv")
+# GC landed 2026-07-19, assembled by the SAME main_futures_seconds.py from the same Databento source.
+#   · GC_1m: 2010-06-06 -> 2026-07-17, 5,658,124 bars, ~350k/year with no holes
+#   · identical schema and conventions to NQ (same assembler, same roll rule, same tz handling)
+#   · likewise NOT back-adjusted — same roll-gap caveat as above
+# Any instrument assembled into <ROOT>/<INST>_Continuous_Data/<INST>_<tf>.csv resolves automatically.
+_16Y_ROOT = Path("/home/dev/Mulham/data_2010_1s")
+
+
+def sixteen_year_path(instrument: str = "NQ", tf: str = "1m") -> Path:
+    """Path to the assembled long-history frame for an instrument, or a non-existent path if absent."""
+    return _16Y_ROOT / f"{instrument}_Continuous_Data" / f"{instrument}_{tf}.csv"
+
+
+_16Y = sixteen_year_path("NQ", "1m")
+_16Y_SECONDS = sixteen_year_path("NQ", "1s")
 
 
 def _read(p: Path) -> pd.DataFrame:
