@@ -28,6 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from optimize import data, signals                               # noqa: E402
 from optimize.fast_engine import fast_backtest, signals_to_int   # noqa: E402
 from perf._common import champion_preset                         # noqa: E402
+from optimize.fundamentals.champion_params import champion_stops, describe  # noqa: E402
 
 TFS = ["4h", "2h", "1h", "15m", "5m", "2m"]
 STOP = 40.0
@@ -44,12 +45,14 @@ def num_kelly(r):
 def trades(tf):
     df, df1, box, vf, n = data.load_inputs(tf, instrument="NQ")
     p = champion_preset(tf)
+    _SS, _SH, _TP, _FL = champion_stops(p, tf)   # STRICT — a missing stop must raise, never default
+    print(describe(p, tf), flush=True)
     sig = signals_to_int(signals.decision_signals(df, box))
     gate = vf <= float(np.percentile(vf[:n], float(p.get("gate_pct", 60))))
     F = fast_backtest(df["Date"].to_numpy(), df["Close"].to_numpy(float), sig, gate,
                       df1["Date"].to_numpy(), df1["High"].to_numpy(float), df1["Low"].to_numpy(float),
-                      df1["Close"].to_numpy(float), float(p.get("sl_soft_points", 30)), STOP,
-                      float(p.get("tp_hard_points", 60)), bool(p.get("flip_entry_direction", False)))
+                      df1["Close"].to_numpy(float), _SS, _SH,
+                      _TP, _FL)
     return np.array([t["pnl_points"] for t in F], float)
 
 

@@ -39,6 +39,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from optimize import data, instruments, signals                    # noqa: E402
 from optimize.fast_engine import fast_backtest, signals_to_int     # noqa: E402
 from perf._common import champion_preset                           # noqa: E402
+from optimize.fundamentals.champion_params import champion_stops  # noqa: E402
 
 # Session labels by ENTRY HOUR (ET), from S1 (SESSION-02). Coarsened to hour since 4h entries are hourly.
 def session_of(hour: int) -> str:
@@ -67,8 +68,8 @@ def main() -> int:
 
     df, df1, box, vf, n = data.load_inputs(a.tf, instrument=a.instrument)
     p = champion_preset(a.tf)
-    sl_soft = float(p.get("sl_soft_points", 30)); sl_hard = float(p.get("sl_hard_points", 40))
-    tp = float(p.get("tp_hard_points", 60)); gp = float(p.get("gate_pct", 60))
+    sl_soft, sl_hard, tp, _flip = champion_stops(p)
+    gp = float(p["gate_pct"])
     pv = instruments.point_value(a.instrument)
 
     sig = signals_to_int(signals.decision_signals(df, box))
@@ -76,7 +77,7 @@ def main() -> int:
     F = fast_backtest(df["Date"].to_numpy(), df["Close"].to_numpy(float), sig, gate,
                       df1["Date"].to_numpy(), df1["High"].to_numpy(float), df1["Low"].to_numpy(float),
                       df1["Close"].to_numpy(float), sl_soft, sl_hard, tp,
-                      bool(p.get("flip_entry_direction", False)))
+                      _flip)
     if not F:
         print("no trades"); return 1
 
