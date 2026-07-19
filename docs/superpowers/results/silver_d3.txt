@@ -1,0 +1,46 @@
+
+====================================================================================
+D3 — PRE-REGISTERED SILVER TEST  (criterion declared in-source; see the docstring)
+====================================================================================
+  [calendar] 1208 events  2010-01-08 -> 2026-12-09
+  [cache] HIT — 882 surprises from surprises_cache.csv (2010-04-14 -> 2026-07-02); skipping ALFRED entirely
+  SI 1-min: 2025-01-01 18:00:00 -> 2026-07-02 19:59:00  (518,753 bars)
+  GC 1-min: 2025-01-01 18:00:00 -> 2026-07-02 19:59:00  (530,917 bars)
+
+------------------------------------------------------------------------------------
+CRITERION (1) — ENOUGH EVENTS?
+------------------------------------------------------------------------------------
+  silver releases with a causal h=5 return:  full=81   2025=51   2026=30
+  full-sample corr(surprise, SI) = -0.173   2025 = -0.032   2026 = -0.321
+  POWER at the OOS n=30 to see r=0.15: 12%  (a null here would be blind — but a POSITIVE still counts against a pre-set bar)
+  => (1) PASS: 2026 OOS n=30 >= 25
+
+------------------------------------------------------------------------------------
+CRITERION (2) — INDEPENDENT OF GOLD? (silver is 0.85-corr with gold; gold did the same OOS)
+------------------------------------------------------------------------------------
+  aligned silver+gold release events: n=81
+  corr(SI return, GC return) = +0.879   (the sisters move together)
+  corr(surprise, SI)            = -0.173   shuffle p = 0.123
+  corr(surprise, GC)            = -0.058
+  PARTIAL corr(surprise, SI|GC) = -0.258   shuffle p = 0.026   <- does silver add ANYTHING beyond gold?
+  => (2) PASS: silver's signal beyond gold is significant (p=0.026)
+
+------------------------------------------------------------------------------------
+CRITERION (3) — STABLE? (negative in >= 3 of 4 chronological quarters)
+------------------------------------------------------------------------------------
+  quarter 1: n= 21  corr = -0.153  (neg)
+  quarter 2: n= 20  corr = -0.070  (neg)
+  quarter 3: n= 20  corr = -0.226  (neg)
+  quarter 4: n= 20  corr = -0.382  (neg)
+  => (3) PASS: negative in 4/4 quarters (>= 3)
+
+====================================================================================
+VERDICT — against the PRE-DECLARED criterion (all three must pass to stay alive)
+====================================================================================
+  (1) enough events      : PASS
+  (2) independent of gold: PASS
+  (3) stable across time : PASS
+
+  ✅ SILVER SURVIVES. Freeze a forward-data pre-registration: silver only, h=5, the frozen
+     rule applied to NEW data past 2026-07-02 that we have not yet seen. Do NOT start
+     building on it — it still cannot be confirmed without long history or forward data.

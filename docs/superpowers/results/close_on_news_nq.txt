@@ -1,0 +1,68 @@
+===== TF=4h =====
+
+NQ 4h champion · 642 trades · total P/L $44,035 · $20/pt
+
+trades OPEN across an 08:30 release: 2 of 642 (0.3%)  — the rest are already flat at release time
+too few spanning trades to say anything. (Consistent with 'already flat for ~77%'.)
+===== TF=1h =====
+
+NQ 1h champion · 1157 trades · total P/L $67,950 · $20/pt
+
+trades OPEN across an 08:30 release: 13 of 1157 (1.1%)  — the rest are already flat at release time
+
+====================================================================================
+GIVE-UP — P/L earned from 08:29 (close-before point) to the real exit, per spanning trade
+====================================================================================
+  total give-up (held − closed) : $      +4,540
+  mean per trade                : $        +349   sd $981
+  95% CI [$-208, $+852]   bootstrap p = 0.217
+
+====================================================================================
+THE RISK-ADJUSTED READ (the Moreira-Muir mechanism)
+====================================================================================
+  holding through the release contributed $+4,540 of the $67,950 total P/L
+  ...at a per-trade sd of $981 across 13 trades (std of the through-release P/L we'd remove by closing).
+  closing before news (no re-entry) is COST-NEUTRAL — it moves the exit, adds no round-trip.
+
+====================================================================================
+VERDICT — is closing before news worth it?
+====================================================================================
+  ✅ GIVE-UP is INDISTINGUISHABLE FROM ZERO (p=0.217) but carries real variance
+     (sd $981/trade). => Holding through the release earns ~nothing on average
+     while adding risk. Closing before news is a FREE variance reduction — the mechanism holds.
+     WORTH a risk-adjusted implementation, BUT note n=13 is small (already flat for most
+     releases), so the total risk removed is modest. Confirm on GC + more TFs before building.
+
+  Also reported: held $+5,790 vs close-before $+1,250 on the 13
+  spanning trades. Next: re-entry variant (close 08:29, re-enter after the burst) + GC champion.
+===== TF=15m =====
+
+NQ 15m champion · 1685 trades · total P/L $54,105 · $20/pt
+
+trades OPEN across an 08:30 release: 17 of 1685 (1.0%)  — the rest are already flat at release time
+
+====================================================================================
+GIVE-UP — P/L earned from 08:29 (close-before point) to the real exit, per spanning trade
+====================================================================================
+  total give-up (held − closed) : $      +1,670
+  mean per trade                : $         +98   sd $910
+  95% CI [$-334, $+526]   bootstrap p = 0.664
+
+====================================================================================
+THE RISK-ADJUSTED READ (the Moreira-Muir mechanism)
+====================================================================================
+  holding through the release contributed $+1,670 of the $54,105 total P/L
+  ...at a per-trade sd of $910 across 17 trades (std of the through-release P/L we'd remove by closing).
+  closing before news (no re-entry) is COST-NEUTRAL — it moves the exit, adds no round-trip.
+
+====================================================================================
+VERDICT — is closing before news worth it?
+====================================================================================
+  ✅ GIVE-UP is INDISTINGUISHABLE FROM ZERO (p=0.664) but carries real variance
+     (sd $910/trade). => Holding through the release earns ~nothing on average
+     while adding risk. Closing before news is a FREE variance reduction — the mechanism holds.
+     WORTH a risk-adjusted implementation, BUT note n=17 is small (already flat for most
+     releases), so the total risk removed is modest. Confirm on GC + more TFs before building.
+
+  Also reported: held $+2,870 vs close-before $+1,200 on the 17
+  spanning trades. Next: re-entry variant (close 08:29, re-enter after the burst) + GC champion.

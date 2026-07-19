@@ -64,17 +64,103 @@ LOOKBACK = 6          # months of prior changes used to form the naive expectati
 HS = [5, 15, 30, 60]  # minutes held after the print
 
 
-def build_surprises(cal: pd.DataFrame, lookback: int = LOOKBACK) -> pd.DataFrame:
-    """One row per release we can price: (Date, event, actual, expected, surprise_z)."""
+_CACHE = Path(__file__).parent / "surprises_cache.csv"
+_CACHE_SIG = Path(__file__).parent / "surprises_cache.sig"
+
+
+def _calendar_signature(cal: pd.DataFrame) -> str:
+    """A fingerprint of the calendar that PRODUCED a cache.
+
+    The cache is valid iff it was built from THIS calendar. Anything else is a guess.
+    """
+    ev = "|".join(f"{e}:{int((cal['event'] == e).sum())}" for e in sorted(SERIES))
+    return f"n={len(cal)} {cal['Date'].min()} -> {cal['Date'].max()} {ev}"
+
+
+def build_surprises(cal: pd.DataFrame, lookback: int = LOOKBACK,
+                    use_cache: bool = True) -> pd.DataFrame:
+    """One row per release we can price: (Date, event, actual, expected, surprise_z).
+
+    CACHED. Building this from scratch pulls one ALFRED point-in-time vintage PER RELEASE — ~1,150 API
+    calls over 17 years, roughly ten minutes. And the answers are IMMUTABLE: a point-in-time vintage is,
+    by definition, what the number was on a date that has already passed. It cannot change. So we cache
+    it to disk and only refetch when the calendar grows.
+
+    Pass use_cache=False to force a rebuild.
+    """
+    sig = _calendar_signature(cal)
+    if use_cache and _CACHE.exists() and _CACHE_SIG.exists():
+        # VALID IFF IT WAS BUILT FROM THIS EXACT CALENDAR.
+        #
+        # The previous check compared the cache's DATE SPAN against the calendar's, and it could never
+        # pass. The calendar legitimately contains releases the cache can never hold: FUTURE scheduled
+        # dates (out to 2026-12-09 — no vintage exists yet, and no price either) and releases from before
+        # our price history begins. So the cache's span is ALWAYS narrower than the calendar's, the check
+        # always said "stale", and 945 ALFRED fetches were re-run on every single invocation while the
+        # log cheerfully printed "rebuilding" as though that were normal.
+        #
+        # A cache that never hits is not a cache. Fingerprint the calendar instead: identical calendar =>
+        # identical vintages (a point-in-time vintage is immutable by definition), so the cache is exact.
+        if _CACHE_SIG.read_text().strip() == sig:
+            c = pd.read_csv(_CACHE, parse_dates=["Date"])
+            print(f"  [cache] HIT — {len(c)} surprises from {_CACHE.name} "
+                  f"({c['Date'].min().date()} -> {c['Date'].max().date()}); skipping ALFRED entirely")
+            return c
+        print(f"  [cache] MISS — the calendar changed since this cache was built. Rebuilding.")
+        print(f"          cached: {_CACHE_SIG.read_text().strip()}")
+        print(f"          now:    {sig}")
+
+    import time as _t
     rows = []
+    total = sum(int((cal["event"] == e).sum()) for e in SERIES)
+    done = 0
+    # TWO KINDS OF DROP, AND CONFLATING THEM COST A HEALTHY RUN ITS LIFE ON 2026-07-14.
+    #
+    #   expected  — the series has no ALFRED vintage that far back. PPIFIS starts 2014-02-19, so all 43
+    #               PPI releases in our 2010-2026 calendar before that date return HTTP 400. This is a
+    #               FACT ABOUT THE DATA. It is permanent, it is fine, and it needs no alarm.
+    #   transient — a 502/timeout. THIS IS A REAL, RECOVERABLE LOSS: one 502 on PAYEMS 2016-02-05 silently
+    #               cost us a genuine payrolls release, and the same request succeeded on retry.
+    #
+    # Reported as one undifferentiated "errors=44", these are indistinguishable — so 43 expected drops
+    # masked 1 real one, and I misread the whole thing as a degradation and killed the run.
+    expected_drops: list[str] = []
+    transient_fails: list[str] = []
+    t0 = _t.time()
+    print(f"  [fetch] {total} ALFRED point-in-time vintages to pull "
+          f"(one per release — this is the slow part)", flush=True)
+
     for event, (sid, kind) in SERIES.items():
         ev = cal[cal["event"] == event].sort_values("Date")
         raw = []
         for ts in ev["Date"]:
+            done += 1
+            # PROGRESS — every 25 vintages, with a rate and an ETA.
+            #
+            # WHY flush=True MATTERS: Python BUFFERS stdout when it is redirected to a file. Without
+            # the flush, a 10-minute run writes an EMPTY log and looks indistinguishable from a hang.
+            # That is a silent failure by construction, and it bit us on 2026-07-14.
+            if done % 25 == 0 or done == total:
+                el = _t.time() - t0
+                rate = done / el if el > 0 else 0
+                eta = (total - done) / rate if rate > 0 else 0
+                # The two counts are reported SEPARATELY. "expected" is allowed to be large and boring;
+                # "TRANSIENT" is the one that must never be nonzero, and it is spelled loudly.
+                print(f"  [fetch] {done:>5}/{total}  ({100*done/total:>5.1f}%)  "
+                      f"{rate:>5.1f}/s  eta {eta/60:>5.1f} min  "
+                      f"expected-drops={len(expected_drops)}  "
+                      f"TRANSIENT-FAILS={len(transient_fails)}", flush=True)
             try:
                 v = alfred.vintage(sid, ts.strftime("%Y-%m-%d"))
+            except alfred.SeriesNotInAlfred:
+                # Permanent and expected: this series simply did not exist yet. Not a failure.
+                expected_drops.append(f"{event} {ts.date()}")
+                continue
             except Exception as e:                       # noqa: BLE001
-                print(f"  ! {event} {ts.date()}: {e}")
+                # Survived all retries. This is a genuine hole in the sample.
+                transient_fails.append(f"{event} {ts.date()}: {e}")
+                print(f"  🚨 TRANSIENT FAIL (survived {alfred.RETRIES} retries) "
+                      f"{event} {ts.date()}: {e}", flush=True)
                 continue
             chg = v.diff() if kind == "diff" else v.pct_change() * 100.0
             chg = chg.dropna()
@@ -94,7 +180,43 @@ def build_surprises(cal: pd.DataFrame, lookback: int = LOOKBACK) -> pd.DataFrame
         d["surprise_z"] = d["raw_surprise"] / sd
         rows.append(d.dropna(subset=["surprise_z"]))
         print(f"  {event:<18} {sid:<10} {len(d):>3} releases")
-    return pd.concat(rows).sort_values("Date").reset_index(drop=True) if rows else pd.DataFrame()
+    if not rows:
+        return pd.DataFrame()
+    out = pd.concat(rows).sort_values("Date").reset_index(drop=True)
+
+    # ---- THE FETCH LEDGER — say out loud what we got and what we lost --------------------------------
+    print()
+    print(f"  [fetch] DONE. {len(out)} surprises from {total} calendar releases.")
+    if expected_drops:
+        by_ev: dict[str, int] = {}
+        for d in expected_drops:
+            by_ev[d.split()[0]] = by_ev.get(d.split()[0], 0) + 1
+        print(f"  [fetch] {len(expected_drops)} EXPECTED drops (series predates ALFRED's archive — "
+              f"permanent, not a failure):")
+        for ev, n in sorted(by_ev.items()):
+            print(f"            {ev}: {n}")
+
+    # ---- THE GATE: a cache with silent holes in it is worse than no cache ----------------------------
+    #
+    # A transient failure drops a release. If we then WRITE that sample to the cache, every future run
+    # HITS the degraded cache and the hole becomes PERMANENT — a network blip from one afternoon, baked
+    # into every study forever, invisible. That is the single most dangerous outcome in this module.
+    #
+    # So: any surviving transient failure and we refuse to cache. The study still runs (you get the
+    # DataFrame back), but nothing is persisted, and a re-run will fetch cleanly.
+    if transient_fails:
+        print()
+        print(f"  🚨 {len(transient_fails)} TRANSIENT FAILURE(S) SURVIVED {alfred.RETRIES} RETRIES:")
+        for f in transient_fails:
+            print(f"       {f}")
+        print(f"  🚨 REFUSING TO WRITE THE CACHE. These are real, recoverable releases — caching this")
+        print(f"     sample would bake the holes in permanently. Re-run to fetch them.")
+        return out
+
+    out.to_csv(_CACHE, index=False)          # immutable by construction — safe to cache forever
+    _CACHE_SIG.write_text(sig)               # ...but ONLY for the calendar that produced it
+    print(f"  [cache] wrote {len(out)} surprises -> {_CACHE.name}  (0 transient failures — clean)")
+    return out
 
 
 def outcomes(df1: pd.DataFrame, sur: pd.DataFrame, h: int) -> tuple[np.ndarray, np.ndarray]:
@@ -112,9 +234,17 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--tf", default="4h")
     ap.add_argument("--n-shuffle", type=int, default=2000)
+    ap.add_argument("--extended", action="store_true",
+                    help="fold in 2024 (roughly DOUBLES the sample)")
     a = ap.parse_args()
 
-    _, df1, *_ = data.load_inputs(a.tf)
+    if a.extended:
+        from optimize.fundamentals.extended_data import load_1m_extended
+        df1 = load_1m_extended("NQ")
+        print(f"[EXTENDED] price frame {df1['Date'].iloc[0]} -> {df1['Date'].iloc[-1]} "
+              f"({len(df1):,} bars)")
+    else:
+        _, df1, *_ = data.load_inputs(a.tf)
     cal = rc.load_calendar()
 
     print("Pulling ALFRED first-print vintages (one per release)...\n")

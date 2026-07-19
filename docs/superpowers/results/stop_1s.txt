@@ -1,0 +1,104 @@
+
+NQ 4h  ·  SL 30.0/40.0  TP 60.0  ·  $20/pt
+642 trades, 235 killed by the HARD STOP
+
+KILL CRITERION (declared before the run):
+  (A) sweeps < 15% of stop-outs            -> verdict STANDS
+  (B) post-sweep path is ALSO a martingale     -> verdict STANDS
+  verdict FALLS only if sweeps are COMMON *and* ignoring the stop on them PAYS.
+
+loading 1-second bars for 235 stop-outs (480 min of path each) — ONE pass over the 7.3 GB file...
+    [1s] seeking to 2025-01-02 02:45:00 -> byte 6,684,712,807 (86.0% into the file); skipping the 86% before it entirely
+    [1s] scanned    4.0M rows  kept 958,081      1s
+    [1s] done: 3,814,110 bars across 235 windows in 7s (one pass)
+
+====================================================================================
+RESULT 1 — HOW MANY STOP-OUTS ARE ACTUALLY TWO-SECOND SWEEPS?
+====================================================================================
+  stop-outs examined at 1-second resolution : 235
+  SWEEPS  (price retraced to the stop within 60s) :  221   ( 94.0%)
+  GENUINE (it did not come back)                        :   14   (  6.0%)
+
+  of the sweeps, how long was price beyond the stop before retracing?
+     median 1s   ·  mean 2.5s   ·  90th pct 4s   ·  max 49s
+     under 5 seconds: 92.8%   under 10 seconds: 95.5%
+
+====================================================================================
+RESULT 2 — IF WE HAD IGNORED THE STOP (1-second counterfactual, TP kept, floor at 3x)
+====================================================================================
+  (unresolved within 480 min — neither TP nor floor — EXCLUDED, never counted as a win: 32 of 235)
+
+  SWEEPS   n= 193  |  realized $    -154,400  ->  ignoring the stop $    -135,600  |  delta $     +18,800  (recovered to TP 47.2%)
+  GENUINE  n=  10  |  realized $      -8,000  ->  ignoring the stop $     -24,000  |  delta $     -16,000  (recovered to TP 0.0%)
+  ALL      n= 203  |  realized $    -162,400  ->  ignoring the stop $    -159,600  |  delta $      +2,800  (recovered to TP 44.8%)
+
+====================================================================================
+RESULT 3 — THE IMPLEMENTABLE RULE: delay the stop, bail if it doesn't come back
+====================================================================================
+  (RESULT 2 is NOT tradeable — it labels sweeps using the 60s AFTER the stop, then measures
+   the path from that same point. This one CHARGES YOU FOR THE WAIT, as reality would.)
+
+  realized on all 235 stop-outs (take the stop, as today): $    -188,000
+
+   wait  margin |      rule P/L      vs today |  stayed in   bailed | floor hits
+  ----------------------------------------------------------------------------
+      5s      0p | $    -169,315 $     +18,685 |        205       26 |         96
+      5s      2p | $    -190,845 $      -2,845 |        140       91 |         70
+      5s      5p | $    -181,455 $      +6,545 |         66      165 |         33
+     10s      0p | $    -172,060 $     +15,940 |        211       20 |        100
+     10s      2p | $    -194,075 $      -6,075 |        162       69 |         82
+     10s      5p | $    -185,335 $      +2,665 |         92      139 |         47
+     30s      0p | $    -172,415 $     +15,585 |        218       12 |        105
+     30s      2p | $    -182,190 $      +5,810 |        191       39 |         93
+     30s      5p | $    -190,025 $      -2,025 |        139       91 |         71
+     60s      0p | $    -175,570 $     +12,430 |        221        8 |        108
+     60s      2p | $    -174,660 $     +13,340 |        200       29 |         97
+     60s      5p | $    -181,690 $      +6,310 |        161       68 |         81
+    120s      0p | $    -175,630 $     +12,370 |        224        5 |        109
+    120s      2p | $    -170,130 $     +17,870 |        211       18 |        100
+    120s      5p | $    -176,610 $     +11,390 |        177       52 |         87
+
+  BEST: wait 5s, margin 0 pts -> $-169,315 ($+18,685 vs taking the stop)
+
+====================================================================================
+RESULT 4 — THE CONTROL: no sweeps, no 1-second data, JUST A WIDER STOP
+====================================================================================
+  hold every stopped trade to TP or the 3x floor (stop widened 40 -> 120 pts)
+  control P/L: $    -176,500   ($+11,500 vs taking the stop, 112 floor hits)
+
+  ⇒ the 1-second sweep logic is worth $+7,185 OVER the dumb control.
+    Of the $+18,685 headline, $+11,500 is just 'the stop is too tight' and needs NO 1-second data at all.
+
+====================================================================================
+RESULT 5 — IS IT DISTINGUISHABLE FROM NOISE? (mandatory: no result without this)
+====================================================================================
+  best delay rule vs the stop       +3.98 pts/trade ($   +80)  95% CI [ -6.16,+14.31]  p=0.452  — NOISE
+  dumb wider stop vs the stop       +2.45 pts/trade ($   +49)  95% CI [ -8.26,+13.35]  p=0.651  — NOISE
+  SWEEP LOGIC vs the control        +1.53 pts/trade ($   +31)  95% CI [ -1.98, +4.72]  p=0.373  — NOISE
+
+  per-trade spread (sd) = 80.6 points. THIS is why 235 trades buys so little:
+  a +4.0 pt/trade effect against a 81 pt spread needs ~3,220 stop-outs to confirm. We have 235.
+
+====================================================================================
+VERDICT — against the criterion declared BEFORE the run
+====================================================================================
+  (A) NOT satisfied: sweeps are 94.0% of stop-outs (>= 15%). Sweeps are COMMON and REAL.
+  (B) judged on the TRADEABLE rule (Result 3), by SIGNIFICANCE — as declared:
+      best delay rule = wait 5s / margin 0pts -> $+18,685 (= +3.98 pts/trade), p = 0.452
+
+      ✅ (B) SATISFIED. The expectancy of ignoring the stop is INDISTINGUISHABLE FROM ZERO
+         (p = 0.452; the 95% interval contains 0). That is precisely what a
+         MARTINGALE looks like — a fair game, which no exit rule can beat.
+
+      => THE ORIGINAL VERDICT STANDS. The dynamic stop-loss remains DEAD.
+
+      AND NOTE WHAT DID *NOT* SAVE IT. The sweeps are entirely real: 94% of
+      stop-outs are swept, and the median one is beyond the stop for ONE SECOND. 1-minute
+      bars really are too coarse to see them. The resolution complaint was CORRECT —
+      and fixing it changed NOTHING, because the money was never there to begin with.
+      Seeing the sweep more clearly does not make it profitable to sit through.
+
+      Of the $+18,685 that LOOKED like an edge, $+11,500 is just
+      'the stop is too tight' (no 1-second data needed), and ALL of it is noise:
+      235 stop-outs against an 81-point per-trade spread would need
+      ~3,220 samples to resolve.

@@ -1,0 +1,48 @@
+
+NQ 17y · per-event-type post-release path patterns (anchor = close[T-1], causal)
+Bonferroni threshold for 5 events: p < 0.010
+
+================================================================================================
+VOLATILITY PATTERN — mean |move| (x a normal minute) at each horizon, per event
+================================================================================================
+  event                 n |     +0     +1     +2     +5    +15    +30
+  cpi                 194 |  12.3x   3.3x   3.1x   2.2x   1.5x   1.7x
+  gdp                 194 |   4.1x   2.2x   2.0x   1.7x   1.2x   1.4x
+  nonfarm_payrolls    191 |  13.6x   4.2x   4.1x   3.3x   2.2x   2.0x
+  pce                 183 |   3.5x   2.3x   2.0x   1.4x   1.1x   1.2x
+  ppi                 180 |   5.4x   2.1x   2.1x   1.4x   1.2x   1.3x
+  retail_sales        164 |   4.1x   2.4x   1.9x   1.6x   1.5x   1.3x
+
+  => the spike-then-decay is consistent and event-specific (a real, saveable VOLATILITY shape).
+
+================================================================================================
+DIRECTIONAL PATTERN — does each event reliably move price ONE WAY? (signed, at +30 min)
+================================================================================================
+  event                 n |  mean +30 ($)    % up   boot p   sign p  verdict
+  cpi                 194 |          +36   57.2%    0.793    0.052  coin flip — no rule
+  gdp                 194 |          +25   53.6%    0.540    0.351  coin flip — no rule
+  nonfarm_payrolls    191 |          +30   55.0%    0.714    0.193  coin flip — no rule
+  pce                 183 |          +46   49.7%    0.349    1.000  coin flip — no rule
+  ppi                 180 |          -54   43.9%    0.312    0.117  coin flip — no rule
+  retail_sales        164 |          -12   47.0%    0.826    0.482  coin flip — no rule
+
+================================================================================================
+PERSISTENCE — does the +5min move predict the +30min move, per event? (momentum vs reversion)
+================================================================================================
+  cpi                persisted  47.9%  corr(early,late) +0.21  momentum
+  gdp                persisted  45.9%  corr(early,late) +0.19  momentum
+  nonfarm_payrolls   persisted  51.3%  corr(early,late) +0.02  neither
+  pce                persisted  47.0%  corr(early,late) +0.05  neither
+  ppi                persisted  46.7%  corr(early,late) -0.15  reversion
+  retail_sales       persisted  48.8%  corr(early,late) +0.12  momentum
+
+================================================================================================
+VERDICT — what is saveable as a rule?
+================================================================================================
+  ✅ VOLATILITY pattern: REAL and event-specific — each release has a consistent spike-then-decay
+     (e.g. CPI/NFP the loudest). This is a saveable rule, but a VOL/straddle/stop-width rule —
+     it says HOW BIG and HOW LONG the move is, not WHICH WAY.
+  ❌ DIRECTIONAL pattern: NONE. No event reliably pushes price one way (all coin flips after
+     Bonferroni). 'The announcement said X so price did directional Y' is not supported —
+     consistent with the 17-year pooled direction null (-0.004). The saveable content->pattern
+     rule is a VOLATILITY rule, not a directional one.

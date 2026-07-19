@@ -1,0 +1,66 @@
+
+NQ edge-champions (4h/2h/1h/15m) · n=4100 trades · win 40.8% · expectancy +2.4 pts
+gap model: alpha=3.0, cap={}x the stop; ruin = wealth < 10% of start
+
+====================================================================================
+NO gap (backtest-ideal)
+====================================================================================
+  f (risk/trade)   P(ruin)   P(50% DD)   median final W
+           0.5%     0.00%        0.0%            1.32x
+           0.6%     0.00%        0.0%            1.39x
+           1.0%     0.00%        0.7%            1.67x
+           1.2%     0.00%        2.9%            1.86x
+           2.0%     0.00%       32.9%            2.39x
+           2.5%     0.07%       58.5%            2.73x
+           3.0%     0.25%       79.4%            3.05x
+           4.0%     2.97%       96.5%            3.43x  <- ruin > 1%
+
+====================================================================================
+gap g=5%, cap 4x
+====================================================================================
+  f (risk/trade)   P(ruin)   P(50% DD)   median final W
+           0.5%     0.00%        0.0%            1.26x
+           0.6%     0.00%        0.0%            1.32x
+           1.0%     0.00%        1.7%            1.54x
+           1.2%     0.00%        5.2%            1.68x
+           2.0%     0.03%       39.4%            2.10x
+           2.5%     0.07%       66.6%            2.29x
+           3.0%     0.88%       83.7%            2.38x
+           4.0%     4.58%       98.1%            2.34x  <- ruin > 1%
+
+====================================================================================
+gap g=10%, cap 4x
+====================================================================================
+  f (risk/trade)   P(ruin)   P(50% DD)   median final W
+           0.5%     0.00%        0.0%            1.22x
+           0.6%     0.00%        0.0%            1.26x
+           1.0%     0.00%        3.2%            1.40x
+           1.2%     0.00%        8.8%            1.50x
+           2.0%     0.00%       46.6%            1.75x
+           2.5%     0.33%       72.9%            1.82x
+           3.0%     1.18%       88.6%            1.76x  <- ruin > 1%
+           4.0%     7.80%       99.0%            1.54x  <- ruin > 1%
+
+====================================================================================
+gap g=5%, cap 6x
+====================================================================================
+  f (risk/trade)   P(ruin)   P(50% DD)   median final W
+           0.5%     0.00%        0.0%            1.26x
+           0.6%     0.00%        0.0%            1.32x
+           1.0%     0.00%        1.7%            1.54x
+           1.2%     0.00%        5.6%            1.63x
+           2.0%     0.00%       41.0%            2.03x
+           2.5%     0.18%       66.6%            2.26x
+           3.0%     0.47%       83.8%            2.41x
+           4.0%     4.50%       97.9%            2.30x  <- ruin > 1%
+
+====================================================================================
+READ
+====================================================================================
+  Compare the safe f under a realistic gap overlay to Z1's full Kelly (2.5%) and quarter (0.6%).
+  The gap tail is what K6 warned about: a fraction that looks safe under the bounded-loss backtest
+  (g=0) can breach the ruin threshold once gaps are included. Read off the largest f holding
+  P(ruin) < 1% under a plausible gap rate — that is the tail-safe cap. The honest sizing is the
+  MIN of (quarter-Kelly, the CI floor, this tail-safe f), with a hard contract cap on top.
+  NOTE: the gap rate g and cap are ASSUMPTIONS from D2/D3, not measured live fills — sensitivity
+  shown across g. Do not adopt a fraction without real fill/slippage data.

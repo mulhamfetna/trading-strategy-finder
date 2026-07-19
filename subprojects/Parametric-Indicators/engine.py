@@ -108,6 +108,11 @@ class SimpleStrategyParams:
     news_pre_min: int = 0         # minutes before the release the window opens (measured: 0)
     news_post_min: int = 12       # minutes after  the release the window closes (measured: 12)
     news_profit_exempt_mult: float = 1.0   # survive the window iff open profit >= this * stop distance
+    # Excursion tracking (live unrealized-P/L observation). OFF => byte-identical (golden-locked):
+    # the trade dict gains NO new keys, so the golden trade-ledger hash cannot move. Purely
+    # observational — it can never change an entry, an exit, or a P/L. Prerequisite for the dynamic
+    # stop-loss, which must know how far a trade went FOR us before it went against us.
+    track_excursions: bool = False
     # Intra-candle entry for vetoed signals (Phase 1). OFF => byte-identical (golden-locked).
     intracandle_veto_entry: bool = False   # arm a vetoed (vol-passed) signal, enter mid-candle when the gate re-opens
     intracandle_max_wait:   int  = 240     # max 1-min bars to wait inside the candle (N); 240 ~= one 4h candle
@@ -218,7 +223,7 @@ class SimpleStrategy:
         tp_mult: Optional[np.ndarray] = None,
         entry_gate: Optional[np.ndarray] = None,
         entry_resolver=None,
-        veto_mask: Optional[np.ndarray] = None,
+        veto_vote_mask: Optional[np.ndarray] = None,   # was `veto_mask` — a trap name; see WHAT BLOCKS below
         blocked_log: Optional[List[Dict]] = None,
         veto_as_flip: bool = False,
         signals: Optional[np.ndarray] = None,
@@ -228,12 +233,38 @@ class SimpleStrategy:
     ) -> Tuple[List[Dict], Dict]:
         """Run the simple engine.
 
+        ═══════════════════════════════════════════════════════════════════════════════════════════════
+        WHAT ACTUALLY BLOCKS AN ENTRY — read this before adding any "veto"-like feature.
+        ═══════════════════════════════════════════════════════════════════════════════════════════════
+        There is EXACTLY ONE array that stops a new trade opening on a decision bar: `entry_gate`.
+        The entry path is `if not entry_gate[idx]: continue`. That is the whole blocking mechanism.
+
+        `veto_vote_mask` DOES NOT BLOCK ANYTHING. It is the per-decision-bar VETO VOTE from the indicator
+        layer, and the engine reads it ONLY to:
+            • classify WHY a bar was dropped, for `blocked_log` ('veto' vs 'vol_gate') — diagnostic only;
+            • arm the intra-candle vetoed-entry rescue (Phase 1);
+            • decide which entries to REVERSE under `veto_as_flip`;
+            • abort/re-arm a carried setup in the live carry resolver.
+        The veto is ALREADY folded into `entry_gate` upstream — `runner.build_layer` returns
+        `gate = vol_gate ∧ ¬veto_mask`, and THAT gate is what arrives here as `entry_gate`. So the two
+        arrays must be kept CONSISTENT by the caller; passing a `veto_vote_mask` without the matching
+        exclusion already baked into `entry_gate` does NOTHING (except in `veto_as_flip` mode, where the
+        gate is deliberately vol-only and vetoed bars stay eligible so they can be reversed).
+
+        ⚠️  THIS IS A TRAP THAT ALREADY BIT US. The parameter used to be named `veto_mask`, and during the
+        news-veto work the obvious-looking move — "pass a veto_mask to stand aside on release bars" —
+        silently did nothing, because the mask was never in `entry_gate`. To stand a bar aside you must
+        remove it from `entry_gate` (see `optimize/core._news_window_mask` → `gate = gate & ~nmask`).
+        The rename to `veto_vote_mask` exists so the name can no longer imply a blocking power it lacks.
+
         ADAPTIVE-CLONE additions (absent from the original src engine):
           - sl_tp_mult: optional per-4h-bar array; multiplies all four SL/TP
             distances at entry (scaling all four preserves ordering constraints).
             None or 1.0 => identical to the original.
           - entry_gate: optional per-4h-bar bool array; if entry_gate[idx] is
             False, no new trade opens on that bar. None => identical to original.
+          - veto_vote_mask: per-bar indicator veto VOTE. NON-BLOCKING — used for logging / intra-candle
+            rescue / veto_as_flip / carry-abort only. See the block above.
         When both are None the clone is behaviourally identical to the original
         (verified by tests/test_clone_parity.py).
 
@@ -305,12 +336,17 @@ class SimpleStrategy:
         blocked_until: Optional[pd.Timestamp] = None
         soft_consec_count: int = 0   # consecutive 1-min closes past the active soft line
         bars_held: int = 0           # 1-min bars at/after entry on the open trade (for the time cap)
+        # Excursion tracking (opt-in, params.track_excursions). The running extremes the OPEN trade has
+        # reached. They must live out here, not in the exit walk: the walk is re-entered once per
+        # decision bar, so a trade spanning several bars would otherwise reset its own history.
+        run_hi: float = float('-inf')
+        run_lo: float = float('inf')
         armed: Optional[Dict] = None  # carry-mode (entry_resolver) armed-but-unfilled setup
         scope = self.params.direction_scope
         flip = self.params.flip_entry_direction
         # veto_as_flip: a vetoed (but otherwise eligible) signal ENTERS THE OPPOSITE direction
         # instead of being dropped. The caller passes a vol-only entry_gate in this mode (so vetoed
-        # bars are not pre-filtered) plus the veto_mask used here to decide which entries to reverse.
+        # bars are not pre-filtered) plus the veto_vote_mask used here to decide which entries to reverse.
         def _opp(d):
             return 'short' if d == 'long' else 'long'
 
@@ -318,7 +354,7 @@ class SimpleStrategy:
             """Walk 1-min bars belonging to df_4h[idx] looking for an exit on the currently open
             trade. Single exit model regardless of `flip`: hard-SL > hard-TP > soft-SL on the
             ENTERED direction. `flip` only reverses entry direction (see entry logic below)."""
-            nonlocal open_trade, blocked_until, soft_consec_count, bars_held
+            nonlocal open_trade, blocked_until, soft_consec_count, bars_held, run_hi, run_lo
             if open_trade is None or start_1m is None:
                 return
             lo = int(start_1m[idx])
@@ -339,6 +375,15 @@ class SimpleStrategy:
                 m_high  = float(mh_arr[t])
                 m_low   = float(ml_arr[t])
                 m_close = float(mc_arr[t])
+
+                # Excursion tracking: the running extremes reached while this trade is open. Updated
+                # BEFORE the exit checks, so the exit bar itself is included — mirrors fast_engine,
+                # which slices hi[:ti+1] (inclusive of the exit bar).
+                if self.params.track_excursions:
+                    if m_high > run_hi:
+                        run_hi = m_high
+                    if m_low < run_lo:
+                        run_lo = m_low
 
                 exit_reason: Optional[ExitReason] = None
                 fill: Optional[float] = None
@@ -414,10 +459,13 @@ class SimpleStrategy:
                 if exit_reason is not None and fill is not None:
                     sub_ts = pd.Timestamp(md_arr[t])                   # materialise the exit timestamp
                     _finalise(open_trade, sub_ts, fill, exit_reason, ep, d, pv)
+                    if self.params.track_excursions:                    # THE main exit path
+                        _stamp_excursions(open_trade, run_hi, run_lo, bars_held)
                     trades.append(open_trade)
                     blocked_until = sub_ts
                     open_trade = None
                     soft_consec_count = 0
+                    run_hi, run_lo = float('-inf'), float('inf')
                     return
                 if resets_counter:
                     soft_consec_count = 0
@@ -463,10 +511,13 @@ class SimpleStrategy:
                 if _nin and _ng:
                     _finalise(open_trade, ts_new_bar_start, float(d4_close[idx - 1]), 'FORCE_CLOSE',
                               open_trade['entry_price'], open_trade['direction'], self.NQ_POINT_VALUE)
+                    if self.params.track_excursions:
+                        _stamp_excursions(open_trade, run_hi, run_lo, bars_held)
                     trades.append(open_trade)
                     open_trade = None
                     soft_consec_count = 0
                     bars_held = 0
+                    run_hi, run_lo = float('-inf'), float('inf')
 
             # Exit walk for a carry-over trade (1-min bars in this new window).
             _walk_exit_for_4h(idx)
@@ -513,7 +564,7 @@ class SimpleStrategy:
 
                 # gate (vol etc.) matches the original: only blocks when set, in-range, and False.
                 gated = (entry_gate is None) or not (0 <= idx < len(entry_gate)) or bool(entry_gate[idx])
-                vetoed = (veto_mask is not None) and (0 <= idx < len(veto_mask)) and bool(veto_mask[idx])
+                vetoed = (veto_vote_mask is not None) and (0 <= idx < len(veto_vote_mask)) and bool(veto_vote_mask[idx])
 
                 # DIAGNOSTIC ONLY (no effect on trades): record fresh in-scope directional signals
                 # that the composite gate dropped, so the caller can LOG them instead of silently
@@ -644,6 +695,30 @@ class SimpleStrategy:
             'open_trade': None if trades and trades[-1]['exit_reason'] != 'OPEN' else open_trade,
         }
         return trades, final_state
+
+
+def _stamp_excursions(trade: Dict, run_hi: float, run_lo: float, bars: int) -> None:
+    """Stamp MFE / MAE on a trade dict in place. Opt-in (params.track_excursions).
+
+    MFE — Maximum Favourable Excursion: the BEST unrealized profit this trade ever saw while open.
+    MAE — Maximum Adverse  Excursion: the WORST unrealized loss it ever saw while open.
+
+    Both in POINTS, signed from the trade's own point of view (MFE >= 0, MAE <= 0), so a long and a
+    short are directly comparable. Clamped, so a gap through the entry can never violate the sign
+    invariants. fast_engine computes the identical quantities over hi[:ti+1] / lo[:ti+1].
+
+    Why this matters: the engine has never known how a trade was doing WHILE OPEN — P/L existed only
+    at exit. That made "was this stop-out a real move, or did we give back a winner?" unanswerable,
+    and the dynamic stop-loss (Task #3) impossible to even express.
+    """
+    ep = float(trade['entry_price'])
+    if trade['direction'] == 'long':
+        mfe, mae = run_hi - ep, run_lo - ep
+    else:
+        mfe, mae = ep - run_lo, ep - run_hi
+    trade['mfe_points'] = max(float(mfe), 0.0)
+    trade['mae_points'] = min(float(mae), 0.0)
+    trade['bars_1m'] = int(bars)
 
 
 def _finalise(

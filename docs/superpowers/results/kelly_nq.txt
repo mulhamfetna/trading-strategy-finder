@@ -1,0 +1,26 @@
+
+NQ champions · Kelly fraction f (= fraction of capital RISKED per trade) · stop 40pt
+
+    tf     n   win%  B(w/l)  binary f*  numeric f*          f* 95% CI   half  quarter
+    4h   642  41.9%    1.61       5.7%        6.0%   [ 0.0%, 12.9%]   3.0%     1.5%
+    2h   616  40.3%    1.64       3.9%        4.1%   [ 0.0%, 11.0%]   2.1%     1.0%
+    1h  1157  41.4%    1.61       4.9%        5.3%   [ 0.1%, 10.1%]   2.7%     1.3%
+   15m  1685  40.1%    1.60       2.7%        3.0%   [ 0.0%,  6.8%]   1.5%     0.7%
+    5m   988  37.9%    1.64       0.0%        0.0%   [ 0.0%,  5.1%]   0.0%     0.0%
+    2m  2268  38.8%    1.59       0.2%        0.1%   [ 0.0%,  3.9%]   0.1%     0.0%
+
+  POOLED n=7356  win 39.8%  B=1.61  expectancy +1.3 pts/trade ($+27)
+  full Kelly f*: binary 2.2%  numeric 2.5%  95% CI [0.3%, 4.4%]
+
+============================================================================================
+READ — what fraction should we actually risk per trade?
+============================================================================================
+  full Kelly (numeric)  : 2.5% of capital risked per trade  <- the CEILING, never exceed
+  half-Kelly            : 1.2%   (keeps ~75% of growth, cuts 50%-drawdown prob to ~12.5%)
+  quarter-Kelly         : 0.6%   (edge-uncertainty safe — K3: mean-error dominates)
+  f* 95% CI lower bound : 0.3%   <- parameter-safety floor; sit at/below this for the edge alone
+
+  Then a FURTHER tail/gap haircut + a HARD exposure cap (K6, catastrophe principle) — not yet
+  applied here. The honest endpoint (tiny fluke-window edge + fat tail): a SMALL fixed fraction
+  (<= quarter-Kelly, and bounded by the CI floor) with a hard contract cap. Next: Z2 = simulate
+  gap-through-stop fills (D2/D3 tail) to read off the tail-safe fraction; Z3 = fixed-frac vs vol-target.

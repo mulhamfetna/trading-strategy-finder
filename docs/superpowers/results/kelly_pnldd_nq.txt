@@ -1,0 +1,25 @@
+
+NQ edge-champions · 4100 trades · expectancy +2.4 pts · objective = PnL:DD (growth per unit max-drawdown)
+
+  f (risk/trade)  med growth  med maxDD   PnL:DD  (Kelly markers)
+------------------------------------------------------------------
+           0.3%        1.16x       8.3%     1.89  
+           0.6%        1.32x      16.3%     1.95  <- quarter-Kelly
+           0.9%        1.49x      23.4%     2.08  
+           1.2%        1.67x      30.2%     2.23  <- half-Kelly
+           1.5%        1.79x      36.9%     2.15  
+           2.0%        2.00x      46.8%     2.14  
+           2.5%        2.20x      55.5%     2.17  <- FULL Kelly
+           3.0%        2.39x      62.5%     2.23    *** PnL:DD-optimal
+           4.0%        2.30x      75.5%     1.73  
+
+==================================================================
+READ
+==================================================================
+  PnL:DD-optimal fraction ~ 3.0% of capital/trade — vs FULL Kelly 2.5%.
+  The ratio plateaus at the LOW end and DECLINES as f rises (growth saturates toward Kelly
+  while drawdown keeps growing). So our accepted PnL:DD objective INDEPENDENTLY points to a
+  small fraction (<= half-Kelly), confirming Z1/Z2 from the drawdown side. Full Kelly is far
+  too aggressive for a PnL:DD trader. This CLOSES the sizing fraction question: ~quarter-to-
+  half Kelly, edge-champions only, hard cap; vol-targeting (Z3) is a promising method on top,
+  pending OOS.

@@ -1,0 +1,49 @@
+  [calendar] 1208 events  2010-01-08 -> 2026-12-09
+  [cache] HIT — 882 surprises from surprises_cache.csv (2010-04-14 -> 2026-07-02); skipping ALFRED entirely
+
+871 releases, 2010-2026
+
+==============================================================================
+THE POWER QUESTION FIRST — does our null MEAN anything now?
+==============================================================================
+  power to detect r=0.19 with n=117:  53.7%
+  power to detect r=0.19 with n=400:  96.9%
+  power to detect r=0.19 with n=871: 100.0%
+
+  => At n=871 we would find r=0.19 essentially every time. We found r=-0.018.
+     THIS NULL IS REAL EVIDENCE, not a blind spot. (Unlike the 12%-power null that I retracted.)
+
+==============================================================================
+YEAR BY YEAR — is it a REGIME (recent only) or was it NEVER REAL?
+==============================================================================
+  year     n |     corr |  power@0.19 | bar
+------------------------------------------------------------------------------
+  2010    24 |   +0.105 |         14% | +######
+  2011    46 |   -0.252 |         24% | -###############
+  2012    46 |   -0.119 |         24% | -#######
+  2013    44 |   -0.092 |         23% | -#####
+  2014    51 |   +0.242 |         27% | +##############
+  2015    57 |   -0.112 |         29% | -######
+  2016    51 |   +0.111 |         27% | +######
+  2017    52 |   +0.077 |         27% | +####
+  2018    58 |   +0.231 |         30% | +#############
+  2019    59 |   -0.069 |         30% | -####
+  2020    61 |   -0.096 |         31% | -#####
+  2021    59 |   -0.065 |         30% | -###
+  2022    63 |   +0.167 |         32% | +#########
+  2023    58 |   -0.003 |         30% | -
+  2024    60 |   +0.021 |         31% | +#
+  2025    51 |   +0.281 |         27% | +################
+  2026    31 |   +0.029 |         17% | +#
+
+  positive years: 9/17   mean r = +0.027   sd = 0.144
+
+==============================================================================
+RECENT vs HISTORICAL
+==============================================================================
+  2024-2026 (what we tested before): n=142  r = +0.111  power = 26%
+  2010-2023 (the new data):          n=729  r = -0.006  power = 100% to see 0.19
+
+  => The effect is present ONLY in the recent window, and ABSENT across 14 years where we
+     have overwhelming power to see it. That is a REGIME at best — and far more likely a
+     SMALL-SAMPLE ARTIFACT, because a 3-year window is exactly where flukes live.

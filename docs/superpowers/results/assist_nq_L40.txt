@@ -1,0 +1,33 @@
+
+NQ 17y · 5,452,534 bars · L=40pt loss, within 30min, hold added contract 60min
+news anchors: 1106 releases · control anchors: 4000 random non-news bars
+
+============================================================================================
+LONG (down-move then add long)
+============================================================================================
+  NEWS       n= 143  added-contract E[return] $    +45/trade  p=0.706  skyrocket 45.5%  worst $  -4,290  sd $1,512
+  control    n= 197  added-contract E[return] $   -166/trade  p=0.118  skyrocket 42.6%  worst $  -5,260  sd $1,484
+
+============================================================================================
+SHORT (up-move then add short)
+============================================================================================
+  NEWS       n= 171  added-contract E[return] $    +53/trade  p=0.657  skyrocket 46.8%  worst $  -4,405  sd $1,570
+  control    n= 179  added-contract E[return] $     +5/trade  p=0.972  skyrocket 38.5%  worst $  -9,040  sd $1,614
+
+============================================================================================
+VERDICT — the pre-declared criterion (does NOT move)
+============================================================================================
+  LONG: added-contract after a NEWS loss = $+45/trade (p=0.706); control $-166; news−control $+212 (p=0.209)
+       -> not positive / not better than control => NO edge on this side.
+  SHORT: added-contract after a NEWS loss = $+53/trade (p=0.657); control $+5; news−control $+48 (p=0.785)
+       -> not positive / not better than control => NO edge on this side.
+
+  ❌ REJECTED. The added contract after a news loss has NO positive, control-beating edge.
+     Adding a second contract is therefore a fair-or-negative bet at DOUBLE size — it only
+     multiplies exposure to the fat per-trade tail (the ±$1,600 swing that defeated every
+     edge in this project). This is exactly the averaging-down-into-ruin the research warns
+     of. The 'assist' must NOT be built. (Consistent with our stop-loss martingale finding:
+     post-loss price is a FAIR game; the news condition does not rescue it.)
+
+  NOTE THE TAIL: read the 'worst' column above — one such loss into a DOUBLED position is the
+  account-killer, and it is not hypothetical (see the 1-second sweep / 80-pt per-trade sd).

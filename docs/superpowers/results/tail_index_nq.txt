@@ -1,0 +1,47 @@
+
+NQ 17y · 5,313,976 gap-clean 1-min log returns · excess-kurtosis +98.6 (Gaussian=0), skew -0.04
+
+============================================================================================
+ALL SESSIONS   (n=5,313,976 returns)
+============================================================================================
+  LOSS tail (left)  (n=2,327,567)
+     Hill:  k=2327(0.1%):3.63  k=11637(0.5%):3.33  k=23275(1.0%):3.16  k=46551(2.0%):2.91
+     GPD:   99.9%:a=3.24(xi=+0.31,n=2328)  99.5%:a=4.06(xi=+0.25,n=11638)  99.0%:a=4.21(xi=+0.24,n=23276)  98.0%:a=4.45(xi=+0.22,n=46552)
+     => tail index alpha RANGE [2.91, 4.45]  (HEAVY, higher moments may not exist)
+  GAIN tail (right)  (n=2,364,152)
+     Hill:  k=2364(0.1%):3.39  k=11820(0.5%):3.16  k=23641(1.0%):2.99  k=47283(2.0%):2.81
+     GPD:   99.9%:a=3.58(xi=+0.28,n=2365)  99.5%:a=3.84(xi=+0.26,n=11821)  99.0%:a=3.97(xi=+0.25,n=23642)  98.0%:a=3.92(xi=+0.26,n=47284)
+     => tail index alpha RANGE [2.81, 3.97]  (HEAVY, higher moments may not exist)
+
+============================================================================================
+RTH (09:30-16:00 ET, the loud session)   (n=1,587,986 returns)
+============================================================================================
+  LOSS tail (left)  (n=731,314)
+     Hill:  k=731(0.1%):4.07  k=3656(0.5%):3.75  k=7313(1.0%):3.57  k=14626(2.0%):3.35
+     GPD:   99.9%:a=3.63(xi=+0.28,n=732)  99.5%:a=4.76(xi=+0.21,n=3657)  99.0%:a=4.80(xi=+0.21,n=7314)  98.0%:a=4.91(xi=+0.20,n=14627)
+     => tail index alpha RANGE [3.35, 4.91]  (HEAVY, higher moments may not exist)
+  GAIN tail (right)  (n=749,518)
+     Hill:  k=749(0.1%):3.64  k=3747(0.5%):3.49  k=7495(1.0%):3.32  k=14990(2.0%):3.12
+     GPD:   99.9%:a=3.98(xi=+0.25,n=750)  99.5%:a=3.95(xi=+0.25,n=3748)  99.0%:a=4.25(xi=+0.24,n=7496)  98.0%:a=4.45(xi=+0.22,n=14991)
+     => tail index alpha RANGE [3.12, 4.45]  (HEAVY, higher moments may not exist)
+
+============================================================================================
+OVERNIGHT (18:00-02:00 ET, the quiet session)   (n=1,696,878 returns)
+============================================================================================
+  LOSS tail (left)  (n=714,245)
+     Hill:  k=714(0.1%):3.18  k=3571(0.5%):2.66  k=7142(1.0%):2.58  k=14284(2.0%):2.53
+     GPD:   99.9%:a=4.16(xi=+0.24,n=715)  99.5%:a=4.01(xi=+0.25,n=3572)  99.0%:a=3.26(xi=+0.31,n=7143)  98.0%:a=2.95(xi=+0.34,n=14285)
+     => tail index alpha RANGE [2.53, 4.16]  (HEAVY, higher moments may not exist)
+  GAIN tail (right)  (n=721,926)
+     Hill:  k=721(0.1%):3.10  k=3609(0.5%):2.76  k=7219(1.0%):2.61  k=14438(2.0%):2.59
+     GPD:   99.9%:a=4.44(xi=+0.23,n=722)  99.5%:a=3.78(xi=+0.26,n=3610)  99.0%:a=3.52(xi=+0.28,n=7220)  98.0%:a=2.99(xi=+0.33,n=14439)
+     => tail index alpha RANGE [2.59, 4.44]  (HEAVY, higher moments may not exist)
+
+============================================================================================
+READ
+============================================================================================
+  The RAW-return tail index is the genuine fat tail (D1: the trade P&L is truncated by the stop).
+  A low alpha (<4) in a session = a heavier tail = bigger gap risk of a fill THROUGH the stop
+  there. Compare loss vs gain (asymmetry) and RTH vs overnight (session risk). This sets, per
+  session/event, how much room the stop needs. Next: D3 = McNeil-Frey (GARCH filter -> GPD on
+  residuals) to condition the tail on volatility state and de-cluster it.

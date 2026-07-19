@@ -1,0 +1,45 @@
+
+price frame: 2010-06-06 18:00:00 -> 2026-07-12 19:59:00  (5,452,534 bars)   [EXTENDED: 2024 folded in]
+  [calendar] 1208 events  2010-01-08 -> 2026-12-09
+  [cache] HIT — 882 surprises from surprises_cache.csv (2010-04-14 -> 2026-07-02); skipping ALFRED entirely
+871 releases with a causal surprise and a full 30-minute path
+POWER: with n=871 we have 99% chance of detecting an effect of r=0.15 (the pre-declared minimum worth acting on).
+       ⇒ A NULL HERE IS A REAL NEGATIVE. We can see; there is nothing to see.
+
+========================================================================================
+Q1 — MAGNITUDE: does a BIGGER surprise produce a BIGGER move? (no direction needed)
+========================================================================================
+  corr(|surprise|, |move| at +5 min      ) = -0.018   p = 0.347  REAL NEGATIVE (power 99% to see r=0.15)
+  corr(|surprise|, |move| at +30 min     ) = -0.011   p = 0.676  REAL NEGATIVE (power 99% to see r=0.15)
+  corr(|surprise|, path RANGE (max-min)  ) = -0.015   p = 0.712  REAL NEGATIVE (power 99% to see r=0.15)
+  corr(|surprise|, path VOLATILITY (std) ) = -0.015   p = 0.678  REAL NEGATIVE (power 99% to see r=0.15)
+
+  A positive, significant value here would mean: we cannot predict WHICH WAY it moves,
+  but we CAN predict HOW FAR. That is a volatility trade, not a directional one — and the
+  efficient-market argument does not forbid it.
+
+==============================================================================
+Q3 — PERSISTENCE: does the surprise predict whether the initial move HOLDS or REVERSES?
+==============================================================================
+  the +5min move persisted to +30min in 48.2% of releases (420/871)
+  (50% = a coin flip: the initial move tells you nothing about the next 25 minutes)
+  corr(early move, later move) = +0.087   NEITHER — no pattern
+
+==============================================================================
+Q2 — SHAPE: cluster the 30-min paths. Does the surprise predict WHICH shape occurs?
+==============================================================================
+  cluster 0: n=326  mean|surprise|= 1.13  mean surprise=-0.50  |  SUSTAINED TREND
+  cluster 1: n=117  mean|surprise|= 0.84  mean surprise=-0.11  |  SUSTAINED TREND
+  cluster 2: n= 98  mean|surprise|= 0.68  mean surprise=+0.07  |  SUSTAINED TREND (down)
+  cluster 3: n=329  mean|surprise|= 0.86  mean surprise=-0.14  |  SUSTAINED TREND (down)
+
+  does the SURPRISE differ across shape-clusters?  p = 0.880   (no — the surprise does not pick the shape)
+
+==============================================================================
+NOTE ON THE YARDSTICK — the user's other point, and it is fair.
+==============================================================================
+  Our 'expected' is a STATISTICAL forecast (mean of the prior 6 changes), not the MARKET's
+  consensus, which costs money. A noisy yardstick attenuates a real signal toward zero.
+  So a NULL result here is evidence against the idea, but NOT proof: it could also be
+  evidence that our ruler is bad. A POSITIVE result, by contrast, would be conservative —
+  a better ruler could only sharpen it.

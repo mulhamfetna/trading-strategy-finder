@@ -310,7 +310,7 @@ def build_payload(df4, df1, box, vf, n2025, params=None, instrument: str = "NQ")
     # WS-I indicator confirmation layer (off by default ⇒ identical to the pure box strategy).
     specs, k_rule, gen_params = P["indicators"], P["k"], P["gen"]
     g_retr, g_runit, g_wait = P["retrace_amount"], P["retrace_unit"], P["wait_bars"]
-    entry_resolver = veto_mask = gen_report = None
+    entry_resolver = veto_votes = gen_report = None
     gate_used = gate
     attrib = None    # per-entry indicator vote attribution (decision #1/#5)
     # Intra-candle vetoed-entry (Phase 1). Read raw so a preset without the keys ⇒ off ⇒ parity.
@@ -343,7 +343,7 @@ def build_payload(df4, df1, box, vf, n2025, params=None, instrument: str = "NQ")
                    if (params or {}).get("ind_1min", True) else None)
         # each ENABLED indicator's per-decision-bar vote (memoised by slice+config); disabled ⇒ no entry ⇒ neutral.
         _votes = _cached_votes(d4, d1, box, inds, ind_src, bar_td)
-        gate_used, entry_resolver, veto_mask = runner.build_layer(
+        gate_used, entry_resolver, veto_votes = runner.build_layer(
             d4, box, inds, k_rule, base,
             retrace_amount=g_retr, retrace_unit=g_runit, wait_bars=g_wait,
             src=ind_src, votes=_votes, veto_as_flip=P["veto_as_flip"])
@@ -396,7 +396,7 @@ def build_payload(df4, df1, box, vf, n2025, params=None, instrument: str = "NQ")
     # it, so it stays None ⇒ byte-identical to the golden baselines.
     blocked = []   # diagnostic: directional signals the gate dropped (logged, not traded)
     trades, _ = SimpleStrategy(sp).backtest(d4, d1, box, entry_gate=gate_used,
-                                            entry_resolver=entry_resolver, veto_mask=veto_mask,
+                                            entry_resolver=entry_resolver, veto_vote_mask=veto_votes,
                                             blocked_log=blocked, veto_as_flip=P["veto_as_flip"],
                                             signals=sig_arr,
                                             intracandle_gate_by_dir=ic_gate_by_dir,
@@ -524,7 +524,7 @@ def build_payload(df4, df1, box, vf, n2025, params=None, instrument: str = "NQ")
     _n = len(d4)
     _sig = np.array([1 if s == "long" else -1 if s == "short" else 0 for s in sig_arr[:_n]], dtype=int)
     _volg = np.asarray(gate, dtype=bool)[:_n] if gate is not None else np.ones(_n, dtype=bool)
-    _veto = np.asarray(veto_mask, dtype=bool)[:_n] if veto_mask is not None else np.zeros(_n, dtype=bool)
+    _veto = np.asarray(veto_votes, dtype=bool)[:_n] if veto_votes is not None else np.zeros(_n, dtype=bool)
     _cmask = None
     if specs and any(i.config.enabled for i in inds):
         from indicators import runner as _runner
