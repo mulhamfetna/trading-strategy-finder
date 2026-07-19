@@ -50,32 +50,45 @@ def main() -> int:
     ap.add_argument("--point-value", type=float, default=100.0, help="GC = $100/point")
     a = ap.parse_args()
 
-    sur = build_surprises(rc.load_calendar())
-    sur = sur.dropna(subset=["z"]) if "z" in sur.columns else sur
+    sur = build_surprises(rc.load_calendar()).dropna(subset=["surprise_z"])
+    sur = sur.assign(Date=pd.to_datetime(sur["Date"]))
     print(f"\n{len(sur)} releases with a causal surprise")
+
+    # Releases BEFORE the 1-second file starts have no price data — drop them explicitly rather than
+    # letting them silently poison the window scan.
+    from optimize.fundamentals.extended_data import sixteen_year_path
+    first_ts = pd.Timestamp(pd.read_csv(sixteen_year_path(a.instrument, "1s"), nrows=1)["datetime"][0])
+    pre = len(sur)
+    sur = sur[sur["Date"] >= first_ts + pd.Timedelta(seconds=PRE_S)]
+    print(f"  {a.instrument} 1-second data starts {first_ts} -> dropped {pre - len(sur)} earlier "
+          f"releases, {len(sur)} remain")
 
     # One pass over the multi-GB 1-second file for ALL release windows.
     windows = [(t - pd.Timedelta(seconds=PRE_S), t + pd.Timedelta(seconds=POST_S))
-               for t in pd.to_datetime(sur["Date"])]
+               for t in sur["Date"]]
     print(f"pulling {len(windows)} x {PRE_S + POST_S}s windows from the 1-second file "
           f"(one pass, byte-seek)...")
     sec = load_1s_windows(windows, instrument=a.instrument)
     print(f"  got {len(sec):,} one-second bars")
 
-    idx = pd.Series(np.arange(len(sec)), index=sec["Date"].values)
+    # Gold does NOT print a bar every second — a 71-second window came back with 67 bars. A missing
+    # second means NO TRADE occurred, so the correct price is the LAST TRADED price: forward-fill.
+    # (Skipping releases with any gap would discard almost the entire sample; interpolating would
+    # invent prices that never traded. Forward-fill is the only honest choice.)
+    closes_by_ts = pd.Series(sec["Close"].values, index=sec["Date"].values)
 
-    rows, zs = [], []
+    rows, zs, dropped = [], [], 0
     for _, r in sur.iterrows():
-        t = pd.Timestamp(r["Date"])
-        z = float(r["z"])
-        # closes at T+0 .. T+POST_S, second by second
-        want = [t + pd.Timedelta(seconds=k) for k in range(POST_S + 1)]
-        pos = idx.reindex(want)
-        if pos.isna().any():          # a gap in the tape => skip, never interpolate a price
+        t = r["Date"]
+        want = pd.date_range(t, periods=POST_S + 1, freq="s")
+        seg = closes_by_ts.reindex(closes_by_ts.index.union(want)).ffill().reindex(want)
+        if seg.isna().any():          # no trade AT ALL at/before T => genuinely no data, drop it
+            dropped += 1
             continue
-        closes = sec["Close"].values[pos.values.astype(int)]
-        rows.append(closes)
-        zs.append(z)
+        rows.append(seg.to_numpy(dtype=float))
+        zs.append(float(r["surprise_z"]))
+    if dropped:
+        print(f"  dropped {dropped} releases with no traded price at the print")
 
     if not rows:
         print("no releases with complete 1-second coverage")

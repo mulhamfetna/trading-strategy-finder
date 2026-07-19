@@ -223,6 +223,14 @@ def load_1s_windows(windows, chunksize: int = 4_000_000, verbose: bool = True,
 
     fh = sec.open("r")
     fh.seek(off)
+    if off == 0:
+        # _seek_to_timestamp returns 0 when the target precedes the whole file, and offset 0 puts us
+        # ON THE HEADER LINE. The reader below is header=None with explicit `names`, so the header
+        # would be parsed as a DATA row whose datetime is the literal string "datetime" — and since
+        # "d" sorts after any "2..." date, the `t[0] > hi` guard fires on the first chunk and the
+        # whole call returns EMPTY. Silently. This bit the GC sub-minute study (task #20): one window
+        # earlier than the file start zeroed out every other window too.
+        fh.readline()
     reader = pd.read_csv(fh, chunksize=chunksize, dtype={"datetime": str},
                          names=["datetime", "open", "high", "low", "close", "volume"], header=None)
     for i, ch in enumerate(reader):
