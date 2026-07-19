@@ -38,6 +38,7 @@ Author: Claude (Opus 4.8) · Reviewer: Mulham Fetna · **$0 spent** · productio
 | **Own distribution** (#7) | ✅ **COMPLETE** | Trade P&L truncated (stop works); raw returns fat (α≈3); **vol-scaled stop REJECTED** (gambler's ruin) → keep fixed stop. Open: fat-tail-aware *sizing*. [`DIST-00`](DIST-00-WORKSTREAM-REPORT.md) |
 | **News v2 → decisions** (NQ+GC) | ✅ **ANSWERED** | Gold reacts (NFP>CPI); close/enter negligible/no-edge; **assist REJECTED** (belief backwards); content→pattern = **volatility not direction**. [`FAV2-00`](FAV2-00-WORKSTREAM-REPORT.md) |
 | **Fat-tail-aware sizing** (#17) | ✅ **COMPLETE** | **Fraction CLOSED: ~0.6–1.2% (quarter-half Kelly), edge-champs only, hard cap** — triangulated 3 ways (Z1 edge-uncertainty, Z2 ruin/DD, Z4 absolute-DD). Vol-targeting (Z3) promising-pending-OOS. Nothing adopted. [`SIZE-00`](SIZE-00-WORKSTREAM-REPORT.md) |
+| **GC replication** (2026-07-19) | ✅ **COMPLETE** | The verdict **REPLICATES on gold** (all 4 tests null, n=866/99% power) ⇒ no longer an NQ quirk. ⭐ Plus a discovery the battery MISSED: gold moves **INVERSE** to macro surprises (Spearman −0.193, negative 15/16 yrs) — Pearson was blind to it. Real residual at **T+1s = +\$49.90 (t=3.40)** but killed by slippage. [`GC-01`](GC-01-REPLICATION-verdict.md) |
 
 ---
 
@@ -155,6 +156,9 @@ Narrowed scope (NQ+GC), goal moved from *prediction* → *decision*. Plan:
 - The intraday U-shape is real on our tape (open/lunch 1.94×); the London–NY overlap is a non-event for NQ.
 - Our champion's stop-out RATE is strongly session-dependent (56%→16%) — a mechanistic consequence of the volatility shape.
 - Only `entry_gate` blocks an entry; "veto" params are non-blocking hints.
+- **The "priced in" verdict REPLICATES on gold** (2026-07-19) — all four pre-registered tests null on GC at n=866/99% power. It is no longer an NQ-specific result.
+- ⭐ **Gold moves INVERSE to macro surprises** — Spearman −0.193 (p<1e-5), negative in **15 of 16 years**, significant in both halves, NULL on the NQ control. Economically textbook (strong data → higher real yields → gold down). A real, durable fact about gold; **not** an entry signal.
+- **A macro release prices over ~10–30 seconds, not instantly** — 59.9% done at +1s, 87% by +10s, 95% by +30s. The residual at +1s is statistically real (+$49.90, t=3.40) and economically un-capturable (dies at 5 ticks of slippage).
 
 **Things that DIED under scrutiny:**
 - The magnitude "survivor" (+0.187 → −0.018 at full power).
@@ -166,6 +170,15 @@ Narrowed scope (NQ+GC), goal moved from *prediction* → *decision*. Plan:
 **FROZEN (pre-registered, unconfirmable now — re-test on future/long data, build nothing):**
 - **Silver** (D3): gold-controlled partial −0.258, 4/4 quarters, but raw died under the better ruler; 1-of-36, fluke window.
 - **The 22:00/Asia entry cell** (S3): +$364/trade stable both halves, but 1-of-6, n=89, fluke window.
+
+**METHOD lessons banked (they generalize beyond this project):**
+- **On fat-tailed instruments, always report RANK correlation alongside Pearson.** The pre-registered
+  battery used Pearson and was blind to one of the strongest, most persistent macro reactions in the
+  book — it reported "gold: nothing here" about an effect that is significant in 15 of 16 years.
+- **Measure at the resolution of the DECISION.** A 1-minute study concluded "100% priced inside the
+  release minute" because its "T+0" was the minute's *close* — 60 seconds late. At 1-second resolution
+  only 59.9% is done at +1s. A coarse study answers a different question than the one you asked, and it
+  does not warn you.
 
 **The THROUGH-LINE that motivates #7:** every apparent edge in this project — news, stop-loss, session —
 was killed by the **fat per-trade loss tail** (an ~80-point / ±$1,600 per-trade swing). An $80/trade

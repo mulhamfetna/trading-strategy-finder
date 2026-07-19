@@ -10,6 +10,59 @@ research programs (TimesFM, HMM, Chronos-2, regime-edge) — are logged by their
 
 ---
 
+## 2026-07-19 — Gold's 16 years arrived: the verdict replicates, a real discovery, and a claim of mine corrected
+
+_The gold data landed, so the whole news battery got re-run on a second instrument. It confirmed the
+original verdict, uncovered something the original battery was blind to, and then forced me to correct
+a conclusion I had stated confidently only hours earlier._
+
+### ✅ What got done
+- **The 16-year gold frame is live.** Verified before use: 2010-06-06 → 2026-07-17, 5.66M one-minute
+  bars, ~350k/year with no holes, identical schema to the Nasdaq, prices sanity-checking (\$1,221 in
+  2010 → \$4,022 in 2026). It came from **our own Databento pipeline** — no purchase, exactly as you said.
+- **The verdict REPLICATES on gold.** All four pre-registered tests — direction, magnitude, persistence,
+  shape — are null on GC at n=866 and 99% power, matching the Nasdaq. **"Scheduled macro news is priced
+  in" is no longer an NQ quirk**; it now holds on a second market with a completely different driver.
+- **⭐ A discovery the original battery MISSED: gold moves INVERSE to macro surprises.** One number
+  looked wrong (gold matched the surprise's direction only 39.5% of the time, where a coin flip is 50%).
+  Chasing it: the shuffle control said 49.0%±1.7%, so the real value sat 5.5 standard deviations away.
+  The cause was our *method* — **Pearson correlation is the wrong tool for a fat-tailed asset**. The rank
+  correlation is **−0.193 (p<0.00001), negative in 15 of 16 years**, significant in both halves, and
+  **null on the Nasdaq control** (which proves it is gold, not a bug). Economically textbook: strong data
+  → higher real yields → gold, which pays no yield, falls.
+- **Then I tested whether it is tradeable — and corrected myself.** First answer (1-minute data): the
+  entire reaction prices inside the release minute, nothing left. **That was wrong** — a resolution
+  artifact. At **1-second** resolution only **59.9%** of the move is done after one second (87% by +10s,
+  95% by +30s), and entering at +1s captures **+\$49.90/release at t=3.40** — statistically real.
+- **But it still is not money.** \$49.90 against a **±\$434** per-trade swing, a 51.2% win rate, and
+  \$2,718/year on one contract. Breakeven dies at 5 ticks of slippage — while the one-second bar you must
+  cross has a \$90 median / \$252 mean range, one second after a major release, the worst liquidity
+  moment of the session. Verdict unchanged (**don't trade the release**) but the reason is now honest:
+  not "nothing is there" but "\$50 is there, behind a cost and latency wall that eats it."
+- **Merged the workstream to `dev`** and fixed the one test it broke (a stale guard that assumed a
+  17-*month* calendar when we now have 17 *years*).
+
+### 🎯 Tomorrow / next
+- **Z3 — the vol-targeting out-of-sample test.** The last "promising but in-sample" result from the
+  sizing workstream; gold is the independent frame it was waiting for.
+- Forward-validate gold's inverse reaction (it is a post-hoc finding and deserves a pre-registered test).
+
+### ⚠️ Challenges / lessons
+1. **Two method lessons, both expensive if unlearned.** *On fat-tailed instruments always report rank
+   correlation alongside Pearson* — we nearly filed "gold doesn't react to news" about one of the most
+   persistent macro reactions in the book. And *measure at the resolution of the decision* — a
+   minute-resolution study cannot answer a first-second question and will not warn you that it can't.
+2. **I announced a finding before finishing the check.** Mid-analysis I called the inverse reaction
+   "possibly the first real positive"; the tradeability split then showed it is a real *discovery* but
+   not a real *edge*. Verify first, announce second.
+3. **Found a genuinely dangerous silent bug** in the 1-second loader: any requested window that predated
+   the file made it return an **empty result with no error**, silently voiding every other window in the
+   same call. That would have quietly corrupted future studies. Fixed.
+4. **Two self-inflicted bugs cost runs** — I generalised a loader's signature but left its body
+   hardcoded, and I guessed a column name instead of reading the schema. Both caught by the first run.
+
+---
+
 ## 2026-07-18 — Progress packaged for review; the GC-data path corrected (in-house, not paid)
 
 _A short, wrap-up day. Everything since 07-14 pulled into one review page, and one earlier recommendation
