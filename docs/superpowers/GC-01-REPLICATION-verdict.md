@@ -162,11 +162,69 @@ cleanest demonstrations of instantaneous price discovery this project has produc
 
 ---
 
-## 8 — OPEN THREADS
+## 8 — ⚠️ CORRECTION (task #20): "priced inside the release minute" WAS OVERSTATED
+
+**Section 5 above concluded that 100% of gold's reaction is priced inside the release minute and there
+is no tradeable residue. Running the same question at 1-SECOND resolution shows that conclusion was an
+artifact of measuring in minutes.** The "T+0" entry in section 5 is the *close of the release minute* —
+by construction it is already 60 seconds late. It answered "what is left after a full minute?" (nothing)
+while appearing to answer "what is left after the print?" (not nothing).
+
+**What the 1-second data actually shows** (n=877 releases, entry at +k seconds, hold to +60s):
+
+| Entry | $/release | t-stat | shuffled null |
+|---|---|---|---|
+| T+0s — **un-tradeable** | +\$124.57 | +6.24 | +\$1.32 ± 20 |
+| **T+1s** | **+\$49.90** | **+3.40** | +\$2.11 ± 14 |
+| T+2s | +\$43.48 | +3.16 | +\$1.02 ± 14 |
+| T+5s | +\$27.34 | +2.31 | +\$1.71 ± 12 |
+| T+10s | +\$15.74 | +1.61 | +\$0.95 ± 10 |
+| T+30s | +\$6.23 | +0.88 | +\$0.71 ± 7 |
+
+**Only 59.9% of the move completes in the first second** — then 78.1% by +5s, 87.4% by +10s, 95% by
++30s. The reaction is fast, but it is *not* instantaneous, and a real residual survives at +1s that is
+comfortably outside the shuffle null.
+
+### But it still does not survive costs
+
+| | |
+|---|---|
+| Edge at T+1s | **+\$49.90** per release |
+| Per-trade swing (std) | **±\$434** — the edge is 1/9th of the noise |
+| Win rate | **51.2%** — barely a coin flip; the edge is asymmetry, not accuracy |
+| Frequency | 54 releases/year → **\$2,718/yr** gross, one contract |
+| **The tape you must cross at entry** | the +1s bar's own high-low range is **\$90 median, \$252 mean** |
+| **Breakeven** | commission (\$5) + **5 ticks slippage (\$50) ⇒ −\$5.10. DEAD.** |
+
+```mermaid
+flowchart TD
+    A["T+1s edge = +$49.90"] --> B["- commission $5 => $44.90"]
+    B --> C["- 2 ticks slippage => $24.90"]
+    C --> D["- 5 ticks slippage => -$5.10  DEAD"]
+    E["The 1-second bar you enter into<br/>ranges $90 median / $252 mean"] --> D
+```
+
+You are entering one second after a major macro release — **the single worst moment for liquidity in the
+session**, when spreads are widest and the book is thinnest. A 5-tick slippage budget is not pessimistic
+there; it is optimistic. And capturing it at all requires parsing the release and firing an order inside
+one second, which is latency infrastructure this project does not have.
+
+**Revised verdict: the residual is statistically REAL but economically UN-CAPTURABLE.** The conclusion
+("do not trade the scheduled release") is unchanged — but the *reason* is now honest: not "there is
+nothing there," but "there is something there, it is worth ~\$50, and it sits behind a cost and latency
+wall that eats it."
+
+**The lesson, which is the real deliverable:** *measure at the resolution of the decision you are making.*
+A minute-resolution study cannot answer a question about the first second, and it will produce a
+confident, wrong, un-flagged answer if you let it.
+
+---
+
+## 9 — OPEN THREADS
 
 | # | Thread | Note |
 |---|---|---|
-| **A** | **Sub-minute pricing** — how fast is "instant"? | We now have **GC 1-second** data. Does the jump price in 1s, 10s, or 45s? If the last of it lands at 30s, there may be a sliver. Given NQ's 1-second-sweep lesson, expect fast. |
-| **B** | Forward-validate the inverse reaction | It is a post-hoc finding; it deserves a pre-registered forward test on new releases. |
+| **A** | ~~Sub-minute pricing~~ | ✅ **DONE** — see section 8. Real residual at +1s, killed by costs. |
+| **B** | Forward-validate the inverse reaction | Still a post-hoc finding; deserves a pre-registered forward test. |
 | **C** | Silver | Still frozen — SI did not land with GC. |
-| **D** | Z3 vol-targeting OOS | Now unblocked; GC is the independent frame it needed. |
+| **D** | Z3 vol-targeting OOS | Now unblocked; GC is the independent frame it needed. **Next up.** |
