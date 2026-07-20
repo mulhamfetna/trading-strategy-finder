@@ -23,8 +23,9 @@ Author: Claude (Opus 4.8) · Reviewer: Mulham Fetna · **$0 spent** · productio
 > scheduled news move our market predictably (**no** — priced in, proven at full power), can we improve the
 > stop-loss (**no** — it's a fair game even at 1-second resolution), and does trading-session structure
 > give us an edge (**no entry edge**, but a real *risk* pattern worth using for sizing). Along the way one
-> thing kept killing every apparent edge: **a huge, fat per-trade loss tail** — an ±$1,600 swing that makes
-> an $80/trade "edge" statistically invisible. So the current workstream (**#7**) is aimed squarely at that
+> thing kept killing every apparent edge: **a huge per-trade loss tail** — a swing that makes an $80/trade
+> "edge" statistically invisible. (⚠️ that swing was quoted as ±$1,600 throughout; on the corrected ledger
+> the real per-trade worst case is **$3,029** — see [`BUG-01`](BUG-01-sizing-studies-ran-the-wrong-strategy.md).) So the current workstream (**#7**) is aimed squarely at that
 > tail: characterize it properly so future stop and sizing decisions rest on real probabilities. We just
 > finished the research phase for it. **You are about to narrow that research with new information.**
 
@@ -91,13 +92,27 @@ The verified recipe (**DIST-01**): GARCH-filter, fit the rare-large-loss tail on
 (peaks-over-threshold + Generalized Pareto)**, asymmetric tails, **McNeil–Frey** conditional; all sources
 are daily/hourly so re-estimate on our data.
 
-**D1 (DIST-02) — a plan-correcting discovery:** the champion's **per-trade P&L is TRUNCATED, not
-fat-tailed.** Bounded [−40,+60] on every TF; **0 of 7,356 trades** lose more than the stop; **excess
-kurtosis −1.82** (negative = *light* tails); **bimodal** (~40% win@+60 / ~37% lose@−40). The "±$1,600 fat
-tail" is really a **bimodal win/lose spread** (~$960) — a near-binary payoff, not a heavy tail. **The stop
-truncates the fat-tailed return process** — which is *why* keep-the-stop (04/06) and never-assist (B3) are
-both right. The genuine fat tail lives in **raw returns** (gap/slippage that could blow *through* the stop
-live) → EVT moves there.
+**D1 (DIST-02) — ⚠️ FIRST VERSION WAS CIRCULAR; corrected 2026-07-20.** The original text below claimed
+the P&L is "bounded [−40,+60] on every TF, 0 of 7,356 trades lose more than the stop." **Those bounds were
+the study's own hardcoded defaults** — it never ran the champions at all (see
+[`BUG-01`](BUG-01-sizing-studies-ran-the-wrong-strategy.md)). It measured its inputs and reported them as
+a discovery.
+
+**The corrected result — the conclusion HOLDS, the magnitudes do not:**
+
+| | Circular version | **Real champion ledger** |
+|---|---|---|
+| P&L bounds | [−40, +60] | **[−151.4, +125.6]** |
+| trades losing MORE than the stop | 0 of 7,356 (0%) | **371 of 9,537 (3.89%)** — the gap/slippage tail |
+| worst loss | −40 pts (−$800) | **−151 pts (−$3,029)** |
+| EVT shape ξ (80/90/95% thresholds) | — | **−0.366 / −1.555 / −1.978 — all ξ<0 ⇒ BOUNDED** |
+| Gaussian check | — | too optimistic at the 1% and 0.5% quantiles |
+
+So the loss tail **is** truncated by the stop — now demonstrated independently by the EVT fit (ξ<0)
+rather than asserted from a hardcoded bound — but **3.89% of trades gap straight through it**, and the
+real per-trade worst case is **$3,029, nearly double the $1,600 quoted throughout the older reports.**
+The qualitative conclusion (the stop truncates the fat-tailed return process, so keep-the-stop and
+never-assist are both right) survives. The genuine fat tail lives in **raw returns** → EVT moves there.
 
 **D2 (DIST-03) — the raw-return tail, confirmed and quantified:** excess kurtosis **+98.6** (vs D1's
 −1.82), tail index **α ≈ 3** (the inverse-cubic law, heavier than daily), loss/gain ~symmetric intraday.
