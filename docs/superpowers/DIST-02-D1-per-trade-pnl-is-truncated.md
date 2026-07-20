@@ -1,3 +1,12 @@
+> # ⚠️ SUPERSEDED — THIS REPORT'S HEADLINE WAS CIRCULAR (corrected 2026-07-20)
+> This study never ran the champions. It read the stops under key names that do not exist, so
+> `dict.get` silently supplied **30/40/60** — and the report then 'discovered' that P&L is truncated
+> at exactly **[−40,+60]**, which were its own hardcoded inputs.
+> **The conclusion survives on the real ledger, the numbers do not:** bounds **[−151.4, +125.6]**,
+> **3.89% of trades gap THROUGH the stop** (not 0%), worst loss **−$3,029** (not −$800), and the
+> truncation is now demonstrated by an EVT fit (ξ<0) rather than asserted.
+> → [`BUG-01`](BUG-01-sizing-studies-ran-the-wrong-strategy.md)
+
 # DISTRIBUTION · 02 — D1: our per-trade P&L is TRUNCATED, not fat-tailed
 
 **#7, first on-data test — and it corrects the plan. The research recipe (EVT / Generalized Pareto /

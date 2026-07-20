@@ -1,3 +1,10 @@
+> # 🔄 REVERSED — the 'flat' reading was the bug (2026-07-20)
+> This reported the PnL:DD ratio as **flat** from half- to full-Kelly, and I publicly withdrew a
+> prediction that it would decline. On the real ledger it **does decline**, optimum **~0.3%** —
+> the original prediction was right. A bug does not only manufacture false findings; it can force
+> you to withdraw true ones.
+> → [`BUG-01`](BUG-01-sizing-studies-ran-the-wrong-strategy.md)
+
 # SIZING · 05 — Z4: the fraction for our PnL:DD objective (I predicted wrong; the constraint is absolute DD)
 
 **The last sizing refinement, and it corrected me. I predicted the PnL:DD *ratio* would decline with size,

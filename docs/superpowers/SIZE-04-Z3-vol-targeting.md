@@ -1,3 +1,10 @@
+> # ❌ REJECTED — this result did NOT survive the correction (2026-07-20)
+> 'Promising, Sharpe 3.2→3.9 in **both** halves' was computed on the wrong trades. On the real
+> champion ledger the halves **FLIP** (−0.79 / +0.27) with `corr(pnl, σ) = +0.020`. No
+> vol-conditional edge exists, so the gain was variance-shaping — a fluke-window artifact.
+> **The planned GC out-of-sample test is moot.** Do not adopt vol-targeting.
+> → [`BUG-01`](BUG-01-sizing-studies-ran-the-wrong-strategy.md)
+
 # SIZING · 04 — Z3: volatility-targeting the contract count (PROMISING, needs OOS)
 
 **Z2 settled the fraction; Z3 asks the method — fixed contracts vs scaling contract count by 1/volatility.

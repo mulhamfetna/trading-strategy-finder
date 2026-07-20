@@ -1,3 +1,9 @@
+> # ⚠️ RE-EARNED on the real champion ledger (2026-07-20)
+> The D1 headline in this report was circular (BUG-01). Corrected: bounds **[−151.4, +125.6]**,
+> **3.89% gap through the stop**, EVT ξ<0 confirms truncation independently, real tail **$3,029**.
+> Keep-the-fixed-stop still stands, and D4 is reinforced.
+> → [`BUG-01`](BUG-01-sizing-studies-ran-the-wrong-strategy.md)
+
 # DISTRIBUTION · 00 — THE COMPLETE WORKSTREAM REPORT (#7: fit our own distribution)
 
 **#7, start to finish. The goal: stop assuming our risk is Gaussian and characterize the fat tail that
