@@ -10,6 +10,65 @@ research programs (TimesFM, HMM, Chronos-2, regime-edge) — are logged by their
 
 ---
 
+## 2026-07-20 — A bug that invalidated two workstreams, found, fixed, and the conclusions re-earned
+
+_The day started by wiring one more test and ended by discovering that six — then eleven — studies had
+never run the strategy they claimed to. Everything was re-derived. Most conclusions survived; one died._
+
+### ✅ What got done
+- **🚨 Found the bug: the sizing and distribution studies never ran our champions.** They read the
+  champion's stop-loss under key names that **do not exist** (`sl_soft_points`, `tp_hard_points`), and
+  because `dict.get(key, default)` **cannot fail**, they silently backtested a generic **30/40/60**
+  strategy instead of the real **128.6/151.4/125.6**. On 4h that is 642 trades at a 41.9% win rate
+  instead of the champion's 445 at 56.0%. Every downstream number was about a strategy we do not trade.
+- **It was three layers deep.** After fixing the key names, the Kelly study still returned `f* = 0.0%`
+  for every timeframe — it normalised profit as `pnl / STOP` with **STOP hardcoded to 40**, so with real
+  151-point stops the maths went to NaN and the solver silently returned zero. Three separate
+  silent-failure bugs in one file, each producing a confident wrong answer rather than an error.
+- **Fixed properly, not patched.** All **eleven** affected studies now use a strict helper: a missing
+  stop **raises** instead of defaulting, and every run prints the stops it actually used.
+- **Re-ran everything and re-earned the conclusions.** Most held; the magnitudes did not:
+  - **Sizing recommendation SURVIVES** — still ~0.6–1.2% per trade. But the confidence interval floor
+    is now **0.0%** (we cannot statistically rule out *zero* edge), and the real per-trade worst case is
+    **\$3,029, not the \$1,600** quoted across every earlier report — understated by roughly half.
+  - **The distribution finding is now real instead of circular.** "P&L truncated at [−40,+60]" was
+    literally reading back its own hardcoded stop. The corrected version is bounded at
+    **[−151.4, +125.6]**, with **3.89% of trades gapping straight through the stop**, and the truncation
+    is now *demonstrated* by an independent statistical fit rather than assumed.
+  - **❌ Vol-targeting is DEAD.** It was the one "promising, pending further testing" result. On the
+    correct trades it **fails its own split**: better in one half, worse in the other. The planned gold
+    out-of-sample test is now moot — a result that flips across halves does not earn one.
+  - **A prediction I had wrongly withdrawn turned out right.** On 07-17 I predicted a ratio would decline,
+    saw "flat," and publicly corrected myself. The corrected data shows it *does* decline. **A bug does
+    not only manufacture false findings — it can force you to withdraw true ones.**
+- **Test-suite triage started (#19).** Fixed a real environment-dependent import bug (`perf/` was only a
+  namespace package, so a system library of the same name shadowed it) — that had silently made two
+  research studies **unrunnable**. Diagnosed the three failing L2 anchor tests as **stale, not a
+  regression**: they pin an old frozen baseline, but the default was deliberately switched to a better
+  champion on 07-11. Documented and handed to that workstream rather than changed unilaterally.
+
+### 🎯 Tomorrow / next
+- Finish the suite triage: the remaining L2 groups, the intracandle tests (#15), and `test_ablate`.
+- Forward-validate gold's inverse macro reaction (it is a post-hoc finding).
+- Decide whether to merge this branch's corrections into `dev`.
+
+### ⚠️ Challenges / lessons
+1. **The big one: never read a strategy parameter with a silent default.** `p["sl_hard"]` would have
+   raised an error on the very first run and cost five minutes. `p.get("sl_hard_points", 40)` cost two
+   workstreams. A missing input must be a **hard failure**, never a plausible substitute.
+2. **Why it hid for so long:** one key (`gate_pct`) *was* spelled correctly, so the champion was
+   demonstrably being loaded and the code looked correct. The defaults were plausible, nothing crashed,
+   and the output *confirmed the belief that had been hardcoded* — which reads as confirmation rather
+   than circular reasoning.
+3. **I made three wrong confident claims today, all from unchecked output** — looked for a directory in
+   the wrong place; concluded files were untracked from a `head`-truncated listing; and called live tests
+   "retired" from memory instead of reading them. Same failure mode as the bug itself: **a confident
+   answer derived from something I did not actually verify.**
+4. **The honest good news:** nothing was ever deployed from the affected studies, so **no money was ever
+   at risk**, and the headline recommendation survived re-derivation unchanged.
+
+---
+
 ## 2026-07-19 — Gold's 16 years arrived: the verdict replicates, a real discovery, and a claim of mine corrected
 
 _The gold data landed, so the whole news battery got re-run on a second instrument. It confirmed the
