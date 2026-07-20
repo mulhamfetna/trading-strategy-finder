@@ -1,32 +1,38 @@
 {
  "tf": "2h",
  "summary": {
-  "pnl": 105462.26000000001,
-  "max_dd": 6664.0,
-  "n_taken": 302,
-  "n_candidates": 302,
-  "win": 72.8,
-  "pf": 1.75,
-  "avg_win": 1115.0,
-  "avg_loss": -1705.0,
-  "n_locks": 164,
-  "noentry_streak_n": 69,
-  "noentry_streak_days": 15.2
+  "pnl": 88478.0,
+  "max_dd": 16274.0,
+  "n_taken": 262,
+  "n_candidates": 262,
+  "win": 49.6,
+  "pf": 1.36,
+  "avg_win": 2591.0,
+  "avg_loss": -1881.0,
+  "n_locks": 144,
+  "noentry_streak_n": 66,
+  "noentry_streak_days": 14.3
  },
- "n_trades": 302,
- "trades_sha256": "05b95db17e99431515b1a07d95a215c5f1d6cc1ef7e26bee10ecc8bf349546e7",
+ "n_trades": 262,
+ "trades_sha256": "3c8b334e7fe2f020b4066979db22bafd17af6ebe171122d33de7880625bf06cd",
  "vote_sha256": {
-  "bollinger": "950f321094bbe54b4506d69e12c434f3ece54ceec3df4e7071aee515acbfecf2",
-  "breaker": "2a81e63b41d02201008dafd6a2b4dff62fe4133107f1a509fcc59d1358f7bcc2",
-  "cci": "47dd11b8863a4e199fa385561bfda31b0c618eb90077b3387393ef0d8b35cea4",
-  "keltner": "45ee1f714a7be72b87b7d4ec3ee3812a09889ffeb48740f5a4e6e97b71ecdf52",
-  "mfi": "9e5fda905e28764a290988045876d30570d7bdebf9942521cac47fab6b7f35f4"
+  "bollinger": "46da9e3c396ffee94e48f1d74c2ec133b4fcbd38d5427973e81a4d17685297d2",
+  "ema_trend": "041c3863cb3dbc01066db48860a804307eb694569f832c1e6efe8f14e99ea4dd",
+  "fvg": "adc51549f9313ee18e4e506c8577edbe9b600545c8993a89cb5b56b5876efc68",
+  "keltner": "6b1147be128b4db2da12de7f24bdb269f3b22aa18306ff50a8c0a9733c5b2744",
+  "obv": "84a3cdd940147acf1fc02a800d2202fdca8198b86b0e87fe448f287bdbac244a",
+  "rsi": "906809d56bde8ce693db97394f3aa01209704150f6c6d0d915ebcd18e92aaaa3",
+  "sma_trend": "585f14cadcc32ad8d96c97b040d30cbe3126b316363b81c2df2b640695b35fad",
+  "structure_trend": "8d9778968eb7fb1c5f21f5a87fc5bfd0a1c5158c4195da632608aeaa234511d9"
  },
  "indicators_enabled": [
   "bollinger",
-  "breaker",
-  "cci",
+  "ema_trend",
+  "fvg",
   "keltner",
-  "mfi"
+  "obv",
+  "rsi",
+  "sma_trend",
+  "structure_trend"
  ]
 }

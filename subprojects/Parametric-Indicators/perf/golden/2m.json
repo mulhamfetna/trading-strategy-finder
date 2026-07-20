@@ -1,20 +1,20 @@
 {
  "tf": "2m",
  "summary": {
-  "pnl": 29777.0,
-  "max_dd": 3261.0,
+  "pnl": 31898.0,
+  "max_dd": 3234.0,
   "n_taken": 276,
   "n_candidates": 276,
   "win": 64.1,
-  "pf": 1.77,
-  "avg_win": 388.0,
+  "pf": 1.82,
+  "avg_win": 400.0,
   "avg_loss": -393.0,
   "n_locks": 0,
   "noentry_streak_n": 214,
   "noentry_streak_days": 18.9
  },
  "n_trades": 276,
- "trades_sha256": "9716070e9a43349153dac629d743aff7a09d0f4db39196c98c6896c9790cf1d8",
+ "trades_sha256": "d3e620783eaa870146badf7a535a4cea64e9e318f5d6421e1a49f0dd2dd9d9ea",
  "vote_sha256": {
   "bollinger": "7b8e7b294cf2fa100bccbd2db929e178bc671ba0618b466a01b684e564c77d00",
   "ema_trend": "da63d4a7f087704b7a2737e8f8121118f8ad539c2d12ea5c86b52ed193bb51dc",
