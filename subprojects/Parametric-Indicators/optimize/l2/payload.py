@@ -29,7 +29,13 @@ _DISK_CACHE = Path(tempfile.gettempdir()) / "wsh_l1_cache"
 # F2 — bump this whenever L1Result's fields change. It's part of the cache FILENAME, so old-schema
 # pickles get a different name and are never loaded (a stale pickle would otherwise unpickle with a
 # new field defaulted, e.g. the STEP-3b vf_seed=None bug). Loads also field-check (run_l1_cached).
-_L1_CACHE_VER = "v4-instrument"
+# BUMP THIS ON ANY P/L-AFFECTING ENGINE CHANGE. The cache key hashes the PARAMS, not the engine's
+# BEHAVIOUR, so a change to how fills are computed does not invalidate it — the causal path then serves
+# a pre-change ledger while build_payload recomputes, and the two silently disagree. That is exactly
+# what happened on 2026-07-20: gap-aware fills (GAP-01) made build_payload report $35,795 while the
+# cached causal path still said $50,030, a $14,235 divergence that looked like a parity bug.
+# v5-gapfills: gap-aware SL/TP fills (GAP-01, 2026-07-20)
+_L1_CACHE_VER = "v5-gapfills"
 
 
 def _l1_cache_file(tf: str, instrument: str = "NQ") -> Path:

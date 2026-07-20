@@ -162,13 +162,14 @@ def test_no_meaningful_speed_regression():
     args = (df["Date"].to_numpy(), df["Close"].to_numpy(float), sig, gate,
             df1["Date"].to_numpy(), df1["High"].to_numpy(float),
             df1["Low"].to_numpy(float), df1["Close"].to_numpy(float), _SS, _SH, _TP, False)
+    _kw = {"m_open": df1["Open"].to_numpy(float)}     # gap-aware fills (GAP-01)
 
     def bench(track, reps=10):
-        fast_backtest(*args, track_excursions=track)          # warm
+        fast_backtest(*args, **_kw, track_excursions=track)          # warm
         ts = []
         for _ in range(reps):
             t = time.process_time()                            # CPU time — ignores other processes
-            fast_backtest(*args, track_excursions=track)
+            fast_backtest(*args, **_kw, track_excursions=track)
             ts.append(time.process_time() - t)
         return float(np.median(ts))
 

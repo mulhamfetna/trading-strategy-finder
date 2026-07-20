@@ -13,7 +13,11 @@ _P = {"sl_soft": 140.0, "sl_hard": 200.0, "tp": 200.0, "gate_pct": 0.0, "dd_limi
       "indicators": [{"key": "ema_trend", "enabled": True, "mode": "confirm",
                       "params": {"fast": 20, "slow": 50}}]}
 BASE_N = 162
-BASE_PNL = -490.25
+# GAP-AWARE FILLS (GAP-01, 2026-07-20): was -490.25 under the old fill-at-the-line model.
+# Trade COUNT is unchanged (162) — only the fill PRICES moved, which is the signature of the fill
+# change rather than a behavioural regression. The contributors feature itself is untouched: this
+# test's job is 'no contributors == the baseline', and that invariant still holds.
+BASE_PNL = -583.75
 
 
 def _n_pnl(r):

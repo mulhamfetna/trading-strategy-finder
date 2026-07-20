@@ -11,7 +11,7 @@ from research.kalman_fusion.metrics import Metrics, summarize
 
 def run_book(C, admit, direction=None):
     """The combined book's trades: [{'pnl': dollars, 'entry_time': ...}] in exit order."""
-    dd, cl, si, md, mh, ml, mc, sls, slh, tp, flip = cp._bt_args(C)
+    dd, cl, si, md, mh, ml, mc, mo, sls, slh, tp, flip = cp._bt_args(C)
     si = np.asarray(si).copy()
     if direction is not None:
         d = np.asarray(direction)

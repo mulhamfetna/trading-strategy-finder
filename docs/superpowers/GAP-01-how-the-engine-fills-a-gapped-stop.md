@@ -182,7 +182,46 @@ been run.
 
 ---
 
-## 8 — RECOMMENDATION
+## 8 — ROLLOUT COMPLETE (2026-07-20)
+
+| Step | Status |
+|---|---|
+| Both engines changed, parity 11/11, 0 mismatches | ✅ |
+| ~29 call sites migrated (all pass `m_open`) | ✅ |
+| `gap_fills` threaded through `validate_params`, `strategy.py`, `core.py`, `l1_runner` | ✅ |
+| Old golden preserved (`perf/golden_pre_gapfills/`, reproducible via `gap_fills=False`) | ✅ |
+| New golden captured under `gap_fills=True` | ✅ |
+| Test suite back to the **pre-existing baseline: 22 failed / 526 passed**, zero net new failures | ✅ |
+
+### Three real bugs the rollout exposed (all fixed)
+
+1. **`validate_params` silently DROPPED `gap_fills`.** It returns an explicit allow-list dict, so the
+   flag never reached the engine and could not be turned off. My first "reproducibility proof" therefore
+   compared `gap_fills=True` **against itself** and showed `delta = 0` on every timeframe — which I
+   nearly reported as success. *Same silent-drop class as BUG-01, in new code, hours after writing the
+   rule against it.* Caught only because a perfect zero on all six timeframes was too clean to be real.
+2. **The L1 disk cache served pre-change results.** Its key hashes params, not engine *behaviour*, so the
+   causal path returned a stale ledger while `build_payload` recomputed — a **\$14,235** divergence that
+   looked like a parity bug. Cache version bumped `v4-instrument → v5-gapfills` with the reason recorded.
+3. **`l1_runner` never threaded `gap_fills`**, so the entire causal/L2 path could not reproduce old
+   numbers at all. Now wired and verified (`False` → 149,989 exactly, `True` → 154,646).
+
+### Attribution discipline
+
+No pinned number was updated until `gap_fills=False` reproduced the old value **exactly**:
+
+| Test | Old | New | Proof |
+|---|---|---|---|
+| `test_build_payload` ×2 | 7,735.0 | 5,870.0 | `False` → 7,735.0 exactly |
+| `test_l1_runner` | 149,989 | 154,646 | `False` → 149,989 exactly |
+| `contrib_wiring` | −490.25 | −583.75 | trade count unchanged (162) |
+
+⚠️ **On the `build_payload` config the max drawdown MORE THAN DOUBLED (3,670 → 7,720).** The old model
+was not only overstating profit — it was materially **understating risk**.
+
+---
+
+## 9 — RECOMMENDATION
 
 1. ✅ **DONE — gap-aware fills are now the system default**, symmetric, parity-verified. See §7.
 2. 🚨 **RE-OPTIMIZE the champions under the new fill model.** They were tuned on a backtest where gaps

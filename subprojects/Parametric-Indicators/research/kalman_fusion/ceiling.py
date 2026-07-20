@@ -41,7 +41,7 @@ def simulate_dir(C, entry_idx: int, direction):
     """Isolated trade at entry_idx FORCED to `direction` (+1/-1 or 'long'/'short'), champion exits.
     Returns dollars, or None if it never closes."""
     dv = _dirval(direction)
-    dd, cl, si, md, mh, ml, mc, sls, slh, tp, flip = cp._bt_args(C)
+    dd, cl, si, md, mh, ml, mc, mo, sls, slh, tp, flip = cp._bt_args(C)
     si = np.asarray(si).copy()
     # engine reads the box signal at idx-1 and applies `flip`; undo flip so `direction` is the REALISED side.
     si[entry_idx - 1] = -dv if flip else dv
