@@ -129,11 +129,71 @@ backtest**. In live trading the bound is soft: 3.2% of the time the market steps
 
 ---
 
-## 7 — RECOMMENDATION
+## 7 — ✅ IMPLEMENTED (2026-07-20): the system now fills at the real price
 
-1. **Add a gap-aware fill mode to the engine** — `fill = worse_of(line, bar_open)` — **off by default** so
-   the golden gate stays byte-identical, and report both numbers on every champion.
-2. **Re-read the EOD-vs-hold decision** with weekend-gap cost charged. EOD may win on several slots once
-   the protection it provides is actually priced.
-3. **Discount every reported edge by ~$9/trade minimum** when sizing. Combined with the corrected
-   expectancy (~$21/trade), the honest net is closer to **$12/trade** before commission and slippage.
+Both engines changed, **parity verified 11/11 configurations, 0 mismatches**.
+
+| | |
+|---|---|
+| `engine.py` | `gap_fills` on `SimpleStrategyParams`, **default True** |
+| `optimize/fast_engine.py` | `m_open` + `gap_fills`, appended at the **end** of the signature so every existing positional caller keeps working |
+| Rule | if the triggering bar **OPENED beyond the level**, fill at the **OPEN**; otherwise the line |
+| Symmetry | gap past the **stop** → fills **worse**; gap past the **take-profit** → fills **better** |
+| Failure mode | `gap_fills=True` with `m_open=None` **RAISES** — no silent fallback (the BUG-01 lesson) |
+| Reproducibility | `gap_fills=False` restores the old numbers exactly, so the previous golden still reproduces |
+
+### The net impact on every champion
+
+Trade **count is identical** by construction — the rule changes the fill *price*, never whether or when
+a trade exits. So this is a clean like-for-like comparison.
+
+| tf | trades | OLD $ | **NEW $** | delta | delta % | $/trade |
+|---|---|---|---|---|---|---|
+| 4h | 445 | 73,752 | **73,209** | −543 | **−0.7%** | −1.22 |
+| 2h | 501 | 18,556 | **9,175** | −9,381 | **−50.6%** | −18.72 |
+| **1h** | 995 | 84,060 | **88,058** | **+3,998** | **+4.8%** | **+4.02** |
+| 15m | 1,993 | 34,735 | **25,242** | −9,493 | −27.3% | −4.76 |
+| 5m | 1,416 | −2,881 | **−11,759** | −8,878 | −308% | −6.27 |
+| **2m** | 4,187 | **+10,819** | **−1,551** | −12,370 | −114% | −2.95 |
+| **ALL** | **9,537** | **219,041** | **182,375** | **−36,667** | **−16.7%** | **−3.84** |
+
+### What this reveals
+
+1. **The honest cost is −16.7% of total P&L**, or −$3.84/trade — *not* the −$9.24/trade the stop-only
+   estimate suggested. **Take-profit gaps recover about 58% of the stop-side cost.** Had I charged only
+   the stops, I would have overstated the damage by 2.4× and reported a loss on 1h that isn't there.
+   **This is why the rule had to be symmetric.**
+2. **🚨 The 2m champion flips from profitable to losing: +\$10,819 → −\$1,551.** Under honest fills it is
+   not a viable strategy. It was only ever profitable because the backtest refused to pay for gaps.
+3. **5m was already losing and gets much worse** (−\$2,881 → −\$11,759). Combined with Z1 showing 5m has
+   **f\* = 0.0%** (no Kelly edge at all), 5m should carry **no size**.
+4. **2h loses half its edge** (−50.6%).
+5. **4h is barely touched (−0.7%)** and **1h improves (+4.8%)** — the two timeframes that already carried
+   most of the edge (Z1: the highest Kelly fractions) are the robust ones. **The edge concentrates
+   further into 4h and 1h.**
+
+### ⚠️ Consequence: the champions are no longer optimal
+
+Every champion was **optimized under the old, optimistic fill model**. The optimizer chose parameters
+that a fill-at-the-line backtest rewarded — including, on the fast timeframes, parameters that only look
+profitable because gaps were free. **A re-optimization under gap-aware fills is required before any of
+these numbers are used for deployment.** That is a server campaign, not a code change, and it has not
+been run.
+
+---
+
+## 8 — RECOMMENDATION
+
+1. ✅ **DONE — gap-aware fills are now the system default**, symmetric, parity-verified. See §7.
+2. 🚨 **RE-OPTIMIZE the champions under the new fill model.** They were tuned on a backtest where gaps
+   were free; 2m in particular is only profitable under that assumption. Until this runs, no champion
+   number should be treated as deployable.
+3. **Re-read the EOD-vs-hold decision** with weekend-gap cost now actually charged. `cap_mode=eod`
+   closes before the session ends and therefore cannot be caught by a weekend gap at all — a protection
+   the old backtest priced at zero. The "forcing EOD everywhere is worse than doing nothing" conclusion
+   was reached without that cost and deserves re-testing.
+4. **Sizing:** on the corrected ledger expectancy was ~$21/trade; gap-aware fills take ~$3.84/trade of
+   that, so the honest figure is **~$17/trade before commission and slippage** — and 5m/2m should carry
+   no size at all (5m already had f\*=0.0% in Z1; 2m is now net negative).
+5. **Recapture the golden baselines** under `gap_fills=True`, keeping the old ones reproducible via
+   `gap_fills=False`.
