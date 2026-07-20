@@ -123,3 +123,51 @@ five minutes; `p.get("sl_hard_points", 40)` cost two workstreams.
 4. **Then** run the Z3 GC out-of-sample test that started all this.
 
 Until step 3 completes, treat #7's "truncated P&L" headline and all of #17's numbers as **retracted**.
+
+---
+
+## 6 — ✅ RE-RUN COMPLETE (2026-07-20): what changed, what held
+
+All eleven studies now use `champion_stops()` (strict — a missing stop raises) and print the stops they
+used. Every affected study was re-run on the true champion ledger. **A third layer of the same bug** was
+found during the re-run: `study_kelly` normalized P&L as `pnl / STOP` with STOP hardcoded to 40, so once
+real 151-point stops were in play `r = -3.79`, `log1p(f·r)` went NaN, and the solver silently returned
+**f\* = 0.0% for every timeframe**. The risk unit must be each TF's own stop.
+
+| Study | Old (buggy) | **New (real champions)** | Verdict |
+|---|---|---|---|
+| **Z1** Kelly | 2.5%, CI [0.3%, 4.4%] | **2.5%, CI [0.0%, 5.3%]** | ✅ **HOLDS** — headline unchanged, CI **wider** (cannot exclude zero edge) |
+| **D1** distribution | "truncated at [−40,+60]" *(circular)* | **bounded at −151.4/+125.6; 3.89% of trades gap THROUGH the stop; EVT ξ<0 at every threshold** | ✅ **HOLDS, now non-circular** — but the real tail is **$3,029**, not $1,600 |
+| **Z2** ruin | quarter-Kelly | ruin >1% once f ≥ 2.5% | ✅ **HOLDS** |
+| **Z4** PnL:DD | "flat half→full Kelly" | **ratio DECLINES as f rises; optimum ~0.3%** | 🔄 **REVERSED** — see below |
+| **Z3** vol-targeting | "promising, Sharpe 3.2→3.9 in **both** halves" | **1st half −0.79, 2nd half +0.27 — FLIPPED.** corr(pnl,σ)=+0.020 | ❌ **REJECTED** — fluke-window artifact |
+| **D4** vol-scaled stop | rejected | fixed stop-out rate is **regime-FLAT** (55.1/56.2/56.5%); the σ-stop would make it **swing** (69.0/56.2/46.3%) | ✅ **REINFORCED** — stronger than before |
+
+### The headline that flipped: Z3 is dead
+
+Vol-targeting was the one "promising pending out-of-sample" result, and it is what sent me to the GC
+frame in the first place. On the correct ledger it **does not survive its own temporal split** — the
+Sharpe edge is −0.79 in the first half and +0.27 in the second. With `corr(pnl, σ) ≈ 0` there is no
+vol-conditional edge to exploit, so any leverage-matched gain was variance-shaping, exactly as the
+study's own kill-criterion predicted. **The GC out-of-sample test is now moot**: an in-sample result that
+flips across halves does not earn an OOS run.
+
+### The prediction I wrongly retracted
+
+On 2026-07-17 I predicted the PnL:DD ratio would decline as the fraction rises, saw "flat," and publicly
+corrected myself. **The prediction was right; the "flat" reading was the bug.** On the correct ledger the
+ratio plateaus at the low end and declines as f rises, optimum ~0.3%. A bug does not only manufacture
+false findings — it can also force you to withdraw true ones.
+
+### Net effect on the recommendation
+
+**The sizing recommendation stands and is now better supported: ~quarter-to-half Kelly (0.6–1.2% per
+trade), edge-champions only, hard cap.** Three independent routes (Z1 edge-uncertainty, Z2 ruin/gap,
+Z4 drawdown) converge on it, now computed on the strategy we actually trade. Two caveats are *worse*
+than before and must travel with the number:
+
+1. **The CI floor is 0.0%** — we cannot statistically exclude a zero edge.
+2. **The real per-trade tail is ~$3,029, not ~$1,600** — nearly double. Any risk budget built on the old
+   figure understates the worst case by ~2×.
+3. **5m has literally zero Kelly edge** (f\*=0.0%) and should carry no size. The edge concentrates in
+   4h and 1h. The pooled win rate is **49.1%** — a coin flip; the 56% figure is 4h alone.
