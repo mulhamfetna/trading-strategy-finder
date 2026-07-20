@@ -103,15 +103,73 @@ owner, so this is documented and handed over rather than changed unilaterally.
 
 ---
 
-## 3 — STILL OPEN
+## 3 — THE COMPLETE PICTURE (full suite, 2026-07-20)
+
+**22 failed · 526 passed · 10 skipped.**
+
+> ⚠️ **My earlier catalogue of these failures was itself built from truncated output.** The first run's
+> failure list was read through `tail`, so I only ever saw the last ~19 of 36 lines and grouped the
+> failures from a partial list. That is the *third* time in this session the same mistake produced a
+> confident wrong statement — and it is the reason §2's "retired/xfail" claim was wrong too. The table
+> below is from the complete list.
+
+| Area | Count | Status |
+|---|---|---|
+| **`optimize/l2/*`** | **17** | **ONE root cause — see below** |
+| `test_intracandle_parity` · `test_intracandle_engine` | 4 | task **#15** |
+| `test_instruments_comex` | 1 | `resolve_paths_use_shifted_box` — separate |
+
+### The 17 `l2` failures are all ONE cause — verified, not assumed
+
+Every one of them carries the *same* drift signature:
+
+| Test | Evidence |
+|---|---|
+| `test_parity_anchor::test_l1_anchor` | `277 == 255` — **+22** |
+| `test_parity_anchor::test_l2_anchor` | `48 == 34` — **+14** |
+| `test_logbook::test_causal_l1_matches_legacy_oracle` | *"Left contains **22** more items"* |
+| `test_logbook::test_causal_l2_matches_legacy_engine` | *"Left contains **14** more items"* |
+| `test_aggregate` (L1) | pnl **148,670** vs pinned **149,989** |
+| `test_aggregate` (L2) | `48 == 34` |
+| `test_logbook::test_cap_1min_produces_time_cap_exits` | `TIME_CAP` present where the control expects none |
+
+**+22 and +14 are exactly the parity-anchor drifts.** And the `TIME_CAP` failure fits the same story: the
+optimized champion preset carries **`cap_1min = 451`**, which the frozen lean anchor did not — so a
+control case asserting "no time-cap exits" now sees them.
+
+**Root cause for all 17: the 4h L1 default was deliberately unlocked from the frozen lean anchor to the
+optimized champion on 2026-07-11.** These tests pin the frozen anchor's behaviour — trade counts, P&L,
+and the absence of a time cap. They are **stale, not a regression.**
+
+```mermaid
+flowchart TD
+    A["2026-07-11: 4h L1 default deliberately<br/>unlocked frozen anchor -> optimized champion"] --> B["different stops<br/>128.6/151.4/125.6"]
+    A --> C["champion carries cap_1min=451"]
+    B --> D["+22 L1 entries, +14 L2 entries<br/>pnl 149,989 -> 148,670"]
+    C --> E["TIME_CAP exits appear"]
+    D --> F["17 l2 tests fail — all STALE, one cause"]
+    E --> F
+```
+
+### Recommended fix (for the L2/dev owner — deliberately NOT applied here)
+
+Have these tests construct their fixture from **`frozen_lean_params()` explicitly** rather than relying
+on whatever `l1_default_params()` currently returns. That keeps them guarding the frozen cached oracle —
+their actual purpose — independent of which champion is deployed. Re-pinning to the champion's numbers is
+worse: it re-couples the guard to a value that moves at every re-optimization.
+
+`optimize/l2/*` belongs to another workstream; this is documented and handed over.
+
+### Still open (not `l2`)
 
 | Group | Count | Note |
 |---|---|---|
-| `l2/test_taxonomy` · `test_tf_defaults` · `test_payload` | 6 | Likely the **same stale-default root cause** as §2 — verify before assuming |
-| `test_intracandle_engine` · `test_intracandle_parity` | 5 | `StopIteration`. This is existing **task #15** |
-| `test_ablate` | 3 | `FileNotFoundError` — a missing data file, probably environmental |
+| `test_intracandle_parity` (3) · `test_intracandle_engine` (1) | 4 | task **#15** |
 | `test_instruments_comex` | 1 | `resolve_paths_use_shifted_box` |
 | `local_dash_test.py` | collection | needs `playwright` installed |
+
+*(`test_ablate` and `test_tf_defaults` failed in the earlier dev-worktree run but pass here — those were
+environmental, a missing data file in that worktree.)*
 
 ---
 
