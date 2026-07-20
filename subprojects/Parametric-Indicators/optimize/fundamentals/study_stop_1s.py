@@ -97,7 +97,7 @@ def main() -> int:
     F = fast_backtest(df["Date"].to_numpy(), df["Close"].to_numpy(float), sig, gate,
                       MD, df1["High"].to_numpy(float), df1["Low"].to_numpy(float),
                       df1["Close"].to_numpy(float), sl_soft, sl_hard, tp,
-                      _flip, track_excursions=True)
+                      _flip, track_excursions=True, m_open=df1["Open"].to_numpy(float))
     stopped = [t for t in F if t["exit_reason"] == "STOP_LOSS_HARD"]
 
     print(f"\n{a.instrument} {a.tf}  ·  SL {sl_soft}/{sl_hard}  TP {tp}  ·  ${pv:,.0f}/pt")

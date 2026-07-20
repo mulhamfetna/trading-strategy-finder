@@ -49,7 +49,7 @@ def ledger_returns(rng):
         F = fast_backtest(df["Date"].to_numpy(), df["Close"].to_numpy(float), sig, gate,
                           df1["Date"].to_numpy(), df1["High"].to_numpy(float), df1["Low"].to_numpy(float),
                           df1["Close"].to_numpy(float), _SS, _SH,
-                          _TP, _FL)
+                          _TP, _FL, m_open=df1["Open"].to_numpy(float))
         r.append(np.array([t["pnl_points"] for t in F], float) / STOP)
     return np.concatenate(r)
 

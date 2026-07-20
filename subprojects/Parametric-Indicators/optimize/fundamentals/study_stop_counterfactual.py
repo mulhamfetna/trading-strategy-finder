@@ -66,10 +66,11 @@ def main() -> int:
     MH = df1["High"].to_numpy(float)
     ML = df1["Low"].to_numpy(float)
     MC = df1["Close"].to_numpy(float)
+    MO = df1["Open"].to_numpy(float)
 
     F = fast_backtest(df["Date"].to_numpy(), df["Close"].to_numpy(float), sig, gate,
                       MD, MH, ML, MC, sl_soft, sl_hard, tp,
-                      _flip, track_excursions=True)
+                      _flip, track_excursions=True, m_open=MO)
 
     stopped = [t for t in F if t["exit_reason"] == "STOP_LOSS_HARD"]
     print(f"\n{a.instrument} {a.tf}  ·  SL {sl_soft}/{sl_hard}  TP {tp}  ·  ${pv}/pt")

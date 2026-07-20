@@ -70,7 +70,7 @@ def engine_vs_fast():
     MD, MH = df1["Date"].to_numpy(), df1["High"].to_numpy(float)
     ML, MC = df1["Low"].to_numpy(float), df1["Close"].to_numpy(float)
     t0 = time.time(); SimpleStrategy(sp).backtest(df, df1, box, entry_gate=g); t_eng = time.time() - t0
-    t0 = time.time(); fast_backtest(DD, DC, si, g, MD, MH, ML, MC, 30, 40, 60, False); t_fast = time.time() - t0
+    t0 = time.time(); fast_backtest(DD, DC, si, g, MD, MH, ML, MC, 30, 40, 60, False, m_open=MO); t_fast = time.time() - t0
     fig = go.Figure(go.Bar(x=["Python engine", "vectorized (numpy)"], y=[t_eng * 1000, t_fast * 1000],
                            marker_color=["#5472d3", "#2e7d32"],
                            text=[f"{t_eng*1000:.0f} ms", f"{t_fast*1000:.1f} ms"], textposition="outside"))

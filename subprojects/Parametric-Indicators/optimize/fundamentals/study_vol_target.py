@@ -57,11 +57,11 @@ def main() -> int:
         print(describe(p, tf), flush=True)
         s = signals_to_int(signals.decision_signals(df, box))
         gate = vf <= float(np.percentile(vf[:n], float(p.get("gate_pct", 60))))
-        MD = df1["Date"].to_numpy(); MC = df1["Close"].to_numpy(float)
+        MD = df1["Date"].to_numpy(); MC = df1["Close"].to_numpy(float); MO = df1["Open"].to_numpy(float)
         F = fast_backtest(df["Date"].to_numpy(), df["Close"].to_numpy(float), s, gate,
                           MD, df1["High"].to_numpy(float), df1["Low"].to_numpy(float), MC,
                           _SS, _SH, _TP,
-                          _FL)
+                          _FL, m_open=MO)
         dt = np.diff(MD).astype("timedelta64[s]").astype(np.int64)
         r = np.full(len(MC), np.nan); r[1:] = np.log(MC[1:] / MC[:-1]); r[1:][dt != 60] = np.nan
         cvar = pd.Series(np.where(np.isfinite(r), r, np.nan) ** 2).ewm(alpha=1 - LAM, adjust=False,

@@ -77,7 +77,7 @@ def main() -> int:
         MO = df1["Open"].to_numpy(float)
         F = fast_backtest(df["Date"].to_numpy(), df["Close"].to_numpy(float), sig, gate,
                           MD, df1["High"].to_numpy(float), df1["Low"].to_numpy(float),
-                          df1["Close"].to_numpy(float), ss, sh, tp, flip)
+                          df1["Close"].to_numpy(float), ss, sh, tp, flip, m_open=MO, gap_fills=False)
 
         slips = []
         n_stops = 0

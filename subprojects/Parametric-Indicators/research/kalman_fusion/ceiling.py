@@ -46,7 +46,7 @@ def simulate_dir(C, entry_idx: int, direction):
     # engine reads the box signal at idx-1 and applies `flip`; undo flip so `direction` is the REALISED side.
     si[entry_idx - 1] = -dv if flip else dv
     gate = np.zeros(C["n"], dtype=bool); gate[int(entry_idx)] = True
-    trades = fast_backtest(dd, cl, si, gate, md, mh, ml, mc, sls, slh, tp, flip)
+    trades = fast_backtest(dd, cl, si, gate, md, mh, ml, mc, sls, slh, tp, flip, m_open=mo)
     if not trades:
         return None
     return float(trades[0]["pnl_points"]) * C["pv"]

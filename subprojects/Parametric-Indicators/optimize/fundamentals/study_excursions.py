@@ -58,7 +58,7 @@ def main() -> int:
                       df1["Date"].to_numpy(), df1["High"].to_numpy(float),
                       df1["Low"].to_numpy(float), df1["Close"].to_numpy(float),
                       sl_soft, sl_hard, tp, _flip,
-                      track_excursions=True)
+                      track_excursions=True, m_open=df1["Open"].to_numpy(float))
 
     pnl = np.array([t["pnl_points"] for t in F])
     mfe = np.array([t["mfe_points"] for t in F])

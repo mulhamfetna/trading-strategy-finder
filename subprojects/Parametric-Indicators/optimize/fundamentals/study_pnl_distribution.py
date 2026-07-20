@@ -47,7 +47,7 @@ def trades_for(tf, inst="NQ"):
     F = fast_backtest(df["Date"].to_numpy(), df["Close"].to_numpy(float), sig, gate,
                       df1["Date"].to_numpy(), df1["High"].to_numpy(float), df1["Low"].to_numpy(float),
                       df1["Close"].to_numpy(float), _SS, slh, tp,
-                      _FL)
+                      _FL, m_open=df1["Open"].to_numpy(float))
     return F, slh, tp
 
 

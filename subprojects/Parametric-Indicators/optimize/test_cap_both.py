@@ -46,7 +46,7 @@ def _synthetic(cap_1min, cap_mode, eod_bar):
     return fast_backtest(d_dates, d_close, sig, None, m_dates, m, m, m,
                          sl_soft=50, sl_hard=90, tp=90, flip=False,
                          cap_1min=cap_1min, cap_mode=cap_mode,
-                         eod_target=eod_target, session_last=session_last)
+                         eod_target=eod_target, session_last=session_last, m_open=m)
 
 
 def test_both_takes_the_bar_cap_when_it_lands_first():
@@ -176,7 +176,7 @@ def test_engine_fast_parity_with_both_caps_on():
     F = fast_backtest(df_dec["Date"].to_numpy(), df_dec["Close"].to_numpy(float), si, None,
                       MD, df1["High"].to_numpy(float), df1["Low"].to_numpy(float),
                       df1["Close"].to_numpy(float), 60, 120, 150, False,
-                      cap_1min=CAP, cap_mode="both", eod_target=et, session_last=sl_arr)
+                      cap_1min=CAP, cap_mode="both", eod_target=et, session_last=sl_arr, m_open=df1["Open"].to_numpy(float))
 
     assert len(E) == len(F) and len(F) > 0
     diffs = sum(1 for e, f in zip(E, F)

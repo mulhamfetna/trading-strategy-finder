@@ -17,7 +17,7 @@ def run_book(C, admit, direction=None):
         d = np.asarray(direction)
         si = np.where(d != 0, d, si)               # override where the policy specifies a direction
     admit = np.asarray(admit, dtype=bool)
-    trades = fast_backtest(dd, cl, si, admit, md, mh, ml, mc, sls, slh, tp, flip)
+    trades = fast_backtest(dd, cl, si, admit, md, mh, ml, mc, sls, slh, tp, flip, m_open=mo)
     return [{"pnl": t["pnl_points"] * C["pv"], "entry_time": t["entry_time"]} for t in trades]
 
 

@@ -15,7 +15,7 @@ for tf in ("4h", "1h"):
     DD = df["Date"].to_numpy(); DC = df["Close"].to_numpy(float)
 
     def run(ss, sh, tp, flip, label):
-        F = fast_backtest(DD, DC, s, gate, MD, HI, LO, MC, ss, sh, tp, flip)
+        F = fast_backtest(DD, DC, s, gate, MD, HI, LO, MC, ss, sh, tp, flip, m_open=MO, gap_fills=False)
         pnl = np.array([float(t["pnl_points"]) for t in F])
         return F, pnl, label
 

@@ -15,7 +15,7 @@ gate = vf <= float(np.percentile(vf[:n], float(p["gate_pct"])))
 MD = df1["Date"].to_numpy(); MO = df1["Open"].to_numpy(float)
 MH = df1["High"].to_numpy(float); ML = df1["Low"].to_numpy(float); MC = df1["Close"].to_numpy(float)
 F = fast_backtest(df["Date"].to_numpy(), df["Close"].to_numpy(float), sig, gate,
-                  MD, MH, ML, MC, ss, sh, tp, flip)
+                  MD, MH, ML, MC, ss, sh, tp, flip, m_open=MO, gap_fills=False)
 
 print(f"champion {tf}: sl_hard={sh}")
 shown = 0

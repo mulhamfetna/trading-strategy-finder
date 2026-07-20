@@ -58,7 +58,7 @@ def _both(track: bool, tf="4h"):
     F = fast_backtest(df["Date"].to_numpy(), df["Close"].to_numpy(float), sig, gate,
                       df1["Date"].to_numpy(), df1["High"].to_numpy(float),
                       df1["Low"].to_numpy(float), df1["Close"].to_numpy(float),
-                      _SS, _SH, _TP, False, track_excursions=track)
+                      _SS, _SH, _TP, False, track_excursions=track, m_open=df1["Open"].to_numpy(float))
     return E, F
 
 

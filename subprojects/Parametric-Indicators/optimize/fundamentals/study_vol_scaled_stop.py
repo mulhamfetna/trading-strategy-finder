@@ -61,10 +61,10 @@ def main() -> int:
     print(describe(p, a.tf), flush=True)
     sig = signals_to_int(signals.decision_signals(df, box))
     gate = vf <= float(np.percentile(vf[:n], float(p.get("gate_pct", 60))))
-    MD = df1["Date"].to_numpy(); MC = df1["Close"].to_numpy(float)
+    MD = df1["Date"].to_numpy(); MC = df1["Close"].to_numpy(float); MO = df1["Open"].to_numpy(float)
     F = fast_backtest(df["Date"].to_numpy(), df["Close"].to_numpy(float), sig, gate,
                       MD, df1["High"].to_numpy(float), df1["Low"].to_numpy(float), MC,
-                      _SS, _SH, TP, _FL)
+                      _SS, _SH, TP, _FL, m_open=MO)
     if not F:
         print("no trades"); return 1
 
