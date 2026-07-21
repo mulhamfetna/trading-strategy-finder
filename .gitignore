@@ -95,3 +95,13 @@ subprojects/timesfm-fusion/**/__pycache__/
 subprojects/timesfm-fusion/.venv/
 # winner bundle: ship the sources, not the built artifacts
 subprojects/Parametric-Indicators/shareable/regime_sizing_overlay_bundle.zip
+
+# --- Local secrets / credentials (NEVER commit — public repo) added 2026-07-20 ---
+keys.env
+keypass.txt
+login.txt
+SERVER_DETIALS.md
+kw-full.ovpn
+vpn_connect.sh
+vpn_kill.sh
+*.ovpn

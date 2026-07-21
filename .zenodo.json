@@ -1,0 +1,21 @@
+{
+  "title": "Trading Strategy Finder: a reproducible quantitative-analysis framework for futures trading-strategy discovery and validation",
+  "description": "A reproducible quantitative-analysis research codebase for discovering and validating futures trading strategies: box-level signal engines, multi-objective optimization, extreme-value risk modelling, and a discipline of pre-registered, power-analysed, cross-instrument-replicated backtests.",
+  "upload_type": "software",
+  "access_right": "open",
+  "license": "AGPL-3.0-or-later",
+  "creators": [
+    { "name": "Fetna, Mulham", "orcid": "0009-0006-4432-798X" }
+  ],
+  "keywords": [
+    "quantitative analysis",
+    "quantitative finance",
+    "algorithmic trading",
+    "backtesting",
+    "multi-objective optimization",
+    "extreme value theory",
+    "market microstructure",
+    "reproducible research",
+    "data science"
+  ]
+}
