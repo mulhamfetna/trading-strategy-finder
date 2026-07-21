@@ -223,20 +223,35 @@ documented.
 
 ---
 
-## PART 4 — OPEN THREADS & WHAT'S QUEUED
+## PART 4 — OPEN THREADS & WHAT'S QUEUED  *(refreshed 2026-07-20)*
 
+Everything the workstream set out to answer is **answered**. What remains is follow-through and a handful
+of genuinely-blocked threads. Ranked by value.
+
+### A — actionable now (no blocker)
+| Item | Why it's worth doing | Cost |
+|---|---|---|
+| **Champion RE-OPTIMIZATION under gap-aware fills** | The champions were all tuned when gaps were free; per-slot rankings moved ±28% (GAP-02), so the *selection* was made on a distorted scoreboard. NG especially. | server campaign |
+| **Re-cut the risk budget** | Drawdown was ~10% optimistic overall, +148% on NG. The sizing rec (Z2/Z4) rests on drawdown, so it should be re-derived on honest DD. | small |
+| **Forward-validate gold's inverse macro reaction** | The Spearman −0.193 finding (GC-01) is post-hoc; it deserves a pre-registered forward test on new releases. | small |
+
+### B — blocked on data
+| Item | Blocker |
+|---|---|
+| **Silver forward test** (`study_silver.py`) | SI long history did NOT land with GC — **confirmed absent on the server 2026-07-20**. Same in-house Databento pipeline as GC would unblock it. |
+| **Asia/22:00 session cell** re-test (S3) | Needs future/long data — same as silver. |
+
+### C — closed / moot / not-ours
 | Item | Status |
 |---|---|
-| **#7 · D1** — fit the champion's per-trade P&L as a mixture | **queued (recommended next)** |
-| #7 · D2 — tail index of NQ 1-min per session | after D1 |
-| #7 · D3 — McNeil–Frey conditional (GARCH→GPD) tail | after D2 |
-| #7 · D4 — decisions (stop/sizing); **sizing half needs its own research pass** | gated |
-| **Silver** — re-run `study_silver.py` on future data | frozen |
-| **Asia cell** — re-test on future/long data | frozen |
-| **Task #15** — `test_intracandle_parity` fails 3/4 on server (pre-existing, separate default-OFF workstream; golden passes) | flagged, not this workstream |
+| #7 D1–D4, Z1–Z4 sizing | ✅ done, re-earned on the real ledger after BUG-01 |
+| Z3 vol-targeting OOS on GC | ❌ **moot** — Z3 died on its own temporal split, so there is nothing to OOS-test |
+| `test_intracandle_parity` (#15) | pre-existing, another workstream's (default-OFF feature); golden passes |
+| The 17 l2 test failures | **stale, not regressions** — the 4h default was deliberately unlocked 07-11 (TESTS-01); handed to the l2/dev owner |
 
-**⏳ Awaiting your input:** you said you'll feed new information to **narrow the #7 research.** This document
-is the clean baseline for that. Nothing is mid-run; the tree is committed and consistent.
+**Nothing is mid-run; the tree is committed and consistent.** The single highest-value next step is the
+champion re-optimization under honest fills — it is the only thing that turns the corrected engine into
+deployable numbers.
 
 ---
 
