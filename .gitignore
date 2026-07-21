@@ -89,3 +89,13 @@ output_shifted/
 
 # Server connection config (host/port/user) — keep private; use server.env.example as the template
 subprojects/meta-prophet/server/server.env
+
+# --- Local secrets / credentials (NEVER commit — public repo) added 2026-07-20 ---
+keys.env
+keypass.txt
+login.txt
+SERVER_DETIALS.md
+kw-full.ovpn
+vpn_connect.sh
+vpn_kill.sh
+*.ovpn
