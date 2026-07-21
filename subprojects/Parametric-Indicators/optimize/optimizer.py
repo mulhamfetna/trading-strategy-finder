@@ -319,12 +319,18 @@ def _native_seed(box: dict, inds: dict, split_sltp: bool, b: dict) -> dict:
     return seed
 
 
-def warm_start_seeds(tf_name: str, split_sltp: bool, b: dict) -> list[dict]:
+def warm_start_seeds(tf_name: str, split_sltp: bool, b: dict, instrument: str = "NQ") -> list[dict]:
     """Known champions to enqueue as the optimizer's FIRST trials so the returned front is provably ≥ their
     score (defeats the 'larger space sampled worse' trap). Reads the per-TF wsh4 champion + (4h) the wsh5
     split champion from optimize/results/*.json. Missing files ⇒ fewer/no seeds (safe)."""
     seeds = []
-    for fn in ("wsh4_champions_full.json", "wsi_champions_full.json"):
+    # Per-instrument champion file: NQ = wsh4_champions_full.json, others = ..._<INST>.json. This lets a
+    # re-optimization of GC (or any onboarded market) warm-start from ITS OWN champions, so the front is
+    # guaranteed >= the prior champion re-scored under the current engine (e.g. gap-aware fills, GAP-01).
+    _suffix = "" if instrument == "NQ" else f"_{instrument}"
+    _champ_files = ([f"wsh4_champions_full{_suffix}.json"] if instrument != "NQ"
+                    else ["wsh4_champions_full.json", "wsi_champions_full.json"])
+    for fn in _champ_files:
         f = _RESULTS_DIR / fn
         if f.exists():
             try:
@@ -403,7 +409,7 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
 
     frozen_specs = frozen_k = None
     if freeze_indicators:
-        _fseeds = warm_start_seeds(tf_name, split_sltp, b)
+        _fseeds = warm_start_seeds(tf_name, split_sltp, b, instrument=instrument)
         if not _fseeds:
             raise SystemExit("--freeze-indicators needs a champion seed (e.g. wsh4_champions_full.json)")
         frozen_specs = _frozen_specs(_fseeds[0]); frozen_k = int(_fseeds[0]["k"])
@@ -546,8 +552,8 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
     )
     # Warm-start: enqueue known champions as the FIRST trials so the returned front is provably ≥ their
     # score (the wsh5 "bigger space, worse result" trap cannot recur). skip_if_exists keeps resumes idempotent.
-    if warm_start and instrument == "NQ":              # non-NQ has no champions; NQ seeds are wrong-scaled
-        seeds = warm_start_seeds(tf_name, split_sltp, b)
+    if warm_start:                                     # per-instrument seeds (NQ + any onboarded market)
+        seeds = warm_start_seeds(tf_name, split_sltp, b, instrument=instrument)
         n_seeded = 0
         for s in seeds:
             try:
