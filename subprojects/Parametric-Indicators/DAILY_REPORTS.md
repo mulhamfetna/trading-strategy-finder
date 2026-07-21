@@ -91,6 +91,14 @@ answer was "the stop, always" — an optimism. Fixed it, then measured it on all
   gappiest contract we trade, and the old model hid almost all of it. **Gold was the only market that got
   better on both axes.**
 
+- **Closed the last frozen session thread — the Asia/22:00 cell is a FLUKE.** Cross-instrument OOS
+  (the box levels only span 2025-26, so the 2010-23 test was impossible): 0 of 3 independent equity
+  indices replicate; 22:00 is *below* average on ES/YM/RTY. #5 fully closed. Caught + fixed my own
+  script contaminating the OOS pool with the discovery instrument.
+- **Launched the gap-aware-fills RE-OPTIMIZATION** on the server (NQ+GC, all 6 TFs, warm-started from
+  each market's own champions so every result ≥ the prior champion re-scored honestly). ~8h campaign,
+  heartbeat-monitored. Feeds the risk-budget re-cut.
+
 ### 🎯 Tomorrow / next
 - Re-optimize the champions under honest fills — not to rescue the total (it's flat) but because per-slot
   rankings moved by up to ±28%, so champion *selection* was made on a distorted scoreboard.
