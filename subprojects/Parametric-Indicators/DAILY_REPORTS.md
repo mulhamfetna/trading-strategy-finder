@@ -69,6 +69,44 @@ never run the strategy they claimed to. Everything was re-derived. Most conclusi
 
 ---
 
+## 2026-07-20 — The stop-fill question: the engine was too kind on gaps, now fixed, and the real cost is RISK not profit
+
+_You asked whether a price gap through the stop books the loss at the hard stop or the real price. The
+answer was "the stop, always" — an optimism. Fixed it, then measured it on all 54 champions._
+
+### ✅ What got done
+- **Answered the question from the code.** Both engines filled every hard stop/take-profit exactly at its
+  line, even when the bar had already OPENED far past it — a price that never traded. On a Friday-to-Sunday
+  weekend gap the booked loss was the stop; the real fill would have been hundreds of points worse.
+- **Fixed it — the system now fills at the real price.** A gapped stop/take-profit fills at the bar's
+  OPEN. Deliberately SYMMETRIC: a gap past the stop costs more, a gap past the take-profit pays more
+  (charging only the stop side would have been dishonest in the other direction). Both engines agree
+  (11/11 parity), the old numbers stay exactly reproducible, and the change fails LOUDLY rather than
+  silently if mis-called.
+- **Measured it on every champion — 9 markets × 6 timeframes = 54.** The headline surprised me:
+  **profit is essentially unchanged (−0.2%), but drawdown is ~10% worse.** The old model was not
+  inflating our profits — it was **understating our RISK.** That matters more, because our sizing work
+  concluded that drawdown (not ruin) is what limits how big we can bet.
+- **Natural gas is the outlier:** its book drawdown rose **+148%** once gaps are priced honestly — the
+  gappiest contract we trade, and the old model hid almost all of it. **Gold was the only market that got
+  better on both axes.**
+
+### 🎯 Tomorrow / next
+- Re-optimize the champions under honest fills — not to rescue the total (it's flat) but because per-slot
+  rankings moved by up to ±28%, so champion *selection* was made on a distorted scoreboard.
+- Re-cut the risk budget, NG especially.
+
+### ⚠️ Challenges / lessons
+1. **I corrected my own numbers twice.** I first called this change −44% of the edge, then −16.7% of P&L.
+   Both were NQ-only, one config — **wrong scope.** On the full book it's −0.2%. A partial measurement must
+   be labelled as partial.
+2. **A THIRD silent allow-list dropped the new flag** — caught this time BEFORE it wasted 108 backtests
+   that would have compared identical configs and reported a clean, meaningless "no change".
+3. **The finding that matters:** the danger of an over-kind backtest isn't a fake profit you'd notice —
+   it's a hidden risk you wouldn't.
+
+---
+
 ## 2026-07-19 — Gold's 16 years arrived: the verdict replicates, a real discovery, and a claim of mine corrected
 
 _The gold data landed, so the whole news battery got re-run on a second instrument. It confirmed the
