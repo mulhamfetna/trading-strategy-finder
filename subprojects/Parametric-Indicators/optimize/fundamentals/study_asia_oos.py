@@ -118,14 +118,18 @@ def main() -> int:
             print(f"  {inst:4} {grp:6} {r['n_all']:>7} {r['n_asia']:>7} {r['asia_mean']:>+13,.0f} "
                   f"{r['pooled_mean']:>+12,.0f} {r['excess']:>+10,.0f} {100*r['win']:>5.1f}% {r['p']:>8.3f}{star}")
             if grp == "EQUITY":
-                eq_pnls.append(r["asia_pnl"])
+                eq_pnls.append((inst, r["asia_pnl"]))
 
     # POOLED EQUITY-INDEX verdict — the tight replication group, all sharing NQ's session clock.
     print("\n" + "=" * 92)
     print("POOLED EQUITY-INDEX 22:00 CELL (NQ+ES+YM+RTY — the tight replication group)")
     print("=" * 92)
-    if eq_pnls:
-        allp = np.concatenate(eq_pnls)
+    # OUT-OF-SAMPLE pool EXCLUDES the discovery instrument (NQ). Including it is the classic
+    # in-sample contamination — NQ is where the effect was found, so it cannot be its own OOS evidence.
+    oos = [pnl for inst, pnl in eq_pnls if inst != "NQ"]
+    if oos:
+        allp = np.concatenate(oos)
+        print("  (OOS pool = ES+YM+RTY only — NQ EXCLUDED as the discovery instrument)")
         mean = allp.mean()
         t = mean / (allp.std(ddof=1) / np.sqrt(len(allp))) if allp.std(ddof=1) > 0 else 0.0
         # sign-flip / one-sample bootstrap p that the pooled 22:00 mean > 0

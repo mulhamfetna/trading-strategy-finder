@@ -34,7 +34,7 @@ Author: Claude (Opus 4.8) · Reviewer: Mulham Fetna · **$0 spent** · productio
 | **Fundamental analysis** (news) | ✅ **CLOSED** | Scheduled US macro is **priced in** — earned at 882 releases / 99% power |
 | **Dynamic stop-loss** (#3, #11) | ✅ **CLOSED** | Dead. A martingale even at 1-second resolution; 94% of stop-outs are 2-second sweeps but chasing them doesn't pay |
 | **`veto_mask` trap** (#4) | ✅ **DONE** | Renamed + documented; only `entry_gate` blocks; golden 6/6 byte-identical |
-| **Session windows** (#5) | ✅ **ANSWERED** | Real in the tape & in our *risk*, not a tradeable *entry* edge |
+| **Session windows** (#5) | ✅ **CLOSED 07-20** | Real in the tape & in our *risk*, not a tradeable *entry* edge. The one frozen exception (Asia/22:00) tested OOS cross-instrument → **FLUKE** (0/3 indices replicate). [`SESSION-04`](SESSION-04-asia-cell-oos-verdict.md) |
 | **Silver** (D3) | ❄️ **FROZEN** | Passed a pre-registered test but unconfirmable now — frozen forward test |
 | **Own distribution** (#7) | ✅ **RE-EARNED 07-20** | Trade P&L **bounded at −151.4/+125.6** (EVT ξ<0), **3.89% gap THROUGH the stop**; raw returns fat (α≈3); **vol-scaled stop REJECTED** — the fixed stop-out rate is regime-FLAT (55/56/57%) while a σ-stop would swing (69/56/46%). The old "[−40,+60]" headline was CIRCULAR (BUG-01). [`DIST-00`](DIST-00-WORKSTREAM-REPORT.md) |
 | **News v2 → decisions** (NQ+GC) | ✅ **ANSWERED** | Gold reacts (NFP>CPI); close/enter negligible/no-edge; **assist REJECTED** (belief backwards); content→pattern = **volatility not direction**. [`FAV2-00`](FAV2-00-WORKSTREAM-REPORT.md) |
@@ -239,7 +239,7 @@ of genuinely-blocked threads. Ranked by value.
 | Item | Blocker |
 |---|---|
 | **Silver forward test** (`study_silver.py`) | SI long history did NOT land with GC — **confirmed absent on the server 2026-07-20**. Same in-house Databento pipeline as GC would unblock it. |
-| **Asia/22:00 session cell** re-test (S3) | Needs future/long data — same as silver. |
+| ~~Asia/22:00 session cell re-test~~ | ✅ **CLOSED 07-20 — FLUKE.** Cross-instrument OOS: 0 of 3 independent equity indices replicate; 22:00 is *below* average on ES/YM/RTY (OOS pool ≈ −$38/trade). [`SESSION-04`](SESSION-04-asia-cell-oos-verdict.md) |
 
 ### C — closed / moot / not-ours
 | Item | Status |
