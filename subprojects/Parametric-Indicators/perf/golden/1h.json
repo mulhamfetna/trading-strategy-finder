@@ -1,36 +1,36 @@
 {
  "tf": "1h",
  "summary": {
-  "pnl": 70373.16000000003,
-  "max_dd": 14340.0,
-  "n_taken": 221,
-  "n_candidates": 256,
-  "win": 52.5,
-  "pf": 1.57,
-  "avg_win": 1676.0,
-  "avg_loss": -1181.0,
-  "n_locks": 35,
-  "noentry_streak_n": 64,
-  "noentry_streak_days": 9.8
+  "pnl": 110037.68000000001,
+  "max_dd": 15534.0,
+  "n_taken": 353,
+  "n_candidates": 353,
+  "win": 53.0,
+  "pf": 1.41,
+  "avg_win": 2029.0,
+  "avg_loss": -1623.0,
+  "n_locks": 139,
+  "noentry_streak_n": 65,
+  "noentry_streak_days": 9.9
  },
- "n_trades": 221,
- "trades_sha256": "7fb49949a1a61116e8f0ccad09aee89f402b8853836100bb1a940c2a99fcf378",
+ "n_trades": 353,
+ "trades_sha256": "826dd355b2470721bd57807ab1f1a80e82ab0d2c36b71ae81d3250bdb9b05010",
  "vote_sha256": {
-  "bollinger": "aee121a289593bc4c9b53ff3e58e9744df324937e3cedde5bcf59f1c1c7bf3d8",
-  "breaker": "6fc2c5098a096725e9feab32c5497b9ce16c08862cb5a1a29c6784579b8f68c6",
+  "bollinger": "2cd3dd31797bf7b1fdb3428e163ad96baaafd78003b9ed8f8b41a5a3650611ac",
   "cisd": "dfa96d3b849babc6ad02b65a56811b032020c419f02466dd0761956a048c6acb",
-  "macd": "6c66d7f765aacf3948f04c3eb0df0cb14ebef73e03015d3d282e40ee5f9e3026",
-  "mfi": "4a5769863fe931ccd951370c893f8bd65ccf89ce246c5ed2dd9bd14c2714a8bb",
-  "sma_trend": "8738866cac2418d6f90774f13f5eaf5bac25b4dfd188e1d3ac4a70b4e5184a56",
-  "stochastic": "3978bfac1d1de114a664a4f86a5dd0e89baf2ddafba24528289ab1b86abe16de"
+  "keltner": "223f7e87f6008557f67ffe03be23e0a7f980088105223064da0661fa97452b72",
+  "mfi": "0e470f6a8fbc5e9c220779fa40f58667a0a70a1624860b8bec999ac38133e008",
+  "order_block": "c5cc5fb9cc9757543dc6d202dea53d43b9d20493aba67b62a87811cd5948df31",
+  "stochastic": "516282d629aa059ed20bf2190bad1992e4a39fa96b14478b514bfc7465a71e88",
+  "vwap": "f468c37d590d257f8ef2b88e9d971f1cb4a3571ad3e890d32367a007933f5892"
  },
  "indicators_enabled": [
   "bollinger",
-  "breaker",
   "cisd",
-  "macd",
+  "keltner",
   "mfi",
-  "sma_trend",
-  "stochastic"
+  "order_block",
+  "stochastic",
+  "vwap"
  ]
 }

@@ -1,38 +1,38 @@
 {
  "tf": "2h",
  "summary": {
-  "pnl": 88478.0,
-  "max_dd": 16274.0,
-  "n_taken": 262,
-  "n_candidates": 262,
-  "win": 49.6,
-  "pf": 1.36,
-  "avg_win": 2591.0,
-  "avg_loss": -1881.0,
-  "n_locks": 144,
-  "noentry_streak_n": 66,
-  "noentry_streak_days": 14.3
+  "pnl": 101517.52000000002,
+  "max_dd": 8768.0,
+  "n_taken": 173,
+  "n_candidates": 173,
+  "win": 61.8,
+  "pf": 1.94,
+  "avg_win": 1962.0,
+  "avg_loss": -1642.0,
+  "n_locks": 58,
+  "noentry_streak_n": 70,
+  "noentry_streak_days": 18.9
  },
- "n_trades": 262,
- "trades_sha256": "3c8b334e7fe2f020b4066979db22bafd17af6ebe171122d33de7880625bf06cd",
+ "n_trades": 173,
+ "trades_sha256": "66c3daf4490c9a166fa29ce5bdfd9f2d92be04eec287bbc2a352220c83de02ed",
  "vote_sha256": {
-  "bollinger": "46da9e3c396ffee94e48f1d74c2ec133b4fcbd38d5427973e81a4d17685297d2",
-  "ema_trend": "041c3863cb3dbc01066db48860a804307eb694569f832c1e6efe8f14e99ea4dd",
-  "fvg": "adc51549f9313ee18e4e506c8577edbe9b600545c8993a89cb5b56b5876efc68",
-  "keltner": "6b1147be128b4db2da12de7f24bdb269f3b22aa18306ff50a8c0a9733c5b2744",
-  "obv": "84a3cdd940147acf1fc02a800d2202fdca8198b86b0e87fe448f287bdbac244a",
-  "rsi": "906809d56bde8ce693db97394f3aa01209704150f6c6d0d915ebcd18e92aaaa3",
-  "sma_trend": "585f14cadcc32ad8d96c97b040d30cbe3126b316363b81c2df2b640695b35fad",
-  "structure_trend": "8d9778968eb7fb1c5f21f5a87fc5bfd0a1c5158c4195da632608aeaa234511d9"
+  "breaker": "0c03e5a154e8cd99414cf0c028ef8ad06540077468c2ac347cf18d316a6a664c",
+  "cci": "7d11b68a26d5eaa943d894e885b5b253e15169a8edc7baf68ec9d96ae17968b9",
+  "fvg": "6f1b290e87a238aa94f44b12362db34c9e39e82b43484116625ec17df28864e9",
+  "keltner": "af10604019228462ce2fd713f5b5f46c598b079d936517ad567b01b62bf36eee",
+  "mfi": "0a8eaabebf622a0fb4b2fdd560fc809914e290554b9b78fbbf834ddf16bc1639",
+  "obv": "105d31afdfac6ce44dd82621ba90d995e44959b37cc7a10701318cf88079afc2",
+  "structure_trend": "f53bfe705244e632ec837b0e095e6c1579150f4c8966c6564d74526e6b961cfc",
+  "vwap": "58e892f51947d366eedc2619c3a48c9ea567f572d92be7abdf967c1c390c8c37"
  },
  "indicators_enabled": [
-  "bollinger",
-  "ema_trend",
+  "breaker",
+  "cci",
   "fvg",
   "keltner",
+  "mfi",
   "obv",
-  "rsi",
-  "sma_trend",
-  "structure_trend"
+  "structure_trend",
+  "vwap"
  ]
 }
