@@ -11,13 +11,13 @@ from research.kalman_fusion.metrics import Metrics, summarize
 
 def run_book(C, admit, direction=None):
     """The combined book's trades: [{'pnl': dollars, 'entry_time': ...}] in exit order."""
-    dd, cl, si, md, mh, ml, mc, sls, slh, tp, flip = cp._bt_args(C)
+    dd, cl, si, md, mh, ml, mc, mo, sls, slh, tp, flip = cp._bt_args(C)
     si = np.asarray(si).copy()
     if direction is not None:
         d = np.asarray(direction)
         si = np.where(d != 0, d, si)               # override where the policy specifies a direction
     admit = np.asarray(admit, dtype=bool)
-    trades = fast_backtest(dd, cl, si, admit, md, mh, ml, mc, sls, slh, tp, flip)
+    trades = fast_backtest(dd, cl, si, admit, md, mh, ml, mc, sls, slh, tp, flip, m_open=mo)
     return [{"pnl": t["pnl_points"] * C["pv"], "entry_time": t["entry_time"]} for t in trades]
 
 

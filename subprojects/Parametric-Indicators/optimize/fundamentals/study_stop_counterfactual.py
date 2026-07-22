@@ -41,6 +41,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from optimize import data, instruments, signals               # noqa: E402
 from optimize.fast_engine import fast_backtest, signals_to_int    # noqa: E402
 from perf._common import champion_preset                      # noqa: E402
+from optimize.fundamentals.champion_params import champion_stops  # noqa: E402
 
 
 def main() -> int:
@@ -55,9 +56,7 @@ def main() -> int:
 
     df, df1, box, vf, n = data.load_inputs(a.tf, instrument=a.instrument)
     p = champion_preset(a.tf)
-    sl_soft = float(p.get("sl_soft_points", 30))
-    sl_hard = float(p.get("sl_hard_points", 40))
-    tp = float(p.get("tp_hard_points", 60))
+    sl_soft, sl_hard, tp, _flip = champion_stops(p)
     gp = float(p.get("gate_pct", 60))
     pv = instruments.point_value(a.instrument)
 
@@ -67,10 +66,11 @@ def main() -> int:
     MH = df1["High"].to_numpy(float)
     ML = df1["Low"].to_numpy(float)
     MC = df1["Close"].to_numpy(float)
+    MO = df1["Open"].to_numpy(float)
 
     F = fast_backtest(df["Date"].to_numpy(), df["Close"].to_numpy(float), sig, gate,
                       MD, MH, ML, MC, sl_soft, sl_hard, tp,
-                      bool(p.get("flip_entry_direction", False)), track_excursions=True)
+                      _flip, track_excursions=True, m_open=MO)
 
     stopped = [t for t in F if t["exit_reason"] == "STOP_LOSS_HARD"]
     print(f"\n{a.instrument} {a.tf}  ·  SL {sl_soft}/{sl_hard}  TP {tp}  ·  ${pv}/pt")

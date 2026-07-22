@@ -23,8 +23,9 @@ Author: Claude (Opus 4.8) · Reviewer: Mulham Fetna · **$0 spent** · productio
 > scheduled news move our market predictably (**no** — priced in, proven at full power), can we improve the
 > stop-loss (**no** — it's a fair game even at 1-second resolution), and does trading-session structure
 > give us an edge (**no entry edge**, but a real *risk* pattern worth using for sizing). Along the way one
-> thing kept killing every apparent edge: **a huge, fat per-trade loss tail** — an ±$1,600 swing that makes
-> an $80/trade "edge" statistically invisible. So the current workstream (**#7**) is aimed squarely at that
+> thing kept killing every apparent edge: **a huge per-trade loss tail** — a swing that makes an $80/trade
+> "edge" statistically invisible. (⚠️ that swing was quoted as ±$1,600 throughout; on the corrected ledger
+> the real per-trade worst case is **$3,029** — see [`BUG-01`](BUG-01-sizing-studies-ran-the-wrong-strategy.md).) So the current workstream (**#7**) is aimed squarely at that
 > tail: characterize it properly so future stop and sizing decisions rest on real probabilities. We just
 > finished the research phase for it. **You are about to narrow that research with new information.**
 
@@ -33,11 +34,13 @@ Author: Claude (Opus 4.8) · Reviewer: Mulham Fetna · **$0 spent** · productio
 | **Fundamental analysis** (news) | ✅ **CLOSED** | Scheduled US macro is **priced in** — earned at 882 releases / 99% power |
 | **Dynamic stop-loss** (#3, #11) | ✅ **CLOSED** | Dead. A martingale even at 1-second resolution; 94% of stop-outs are 2-second sweeps but chasing them doesn't pay |
 | **`veto_mask` trap** (#4) | ✅ **DONE** | Renamed + documented; only `entry_gate` blocks; golden 6/6 byte-identical |
-| **Session windows** (#5) | ✅ **ANSWERED** | Real in the tape & in our *risk*, not a tradeable *entry* edge |
+| **Session windows** (#5) | ✅ **CLOSED 07-20** | Real in the tape & in our *risk*, not a tradeable *entry* edge. The one frozen exception (Asia/22:00) tested OOS cross-instrument → **FLUKE** (0/3 indices replicate). [`SESSION-04`](SESSION-04-asia-cell-oos-verdict.md) |
 | **Silver** (D3) | ❄️ **FROZEN** | Passed a pre-registered test but unconfirmable now — frozen forward test |
-| **Own distribution** (#7) | ✅ **COMPLETE** | Trade P&L truncated (stop works); raw returns fat (α≈3); **vol-scaled stop REJECTED** (gambler's ruin) → keep fixed stop. Open: fat-tail-aware *sizing*. [`DIST-00`](DIST-00-WORKSTREAM-REPORT.md) |
+| **Own distribution** (#7) | ✅ **RE-EARNED 07-20** | Trade P&L **bounded at −151.4/+125.6** (EVT ξ<0), **3.89% gap THROUGH the stop**; raw returns fat (α≈3); **vol-scaled stop REJECTED** — the fixed stop-out rate is regime-FLAT (55/56/57%) while a σ-stop would swing (69/56/46%). The old "[−40,+60]" headline was CIRCULAR (BUG-01). [`DIST-00`](DIST-00-WORKSTREAM-REPORT.md) |
 | **News v2 → decisions** (NQ+GC) | ✅ **ANSWERED** | Gold reacts (NFP>CPI); close/enter negligible/no-edge; **assist REJECTED** (belief backwards); content→pattern = **volatility not direction**. [`FAV2-00`](FAV2-00-WORKSTREAM-REPORT.md) |
-| **Fat-tail-aware sizing** (#17) | ✅ **COMPLETE** | **Fraction CLOSED: ~0.6–1.2% (quarter-half Kelly), edge-champs only, hard cap** — triangulated 3 ways (Z1 edge-uncertainty, Z2 ruin/DD, Z4 absolute-DD). Vol-targeting (Z3) promising-pending-OOS. Nothing adopted. [`SIZE-00`](SIZE-00-WORKSTREAM-REPORT.md) |
+| **Fat-tail-aware sizing** (#17) | ✅ **RE-EARNED 07-20** | **~0.6–1.2% (quarter-half Kelly), edge-champs only, hard cap** — triangulated 3 ways, now on the REAL champion ledger after BUG-01. ⚠️ CI floor **0.0%** (cannot exclude zero edge); real per-trade tail **$3,029** not $1,600; **5m f\*=0.0%** (no size). **Z3 vol-targeting REJECTED** (halves flip). [`SIZE-00`](SIZE-00-WORKSTREAM-REPORT.md) · [`BUG-01`](BUG-01-sizing-studies-ran-the-wrong-strategy.md) |
+| **GC replication** (2026-07-19) | ✅ **COMPLETE** | The verdict **REPLICATES on gold** (all 4 tests null, n=866/99% power) ⇒ no longer an NQ quirk. ⭐ Plus a discovery the battery MISSED: gold moves **INVERSE** to macro surprises (Spearman −0.193, negative 15/16 yrs) — Pearson was blind to it. Real residual at **T+1s = +\$49.90 (t=3.40)** but killed by slippage. [`GC-01`](GC-01-REPLICATION-verdict.md) |
+| **Gap-aware fills** (GAP-01/02) | ✅ **SHIPPED 07-20** | Engine now fills a gapped SL/TP at the bar OPEN, not the line (symmetric, `gap_fills` default True, parity 11/11, old golden preserved). Across all **54 champions** P&L is NEUTRAL (**−0.2%**) but **drawdown +9.8%** (NG +148%, GC better on both) — the old model understated **RISK**, not profit. [`GAP-01`](GAP-01-how-the-engine-fills-a-gapped-stop.md) · [`GAP-02`](GAP-02-champion-before-after.md) |
 
 ---
 
@@ -90,13 +93,27 @@ The verified recipe (**DIST-01**): GARCH-filter, fit the rare-large-loss tail on
 (peaks-over-threshold + Generalized Pareto)**, asymmetric tails, **McNeil–Frey** conditional; all sources
 are daily/hourly so re-estimate on our data.
 
-**D1 (DIST-02) — a plan-correcting discovery:** the champion's **per-trade P&L is TRUNCATED, not
-fat-tailed.** Bounded [−40,+60] on every TF; **0 of 7,356 trades** lose more than the stop; **excess
-kurtosis −1.82** (negative = *light* tails); **bimodal** (~40% win@+60 / ~37% lose@−40). The "±$1,600 fat
-tail" is really a **bimodal win/lose spread** (~$960) — a near-binary payoff, not a heavy tail. **The stop
-truncates the fat-tailed return process** — which is *why* keep-the-stop (04/06) and never-assist (B3) are
-both right. The genuine fat tail lives in **raw returns** (gap/slippage that could blow *through* the stop
-live) → EVT moves there.
+**D1 (DIST-02) — ⚠️ FIRST VERSION WAS CIRCULAR; corrected 2026-07-20.** The original text below claimed
+the P&L is "bounded [−40,+60] on every TF, 0 of 7,356 trades lose more than the stop." **Those bounds were
+the study's own hardcoded defaults** — it never ran the champions at all (see
+[`BUG-01`](BUG-01-sizing-studies-ran-the-wrong-strategy.md)). It measured its inputs and reported them as
+a discovery.
+
+**The corrected result — the conclusion HOLDS, the magnitudes do not:**
+
+| | Circular version | **Real champion ledger** |
+|---|---|---|
+| P&L bounds | [−40, +60] | **[−151.4, +125.6]** |
+| trades losing MORE than the stop | 0 of 7,356 (0%) | **371 of 9,537 (3.89%)** — the gap/slippage tail |
+| worst loss | −40 pts (−$800) | **−151 pts (−$3,029)** |
+| EVT shape ξ (80/90/95% thresholds) | — | **−0.366 / −1.555 / −1.978 — all ξ<0 ⇒ BOUNDED** |
+| Gaussian check | — | too optimistic at the 1% and 0.5% quantiles |
+
+So the loss tail **is** truncated by the stop — now demonstrated independently by the EVT fit (ξ<0)
+rather than asserted from a hardcoded bound — but **3.89% of trades gap straight through it**, and the
+real per-trade worst case is **$3,029, nearly double the $1,600 quoted throughout the older reports.**
+The qualitative conclusion (the stop truncates the fat-tailed return process, so keep-the-stop and
+never-assist are both right) survives. The genuine fat tail lives in **raw returns** → EVT moves there.
 
 **D2 (DIST-03) — the raw-return tail, confirmed and quantified:** excess kurtosis **+98.6** (vs D1's
 −1.82), tail index **α ≈ 3** (the inverse-cubic law, heavier than daily), loss/gain ~symmetric intraday.
@@ -155,6 +172,9 @@ Narrowed scope (NQ+GC), goal moved from *prediction* → *decision*. Plan:
 - The intraday U-shape is real on our tape (open/lunch 1.94×); the London–NY overlap is a non-event for NQ.
 - Our champion's stop-out RATE is strongly session-dependent (56%→16%) — a mechanistic consequence of the volatility shape.
 - Only `entry_gate` blocks an entry; "veto" params are non-blocking hints.
+- **The "priced in" verdict REPLICATES on gold** (2026-07-19) — all four pre-registered tests null on GC at n=866/99% power. It is no longer an NQ-specific result.
+- ⭐ **Gold moves INVERSE to macro surprises** — Spearman −0.193 (p<1e-5), negative in **15 of 16 years**, significant in both halves, NULL on the NQ control. Economically textbook (strong data → higher real yields → gold down). A real, durable fact about gold; **not** an entry signal.
+- **A macro release prices over ~10–30 seconds, not instantly** — 59.9% done at +1s, 87% by +10s, 95% by +30s. The residual at +1s is statistically real (+$49.90, t=3.40) and economically un-capturable (dies at 5 ticks of slippage).
 
 **Things that DIED under scrutiny:**
 - The magnitude "survivor" (+0.187 → −0.018 at full power).
@@ -166,6 +186,15 @@ Narrowed scope (NQ+GC), goal moved from *prediction* → *decision*. Plan:
 **FROZEN (pre-registered, unconfirmable now — re-test on future/long data, build nothing):**
 - **Silver** (D3): gold-controlled partial −0.258, 4/4 quarters, but raw died under the better ruler; 1-of-36, fluke window.
 - **The 22:00/Asia entry cell** (S3): +$364/trade stable both halves, but 1-of-6, n=89, fluke window.
+
+**METHOD lessons banked (they generalize beyond this project):**
+- **On fat-tailed instruments, always report RANK correlation alongside Pearson.** The pre-registered
+  battery used Pearson and was blind to one of the strongest, most persistent macro reactions in the
+  book — it reported "gold: nothing here" about an effect that is significant in 15 of 16 years.
+- **Measure at the resolution of the DECISION.** A 1-minute study concluded "100% priced inside the
+  release minute" because its "T+0" was the minute's *close* — 60 seconds late. At 1-second resolution
+  only 59.9% is done at +1s. A coarse study answers a different question than the one you asked, and it
+  does not warn you.
 
 **The THROUGH-LINE that motivates #7:** every apparent edge in this project — news, stop-loss, session —
 was killed by the **fat per-trade loss tail** (an ~80-point / ±$1,600 per-trade swing). An $80/trade
@@ -194,20 +223,35 @@ documented.
 
 ---
 
-## PART 4 — OPEN THREADS & WHAT'S QUEUED
+## PART 4 — OPEN THREADS & WHAT'S QUEUED  *(refreshed 2026-07-20)*
 
+Everything the workstream set out to answer is **answered**. What remains is follow-through and a handful
+of genuinely-blocked threads. Ranked by value.
+
+### A — actionable now (no blocker)
+| Item | Why it's worth doing | Cost |
+|---|---|---|
+| **Champion RE-OPTIMIZATION under gap-aware fills** | The champions were all tuned when gaps were free; per-slot rankings moved ±28% (GAP-02), so the *selection* was made on a distorted scoreboard. NG especially. | server campaign |
+| **Re-cut the risk budget** | Drawdown was ~10% optimistic overall, +148% on NG. The sizing rec (Z2/Z4) rests on drawdown, so it should be re-derived on honest DD. | small |
+| **Forward-validate gold's inverse macro reaction** | The Spearman −0.193 finding (GC-01) is post-hoc; it deserves a pre-registered forward test on new releases. | small |
+
+### B — blocked on data
+| Item | Blocker |
+|---|---|
+| **Silver forward test** (`study_silver.py`) | SI long history did NOT land with GC — **confirmed absent on the server 2026-07-20**. Same in-house Databento pipeline as GC would unblock it. |
+| ~~Asia/22:00 session cell re-test~~ | ✅ **CLOSED 07-20 — FLUKE.** Cross-instrument OOS: 0 of 3 independent equity indices replicate; 22:00 is *below* average on ES/YM/RTY (OOS pool ≈ −$38/trade). [`SESSION-04`](SESSION-04-asia-cell-oos-verdict.md) |
+
+### C — closed / moot / not-ours
 | Item | Status |
 |---|---|
-| **#7 · D1** — fit the champion's per-trade P&L as a mixture | **queued (recommended next)** |
-| #7 · D2 — tail index of NQ 1-min per session | after D1 |
-| #7 · D3 — McNeil–Frey conditional (GARCH→GPD) tail | after D2 |
-| #7 · D4 — decisions (stop/sizing); **sizing half needs its own research pass** | gated |
-| **Silver** — re-run `study_silver.py` on future data | frozen |
-| **Asia cell** — re-test on future/long data | frozen |
-| **Task #15** — `test_intracandle_parity` fails 3/4 on server (pre-existing, separate default-OFF workstream; golden passes) | flagged, not this workstream |
+| #7 D1–D4, Z1–Z4 sizing | ✅ done, re-earned on the real ledger after BUG-01 |
+| Z3 vol-targeting OOS on GC | ❌ **moot** — Z3 died on its own temporal split, so there is nothing to OOS-test |
+| `test_intracandle_parity` (#15) | pre-existing, another workstream's (default-OFF feature); golden passes |
+| The 17 l2 test failures | **stale, not regressions** — the 4h default was deliberately unlocked 07-11 (TESTS-01); handed to the l2/dev owner |
 
-**⏳ Awaiting your input:** you said you'll feed new information to **narrow the #7 research.** This document
-is the clean baseline for that. Nothing is mid-run; the tree is committed and consistent.
+**Nothing is mid-run; the tree is committed and consistent.** The single highest-value next step is the
+champion re-optimization under honest fills — it is the only thing that turns the corrected engine into
+deployable numbers.
 
 ---
 

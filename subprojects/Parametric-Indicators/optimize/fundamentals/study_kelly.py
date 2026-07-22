@@ -28,9 +28,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from optimize import data, signals                               # noqa: E402
 from optimize.fast_engine import fast_backtest, signals_to_int   # noqa: E402
 from perf._common import champion_preset                         # noqa: E402
+from optimize.fundamentals.champion_params import champion_stops, describe  # noqa: E402
 
 TFS = ["4h", "2h", "1h", "15m", "5m", "2m"]
-STOP = 40.0
 FGRID = np.linspace(0.001, 0.95, 400)
 
 
@@ -42,30 +42,36 @@ def num_kelly(r):
 
 
 def trades(tf):
+    """(pnl_points, sl_hard) — the stop is returned because it IS the risk unit for Kelly."""
     df, df1, box, vf, n = data.load_inputs(tf, instrument="NQ")
     p = champion_preset(tf)
+    _SS, _SH, _TP, _FL = champion_stops(p, tf)   # STRICT — a missing stop must raise, never default
+    print(describe(p, tf), flush=True)
     sig = signals_to_int(signals.decision_signals(df, box))
     gate = vf <= float(np.percentile(vf[:n], float(p.get("gate_pct", 60))))
     F = fast_backtest(df["Date"].to_numpy(), df["Close"].to_numpy(float), sig, gate,
                       df1["Date"].to_numpy(), df1["High"].to_numpy(float), df1["Low"].to_numpy(float),
-                      df1["Close"].to_numpy(float), float(p.get("sl_soft_points", 30)), STOP,
-                      float(p.get("tp_hard_points", 60)), bool(p.get("flip_entry_direction", False)))
-    return np.array([t["pnl_points"] for t in F], float)
+                      df1["Close"].to_numpy(float), _SS, _SH,
+                      _TP, _FL, m_open=df1["Open"].to_numpy(float))
+    return np.array([t["pnl_points"] for t in F], float), _SH
 
 
 def main() -> int:
     rng = np.random.default_rng(0)
-    allr = []
-    print(f"\nNQ champions · Kelly fraction f (= fraction of capital RISKED per trade) · stop {STOP:.0f}pt\n")
+    allr, stops = [], []
+    print("\nNQ champions · Kelly fraction f (= fraction of capital RISKED per trade)")
+    print("  risk unit = EACH TF's OWN hard stop (was hardcoded 40pt — see BUG-01)\n")
     print(f"  {'tf':>4} {'n':>5} {'win%':>6} {'B(w/l)':>7} {'binary f*':>10} {'numeric f*':>11} "
           f"{'f* 95% CI':>18} {'half':>6} {'quarter':>8}")
     for tf in TFS:
         try:
-            pnl = trades(tf)
+            pnl, stop_tf = trades(tf)
         except Exception as e:                                    # noqa: BLE001
             print(f"  {tf:>4} FAIL {str(e)[:40]}"); continue
-        r = pnl / STOP                                            # normalized by risk
-        allr.append(r)
+        # Normalize by THIS TF's own hard stop. Using a global 40 here was the last vestige of
+        # BUG-01: with a real 151-pt stop it makes r=-3.8, and log1p(f*r) goes NaN for f>0.26.
+        r = pnl / stop_tf
+        allr.append(r); stops.append(stop_tf)
         p_ = float((r > 0).mean())
         w = r[r > 0].mean() if (r > 0).any() else 0.0
         l = -r[r < 0].mean() if (r < 0).any() else 1.0
@@ -82,7 +88,7 @@ def main() -> int:
     fbin = max(0.0, (B * p_ - (1 - p_)) / B); fnum, _ = num_kelly(R)
     boot = np.array([num_kelly(rng.choice(R, len(R), replace=True))[0] for _ in range(3000)])
     lo, hi = np.percentile(boot, [2.5, 97.5])
-    exp_pts = R.mean() * STOP
+    exp_pts = R.mean() * float(np.mean(stops))          # avg risk unit across the pooled TFs
     print(f"\n  POOLED n={len(R)}  win {100*p_:.1f}%  B={B:.2f}  expectancy {exp_pts:+.1f} pts/trade "
           f"(${exp_pts*20:+.0f})")
     print(f"  full Kelly f*: binary {100*fbin:.1f}%  numeric {100*fnum:.1f}%  95% CI [{100*lo:.1f}%, {100*hi:.1f}%]")

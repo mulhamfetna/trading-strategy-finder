@@ -8,8 +8,13 @@ direction (long↔short); the exit logic is identical either way.
     - flip=True:  Stage 1 signal SWAPPED (long↔short). Holds untouched.
 
   Exit lines (both modes): sl_soft, sl_hard, tp (one take-profit).
-    - Hard SL fires on bar EXTREME touching sl_hard_line; fill at line.
-    - Hard TP fires on bar EXTREME touching tp_hard_line; fill at line.
+    - Hard SL fires on bar EXTREME touching sl_hard_line.
+    - Hard TP fires on bar EXTREME touching tp_hard_line.
+    - FILL (gap_fills=True, the default since 2026-07-20): at the line, UNLESS the triggering bar
+      OPENED already beyond it — then at the OPEN, because no trade ever happened at the line.
+      Symmetric: a gap past the stop costs MORE, a gap past the take-profit pays MORE.
+      gap_fills=False restores the old fill-at-the-line behaviour (and the old golden numbers).
+      Measured impact: 3.2% of stops gap, mean overshoot 128-219 pts. See GAP-01.
     - Soft SL fires on 2 consecutive 1-min closes past sl_soft_line; fill at 2nd close.
     - Per-bar tie-break: hard SL > hard TP > soft SL (loss-first pessimism).
   There is NO soft take-profit. flip=True on signal S == flip=False on ¬S,
@@ -113,6 +118,11 @@ class SimpleStrategyParams:
     # observational — it can never change an entry, an exit, or a P/L. Prerequisite for the dynamic
     # stop-loss, which must know how far a trade went FOR us before it went against us.
     track_excursions: bool = False
+    # GAP-AWARE FILLS (GAP-01, 2026-07-20). ON => a hard SL/TP whose bar OPENED beyond the
+    # line fills at the OPEN, not the line — because no trade ever happened at the line.
+    # Symmetric: gaps past the stop cost more, gaps past the take-profit pay more.
+    # OFF reproduces the old optimistic fill-at-the-line numbers (and the old golden).
+    gap_fills: bool = True
     # Intra-candle entry for vetoed signals (Phase 1). OFF => byte-identical (golden-locked).
     intracandle_veto_entry: bool = False   # arm a vetoed (vol-passed) signal, enter mid-candle when the gate re-opens
     intracandle_max_wait:   int  = 240     # max 1-min bars to wait inside the candle (N); 240 ~= one 4h candle
@@ -303,6 +313,7 @@ class SimpleStrategy:
             mh_arr = df_1min['High'].to_numpy(dtype=float)
             ml_arr = df_1min['Low'].to_numpy(dtype=float)
             mc_arr = df_1min['Close'].to_numpy(dtype=float)
+            mo_arr = df_1min['Open'].to_numpy(dtype=float)   # gap-aware fills (GAP-01)
             if self.params.cap_mode in ("eod", "both"):
                 from optimize.trading_days import eod_targets
                 eod_target_arr, session_last_arr = eod_targets(md_arr, self.params.eod_margin_min)
@@ -320,7 +331,7 @@ class SimpleStrategy:
         else:
             start_1m = None
             news_target_arr = None
-            md_arr = mh_arr = ml_arr = mc_arr = None
+            md_arr = mh_arr = ml_arr = mc_arr = mo_arr = None
             eod_target_arr = session_last_arr = None
 
         # Intra-candle vetoed-entry resolver (Phase 1). Built only when the flag is on AND a gate is supplied
@@ -392,11 +403,23 @@ class SimpleStrategy:
                 # Single exit model (flip or not): hard-SL > hard-TP > soft-SL on the ENTERED
                 # direction. `flip` only reverses entry direction; it no longer swaps "soft" to the
                 # TP side. (ts_ stays computed at entry but unused — soft-TP is inactive, as before.)
+                # GAP-AWARE FILL (mirrors fast_engine). The TRIGGER is "the bar's extreme reached the
+                # line"; the FILL used to be the line itself. Those coincide only when price moves
+                # through the level continuously. If the bar OPENED already beyond the level, no trade
+                # ever happened at the line — the first available price is the open.
+                # SYMMETRIC ON PURPOSE: a gap past the STOP fills WORSE, a gap past the TAKE-PROFIT
+                # fills BETTER. Applying it only to stops would inject a pessimistic bias.
+                m_open_px = float(mo_arr[t]) if self.params.gap_fills else None
+
                 if d == 'long':
                     if m_low <= sh:
                         exit_reason, fill = 'STOP_LOSS_HARD', sh
+                        if m_open_px is not None and m_open_px < fill:
+                            fill = m_open_px
                     elif m_high >= th:
                         exit_reason, fill = 'TAKE_PROFIT_HARD', th
+                        if m_open_px is not None and m_open_px > fill:
+                            fill = m_open_px
                     elif m_close <= ss:
                         soft_consec_count += 1
                         resets_counter = False
@@ -405,8 +428,12 @@ class SimpleStrategy:
                 else:  # short
                     if m_high >= sh:
                         exit_reason, fill = 'STOP_LOSS_HARD', sh
+                        if m_open_px is not None and m_open_px > fill:
+                            fill = m_open_px
                     elif m_low <= th:
                         exit_reason, fill = 'TAKE_PROFIT_HARD', th
+                        if m_open_px is not None and m_open_px < fill:
+                            fill = m_open_px
                     elif m_close >= ss:
                         soft_consec_count += 1
                         resets_counter = False

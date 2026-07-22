@@ -1,3 +1,9 @@
+> # ⚠️ RECOMPUTED on the real champion ledger (2026-07-20)
+> Ran on the wrong trades (41.9% win rate instead of the champion's; pooled truth is **49.1%**).
+> Full Kelly still **2.5%**, but the CI widened **[0.3%,4.4%] → [0.0%, 5.3%]** — we can no longer
+> exclude a zero edge. **5m is f\*=0.0%** and should carry no size.
+> → [`BUG-01`](BUG-01-sizing-studies-ran-the-wrong-strategy.md)
+
 # SIZING · 02 — Z1: the Kelly fraction on our ledger (small, and hugely uncertain)
 
 **The first on-data sizing test. SIZE-01's illustrative formula gave f\* ≈ 6.7% using an assumed 44% win

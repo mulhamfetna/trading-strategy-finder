@@ -99,7 +99,7 @@ def _both_engines(mult: float = 1.0, pre: int = 0, post: int = 12):
                       df1["Date"].to_numpy(), df1["High"].to_numpy(float),
                       df1["Low"].to_numpy(float), df1["Close"].to_numpy(float),
                       _SS, _SH, _TP, False,
-                      news_target=tgt, news_profit_exempt_mult=mult)
+                      news_target=tgt, news_profit_exempt_mult=mult, m_open=df1["Open"].to_numpy(float))
     return E, F
 
 

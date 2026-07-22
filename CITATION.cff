@@ -12,9 +12,17 @@ authors:
     given-names: Mulham
     orcid: "https://orcid.org/0009-0006-4432-798X"
     email: contact@mulhamfetna.com
-version: 5.0.0
-date-released: "2026-07-20"
+version: 5.1.0
+date-released: "2026-07-22"
 license: AGPL-3.0-or-later
+doi: "10.5281/zenodo.21473312"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.21473312"
+    description: "The concept DOI (always resolves to the latest version)."
+  - type: doi
+    value: "10.5281/zenodo.21473313"
+    description: "The v5.0.0 version DOI."
 url: "https://github.com/mulhamfetna/trading-strategy-finder"
 repository-code: "https://github.com/mulhamfetna/trading-strategy-finder"
 keywords:

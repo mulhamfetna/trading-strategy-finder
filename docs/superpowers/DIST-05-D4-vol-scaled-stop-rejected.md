@@ -1,3 +1,8 @@
+> # ✅ REINFORCED on the real champion ledger (2026-07-20)
+> Re-run after BUG-01: the **fixed** stop-out rate is regime-**FLAT** (55.1 / 56.2 / 56.5%), while a
+> σ-scaled stop would make it **SWING** (69.0 / 56.2 / 46.3%). The rejection is stronger than
+> originally reported. → [`BUG-01`](BUG-01-sizing-studies-ran-the-wrong-strategy.md)
+
 # DISTRIBUTION · 05 — D4: the vol-scaled stop is REJECTED (the fixed stop is already regime-invariant)
 
 **#7, final on-data test — and it overturns its own proposed deliverable. D3 suggested a volatility-scaled

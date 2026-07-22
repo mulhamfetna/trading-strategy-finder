@@ -24,7 +24,7 @@ def _frames():
 def test_time_cap_fires_at_nth_bar_close_long():
     d_dates, d_close, sig, m_dates, m = _frames()
     tr = fast_backtest(d_dates, d_close, sig, None, m_dates, m, m, m,
-                       sl_soft=5, sl_hard=10, tp=10, flip=False, cap_1min=4)
+                       sl_soft=5, sl_hard=10, tp=10, flip=False, cap_1min=4, m_open=m)
     assert len(tr) == 1
     t = tr[0]
     assert t["exit_reason"] == "TIME_CAP"
@@ -35,6 +35,6 @@ def test_time_cap_fires_at_nth_bar_close_long():
 def test_cap_zero_is_disabled():
     d_dates, d_close, sig, m_dates, m = _frames()
     tr = fast_backtest(d_dates, d_close, sig, None, m_dates, m, m, m,
-                       sl_soft=5, sl_hard=10, tp=10, flip=False, cap_1min=0)
+                       sl_soft=5, sl_hard=10, tp=10, flip=False, cap_1min=0, m_open=m)
     # no SL/TP/soft + no cap → never closes → OPEN dropped → no completed trade
     assert tr == []

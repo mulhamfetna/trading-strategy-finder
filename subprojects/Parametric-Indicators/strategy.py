@@ -253,7 +253,13 @@ def validate_params(params, instrument: str = "NQ"):
                 timeframe=timeframe, dd_cap=dd_cap, pv=pv, indicators=list(specs), k=k, gen=gen,
                 retrace_amount=retrace_amount, retrace_unit=retrace_unit, wait_bars=wait_bars,
                 cap_1min=cap_1min, cap_mode=cap_mode, eod_margin_min=eod_margin_min,
-                veto_as_flip=bool(params.get("veto_as_flip")), **split)
+                veto_as_flip=bool(params.get("veto_as_flip")),
+                # GAP-AWARE FILLS (GAP-01). This dict is an EXPLICIT allow-list — any key not named
+                # here is silently DROPPED, so gap_fills must be carried through here or the flag can
+                # never be turned off from a preset. Default True (the honest model); False reproduces
+                # the pre-2026-07-20 fill-at-the-line numbers and the golden_pre_gapfills baselines.
+                gap_fills=bool(params.get("gap_fills", True)),
+                **split)
 
 
 _WINDOW_LOHI = {"full": lambda N, n: (0, N), "2024": lambda N, n: (0, N),
@@ -385,7 +391,13 @@ def build_payload(df4, df1, box, vf, n2025, params=None, instrument: str = "NQ")
                               cap_1min=P["cap_1min"], cap_mode=P["cap_mode"],
                               eod_margin_min=P["eod_margin_min"],
                               intracandle_veto_entry=ic_on, intracandle_max_wait=ic_n,
-                              intracandle_force_close=ic_fc, **_sp_split)
+                              intracandle_force_close=ic_fc,
+                              # GAP-AWARE FILLS (GAP-01): a hard SL/TP whose bar OPENED beyond the line
+                              # fills at the OPEN — the line was never available. Default True (the
+                              # honest model); a preset can set gap_fills=False to reproduce the old
+                              # optimistic numbers and the pre-2026-07-20 golden baselines.
+                              gap_fills=bool(P.get("gap_fills", True)),
+                              **_sp_split)
     # Step B2 (Axis B): precompute the param-independent Stage-1 signal ONCE (vectorized) and feed it to
     # the engine so it does NOT recompute _stage1_candle_signal + box.loc per decision bar. Byte-identical
     # (optimize.signals.decision_signals ≡ engine._stage1_candle_signal — see tests/test_axisB_signal_equiv.py).

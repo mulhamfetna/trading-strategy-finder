@@ -1,3 +1,10 @@
+> # ⚠️ RE-EARNED on the real champion ledger (2026-07-20)
+> Every study behind this report ran on the wrong trades (BUG-01). **The recommendation SURVIVES —
+> ~0.6–1.2%/trade, quarter-to-half Kelly, edge-champions only, hard cap** — but three caveats are
+> worse: the CI floor is **0.0%**, the real per-trade tail is **$3,029 not $1,600**, and **5m has
+> f\*=0.0%**. **Z3 vol-targeting is now REJECTED.**
+> → [`BUG-01`](BUG-01-sizing-studies-ran-the-wrong-strategy.md)
+
 # SIZING · 00 — THE COMPLETE WORKSTREAM REPORT (fat-tail-aware position sizing)
 
 **The sizing workstream, start to finish. The question left open by #7: given a tiny, uncertain edge and a

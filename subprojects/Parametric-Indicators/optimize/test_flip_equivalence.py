@@ -44,10 +44,10 @@ def test_flip_equals_reversed_signal(inputs, ss, sh, tp, gp):
     df, df1, box, vf, n, sig = inputs
     DD, DC = df["Date"].to_numpy(), df["Close"].to_numpy(float)
     MD = df1["Date"].to_numpy(); MH = df1["High"].to_numpy(float)
-    ML = df1["Low"].to_numpy(float); MC = df1["Close"].to_numpy(float)
+    ML = df1["Low"].to_numpy(float); MC = df1["Close"].to_numpy(float); MO = df1["Open"].to_numpy(float)
     gate = None if gp <= 0 else (vf <= float(np.percentile(vf[:n], gp)))
-    flipped = fast_backtest(DD, DC, sig, gate, MD, MH, ML, MC, ss, sh, tp, True)
-    reversed_ = fast_backtest(DD, DC, (-sig).astype(sig.dtype), gate, MD, MH, ML, MC, ss, sh, tp, False)
+    flipped = fast_backtest(DD, DC, sig, gate, MD, MH, ML, MC, ss, sh, tp, True, m_open=MO)
+    reversed_ = fast_backtest(DD, DC, (-sig).astype(sig.dtype), gate, MD, MH, ML, MC, ss, sh, tp, False, m_open=MO)
     assert len(flipped) == len(reversed_)
     assert [_key(t) for t in flipped] == [_key(t) for t in reversed_]
 

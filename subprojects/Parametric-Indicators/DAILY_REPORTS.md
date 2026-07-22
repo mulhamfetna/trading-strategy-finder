@@ -10,6 +10,164 @@ research programs (TimesFM, HMM, Chronos-2, regime-edge) — are logged by their
 
 ---
 
+## 2026-07-20 — A bug that invalidated two workstreams, found, fixed, and the conclusions re-earned
+
+_The day started by wiring one more test and ended by discovering that six — then eleven — studies had
+never run the strategy they claimed to. Everything was re-derived. Most conclusions survived; one died._
+
+### ✅ What got done
+- **🚨 Found the bug: the sizing and distribution studies never ran our champions.** They read the
+  champion's stop-loss under key names that **do not exist** (`sl_soft_points`, `tp_hard_points`), and
+  because `dict.get(key, default)` **cannot fail**, they silently backtested a generic **30/40/60**
+  strategy instead of the real **128.6/151.4/125.6**. On 4h that is 642 trades at a 41.9% win rate
+  instead of the champion's 445 at 56.0%. Every downstream number was about a strategy we do not trade.
+- **It was three layers deep.** After fixing the key names, the Kelly study still returned `f* = 0.0%`
+  for every timeframe — it normalised profit as `pnl / STOP` with **STOP hardcoded to 40**, so with real
+  151-point stops the maths went to NaN and the solver silently returned zero. Three separate
+  silent-failure bugs in one file, each producing a confident wrong answer rather than an error.
+- **Fixed properly, not patched.** All **eleven** affected studies now use a strict helper: a missing
+  stop **raises** instead of defaulting, and every run prints the stops it actually used.
+- **Re-ran everything and re-earned the conclusions.** Most held; the magnitudes did not:
+  - **Sizing recommendation SURVIVES** — still ~0.6–1.2% per trade. But the confidence interval floor
+    is now **0.0%** (we cannot statistically rule out *zero* edge), and the real per-trade worst case is
+    **\$3,029, not the \$1,600** quoted across every earlier report — understated by roughly half.
+  - **The distribution finding is now real instead of circular.** "P&L truncated at [−40,+60]" was
+    literally reading back its own hardcoded stop. The corrected version is bounded at
+    **[−151.4, +125.6]**, with **3.89% of trades gapping straight through the stop**, and the truncation
+    is now *demonstrated* by an independent statistical fit rather than assumed.
+  - **❌ Vol-targeting is DEAD.** It was the one "promising, pending further testing" result. On the
+    correct trades it **fails its own split**: better in one half, worse in the other. The planned gold
+    out-of-sample test is now moot — a result that flips across halves does not earn one.
+  - **A prediction I had wrongly withdrawn turned out right.** On 07-17 I predicted a ratio would decline,
+    saw "flat," and publicly corrected myself. The corrected data shows it *does* decline. **A bug does
+    not only manufacture false findings — it can force you to withdraw true ones.**
+- **Test-suite triage started (#19).** Fixed a real environment-dependent import bug (`perf/` was only a
+  namespace package, so a system library of the same name shadowed it) — that had silently made two
+  research studies **unrunnable**. Diagnosed the three failing L2 anchor tests as **stale, not a
+  regression**: they pin an old frozen baseline, but the default was deliberately switched to a better
+  champion on 07-11. Documented and handed to that workstream rather than changed unilaterally.
+
+### 🎯 Tomorrow / next
+- Finish the suite triage: the remaining L2 groups, the intracandle tests (#15), and `test_ablate`.
+- Forward-validate gold's inverse macro reaction (it is a post-hoc finding).
+- Decide whether to merge this branch's corrections into `dev`.
+
+### ⚠️ Challenges / lessons
+1. **The big one: never read a strategy parameter with a silent default.** `p["sl_hard"]` would have
+   raised an error on the very first run and cost five minutes. `p.get("sl_hard_points", 40)` cost two
+   workstreams. A missing input must be a **hard failure**, never a plausible substitute.
+2. **Why it hid for so long:** one key (`gate_pct`) *was* spelled correctly, so the champion was
+   demonstrably being loaded and the code looked correct. The defaults were plausible, nothing crashed,
+   and the output *confirmed the belief that had been hardcoded* — which reads as confirmation rather
+   than circular reasoning.
+3. **I made three wrong confident claims today, all from unchecked output** — looked for a directory in
+   the wrong place; concluded files were untracked from a `head`-truncated listing; and called live tests
+   "retired" from memory instead of reading them. Same failure mode as the bug itself: **a confident
+   answer derived from something I did not actually verify.**
+4. **The honest good news:** nothing was ever deployed from the affected studies, so **no money was ever
+   at risk**, and the headline recommendation survived re-derivation unchanged.
+
+---
+
+## 2026-07-20 — The stop-fill question: the engine was too kind on gaps, now fixed, and the real cost is RISK not profit
+
+_You asked whether a price gap through the stop books the loss at the hard stop or the real price. The
+answer was "the stop, always" — an optimism. Fixed it, then measured it on all 54 champions._
+
+### ✅ What got done
+- **Answered the question from the code.** Both engines filled every hard stop/take-profit exactly at its
+  line, even when the bar had already OPENED far past it — a price that never traded. On a Friday-to-Sunday
+  weekend gap the booked loss was the stop; the real fill would have been hundreds of points worse.
+- **Fixed it — the system now fills at the real price.** A gapped stop/take-profit fills at the bar's
+  OPEN. Deliberately SYMMETRIC: a gap past the stop costs more, a gap past the take-profit pays more
+  (charging only the stop side would have been dishonest in the other direction). Both engines agree
+  (11/11 parity), the old numbers stay exactly reproducible, and the change fails LOUDLY rather than
+  silently if mis-called.
+- **Measured it on every champion — 9 markets × 6 timeframes = 54.** The headline surprised me:
+  **profit is essentially unchanged (−0.2%), but drawdown is ~10% worse.** The old model was not
+  inflating our profits — it was **understating our RISK.** That matters more, because our sizing work
+  concluded that drawdown (not ruin) is what limits how big we can bet.
+- **Natural gas is the outlier:** its book drawdown rose **+148%** once gaps are priced honestly — the
+  gappiest contract we trade, and the old model hid almost all of it. **Gold was the only market that got
+  better on both axes.**
+
+- **Closed the last frozen session thread — the Asia/22:00 cell is a FLUKE.** Cross-instrument OOS
+  (the box levels only span 2025-26, so the 2010-23 test was impossible): 0 of 3 independent equity
+  indices replicate; 22:00 is *below* average on ES/YM/RTY. #5 fully closed. Caught + fixed my own
+  script contaminating the OOS pool with the discovery instrument.
+- **Launched the gap-aware-fills RE-OPTIMIZATION** on the server (NQ+GC, all 6 TFs, warm-started from
+  each market's own champions so every result ≥ the prior champion re-scored honestly). ~8h campaign,
+  heartbeat-monitored. Feeds the risk-budget re-cut.
+
+### 🎯 Tomorrow / next
+- Re-optimize the champions under honest fills — not to rescue the total (it's flat) but because per-slot
+  rankings moved by up to ±28%, so champion *selection* was made on a distorted scoreboard.
+- Re-cut the risk budget, NG especially.
+
+### ⚠️ Challenges / lessons
+1. **I corrected my own numbers twice.** I first called this change −44% of the edge, then −16.7% of P&L.
+   Both were NQ-only, one config — **wrong scope.** On the full book it's −0.2%. A partial measurement must
+   be labelled as partial.
+2. **A THIRD silent allow-list dropped the new flag** — caught this time BEFORE it wasted 108 backtests
+   that would have compared identical configs and reported a clean, meaningless "no change".
+3. **The finding that matters:** the danger of an over-kind backtest isn't a fake profit you'd notice —
+   it's a hidden risk you wouldn't.
+
+---
+
+## 2026-07-19 — Gold's 16 years arrived: the verdict replicates, a real discovery, and a claim of mine corrected
+
+_The gold data landed, so the whole news battery got re-run on a second instrument. It confirmed the
+original verdict, uncovered something the original battery was blind to, and then forced me to correct
+a conclusion I had stated confidently only hours earlier._
+
+### ✅ What got done
+- **The 16-year gold frame is live.** Verified before use: 2010-06-06 → 2026-07-17, 5.66M one-minute
+  bars, ~350k/year with no holes, identical schema to the Nasdaq, prices sanity-checking (\$1,221 in
+  2010 → \$4,022 in 2026). It came from **our own Databento pipeline** — no purchase, exactly as you said.
+- **The verdict REPLICATES on gold.** All four pre-registered tests — direction, magnitude, persistence,
+  shape — are null on GC at n=866 and 99% power, matching the Nasdaq. **"Scheduled macro news is priced
+  in" is no longer an NQ quirk**; it now holds on a second market with a completely different driver.
+- **⭐ A discovery the original battery MISSED: gold moves INVERSE to macro surprises.** One number
+  looked wrong (gold matched the surprise's direction only 39.5% of the time, where a coin flip is 50%).
+  Chasing it: the shuffle control said 49.0%±1.7%, so the real value sat 5.5 standard deviations away.
+  The cause was our *method* — **Pearson correlation is the wrong tool for a fat-tailed asset**. The rank
+  correlation is **−0.193 (p<0.00001), negative in 15 of 16 years**, significant in both halves, and
+  **null on the Nasdaq control** (which proves it is gold, not a bug). Economically textbook: strong data
+  → higher real yields → gold, which pays no yield, falls.
+- **Then I tested whether it is tradeable — and corrected myself.** First answer (1-minute data): the
+  entire reaction prices inside the release minute, nothing left. **That was wrong** — a resolution
+  artifact. At **1-second** resolution only **59.9%** of the move is done after one second (87% by +10s,
+  95% by +30s), and entering at +1s captures **+\$49.90/release at t=3.40** — statistically real.
+- **But it still is not money.** \$49.90 against a **±\$434** per-trade swing, a 51.2% win rate, and
+  \$2,718/year on one contract. Breakeven dies at 5 ticks of slippage — while the one-second bar you must
+  cross has a \$90 median / \$252 mean range, one second after a major release, the worst liquidity
+  moment of the session. Verdict unchanged (**don't trade the release**) but the reason is now honest:
+  not "nothing is there" but "\$50 is there, behind a cost and latency wall that eats it."
+- **Merged the workstream to `dev`** and fixed the one test it broke (a stale guard that assumed a
+  17-*month* calendar when we now have 17 *years*).
+
+### 🎯 Tomorrow / next
+- **Z3 — the vol-targeting out-of-sample test.** The last "promising but in-sample" result from the
+  sizing workstream; gold is the independent frame it was waiting for.
+- Forward-validate gold's inverse reaction (it is a post-hoc finding and deserves a pre-registered test).
+
+### ⚠️ Challenges / lessons
+1. **Two method lessons, both expensive if unlearned.** *On fat-tailed instruments always report rank
+   correlation alongside Pearson* — we nearly filed "gold doesn't react to news" about one of the most
+   persistent macro reactions in the book. And *measure at the resolution of the decision* — a
+   minute-resolution study cannot answer a first-second question and will not warn you that it can't.
+2. **I announced a finding before finishing the check.** Mid-analysis I called the inverse reaction
+   "possibly the first real positive"; the tradeability split then showed it is a real *discovery* but
+   not a real *edge*. Verify first, announce second.
+3. **Found a genuinely dangerous silent bug** in the 1-second loader: any requested window that predated
+   the file made it return an **empty result with no error**, silently voiding every other window in the
+   same call. That would have quietly corrupted future studies. Fixed.
+4. **Two self-inflicted bugs cost runs** — I generalised a loader's signature but left its body
+   hardcoded, and I guessed a column name instead of reading the schema. Both caught by the first run.
+
+---
+
 ## 2026-07-18 — Progress packaged for review; the GC-data path corrected (in-house, not paid)
 
 _A short, wrap-up day. Everything since 07-14 pulled into one review page, and one earlier recommendation

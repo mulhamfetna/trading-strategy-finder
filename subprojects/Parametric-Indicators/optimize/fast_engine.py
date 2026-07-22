@@ -10,7 +10,8 @@ FAITHFULNESS (must match engine.py exactly — see optimize/test_fast_parity.py)
     at a time; re-entry only on a decision bar whose date > the last exit time.
   • Exit (resolved on 1-min, lines are absolute point distances):
       Single exit model (flip or not): per-bar priority hard-SL > hard-TP > soft-SL.
-        long : SLh low≤ep-slh(fill line) · TPh high≥ep+tp(fill line) · SLs 2 consecutive closes≤ep-sls(fill close)
+        long : SLh low≤ep-slh · TPh high≥ep+tp · SLs 2 consecutive closes≤ep-sls(fill close)
+        FILL for SLh/TPh: the line, UNLESS the bar OPENED beyond it ⇒ the OPEN (gap_fills, default ON).
         short: mirrored.
       flip=True only REVERSES the entry direction (d = -raw); the exit logic is identical (matches engine).
   • "2 consecutive closes" == close past the soft line on bar t AND bar t-1 (the engine's consec≥2,
@@ -68,13 +69,24 @@ def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
                   intracandle_normal_gate: np.ndarray | None = None,
                   news_target: np.ndarray | None = None,
                   news_profit_exempt_mult: float = 1.0,
-                  track_excursions: bool = False) -> list[dict]:
+                  track_excursions: bool = False,
+                  m_open: np.ndarray | None = None,
+                  gap_fills: bool = True) -> list[dict]:
     """Return the list of completed trades (dicts with entry/exit/dir/reason/pnl_points), in order.
     Mirrors engine.SimpleStrategy(...).backtest(...) candidate stream (exit_reason != OPEN).
 
     Split SL/TP (Q3 / E2): the optional long_*/short_* args give the FINAL post-flip direction its own
     sl_soft/sl_hard/tp. Any that is None falls back to the shared sl_soft/sl_hard/tp ⇒ when none are set,
     long==short==shared ⇒ byte-identical to the pre-split path (locked by test_fast_parity)."""
+    if gap_fills and m_open is None:
+        raise ValueError(
+            "gap_fills=True requires m_open (the 1-minute Open array). A gapped stop must fill at the "
+            "bar's OPEN, not at the stop line — without Open we cannot know where the fill really was. "
+            "Pass m_open=df1['Open'].to_numpy(float), or set gap_fills=False to reproduce the OLD "
+            "(optimistic, fill-at-the-line) numbers. See docs/superpowers/GAP-01-how-the-engine-fills-"
+            "a-gapped-stop.md — silently falling back to the line is exactly the bug class that cost "
+            "us two workstreams (BUG-01)."
+        )
     n = len(d_dates)
     M = len(m_dates)
     trades: list[dict] = []
@@ -137,6 +149,7 @@ def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
             slh_line, tph_line = ep + slh, ep - tpv
             sls_line, tps_line = ep + sls, ep - tpv
         hi, lo, cl = m_high[e:], m_low[e:], m_close[e:]
+        op = m_open[e:] if m_open is not None else None
 
         # candidate first-hit slice indices for the three exit kinds
         if d == LONG:
@@ -208,7 +221,23 @@ def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
         for rank, (ti, reason, line) in enumerate(order):
             if ti < 0:
                 continue
-            fill = float(cl[ti]) if line is None else float(line)
+            if line is None:
+                fill = float(cl[ti])
+            else:
+                fill = float(line)
+                if gap_fills:
+                    # GAP-AWARE FILL. The TRIGGER is "the bar's extreme reached the line"; the FILL used
+                    # to be the line itself. Those coincide only when price moves through the level
+                    # continuously. If the bar OPENED already beyond the level, no trade ever happened
+                    # at the line — the first available price is the open.
+                    #
+                    # SYMMETRIC ON PURPOSE: a gap past the STOP fills WORSE, a gap past the TAKE-PROFIT
+                    # fills BETTER. Applying it only to stops would inject a pessimistic bias.
+                    o = float(op[ti])
+                    if reason == R_SL_HARD:
+                        fill = min(fill, o) if d == LONG else max(fill, o)
+                    elif reason == R_TP_HARD:
+                        fill = max(fill, o) if d == LONG else min(fill, o)
             cand = (ti, rank, reason, fill)
             if best is None or ti < best[0]:
                 best = cand
