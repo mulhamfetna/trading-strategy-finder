@@ -1,0 +1,53 @@
+name: CI
+
+# Data-free verification gate. The price data is NOT in the repo (server-only, gitignored), so CI cannot
+# run the data-dependent backtests or the golden gate — those run on the server at the dev -> main boundary
+# (see AGENTS.md §4). What CI DOES catch is the most common failure mode: syntax / import / interface
+# breakage (mangled edits, renamed kwargs, unmigrated call sites).
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev, main]
+
+jobs:
+  byte-compile:
+    name: Byte-compile the engine tree (syntax)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: compileall (no deps needed — pure syntax gate)
+        run: python -m compileall -q subprojects/Parametric-Indicators
+
+  import-smoke:
+    name: Import smoke-test the core engine (imports / interfaces)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: subprojects/Parametric-Indicators
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install core + declared deps
+        run: |
+          python -m pip install --upgrade pip
+          # Core scientific stack the engine assumes (not pinned in requirements.txt, which only lists
+          # the optimizer-dashboard extras).
+          pip install numpy pandas scipy optuna
+          pip install -r requirements.txt
+      - name: Import the core modules (fails on any import / interface breakage)
+        run: |
+          python -c "
+          import config, strategy, engine, presets
+          import optimize.fast_engine, optimize.instruments, optimize.signals, optimize.timeframes
+          from optimize.l2 import payload
+          from optimize import optimizer
+          from indicators import library
+          print('core engine imports OK')
+          "
