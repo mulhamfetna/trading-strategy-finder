@@ -26,6 +26,10 @@ jobs:
   import-smoke:
     name: Import smoke-test the core engine (imports / interfaces)
     runs-on: ubuntu-latest
+    # optimize/instruments.py eagerly loads the cross-subproject registry at import time from
+    # $WSH_DATA_BASE/subprojects/all-stocks-signals/instruments.py — point it at the checkout root.
+    env:
+      WSH_DATA_BASE: ${{ github.workspace }}
     defaults:
       run:
         working-directory: subprojects/Parametric-Indicators
