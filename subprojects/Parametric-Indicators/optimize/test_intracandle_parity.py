@@ -32,7 +32,7 @@ def _fast_champion(ic_on, N=240, force_close=False):
     return fast_backtest(DD, DC, np.asarray(C["sig"]), gate, MD, MH, ML, MC,
                          float(p["sl_soft"]), float(p["sl_hard"]), float(p["tp"]), bool(p["flip"]),
                          intracandle_gate_by_dir=ic, intracandle_vol_gate=volg, intracandle_veto_mask=veto,
-                         intracandle_max_wait=N, intracandle_force_close=force_close)
+                         intracandle_max_wait=N, intracandle_force_close=force_close, m_open=MO)
 
 
 def _fast_keys(F):

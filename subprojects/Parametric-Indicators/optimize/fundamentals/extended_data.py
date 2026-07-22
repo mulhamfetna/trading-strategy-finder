@@ -82,27 +82,30 @@ def load_1m_extended(instrument: str = "NQ") -> pd.DataFrame:
     """The longest 1-minute NQ history available, in the SAME shape the engine's loader produces:
     columns ['Date','Open','High','Low','Close','Volume'], tz-naive US-Eastern wall-clock, sorted.
 
-    Prefers the 16-year frame (2010->2026). Falls back to 2024+2025+2026 if it is absent, and to the
-    engine's own loader for any non-NQ instrument.
+    Prefers the assembled 16-year frame (2010->2026) for ANY instrument that has one — NQ since
+    2026-07-13, GC since 2026-07-19. Falls back to the 2024+2025+2026 stitch (NQ only, which is the
+    only instrument those legacy files exist for), then to the engine's own loader.
 
     ⚠️ THE ENGINE MUST NEVER USE THIS. Lengthening the engine's price history would change n_split and
     the volatility-percentile gate, and therefore EVERY champion. optimize/data.py stays untouched and
     the golden 6/6 stay byte-identical. This is research only.
     """
-    if instrument != "NQ":
-        from optimize import data as _d
-        _, df1, *_ = _d.load_inputs("4h", instrument=instrument)
-        return df1
+    long_frame = sixteen_year_path(instrument, "1m")
 
-    if _16Y.exists():
-        df = _read(_16Y)
-    else:
+    if long_frame.exists():
+        df = _read(long_frame)
+    elif instrument == "NQ":
+        # The legacy 2024+2025+2026 stitch exists for NQ only.
         frames = [_read(p) for p in (_2024, _MAIN) if p.exists()]
         if not frames:
             from optimize import data as _d
             _, df1, *_ = _d.load_inputs("4h", instrument="NQ")
             return df1
         df = pd.concat(frames, ignore_index=True)
+    else:
+        from optimize import data as _d
+        _, df1, *_ = _d.load_inputs("4h", instrument=instrument)
+        return df1
 
     df = df.sort_values("Date").reset_index(drop=True)
 
@@ -113,15 +116,18 @@ def load_1m_extended(instrument: str = "NQ") -> pd.DataFrame:
     return df
 
 
-def load_1s(start=None, end=None) -> pd.DataFrame:
-    """1-SECOND NQ bars (7.8 GB file — ALWAYS pass a window, never load it whole).
+def load_1s(start=None, end=None, instrument: str = "NQ") -> pd.DataFrame:
+    """1-SECOND bars (multi-GB file — ALWAYS pass a window, never load it whole).
 
     This is what answers Task #6: the 2025-03-07 payrolls bar went DOWN 46 points and UP 141 points
     inside the same minute, and a 1-minute OHLC candle cannot tell you the ORDER. Seconds can.
+
+    `instrument` selects the market (NQ 7.8 GB, GC 5.4 GB since 2026-07-19).
     """
-    if not _16Y_SECONDS.exists():
-        raise FileNotFoundError(f"1-second file not found: {_16Y_SECONDS}")
-    it = pd.read_csv(_16Y_SECONDS, parse_dates=["datetime"], chunksize=2_000_000)
+    sec = sixteen_year_path(instrument, "1s")
+    if not sec.exists():
+        raise FileNotFoundError(f"1-second file not found: {sec}")
+    it = pd.read_csv(sec, parse_dates=["datetime"], chunksize=2_000_000)
     keep = []
     for ch in it:
         if start is not None:
@@ -182,7 +188,8 @@ def _seek_to_timestamp(path: Path, target: str) -> int:
         return f.tell()
 
 
-def load_1s_windows(windows, chunksize: int = 4_000_000, verbose: bool = True) -> pd.DataFrame:
+def load_1s_windows(windows, chunksize: int = 4_000_000, verbose: bool = True,
+                    instrument: str = "NQ") -> pd.DataFrame:
     """Many small 1-second windows, in ONE pass over the 7.3 GB / 142M-row file.
 
     `windows` = iterable of (start, end) timestamps, inclusive. Returns every 1-second bar falling in
@@ -196,8 +203,9 @@ def load_1s_windows(windows, chunksize: int = 4_000_000, verbose: bool = True) -
     sorts chronologically. So we can locate window boundaries with a string searchsorted and never parse
     the 142M timestamps we are going to throw away — we parse only the few thousand rows we keep.
     """
-    if not _16Y_SECONDS.exists():
-        raise FileNotFoundError(f"1-second file not found: {_16Y_SECONDS}")
+    sec = sixteen_year_path(instrument, "1s")
+    if not sec.exists():
+        raise FileNotFoundError(f"1-second file not found: {sec}")
 
     w = sorted((pd.Timestamp(s), pd.Timestamp(e)) for s, e in windows)
     if not w:
@@ -207,14 +215,22 @@ def load_1s_windows(windows, chunksize: int = 4_000_000, verbose: bool = True) -
     lo, hi = min(s_str), max(e_str)                     # numpy's max() has no loop for <U19 dtype
 
     keep, seen, t0 = [], 0, _time.time()
-    off = _seek_to_timestamp(_16Y_SECONDS, lo)
+    off = _seek_to_timestamp(sec, lo)
     if verbose:
-        pct = 100 * off / _16Y_SECONDS.stat().st_size
-        print(f"    [1s] seeking to {lo} -> byte {off:,} ({pct:.1f}% into the file); "
+        pct = 100 * off / sec.stat().st_size
+        print(f"    [1s] {instrument}: seeking to {lo} -> byte {off:,} ({pct:.1f}% into the file); "
               f"skipping the {pct:.0f}% before it entirely", flush=True)
 
-    fh = _16Y_SECONDS.open("r")
+    fh = sec.open("r")
     fh.seek(off)
+    if off == 0:
+        # _seek_to_timestamp returns 0 when the target precedes the whole file, and offset 0 puts us
+        # ON THE HEADER LINE. The reader below is header=None with explicit `names`, so the header
+        # would be parsed as a DATA row whose datetime is the literal string "datetime" — and since
+        # "d" sorts after any "2..." date, the `t[0] > hi` guard fires on the first chunk and the
+        # whole call returns EMPTY. Silently. This bit the GC sub-minute study (task #20): one window
+        # earlier than the file start zeroed out every other window too.
+        fh.readline()
     reader = pd.read_csv(fh, chunksize=chunksize, dtype={"datetime": str},
                          names=["datetime", "open", "high", "low", "close", "volume"], header=None)
     for i, ch in enumerate(reader):

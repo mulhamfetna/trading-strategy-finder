@@ -236,13 +236,15 @@ def main() -> int:
     ap.add_argument("--n-shuffle", type=int, default=2000)
     ap.add_argument("--extended", action="store_true",
                     help="fold in 2024 (roughly DOUBLES the sample)")
+    ap.add_argument("--instrument", default="NQ",
+                    help="market to test (NQ default; GC = the independent replication target)")
     a = ap.parse_args()
 
-    if a.extended:
+    if a.extended or a.instrument != "NQ":
         from optimize.fundamentals.extended_data import load_1m_extended
-        df1 = load_1m_extended("NQ")
-        print(f"[EXTENDED] price frame {df1['Date'].iloc[0]} -> {df1['Date'].iloc[-1]} "
-              f"({len(df1):,} bars)")
+        df1 = load_1m_extended(a.instrument)
+        print(f"[EXTENDED] instrument {a.instrument}  price frame {df1['Date'].iloc[0]} -> "
+              f"{df1['Date'].iloc[-1]} ({len(df1):,} bars)")
     else:
         _, df1, *_ = data.load_inputs(a.tf)
     cal = rc.load_calendar()

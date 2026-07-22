@@ -21,7 +21,12 @@ def test_run_l1_ledger_matches_frozen_engine():
                            dict(r.params, window="full"), r.bar_td, sig_int=r.sig_int)
     assert abs(l1_total - ref["pnl"]) < 1e-6
     assert len(r.ledger) == ref["n_taken"]
-    assert abs(l1_total - 149989.0) < 50.0          # loose sanity vs the rounded champion figure
+    # GAP-AWARE FILLS (GAP-01, 2026-07-20). Was 149,989 under the old fill-at-the-line model.
+    # VERIFIED ATTRIBUTION: gap_fills=False still returns 149,989 EXACTLY on this same frozen-lean
+    # config, so the whole +4,657 delta is the fill change. Trade count is unchanged (255) — only
+    # the fill PRICES moved, and here they moved in our FAVOUR (take-profit gaps outweigh stop gaps).
+    # The real guard is the assert above (run_l1 == backtest_metrics); this is a loose sanity bound.
+    assert abs(l1_total - 154646.0) < 50.0
 
 
 def test_state_timeline_marks_each_trade_bar():

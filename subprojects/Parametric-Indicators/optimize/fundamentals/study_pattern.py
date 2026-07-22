@@ -45,13 +45,17 @@ from optimize.fundamentals.study_surprise import build_surprises   # noqa: E402
 H = 30          # minutes of post-release path we study
 
 
-def _frame(extended: bool):
+def _frame(extended: bool, instrument: str = "NQ"):
     """The 1-minute price frame. --extended folds in 2024, which roughly DOUBLES the sample.
+
+    --instrument selects the market. NQ is the default so every previously-reported NQ number stays
+    byte-reproducible; GC (gold) got its own 16-year frame on 2026-07-19 and is the REPLICATION target
+    — the same pre-registered battery on an independent instrument.
 
     The engine's own data loading is untouched (golden-locked); this is research-only.
     """
-    if extended:
-        return load_1m_extended("NQ")
+    if extended or instrument != "NQ":
+        return load_1m_extended(instrument)
     _, df1, *_ = data.load_inputs("4h")
     return df1
 
@@ -116,11 +120,14 @@ def main() -> int:
     ap.add_argument("--n-shuffle", type=int, default=3000)
     ap.add_argument("--extended", action="store_true",
                     help="fold in 2024 (roughly DOUBLES the sample)")
+    ap.add_argument("--instrument", default="NQ",
+                    help="market to test (NQ default; GC = the independent replication target)")
     a = ap.parse_args()
     rng = np.random.default_rng(0)
 
-    df1 = _frame(a.extended)
-    print(f"\nprice frame: {df1['Date'].iloc[0]} -> {df1['Date'].iloc[-1]}  "
+    df1 = _frame(a.extended, a.instrument)
+    print(f"\ninstrument: {a.instrument}")
+    print(f"price frame: {df1['Date'].iloc[0]} -> {df1['Date'].iloc[-1]}  "
           f"({len(df1):,} bars){'   [EXTENDED: 2024 folded in]' if a.extended else ''}")
     sur = build_surprises(rc.load_calendar())
     P, z, dates = paths_for(df1, sur)

@@ -22,7 +22,7 @@ def test_eod_exits_at_session_target_bar():
     session_last = np.full(10, 9, dtype=np.int64)
     tr = fast_backtest(d_dates, d_close, sig, None, m_dates, m, m, m,
                        sl_soft=50, sl_hard=90, tp=90, flip=False,
-                       cap_mode="eod", eod_target=eod_target, session_last=session_last)
+                       cap_mode="eod", eod_target=eod_target, session_last=session_last, m_open=m)
     assert len(tr) == 1 and tr[0]["exit_reason"] == "END_OF_DAY"
     # entry e=1, target global 5 -> slice index 4 -> exit at m_dates[5]
     assert np.datetime64(tr[0]["exit_time"]) == m_dates[5]
@@ -34,5 +34,5 @@ def test_eod_off_by_default_no_exit():
     m_dates = np.arange(0, 600, 60).astype("datetime64[s]")
     m = np.full(10, 100.0)
     tr = fast_backtest(d_dates, np.array([100.0, 100.0, 100.0]), sig, None, m_dates, m, m, m,
-                       sl_soft=50, sl_hard=90, tp=90, flip=False)
+                       sl_soft=50, sl_hard=90, tp=90, flip=False, m_open=m)
     assert tr == []          # no cap, SL/TP never hit -> OPEN -> dropped

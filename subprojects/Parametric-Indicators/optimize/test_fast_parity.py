@@ -36,6 +36,7 @@ def main(tf: str = "4h") -> int:
     DD, DC = df["Date"].to_numpy(), df["Close"].to_numpy(float)
     MD = df1["Date"].to_numpy(); MH = df1["High"].to_numpy(float)
     ML = df1["Low"].to_numpy(float); MC = df1["Close"].to_numpy(float)
+    MO = df1["Open"].to_numpy(float)          # gap-aware fills (GAP-01)
 
     def gate(gp):
         return None if gp <= 0 else (vf <= float(np.percentile(vf[:n], gp)))
@@ -47,7 +48,7 @@ def main(tf: str = "4h") -> int:
                                   box_data_path="", flip_entry_direction=flip)
         E0, _ = SimpleStrategy(sp).backtest(df, df1, box, entry_gate=gate(gp))
         E = [t for t in E0 if t.get("exit_reason") not in (None, "OPEN")]
-        F = fast_backtest(DD, DC, sig_int, gate(gp), MD, MH, ML, MC, ss, sh, tp, flip)
+        F = fast_backtest(DD, DC, sig_int, gate(gp), MD, MH, ML, MC, ss, sh, tp, flip, m_open=MO)
         diffs = sum(
             1 for e, f in zip(E, F)
             if pd.Timestamp(e["entry_time"]) != pd.Timestamp(f["entry_time"])
@@ -73,7 +74,7 @@ def main(tf: str = "4h") -> int:
         E = [t for t in E0 if t.get("exit_reason") not in (None, "OPEN")]
         F = fast_backtest(DD, DC, sig_int, gate(gp), MD, MH, ML, MC, l_ss, l_sh, l_tp, flip,
                           long_sl_soft=l_ss, long_sl_hard=l_sh, long_tp=l_tp,
-                          short_sl_soft=s_ss, short_sl_hard=s_sh, short_tp=s_tp)
+                          short_sl_soft=s_ss, short_sl_hard=s_sh, short_tp=s_tp, m_open=MO)
         diffs = sum(
             1 for e, f in zip(E, F)
             if pd.Timestamp(e["entry_time"]) != pd.Timestamp(f["entry_time"])
@@ -94,7 +95,7 @@ def main(tf: str = "4h") -> int:
                                   flip_entry_direction=flip, cap_1min=cap)
         E0, _ = SimpleStrategy(sp).backtest(df, df1, box, entry_gate=gate(gp))
         E = [t for t in E0 if t.get("exit_reason") not in (None, "OPEN")]
-        F = fast_backtest(DD, DC, sig_int, gate(gp), MD, MH, ML, MC, ss, sh, tp, flip, cap_1min=cap)
+        F = fast_backtest(DD, DC, sig_int, gate(gp), MD, MH, ML, MC, ss, sh, tp, flip, cap_1min=cap, m_open=MO)
         diffs = sum(
             1 for e, f in zip(E, F)
             if pd.Timestamp(e["entry_time"]) != pd.Timestamp(f["entry_time"])
@@ -115,7 +116,7 @@ def main(tf: str = "4h") -> int:
     E0, _ = SimpleStrategy(sp).backtest(df, df1, box, entry_gate=gate(0))
     E = [t for t in E0 if t.get("exit_reason") not in (None, "OPEN")]
     F = fast_backtest(DD, DC, sig_int, gate(0), MD, MH, ML, MC, 60, 120, 150, False,
-                      cap_mode="eod", eod_target=et, session_last=sl_arr)
+                      cap_mode="eod", eod_target=et, session_last=sl_arr, m_open=MO)
     diffs = sum(
         1 for e, f in zip(E, F)
         if pd.Timestamp(e["entry_time"]) != pd.Timestamp(f["entry_time"])

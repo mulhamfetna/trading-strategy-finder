@@ -65,6 +65,7 @@ from optimize import data, instruments, signals                    # noqa: E402
 from optimize.fast_engine import fast_backtest, signals_to_int     # noqa: E402
 from optimize.fundamentals.extended_data import load_1s_windows    # noqa: E402
 from perf._common import champion_preset                           # noqa: E402
+from optimize.fundamentals.champion_params import champion_stops  # noqa: E402
 
 SWEEP_RATE_KILL = 0.15          # (A) below this, sweeps are rare and the verdict stands
 
@@ -85,9 +86,7 @@ def main() -> int:
     # ---------------------------------------------------------------- the champion, on 1-minute bars
     df, df1, box, vf, n = data.load_inputs(a.tf, instrument=a.instrument)
     p = champion_preset(a.tf)
-    sl_soft = float(p.get("sl_soft_points", 30))
-    sl_hard = float(p.get("sl_hard_points", 40))
-    tp = float(p.get("tp_hard_points", 60))
+    sl_soft, sl_hard, tp, _flip = champion_stops(p)
     gp = float(p.get("gate_pct", 60))
     pv = instruments.point_value(a.instrument)
 
@@ -98,7 +97,7 @@ def main() -> int:
     F = fast_backtest(df["Date"].to_numpy(), df["Close"].to_numpy(float), sig, gate,
                       MD, df1["High"].to_numpy(float), df1["Low"].to_numpy(float),
                       df1["Close"].to_numpy(float), sl_soft, sl_hard, tp,
-                      bool(p.get("flip_entry_direction", False)), track_excursions=True)
+                      _flip, track_excursions=True, m_open=df1["Open"].to_numpy(float))
     stopped = [t for t in F if t["exit_reason"] == "STOP_LOSS_HARD"]
 
     print(f"\n{a.instrument} {a.tf}  ·  SL {sl_soft}/{sl_hard}  TP {tp}  ·  ${pv:,.0f}/pt")

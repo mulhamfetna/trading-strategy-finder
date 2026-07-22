@@ -45,7 +45,7 @@ def main(tf: str = "4h") -> int:
     sig_int = signals_to_int(signals.decision_signals(df, box))
     DD, DC = df["Date"].to_numpy(), df["Close"].to_numpy(float)
     MD = df1["Date"].to_numpy(); MH = df1["High"].to_numpy(float)
-    ML = df1["Low"].to_numpy(float); MC = df1["Close"].to_numpy(float)
+    ML = df1["Low"].to_numpy(float); MC = df1["Close"].to_numpy(float); MO = df1["Open"].to_numpy(float)
     vol_gate = vf <= float(np.percentile(vf[:n], GP))
 
     def run_case(specs, k):
@@ -56,7 +56,7 @@ def main(tf: str = "4h") -> int:
                                   box_data_path="", flip_entry_direction=False)
         E0, _ = SimpleStrategy(sp).backtest(df, df1, box, entry_gate=g)
         E = [t for t in E0 if t.get("exit_reason") not in (None, "OPEN")]
-        F = fast_backtest(DD, DC, sig_int, g, MD, MH, ML, MC, SS, SH, TP, False)
+        F = fast_backtest(DD, DC, sig_int, g, MD, MH, ML, MC, SS, SH, TP, False, m_open=MO)
         return E, F, int(g.sum())
 
     ok_all = True

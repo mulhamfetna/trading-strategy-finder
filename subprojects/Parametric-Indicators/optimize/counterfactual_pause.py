@@ -91,23 +91,24 @@ def _bt_args(C):
     return (d["Date"].to_numpy(), d["Close"].to_numpy(float), C["sig"],
             d1["Date"].to_numpy(), d1["High"].to_numpy(float),
             d1["Low"].to_numpy(float), d1["Close"].to_numpy(float),
+            d1["Open"].to_numpy(float),                    # gap-aware fills (GAP-01)
             float(p["sl_soft"]), float(p["sl_hard"]), float(p["tp"]), bool(p["flip"]))
 
 
 def champion_taken_trades(C):
     """Full champion run via fast_backtest with the real gate (matches core.backtest_metrics' candidate stream)."""
-    dd, cl, si, md, mh, ml, mc, sls, slh, tp, flip = _bt_args(C)
-    return fast_backtest(dd, cl, si, _engine_gate(C), md, mh, ml, mc, sls, slh, tp, flip)
+    dd, cl, si, md, mh, ml, mc, mo, sls, slh, tp, flip = _bt_args(C)
+    return fast_backtest(dd, cl, si, _engine_gate(C), md, mh, ml, mc, sls, slh, tp, flip, m_open=mo)
 
 
 def simulate_one_custom(C, entry_idx: int, sls: float, slh: float, tp: float, flip: bool):
     """Simulate the box signal entering at `entry_idx` in ISOLATION with CUSTOM exit lines (sls/slh/tp) — real
     signals + real 1-min path, only the exit distances change ⇒ no look-ahead. Returns the trade dict or None."""
-    dd, cl, si, md, mh, ml, mc, _sls, _slh, _tp, _flip = _bt_args(C)
+    dd, cl, si, md, mh, ml, mc, mo, _sls, _slh, _tp, _flip = _bt_args(C)
     gate_one = np.zeros(C["n"], dtype=bool)
     gate_one[int(entry_idx)] = True
     trades = fast_backtest(dd, cl, si, gate_one, md, mh, ml, mc,
-                           float(sls), float(slh), float(tp), bool(flip))
+                           float(sls), float(slh), float(tp), bool(flip), m_open=mo)
     return trades[0] if trades else None
 
 

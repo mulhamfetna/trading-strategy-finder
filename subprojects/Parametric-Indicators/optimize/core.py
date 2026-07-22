@@ -362,6 +362,12 @@ def backtest_metrics(
         intracandle_force_close=bool(params.get("intracandle_force_close", False)),
         news_target=news_target,
         news_profit_exempt_mult=float(params.get("news_profit_exempt_mult", 1.0)),
+        # GAP-AWARE FILLS (GAP-01). A hard SL/TP whose bar OPENED beyond the line fills at the OPEN —
+        # the line was never available. Symmetric: gaps past the stop cost more, gaps past the
+        # take-profit pay more. `gap_fills` is threaded from params so a caller can reproduce the old
+        # optimistic numbers with gap_fills=False, but the DEFAULT is the honest model.
+        m_open=d1["Open"].to_numpy(float),
+        gap_fills=bool(params.get("gap_fills", True)),
         **_split)
     # fast_backtest returns completed trades already in entry order (no OPEN trades)
 

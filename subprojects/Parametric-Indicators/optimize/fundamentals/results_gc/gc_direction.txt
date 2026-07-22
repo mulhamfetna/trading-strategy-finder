@@ -1,0 +1,18 @@
+[EXTENDED] instrument GC  price frame 2010-06-06 18:00:00 -> 2026-07-17 16:59:00 (5,658,123 bars)
+  [calendar] 1208 events  2010-01-08 -> 2026-12-09
+Pulling ALFRED first-print vintages (one per release)...
+
+  [cache] HIT — 882 surprises from surprises_cache.csv (2010-04-14 -> 2026-07-02); skipping ALFRED entirely
+
+882 priced releases with a causal surprise
+
+   h    n |    corr  sign-hit |    shuffled corr |      p
+--------------------------------------------------------------
+   5  866 |  -0.018     39.5% |   0.024 ± 0.026 |  0.432
+  15  866 |  +0.007     43.8% |   0.023 ± 0.025 |  0.750
+  30  866 |  +0.011     44.8% |   0.023 ± 0.024 |  0.635
+  60  866 |  +0.008     47.1% |   0.024 ± 0.025 |  0.729
+
+VERDICT: no link between the surprise and the move. A statistical expectation carries
+         no signal, so the paid consensus would have to carry ALL of it alone.
+         That is a much higher bar — decide deliberately before spending.

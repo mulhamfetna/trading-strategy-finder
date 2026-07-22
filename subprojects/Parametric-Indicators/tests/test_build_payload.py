@@ -93,7 +93,11 @@ def test_timeframe_defaults_to_4h_and_matches_legacy(inputs):
     out = _run(inputs)
     assert out["meta"]["params"]["timeframe"] == "4h"
     s = out["meta"]["summary"]
-    assert s["pnl"] == 7735.0 and round(s["max_dd"]) == 3670 and s["n_taken"] == 66
+    # GAP-AWARE FILLS (GAP-01, 2026-07-20). Was pnl=7735.0 / dd=3670 / n=66 under the old
+    # fill-at-the-line model. VERIFIED ATTRIBUTION: gap_fills=False still reproduces those
+    # numbers EXACTLY, so the whole delta is the fill change and nothing else.
+    # Note the drawdown MORE THAN DOUBLED (3670 -> 7720): the old model understated risk here.
+    assert s["pnl"] == 5870.0 and round(s["max_dd"]) == 7720 and s["n_taken"] == 65
 
 
 def test_explicit_4h_equals_default(inputs):
@@ -139,7 +143,11 @@ def test_noentry_does_not_change_summary(inputs):
     """Turning on the diagnostic log must not alter P/L, maxDD or trade count (it only adds events)."""
     out = _run(inputs)                      # default winner box, gate on
     s = out["meta"]["summary"]
-    assert s["pnl"] == 7735.0 and round(s["max_dd"]) == 3670 and s["n_taken"] == 66
+    # GAP-AWARE FILLS (GAP-01, 2026-07-20). Was pnl=7735.0 / dd=3670 / n=66 under the old
+    # fill-at-the-line model. VERIFIED ATTRIBUTION: gap_fills=False still reproduces those
+    # numbers EXACTLY, so the whole delta is the fill change and nothing else.
+    # Note the drawdown MORE THAN DOUBLED (3670 -> 7720): the old model understated risk here.
+    assert s["pnl"] == 5870.0 and round(s["max_dd"]) == 7720 and s["n_taken"] == 65
 
 
 # --- indicator warm-up: wait for the look-back (and its dependencies) before voting -----------
