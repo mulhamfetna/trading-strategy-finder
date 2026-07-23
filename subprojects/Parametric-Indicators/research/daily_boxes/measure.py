@@ -39,3 +39,38 @@ def supply_stats(df_dec: pd.DataFrame, box: pd.DataFrame,
         "days_scarce": int((~grouped["base"]).sum()),
         "days_rescued_by_daily": int((~grouped["base"] & grouped["daily"]).sum()),
     }
+
+
+# Verdict bands, fixed in the design spec BEFORE any number was seen (spec section 6).
+_LARGE_THRESHOLD = 0.20        # >= 20% uplift -> go B
+_NEGLIGIBLE_THRESHOLD = 0.05   # <  5% uplift -> negligible
+
+
+def gate_survival(new_mask: np.ndarray, gate: np.ndarray, baseline_entries: int) -> dict:
+    """Of the NEW daily signals, how many land on bars the champion's live gate would have passed?
+
+    `gate` is the engine's effective per-bar gate (vol_gate & ~veto & confirm). This is an UPPER BOUND on new
+    takeable entries: it ignores position-carry, cooldown and the breaker, any of which can still block a bar
+    the gate allowed.
+    """
+    if baseline_entries <= 0:
+        raise ValueError(f"baseline_entries must be positive, got {baseline_entries}")
+    new_mask = np.asarray(new_mask, dtype=bool)
+    gate = np.asarray(gate, dtype=bool)
+    if new_mask.shape != gate.shape:
+        raise ValueError(f"shape mismatch: new_mask {new_mask.shape} vs gate {gate.shape}")
+
+    surviving = int((new_mask & gate).sum())
+    uplift = surviving / float(baseline_entries)
+    if uplift >= _LARGE_THRESHOLD:
+        band = "large"
+    elif uplift < _NEGLIGIBLE_THRESHOLD:
+        band = "negligible"
+    else:
+        band = "gray"
+    return {
+        "new_signals": int(new_mask.sum()),
+        "gate_surviving": surviving,
+        "uplift": uplift,
+        "verdict_band": band,
+    }

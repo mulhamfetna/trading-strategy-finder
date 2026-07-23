@@ -59,3 +59,31 @@ def test_new_signals_never_exceed_daily_signals():
     df_dec, box = _frame()
     s = supply_stats(df_dec, box, _PAIRS_W, _PAIRS_D)
     assert s["new_signals"] <= s["daily_signals"]
+
+
+from research.daily_boxes.measure import gate_survival          # noqa: E402
+
+
+def test_gate_survival_counts_and_uplift():
+    new_mask = np.array([True, True, True, False])
+    gate = np.array([True, False, True, True])
+    r = gate_survival(new_mask, gate, baseline_entries=10)
+    assert r["new_signals"] == 3
+    assert r["gate_surviving"] == 2          # bars 0 and 2
+    assert r["uplift"] == 0.2                # 2/10
+
+
+def test_verdict_bands_use_the_prefixed_thresholds():
+    gate = np.ones(100, dtype=bool)
+    # 25 surviving / 100 baseline = 25% -> large
+    assert gate_survival(np.array([True]*25 + [False]*75), gate, 100)["verdict_band"] == "large"
+    # 10/100 = 10% -> gray
+    assert gate_survival(np.array([True]*10 + [False]*90), gate, 100)["verdict_band"] == "gray"
+    # 3/100 = 3% -> negligible
+    assert gate_survival(np.array([True]*3 + [False]*97), gate, 100)["verdict_band"] == "negligible"
+
+
+def test_zero_baseline_entries_is_an_error_not_a_divide_by_zero():
+    import pytest as _pytest
+    with _pytest.raises(ValueError):
+        gate_survival(np.array([True]), np.array([True]), baseline_entries=0)
