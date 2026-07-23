@@ -11,7 +11,7 @@ _PROJ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_PROJ))
 
 from research.daily_boxes.informativeness import (               # noqa: E402
-    block_bootstrap_ci, control_date, control_location,
+    block_bootstrap_ci, block_bootstrap_diff_ci, control_date, control_location,
     directional_forward_returns, min_detectable_effect,
 )
 
@@ -62,6 +62,23 @@ def test_block_bootstrap_ci_is_deterministic_for_a_fixed_seed():
     a = block_bootstrap_ci(x, 20, 200, 0.10, np.random.default_rng(3))
     b = block_bootstrap_ci(x, 20, 200, 0.10, np.random.default_rng(3))
     assert a == b
+
+
+def test_diff_ci_detects_a_real_separation():
+    rng = np.random.default_rng(11)
+    x = rng.normal(10.0, 1.0, 500)      # clearly higher
+    y = rng.normal(0.0, 1.0, 500)
+    point, lo, hi = block_bootstrap_diff_ci(x, y, 20, 300, 0.10, np.random.default_rng(12))
+    assert point > 9.0
+    assert lo > 0.0, "a genuine +10 separation must exclude zero"
+
+
+def test_diff_ci_includes_zero_for_identical_distributions():
+    rng = np.random.default_rng(13)
+    x = rng.normal(0.0, 1.0, 500)
+    y = rng.normal(0.0, 1.0, 500)
+    _point, lo, hi = block_bootstrap_diff_ci(x, y, 20, 300, 0.10, np.random.default_rng(14))
+    assert lo <= 0.0 <= hi, "no true difference must not be called significant"
 
 
 def test_min_detectable_effect_shrinks_as_n_grows():

@@ -22,7 +22,7 @@ from optimize import counterfactual_pause as cp                          # noqa:
 from optimize.signals import decision_signals                            # noqa: E402
 from research.daily_boxes.extended_frame import load_extended            # noqa: E402
 from research.daily_boxes.informativeness import (                       # noqa: E402
-    block_bootstrap_ci, control_date, control_location,
+    block_bootstrap_ci, block_bootstrap_diff_ci, control_date, control_location,
     directional_forward_returns, min_detectable_effect,
 )
 from research.daily_boxes.levels import DAILY_LEVELS                     # noqa: E402
@@ -109,14 +109,17 @@ def main() -> int:
               f"reporting the champion window only.")
 
     rows = []
+    diffs = []
     for window, (dd, bx) in windows.items():
         real = study_signals(dd, bx, DAILY_LEVELS)
         c1 = study_signals(dd, control_location(bx, DAILY_LEVELS, rng, a.loc_frac), DAILY_LEVELS)
         c2 = study_signals(dd, control_date(bx, DAILY_LEVELS, rng), DAILY_LEVELS)
         for h in horizons:
+            arms = {}
             for label, sg in (("real", real), ("control_location", c1), ("control_date", c2)):
                 r = directional_forward_returns(dd, sg, h)
                 r = r[~np.isnan(r)]
+                arms[label] = r
                 lo, hi = block_bootstrap_ci(r, a.block, a.draws, 0.10, np.random.default_rng(a.seed))
                 rows.append({
                     "window": window, "horizon": h, "arm": label, "n": len(r),
@@ -129,8 +132,26 @@ def main() -> int:
                       f"mean={rows[-1]['mean_points']:+8.2f}pt "
                       f"CI90=[{lo:+.2f},{hi:+.2f}] MDE={rows[-1]['min_detectable_effect_points']:.2f}")
 
+            # THE decisive comparison: is real BETTER than each dumb control? Overlapping one-sample CIs are
+            # not a test of the difference, so bootstrap the difference itself.
+            for ctrl in ("control_location", "control_date"):
+                pt, dlo, dhi = block_bootstrap_diff_ci(arms["real"], arms[ctrl], a.block, a.draws, 0.10,
+                                                       np.random.default_rng(a.seed + 1))
+                beats = dlo > 0.0
+                diffs.append({"window": window, "horizon": h, "vs": ctrl,
+                              "diff_points": pt, "diff_dollars": pt * 20.0,
+                              "ci90_lo": dlo, "ci90_hi": dhi, "real_beats_control": beats})
+                print(f"[M3-DIFF] {window:20s} h={h} real - {ctrl:16s} "
+                      f"= {pt:+8.2f}pt CI90=[{dlo:+.2f},{dhi:+.2f}] "
+                      f"{'REAL WINS' if beats else 'no advantage'}")
+
     pd.DataFrame(rows).to_csv(outdir / f"{a.tf}_informativeness.csv", index=False)
-    print(f"\nwrote {outdir}/{a.tf}_supply.csv and {outdir}/{a.tf}_informativeness.csv")
+    pd.DataFrame(diffs).to_csv(outdir / f"{a.tf}_real_vs_control.csv", index=False)
+
+    n_wins = sum(1 for d in diffs if d["real_beats_control"])
+    print(f"\n[VERDICT INPUT] supply band = {g['verdict_band']} (uplift {g['uplift']:.1%})")
+    print(f"[VERDICT INPUT] real beats a dumb control in {n_wins}/{len(diffs)} comparisons")
+    print(f"\nwrote {outdir}/{a.tf}_supply.csv, {a.tf}_informativeness.csv, {a.tf}_real_vs_control.csv")
     return 0
 
 

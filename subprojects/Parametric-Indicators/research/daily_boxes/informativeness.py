@@ -94,6 +94,34 @@ def block_bootstrap_ci(x: np.ndarray, block: int, n_boot: int, alpha: float,
     return (lo, hi)
 
 
+def block_bootstrap_diff_ci(x: np.ndarray, y: np.ndarray, block: int, n_boot: int, alpha: float,
+                            rng: np.random.Generator) -> Tuple[float, float, float]:
+    """CI for the DIFFERENCE of means (mean(x) - mean(y)), two independent block bootstraps.
+
+    This is the number that actually decides 'are the real zones better than the control?'. Comparing two
+    overlapping one-sample CIs by eye is NOT a test of their difference — two intervals can overlap while the
+    difference is significant, and vice versa. The arms are unpaired (different bars fire under real vs
+    control zones), so each is resampled independently.
+
+    Returns (point_estimate, lo, hi).
+    """
+    x = np.asarray(x, dtype=float); x = x[~np.isnan(x)]
+    y = np.asarray(y, dtype=float); y = y[~np.isnan(y)]
+    if len(x) == 0 or len(y) == 0:
+        return (float("nan"), float("nan"), float("nan"))
+
+    def _draw(v: np.ndarray) -> float:
+        b = min(block, len(v))
+        n_blocks = int(np.ceil(len(v) / b))
+        starts = rng.integers(0, len(v) - b + 1, size=n_blocks)
+        return float(np.concatenate([v[s:s + b] for s in starts])[: len(v)].mean())
+
+    diffs = np.array([_draw(x) - _draw(y) for _ in range(n_boot)], dtype=float)
+    return (float(x.mean() - y.mean()),
+            float(np.quantile(diffs, alpha / 2.0)),
+            float(np.quantile(diffs, 1.0 - alpha / 2.0)))
+
+
 def min_detectable_effect(x: np.ndarray, power: float = 0.80, alpha: float = 0.05) -> float:
     """Smallest mean effect a two-sided one-sample t-test could detect at `power`, given this sample's spread.
 
