@@ -11,9 +11,8 @@ Measure whether the **daily (`D*`) box levels** — which exist in the NQ box CS
 time** — carry tradeable information, and produce a decision-ready verdict on what (if anything) to do with
 them.
 
-This is a **characterization study, inert with respect to production**. It adds one opt-in parameter to
-`box_lookup.py` (§3) but changes no strategy behavior at its default, re-optimizes no champion, and deploys
-nothing. Its only output is measurements plus a verdict.
+This is a **characterization study that modifies no production file at all** (§3). It re-optimizes no champion
+and deploys nothing. Its only output is measurements plus a verdict.
 
 ## Non-goals
 
@@ -107,35 +106,71 @@ negative result requires a power analysis to mean anything.
 
 ---
 
-## 3. Guardrails — production must not change
+## 3. Guardrails — zero production edits
+
+### Which signal rule actually governs the champions
+
+Corrected 2026-07-23 during planning, after reading the code. There are **two different box rules** in this
+repo, and only one is on the champion path:
+
+| Path | Rule | Used by |
+|---|---|---|
+| `engine._stage1_candle_signal` → vectorized `optimize.signals.decision_signals` | **touch-and-close-beyond** | **the champions / optimizer** |
+| `BoxLookup` | traversal state machine (`above → inside → below`) | dashboard API, L2 contributor state feature |
+
+The champion Stage-1 rule, quoted from `decision_signals`' docstring:
+
+> - color: green = close>open, red = close<open; a doji (close==open) ⇒ hold.
+> - a level pair contributes only if BOTH columns are present and non-NaN ('valid') AND the bar's
+>   `[low,high]` overlaps `[lower,upper]` ('touched').
+> - long iff green & touched & close>upper; short iff red & touched & close<lower (any pair).
+> - long WINS ties; missing box row / NaN levels ⇒ that pair invalid ⇒ hold.
+
+The zone set it reads is one constant — `engine.py:55`:
+
+```python
+_LEVEL_PAIRS = _WEEKLY_LEVELS + _MONTHLY_LEVELS
+```
+
+**Measuring supply with the traversal rule would answer the wrong question.** The study uses the
+touch-and-close-beyond rule.
+
+### The guardrail
 
 ```mermaid
 flowchart LR
-  P["BoxLookup(tiers=('W','M'))<br/>DEFAULT = today"] --> PROD["production signals<br/>byte-identical"]
-  A["BoxLookup(tiers=('D',))<br/>or ('W','M','D')"] --> STUDY["study only"]
-  PROD -.->|"guarded by"| G["golden gate 6/6<br/>+ default-tier unit test"]
+  PROD["engine._LEVEL_PAIRS<br/>= W + M<br/>(UNTOUCHED)"] --> DS["optimize.signals.decision_signals<br/>production, unmodified"]
+  S["study_signals(df, box, pairs=…)<br/>NEW standalone module<br/>pairs is REQUIRED"] --> P{"parity gate:<br/>study_signals(W+M)<br/>≡ decision_signals?"}
+  DS --> P
+  P -->|"must be element-for-element equal"| OK["fidelity proven<br/>→ run with D added"]
 ```
 
-- `BoxLookup` gains an explicit **`tiers`** parameter, defaulting to `("W","M")` — exactly present behavior.
-- The default path must remain **byte-identical**, guarded by (i) a unit test asserting default-tier signals
-  equal current signals and (ii) the **golden regression gate staying 6/6 green** before and after.
-- The daily tier is **opt-in**. Nothing reads it unless the study asks for it.
+- **No production file is edited.** `box_lookup.py`, `engine.py`, `optimize/signals.py` are untouched, so the
+  golden gate cannot break. It is still run before and after as evidence.
+- The study module reimplements the quoted rule and takes **`pairs` as a required argument** — no default, no
+  `dict.get`, satisfying the no-silent-defaults rule. The tier set in use is printed on every run.
+- **Fidelity is proven, not assumed:** `study_signals(df, box, pairs=_LEVEL_PAIRS)` must equal
+  `decision_signals(df, box)` element-for-element on the real champion frames. If it doesn't, the study is
+  wrong and stops.
 
-Rationale: past regressions in this codebase came from edits to shared paths. An inert-by-default parameter is
-the only safe way to add a tier.
+Rationale: past regressions came from edits to shared paths. Not editing them at all is strictly safer than an
+inert-by-default parameter, and the parity gate gives the same confidence.
 
 ---
 
 ## 4. Components
 
+All new files live under `research/daily_boxes/`. **No existing file is modified.**
+
 | Unit | Purpose | Depends on |
 |---|---|---|
-| `_DAILY_LEVELS` (in `box_lookup.py`) | The 8 daily zone-pairs, mirroring `_WEEKLY_LEVELS` | box CSV |
-| `tiers=` parameter on `BoxLookup` | Opt-in tier selection; default reproduces today | — |
-| `merge_box_data.py` | Build + assert the 626-day merged frame | both box CSVs |
-| `daily_box_study.py` | Runs M1/M2/M3 and emits results | the above, champion payload |
+| `levels.py` | `DAILY_LEVELS` — the 8 daily zone-pairs, mirroring `_WEEKLY_LEVELS`' `(upper, lower, label)` shape | — |
+| `merge_box_data.py` | Build + assert the 626-day merged box frame | both box CSVs |
+| `study_signals.py` | The champion Stage-1 rule with `pairs` **required**; + the parity gate vs `decision_signals` | `optimize.signals`, `engine` (read-only imports) |
+| `measure.py` | M1 supply, M2 gate survival, M3 informativeness + controls | the above, champion payload |
+| `run_study.py` | CLI entry point; prints every parameter as used, writes CSV + report inputs | all of the above |
 
-Each unit is independently testable. Only `tiers=` touches shared code, and it is inert at its default.
+Each unit is independently testable and has one responsibility.
 
 ---
 
@@ -143,7 +178,7 @@ Each unit is independently testable. Only `tiers=` touches shared code, and it i
 
 ### M1 — Supply: how many signals do daily zones add?
 
-Run the existing traversal state-machine for three level sets and compare:
+Run the champion Stage-1 rule (§3, touch-and-close-beyond) for three level sets and compare:
 
 | Level set | Meaning |
 |---|---|
@@ -151,9 +186,7 @@ Run the existing traversal state-machine for three level sets and compare:
 | `D` only | The discarded tier in isolation |
 | `W+M+D` | Combined |
 
-The traversal rule (unchanged, from `box_lookup.py`): a signal fires only when the close **traverses** a zone —
-`above → inside → below` = **short**, `below → inside → above` = **long**. Gap-skips with no intervening
-`inside` bar update state silently and do **not** fire.
+The rule is the one quoted in §3 and is **not modified** — only the `pairs` list it iterates over changes.
 
 Report:
 - total signals per level set;
@@ -259,9 +292,9 @@ here means daily *levels* evaluated on an intraday decision frame — not tradin
 
 | Check | Asserts |
 |---|---|
-| Default-tier unit test | `BoxLookup(tiers=("W","M"))` signals ≡ current signals, byte-identical |
-| Daily-tier unit test | Daily tier loads 8 zones and fires traversals |
-| Golden gate | **6/6 green** before and after the change |
+| **Parity gate** | `study_signals(df, box, pairs=_LEVEL_PAIRS)` ≡ `decision_signals(df, box)` element-for-element on the real champion frames |
+| Daily-levels test | `DAILY_LEVELS` has 8 pairs and every column exists in the merged frame |
+| Golden gate | **6/6 green** — evidence that nothing production-side moved |
 | Merge test | 626 rows, contiguous, schema-identical |
 | Param echo | Every measurement parameter printed as used |
 
