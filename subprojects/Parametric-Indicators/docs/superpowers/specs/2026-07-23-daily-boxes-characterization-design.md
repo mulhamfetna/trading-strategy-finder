@@ -86,23 +86,31 @@ the reason they may be lower-conviction and noisier. That trade-off is what this
 
 ---
 
-## 2. Study window
+## 2. Study window — split by measurement
 
-Merge the two NQ box files into one frame:
+Corrected 2026-07-23 during planning. The first draft specified one merged 626-day box window for everything.
+That is **wrong for M1/M2**: those are computed on the champion's decision frame, and the champion research
+window is 2025–2026 only —
 
-| File | Rows | Range |
-|---|--:|---|
-| `data/2024_data/NQ_full_data_2024.csv` | 263 | 2023-12-29 → 2024-12-31 |
-| `data/full_data/NQ_full_data.csv` | 363 | 2025-01-01 → 2026-05-22 |
-| **merged** | **626** | **2023-12-29 → 2026-05-22** |
+- `optimize/data.py:36` → `_BOX_CSV = DATA_ROOT/full_data/NQ_full_data.csv` (363 rows, 2025-01-01 → 2026-05-22)
+- `config.py:24` → `YEARS = (2025, 2026)` (2025 train / 2026 out-of-sample)
+- `data/full_data/NQ_4h.csv` → **2,119 bars, 2025-01-01 → 2026-05-19**
 
-Both carry all 16 `D*` columns with the dense-4 fully populated (263/263 and 363/363). They are **contiguous**
-— no overlap, no calendar gap at the seam.
+Merging 2024 *box* rows would add rows that no decision candle ever reindexes against — they would silently do
+nothing. But 2024 **candles do exist** (`data/2024_data/NQ_4h_2024.csv`, 1,544 bars; `NQ_1m_2024.csv`;
+`NQ_full_data_2024.csv`, 263 box rows), and M3 needs no champion at all. So:
 
-Rationale for merging rather than using the shorter file: this project has repeatedly been burned by n=1
-results (the regime size-ramp that reversed sign after a champion change; the Asia-session cell that failed to
-replicate on 3 other indices). Doubling the sample is nearly free here, and the standing rule is that a
-negative result requires a power analysis to mean anything.
+| Measurement | Window | Size | Why |
+|---|---|--:|---|
+| **M1 supply, M2 gate survival** | 2025-01-01 → 2026-05-19 | **2,119 4h bars** | Must match the champion frame — and matches the prior sleeping-days baseline **exactly** (2,119 bars / 255 entries / 823 in-gap raw / 18% passable), so the numbers are directly comparable |
+| **M3 informativeness** | 2024-01-01 → 2026-05-19 | **3,663 4h bars** (+73%) | Strategy-independent — needs only candles + box levels, no gate. Take the extra power where it is actually usable |
+
+M3's 2024 extension is reported **both ways** (2025–26 alone, and 2024–26) so the extension cannot quietly
+change a conclusion. If they disagree, that disagreement is itself a finding about stability.
+
+Rationale for taking 2024 where possible: this project has repeatedly been burned by n=1 results (the regime
+size-ramp that reversed sign after a champion change; the Asia-session cell that failed to replicate on 3 other
+indices), and a negative result is meaningless without power behind it.
 
 ---
 
@@ -165,7 +173,7 @@ All new files live under `research/daily_boxes/`. **No existing file is modified
 | Unit | Purpose | Depends on |
 |---|---|---|
 | `levels.py` | `DAILY_LEVELS` — the 8 daily zone-pairs, mirroring `_WEEKLY_LEVELS`' `(upper, lower, label)` shape | — |
-| `merge_box_data.py` | Build + assert the 626-day merged box frame | both box CSVs |
+| `extended_frame.py` | Build + assert the **M3-only** 2024–26 frame (candles + box), used for the power extension | 2024 + full_data CSVs |
 | `study_signals.py` | The champion Stage-1 rule with `pairs` **required**; + the parity gate vs `decision_signals` | `optimize.signals`, `engine` (read-only imports) |
 | `measure.py` | M1 supply, M2 gate survival, M3 informativeness + controls | the above, champion payload |
 | `run_study.py` | CLI entry point; prints every parameter as used, writes CSV + report inputs | all of the above |
@@ -276,8 +284,11 @@ here means daily *levels* evaluated on an intraday decision frame — not tradin
 
 ## 8. Error handling
 
-- **Merge assertions:** identical schema across both files, no duplicate dates, no calendar gap at the seam,
-  sorted ascending. Fail loudly; never silently truncate.
+- **Frame assertions (M3 extension):** identical schema across the 2024 and 2025–26 files, no duplicate dates,
+  no calendar gap at the seam, sorted ascending, and candle coverage matching box coverage. Fail loudly; never
+  silently truncate.
+- **Window assertion:** M1/M2 must assert they are running on exactly 2,119 4h bars — if that number moves, the
+  champion frame changed underneath us and the baseline comparison is invalid.
 - **Missing columns:** hard failure naming the missing column, not a silent skip.
 - **No silent defaults.** Every measurement parameter (horizons, buffer, control seed count, timeframe, level
   set) is passed explicitly and **printed as used**. No `dict.get(key, default)` anywhere near a measurement or
@@ -316,6 +327,7 @@ run on the local box.
 
 None blocking. Two noted for the report:
 
-- The merged window (2023-12-29 → 2026-05-22) is still **one broadly bullish era**. It cannot settle
-  bear-market behavior; that gap is the same 2010–2023 data constraint flagged in the FA closeout.
+- Even with M3's 2024 extension, the window (2024-01-01 → 2026-05-19) is still **one broadly bullish era**. It
+  cannot settle bear-market behavior; that gap is the same 2010–2023 data constraint flagged in the FA closeout.
+- M1/M2 remain on 2,119 bars by necessity (the champion frame). Their power is fixed by that, not chosen.
 - M2 is an upper bound on takeable entries (position-carry / cooldown / breaker not modeled).
