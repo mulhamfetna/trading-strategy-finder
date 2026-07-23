@@ -13,6 +13,7 @@ import pandas as pd
 
 import config
 from loader import load_data
+from optimize.data import _RAW      # production decision-candle dir ($WSH_DATA_BASE/<RAW_DIR>)
 
 _CANDLE_2024 = "NQ_{tf}_2024.csv"
 _BOX_2024 = "NQ_full_data_2024.csv"
@@ -42,10 +43,16 @@ def _read_candles(path: Path) -> pd.DataFrame:
 
 
 def load_extended(tf_name: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    """Return (df_dec, box) spanning 2024-01-01 -> 2026-05-19 for the given decision timeframe."""
+    """Return (df_dec, box) spanning 2024-01-01 -> 2026-05-19 for the given decision timeframe.
+
+    Path resolution deliberately mirrors optimize/data.py, which uses TWO different roots:
+      - decision candles: $WSH_DATA_BASE/<RAW_DIR>/NQ_<tf>.csv   (imported as _RAW)
+      - box levels:       $WSG_DATA_ROOT/full_data/NQ_full_data.csv
+    The 2024 add-on files live under $WSG_DATA_ROOT/2024_data/.
+    """
     root = Path(config.DATA_ROOT)
     c_2024 = root / "2024_data" / _CANDLE_2024.format(tf=tf_name)
-    c_main = root / "full_data" / f"NQ_{tf_name}.csv"
+    c_main = Path(_RAW) / f"NQ_{tf_name}.csv"
     b_2024 = root / "2024_data" / _BOX_2024
     b_main = root / "full_data" / "NQ_full_data.csv"
     for p in (c_2024, c_main, b_2024, b_main):

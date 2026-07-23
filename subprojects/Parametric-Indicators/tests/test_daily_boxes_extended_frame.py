@@ -46,3 +46,25 @@ def test_load_extended_real_data_spans_2024_to_2026():
     assert df_dec["Date"].max().year == 2026
     assert len(df_dec) == 3663, f"expected 3663 4h bars, got {len(df_dec)}"
     assert {"Open", "High", "Low", "Close"}.issubset(df_dec.columns)
+
+
+def test_main_candles_come_from_the_PRODUCTION_raw_dir():
+    """Regression guard: decision candles must resolve exactly where optimize/data.py resolves them.
+
+    They live under $WSH_DATA_BASE/<RAW_DIR>/, NOT under $WSG_DATA_ROOT/full_data/. Those two happen to
+    both contain NQ_4h.csv, so a wrong path silently 'works' on 4h and then fails on 1h.
+    """
+    from optimize.data import _RAW
+    for tf in ("4h", "1h", "2h"):
+        assert (Path(_RAW) / f"NQ_{tf}.csv").exists(), f"production candle path missing for {tf}"
+
+
+def test_load_extended_works_for_1h_not_only_4h():
+    """1h has no NQ_1h.csv under full_data/ — this fails if the loader uses the wrong root."""
+    try:
+        df_dec, _box = load_extended("1h")
+    except FileNotFoundError as e:
+        pytest.skip(f"real data not present: {e}")
+    assert df_dec["Date"].min().year == 2024
+    assert df_dec["Date"].max().year == 2026
+    assert len(df_dec) > 3663, "1h must have more bars than 4h"

@@ -96,12 +96,20 @@ def main() -> int:
                    "baseline_entries": baseline_entries}]).to_csv(
         outdir / f"{a.tf}_supply.csv", index=False)
 
-    # ================= M3 : both windows =================
+    # ================= M3 : champion window, plus the 2024 extension WHERE IT EXISTS =================
+    # The 2024 add-on candles exist for 4h and 1m only -- there is no NQ_1h_2024.csv. Rather than fabricate
+    # one by resampling (which would not be byte-comparable to how the production frames were built), the
+    # extended arm is simply SKIPPED and the skip is printed, so a missing window can never be mistaken for
+    # a measured null.
+    windows = {"champion_2025_2026": (df_dec, box)}
+    try:
+        windows["extended_2024_2026"] = load_extended(a.tf)
+    except FileNotFoundError as e:
+        print(f"\n[M3] extended 2024-26 window UNAVAILABLE for {a.tf} (missing {e}); "
+              f"reporting the champion window only.")
+
     rows = []
-    for window, (dd, bx) in {
-        "champion_2025_2026": (df_dec, box),
-        "extended_2024_2026": load_extended(a.tf),
-    }.items():
+    for window, (dd, bx) in windows.items():
         real = study_signals(dd, bx, DAILY_LEVELS)
         c1 = study_signals(dd, control_location(bx, DAILY_LEVELS, rng, a.loc_frac), DAILY_LEVELS)
         c2 = study_signals(dd, control_date(bx, DAILY_LEVELS, rng), DAILY_LEVELS)
