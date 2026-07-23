@@ -1,0 +1,2 @@
+base_signals,daily_signals,combined_signals,new_signals,days_total,days_with_base_signal,days_scarce,days_rescued_by_daily,gate_surviving,uplift,verdict_band,tf,bars,baseline_entries
+829,989,1268,439,431,340,91,49,65,0.2620967741935484,large,4h,2119,248
