@@ -20,6 +20,10 @@ comparisons** on two different chart speeds, the real daily zones beat the rando
 **So: lots of new trades, no evidence of any new edge. Recommendation — do NOT spend a re-optimization
 campaign on them.**
 
+We also tested the other possible use — treating daily zones as a **veto** (refusing entries that point into
+one). That fails too, and for a blunt reason: the trades it would block are **profitable**, so blocking them
+would delete about **half the book's P&L**. Both uses are now closed (§3b).
+
 ---
 
 ## 1. What we were actually testing (plain language)
@@ -159,8 +163,8 @@ from current price, so only 89 signals survive and they are odd ones. Total acro
 | Option | Verdict |
 |---|---|
 | **B — use daily zones as a new entry signal** | **NO.** Supply is large but carries no measurable information. |
-| **C — use daily zones as a veto/filter** | **NOT TESTED** — see the honest limitation below. |
-| Keep discarding them | **Yes, for entry purposes.** |
+| **C — use daily zones as a veto/filter** | **NO.** Tested (§3b). The trades it would block are *profitable*; vetoing them deletes ~half the book's P&L. |
+| Keep discarding them | **Yes — both uses are now closed.** |
 
 **Why "no" to B even though supply is large.** The whole cost of Option B — re-optimizing every champion,
 re-capturing the golden baselines — is only worth paying if the new signals carry an edge. They do not. Adding
@@ -168,12 +172,45 @@ re-capturing the golden baselines — is only worth paying if the new signals ca
 intra-candle feature**: that feature also added entries, and the optimizer *avoided* it because the extra
 trades blew up drawdown. We should not re-run that experiment under a new name.
 
-### The limitation I will not paper over
+## 3b. Option C — the veto thesis, now tested
 
-**This study does not test Option C.** We measured whether *breaking through* a daily zone predicts
-continuation. A veto is a different claim — that *entering toward* an unbroken zone is bad because price
-bounces off it. That is a separate measurement we did not run. So C is **open but untested**, not disproved.
-Note it is also a *quantity-reducing* change, which runs against the stated "increase entries" direction.
+The first version of this report closed with "C is open but untested". It has since been measured.
+
+**The claim.** A veto says: *don't enter toward a daily zone, because price will stall or reverse at it.* That
+is a different question from §2 (which asked whether *breaking through* a zone predicts continuation), so it
+needed its own measurement.
+
+**How we framed it.** A trade is **"walled"** when a daily zone sits between its entry price and its
+take-profit target — meaning price must punch through a daily zone to reach the target. If the thesis is true,
+walled trades should earn reliably less than clear ones, and by more than the same test on random zones.
+
+| | 4-hour | 1-hour |
+|---|--:|--:|
+| Take-profit target | 125.6 pts ($2,511) | 99.7 pts ($1,995) |
+| Trades in book | 248 | 353 |
+| **Walled trades** | **166 (66.9%)** | **216 (61.2%)** |
+| Average walled trade | **+$478** | **+$241** |
+| Average clear trade | +$827 | +$424 |
+| walled − clear | −17.41 pts, CI90 **[−34.82, +14.06]** | −9.16 pts, CI90 **[−22.08, +6.54]** |
+| Reliable difference? | **No — CI includes zero** | **No — CI includes zero** |
+| **A veto would delete** | **+$79,407 of a +$147,191 book** | **+$51,981 of a +$110,038 book** |
+
+**Verdict: NO — and the decisive reason needs no statistics.** The walled trades are **profitable**
+(+$478 and +$241 per trade on average). A veto only earns its keep if the group it blocks *loses* money. This
+one would delete roughly **two-thirds of all trades and about half of all profit**. The direction of the point
+estimate is mildly supportive — walled trades do earn less — but the difference is not reliable on either
+timeframe, and "earns less while still making money" is not a case for deleting it.
+
+**Why the test barely discriminates, and that is itself the finding.** The take-profit is **125.6 points**
+while a daily zone is only **22.2 points** tall, and there are **8 of them every single day**. So *of course*
+something lands between entry and target — it happens on two-thirds of trades. The classification is close to
+"is it a Tuesday". Daily zones are too dense, relative to how far these trades travel, to act as a meaningful
+filter.
+
+**One control oddity, stated rather than hidden.** On the random-location control the sign *flips* (walled
+trades did better, +21.08 pts on 4h). We do not read this as meaningful: the control's walled set is a
+different, smaller group (95 vs 166 trades), and by the rule we require — the whole interval below zero — the
+control fails the thesis too. It does confirm that "walled vs clear" is not picking up anything stable.
 
 ### Power — how much could we have missed?
 
@@ -213,6 +250,9 @@ negative. A genuine edge would show up as consistently positive, not consistentl
   produces a non-replicating "win". The random-*location* control is the one worth keeping.
 - **The 2024 extension only exists for 4h** (there is no `NQ_1h_2024.csv`), so 1h got no power boost. The run
   prints that it skipped, so it can never be mistaken for a measured null.
+- **Shipping a report that said "C is untested" was the right call, and then testing it was better.** Naming
+  the unanswered variant is what made it obvious C had to be measured before closing the topic. Had the first
+  report just said "daily boxes: closed", a live option would have been buried.
 - **Still one bull era.** Everything here is 2024–2026. Nothing in this study speaks to a bear market.
 
 ---
