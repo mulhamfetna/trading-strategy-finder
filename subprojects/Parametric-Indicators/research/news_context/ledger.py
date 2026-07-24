@@ -11,7 +11,8 @@ from typing import Sequence
 import numpy as np
 import pandas as pd
 
-_LEDGER = Path(__file__).resolve().parents[1] / "optimize" / "fundamentals" / "surprises_cache.csv"
+# this file is research/news_context/ledger.py -> parents[2] is the Parametric-Indicators root
+_LEDGER = Path(__file__).resolve().parents[2] / "optimize" / "fundamentals" / "surprises_cache.csv"
 
 
 def load_ledger(path: Path | None = None) -> pd.DataFrame:

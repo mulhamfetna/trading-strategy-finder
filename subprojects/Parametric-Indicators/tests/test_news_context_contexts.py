@@ -101,3 +101,13 @@ def test_c2_unknown_date_is_unlabelled(tmp_path):
                   "regime": [0, 1, 3], "n_regimes": 4}).to_csv(csv, index=False)
     s = pd.DataFrame({"Date": pd.to_datetime(["2020-06-01 08:30"]), "surprise_z": [0.0]})
     assert label_c2_vol_regime(s, csv)[0] == ""
+
+
+def test_default_ledger_path_resolves_to_the_committed_file():
+    """Regression guard: the default path is relative to this package, and an off-by-one in parents[]
+    silently pointed at research/optimize/... instead of the project root."""
+    from research.news_context.ledger import _LEDGER, load_ledger
+    assert _LEDGER.exists(), f"committed ledger not found at {_LEDGER}"
+    d = load_ledger()
+    assert len(d) == 882, f"expected the 882-release ledger, got {len(d)}"
+    assert {"Date", "event", "surprise_z"}.issubset(d.columns)
