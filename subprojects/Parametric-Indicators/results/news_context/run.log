@@ -1,0 +1,47 @@
+==============================================================================
+NEWS CONTEXT-DEPENDENCE -- parameters actually used
+  C1 trailing k    : 40 releases
+  horizons (min)   : [5, 15, 30, 60]
+  C3 MA days       : 50
+  shuffle draws    : 1000
+  control block    : 20 releases
+  seed             : 20260723
+  regime csv       : /home/dev/Mulham/news-context/subprojects/regime-edge/data/nq_daily_regime.csv  (exists=True)
+  tests            : 3 splits x 4 horizons = 12
+  Bonferroni alpha : 0.00417
+==============================================================================
+
+ledger: 882 releases 2010-04-14 -> 2026-07-02
+price : 5,452,534 1-min bars 2010-06-06 18:00:00 -> 2026-07-12 19:59:00
+  ret_5: 870 priced releases
+  ret_15: 871 priced releases
+  ret_30: 870 priced releases
+  ret_60: 865 priced releases
+
+[h=5] POOLED spearman=-0.0073 pearson=-0.0125 n=870
+  C1_policy_regime        POS: rho=+0.0608 n= 481 |       NEG: rho=-0.1023 n= 354 | delta=+0.1631 p=0.0190 pBLOCK=0.0519 MDE=0.1944 h1=-0.126 h2=+0.072 FLIPS no
+  C2_vol_regime          CALM: rho=-0.0041 n= 640 | TURBULENT: rho=-0.0285 n= 228 | delta=+0.0245 p=0.7413 pBLOCK=0.7862 MDE=0.2139 h1=+0.032 h2=-0.097 FLIPS no
+  C3_trend                 UP: rho=-0.0489 n= 611 |      DOWN: rho=+0.0719 n= 253 | delta=-0.1209 p=0.1029 pBLOCK=0.1129 MDE=0.2074 h1=-0.062 h2=-0.169 STABLE no
+
+[h=15] POOLED spearman=-0.0225 pearson=-0.0149 n=871
+  C1_policy_regime        POS: rho=+0.0509 n= 501 |       NEG: rho=-0.1034 n= 335 | delta=+0.1543 p=0.0380 pBLOCK=0.0320 MDE=0.1959 h1=-0.050 h2=-0.016 STABLE no
+  C2_vol_regime          CALM: rho=-0.0237 n= 640 | TURBULENT: rho=-0.0059 n= 229 | delta=-0.0178 p=0.8202 pBLOCK=0.8322 MDE=0.2136 h1=+0.136 h2=-0.168 FLIPS no
+  C3_trend                 UP: rho=-0.0597 n= 611 |      DOWN: rho=+0.0497 n= 254 | delta=-0.1094 p=0.1349 pBLOCK=0.1359 MDE=0.2071 h1=+0.032 h2=-0.170 FLIPS no
+
+[h=30] POOLED spearman=-0.0020 pearson=-0.0145 n=870
+  C1_policy_regime        POS: rho=+0.0798 n= 517 |       NEG: rho=-0.1225 n= 318 | delta=+0.2023 p=0.0060 pBLOCK=0.0050 MDE=0.1978 h1=-0.148 h2=+0.109 FLIPS no
+  C2_vol_regime          CALM: rho=+0.0376 n= 640 | TURBULENT: rho=-0.0853 n= 228 | delta=+0.1229 p=0.1069 pBLOCK=0.1149 MDE=0.2139 h1=+0.114 h2=+0.020 STABLE no
+  C3_trend                 UP: rho=-0.0070 n= 611 |      DOWN: rho=-0.0034 n= 253 | delta=-0.0035 p=0.9620 pBLOCK=0.9690 MDE=0.2074 h1=-0.025 h2=-0.003 STABLE no
+
+[h=60] POOLED spearman=-0.0000 pearson=+0.0092 n=865
+  C1_policy_regime        POS: rho=+0.1021 n= 491 |       NEG: rho=-0.1290 n= 339 | delta=+0.2311 p=0.0020 pBLOCK=0.0020 MDE=0.1960 h1=-0.112 h2=+0.236 FLIPS *** BEATS BOTH
+  C2_vol_regime          CALM: rho=+0.0461 n= 635 | TURBULENT: rho=-0.0851 n= 228 | delta=+0.1312 p=0.0999 pBLOCK=0.0909 MDE=0.2141 h1=+0.186 h2=+0.039 STABLE no
+  C3_trend                 UP: rho=+0.0065 n= 608 |      DOWN: rho=-0.0028 n= 251 | delta=+0.0093 p=0.8781 pBLOCK=0.9311 MDE=0.2082 h1=-0.003 h2=+0.003 FLIPS no
+
+==============================================================================
+[VERDICT INPUT] 1/12 tests beat the shuffled control at Bonferroni alpha=0.00417
+[VERDICT INPUT] 1/12 ALSO beat the persistence-preserving block control
+[VERDICT INPUT] 0/12 beat BOTH controls AND are temporally stable
+[VERDICT INPUT] worst-case minimum detectable |delta rho| = 0.2141 (a null below this is UNDERPOWERED, not evidence of absence)
+==============================================================================
+wrote results/news_context/context_dependence.csv
