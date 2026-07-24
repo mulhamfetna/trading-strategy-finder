@@ -22,7 +22,7 @@ from research.news_context.contexts import (                          # noqa: E4
 )
 from research.news_context.ledger import attach_returns, load_ledger  # noqa: E402
 from research.news_context.stats import (                             # noqa: E402
-    assoc, bucket_delta, min_detectable_rho, shuffle_control,
+    assoc, block_shuffle_control, bucket_delta, min_detectable_rho, shuffle_control,
 )
 
 
@@ -38,6 +38,8 @@ def main() -> int:
     ap.add_argument("--ma-days", type=int, required=True)
     ap.add_argument("--draws", type=int, required=True)
     ap.add_argument("--seed", type=int, required=True)
+    ap.add_argument("--block", type=int, required=True,
+                    help="block length (releases) for the persistence-preserving control")
     ap.add_argument("--out", default="results/news_context")
     a = ap.parse_args()
     hs = [int(x) for x in a.horizons.split(",")]
@@ -51,6 +53,7 @@ def main() -> int:
     print(f"  horizons (min)   : {hs}")
     print(f"  C3 MA days       : {a.ma_days}")
     print(f"  shuffle draws    : {a.draws}")
+    print(f"  control block    : {a.block} releases")
     print(f"  seed             : {a.seed}")
     print(f"  regime csv       : {reg_csv}  (exists={reg_csv.exists()})")
     print(f"  tests            : 3 splits x {len(hs)} horizons = {n_tests}")
@@ -82,23 +85,36 @@ def main() -> int:
             "C2_vol_regime":    (label_c2_vol_regime(sur, reg_csv), "CALM", "TURBULENT"),
             "C3_trend":         (label_c3_trend(sur, df1, a.ma_days), "UP", "DOWN"),
         }
+        half = len(sur) // 2          # temporal split point, by release order
         for name, (lab, A, B) in splits.items():
             aa = assoc(z[lab == A], r[lab == A])
             bb = assoc(z[lab == B], r[lab == B])
             d = bucket_delta(z, r, lab, A, B)
             p, pct = shuffle_control(z, r, lab, A, B, a.draws, np.random.default_rng(a.seed))
+            # HARDER control: keeps the labels' time-clustering intact (see stats.block_shuffle_control)
+            pb, _ = block_shuffle_control(z, r, lab, A, B, a.draws, a.block,
+                                          np.random.default_rng(a.seed + 1))
             mde = min_detectable_rho(aa["n"], bb["n"])
+            # TEMPORAL STABILITY -- the gate that killed Exp 50 and the Asia session cell
+            d1 = bucket_delta(z[:half], r[:half], lab[:half], A, B)
+            d2 = bucket_delta(z[half:], r[half:], lab[half:], A, B)
+            stable = (not np.isnan(d1)) and (not np.isnan(d2)) and (np.sign(d1) == np.sign(d2))
             sig = (not np.isnan(p)) and p < alpha_bonf
+            sig_b = (not np.isnan(pb)) and pb < alpha_bonf
             print(f"  {name:17s} {A:>9s}: rho={aa['spearman']:+.4f} n={aa['n']:4d} | "
                   f"{B:>9s}: rho={bb['spearman']:+.4f} n={bb['n']:4d} | "
-                  f"delta={d:+.4f} p={p:.4f} MDE={mde:.4f} "
-                  f"{'*** BEATS CONTROL' if sig else 'no'}")
+                  f"delta={d:+.4f} p={p:.4f} pBLOCK={pb:.4f} MDE={mde:.4f} "
+                  f"h1={d1:+.3f} h2={d2:+.3f} {'STABLE' if stable else 'FLIPS'} "
+                  f"{'*** BEATS BOTH' if (sig and sig_b) else ('* iid only' if sig else 'no')}")
             rows.append({"horizon": h, "split": name, "bucket_a": A, "bucket_b": B,
                          "rho_a": aa["spearman"], "n_a": aa["n"],
                          "rho_b": bb["spearman"], "n_b": bb["n"],
                          "delta": d, "shuffle_p": p, "shuffle_pct": pct,
-                         "mde_rho": mde, "bonferroni_alpha": alpha_bonf,
-                         "beats_control": sig,
+                         "block_shuffle_p": pb, "mde_rho": mde,
+                         "delta_first_half": d1, "delta_second_half": d2,
+                         "temporally_stable": stable,
+                         "bonferroni_alpha": alpha_bonf,
+                         "beats_control": sig, "beats_block_control": sig_b,
                          "pooled_spearman": pooled["spearman"],
                          "pooled_pearson": pooled["pearson"], "pooled_n": pooled["n"]})
 
@@ -107,10 +123,14 @@ def main() -> int:
     pd.DataFrame(rows).to_csv(outdir / "context_dependence.csv", index=False)
 
     n_sig = sum(1 for x in rows if x["beats_control"])
+    n_both = sum(1 for x in rows if x["beats_control"] and x["beats_block_control"])
+    n_stable = sum(1 for x in rows if x["beats_control"] and x["beats_block_control"] and x["temporally_stable"])
     worst_mde = np.nanmax([x["mde_rho"] for x in rows])
     print("\n" + "=" * 78)
     print(f"[VERDICT INPUT] {n_sig}/{len(rows)} tests beat the shuffled control at "
           f"Bonferroni alpha={alpha_bonf:.5f}")
+    print(f"[VERDICT INPUT] {n_both}/{len(rows)} ALSO beat the persistence-preserving block control")
+    print(f"[VERDICT INPUT] {n_stable}/{len(rows)} beat BOTH controls AND are temporally stable")
     print(f"[VERDICT INPUT] worst-case minimum detectable |delta rho| = {worst_mde:.4f} "
           f"(a null below this is UNDERPOWERED, not evidence of absence)")
     print("=" * 78)
