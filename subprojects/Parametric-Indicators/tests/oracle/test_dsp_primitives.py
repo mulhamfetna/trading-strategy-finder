@@ -8,7 +8,13 @@ import numpy as np
 from indicators.calc import dsp
 from tests.oracle.fixture import ohlcv
 
-C = ohlcv(300)["close"]
+D = ohlcv(300)
+H, L, C = D["high"], D["low"], D["close"]
+
+
+def _fin(a):
+    a = np.asarray(a, float)
+    return a[~np.isnan(a)]
 
 
 def test_super_smoother_constant_fixed_point():
@@ -25,3 +31,31 @@ def test_super_smoother_smooths_and_no_nan():
     a1 = np.exp(-np.sqrt(2) * np.pi / 20)
     b1 = 2 * a1 * np.cos(np.sqrt(2) * np.pi / 20)
     assert np.isclose(1 - b1 - (-a1 * a1) + b1 + (-a1 * a1), 1.0)
+
+
+def test_roofing_bandpass_oscillate_around_zero():
+    for a in (dsp.roofing(C, 48, 10), dsp.bandpass(C, 20, 0.3)):
+        f = _fin(a)
+        assert abs(f.mean()) < f.std()               # zero-centred oscillator
+        assert len(f) > 200
+
+
+def test_frama_tracks_price_and_smooths():
+    fr = _fin(dsp.frama(H, L, C, 16))
+    assert len(fr) > 200
+    # FRAMA stays within the price envelope
+    assert fr.min() >= L.min() - 1e-6 and fr.max() <= H.max() + 1e-6
+
+
+def test_frama_constant_fixed_point():
+    n = 300
+    h = np.full(n, 11.0); l = np.full(n, 9.0); c = np.full(n, 10.0)
+    fr = dsp.frama(h, l, c, 16)
+    assert np.allclose(fr[20:], 10.0, atol=1e-6)
+
+
+def test_mama_fama_finite_and_fama_smoother():
+    mama, fama = dsp.mama_fama(C)
+    assert not np.isnan(mama).any() and not np.isnan(fama).any()
+    assert np.std(np.diff(fama)) < np.std(np.diff(mama))    # FAMA follows more slowly
+
