@@ -59,3 +59,35 @@ def test_mama_fama_finite_and_fama_smoother():
     assert not np.isnan(mama).any() and not np.isnan(fama).any()
     assert np.std(np.diff(fama)) < np.std(np.diff(mama))    # FAMA follows more slowly
 
+
+def test_laguerre_rsi_bounded_unit():
+    v = _fin(dsp.laguerre_rsi(C, 0.5))
+    assert v.min() >= -1e-9 and v.max() <= 1 + 1e-9 and len(v) > 200
+
+
+def test_schaff_bounded_0_100():
+    v = _fin(dsp.schaff_trend_cycle(C, 23, 50, 10))
+    assert v.min() >= -1e-6 and v.max() <= 100 + 1e-6
+
+
+def test_cyber_and_cg_oscillate_around_zero():
+    for a in (dsp.cyber_cycle(C, 0.07), dsp.center_of_gravity(C, 10)):
+        f = _fin(a)
+        assert abs(f.mean()) < f.std() + 1e-9 and len(f) > 200
+
+
+def test_dominant_cycle_period_bounded():
+    per, _ = dsp.dominant_cycle(C)
+    # candidate period is clamped [6,50]; the EMA-smoothed output ramps from 0 → upper bound holds,
+    # and once warmed the period settles inside the band.
+    assert per.max() <= 50 + 1e-6
+    settled = per[80:]
+    assert 6 - 1e-6 <= np.median(settled) <= 50 + 1e-6
+
+
+def test_sinewave_bounded_unit():
+    sine, lead = dsp.hilbert_sinewave(C)
+    for a in (sine, lead):
+        f = _fin(a)
+        assert f.min() >= -1 - 1e-9 and f.max() <= 1 + 1e-9 and len(f) > 100
+
