@@ -61,6 +61,8 @@ class IndicatorConfig:
 class Indicator(ABC):
     """Base indicator. Subclasses implement `directions(ctx)`."""
     key: str = ""
+    needs_ref: bool = False   # True for cross-series indicators — treated as INACTIVE (not a confirmer/
+                              # vetoer, so it never tightens the K-rule) when ctx.ref_close is None.
 
     def __init__(self, config: IndicatorConfig | None = None) -> None:
         self.config = (config or IndicatorConfig()).validate()

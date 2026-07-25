@@ -53,3 +53,24 @@ def test_leading_unmatched_is_nan():
 def test_none_ref_leaves_ref_close_none():
     dec = _frame(pd.date_range("2025-01-01", periods=3, freq="D"), [1.0, 2, 3])
     assert runner.market_context(dec).ref_close is None
+
+
+def test_needs_ref_indicator_inactive_without_reference():
+    """#19 framework fix: a cross-series (needs_ref) indicator with no ctx.ref_close is INACTIVE — it
+    never tightens the K-rule. With a reference it becomes active and constrains the gate."""
+    from indicators import confirm, library
+    from indicators.base import MarketContext
+    n = 160
+    rng = np.random.default_rng(0)
+    close = np.cumsum(rng.normal(0, 1, n)) + 100
+    ref = close * 1.3 + np.cumsum(rng.normal(0, 0.3, n))
+    box_dir = np.tile([1, -1, 0, 1], n // 4).astype(np.int8)
+    ind = library.from_specs([{"key": "cointegration", "enabled": True, "mode": "both",
+                               "params": {"n": 50, "lower": -2, "upper": 2}}])[0]
+    z = np.ones(n)
+    g0, _, active0 = confirm.build_gate(MarketContext(close, close, close, close, z, None, None),
+                                        box_dir, [ind], k=1)
+    assert active0[0] == np.False_ and g0.all()          # inactive ⇒ no constraint ⇒ everything allowed
+    g1, _, active1 = confirm.build_gate(MarketContext(close, close, close, close, z, None, ref),
+                                        box_dir, [ind], k=1)
+    assert active1[0] == np.True_ and not np.array_equal(g0, g1)   # active ⇒ it changes the gate

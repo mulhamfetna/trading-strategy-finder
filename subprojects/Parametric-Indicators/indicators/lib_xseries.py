@@ -24,6 +24,7 @@ class RollingCorr(Indicator, _NeedsRef):
     """Veto BOTH sides when primary↔reference return correlation is low (reference decoupled ⇒ its
     signal is unreliable). |corr| below threshold ⇒ veto."""
     key = "rolling_corr"
+    needs_ref = True
     def directions(self, ctx):
         r = self._ref(ctx)
         n = len(ctx.close)
@@ -38,6 +39,7 @@ class RollingCorr(Indicator, _NeedsRef):
 class RollingBeta(StanceIndicator, _NeedsRef):
     """Beta-scaled reference lead: sign(beta · reference's recent move) — expect the primary to follow."""
     key = "rolling_beta"
+    needs_ref = True
     def stance(self, ctx):
         r = self._ref(ctx)
         if r is None:
@@ -55,6 +57,7 @@ class RollingBeta(StanceIndicator, _NeedsRef):
 class Cointegration(Indicator, _NeedsRef):
     """Pair spread z-score (mean-reversion): z≥upper ⇒ primary rich vs reference → short; z≤lower → long."""
     key = "cointegration"
+    needs_ref = True
     def directions(self, ctx):
         r = self._ref(ctx)
         n = len(ctx.close)
@@ -69,6 +72,7 @@ class Cointegration(Indicator, _NeedsRef):
 class PCAFactor(StanceIndicator, _NeedsRef):
     """2-series PCA common-factor direction: sign of the primary's projection on PC1 of [primary,ref] returns."""
     key = "pca_factor"
+    needs_ref = True
     def stance(self, ctx):
         r = self._ref(ctx)
         if r is None:
