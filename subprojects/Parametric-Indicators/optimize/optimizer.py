@@ -53,13 +53,18 @@ def _suggest_param(trial, name, p):
     return trial.suggest_float(name, lo, hi, step=st)
 
 
-def _suggest_indicators(trial, exclude=(), only=(), prefix=""):
+def _suggest_indicators(trial, exclude=(), only=(), prefix="", max_enabled=None):
     """WS-I.8 search space: each registered indicator on/off + its params (rectangular — params always
     suggested so NSGA crossover stays well-defined). Mode = the schema default. Keys in `exclude`, or (when
     `only` is non-empty) keys NOT in `only`, are forced OFF with default params and NOT suggested (α: revert
     to wsh4-era / restrict to a subset ⇒ fewer dimensions). `_searched` flags which keys entered the search.
     `prefix` namespaces the Optuna param names (e.g. 'es_') so a cross-instrument contributor's committee
-    can be searched alongside NQ's without name collisions; prefix='' is byte-identical to before."""
+    can be searched alongside NQ's without name collisions; prefix='' is byte-identical to before.
+
+    `max_enabled` (WS-EXTRA-IND): cap the number of simultaneously-enabled indicators. With ~125 keys the
+    K-of-N search would otherwise explore 125-way soups; None = uncapped (byte-identical to before). The cap
+    is applied as a POST-suggestion repair (keep the first `max_enabled` enabled in REGISTRY order, force the
+    rest off) so the Optuna param dimensionality stays rectangular — only the feasible region shrinks."""
     specs = []
     for key in library.REGISTRY:
         meta = library.SCHEMA[key]
@@ -71,6 +76,10 @@ def _suggest_indicators(trial, exclude=(), only=(), prefix=""):
         enabled = trial.suggest_categorical(f"{prefix}en_{key}", [False, True])
         params = {p["name"]: _suggest_param(trial, f"{prefix}{key}_{p['name']}", p) for p in meta["params"]}
         specs.append({"key": key, "enabled": enabled, "mode": meta["mode"], "params": params, "_searched": True})
+    if max_enabled is not None:
+        on = [s for s in specs if s["enabled"]]
+        for s in on[int(max_enabled):]:      # deterministic REGISTRY order ⇒ reproducible repair
+            s["enabled"] = False
     return specs
 
 
@@ -384,7 +393,7 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         dd_pnl_cap: float = DD_PNL_CAP, contrib_tokens: tuple = (),
         contrib_exclude=None, instrument: str = "NQ", intracandle: bool = False,
         freeze_indicators: bool = False, intracandle_always_on: bool = False,
-        force_eod: bool = False) -> dict:
+        force_eod: bool = False, max_enabled: int | None = None) -> dict:
     # split_sltp (Q3 / E2): when True the optimizer searches SEPARATE long vs short SL/TP (long_*/short_*),
     # widening the space per the user's point-5 goal. Default False ⇒ shared SL/TP ⇒ identical to prior runs.
     # NOTE FOR THE NEXT FULL RUN (wsh5): launch with split_sltp=True to let longs and shorts get their own
@@ -429,7 +438,8 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
             k_rule = frozen_k
         else:
             specs = [{k: v for k, v in s.items() if k != "_searched"}      # strip the test-hook key
-                     for s in _suggest_indicators(trial, exclude_inds, only_inds)]   # α: scoped search space
+                     for s in _suggest_indicators(trial, exclude_inds, only_inds,
+                                                  max_enabled=max_enabled)]   # α: scoped search space + K-cap
             k_rule = trial.suggest_int("k", 1, 5)       # clamped to #confirmers by confirm_mask
         # Time caps, asked the way the indicators are asked: a yes/no per cap, plus "how much" for the
         # bars cap. Rectangular space (cap_1min always suggested) so NSGA-III sees a fixed dimension set;
@@ -667,6 +677,9 @@ def main() -> int:
     ap.add_argument("--freeze-indicators", action="store_true",
                     help="FIX the indicator layer (on/off + params + k) at the champion's; search only SL/TP + gate "
                          "+ intra-candle. Far fewer dims; the intra-candle gate is memoised once. Needs a champion seed.")
+    ap.add_argument("--max-enabled", type=int, default=None,
+                    help="Cap simultaneously-enabled indicators per trial (post-suggestion repair, REGISTRY order). "
+                         "Keeps the ~125-key K-of-N search sparse/interpretable. Default: uncapped.")
     a = ap.parse_args()
     from optimize import instruments as _inst
     if not _inst.is_valid(a.instrument):
@@ -696,7 +709,7 @@ def main() -> int:
         contrib_tokens=contrib_tokens, instrument=a.instrument,
         intracandle=(a.intracandle or a.intracandle_on),
         freeze_indicators=a.freeze_indicators, intracandle_always_on=a.intracandle_on,
-        force_eod=a.force_eod)
+        force_eod=a.force_eod, max_enabled=a.max_enabled)
     return 0
 
 

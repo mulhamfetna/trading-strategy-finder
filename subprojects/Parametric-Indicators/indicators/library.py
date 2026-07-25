@@ -12,24 +12,7 @@ import numpy as np
 
 from . import classic, smc, votes
 from .base import BOTH, Indicator, MarketContext
-
-
-def _sign_stance(x: np.ndarray) -> np.ndarray:
-    """sign with NaN→0, as int8 stance."""
-    s = np.zeros(len(x), dtype=np.int8)
-    a = np.asarray(x, dtype=float)
-    s[a > 0] = 1
-    s[a < 0] = -1
-    return s
-
-
-class StanceIndicator(Indicator):
-    """Indicators whose vote is a plain bullish/bearish stance."""
-    def stance(self, ctx: MarketContext) -> np.ndarray:
-        raise NotImplementedError
-
-    def directions(self, ctx: MarketContext):
-        return votes.stance_directions(self.stance(ctx))
+from .stances import StanceIndicator, _sign_stance
 
 
 class EMATrend(StanceIndicator):
@@ -311,11 +294,15 @@ class CISDConfirm(StanceIndicator):
         return 1
 
 
-REGISTRY = {c.key: c for c in (
+from . import lib_ma, lib_trend, lib_osc, lib_vol, lib_volume, lib_levels, lib_bw, lib_quant  # noqa: E402
+
+_SCHOOLS = (lib_ma, lib_trend, lib_osc, lib_vol, lib_volume, lib_levels, lib_bw, lib_quant)
+_BUILTINS = (
     EMATrend, SMATrend, MACD, VWAPTrend, KeltnerTrend, OBVTrend, CCIBreakout,
     RSIZone, StochasticZone, MFIZone, BollingerVeto, ADXVeto,
     StructureTrend, OrderBlock, FVGConfirm, IFVGConfirm, BreakerBlock, CISDConfirm,
-)}
+)
+REGISTRY = {c.key: c for c in (*_BUILTINS, *(c for m in _SCHOOLS for c in m.CLASSES))}
 
 
 def build(key: str, config=None) -> Indicator:
@@ -376,6 +363,11 @@ SCHEMA = {
                    "params": [{"name": "swing_l", "default": 2, "min": 1, "max": 20, "step": 1}]},
     "cisd":       {"label": "CISD — delivery shift (SMC)", "mode": "both", "params": []},
 }
+for _m in _SCHOOLS:                       # merge per-school schemas (keys must be unique)
+    for _k, _v in _m.SCHEMA.items():
+        if _k in SCHEMA:
+            raise KeyError(f"duplicate indicator key {_k!r}")
+        SCHEMA[_k] = _v
 MODES = ("confirm", "veto", "both")
 RETRACE_UNITS = ("atr_mult", "points")
 
