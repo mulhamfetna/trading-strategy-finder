@@ -34,6 +34,8 @@ class MarketContext:
     close: np.ndarray
     volume: np.ndarray
     session_id: np.ndarray | None = None
+    ref_close: np.ndarray | None = None   # reference-instrument close, causally aligned to these bars
+                                           # (cross-series indicators only; None ⇒ they stay neutral)
 
     def __len__(self) -> int:
         return len(self.close)
