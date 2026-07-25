@@ -295,9 +295,10 @@ class CISDConfirm(StanceIndicator):
 
 
 from . import lib_ma, lib_trend, lib_osc, lib_vol, lib_volume, lib_levels, lib_bw, lib_quant  # noqa: E402
-from . import lib_dsp  # noqa: E402  (Tier-2)
+from . import lib_dsp, lib_tier2  # noqa: E402  (Tier-2)
 
-_SCHOOLS = (lib_ma, lib_trend, lib_osc, lib_vol, lib_volume, lib_levels, lib_bw, lib_quant, lib_dsp)
+_SCHOOLS = (lib_ma, lib_trend, lib_osc, lib_vol, lib_volume, lib_levels, lib_bw, lib_quant,
+            lib_dsp, lib_tier2)
 _BUILTINS = (
     EMATrend, SMATrend, MACD, VWAPTrend, KeltnerTrend, OBVTrend, CCIBreakout,
     RSIZone, StochasticZone, MFIZone, BollingerVeto, ADXVeto,
