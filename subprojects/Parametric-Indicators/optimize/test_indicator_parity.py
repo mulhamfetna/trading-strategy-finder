@@ -51,6 +51,20 @@ def _count_mismatch(E, F) -> int:
     )
 
 
+CROSS_SERIES = ("rolling_corr", "rolling_beta", "cointegration", "pca_factor")
+
+
+def _load_reference(tf, instrument="ES"):
+    """Load a reference instrument's decision frame (Date+Close) for the cross-series indicators.
+    Returns None if unavailable — the cross-series keys then stay neutral (still parity-valid)."""
+    try:
+        rdf, *_ = data.load_inputs(tf, instrument)
+        return rdf
+    except Exception as exc:  # noqa: BLE001
+        print(f"[ref] {instrument} {tf} unavailable ({exc}); cross-series keys will be inert")
+        return None
+
+
 def main(tf: str = "4h", keys=None) -> int:
     df, df1, box, vf, n = data.load_inputs(tf)
     sig_int = signals_to_int(signals.decision_signals(df, box))
@@ -58,10 +72,12 @@ def main(tf: str = "4h", keys=None) -> int:
     MD = df1["Date"].to_numpy(); MH = df1["High"].to_numpy(float)
     ML = df1["Low"].to_numpy(float); MC = df1["Close"].to_numpy(float); MO = df1["Open"].to_numpy(float)
     vol_gate = vf <= float(np.percentile(vf[:n], GP))
+    ref_df = _load_reference(tf, "ES")
 
-    def run_case(specs, k):
+    def run_case(specs, k, rd=None):
         inds = library.from_specs(specs)
-        g = vol_gate & ~runner.veto_mask(df, box, inds) & runner.confirm_mask(df, box, inds, k)
+        g = (vol_gate & ~runner.veto_mask(df, box, inds, ref_df=rd)
+             & runner.confirm_mask(df, box, inds, k, ref_df=rd))
         sp = SimpleStrategyParams(sl_soft_points=SS, sl_hard_points=SH,
                                   tp_hard_points=TP, data_path_4h="", data_path_1min="",
                                   box_data_path="", flip_entry_direction=False)
@@ -90,7 +106,8 @@ def main(tf: str = "4h", keys=None) -> int:
         meta = library.SCHEMA[key]
         params = {p["name"]: p["default"] for p in meta["params"]}
         specs = [{"key": key, "enabled": True, "mode": meta["mode"], "params": params}]
-        E, F, ng = run_case(specs, 1)
+        rd = ref_df if key in CROSS_SERIES else None       # only the cross-series keys use the reference
+        E, F, ng = run_case(specs, 1, rd)
         diffs = _count_mismatch(E, F)
         ok = len(E) == len(F) and diffs == 0
         ok_all &= ok
