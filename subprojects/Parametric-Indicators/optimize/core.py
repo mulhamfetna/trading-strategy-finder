@@ -110,20 +110,31 @@ def _cached_source(d, d1, bar_duration):
     return src
 
 
-def _cached_votes(d, d1, box, inds, src, bar_duration):
+def _cached_votes(d, d1, box, inds, src, bar_duration, ref_df=None):
     """runner.compute_votes drop-in (dict keyed by id(ind)) with a per-(slice, config) memo, backed by a
     disk cache (vote_cache) so cold computes (ifvg/breaker) persist across processes + respawns. Returned
-    arrays are read-only downstream (veto/confirm masks copy), so sharing them is safe. Result-neutral."""
-    from indicators import runner
+    arrays are read-only downstream (veto/confirm masks copy), so sharing them is safe. Result-neutral.
+
+    `ref_df` (optional) supplies the cross-series reference instrument. Cross-series votes depend on it,
+    and the cache key does NOT encode the reference — so those keys are computed FRESH every call (never
+    cached) to avoid cross-study poisoning. All other indicators use the cache exactly as before."""
+    from indicators import library, runner
     from optimize import vote_cache
+    xs_keys = set(library.lib_xseries.SCHEMA)
     base = _slice_sig(d, d1, bar_duration)
     use1 = src is not None
-    ctx = bdir = None                                    # built lazily, only on a real (memo+disk) miss
+    ctx = bdir = None                                    # built lazily, only on a real miss / cross-series
     out = {}
     for ind in inds:
         if not ind.config.enabled:
             continue
         c = ind.config
+        if ind.key in xs_keys:                           # reference-dependent ⇒ never cached
+            if ctx is None:
+                from indicators.runner import box_direction_int, market_context
+                ctx = market_context(d, ref_df); bdir = box_direction_int(d, box)
+            out[id(ind)] = runner._ind_vote(ind, ctx, bdir, src)
+            continue
         params_t = tuple(sorted(c.params.items()))
         key = (base, use1, ind.key, c.mode, params_t)
         v = _VOTE_MEMO.get(key)
@@ -132,8 +143,8 @@ def _cached_votes(d, d1, box, inds, src, bar_duration):
             v = vote_cache.get(dkey)
             if v is None:
                 if ctx is None:
-                    from indicators.runner import market_context, box_direction_int
-                    ctx = market_context(d); bdir = box_direction_int(d, box)
+                    from indicators.runner import box_direction_int, market_context
+                    ctx = market_context(d, ref_df); bdir = box_direction_int(d, box)
                 v = runner._ind_vote(ind, ctx, bdir, src)
                 vote_cache.put(dkey, v)
             _VOTE_MEMO[key] = v
@@ -142,7 +153,7 @@ def _cached_votes(d, d1, box, inds, src, bar_duration):
 
 
 def _contributor_gate(d, d1, box, vfw, vf, n_split, gate_ref_vf, gate_pct, params,
-                      bar_duration, contrib, lo, hi):
+                      bar_duration, contrib, lo, hi, ref_df=None):
     """Entry gate for the cross-instrument contributor path (L1 opt-in): vol_gate ∧ (NQ veto/confirm
     COMBINED with the precomputed contributor masks by topology). The expensive ES committee is NOT
     recomputed here — it lives in `contrib` (precomputed once per trial over the full frame); only the
@@ -159,7 +170,7 @@ def _contributor_gate(d, d1, box, vfw, vf, n_split, gate_ref_vf, gate_pct, param
     inds = library.from_specs(specs) if specs else []
     if inds and any(i.config.enabled for i in inds):
         src = _cached_source(d, d1, bar_duration) if params.get("ind_1min") else None
-        votes = _cached_votes(d, d1, box, inds, src, bar_duration)
+        votes = _cached_votes(d, d1, box, inds, src, bar_duration, ref_df)
         nq_veto = runner.veto_mask(d, box, inds, src=src, votes=votes)
         nq_confirm = runner.confirm_mask(d, box, inds, int(params.get("k", 1)), src=src, votes=votes)
         nq_cc, nq_nconf = runner.confirm_count(d, box, inds, src=src, votes=votes)
@@ -226,6 +237,7 @@ def backtest_metrics(
     gate_used: np.ndarray | None = None,
     contrib: dict | None = None,
     pv: float = config.NQ_POINT_VALUE,
+    ref_df: pd.DataFrame | None = None,
 ) -> dict:
     """Run one backtest on an arbitrary decision timeframe; return summary metrics + trades.
 
@@ -278,7 +290,7 @@ def backtest_metrics(
     elif contrib is not None:
         # Cross-instrument contributor path (L1 opt-in). Default (contrib=None) is byte-identical.
         gate = _contributor_gate(d, d1, box, vfw, vf, n_split, gate_ref_vf, gate_pct, params,
-                                 bar_duration, contrib, lo, hi)
+                                 bar_duration, contrib, lo, hi, ref_df)
     else:
         # Volatility gate threshold frozen on the reference segment (causal); 0 => no gate.
         gate = None
@@ -301,7 +313,7 @@ def backtest_metrics(
                 # bar's last-closed minute); else decision-TF (default, unchanged). Votes computed ONCE
                 # and shared by the veto + confirm masks.
                 src = _cached_source(d, d1, bar_duration) if params.get("ind_1min") else None
-                votes = _cached_votes(d, d1, box, inds, src, bar_duration)
+                votes = _cached_votes(d, d1, box, inds, src, bar_duration, ref_df)
                 vmask = runner.veto_mask(d, box, inds, src=src, votes=votes)
                 cmask = runner.confirm_mask(d, box, inds, int(params.get("k", 1)), src=src, votes=votes)
                 gate = base & ~vmask & cmask
