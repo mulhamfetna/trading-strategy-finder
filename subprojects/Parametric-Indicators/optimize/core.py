@@ -171,9 +171,9 @@ def _contributor_gate(d, d1, box, vfw, vf, n_split, gate_ref_vf, gate_pct, param
     if inds and any(i.config.enabled for i in inds):
         src = _cached_source(d, d1, bar_duration) if params.get("ind_1min") else None
         votes = _cached_votes(d, d1, box, inds, src, bar_duration, ref_df)
-        nq_veto = runner.veto_mask(d, box, inds, src=src, votes=votes)
-        nq_confirm = runner.confirm_mask(d, box, inds, int(params.get("k", 1)), src=src, votes=votes)
-        nq_cc, nq_nconf = runner.confirm_count(d, box, inds, src=src, votes=votes)
+        nq_veto = runner.veto_mask(d, box, inds, src=src, votes=votes, ref_df=ref_df)
+        nq_confirm = runner.confirm_mask(d, box, inds, int(params.get("k", 1)), src=src, votes=votes, ref_df=ref_df)
+        nq_cc, nq_nconf = runner.confirm_count(d, box, inds, src=src, votes=votes, ref_df=ref_df)
     else:
         m = len(d)
         nq_veto = np.zeros(m, dtype=bool); nq_confirm = np.ones(m, dtype=bool)
@@ -314,8 +314,8 @@ def backtest_metrics(
                 # and shared by the veto + confirm masks.
                 src = _cached_source(d, d1, bar_duration) if params.get("ind_1min") else None
                 votes = _cached_votes(d, d1, box, inds, src, bar_duration, ref_df)
-                vmask = runner.veto_mask(d, box, inds, src=src, votes=votes)
-                cmask = runner.confirm_mask(d, box, inds, int(params.get("k", 1)), src=src, votes=votes)
+                vmask = runner.veto_mask(d, box, inds, src=src, votes=votes, ref_df=ref_df)
+                cmask = runner.confirm_mask(d, box, inds, int(params.get("k", 1)), src=src, votes=votes, ref_df=ref_df)
                 gate = base & ~vmask & cmask
                 # News veto: a scheduled high-impact release can only ever REMOVE eligibility. Absent /
                 # off ⇒ _news_window_mask returns None ⇒ gate untouched ⇒ byte-identical (golden-locked).

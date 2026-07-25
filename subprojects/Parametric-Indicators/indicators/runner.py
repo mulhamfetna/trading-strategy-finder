@@ -196,7 +196,8 @@ def veto_mask(df, box, indicators, src=None, votes=None, ref_df=None):
     n = len(df)
     out = np.zeros(n, dtype=bool)
     vetoers = [ind for ind in indicators
-               if ind.config.enabled and ind.config.mode in ("veto", "both")]
+               if ind.config.enabled and ind.config.mode in ("veto", "both")
+               and not (ind.needs_ref and ref_df is None)]     # cross-series inert without a reference
     if not vetoers:
         return out
     if votes is None:
@@ -219,7 +220,8 @@ def confirm_mask(df, box, indicators, k, src=None, votes=None, ref_df=None):
     n = len(df)
     out = np.ones(n, dtype=bool)
     confirmers = [ind for ind in indicators
-                  if ind.config.enabled and ind.config.mode in ("confirm", "both")]
+                  if ind.config.enabled and ind.config.mode in ("confirm", "both")
+                  and not (ind.needs_ref and ref_df is None)]     # cross-series inert without a reference
     k_eff = min(int(k), len(confirmers))
     if k_eff <= 0:
         return out                                # no confirm requirement (parity)
@@ -239,7 +241,8 @@ def confirm_count(df, box, indicators, src=None, votes=None, ref_df=None):
     cross-instrument topology combine needs the raw count (merged pools counts), not just the >=K gate."""
     n = len(df)
     confirmers = [ind for ind in indicators
-                  if ind.config.enabled and ind.config.mode in ("confirm", "both")]
+                  if ind.config.enabled and ind.config.mode in ("confirm", "both")
+                  and not (ind.needs_ref and ref_df is None)]     # cross-series inert without a reference
     cc_entry = np.zeros(n, dtype=np.int64)
     if not confirmers:
         return cc_entry, 0
@@ -294,7 +297,8 @@ def build_entry_resolver(df, box, indicators, k,
     ctx = market_context(df)
     bdir = box_direction_int(df, box)
     confirmers = [ind for ind in indicators
-                  if ind.config.enabled and ind.config.mode in ("confirm", "both")]
+                  if ind.config.enabled and ind.config.mode in ("confirm", "both")
+                  and not (ind.needs_ref and ref_df is None)]     # cross-series inert without a reference
     n_confirm = len(confirmers)
     if votes is None:
         votes = {id(ind): _ind_vote(ind, ctx, bdir, src) for ind in confirmers}
