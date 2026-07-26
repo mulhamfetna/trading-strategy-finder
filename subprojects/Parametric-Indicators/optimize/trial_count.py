@@ -54,11 +54,23 @@ def completed(prefix: str, tf: str) -> int:
         return 0
 
 
+def finished(prefix: str, tf: str) -> int:
+    """FINISHED-trial count (complete + pruned + fail) — for progress toward a total-trial target, so the
+    bar reaches 100% (`--trials N` runs N trials total; pruned ones still count). NOT for the watchdog."""
+    name = f"{prefix}_{tf}{_SUF}"
+    try:
+        study = optuna.load_study(study_name=name, storage=_quiet_url(tf, name))
+        return sum(1 for t in study.trials if t.state.is_finished())
+    except Exception:
+        return 0
+
+
 if __name__ == "__main__":
     import argparse
     optuna.logging.set_verbosity(optuna.logging.WARNING)
     ap = argparse.ArgumentParser()
     ap.add_argument("tf")
     ap.add_argument("--prefix", default="wsh4")
+    ap.add_argument("--finished", action="store_true", help="count complete+pruned+fail (progress), not just complete")
     a = ap.parse_args()
-    print(completed(a.prefix, a.tf))
+    print(finished(a.prefix, a.tf) if a.finished else completed(a.prefix, a.tf))
