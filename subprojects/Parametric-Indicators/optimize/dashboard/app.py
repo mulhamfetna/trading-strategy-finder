@@ -10,7 +10,7 @@ from fastapi import Body, FastAPI
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from optimize.dashboard import control, progress, queue, run_presets, runner
+from optimize.dashboard import control, progress, queue, results, run_presets, runner
 
 app = FastAPI(title="Optimizer Control Plane")
 _STATIC = Path(__file__).resolve().parent / "static"
@@ -46,6 +46,12 @@ def api_resume(cfg: dict = Body(default={})):
 def api_stop():
     # Real stop: signal the owned process group (SIGTERM→SIGKILL). No pkill on unowned workers.
     return runner._MGR.stop()
+
+
+@app.get("/api/study/{name}")
+def api_study(name: str):
+    # Reporting: a study's results (Pareto/best/feasibility) read from the store (#43).
+    return results.study_summary(name)
 
 
 @app.get("/api/run/state")
