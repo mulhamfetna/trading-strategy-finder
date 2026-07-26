@@ -189,11 +189,16 @@ class RunManager:
             return {"ok": True, "detail": f"already exited (rc={self.proc.returncode})"}
         try:
             pgid = os.getpgid(self.proc.pid)
-            os.killpg(pgid, signal.SIGTERM)          # real stop: signal the whole owned group
+            os.killpg(pgid, signal.SIGTERM)          # graceful stop of the whole owned group
             try:
-                self.proc.wait(timeout=8)
+                self.proc.wait(timeout=4)
             except subprocess.TimeoutExpired:
+                pass
+            # Sweep the group with SIGKILL so fold/loky worker stragglers don't linger after Stop.
+            try:
                 os.killpg(pgid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
             return {"ok": True, "detail": "stopped"}
         except ProcessLookupError:
             return {"ok": True, "detail": "already gone"}
