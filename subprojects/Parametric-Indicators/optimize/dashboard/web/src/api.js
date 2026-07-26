@@ -35,9 +35,10 @@ export const api = {
   presetSave: (name, cfg) => j('POST', `/api/presets/${encodeURIComponent(name)}`, cfg),
   presetDelete: (name) => j('DELETE', `/api/presets/${encodeURIComponent(name)}`),
 
-  // run queue (instruments × timeframes matrix)
+  // run queue = owned fleet (instruments × timeframes matrix)
   queueState: () => j('GET', '/api/queue'),
   queueLaunch: (cfg) => j('POST', '/api/queue', cfg),
+  queueStop: () => j('POST', '/api/queue/stop'),
 }
 
 // SSE helper for the legacy log/progress stream (GET /api/progress?tf=...).

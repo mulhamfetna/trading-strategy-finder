@@ -121,12 +121,18 @@ def api_preset_delete(name: str):
 
 @app.post("/api/queue")
 def api_queue_launch(cfg: dict = Body(default={})):
-    return {"queue": queue.launch(cfg, control.start)}
+    # Owned fleet (#36): one owned optimizer subprocess per (instrument, tf) cell (capped, live, stoppable).
+    return {"queue": runner.fleet_launch(cfg)}
 
 
 @app.get("/api/queue")
 def api_queue_state():
-    return {"queue": queue.state()}
+    return {"queue": runner.fleet_state()}
+
+
+@app.post("/api/queue/stop")
+def api_queue_stop():
+    return runner.fleet_stop()
 
 
 @app.post("/api/bundle")

@@ -226,3 +226,62 @@ class RunManager:
 
 
 _MGR = RunManager()
+
+
+# ── fleet: the Launch-matrix queue as OWNED runs (#36) ────────────────────────────────────────────
+# One owned optimizer subprocess per (instrument, timeframe) cell — same live/stop guarantees as the
+# single Run button, just many at once, capped so the box isn't oversubscribed.
+_FLEET: list[dict] = []                          # [{run: RunManager|None, item: {...}}]
+
+
+def _worker_cap() -> int:
+    return max(1, (os.cpu_count() or 4) - 2)      # leave 2 cores for OS/Postgres (mirrors remote_wsi guard)
+
+
+def fleet_launch(cfg: dict) -> list[dict]:
+    """Expand instruments×timeframes and launch ONE owned run per cell, up to the worker cap. Cells beyond
+    the cap are 'deferred' (surfaced, never silently dropped — relaunch after the running ones finish)."""
+    from optimize.dashboard import queue as q
+    global _FLEET
+    fleet_stop()                                  # stop any prior fleet first
+    _FLEET = []
+    cap = _worker_cap()
+    for i, c in enumerate(q.expand(cfg)):
+        item = {"instrument": c.get("instrument"), "timeframe": c.get("timeframe"), "state": "pending"}
+        if i >= cap:
+            item.update(state="deferred",
+                        detail=f"exceeds worker cap ({cap}); relaunch after the running cells finish")
+            _FLEET.append({"run": None, "item": item})
+            continue
+        r = RunManager()
+        res = r.start(c)
+        if res.get("ok"):
+            item.update(state="running", study=res.get("study"), target=res.get("target"))
+        else:
+            item.update(state="failed", detail=res.get("detail", ""))
+            r = None
+        _FLEET.append({"run": r, "item": item})
+    return fleet_state()
+
+
+def fleet_state() -> list[dict]:
+    out = []
+    for e in _FLEET:
+        it = dict(e["item"])
+        r = e["run"]
+        if r is not None:
+            st = r.state()
+            it["running"] = st["running"]
+            it["returncode"] = st["returncode"]
+            it["target"] = st["target"]
+            if st["running"]:
+                it["done"] = r.done_count()
+            elif it.get("state") == "running":       # transitioned running → done since last poll
+                it["state"] = "finished" if st["returncode"] == 0 else "stopped"
+        out.append(it)
+    return out
+
+
+def fleet_stop() -> dict:
+    n = sum(1 for e in _FLEET if e["run"] is not None and (e["run"].stop() or True))
+    return {"ok": True, "stopped": n}
