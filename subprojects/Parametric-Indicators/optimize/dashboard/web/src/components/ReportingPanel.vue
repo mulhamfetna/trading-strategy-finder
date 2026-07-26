@@ -26,7 +26,11 @@ onUnmounted(() => timer && clearInterval(timer))
 const rowKey = (c) => `${c.instrument}_${c.tf}`
 const toggle = (c) => { expanded.value = expanded.value === rowKey(c) ? null : rowKey(c) }
 
-const optunaUrl = computed(() => `http://localhost:${store.config.optuna_port || 8082}/dashboard/`)
+// Use the SAME host the page was loaded from (LAN IP, VPN IP, or localhost) so the link works from
+// any device / tunnel — optuna-dashboard binds the same host as the control plane, just a different port.
+const optunaHost = computed(() => window.location.hostname || 'localhost')
+const optunaUrl = computed(() => `http://${optunaHost.value}:${store.config.optuna_port || 8082}/dashboard/`)
+const isLocal = computed(() => ['localhost', '127.0.0.1'].includes(optunaHost.value))
 const feas = (f) => (f === true ? '✓' : f === false ? '✗' : '—')
 </script>
 
@@ -35,12 +39,12 @@ const feas = (f) => (f === true ? '✓' : f === false ? '✗' : '—')
     <h2>Reporting</h2>
 
     <h3>Live graphs (optuna-dashboard)</h3>
-    <p class="muted" style="font-size:12px">Pareto front, optimization history &amp; param importance for every study.
-      Tunnel the optuna port, then open it:</p>
+    <p class="muted" style="font-size:12px">Pareto front, optimization history &amp; param importance for every study.</p>
     <div class="row">
       <a class="btn" :href="optunaUrl" target="_blank" rel="noopener">Open optuna-dashboard ↗</a>
     </div>
-    <pre class="tip mono">ssh -L {{ store.config.optuna_port || 8082 }}:127.0.0.1:{{ store.config.optuna_port || 8082 }} amd-trading</pre>
+    <pre v-if="isLocal" class="tip mono">via localhost — tunnel the optuna port first:
+ssh -L {{ store.config.optuna_port || 8082 }}:127.0.0.1:{{ store.config.optuna_port || 8082 }} amd-trading</pre>
 
     <h3>Active run result <span v-if="study" class="pill">{{ study }}</span></h3>
     <template v-if="summary && summary.ok">
