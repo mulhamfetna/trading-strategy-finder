@@ -10,6 +10,16 @@ set -a; source "$ENV_FILE"; set +a
 : "${WSH_STORAGE_URL:?set WSH_STORAGE_URL in dashboard.env}"
 echo "binding dashboard to $DASH_BIND_IP (control:${DASH_CONTROL_PORT:-8350} optuna:${DASH_OPTUNA_PORT:-8081})"
 
+# 0) build the Vue SPA (served by the control plane at '/'). Skip if dist/ is present and DASH_SKIP_BUILD=1.
+if [ -z "${DASH_SKIP_BUILD:-}" ] || [ ! -d "$HERE/web/dist" ]; then
+  if command -v npm >/dev/null 2>&1; then
+    echo "building control-center SPA (npm run build)…"
+    ( cd "$HERE/web" && npm install --no-audit --no-fund --silent && npm run build --silent )
+  else
+    echo "npm not found — serving without the SPA (control plane API still up)"
+  fi
+fi
+
 # 1) optuna-dashboard (live graphs/Pareto) — reads the same Postgres the optimizer writes to
 optuna-dashboard "$WSH_STORAGE_URL" --host "$DASH_BIND_IP" --port "${DASH_OPTUNA_PORT:-8081}" \
   > "$HERE/optuna_dashboard.log" 2>&1 &

@@ -20,6 +20,7 @@ if str(_PI) not in sys.path:
     sys.path.insert(0, str(_PI))
 
 from optimize import optimizer as OPT               # SAMPLER_CHOICES, search_dims, recommended_trials, print_plan
+from optimize import instruments as INST            # TOKENS (tradeable instrument list)
 from indicators import library                      # schema()
 
 _REMOTE = _PI / "optimize" / "server" / "remote_wsi.sh"
@@ -49,18 +50,57 @@ def config() -> dict:
     except Exception:
         pl = []
     return {"samplers": list(OPT.SAMPLER_CHOICES), "engines": ["single", "two_stage"],
-            "stage_b": ["cmaes", "gp"], "timeframes": TIMEFRAMES, "bounds": bounds,
-            "indicators": library.schema().get("indicators", []), "presets": pl,
+            "stage_b": ["cmaes", "gp"], "timeframes": TIMEFRAMES, "instruments": list(INST.TOKENS),
+            "bounds": bounds, "indicators": library.schema().get("indicators", []), "presets": pl,
             "trials_per_dim": OPT.TRIALS_PER_DIM}
 
 
 def plan(cfg: dict) -> dict:
-    """Acceptance preview: search dimensions → recommended (∝-dimension) trial budget."""
+    """Acceptance preview: search dimensions → recommended (∝-dimension) trial budget + the exact
+    optimizer command the run will execute (so the UI shows what the launch actually does)."""
     split = bool(cfg.get("split_sltp", False))
     per_dim = int(cfg.get("trials_per_dim", OPT.TRIALS_PER_DIM))
     dims = OPT.search_dims(split)
     return {"dims": dims["total"], "breakdown": dims, "trials_per_dim": per_dim,
-            "recommended_trials": OPT.recommended_trials(split, per_dim)}
+            "recommended_trials": OPT.recommended_trials(split, per_dim),
+            "command": preview_command(cfg)}
+
+
+def preview_command(cfg: dict) -> str:
+    """Render the optimizer.py invocation equivalent to this cfg — mirrors remote_wsi.sh's IND_ARGS
+    construction exactly (same flags, same order, opt-in flags omitted when unset). Representative of
+    the FIRST selected timeframe; a matrix launches one such command per (instrument, tf)."""
+    tfs = cfg.get("timeframes") or ([cfg["timeframe"]] if cfg.get("timeframe") else ["4h"])
+    tf = str(tfs[0])
+    # trials: 'one' ⇒ user count; otherwise the ∝-dim recommended target the watchdog drives toward.
+    if cfg.get("trials_mode") == "one" and cfg.get("trials"):
+        trials = str(int(cfg["trials"]))
+    else:
+        trials = str(OPT.recommended_trials(bool(cfg.get("split_sltp")),
+                                            int(cfg.get("trials_per_dim", OPT.TRIALS_PER_DIM))))
+    parts = ["python3 optimize/optimizer.py", tf, "--trials", trials, "--folds 5", "--min-trades 5"]
+    if cfg.get("ind_1min", True):
+        parts.append("--ind-1min")
+    if cfg.get("split_sltp"):
+        parts.append("--split-sltp")
+    if cfg.get("sampler"):
+        parts.append(f"--sampler {cfg['sampler']}")
+    if cfg.get("exclude_indicators"):
+        parts.append("--exclude-indicators " + ",".join(str(x) for x in cfg["exclude_indicators"]))
+    if cfg.get("only_indicators"):
+        parts.append("--only-indicators " + ",".join(str(x) for x in cfg["only_indicators"]))
+    if cfg.get("reference"):
+        parts.append(f"--reference {cfg['reference']}")
+    if cfg.get("max_enabled"):
+        parts.append(f"--max-enabled {int(cfg['max_enabled'])}")
+    if cfg.get("cold_start"):
+        parts.append("--no-warm-start")
+    if cfg.get("dd_cap") not in (None, ""):
+        parts.append(f"--dd-pnl-cap {cfg['dd_cap']}")
+    inst = str(cfg.get("instrument", "NQ"))
+    if inst != "NQ":
+        parts.append(f"--instrument {inst}")
+    return " ".join(parts)
 
 
 # ── lifecycle: start / stop(pause) / resume ──────────────────────────────────────────────────────
@@ -74,6 +114,19 @@ def _apply_env(cfg: dict) -> None:
             os.environ[env] = str(cfg[key])
     os.environ["WSH_SPLIT"] = "1" if cfg.get("split_sltp") else ""
     os.environ["WSH_CONFIRM"] = "1"                # UI already showed the plan + user accepted → skip prompt
+    # Control-center run parameters (#23). Absent keys are left unset ⇒ remote_wsi.sh omits the flag
+    # ⇒ byte-identical to a bare launch. List-valued selections are comma-joined for --only/--exclude.
+    for key, env in {"only_indicators": "WSH_ONLY", "exclude_indicators": "WSH_EXCLUDE"}.items():
+        if cfg.get(key):
+            os.environ[env] = ",".join(str(x) for x in cfg[key])
+    for key, env in {"reference": "WSH_REFERENCE", "max_enabled": "WSH_MAXENABLED",
+                     "instrument": "WSH_INSTRUMENT", "dd_cap": "WSH_DD_CAP"}.items():
+        if cfg.get(key) not in (None, ""):
+            os.environ[env] = str(cfg[key])
+    if cfg.get("timeframes"):
+        os.environ["WSH_TFS"] = " ".join(str(t) for t in cfg["timeframes"])
+    os.environ["WSH_IND1MIN"] = "1" if cfg.get("ind_1min", True) else "0"   # default ON (backward-compat)
+    os.environ["WSH_NOWARM"] = "1" if cfg.get("cold_start") else ""         # cold ⇒ --no-warm-start
 
 
 def start(cfg: dict) -> dict:
@@ -117,9 +170,48 @@ def status() -> dict:
     try:
         data = json.loads(r["stdout"])
     except Exception:
-        return {"ok": False, "studies": [], "raw": r["stdout"][-400:]}
+        return {"ok": False, "studies": [], "running": False, "n_studies": 0, "raw": r["stdout"][-400:]}
     data["ok"] = r["ok"]
+    studies = data.get("studies", [])
+    # Normalized top-level flags the UI drives buttons + health off of. A run is "running" if ANY
+    # study still has worker processes (`running` = live worker count from `stats --json`).
+    data["running"] = any(int(s.get("running", s.get("workers", 0)) or 0) > 0 for s in studies)
+    data["n_studies"] = len(studies)
     return data
+
+
+# ── health ────────────────────────────────────────────────────────────────────────────────────────
+def health() -> dict:
+    """Host + run health for the control panel's health strip. Runs on the same box as the optimizer,
+    so psutil reflects the server. Every field degrades to None if unavailable (psutil missing, no server)."""
+    h = {"cpu_pct": None, "mem_pct": None, "workers": None, "n_studies": 0, "running": False}
+    try:
+        import psutil
+        h["cpu_pct"] = round(psutil.cpu_percent(interval=0.0), 1)
+        h["mem_pct"] = round(psutil.virtual_memory().percent, 1)
+    except Exception:
+        pass
+    st = status()
+    studies = st.get("studies", [])
+    h["n_studies"] = len(studies)
+    h["running"] = bool(st.get("running"))
+    w = sum(int(s.get("running", s.get("workers", 0)) or 0) for s in studies)
+    h["workers"] = w or None
+    return h
+
+
+def study_progress(tf: str, target: int | None = None) -> dict:
+    """Completed-trial count + target for one timeframe's study, read defensively from `status()`
+    (the live `stats --json` shape varies). Returns {done, target}."""
+    done, tgt = 0, int(target or 0)
+    for st in status().get("studies", []):
+        name = str(st.get("tf") or st.get("name") or "")
+        if name == str(tf) or name.endswith(str(tf)):
+            done = int(st.get("complete", st.get("done", st.get("n_complete", 0))) or 0)
+            if not target:
+                tgt = int(st.get("target", st.get("recommended", st.get("n_trials", 0))) or 0)
+            break
+    return {"done": done, "target": tgt}
 
 
 # ── logs (SSE source) ─────────────────────────────────────────────────────────────────────────────

@@ -8,11 +8,13 @@ from pathlib import Path
 
 from fastapi import Body, FastAPI
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 
-from optimize.dashboard import control
+from optimize.dashboard import control, progress, queue, run_presets
 
 app = FastAPI(title="Optimizer Control Plane")
 _STATIC = Path(__file__).resolve().parent / "static"
+_WEB_DIST = Path(__file__).resolve().parent / "web" / "dist"       # built Vue SPA (npm run build)
 _BUNDLES: dict[str, str] = {}
 
 
@@ -48,12 +50,56 @@ def api_status():
     return control.status()
 
 
+@app.get("/api/health")
+def api_health():
+    return control.health()
+
+
 @app.get("/api/progress")
 def api_progress(tf: str = "4h"):
     def gen():
         for line in control.follow_logs(tf):
             yield f"data: {json.dumps({'line': line})}\n\n"
     return StreamingResponse(gen(), media_type="text/event-stream")
+
+
+@app.get("/api/live/progress")
+def api_live_progress(tf: str = "4h", target: int = 0):
+    sp = control.study_progress(tf, target or None)
+    return progress.live(tf, sp["done"], sp["target"], time.time())
+
+
+@app.get("/api/presets")
+def api_presets():
+    names = run_presets.list_names()
+    return {"names": names, "presets": {n: run_presets.get(n) for n in names}}
+
+
+@app.get("/api/presets/{name}")
+def api_preset_get(name: str):
+    return {"name": name, "cfg": run_presets.get(name)}
+
+
+@app.post("/api/presets/{name}")
+def api_preset_save(name: str, cfg: dict = Body(default={})):
+    run_presets.save(name, cfg)
+    return {"ok": True, "names": run_presets.list_names()}
+
+
+@app.delete("/api/presets/{name}")
+def api_preset_delete(name: str):
+    run_presets.delete(name)
+    return {"ok": True, "names": run_presets.list_names()}
+
+
+@app.post("/api/queue")
+def api_queue_launch(cfg: dict = Body(default={})):
+    return {"queue": queue.launch(cfg, control.start)}
+
+
+@app.get("/api/queue")
+def api_queue_state():
+    return {"queue": queue.state()}
 
 
 @app.post("/api/bundle")
@@ -72,7 +118,15 @@ def api_bundle_get(bid: str):
     return FileResponse(path, filename=Path(path).name, media_type="application/gzip")
 
 
-@app.get("/", response_class=HTMLResponse)
-def index():
-    f = _STATIC / "index.html"
-    return f.read_text() if f.exists() else "<h1>optimizer control plane up</h1>"
+# Serve the built Vue SPA at '/' (mounted LAST so every '/api/*' route above wins first).
+# `html=True` returns index.html for '/' and for client-side routes. If the SPA hasn't been built
+# yet, fall back to the legacy static index / a stub so the control plane still boots.
+if _WEB_DIST.exists():
+    app.mount("/", StaticFiles(directory=str(_WEB_DIST), html=True), name="spa")
+else:
+    @app.get("/", response_class=HTMLResponse)
+    def index():
+        f = _STATIC / "index.html"
+        if f.exists():
+            return f.read_text()
+        return "<h1>optimizer control plane up — run `npm --prefix web run build` to serve the SPA</h1>"
