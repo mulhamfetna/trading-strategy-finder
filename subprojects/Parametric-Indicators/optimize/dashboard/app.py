@@ -9,7 +9,7 @@ from pathlib import Path
 from fastapi import Body, FastAPI
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 
-from optimize.dashboard import control, progress
+from optimize.dashboard import control, progress, queue, run_presets
 
 app = FastAPI(title="Optimizer Control Plane")
 _STATIC = Path(__file__).resolve().parent / "static"
@@ -60,6 +60,39 @@ def api_progress(tf: str = "4h"):
 def api_live_progress(tf: str = "4h", target: int = 0):
     sp = control.study_progress(tf, target or None)
     return progress.live(tf, sp["done"], sp["target"], time.time())
+
+
+@app.get("/api/presets")
+def api_presets():
+    names = run_presets.list_names()
+    return {"names": names, "presets": {n: run_presets.get(n) for n in names}}
+
+
+@app.get("/api/presets/{name}")
+def api_preset_get(name: str):
+    return {"name": name, "cfg": run_presets.get(name)}
+
+
+@app.post("/api/presets/{name}")
+def api_preset_save(name: str, cfg: dict = Body(default={})):
+    run_presets.save(name, cfg)
+    return {"ok": True, "names": run_presets.list_names()}
+
+
+@app.delete("/api/presets/{name}")
+def api_preset_delete(name: str):
+    run_presets.delete(name)
+    return {"ok": True, "names": run_presets.list_names()}
+
+
+@app.post("/api/queue")
+def api_queue_launch(cfg: dict = Body(default={})):
+    return {"queue": queue.launch(cfg, control.start)}
+
+
+@app.get("/api/queue")
+def api_queue_state():
+    return {"queue": queue.state()}
 
 
 @app.post("/api/bundle")
