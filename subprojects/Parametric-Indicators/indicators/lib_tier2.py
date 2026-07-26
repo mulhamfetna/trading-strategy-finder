@@ -93,7 +93,7 @@ SCHEMA = {
     "td_combo": {"label": "TD Combo (perfected setup)", "mode": "both", "params": []},
     "kalman": {"label": "Kalman trend", "mode": "confirm",
                "params": [{"name": "q", "default": 0.001, "min": 0.0001, "max": 1.0, "step": 0.0001},
-                          {"name": "r", "default": 0.1, "min": 0.001, "max": 10.0, "step": 0.01}]},
+                          {"name": "r", "default": 0.1, "min": 0.001, "max": 10.0, "step": 0.001}]},
     "ou_halflife": {"label": "OU half-life (veto no-reversion)", "mode": "veto",
                     "params": [{"name": "n", "default": 50, "min": 10, "max": 300, "step": 1}]},
 }

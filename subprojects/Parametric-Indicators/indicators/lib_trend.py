@@ -74,7 +74,8 @@ class Vortex(StanceIndicator):
     def stance(self, ctx):
         n = int(self.config.params.get("n", 14))
         vp, vm = T.vortex(ctx.high, ctx.low, ctx.close, n)
-        return _sign_stance(vp - vm)
+        with np.errstate(invalid="ignore"):        # NaN/inf on warm-up/zero-range bars → neutral vote (no noisy RuntimeWarning)
+            return _sign_stance(vp - vm)
     def warmup_bars(self): return int(self.config.params.get("n", 14))
 
 
@@ -299,7 +300,7 @@ SCHEMA = {
     "qqe": {"label": "QQE", "mode": "confirm",
             "params": [{"name": "n", "default": 14, "min": 2, "max": 100, "step": 1},
                        {"name": "sf", "default": 5, "min": 1, "max": 50, "step": 1},
-                       {"name": "f", "default": 4.236, "min": 1.0, "max": 8.0, "step": 0.1}]},
+                       {"name": "f", "default": 4.236, "min": 1.0, "max": 8.0, "step": 0.001}]},
     "elder_ray": {"label": "Elder Ray", "mode": "confirm",
                   "params": [{"name": "n", "default": 13, "min": 2, "max": 100, "step": 1}]},
     "elder_impulse": {"label": "Elder Impulse", "mode": "confirm",
