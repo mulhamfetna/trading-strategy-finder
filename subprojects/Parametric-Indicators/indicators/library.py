@@ -386,11 +386,58 @@ for _m in _SCHOOLS:
     for _k in _m.SCHEMA:
         _KEY_FAMILY[_k] = _fam
 
+# Signal cadence per key — leading (anticipate the turn) / lagging (confirm the trend) /
+# filter (non-directional regime/volatility veto). See docs/extra-indicators/INDICATOR-LEADING-LAGGING.md
+# (issue #30). Everything not listed defaults to "lagging". Counts: leading 80, filter 24, lagging 61.
+_LEADING = {
+    # builtin momentum + SMC zones
+    "obv", "cci", "rsi", "stochastic", "mfi",
+    "order_block", "fvg", "ifvg", "breaker", "cisd",
+    # oscillators (all 23)
+    "rsi_cutler", "rsi_connors", "stoch_rsi", "kdj", "williams_r", "cmo", "ultimate_osc", "smi",
+    "rmi", "cmo_chande_dmi", "wavetrend", "pgo", "psy", "momentum", "roc", "disparity", "bias",
+    "balance_of_power", "tsi", "rvgi", "fisher", "derivative_osc", "ergodic_osc",
+    # momentum-core trend hybrids + volatility-momentum
+    "qqe", "elder_ray", "rvi_dorsey",
+    # volume flow / divergence
+    "ad_line", "cmf", "chaikin_osc", "pvt", "tvi", "nvi", "pvi", "eom", "force_index", "klinger",
+    "vol_osc", "demand_index", "twiggs_mf", "wvad", "bw_mfi", "vzo",
+    # pre-drawn levels
+    "ichimoku_cloud", "pivot_floor", "pivot_woodie", "pivot_demark", "pivot_camarilla", "pivot_fib", "cpr",
+    # bill williams momentum / reversal
+    "fractals", "awesome_osc", "accel_osc", "elliott_wave_osc",
+    # quant oscillators
+    "zscore", "demarker", "td_rei",
+    # dsp cycle / reversal / mean-reversion
+    "roofing", "bandpass", "laguerre_rsi", "schaff_trend_cycle", "cyber_cycle", "center_of_gravity",
+    "sinewave", "hilbert_cycle", "td_sequential", "td_combo", "ou_halflife",
+    # cross-series predictive
+    "rolling_beta", "cointegration", "pca_factor",
+}
+_FILTER = {
+    # volatility vetoes (non-directional)
+    "atr_norm", "stddev", "hist_vol", "parkinson", "garman_klass", "rogers_satchell", "yang_zhang",
+    "ulcer", "vol_ratio", "starc", "accel_bands", "proj_bands", "chaikin_vol", "mass_index",
+    "choppiness", "ttm_squeeze",
+    # statistical / regime
+    "hurst_exp", "dfa", "autocorr", "linreg_r2", "efficiency_ratio", "garch_ewma",
+    "volume_ratio_asia", "rolling_corr",
+}
+
+
+def _lead_lag(key: str) -> str:
+    if key in _LEADING:
+        return "leading"
+    if key in _FILTER:
+        return "filter"
+    return "lagging"
+
 
 def schema():
-    """UI schema for every registered indicator (key + family + label + default mode + tunable params).
+    """UI schema for every registered indicator (key + family + lead_lag + label + default mode + params).
     Plus the shared enums. The frontend builds the whole indicator panel from this — no hardcoding."""
-    inds = [dict(key=k, family=_KEY_FAMILY.get(k, "builtin"), **SCHEMA[k]) for k in REGISTRY]
+    inds = [dict(key=k, family=_KEY_FAMILY.get(k, "builtin"), lead_lag=_lead_lag(k), **SCHEMA[k])
+            for k in REGISTRY]
     return {"indicators": inds, "modes": list(MODES), "retrace_units": list(RETRACE_UNITS),
             "retrace_default": {"amount": 0.0, "unit": "atr_mult"}, "wait_default": 0, "k_default": 1,
             "gen_params": [{"name": "swing_l", "default": 2, "min": 1, "max": 20, "step": 1},

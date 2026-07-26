@@ -1,6 +1,6 @@
 # Indicators split: Leading vs Lagging (165-indicator library)
 
-**Status:** proposal for review (issue #30). Classify the whole library on the *leading ↔ lagging* axis, first as this document; once you approve it, we mirror the grouping into the dashboard indicator picker (next to the existing **family** grouping).
+**Status:** ✅ APPROVED + WIRED (issue #30). Decision: **three groups** (Leading / Lagging / **Filter-Regime**), hybrids kept as classified below, volume labelled **Leading**. The classification is emitted by `library.schema()` as a `lead_lag` field per indicator (`leading`/`lagging`/`filter`) and the dashboard indicator picker can now **group by cadence** and **filter by cadence** (a per-row badge shows each indicator's class), alongside the existing **family** grouping.
 
 ---
 
