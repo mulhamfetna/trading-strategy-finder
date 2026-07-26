@@ -44,8 +44,8 @@ def api_resume(cfg: dict = Body(default={})):
 
 @app.post("/api/stop")
 def api_stop():
-    # Real stop: signal the owned process group (SIGTERM→SIGKILL). No pkill on unowned workers.
-    return runner._MGR.stop()
+    # Real stop: the owned run's process group, AND any detached orphans from a restart (#46).
+    return runner.stop_all()
 
 
 @app.get("/api/study/{name}")
@@ -57,9 +57,23 @@ def api_study(name: str):
 @app.get("/api/run/state")
 def api_run_state():
     st = runner._MGR.state()
-    if st.get("pid"):                                        # a run exists (active or just finished)
+    if st.get("pid"):                                        # an OWNED run exists (active or just finished)
         done = runner._MGR.done_count()
         st["progress"] = progress.live(st.get("tf") or "run", done, st.get("target") or 0, time.time())
+        st["detached"] = False
+        return st
+    # No owned run — surface a DETACHED orphan (a run still alive after a restart) so the UI isn't
+    # misleadingly idle. Its progress comes from the store; Stop (stop_all) can kill it.
+    orphans = runner.detached_runs()
+    if orphans:
+        o = orphans[0]
+        done = runner.done_count_for(o.get("prefix"), o.get("tf"))
+        return {"running": True, "detached": True, "study": o.get("study"), "tf": o.get("tf"),
+                "prefix": o.get("prefix"), "pid": o.get("pid"), "target": 0, "returncode": None,
+                "progress": progress.live(o.get("tf") or "run", done, 0, time.time()),
+                "detached_count": len(orphans)}
+    st["detached"] = False
+    st["detached_count"] = 0
     return st
 
 

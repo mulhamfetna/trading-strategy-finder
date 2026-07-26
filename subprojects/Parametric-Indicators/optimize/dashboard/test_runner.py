@@ -130,3 +130,30 @@ def test_fleet_defers_cells_beyond_worker_cap(monkeypatch):
     states = [i["state"] for i in q]
     assert states.count("running") == 1 and states.count("deferred") == 2  # cap enforced + surfaced
     runner.fleet_stop()
+
+
+# ── detached orphans (#46) ────────────────────────────────────────────────────────────────────────
+_PS = """  PID  PGID COMMAND
+ 12345 12345 /venv/bin/python3 -u optimize/optimizer.py 4h --folds 5 --study-prefix ccabc123 --auto-trials --ind-1min
+ 12346 12300 /venv/bin/python3 -u optimize/optimizer.py 15m --study-prefix ccdef456 --trials 8 --instrument ES
+ 99999 99999 sshd: idle
+ 55555 55555 /venv/bin/python3 optimize/optimizer.py 1h --trials 5
+"""
+
+
+def test_parse_ps_finds_only_cc_runs():
+    runs = runner._parse_ps(_PS)
+    assert len(runs) == 2                                     # sshd + non-cc optimizer ignored
+    a, b = runs
+    assert a["pid"] == 12345 and a["prefix"] == "ccabc123" and a["tf"] == "4h" and a["study"] == "ccabc123_4h"
+    assert b["pgid"] == 12300 and b["instrument"] == "ES" and b["study"] == "ccdef456_15m_ES"
+
+
+def test_detached_runs_excludes_owned(monkeypatch):
+    monkeypatch.setattr(runner, "scan_cc_runs", lambda: [
+        {"pid": 111, "pgid": 111, "prefix": "cc1", "tf": "4h", "instrument": "NQ", "study": "cc1_4h"},
+        {"pid": 222, "pgid": 222, "prefix": "cc2", "tf": "1h", "instrument": "NQ", "study": "cc2_1h"},
+    ])
+    monkeypatch.setattr(runner, "_owned_pids", lambda: {111})   # 111 is owned → only 222 is a detached orphan
+    d = runner.detached_runs()
+    assert len(d) == 1 and d[0]["pid"] == 222
