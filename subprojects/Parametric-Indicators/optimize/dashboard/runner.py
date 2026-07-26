@@ -221,11 +221,12 @@ class RunManager:
         return list(self.lines)[-n:]
 
     def done_count(self) -> int:
-        """Completed-trial count for the active study, via the existing trial_count.py (store-aware)."""
+        """FINISHED-trial count (complete+pruned+fail) for the active study — progress toward the total-trial
+        target, so the bar reaches 100% even when trials are pruned. Via trial_count.py --finished."""
         if not self.prefix or not self.tf:
             return 0
         try:
-            r = subprocess.run([_python(), "optimize/trial_count.py", self.tf, "--prefix", self.prefix],
+            r = subprocess.run([_python(), "optimize/trial_count.py", self.tf, "--prefix", self.prefix, "--finished"],
                                cwd=str(_PI), env=_child_env(self.cfg or {}),
                                capture_output=True, text=True, timeout=20)
             return int("".join(ch for ch in r.stdout if ch.isdigit()) or 0)
@@ -365,7 +366,7 @@ def done_count_for(prefix: str, tf: str) -> int:
     if not prefix or not tf:
         return 0
     try:
-        r = subprocess.run([_python(), "optimize/trial_count.py", tf, "--prefix", prefix],
+        r = subprocess.run([_python(), "optimize/trial_count.py", tf, "--prefix", prefix, "--finished"],
                            cwd=str(_PI), env=_child_env({}), capture_output=True, text=True, timeout=20)
         return int("".join(c for c in r.stdout if c.isdigit()) or 0)
     except Exception:
