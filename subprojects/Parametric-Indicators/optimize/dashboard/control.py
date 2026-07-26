@@ -74,6 +74,19 @@ def _apply_env(cfg: dict) -> None:
             os.environ[env] = str(cfg[key])
     os.environ["WSH_SPLIT"] = "1" if cfg.get("split_sltp") else ""
     os.environ["WSH_CONFIRM"] = "1"                # UI already showed the plan + user accepted → skip prompt
+    # Control-center run parameters (#23). Absent keys are left unset ⇒ remote_wsi.sh omits the flag
+    # ⇒ byte-identical to a bare launch. List-valued selections are comma-joined for --only/--exclude.
+    for key, env in {"only_indicators": "WSH_ONLY", "exclude_indicators": "WSH_EXCLUDE"}.items():
+        if cfg.get(key):
+            os.environ[env] = ",".join(str(x) for x in cfg[key])
+    for key, env in {"reference": "WSH_REFERENCE", "max_enabled": "WSH_MAXENABLED",
+                     "instrument": "WSH_INSTRUMENT", "dd_cap": "WSH_DD_CAP"}.items():
+        if cfg.get(key) not in (None, ""):
+            os.environ[env] = str(cfg[key])
+    if cfg.get("timeframes"):
+        os.environ["WSH_TFS"] = " ".join(str(t) for t in cfg["timeframes"])
+    os.environ["WSH_IND1MIN"] = "1" if cfg.get("ind_1min", True) else "0"   # default ON (backward-compat)
+    os.environ["WSH_NOWARM"] = "1" if cfg.get("cold_start") else ""         # cold ⇒ --no-warm-start
 
 
 def start(cfg: dict) -> dict:

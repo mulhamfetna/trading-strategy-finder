@@ -48,11 +48,16 @@ SPLIT_ARG="${WSH_SPLIT:+--split-sltp}"                 # set WSH_SPLIT=1 to sear
 SAMPLER_ARG="${WSH_SAMPLER:+--sampler $WSH_SAMPLER}"   # optimizer brain (P2): nsga3*(default)|nsga2|tpe|motpe|gp; unset ⇒ nsga3 (unchanged)
 OBJ_ARG="${WSH_OBJECTIVE:+--objective $WSH_OBJECTIVE}" # α: winrate*(default)|decision_pause; unset ⇒ winrate (unchanged)
 EXCL_ARG="${WSH_EXCLUDE:+--exclude-indicators $WSH_EXCLUDE}"  # α: e.g. ifvg,breaker,cisd reverts to wsh4-era 15
+ONLY_ARG="${WSH_ONLY:+--only-indicators $WSH_ONLY}"    # control-center: restrict the search to these indicators
+REF_ARG="${WSH_REFERENCE:+--reference $WSH_REFERENCE}" # control-center: cross-series reference instrument (#17)
+MAXEN_ARG="${WSH_MAXENABLED:+--max-enabled $WSH_MAXENABLED}"  # control-center: cap simultaneously-enabled indicators
+NOWARM_ARG="${WSH_NOWARM:+--no-warm-start}"           # control-center: cold start (skip champion warm-start)
+IND1MIN_ARG="--ind-1min"; [ "${WSH_IND1MIN:-1}" = "0" ] && IND1MIN_ARG=""  # default ON; WSH_IND1MIN=0 ⇒ decision-TF
 DDCAP_ARG="${WSH_DD_CAP:+--dd-pnl-cap $WSH_DD_CAP}"    # α: relax the DD≤cap·P/L feasibility (e.g. 0.5) for shorter pauses
 INSTRUMENT="${WSH_INSTRUMENT:-NQ}"                     # NQ (default) or ES; non-NQ → suffixed studies/champions
 INST_ARG=""; [ "$INSTRUMENT" != "NQ" ] && INST_ARG="--instrument $INSTRUMENT"
 RSUF=""; [ "$INSTRUMENT" != "NQ" ] && RSUF="_$INSTRUMENT"   # study/db filename suffix mirrored into launch.sh + readers
-IND_ARGS="--ind-1min --study-prefix $PREFIX $SPLIT_ARG $SAMPLER_ARG $OBJ_ARG $EXCL_ARG $DDCAP_ARG $INST_ARG" # indicators read the 1-minute frame
+IND_ARGS="$IND1MIN_ARG --study-prefix $PREFIX $SPLIT_ARG $SAMPLER_ARG $OBJ_ARG $EXCL_ARG $ONLY_ARG $REF_ARG $MAXEN_ARG $NOWARM_ARG $DDCAP_ARG $INST_ARG"
 
 SSH_OPTS=(-p "$SRV_PORT" -i "$SRV_KEY" -o IdentitiesOnly=yes -o BatchMode=yes \
           -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 \
