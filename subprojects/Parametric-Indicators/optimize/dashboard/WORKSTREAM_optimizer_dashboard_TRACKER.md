@@ -10,6 +10,22 @@ metadata:
 
 # 🧭 WORKSTREAM TRACKER — Optimizer Control & Visualization Dashboard
 
+## 🆕 Control Center v2 — P1 (control + settings + progress/ETA) — issues #22 (epic) / #23 (P1)
+**Branch `feat/optimizer-control-center` (off dev@247afd7). Design + plan in `docs/superpowers/{specs,plans}/2026-07-25-optimizer-control-center-*`.**
+
+P1 replaces terminal launching with a Vue SPA served by the FastAPI control plane. Status by phase:
+- **A (backend)** ✅ schema `family` tag · cfg→CLI wiring (only/exclude/reference/K-cap/instrument/tf/ind-frame/cold) · `/api/live/progress`+ETA · `/api/presets` · `/api/queue` (+`max_trials` budget clamp) · `/api/health`.
+- **B (scaffold)** ✅ `web/` Vite+Vue3, 3-column shell, `api.js`+reactive `store.js`, mounted at `/` (StaticFiles) below `/api/*`; `run_dashboard.sh` builds first.
+- **C (control)** ✅ start/resume/stop · progress bar + live ETA · health strip · SSE log tail (filterable).
+- **D (settings)** ✅ indicator+family picker · instruments×tf matrix · trials three-way + knobs · command preview (`/api/plan` returns the exact `optimizer.py` command) · presets UI · queue + budget guard.
+- **E (integration)** ⏳ guardrails (golden 6/6 · parity 4h · VPN-bind) + user-run live acceptance over VPN.
+
+Guardrails: **no scoring-engine change** — additions are dashboard/control/config/queue only. `optimize/dashboard/` unit suite = 49 green. Live acceptance (real launch over VPN + screenshot) is the user's step; click-path in the #23 PR body.
+P2 (live figures) + P3 (leaderboard/reports/adopt-gate) are separate plans under epic #22.
+
+---
+
+
 > **READ FIRST WHEN RESUMING.** Single source of truth for this workstream. Spec + plan are written; the
 > user explicitly **held implementation**. Do not write dashboard code until the user says go.
 
