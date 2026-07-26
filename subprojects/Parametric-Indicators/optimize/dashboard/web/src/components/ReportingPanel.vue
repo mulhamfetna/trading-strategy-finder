@@ -5,6 +5,8 @@ import { api } from '../api.js'
 
 const study = ref(null)       // active run's study name
 const summary = ref(null)     // /api/study/{name} result
+const champs = ref([])        // champion leaderboard
+const expanded = ref(null)    // expanded champion row key
 let timer = null
 
 async function refresh() {
@@ -15,8 +17,14 @@ async function refresh() {
     else summary.value = null
   } catch { /* keep last */ }
 }
-onMounted(() => { refresh(); timer = setInterval(refresh, 4000) })
+async function loadChampions() {
+  try { champs.value = (await api.champions()).champions || [] } catch { /* ignore */ }
+}
+onMounted(() => { refresh(); loadChampions(); timer = setInterval(refresh, 4000) })
 onUnmounted(() => timer && clearInterval(timer))
+
+const rowKey = (c) => `${c.instrument}_${c.tf}`
+const toggle = (c) => { expanded.value = expanded.value === rowKey(c) ? null : rowKey(c) }
 
 const optunaUrl = computed(() => `http://localhost:${store.config.optuna_port || 8082}/dashboard/`)
 const feas = (f) => (f === true ? '✓' : f === false ? '✗' : '—')
@@ -63,8 +71,30 @@ const feas = (f) => (f === true ? '✓' : f === false ? '✗' : '—')
     <p v-else-if="study" class="muted">loading results…</p>
     <p v-else class="muted">Run a study to see its results here.</p>
 
-    <h3>Champion leaderboard</h3>
-    <p class="muted" style="font-size:12px">All/deployed champions with full details — coming next (P3).</p>
+    <h3>Champion leaderboard <span class="pill">{{ champs.length }}</span></h3>
+    <p v-if="!champs.length" class="muted" style="font-size:12px">no champions found in optimize/results.</p>
+    <table v-else class="tt mono">
+      <thead><tr><th>inst</th><th>tf</th><th>P/L</th><th>DD</th><th>win%</th><th>#ind</th><th></th></tr></thead>
+      <tbody>
+        <template v-for="c in champs" :key="rowKey(c)">
+          <tr class="crow" @click="toggle(c)">
+            <td>{{ c.instrument }}</td><td>{{ c.tf }}</td>
+            <td>{{ c.pnl?.toLocaleString() }}</td><td>{{ c.dd?.toLocaleString() }}</td>
+            <td>{{ c.win }}</td><td>{{ c.n_indicators }}</td>
+            <td>{{ expanded === rowKey(c) ? '▾' : '▸' }}</td>
+          </tr>
+          <tr v-if="expanded === rowKey(c)" class="cdetail">
+            <td colspan="7">
+              <div><b>median P/L</b> ${{ c.median_pnl?.toLocaleString() }} · <b>deployed</b> {{ c.deployed ? '✓' : '—' }}</div>
+              <div><b>indicators:</b> {{ c.indicators.join(', ') || '(none)' }}</div>
+              <div><b>box:</b> SL {{ c.box.sl_soft?.toFixed?.(0) }}/{{ c.box.sl_hard?.toFixed?.(0) }}
+                · TP {{ c.box.tp?.toFixed?.(0) }} · gate {{ c.box.gate_pct?.toFixed?.(0) }}%
+                · cooldown {{ c.box.cooldown }} · K {{ c.box.k }} · cap {{ c.box.cap_mode }}/{{ c.box.cap_1min }}</div>
+            </td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
   </section>
 </template>
 
@@ -80,4 +110,7 @@ const feas = (f) => (f === true ? '✓' : f === false ? '✗' : '—')
 .tt th, .tt td { text-align: right; padding: 2px 6px; border-bottom: 1px solid var(--border); }
 .tt th:first-child, .tt td:first-child { text-align: left; }
 .tt tr.feas td { color: var(--ok); }
+.crow { cursor: pointer; }
+.crow:hover td { background: var(--panel-2); }
+.cdetail td { text-align: left; color: var(--muted); font-size: 11px; padding: 6px 8px; line-height: 1.6; }
 </style>

@@ -10,7 +10,7 @@ from fastapi import Body, FastAPI
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from optimize.dashboard import control, progress, queue, results, run_presets, runner
+from optimize.dashboard import champions, control, progress, queue, results, run_presets, runner
 
 app = FastAPI(title="Optimizer Control Plane")
 _STATIC = Path(__file__).resolve().parent / "static"
@@ -46,6 +46,12 @@ def api_resume(cfg: dict = Body(default={})):
 def api_stop():
     # Real stop: the owned run's process group, AND any detached orphans from a restart (#46).
     return runner.stop_all()
+
+
+@app.get("/api/champions")
+def api_champions():
+    # Champion leaderboard: the deployed best-champion set per (instrument, tf) (#22).
+    return champions.leaderboard()
 
 
 @app.get("/api/study/{name}")
