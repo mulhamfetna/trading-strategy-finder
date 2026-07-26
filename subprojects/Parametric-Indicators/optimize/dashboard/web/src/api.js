@@ -25,6 +25,7 @@ export const api = {
   resume: (cfg) => j('POST', '/api/resume', cfg),
   stop: () => j('POST', '/api/stop'),
   runState: () => j('GET', '/api/run/state'),
+  study: (name) => j('GET', `/api/study/${encodeURIComponent(name)}`),
 
   // live progress / ETA (snapshot poll)
   liveProgress: (tf, target) =>

@@ -9,7 +9,7 @@ import { api } from './api.js'
 export const store = reactive({
   config: {
     samplers: [], engines: [], stage_b: [], timeframes: [], instruments: [],
-    bounds: {}, indicators: [], presets: [], trials_per_dim: 0,
+    bounds: {}, indicators: [], presets: [], trials_per_dim: 0, optuna_port: 8082,
   },
   cfg: {
     // selections (all optional — absent keys ⇒ optimizer defaults, byte-identical to a bare launch)
@@ -29,7 +29,7 @@ export const store = reactive({
     try {
       const c = await api.config()
       for (const k of ['samplers', 'engines', 'stage_b', 'timeframes', 'instruments',
-                       'bounds', 'indicators', 'presets', 'trials_per_dim']) {
+                       'bounds', 'indicators', 'presets', 'trials_per_dim', 'optuna_port']) {
         if (c[k] !== undefined) this.config[k] = c[k]
       }
       // sensible first-run defaults derived from the server

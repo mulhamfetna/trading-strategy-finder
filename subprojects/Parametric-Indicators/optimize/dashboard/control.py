@@ -52,7 +52,8 @@ def config() -> dict:
     return {"samplers": list(OPT.SAMPLER_CHOICES), "engines": ["single", "two_stage"],
             "stage_b": ["cmaes", "gp"], "timeframes": TIMEFRAMES, "instruments": list(INST.TOKENS),
             "bounds": bounds, "indicators": library.schema().get("indicators", []), "presets": pl,
-            "trials_per_dim": OPT.TRIALS_PER_DIM}
+            "trials_per_dim": OPT.TRIALS_PER_DIM,
+            "optuna_port": int(os.environ.get("DASH_OPTUNA_PORT", 8082))}   # live Pareto/graphs (separate tunnel)
 
 
 def plan(cfg: dict) -> dict:

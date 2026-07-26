@@ -21,6 +21,19 @@ async function pollState() {
 }
 
 async function start() {
+  // Big-run guard: an auto run is the FULL search (can be ~47k trials ≈ days). Confirm first.
+  if (store.cfg.trials_mode === 'auto') {
+    try {
+      const plan = await api.plan(store.runCfg())
+      const n = plan?.recommended_trials || 0
+      if (n > 20000 && !confirm(
+        `Auto mode runs the FULL search: ~${n.toLocaleString()} trials (${plan.dims} dims). ` +
+        `At ~200 trials/min that's roughly ${Math.round(n / 200 / 60)} h — it can take days. ` +
+        `Use "one count" for a short run instead.\n\nLaunch the full ${n.toLocaleString()}-trial run anyway?`)) {
+        return
+      }
+    } catch { /* if the plan call fails, don't block the run */ }
+  }
   busy.value = true; msg.value = ''
   try {
     const r = await api.run(store.runCfg())

@@ -1,19 +1,83 @@
 <script setup>
-// Live + final reporting (leaderboard, Pareto, champion detail) is P2/P3.
-// P1 keeps a minimal live view so the column isn't empty.
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { store } from '../store.js'
+import { api } from '../api.js'
+
+const study = ref(null)       // active run's study name
+const summary = ref(null)     // /api/study/{name} result
+let timer = null
+
+async function refresh() {
+  try {
+    const st = await api.runState()
+    study.value = st.study
+    if (st.study) summary.value = await api.study(st.study)
+    else summary.value = null
+  } catch { /* keep last */ }
+}
+onMounted(() => { refresh(); timer = setInterval(refresh, 4000) })
+onUnmounted(() => timer && clearInterval(timer))
+
+const optunaUrl = computed(() => `http://localhost:${store.config.optuna_port || 8082}/dashboard/`)
+const feas = (f) => (f === true ? '✓' : f === false ? '✗' : '—')
 </script>
 
 <template>
   <section class="panel">
     <h2>Reporting</h2>
-    <p class="muted">Live figures, Pareto front, and champion leaderboard arrive in P2/P3.</p>
-    <div v-if="store.status.studies && store.status.studies.length">
-      <h3>Studies</h3>
-      <div v-for="s in store.status.studies" :key="s.tf || s.name" class="row mono">
-        <span class="pill">{{ s.tf || s.name }}</span>
-        <span class="muted">{{ s.complete ?? s.done ?? '?' }} trials</span>
-      </div>
+
+    <h3>Live graphs (optuna-dashboard)</h3>
+    <p class="muted" style="font-size:12px">Pareto front, optimization history &amp; param importance for every study.
+      Tunnel the optuna port, then open it:</p>
+    <div class="row">
+      <a class="btn" :href="optunaUrl" target="_blank" rel="noopener">Open optuna-dashboard ↗</a>
     </div>
+    <pre class="tip mono">ssh -L {{ store.config.optuna_port || 8082 }}:127.0.0.1:{{ store.config.optuna_port || 8082 }} amd-trading</pre>
+
+    <h3>Active run result <span v-if="study" class="pill">{{ study }}</span></h3>
+    <template v-if="summary && summary.ok">
+      <div class="row mono" style="font-size:12px">
+        <span class="pill">{{ summary.complete }} complete</span>
+        <span class="pill">{{ summary.pruned }} pruned</span>
+        <span class="pill" :class="summary.feasible_count ? 'ok' : ''">{{ summary.feasible_count }} feasible</span>
+      </div>
+      <div v-if="summary.best_feasible" class="best">
+        <b>Best feasible</b> · trial {{ summary.best_feasible.trial }} ·
+        P/L <b>${{ summary.best_feasible.pnl.toLocaleString() }}</b> ·
+        DD ${{ summary.best_feasible.dd?.toLocaleString() }} · win {{ summary.best_feasible.win }}%
+      </div>
+      <p v-else class="muted" style="font-size:12px">No feasible champion yet
+        (DD ≤ cap·P/L) — needs more trials.</p>
+
+      <h3>Top trials by P/L</h3>
+      <table class="tt mono">
+        <thead><tr><th>#</th><th>P/L</th><th>DD</th><th>win%</th><th>feas</th></tr></thead>
+        <tbody>
+          <tr v-for="r in summary.top" :key="r.trial" :class="{ feas: r.feasible }">
+            <td>{{ r.trial }}</td><td>{{ r.pnl?.toLocaleString() }}</td>
+            <td>{{ r.dd?.toLocaleString() }}</td><td>{{ r.win }}</td><td>{{ feas(r.feasible) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </template>
+    <p v-else-if="study" class="muted">loading results…</p>
+    <p v-else class="muted">Run a study to see its results here.</p>
+
+    <h3>Champion leaderboard</h3>
+    <p class="muted" style="font-size:12px">All/deployed champions with full details — coming next (P3).</p>
   </section>
 </template>
+
+<style scoped>
+.btn { display: inline-block; padding: 6px 12px; border: 1px solid var(--accent); border-radius: 6px;
+  color: var(--accent); text-decoration: none; font-size: 13px; }
+.btn:hover { background: var(--panel-2); }
+.tip { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px;
+  font-size: 11px; color: var(--muted); margin: 6px 0; white-space: pre-wrap; word-break: break-all; }
+.pill.ok { color: var(--ok); border-color: var(--ok); }
+.best { border: 1px solid var(--ok); border-radius: 6px; padding: 8px; margin: 8px 0; font-size: 12px; }
+.tt { width: 100%; border-collapse: collapse; font-size: 11px; }
+.tt th, .tt td { text-align: right; padding: 2px 6px; border-bottom: 1px solid var(--border); }
+.tt th:first-child, .tt td:first-child { text-align: left; }
+.tt tr.feas td { color: var(--ok); }
+</style>
