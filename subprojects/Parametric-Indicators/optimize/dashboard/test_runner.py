@@ -48,6 +48,25 @@ def test_auto_mode_uses_auto_trials():
     assert "--auto-trials" in cmd and "--trials" not in cmd
 
 
+def test_expanded_cell_trials_are_honored():
+    # a queue.expand()-ed cell carries auto_trials/trials (NOT trials_mode) — the fleet must honor them
+    from optimize.dashboard import queue
+    cell = queue.expand({"instruments": ["NQ"], "timeframes": ["4h"], "trials_mode": "one", "trials": 8})[0]
+    assert "trials_mode" not in cell and cell["auto_trials"] is False and cell["trials"] == 8
+    cmd = runner.build_command(cell, "4h")
+    assert "--trials 8" in " ".join(cmd) and "--auto-trials" not in cmd     # was the bug: ran auto
+    assert runner.target_trials(cell, "4h") == 8
+
+
+def test_expanded_cell_budget_clamp_is_honored():
+    from optimize.dashboard import queue
+    cell = queue.expand({"instruments": ["NQ"], "timeframes": ["4h"], "trials_mode": "auto",
+                         "max_trials": 5000})[0]
+    cmd = runner.build_command(cell, "4h")
+    assert "--trials 5000" in " ".join(cmd)          # budget guard actually reaches the command
+    assert runner.target_trials(cell, "4h") == 5000
+
+
 def test_start_rejects_invalid_cfg():
     mgr = runner.RunManager()
     r = mgr.start({})
@@ -61,7 +80,7 @@ def test_lifecycle_owned_process_starts_streams_and_stops(monkeypatch):
             "print('trial 1 done', flush=True)\n"
             "time.sleep(30)\n"]
     monkeypatch.setattr(runner, "build_command", lambda cfg, tf: fake)
-    monkeypatch.setattr(runner, "target_trials", lambda cfg: 100)
+    monkeypatch.setattr(runner, "target_trials", lambda cfg, tf=None: 100)
     mgr = runner.RunManager()
     r = mgr.start({"instrument": "NQ", "timeframes": ["4h"], "trials_mode": "auto"})
     assert r["ok"] is True and r["pid"] > 0
@@ -88,7 +107,7 @@ _FAKE = [sys.executable, "-u", "-c", "import time; print('go', flush=True); time
 
 def _fake_fleet(monkeypatch):
     monkeypatch.setattr(runner, "build_command", lambda cfg, tf: _FAKE)
-    monkeypatch.setattr(runner, "target_trials", lambda cfg: 10)
+    monkeypatch.setattr(runner, "target_trials", lambda cfg, tf=None: 10)
     monkeypatch.setattr(runner.RunManager, "done_count", lambda self: 0)   # avoid trial_count.py subprocess
 
 
