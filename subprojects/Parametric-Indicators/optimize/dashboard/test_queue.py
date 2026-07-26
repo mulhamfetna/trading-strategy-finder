@@ -29,3 +29,22 @@ def test_per_item_trials_mode():
 def test_defaults_single_instrument_and_tf():
     got = queue.expand({"instrument": "NQ", "trials_mode": "auto"})
     assert len(got) == 1 and got[0]["instrument"] == "NQ" and got[0]["timeframe"] == "4h"
+
+
+def test_budget_guard_clamps_trials():
+    # 'one' count above the per-study budget is clamped down.
+    got = queue.expand({"instruments": ["NQ"], "timeframes": ["4h"], "trials_mode": "one",
+                        "trials": 50000, "max_trials": 8000})
+    assert got[0]["trials"] == 8000 and got[0]["auto_trials"] is False
+
+
+def test_budget_guard_bounds_auto():
+    # 'auto' + a budget becomes an explicit bounded count (auto can't be left unbounded under a cap).
+    got = queue.expand({"instruments": ["NQ"], "timeframes": ["4h"], "trials_mode": "auto",
+                        "max_trials": 6000})
+    assert got[0]["trials"] == 6000 and got[0]["auto_trials"] is False
+
+
+def test_no_budget_leaves_trials_untouched():
+    got = queue.expand({"instruments": ["NQ"], "timeframes": ["4h"], "trials_mode": "one", "trials": 5000})
+    assert got[0]["trials"] == 5000

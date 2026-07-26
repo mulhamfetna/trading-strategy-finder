@@ -56,12 +56,51 @@ def config() -> dict:
 
 
 def plan(cfg: dict) -> dict:
-    """Acceptance preview: search dimensions → recommended (∝-dimension) trial budget."""
+    """Acceptance preview: search dimensions → recommended (∝-dimension) trial budget + the exact
+    optimizer command the run will execute (so the UI shows what the launch actually does)."""
     split = bool(cfg.get("split_sltp", False))
     per_dim = int(cfg.get("trials_per_dim", OPT.TRIALS_PER_DIM))
     dims = OPT.search_dims(split)
     return {"dims": dims["total"], "breakdown": dims, "trials_per_dim": per_dim,
-            "recommended_trials": OPT.recommended_trials(split, per_dim)}
+            "recommended_trials": OPT.recommended_trials(split, per_dim),
+            "command": preview_command(cfg)}
+
+
+def preview_command(cfg: dict) -> str:
+    """Render the optimizer.py invocation equivalent to this cfg — mirrors remote_wsi.sh's IND_ARGS
+    construction exactly (same flags, same order, opt-in flags omitted when unset). Representative of
+    the FIRST selected timeframe; a matrix launches one such command per (instrument, tf)."""
+    tfs = cfg.get("timeframes") or ([cfg["timeframe"]] if cfg.get("timeframe") else ["4h"])
+    tf = str(tfs[0])
+    # trials: 'one' ⇒ user count; otherwise the ∝-dim recommended target the watchdog drives toward.
+    if cfg.get("trials_mode") == "one" and cfg.get("trials"):
+        trials = str(int(cfg["trials"]))
+    else:
+        trials = str(OPT.recommended_trials(bool(cfg.get("split_sltp")),
+                                            int(cfg.get("trials_per_dim", OPT.TRIALS_PER_DIM))))
+    parts = ["python3 optimize/optimizer.py", tf, "--trials", trials, "--folds 5", "--min-trades 5"]
+    if cfg.get("ind_1min", True):
+        parts.append("--ind-1min")
+    if cfg.get("split_sltp"):
+        parts.append("--split-sltp")
+    if cfg.get("sampler"):
+        parts.append(f"--sampler {cfg['sampler']}")
+    if cfg.get("exclude_indicators"):
+        parts.append("--exclude-indicators " + ",".join(str(x) for x in cfg["exclude_indicators"]))
+    if cfg.get("only_indicators"):
+        parts.append("--only-indicators " + ",".join(str(x) for x in cfg["only_indicators"]))
+    if cfg.get("reference"):
+        parts.append(f"--reference {cfg['reference']}")
+    if cfg.get("max_enabled"):
+        parts.append(f"--max-enabled {int(cfg['max_enabled'])}")
+    if cfg.get("cold_start"):
+        parts.append("--no-warm-start")
+    if cfg.get("dd_cap") not in (None, ""):
+        parts.append(f"--dd-pnl-cap {cfg['dd_cap']}")
+    inst = str(cfg.get("instrument", "NQ"))
+    if inst != "NQ":
+        parts.append(f"--instrument {inst}")
+    return " ".join(parts)
 
 
 # ── lifecycle: start / stop(pause) / resume ──────────────────────────────────────────────────────

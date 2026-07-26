@@ -26,6 +26,26 @@ def test_plan_scales_with_split():
     assert split["recommended_trials"] == split["dims"] * base["trials_per_dim"]
 
 
+def test_plan_includes_command_string():
+    p = C.plan({"timeframes": ["1h"], "only_indicators": ["rsi", "macd"], "reference": "ES",
+                "instrument": "GC", "split_sltp": True, "cold_start": True, "max_enabled": 3,
+                "trials_mode": "one", "trials": 8000, "ind_1min": True})
+    cmd = p["command"]
+    assert "optimize/optimizer.py 1h" in cmd
+    assert "--only-indicators rsi,macd" in cmd and "--reference ES" in cmd
+    assert "--instrument GC" in cmd and "--split-sltp" in cmd and "--no-warm-start" in cmd
+    assert "--max-enabled 3" in cmd and "--ind-1min" in cmd and "--trials 8000" in cmd
+
+
+def test_preview_command_minimal_is_bare():
+    # No opt-in selections ⇒ command carries only the always-on flags (byte-identical to a bare run).
+    cmd = C.preview_command({"timeframes": ["4h"], "trials_mode": "auto"})
+    assert "optimize/optimizer.py 4h" in cmd and "--ind-1min" in cmd
+    for flag in ("--only-indicators", "--exclude-indicators", "--reference",
+                 "--instrument", "--split-sltp", "--no-warm-start", "--max-enabled"):
+        assert flag not in cmd
+
+
 def test_start_single_builds_env_and_calls_run(monkeypatch):
     seen = {}
     monkeypatch.setattr(C, "_run_remote", lambda args, timeout=120: seen.update({"args": args}) or
