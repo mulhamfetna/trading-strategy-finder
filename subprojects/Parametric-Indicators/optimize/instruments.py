@@ -35,7 +35,12 @@ def _load_registry():
     return mod.REGISTRY
 
 
-_REGISTRY = _load_registry()
+@functools.lru_cache(maxsize=1)
+def _registry():
+    """Lazily load the no-mix registry (cached). Deferred so merely importing this module for the static
+    TOKENS/POINT_VALUE — as the dashboard control plane does — has NO import-time filesystem dependency;
+    the registry file is only read the first time a non-NQ instrument is actually resolved."""
+    return _load_registry()
 
 
 def is_valid(token: str) -> bool:
@@ -51,7 +56,7 @@ def resolve_paths(token: str, tf: str) -> tuple[str, str, str]:
     ES → the ALL_STOCKS registry."""
     if token == "NQ":
         return (str(_RAW / f"NQ_{tf}.csv"), str(_RAW / "NQ_1m.csv"), str(_BOX_CSV))
-    inst = _REGISTRY[token]
+    inst = _registry()[token]
     return (inst.candle_csv(tf), inst.candle_csv("1m"), inst.box_csv)
 
 
