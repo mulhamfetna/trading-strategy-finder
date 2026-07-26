@@ -80,3 +80,34 @@ def test_lifecycle_owned_process_starts_streams_and_stops(monkeypatch):
 
 def test_stop_when_nothing_running_is_safe():
     assert runner.RunManager().stop()["ok"] is True
+
+
+# ── fleet (Launch-matrix queue on owned runs, #36) ────────────────────────────────────────────────
+_FAKE = [sys.executable, "-u", "-c", "import time; print('go', flush=True); time.sleep(30)"]
+
+
+def _fake_fleet(monkeypatch):
+    monkeypatch.setattr(runner, "build_command", lambda cfg, tf: _FAKE)
+    monkeypatch.setattr(runner, "target_trials", lambda cfg: 10)
+    monkeypatch.setattr(runner.RunManager, "done_count", lambda self: 0)   # avoid trial_count.py subprocess
+
+
+def test_fleet_launches_one_owned_run_per_cell(monkeypatch):
+    _fake_fleet(monkeypatch)
+    q = runner.fleet_launch({"instruments": ["NQ", "ES"], "timeframes": ["4h"], "trials_mode": "auto"})
+    assert len(q) == 2
+    assert {(i["instrument"], i["timeframe"]) for i in q} == {("NQ", "4h"), ("ES", "4h")}
+    assert all(i["state"] == "running" and i["running"] for i in q)
+    st = runner.fleet_stop()
+    assert st["ok"] and st["stopped"] == 2
+    time.sleep(0.3)
+    assert all(not i["running"] for i in runner.fleet_state())
+
+
+def test_fleet_defers_cells_beyond_worker_cap(monkeypatch):
+    _fake_fleet(monkeypatch)
+    monkeypatch.setattr(runner, "_worker_cap", lambda: 1)                 # force a tiny cap
+    q = runner.fleet_launch({"instruments": ["NQ", "ES", "GC"], "timeframes": ["4h"], "trials_mode": "auto"})
+    states = [i["state"] for i in q]
+    assert states.count("running") == 1 and states.count("deferred") == 2  # cap enforced + surfaced
+    runner.fleet_stop()
