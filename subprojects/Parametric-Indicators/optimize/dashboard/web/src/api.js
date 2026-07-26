@@ -14,9 +14,10 @@ async function j(method, path, body) {
 }
 
 export const api = {
-  // config / status
+  // config / status / health
   config: () => j('GET', '/api/config'),
   status: () => j('GET', '/api/status'),
+  health: () => j('GET', '/api/health'),
 
   // planning + lifecycle
   plan: (cfg) => j('POST', '/api/plan', cfg),

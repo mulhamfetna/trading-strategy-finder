@@ -88,6 +88,30 @@ def test_status_bad_json_is_safe(monkeypatch):
     assert s["ok"] is False and s["studies"] == []
 
 
+def test_status_derives_running_and_study_count(monkeypatch):
+    sample = ('{"studies":[{"tf":"4h","complete":10,"running":3},'
+              '{"tf":"1h","complete":40,"running":0}]}')
+    monkeypatch.setattr(C, "_run_remote", lambda args, timeout=120:
+                        {"ok": True, "stdout": sample, "stderr": "", "code": 0})
+    s = C.status()
+    assert s["running"] is True and s["n_studies"] == 2      # any worker>0 ⇒ running
+
+
+def test_status_running_false_when_no_workers(monkeypatch):
+    monkeypatch.setattr(C, "_run_remote", lambda args, timeout=120:
+                        {"ok": True, "stdout": '{"studies":[{"tf":"4h","complete":10,"running":0}]}',
+                         "stderr": "", "code": 0})
+    assert C.status()["running"] is False
+
+
+def test_health_reports_studies_and_survives_no_psutil(monkeypatch):
+    monkeypatch.setattr(C, "_run_remote", lambda args, timeout=120:
+                        {"ok": True, "stdout": '{"studies":[{"tf":"4h","complete":10,"running":2}]}',
+                         "stderr": "", "code": 0})
+    h = C.health()
+    assert h["n_studies"] == 1 and h["running"] is True and "cpu_pct" in h and "mem_pct" in h
+
+
 def test_tail_logs(tmp_path, monkeypatch):
     log = tmp_path / "4h.log"; log.write_text("l1\nl2\nl3\n")
     monkeypatch.setattr(C, "_log_path", lambda tf: log)

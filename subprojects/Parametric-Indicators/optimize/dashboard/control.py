@@ -131,9 +131,34 @@ def status() -> dict:
     try:
         data = json.loads(r["stdout"])
     except Exception:
-        return {"ok": False, "studies": [], "raw": r["stdout"][-400:]}
+        return {"ok": False, "studies": [], "running": False, "n_studies": 0, "raw": r["stdout"][-400:]}
     data["ok"] = r["ok"]
+    studies = data.get("studies", [])
+    # Normalized top-level flags the UI drives buttons + health off of. A run is "running" if ANY
+    # study still has worker processes (`running` = live worker count from `stats --json`).
+    data["running"] = any(int(s.get("running", s.get("workers", 0)) or 0) > 0 for s in studies)
+    data["n_studies"] = len(studies)
     return data
+
+
+# ── health ────────────────────────────────────────────────────────────────────────────────────────
+def health() -> dict:
+    """Host + run health for the control panel's health strip. Runs on the same box as the optimizer,
+    so psutil reflects the server. Every field degrades to None if unavailable (psutil missing, no server)."""
+    h = {"cpu_pct": None, "mem_pct": None, "workers": None, "n_studies": 0, "running": False}
+    try:
+        import psutil
+        h["cpu_pct"] = round(psutil.cpu_percent(interval=0.0), 1)
+        h["mem_pct"] = round(psutil.virtual_memory().percent, 1)
+    except Exception:
+        pass
+    st = status()
+    studies = st.get("studies", [])
+    h["n_studies"] = len(studies)
+    h["running"] = bool(st.get("running"))
+    w = sum(int(s.get("running", s.get("workers", 0)) or 0) for s in studies)
+    h["workers"] = w or None
+    return h
 
 
 def study_progress(tf: str, target: int | None = None) -> dict:

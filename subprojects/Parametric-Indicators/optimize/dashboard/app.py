@@ -50,6 +50,11 @@ def api_status():
     return control.status()
 
 
+@app.get("/api/health")
+def api_health():
+    return control.health()
+
+
 @app.get("/api/progress")
 def api_progress(tf: str = "4h"):
     def gen():
