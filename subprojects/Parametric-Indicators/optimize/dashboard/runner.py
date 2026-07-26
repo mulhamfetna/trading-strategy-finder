@@ -293,3 +293,80 @@ def fleet_state() -> list[dict]:
 def fleet_stop() -> dict:
     n = sum(1 for e in _FLEET if e["run"] is not None and (e["run"].stop() or True))
     return {"ok": True, "stopped": n}
+
+
+# ── detached orphans: cc-runs still alive after a control-plane restart (#46) ──────────────────────
+# start_new_session=True detaches owned optimizer children from the control plane, so a restart loses
+# the handle. We recover them by scanning the process table for cc-prefixed optimizer runs.
+import re as _re
+
+
+def _parse_ps(text: str) -> list[dict]:
+    """Parse `ps -eo pid,pgid,args` output → cc-prefixed optimizer runs [{pid,pgid,study,prefix,tf,instrument}]."""
+    runs = []
+    for line in text.splitlines():
+        if "optimize/optimizer.py" not in line or "--study-prefix cc" not in line:
+            continue
+        toks = line.split()
+        try:
+            pid, pgid = int(toks[0]), int(toks[1])
+        except (ValueError, IndexError):
+            continue
+        m = _re.search(r"--study-prefix (cc\w+)", line)
+        prefix = m.group(1) if m else None
+        tf = next((toks[i + 1] for i, t in enumerate(toks) if t.endswith("optimizer.py") and i + 1 < len(toks)), None)
+        mi = _re.search(r"--instrument (\w+)", line)
+        inst = mi.group(1) if mi else "NQ"
+        study = (f"{prefix}_{tf}" + ("" if inst == "NQ" else f"_{inst}")) if (prefix and tf) else None
+        runs.append({"pid": pid, "pgid": pgid, "prefix": prefix, "tf": tf, "instrument": inst, "study": study})
+    return runs
+
+
+def scan_cc_runs() -> list[dict]:
+    try:
+        out = subprocess.run(["ps", "-eo", "pid,pgid,args"], capture_output=True, text=True, timeout=10).stdout
+    except Exception:
+        return []
+    return _parse_ps(out)
+
+
+def _owned_pids() -> set:
+    pids = set()
+    if _MGR.proc is not None:
+        pids.add(_MGR.proc.pid)
+    for e in _FLEET:
+        r = e.get("run")
+        if r is not None and r.proc is not None:
+            pids.add(r.proc.pid)
+    return pids
+
+
+def detached_runs() -> list[dict]:
+    """cc-optimizer processes alive but NOT owned by this control plane (orphans from a restart)."""
+    owned = _owned_pids()
+    return [r for r in scan_cc_runs() if r["pid"] not in owned]
+
+
+def stop_all() -> dict:
+    """Stop the owned primary run AND kill any detached orphans, so the UI's Stop always clears runs."""
+    _MGR.stop()
+    killed = 0
+    for r in detached_runs():
+        try:
+            os.killpg(r["pgid"], signal.SIGKILL)
+            killed += 1
+        except (ProcessLookupError, PermissionError):
+            pass
+    return {"ok": True, "detail": f"stopped owned run + {killed} detached orphan(s)"}
+
+
+def done_count_for(prefix: str, tf: str) -> int:
+    """Completed-trial count for a study by prefix+tf (store-aware) — used for detached-orphan progress."""
+    if not prefix or not tf:
+        return 0
+    try:
+        r = subprocess.run([_python(), "optimize/trial_count.py", tf, "--prefix", prefix],
+                           cwd=str(_PI), env=_child_env({}), capture_output=True, text=True, timeout=20)
+        return int("".join(c for c in r.stdout if c.isdigit()) or 0)
+    except Exception:
+        return 0

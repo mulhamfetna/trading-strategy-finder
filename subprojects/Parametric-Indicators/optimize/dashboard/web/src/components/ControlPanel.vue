@@ -75,7 +75,11 @@ const shownLog = computed(() => logLines.value.slice(-200).join('\n') || '(no ou
       <span v-if="run.running" class="pill run">running</span>
     </div>
 
-    <p v-if="missing.length" class="missing">
+    <p v-if="run.detached" class="detached">
+      ⚠ A run is still active from before a restart (detached): <b>{{ run.study }}</b>
+      — reconnected from the process table. Hit <b>Stop</b> to clear it.
+    </p>
+    <p v-if="missing.length && !run.detached" class="missing">
       ⚠ Select before running: <b>{{ missing.join(', ') }}</b>
     </p>
     <p v-if="msg" class="mono muted" style="word-break:break-word">{{ msg }}</p>
@@ -99,6 +103,8 @@ const shownLog = computed(() => logLines.value.slice(-200).join('\n') || '(no ou
 
 <style scoped>
 .missing { color: var(--warn); font-size: 13px; margin: 6px 0; }
+.detached { color: var(--warn); font-size: 12px; margin: 6px 0; border: 1px solid var(--warn);
+  border-radius: 6px; padding: 6px 8px; }
 .pill.run { color: var(--ok); border-color: var(--ok); }
 .log { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px;
   height: 240px; overflow: auto; white-space: pre-wrap; word-break: break-word; font-size: 11px;
