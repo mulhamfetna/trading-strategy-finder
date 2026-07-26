@@ -14,7 +14,7 @@ Wants=network-online.target
 Type=simple
 User=dev
 WorkingDirectory=/home/dev/Mulham/code/subprojects/Parametric-Indicators
-ExecStart=/home/dev/Mulham/code/subprojects/Parametric-Indicators/optimize/dashboard/serve_control_plane.sh
+ExecStart=/bin/bash /home/dev/Mulham/code/subprojects/Parametric-Indicators/optimize/dashboard/serve_control_plane.sh
 Restart=on-failure
 RestartSec=3
 # Owned optimizer children run in their own process groups (start_new_session=True); KillMode=process
