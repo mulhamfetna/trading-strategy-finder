@@ -10,7 +10,7 @@ from fastapi import Body, FastAPI
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from optimize.dashboard import control, progress, queue, run_presets
+from optimize.dashboard import control, progress, queue, run_presets, runner
 
 app = FastAPI(title="Optimizer Control Plane")
 _STATIC = Path(__file__).resolve().parent / "static"
@@ -32,7 +32,9 @@ def api_plan(cfg: dict = Body(default={})):
 
 @app.post("/api/run")
 def api_run(cfg: dict = Body(default={})):
-    return control.start(cfg)
+    # Owned-subprocess driver (#28): validates mandatory fields, launches a per-selection study as a
+    # process the control plane owns, returns IMMEDIATELY (non-blocking). Errors → {ok:False, errors}.
+    return runner._MGR.start(cfg)
 
 
 @app.post("/api/resume")
@@ -42,7 +44,32 @@ def api_resume(cfg: dict = Body(default={})):
 
 @app.post("/api/stop")
 def api_stop():
-    return control.stop()
+    # Real stop: signal the owned process group (SIGTERM→SIGKILL). No pkill on unowned workers.
+    return runner._MGR.stop()
+
+
+@app.get("/api/run/state")
+def api_run_state():
+    st = runner._MGR.state()
+    if st.get("pid"):                                        # a run exists (active or just finished)
+        done = runner._MGR.done_count()
+        st["progress"] = progress.live(st.get("tf") or "run", done, st.get("target") or 0, time.time())
+    return st
+
+
+@app.get("/api/run/logs")
+def api_run_logs():
+    def gen():
+        cursor = 0
+        while True:
+            cursor, new = runner._MGR.lines_since(cursor)
+            for ln in new:
+                yield f"data: {json.dumps({'line': ln})}\n\n"
+            if not runner._MGR.running() and not new:
+                yield f"data: {json.dumps({'done': True, 'returncode': runner._MGR.state()['returncode']})}\n\n"
+                return
+            time.sleep(1)
+    return StreamingResponse(gen(), media_type="text/event-stream")
 
 
 @app.get("/api/status")

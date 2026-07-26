@@ -25,16 +25,27 @@ def test_plan_endpoint(monkeypatch):
     assert r.status_code == 200 and r.json()["recommended_trials"] == 5600
 
 
-def test_run_delegates(monkeypatch):
+def test_run_delegates_to_owned_runner(monkeypatch):
     seen = {}
-    monkeypatch.setattr(APP.control, "start", lambda cfg: seen.update({"cfg": cfg}) or {"ok": True, "launched": True})
-    r = client.post("/api/run", json={"sampler": "gp", "engine": "single"})
+    monkeypatch.setattr(APP.runner._MGR, "start", lambda cfg: seen.update({"cfg": cfg}) or {"ok": True, "pid": 42})
+    r = client.post("/api/run", json={"instrument": "NQ", "timeframes": ["4h"], "sampler": "gp"})
     assert r.status_code == 200 and r.json()["ok"] and seen["cfg"]["sampler"] == "gp"
 
 
+def test_run_reports_missing_fields(monkeypatch):
+    # real runner validation: an empty cfg returns ok:False + the missing fields (not a 500)
+    r = client.post("/api/run", json={})
+    assert r.status_code == 200 and r.json()["ok"] is False and "instrument" in r.json()["errors"]
+
+
 def test_stop_endpoint(monkeypatch):
-    monkeypatch.setattr(APP.control, "stop", lambda: {"ok": True})
+    monkeypatch.setattr(APP.runner._MGR, "stop", lambda: {"ok": True, "detail": "stopped"})
     assert client.post("/api/stop").json()["ok"]
+
+
+def test_run_state_endpoint():
+    st = client.get("/api/run/state").json()
+    assert "running" in st and "study" in st
 
 
 def test_resume_endpoint(monkeypatch):

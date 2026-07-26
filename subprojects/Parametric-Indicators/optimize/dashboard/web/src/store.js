@@ -72,4 +72,25 @@ export const store = reactive({
     if (c.indicator_mode === 'exclude' && c.exclude_indicators.length) out.exclude_indicators = c.exclude_indicators
     return out
   },
+
+  // The single-study cfg for the Run button (owned driver): first selected instrument + timeframe.
+  runCfg() {
+    const c = this.launchCfg()
+    c.instrument = this.cfg.instruments[0] || ''
+    c.timeframes = this.cfg.timeframes.length ? [this.cfg.timeframes[0]] : []
+    c.indicator_mode = this.cfg.indicator_mode
+    return c
+  },
+
+  // Mandatory fields missing for a run (mirrors runner.validate on the backend) — gates the Run button.
+  runMissing() {
+    const c = this.runCfg()
+    const m = []
+    if (!c.instrument) m.push('instrument')
+    if (!c.timeframes.length) m.push('timeframe')
+    if (c.trials_mode === 'one' && !(Number(c.trials) > 0)) m.push('trials count')
+    if (this.cfg.indicator_mode === 'only' && !this.cfg.only_indicators.length) m.push('≥1 indicator (only)')
+    if (this.cfg.indicator_mode === 'exclude' && !this.cfg.exclude_indicators.length) m.push('≥1 indicator (exclude)')
+    return m
+  },
 })
