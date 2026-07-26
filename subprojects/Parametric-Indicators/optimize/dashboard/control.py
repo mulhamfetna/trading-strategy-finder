@@ -135,6 +135,20 @@ def status() -> dict:
     return data
 
 
+def study_progress(tf: str, target: int | None = None) -> dict:
+    """Completed-trial count + target for one timeframe's study, read defensively from `status()`
+    (the live `stats --json` shape varies). Returns {done, target}."""
+    done, tgt = 0, int(target or 0)
+    for st in status().get("studies", []):
+        name = str(st.get("tf") or st.get("name") or "")
+        if name == str(tf) or name.endswith(str(tf)):
+            done = int(st.get("complete", st.get("done", st.get("n_complete", 0))) or 0)
+            if not target:
+                tgt = int(st.get("target", st.get("recommended", st.get("n_trials", 0))) or 0)
+            break
+    return {"done": done, "target": tgt}
+
+
 # ── logs (SSE source) ─────────────────────────────────────────────────────────────────────────────
 def _log_path(tf: str) -> Path:
     return _LOGS_DIR / f"{tf}.log"

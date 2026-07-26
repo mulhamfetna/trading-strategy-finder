@@ -9,7 +9,7 @@ from pathlib import Path
 from fastapi import Body, FastAPI
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 
-from optimize.dashboard import control
+from optimize.dashboard import control, progress
 
 app = FastAPI(title="Optimizer Control Plane")
 _STATIC = Path(__file__).resolve().parent / "static"
@@ -54,6 +54,12 @@ def api_progress(tf: str = "4h"):
         for line in control.follow_logs(tf):
             yield f"data: {json.dumps({'line': line})}\n\n"
     return StreamingResponse(gen(), media_type="text/event-stream")
+
+
+@app.get("/api/live/progress")
+def api_live_progress(tf: str = "4h", target: int = 0):
+    sp = control.study_progress(tf, target or None)
+    return progress.live(tf, sp["done"], sp["target"], time.time())
 
 
 @app.post("/api/bundle")
