@@ -29,6 +29,13 @@ def test_apply_env_maps_the_new_selections():
     assert os.environ["WSH_DD_CAP"] == "0.5"
 
 
+def test_config_exposes_instruments_and_indicator_families():
+    cfg = control.config()
+    assert set(("NQ", "ES", "GC")).issubset(set(cfg["instruments"]))   # matrix picker source (D2)
+    inds = cfg["indicators"]
+    assert inds and all("family" in i and "key" in i for i in inds)    # family-grouped picker (D1)
+
+
 def test_apply_env_exclude_list_and_defaults():
     _clear()
     control._apply_env({"exclude_indicators": ["ifvg", "breaker"]})

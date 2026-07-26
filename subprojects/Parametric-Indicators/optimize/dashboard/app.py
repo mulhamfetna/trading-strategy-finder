@@ -8,11 +8,13 @@ from pathlib import Path
 
 from fastapi import Body, FastAPI
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 
 from optimize.dashboard import control, progress, queue, run_presets
 
 app = FastAPI(title="Optimizer Control Plane")
 _STATIC = Path(__file__).resolve().parent / "static"
+_WEB_DIST = Path(__file__).resolve().parent / "web" / "dist"       # built Vue SPA (npm run build)
 _BUNDLES: dict[str, str] = {}
 
 
@@ -111,7 +113,15 @@ def api_bundle_get(bid: str):
     return FileResponse(path, filename=Path(path).name, media_type="application/gzip")
 
 
-@app.get("/", response_class=HTMLResponse)
-def index():
-    f = _STATIC / "index.html"
-    return f.read_text() if f.exists() else "<h1>optimizer control plane up</h1>"
+# Serve the built Vue SPA at '/' (mounted LAST so every '/api/*' route above wins first).
+# `html=True` returns index.html for '/' and for client-side routes. If the SPA hasn't been built
+# yet, fall back to the legacy static index / a stub so the control plane still boots.
+if _WEB_DIST.exists():
+    app.mount("/", StaticFiles(directory=str(_WEB_DIST), html=True), name="spa")
+else:
+    @app.get("/", response_class=HTMLResponse)
+    def index():
+        f = _STATIC / "index.html"
+        if f.exists():
+            return f.read_text()
+        return "<h1>optimizer control plane up — run `npm --prefix web run build` to serve the SPA</h1>"

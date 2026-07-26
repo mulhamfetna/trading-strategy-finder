@@ -20,6 +20,7 @@ if str(_PI) not in sys.path:
     sys.path.insert(0, str(_PI))
 
 from optimize import optimizer as OPT               # SAMPLER_CHOICES, search_dims, recommended_trials, print_plan
+from optimize import instruments as INST            # TOKENS (tradeable instrument list)
 from indicators import library                      # schema()
 
 _REMOTE = _PI / "optimize" / "server" / "remote_wsi.sh"
@@ -49,8 +50,8 @@ def config() -> dict:
     except Exception:
         pl = []
     return {"samplers": list(OPT.SAMPLER_CHOICES), "engines": ["single", "two_stage"],
-            "stage_b": ["cmaes", "gp"], "timeframes": TIMEFRAMES, "bounds": bounds,
-            "indicators": library.schema().get("indicators", []), "presets": pl,
+            "stage_b": ["cmaes", "gp"], "timeframes": TIMEFRAMES, "instruments": list(INST.TOKENS),
+            "bounds": bounds, "indicators": library.schema().get("indicators", []), "presets": pl,
             "trials_per_dim": OPT.TRIALS_PER_DIM}
 
 
