@@ -373,11 +373,24 @@ for _m in _SCHOOLS:                       # merge per-school schemas (keys must 
 MODES = ("confirm", "veto", "both")
 RETRACE_UNITS = ("atr_mult", "points")
 
+# Indicator family (school) per key — the control-center UI groups/selects by family. Built from the
+# lib_<school> modules; the 18 built-ins map to "builtin".
+_FAMILY_BY_MODULE = {
+    "lib_ma": "ma", "lib_osc": "oscillator", "lib_trend": "trend", "lib_vol": "volatility",
+    "lib_volume": "volume", "lib_levels": "levels", "lib_bw": "bill_williams", "lib_quant": "quant",
+    "lib_dsp": "dsp", "lib_tier2": "dsp", "lib_xseries": "cross_series",
+}
+_KEY_FAMILY = {}
+for _m in _SCHOOLS:
+    _fam = _FAMILY_BY_MODULE.get(_m.__name__.rsplit(".", 1)[-1], "other")
+    for _k in _m.SCHEMA:
+        _KEY_FAMILY[_k] = _fam
+
 
 def schema():
-    """UI schema for every registered indicator (key + label + default mode + tunable params).
+    """UI schema for every registered indicator (key + family + label + default mode + tunable params).
     Plus the shared enums. The frontend builds the whole indicator panel from this — no hardcoding."""
-    inds = [dict(key=k, **SCHEMA[k]) for k in REGISTRY]
+    inds = [dict(key=k, family=_KEY_FAMILY.get(k, "builtin"), **SCHEMA[k]) for k in REGISTRY]
     return {"indicators": inds, "modes": list(MODES), "retrace_units": list(RETRACE_UNITS),
             "retrace_default": {"amount": 0.0, "unit": "atr_mult"}, "wait_default": 0, "k_default": 1,
             "gen_params": [{"name": "swing_l", "default": 2, "min": 1, "max": 20, "step": 1},
