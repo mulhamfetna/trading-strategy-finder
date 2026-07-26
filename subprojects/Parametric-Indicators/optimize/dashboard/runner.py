@@ -81,10 +81,24 @@ def study_name(cfg: dict, tf: str) -> str:
     return f"{study_prefix(cfg)}_{tf}" + ("" if inst == "NQ" else f"_{inst}")
 
 
-def target_trials(cfg: dict) -> int:
+def _explicit_trials(cfg: dict, tf: str) -> int | None:
+    """The explicit trial count this cfg pins, or None for auto. Handles BOTH the raw Run cfg
+    (trials_mode/trials/per_trials) AND a queue.expand()-ed cell (auto_trials + trials)."""
+    if "auto_trials" in cfg:                          # already-expanded cell (from the fleet/queue)
+        return None if cfg["auto_trials"] else (int(cfg.get("trials") or 0) or None)
+    mode = cfg.get("trials_mode", "auto")
+    if mode == "one":
+        return int(cfg.get("trials") or 0) or None
+    if mode == "per":
+        return int((cfg.get("per_trials") or {}).get(f"{cfg.get('instrument')}:{tf}", 0)) or None
+    return None
+
+
+def target_trials(cfg: dict, tf: str = "4h") -> int:
     from optimize import optimizer as OPT
-    if cfg.get("trials_mode") == "one" and cfg.get("trials"):
-        return int(cfg["trials"])
+    n = _explicit_trials(cfg, tf)
+    if n is not None:
+        return n
     return OPT.recommended_trials(bool(cfg.get("split_sltp")),
                                   int(cfg.get("trials_per_dim", OPT.TRIALS_PER_DIM)))
 
@@ -93,14 +107,8 @@ def build_command(cfg: dict, tf: str) -> list[str]:
     """The optimizer.py argv equivalent to this cfg (mirrors remote_wsi.sh IND_ARGS)."""
     cmd = [_python(), "-u", "optimize/optimizer.py", str(tf), "--folds", "5", "--min-trades", "5",
            "--study-prefix", study_prefix(cfg)]
-    mode = cfg.get("trials_mode", "auto")
-    if mode == "one" and int(cfg.get("trials") or 0):
-        cmd += ["--trials", str(int(cfg["trials"]))]
-    elif mode == "per":
-        n = int((cfg.get("per_trials") or {}).get(f"{cfg.get('instrument')}:{tf}", 0))
-        cmd += (["--trials", str(n)] if n else ["--auto-trials"])
-    else:
-        cmd += ["--auto-trials"]
+    n = _explicit_trials(cfg, tf)
+    cmd += (["--trials", str(n)] if n is not None else ["--auto-trials"])
     if cfg.get("ind_1min", True):
         cmd.append("--ind-1min")
     if cfg.get("split_sltp"):
@@ -156,7 +164,7 @@ class RunManager:
         cmd = build_command(cfg, tf)
         self.prefix = study_prefix(cfg)
         self.study = study_name(cfg, tf)
-        self.tf, self.cfg, self.target = tf, cfg, target_trials(cfg)
+        self.tf, self.cfg, self.target = tf, cfg, target_trials(cfg, tf)
         self.lines.clear()
         self._total = 0
         self.proc = subprocess.Popen(cmd, cwd=str(_PI), env=_child_env(cfg),
