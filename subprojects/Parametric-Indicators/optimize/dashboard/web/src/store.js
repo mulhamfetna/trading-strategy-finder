@@ -28,8 +28,6 @@ export const store = reactive({
   async loadConfig() {
     try {
       const c = await api.config()
-      // config() also embeds a status snapshot under `status`
-      this.status = c.status || this.status
       for (const k of ['samplers', 'engines', 'stage_b', 'timeframes', 'instruments',
                        'bounds', 'indicators', 'presets', 'trials_per_dim']) {
         if (c[k] !== undefined) this.config[k] = c[k]
@@ -38,17 +36,22 @@ export const store = reactive({
       if (!this.cfg.sampler && this.config.samplers.length) this.cfg.sampler = this.config.samplers[0]
       this.conn = 'online'
       this.loaded = true
+      this.refreshStatus()        // fire the (slow) status poll async — never blocks the page render (#41)
     } catch (e) {
       this.conn = 'offline'
     }
   },
 
   async refreshStatus() {
+    if (this._statusInFlight) return       // the status query is slow (~13s) — don't pile up overlapping polls
+    this._statusInFlight = true
     try {
       this.status = await api.status()
       this.conn = 'online'
     } catch {
       this.conn = 'offline'
+    } finally {
+      this._statusInFlight = false
     }
   },
 

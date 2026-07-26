@@ -20,9 +20,9 @@ _BUNDLES: dict[str, str] = {}
 
 @app.get("/api/config")
 def api_config():
-    cfg = control.config()
-    cfg["status"] = control.status()
-    return cfg
+    # Config only (instant). Status is intentionally NOT embedded — control.status() runs the slow
+    # `stats --json` Postgres query (~13s); the UI polls /api/status separately so the page renders now.
+    return control.config()
 
 
 @app.post("/api/plan")

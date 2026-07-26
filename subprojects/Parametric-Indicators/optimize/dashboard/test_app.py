@@ -12,11 +12,12 @@ import optimize.dashboard.app as APP
 client = TestClient(APP.app)
 
 
-def test_config_endpoint(monkeypatch):
+def test_config_endpoint_is_status_free(monkeypatch):
+    # /api/config must NOT embed the slow status query (#41) — it returns config only.
     monkeypatch.setattr(APP.control, "config", lambda: {"samplers": ["nsga3", "gp"], "engines": ["single"]})
-    monkeypatch.setattr(APP.control, "status", lambda: {"ok": True, "studies": []})
+    monkeypatch.setattr(APP.control, "status", lambda: (_ for _ in ()).throw(AssertionError("status must not be called")))
     r = client.get("/api/config")
-    assert r.status_code == 200 and "samplers" in r.json() and "status" in r.json()
+    assert r.status_code == 200 and "samplers" in r.json() and "status" not in r.json()
 
 
 def test_plan_endpoint(monkeypatch):
