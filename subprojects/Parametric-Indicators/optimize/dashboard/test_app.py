@@ -49,6 +49,26 @@ def test_run_state_endpoint():
     assert "running" in st and "study" in st
 
 
+def test_run_state_surfaces_orphan_even_when_owned_run_finished(monkeypatch):
+    # #49: a FINISHED owned run must NOT mask a detached orphan
+    monkeypatch.setattr(APP.runner._MGR, "state",
+                        lambda: {"running": False, "pid": 100, "returncode": 0, "study": "ccold_4h", "tf": "4h", "target": 2})
+    monkeypatch.setattr(APP.runner, "detached_runs",
+                        lambda: [{"pid": 200, "pgid": 200, "prefix": "ccnew", "tf": "1h", "instrument": "NQ", "study": "ccnew_1h"}])
+    monkeypatch.setattr(APP.runner, "done_count_for", lambda prefix, tf: 5)
+    d = client.get("/api/run/state").json()
+    assert d["running"] is True and d["detached"] is True and d["study"] == "ccnew_1h"
+
+
+def test_run_state_shows_finished_run_when_no_orphan(monkeypatch):
+    monkeypatch.setattr(APP.runner._MGR, "state",
+                        lambda: {"running": False, "pid": 100, "returncode": 0, "study": "ccold_4h", "tf": "4h", "target": 2})
+    monkeypatch.setattr(APP.runner, "detached_runs", lambda: [])
+    monkeypatch.setattr(APP.runner._MGR, "done_count", lambda: 2)
+    d = client.get("/api/run/state").json()
+    assert d["running"] is False and d["detached"] is False and d["study"] == "ccold_4h"
+
+
 def test_resume_endpoint(monkeypatch):
     monkeypatch.setattr(APP.control, "resume", lambda cfg: {"ok": True, "resumed": True})
     assert client.post("/api/resume", json={}).json()["resumed"]
