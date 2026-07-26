@@ -63,13 +63,13 @@ def api_study(name: str):
 @app.get("/api/run/state")
 def api_run_state():
     st = runner._MGR.state()
-    if st.get("pid"):                                        # an OWNED run exists (active or just finished)
+    if st.get("running"):                                    # owned run ACTIVELY running → report it
         done = runner._MGR.done_count()
         st["progress"] = progress.live(st.get("tf") or "run", done, st.get("target") or 0, time.time())
         st["detached"] = False
         return st
-    # No owned run — surface a DETACHED orphan (a run still alive after a restart) so the UI isn't
-    # misleadingly idle. Its progress comes from the store; Stop (stop_all) can kill it.
+    # Owned run is idle/finished — a DETACHED orphan (another run still alive after a restart) takes
+    # precedence so the UI isn't misleadingly idle. (Bugfix #49: a finished _MGR run must NOT mask orphans.)
     orphans = runner.detached_runs()
     if orphans:
         o = orphans[0]
@@ -78,6 +78,10 @@ def api_run_state():
                 "prefix": o.get("prefix"), "pid": o.get("pid"), "target": 0, "returncode": None,
                 "progress": progress.live(o.get("tf") or "run", done, 0, time.time()),
                 "detached_count": len(orphans)}
+    # Neither running nor orphaned — return the last owned (finished) run's state so its result stays visible.
+    if st.get("pid"):
+        st["progress"] = progress.live(st.get("tf") or "run", runner._MGR.done_count(),
+                                       st.get("target") or 0, time.time())
     st["detached"] = False
     st["detached_count"] = 0
     return st
