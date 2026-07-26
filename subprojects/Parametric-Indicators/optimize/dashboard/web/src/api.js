@@ -19,11 +19,12 @@ export const api = {
   status: () => j('GET', '/api/status'),
   health: () => j('GET', '/api/health'),
 
-  // planning + lifecycle
+  // planning + lifecycle (run = owned subprocess driver, #28)
   plan: (cfg) => j('POST', '/api/plan', cfg),
   run: (cfg) => j('POST', '/api/run', cfg),
   resume: (cfg) => j('POST', '/api/resume', cfg),
   stop: () => j('POST', '/api/stop'),
+  runState: () => j('GET', '/api/run/state'),
 
   // live progress / ETA (snapshot poll)
   liveProgress: (tf, target) =>
@@ -39,8 +40,7 @@ export const api = {
   queueLaunch: (cfg) => j('POST', '/api/queue', cfg),
 }
 
-// SSE helper for the log/progress stream (GET /api/progress?tf=...).
-// Returns the EventSource so the caller can .close() it.
+// SSE helper for the legacy log/progress stream (GET /api/progress?tf=...).
 export function streamLogs(tf, onLine) {
   const es = new EventSource(`/api/progress?tf=${encodeURIComponent(tf)}`)
   es.onmessage = (e) => {
@@ -49,5 +49,19 @@ export function streamLogs(tf, onLine) {
       if (line != null) onLine(line)
     } catch { /* ignore malformed frames */ }
   }
+  return es
+}
+
+// SSE for the OWNED run's live stdout (GET /api/run/logs). onLine per line; onDone at exit.
+export function streamRunLogs(onLine, onDone) {
+  const es = new EventSource('/api/run/logs')
+  es.onmessage = (e) => {
+    try {
+      const d = JSON.parse(e.data)
+      if (d.line != null) onLine(d.line)
+      if (d.done) { onDone && onDone(d.returncode); es.close() }
+    } catch { /* ignore */ }
+  }
+  es.onerror = () => es.close()
   return es
 }
