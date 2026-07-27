@@ -113,6 +113,12 @@ Every one exists because skipping it produced a wrong, confident result that had
 Reports live in `docs/superpowers/`; the running standup is
 `subprojects/Parametric-Indicators/DAILY_REPORTS.md`.
 
+**The cost analogue of these rules is [`docs/EXPANSION_ROUND_PLAYBOOK.md`](docs/EXPANSION_ROUND_PLAYBOOK.md)
+— read it before ANY expansion round** (new indicators, instruments, timeframes, layers). Correctness is
+gated on every PR; **cost is gated on none**, which is how one indicator (`dfa`) silently became 81% of
+all optimizer compute — 12.6 minutes for a single compute — while the performance report still blamed
+three indicators that had already been fixed (#54).
+
 ---
 
 ## 6 — CHECKPOINTS ARE RELEASES (with DOIs)
@@ -158,6 +164,10 @@ milestone, a frozen finding, or a **new champion set** (only once verified).
 - [ ] `git worktree add .worktrees/<slug> -b feat/<issue>-<slug> dev`
 - [ ] Server dir `~/Mulham/<slug>` if compute is needed
 - [ ] Deep-research pass first (for a new question)
+- [ ] **If this is an EXPANSION round** (more indicators / instruments / timeframes / layers):
+      run the start-of-round checklist in [`docs/EXPANSION_ROUND_PLAYBOOK.md`](docs/EXPANSION_ROUND_PLAYBOOK.md)
+      — re-profile first (an old profile is invalid after growth), record the "before" number, and
+      multiply any per-bar cost by **486,969** before committing to it
 - [ ] Work; print params actually used; power / dumb-control / noise checks as applicable
 - [ ] Golden gate green on the server; CI green on the PR
 - [ ] PR to `dev` with `Closes #N`; delete the branch after merge
