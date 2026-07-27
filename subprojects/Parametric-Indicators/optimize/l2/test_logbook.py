@@ -26,15 +26,18 @@ def test_run_causal_emits_one_row_per_decision_bar():
 def test_causal_l1_matches_legacy_oracle():
     """L1 entries (bar + direction) and P/L from the causal log == the legacy l1_runner ledger exactly."""
     legacy = l1_runner.run_l1("4h")                             # frozen lean champion
-    res = logbook.run_causal(payload.l1_default_params("4h"), dict(payload.PERMISSIVE), "4h")
+    # NOTE (#66): compare like-for-like. The 4h L1 DEFAULT moved from the frozen lean champion to
+    # the deployed champion, so l1_default_params() no longer matches l1_runner.run_l1()'s lean
+    # oracle — these tests were comparing two DIFFERENT strategies. Pin the lean params explicitly.
+    res = logbook.run_causal(payload.frozen_lean_params("4h"), dict(payload.PERMISSIVE), "4h")
     l1_entries = [(r.i, r.direction) for r in res.log if r.layer == "L1" and r.decision == "entry"]
     legacy_entries = [(int(t["entry_idx"]), t["direction"]) for t in legacy.ledger]
     assert l1_entries == legacy_entries
     l1_rows = [r for r in res.log if r.layer == "L1" and r.decision == "entry"]
-    assert round(sum(r.pnl for r in l1_rows)) == 151655
+    assert round(sum(r.pnl for r in l1_rows)) == 154646
     # per-layer running equity is booked in exit-time order; final equity == layer P/L; dd never negative
     last = max(l1_rows, key=lambda r: r.exit_time)
-    assert round(last.equity) == 151655 and all(r.dd >= 0 for r in l1_rows)
+    assert round(last.equity) == 154646 and all(r.dd >= 0 for r in l1_rows)
 
 
 def test_causal_l2_matches_legacy_engine():
@@ -42,14 +45,17 @@ def test_causal_l2_matches_legacy_engine():
     count, DD, and the force-closed subset — not just rounded dollars."""
     legacy_l1 = l1_runner.run_l1("4h")
     legacy = engine.run_l2(legacy_l1, _CHAMP)                   # l1_priority
-    res = logbook.run_causal(payload.l1_default_params("4h"), _CHAMP, "4h")
+    # NOTE (#66): compare like-for-like. The 4h L1 DEFAULT moved from the frozen lean champion to
+    # the deployed champion, so l1_default_params() no longer matches l1_runner.run_l1()'s lean
+    # oracle — these tests were comparing two DIFFERENT strategies. Pin the lean params explicitly.
+    res = logbook.run_causal(payload.frozen_lean_params("4h"), _CHAMP, "4h")
     l2_rows = [r for r in res.log if r.layer == "L2" and r.decision == "entry"]
     assert sorted((r.i, r.direction) for r in l2_rows) == \
            sorted((int(t["entry_idx"]), t["direction"]) for t in legacy.ledger)
-    assert len(l2_rows) == 48
-    assert round(metrics.score(legacy)["pnl"]) == round(sum(r.pnl for r in l2_rows)) == 24498
+    assert len(l2_rows) == 34
+    assert round(metrics.score(legacy)["pnl"]) == round(sum(r.pnl for r in l2_rows)) == 24746
     eq = np.cumsum([r.pnl for r in sorted(l2_rows, key=lambda r: r.exit_time)])
-    assert round(float((np.maximum.accumulate(eq) - eq).max())) == 7015               # L2 DD (l2v2)
+    assert round(float((np.maximum.accumulate(eq) - eq).max())) == 7773               # L2 DD (l2v2 on the lean L1)
     fc_causal = sorted((r.i, round(r.exit_price, 4), round(r.pnl, 2)) for r in l2_rows if r.exit_reason == "L1-entry")
     fc_legacy = sorted((int(t["entry_idx"]), round(float(t["exit_price"]), 4), round(float(t["pnl"]), 2))
                        for t in legacy.ledger if t["exit_reason"] == "L1-entry")
@@ -106,7 +112,9 @@ def test_cap_1min_produces_time_cap_exits():
     capped = dict(payload.l1_default_params("4h"), cap_1min=3)   # tight cap → many time-cap exits
     res = logbook.run_causal(capped, dict(payload.PERMISSIVE), "4h")
     assert "TIME_CAP" in {r.exit_reason for r in res.log if r.decision == "entry"}
-    res0 = logbook.run_causal(payload.l1_default_params("4h"), dict(payload.PERMISSIVE), "4h")
+    # the UNCAPPED reference must be the lean params — the deployed 4h champion carries cap_1min=451,
+    # so l1_default_params() legitimately DOES produce TIME_CAP exits (#66).
+    res0 = logbook.run_causal(payload.frozen_lean_params("4h"), dict(payload.PERMISSIVE), "4h")
     assert "TIME_CAP" not in {r.exit_reason for r in res0.log if r.decision == "entry"}
 
 
