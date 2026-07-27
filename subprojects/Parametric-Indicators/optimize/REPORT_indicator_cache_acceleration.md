@@ -210,6 +210,45 @@ individually diagnosed, because the control proves none of them are caused by th
 
 ---
 
+## 4b. The end-to-end result: the same profile, re-run
+
+The indicator-level speed-up is only meaningful if the *whole optimizer run* gets faster. We re-ran the
+**identical** profile (same timeframe, same seed ⇒ the optimizer suggested the **same trials**, and the
+probe confirms the **same 233 cold computations**), the only difference being the fixed `dfa`:
+
+| Measurement (3 trials, NQ 4h, 165 indicators, cold cache) | Before | After | Change |
+|---|---:|---:|---:|
+| **Wall clock** | 208 s | **40 s** | **5.1× faster** |
+| Cold indicator compute | 206 s | 39 s | 5.3× less |
+| Cold computations performed | 233 | 233 | identical (apples-to-apples) |
+| `dfa` cold time | **167.0 s** | **0.161 s** | 1,037× less |
+| `dfa` share of all indicator time | **81%** | **0.42%** | no longer in the top 12 |
+
+```mermaid
+graph TB
+    subgraph B["BEFORE — 208 s"]
+        B1["dfa — 167 s (81%)"]
+        B2["all 164 others — 39 s"]
+    end
+    subgraph A["AFTER — 40 s"]
+        A1["dfa — 0.16 s (0.4%)"]
+        A2["all 164 others — 39 s"]
+    end
+    B -->|"one function rewritten<br/>0 decisions changed"| A
+```
+
+**Read this carefully, because it sets the ceiling on further work.** The 164 other indicators still cost
+the same ~39 s — that part was never the problem and is untouched. The whole 168-second saving came from
+one function. The remaining cost is now **diffuse**: the new leader, `autocorr`, is 3.66 s (9% of what's
+left), followed by `hurst_exp` 2.93 s and `ifvg` 2.51 s. There is no second `dfa` hiding in the profile.
+
+**What this means for a real sweep:** a production study runs thousands of trials, not three. Every trial
+that switched `dfa` on previously paid ~83 s per fold-slice compute (up to ~756 s on the full series at
+`n=400`). Those costs are now ~0.2–0.7 s. The saving compounds across every trial and every one of the
+~30 parallel workers.
+
+---
+
 ## 5. Answering each technology you asked about
 
 | Your question | Verdict | Why |
@@ -264,8 +303,7 @@ problem we no longer have.
 
 Stated plainly so nothing here is over-claimed:
 
-1. **The re-baseline is pending** — we have not yet re-run the profile *with* the fast `dfa` to confirm the
-   new distribution of cost and how much of the original 208 s remains.
+1. ~~The re-baseline is pending~~ — **done, see §4b** (208 s → 40 s on an identical workload).
 2. **Cache substrate was not benchmarked** (`.npy` vs `/dev/shm` vs Redis vs shared memory). It was
    de-prioritized once compute proved to be 99% of the cost, but the Redis/RAM question is therefore
    answered by *reasoning*, not measurement.
@@ -294,15 +332,15 @@ AND beats both dumb controls** (the warm cache; simply adding CPU workers).
 
 ## 9. Recommended next steps
 
-1. **Fix the same pattern in `hurst_exp`, `autocorr`, `linreg_r2`** — identical per-bar-loop structure,
-   same closed-form/Numba treatment, same vote-parity gate. (Expected: another large cut to the remaining
-   ~19%.)
-2. **Re-run the baseline** with the fast `dfa` to publish the new cost distribution.
-3. **Add a review rule:** no `np.polyfit` / `np.corrcoef` / `np.linalg.*` inside a per-bar loop in any new
+1. **Fix the same pattern in `autocorr` (3.66 s), `hurst_exp` (2.93 s), `linreg_r2`** — identical
+   per-bar-loop structure, same closed-form/Numba treatment, same vote-parity gate. Realistic expectation:
+   these three are ~17% of what remains, so the honest upside is roughly **40 s → ~33 s** — worthwhile and
+   cheap, but nothing like the `dfa` win. **There is no second `dfa`.** Diminishing returns start here.
+2. **Add a review rule:** no `np.polyfit` / `np.corrcoef` / `np.linalg.*` inside a per-bar loop in any new
    indicator; and add a cheap CI timing check so a future indicator cannot silently reintroduce a
    12-minute compute.
-4. **Optional, only if still needed:** the substrate and cache-level questions (§7.2, §7.3).
-5. **Keep the GPU shelved** unless a future profile shows dense parallel arithmetic dominating.
+3. **Optional, only if still needed:** the substrate and cache-level questions (§7.2, §7.3).
+4. **Keep the GPU shelved** unless a future profile shows dense parallel arithmetic dominating.
 
 ---
 
