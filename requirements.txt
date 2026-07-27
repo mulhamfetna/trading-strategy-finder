@@ -7,3 +7,4 @@ fastapi
 uvicorn[standard]
 httpx
 optuna>=3.5.0
+numba  # optional fast path for calc/quant.dfa (#54); absent => verbatim reference fallback
