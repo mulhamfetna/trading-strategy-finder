@@ -34,6 +34,8 @@ class MarketContext:
     close: np.ndarray
     volume: np.ndarray
     session_id: np.ndarray | None = None
+    ref_close: np.ndarray | None = None   # reference-instrument close, causally aligned to these bars
+                                           # (cross-series indicators only; None ⇒ they stay neutral)
 
     def __len__(self) -> int:
         return len(self.close)
@@ -59,6 +61,8 @@ class IndicatorConfig:
 class Indicator(ABC):
     """Base indicator. Subclasses implement `directions(ctx)`."""
     key: str = ""
+    needs_ref: bool = False   # True for cross-series indicators — treated as INACTIVE (not a confirmer/
+                              # vetoer, so it never tightens the K-rule) when ctx.ref_close is None.
 
     def __init__(self, config: IndicatorConfig | None = None) -> None:
         self.config = (config or IndicatorConfig()).validate()

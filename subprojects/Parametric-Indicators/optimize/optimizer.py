@@ -53,13 +53,18 @@ def _suggest_param(trial, name, p):
     return trial.suggest_float(name, lo, hi, step=st)
 
 
-def _suggest_indicators(trial, exclude=(), only=(), prefix=""):
+def _suggest_indicators(trial, exclude=(), only=(), prefix="", max_enabled=None):
     """WS-I.8 search space: each registered indicator on/off + its params (rectangular — params always
     suggested so NSGA crossover stays well-defined). Mode = the schema default. Keys in `exclude`, or (when
     `only` is non-empty) keys NOT in `only`, are forced OFF with default params and NOT suggested (α: revert
     to wsh4-era / restrict to a subset ⇒ fewer dimensions). `_searched` flags which keys entered the search.
     `prefix` namespaces the Optuna param names (e.g. 'es_') so a cross-instrument contributor's committee
-    can be searched alongside NQ's without name collisions; prefix='' is byte-identical to before."""
+    can be searched alongside NQ's without name collisions; prefix='' is byte-identical to before.
+
+    `max_enabled` (WS-EXTRA-IND): cap the number of simultaneously-enabled indicators. With ~125 keys the
+    K-of-N search would otherwise explore 125-way soups; None = uncapped (byte-identical to before). The cap
+    is applied as a POST-suggestion repair (keep the first `max_enabled` enabled in REGISTRY order, force the
+    rest off) so the Optuna param dimensionality stays rectangular — only the feasible region shrinks."""
     specs = []
     for key in library.REGISTRY:
         meta = library.SCHEMA[key]
@@ -71,6 +76,10 @@ def _suggest_indicators(trial, exclude=(), only=(), prefix=""):
         enabled = trial.suggest_categorical(f"{prefix}en_{key}", [False, True])
         params = {p["name"]: _suggest_param(trial, f"{prefix}{key}_{p['name']}", p) for p in meta["params"]}
         specs.append({"key": key, "enabled": enabled, "mode": meta["mode"], "params": params, "_searched": True})
+    if max_enabled is not None:
+        on = [s for s in specs if s["enabled"]]
+        for s in on[int(max_enabled):]:      # deterministic REGISTRY order ⇒ reproducible repair
+            s["enabled"] = False
     return specs
 
 
@@ -384,7 +393,8 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         dd_pnl_cap: float = DD_PNL_CAP, contrib_tokens: tuple = (),
         contrib_exclude=None, instrument: str = "NQ", intracandle: bool = False,
         freeze_indicators: bool = False, intracandle_always_on: bool = False,
-        force_eod: bool = False) -> dict:
+        force_eod: bool = False, max_enabled: int | None = None,
+        reference: str | None = None) -> dict:
     # split_sltp (Q3 / E2): when True the optimizer searches SEPARATE long vs short SL/TP (long_*/short_*),
     # widening the space per the user's point-5 goal. Default False ⇒ shared SL/TP ⇒ identical to prior runs.
     # NOTE FOR THE NEXT FULL RUN (wsh5): launch with split_sltp=True to let longs and shorts get their own
@@ -403,6 +413,20 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
     print(f"[{tf_name}] loading inputs ({instrument}, pv={pv:g}) ...", flush=True)
     df_dec, df1, box, vf, n_split = data_mod.load_inputs(tf_name, instrument)
     sig_int = signals_to_int(sig_mod.decision_signals(df_dec, box))   # precompute once (param-independent)
+    # Cross-series reference (#17): loaded ONCE; None ⇒ cross-series indicators stay neutral (parity).
+    ref_df = None
+    if reference and reference != instrument:
+        try:
+            ref_df, *_ = data_mod.load_inputs(tf_name, reference)
+            print(f"[{tf_name}] cross-series reference = {reference} ({len(ref_df)} bars, causally aligned)", flush=True)
+        except Exception as exc:  # noqa: BLE001
+            print(f"[{tf_name}] reference {reference} unavailable ({exc}); cross-series indicators inert", flush=True)
+    # A cross-series indicator with NO reference can never confirm ⇒ enabling it would gate out every
+    # entry. So exclude those keys from the search unless a reference is actually loaded.
+    if ref_df is None:
+        _xs = tuple(library.lib_xseries.SCHEMA)
+        exclude_inds = tuple(dict.fromkeys((*exclude_inds, *_xs)))
+        print(f"[{tf_name}] no reference ⇒ cross-series indicators excluded from search: {list(_xs)}", flush=True)
     print(f"[{tf_name}] {len(df_dec)} decision bars; cooldown cap {cap}; "
           f"bounds sl_soft{b['sl_soft']} sl_hard{b['sl_hard']} tp{b['tp']}; "
           f"indicators on {'1-MINUTE frame' if ind_1min else 'decision TF'}", flush=True)
@@ -429,7 +453,8 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
             k_rule = frozen_k
         else:
             specs = [{k: v for k, v in s.items() if k != "_searched"}      # strip the test-hook key
-                     for s in _suggest_indicators(trial, exclude_inds, only_inds)]   # α: scoped search space
+                     for s in _suggest_indicators(trial, exclude_inds, only_inds,
+                                                  max_enabled=max_enabled)]   # α: scoped search space + K-cap
             k_rule = trial.suggest_int("k", 1, 5)       # clamped to #confirmers by confirm_mask
         # Time caps, asked the way the indicators are asked: a yes/no per cap, plus "how much" for the
         # bars cap. Rectangular space (cap_1min always suggested) so NSGA-III sees a fixed dimension set;
@@ -478,7 +503,7 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
             params["contributors"] = [_cs.suggest_contributor(trial, tok, exclude_committee=exc)
                                       for tok in contrib_tokens]
             _contrib = _cmask.precompute_contributor_masks(params, df_dec, df1, box, sig_int, tf.bar_td)
-        r = score_walkforward(df_dec, df1, box, vf, params, tf.bar_td, k=folds,
+        r = score_walkforward(df_dec, df1, box, vf, params, tf.bar_td, k=folds, ref_df=ref_df,
                               min_trades=min_trades, sig_int=sig_int, contrib=_contrib, pv=pv)
         if not r["valid"]:
             raise optuna.TrialPruned()
@@ -486,7 +511,7 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         # FULL-PERIOD feasibility (user): full-window max DD ≤ 25% of full-window P/L. One extra
         # backtest over the whole window (gate frozen causally on vf[:n_split]).
         full = backtest_metrics(df_dec, df1, box, vf, n_split, dict(params, window="full"),
-                                tf.bar_td, sig_int=sig_int, contrib=_contrib, pv=pv)
+                                tf.bar_td, sig_int=sig_int, contrib=_contrib, pv=pv, ref_df=ref_df)
         full_pnl = float(full["pnl"]); full_dd = float(full["max_dd"])
         dec_pause = float(full.get("max_no_entry_days_decision", full.get("max_no_entry_days", 0.0)))
         # ⚠️ RECORD THE EXIT RULE THIS TRIAL WAS SCORED WITH. Do not make anything downstream re-derive it
@@ -667,6 +692,12 @@ def main() -> int:
     ap.add_argument("--freeze-indicators", action="store_true",
                     help="FIX the indicator layer (on/off + params + k) at the champion's; search only SL/TP + gate "
                          "+ intra-candle. Far fewer dims; the intra-candle gate is memoised once. Needs a champion seed.")
+    ap.add_argument("--max-enabled", type=int, default=None,
+                    help="Cap simultaneously-enabled indicators per trial (post-suggestion repair, REGISTRY order). "
+                         "Keeps the ~125-key K-of-N search sparse/interpretable. Default: uncapped.")
+    ap.add_argument("--reference", default=None,
+                    help="Reference instrument for the cross-series indicators (rolling_corr/beta, "
+                         "cointegration, pca_factor), e.g. ES. Causally aligned; default: none (they stay inert).")
     a = ap.parse_args()
     from optimize import instruments as _inst
     if not _inst.is_valid(a.instrument):
@@ -696,7 +727,7 @@ def main() -> int:
         contrib_tokens=contrib_tokens, instrument=a.instrument,
         intracandle=(a.intracandle or a.intracandle_on),
         freeze_indicators=a.freeze_indicators, intracandle_always_on=a.intracandle_on,
-        force_eod=a.force_eod)
+        force_eod=a.force_eod, max_enabled=a.max_enabled, reference=a.reference)
     return 0
 
 

@@ -40,17 +40,44 @@ CASES = [
 SS, SH, TP, GP = 30, 40, 60, 60   # the winner box params
 
 
-def main(tf: str = "4h") -> int:
+def _count_mismatch(E, F) -> int:
+    """Trade-for-trade mismatch count between the exact engine (E) and fast engine (F)."""
+    return sum(
+        1 for e, f in zip(E, F)
+        if pd.Timestamp(e["entry_time"]) != pd.Timestamp(f["entry_time"])
+        or e["direction"] != f["direction"] or e["exit_reason"] != f["exit_reason"]
+        or pd.Timestamp(e["exit_time"]) != pd.Timestamp(f["exit_time"])
+        or abs(e["pnl_points"] - f["pnl_points"]) > 1e-6
+    )
+
+
+CROSS_SERIES = ("rolling_corr", "rolling_beta", "cointegration", "pca_factor")
+
+
+def _load_reference(tf, instrument="ES"):
+    """Load a reference instrument's decision frame (Date+Close) for the cross-series indicators.
+    Returns None if unavailable — the cross-series keys then stay neutral (still parity-valid)."""
+    try:
+        rdf, *_ = data.load_inputs(tf, instrument)
+        return rdf
+    except Exception as exc:  # noqa: BLE001
+        print(f"[ref] {instrument} {tf} unavailable ({exc}); cross-series keys will be inert")
+        return None
+
+
+def main(tf: str = "4h", keys=None) -> int:
     df, df1, box, vf, n = data.load_inputs(tf)
     sig_int = signals_to_int(signals.decision_signals(df, box))
     DD, DC = df["Date"].to_numpy(), df["Close"].to_numpy(float)
     MD = df1["Date"].to_numpy(); MH = df1["High"].to_numpy(float)
     ML = df1["Low"].to_numpy(float); MC = df1["Close"].to_numpy(float); MO = df1["Open"].to_numpy(float)
     vol_gate = vf <= float(np.percentile(vf[:n], GP))
+    ref_df = _load_reference(tf, "ES")
 
-    def run_case(specs, k):
+    def run_case(specs, k, rd=None):
         inds = library.from_specs(specs)
-        g = vol_gate & ~runner.veto_mask(df, box, inds) & runner.confirm_mask(df, box, inds, k)
+        g = (vol_gate & ~runner.veto_mask(df, box, inds, ref_df=rd)
+             & runner.confirm_mask(df, box, inds, k, ref_df=rd))
         sp = SimpleStrategyParams(sl_soft_points=SS, sl_hard_points=SH,
                                   tp_hard_points=TP, data_path_4h="", data_path_1min="",
                                   box_data_path="", flip_entry_direction=False)
@@ -60,18 +87,31 @@ def main(tf: str = "4h") -> int:
         return E, F, int(g.sum())
 
     ok_all = True
-    for name, specs, k in CASES:
-        E, F, ng = run_case(specs, k)
-        diffs = sum(
-            1 for e, f in zip(E, F)
-            if pd.Timestamp(e["entry_time"]) != pd.Timestamp(f["entry_time"])
-            or e["direction"] != f["direction"] or e["exit_reason"] != f["exit_reason"]
-            or pd.Timestamp(e["exit_time"]) != pd.Timestamp(f["exit_time"])
-            or abs(e["pnl_points"] - f["pnl_points"]) > 1e-6
-        )
+    # Legacy combo regressions run only in a full sweep (skipped when --keys narrows the run).
+    if not keys:
+        for name, specs, k in CASES:
+            E, F, ng = run_case(specs, k)
+            diffs = _count_mismatch(E, F)
+            ok = len(E) == len(F) and diffs == 0
+            ok_all &= ok
+            print(f"{name:26} engine={len(E):4} fast={len(F):4} gate_bars={ng:5} mismatch={diffs:3}  "
+                  f"{'OK' if ok else 'FAIL'}")
+
+    # Full-registry sweep: every registered key enabled ALONE at its SCHEMA defaults (k=1).
+    # New indicators auto-enter here — this is the per-batch parity gate. `--keys a,b` narrows it.
+    sweep_keys = keys if keys else list(library.REGISTRY)
+    for key in sweep_keys:
+        if key not in library.SCHEMA:
+            print(f"{key+' solo':26} UNKNOWN KEY"); ok_all = False; continue
+        meta = library.SCHEMA[key]
+        params = {p["name"]: p["default"] for p in meta["params"]}
+        specs = [{"key": key, "enabled": True, "mode": meta["mode"], "params": params}]
+        rd = ref_df if key in CROSS_SERIES else None       # only the cross-series keys use the reference
+        E, F, ng = run_case(specs, 1, rd)
+        diffs = _count_mismatch(E, F)
         ok = len(E) == len(F) and diffs == 0
         ok_all &= ok
-        print(f"{name:26} engine={len(E):4} fast={len(F):4} gate_bars={ng:5} mismatch={diffs:3}  "
+        print(f"{key+' solo':26} engine={len(E):4} fast={len(F):4} gate_bars={ng:5} mismatch={diffs:3}  "
               f"{'OK' if ok else 'FAIL'}")
 
     # all-off ⇒ confirm/veto masks are identity ⇒ gate == vol_gate exactly
@@ -87,4 +127,12 @@ def main(tf: str = "4h") -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1] if len(sys.argv) > 1 else "4h"))
+    # usage: python optimize/test_indicator_parity.py [tf] [--keys=a,b,c]
+    _argv = [a for a in sys.argv[1:]]
+    _keys = None
+    for _a in list(_argv):
+        if _a.startswith("--keys="):
+            _keys = [k for k in _a.split("=", 1)[1].split(",") if k]
+            _argv.remove(_a)
+    _tf = _argv[0] if _argv else "4h"
+    raise SystemExit(main(_tf, keys=_keys))

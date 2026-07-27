@@ -1,0 +1,1330 @@
+{
+  "bars_stage1": 20000,
+  "scale": 24.348,
+  "budget_s": 2.0,
+  "n_indicators": 165,
+  "n_over_budget": 17,
+  "ranked": [
+    {
+      "key": "sinewave",
+      "worst_config": "default",
+      "subset_s": 0.2699,
+      "projected_full_s": 6.57,
+      "over_budget": true,
+      "notes": {}
+    },
+    {
+      "key": "ifvg",
+      "worst_config": "default",
+      "subset_s": 0.2115,
+      "projected_full_s": 5.15,
+      "over_budget": true,
+      "notes": {}
+    },
+    {
+      "key": "proj_bands",
+      "worst_config": "all_max",
+      "subset_s": 0.2099,
+      "projected_full_s": 5.11,
+      "over_budget": true,
+      "notes": {}
+    },
+    {
+      "key": "ou_halflife",
+      "worst_config": "all_max",
+      "subset_s": 0.1787,
+      "projected_full_s": 4.35,
+      "over_budget": true,
+      "notes": {}
+    },
+    {
+      "key": "cmo_chande_dmi",
+      "worst_config": "all_max",
+      "subset_s": 0.1634,
+      "projected_full_s": 3.98,
+      "over_budget": true,
+      "notes": {}
+    },
+    {
+      "key": "linreg_channel",
+      "worst_config": "all_max",
+      "subset_s": 0.1542,
+      "projected_full_s": 3.75,
+      "over_budget": true,
+      "notes": {}
+    },
+    {
+      "key": "schaff_trend_cycle",
+      "worst_config": "all_max",
+      "subset_s": 0.1427,
+      "projected_full_s": 3.47,
+      "over_budget": true,
+      "notes": {}
+    },
+    {
+      "key": "ichimoku_cloud",
+      "worst_config": "default",
+      "subset_s": 0.1407,
+      "projected_full_s": 3.43,
+      "over_budget": true,
+      "notes": {}
+    },
+    {
+      "key": "ichimoku_tk_cross",
+      "worst_config": "all_max",
+      "subset_s": 0.1398,
+      "projected_full_s": 3.4,
+      "over_budget": true,
+      "notes": {}
+    },
+    {
+      "key": "lsma",
+      "worst_config": "all_max",
+      "subset_s": 0.1274,
+      "projected_full_s": 3.1,
+      "over_budget": true,
+      "notes": {}
+    },
+    {
+      "key": "linreg_r2",
+      "worst_config": "all_max",
+      "subset_s": 0.1252,
+      "projected_full_s": 3.05,
+      "over_budget": true,
+      "notes": {}
+    },
+    {
+      "key": "order_block",
+      "worst_config": "all_min",
+      "subset_s": 0.1156,
+      "projected_full_s": 2.82,
+      "over_budget": true,
+      "notes": {}
+    },
+    {
+      "key": "frama",
+      "worst_config": "all_min",
+      "subset_s": 0.1139,
+      "projected_full_s": 2.77,
+      "over_budget": true,
+      "notes": {}
+    },
+    {
+      "key": "chande_kroll",
+      "worst_config": "all_max",
+      "subset_s": 0.1038,
+      "projected_full_s": 2.53,
+      "over_budget": true,
+      "notes": {}
+    },
+    {
+      "key": "mama_fama",
+      "worst_config": "all_max",
+      "subset_s": 0.0957,
+      "projected_full_s": 2.33,
+      "over_budget": true,
+      "notes": {}
+    },
+    {
+      "key": "smi",
+      "worst_config": "default",
+      "subset_s": 0.0895,
+      "projected_full_s": 2.18,
+      "over_budget": true,
+      "notes": {}
+    },
+    {
+      "key": "ulcer",
+      "worst_config": "all_max",
+      "subset_s": 0.089,
+      "projected_full_s": 2.17,
+      "over_budget": true,
+      "notes": {}
+    },
+    {
+      "key": "hilbert_cycle",
+      "worst_config": "default",
+      "subset_s": 0.0746,
+      "projected_full_s": 1.82,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "fisher",
+      "worst_config": "all_min",
+      "subset_s": 0.0707,
+      "projected_full_s": 1.72,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "rsi_connors",
+      "worst_config": "default",
+      "subset_s": 0.0644,
+      "projected_full_s": 1.57,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "linreg_slope",
+      "worst_config": "all_max",
+      "subset_s": 0.062,
+      "projected_full_s": 1.51,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "hma",
+      "worst_config": "all_max",
+      "subset_s": 0.0598,
+      "projected_full_s": 1.46,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "chandelier",
+      "worst_config": "default",
+      "subset_s": 0.0579,
+      "projected_full_s": 1.41,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "kdj",
+      "worst_config": "default",
+      "subset_s": 0.0576,
+      "projected_full_s": 1.4,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "stoch_rsi",
+      "worst_config": "all_max",
+      "subset_s": 0.0543,
+      "projected_full_s": 1.32,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "qqe",
+      "worst_config": "default",
+      "subset_s": 0.0528,
+      "projected_full_s": 1.28,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "adx",
+      "worst_config": "all_min",
+      "subset_s": 0.0481,
+      "projected_full_s": 1.17,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "choppiness",
+      "worst_config": "default",
+      "subset_s": 0.0477,
+      "projected_full_s": 1.16,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "stochastic",
+      "worst_config": "default",
+      "subset_s": 0.0469,
+      "projected_full_s": 1.14,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "williams_r",
+      "worst_config": "default",
+      "subset_s": 0.0468,
+      "projected_full_s": 1.14,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "donchian",
+      "worst_config": "all_min",
+      "subset_s": 0.0467,
+      "projected_full_s": 1.14,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "aroon",
+      "worst_config": "all_max",
+      "subset_s": 0.0385,
+      "projected_full_s": 0.94,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "aroon_osc",
+      "worst_config": "all_max",
+      "subset_s": 0.0387,
+      "projected_full_s": 0.94,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "gmma",
+      "worst_config": "default",
+      "subset_s": 0.0355,
+      "projected_full_s": 0.86,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "rvgi",
+      "worst_config": "all_min",
+      "subset_s": 0.0348,
+      "projected_full_s": 0.85,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "vidya",
+      "worst_config": "all_max",
+      "subset_s": 0.0337,
+      "projected_full_s": 0.82,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "vol_ratio",
+      "worst_config": "all_min",
+      "subset_s": 0.0328,
+      "projected_full_s": 0.8,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "di_cross",
+      "worst_config": "all_min",
+      "subset_s": 0.0326,
+      "projected_full_s": 0.79,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "gator",
+      "worst_config": "default",
+      "subset_s": 0.0319,
+      "projected_full_s": 0.78,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "alligator",
+      "worst_config": "default",
+      "subset_s": 0.0317,
+      "projected_full_s": 0.77,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "derivative_osc",
+      "worst_config": "all_min",
+      "subset_s": 0.0294,
+      "projected_full_s": 0.72,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "center_of_gravity",
+      "worst_config": "all_max",
+      "subset_s": 0.0291,
+      "projected_full_s": 0.71,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "dfa",
+      "worst_config": "all_max",
+      "subset_s": 0.0264,
+      "projected_full_s": 0.64,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "rvi_dorsey",
+      "worst_config": "default",
+      "subset_s": 0.0233,
+      "projected_full_s": 0.57,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "laguerre_rsi",
+      "worst_config": "all_min",
+      "subset_s": 0.0235,
+      "projected_full_s": 0.57,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "tsi",
+      "worst_config": "all_max",
+      "subset_s": 0.0226,
+      "projected_full_s": 0.55,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "ergodic_osc",
+      "worst_config": "default",
+      "subset_s": 0.0226,
+      "projected_full_s": 0.55,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "kama",
+      "worst_config": "all_min",
+      "subset_s": 0.022,
+      "projected_full_s": 0.54,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "rma",
+      "worst_config": "default",
+      "subset_s": 0.0217,
+      "projected_full_s": 0.53,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "supertrend",
+      "worst_config": "all_max",
+      "subset_s": 0.0219,
+      "projected_full_s": 0.53,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "rmi",
+      "worst_config": "default",
+      "subset_s": 0.0216,
+      "projected_full_s": 0.53,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "atr_norm",
+      "worst_config": "default",
+      "subset_s": 0.0215,
+      "projected_full_s": 0.52,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "wma",
+      "worst_config": "default",
+      "subset_s": 0.0208,
+      "projected_full_s": 0.51,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "sine_wma",
+      "worst_config": "all_max",
+      "subset_s": 0.0191,
+      "projected_full_s": 0.47,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "trix",
+      "worst_config": "all_max",
+      "subset_s": 0.0194,
+      "projected_full_s": 0.47,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "asi",
+      "worst_config": "default",
+      "subset_s": 0.0194,
+      "projected_full_s": 0.47,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "tma",
+      "worst_config": "all_max",
+      "subset_s": 0.0189,
+      "projected_full_s": 0.46,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "yang_zhang",
+      "worst_config": "all_max",
+      "subset_s": 0.018,
+      "projected_full_s": 0.44,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "tema",
+      "worst_config": "default",
+      "subset_s": 0.0177,
+      "projected_full_s": 0.43,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "t3",
+      "worst_config": "all_min",
+      "subset_s": 0.0178,
+      "projected_full_s": 0.43,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "ttm_squeeze",
+      "worst_config": "all_max",
+      "subset_s": 0.0175,
+      "projected_full_s": 0.43,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "roofing",
+      "worst_config": "all_min",
+      "subset_s": 0.0177,
+      "projected_full_s": 0.43,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "ppo",
+      "worst_config": "default",
+      "subset_s": 0.0168,
+      "projected_full_s": 0.41,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "wavetrend",
+      "worst_config": "all_min",
+      "subset_s": 0.0167,
+      "projected_full_s": 0.41,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "efficiency_ratio",
+      "worst_config": "all_max",
+      "subset_s": 0.0162,
+      "projected_full_s": 0.4,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "stddev",
+      "worst_config": "all_max",
+      "subset_s": 0.0153,
+      "projected_full_s": 0.37,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "garch_ewma",
+      "worst_config": "default",
+      "subset_s": 0.0146,
+      "projected_full_s": 0.36,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "hist_vol",
+      "worst_config": "all_max",
+      "subset_s": 0.0143,
+      "projected_full_s": 0.35,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "cyber_cycle",
+      "worst_config": "default",
+      "subset_s": 0.0146,
+      "projected_full_s": 0.35,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "emd",
+      "worst_config": "all_min",
+      "subset_s": 0.0143,
+      "projected_full_s": 0.35,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "keltner",
+      "worst_config": "all_min",
+      "subset_s": 0.0138,
+      "projected_full_s": 0.34,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "mcginley",
+      "worst_config": "all_min",
+      "subset_s": 0.0134,
+      "projected_full_s": 0.33,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "evwma",
+      "worst_config": "all_min",
+      "subset_s": 0.0136,
+      "projected_full_s": 0.33,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "klinger",
+      "worst_config": "default",
+      "subset_s": 0.0136,
+      "projected_full_s": 0.33,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "dema",
+      "worst_config": "all_max",
+      "subset_s": 0.0119,
+      "projected_full_s": 0.29,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "elder_impulse",
+      "worst_config": "all_max",
+      "subset_s": 0.0119,
+      "projected_full_s": 0.29,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "parkinson",
+      "worst_config": "all_min",
+      "subset_s": 0.011,
+      "projected_full_s": 0.27,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "garman_klass",
+      "worst_config": "all_min",
+      "subset_s": 0.011,
+      "projected_full_s": 0.27,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "rogers_satchell",
+      "worst_config": "all_min",
+      "subset_s": 0.011,
+      "projected_full_s": 0.27,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "starc",
+      "worst_config": "all_max",
+      "subset_s": 0.011,
+      "projected_full_s": 0.27,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "mass_index",
+      "worst_config": "default",
+      "subset_s": 0.0102,
+      "projected_full_s": 0.25,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "jma",
+      "worst_config": "all_min",
+      "subset_s": 0.0104,
+      "projected_full_s": 0.25,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "coppock",
+      "worst_config": "default",
+      "subset_s": 0.01,
+      "projected_full_s": 0.24,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "hurst_exp",
+      "worst_config": "all_max",
+      "subset_s": 0.0098,
+      "projected_full_s": 0.24,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "alma",
+      "worst_config": "all_max",
+      "subset_s": 0.0096,
+      "projected_full_s": 0.23,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "macd",
+      "worst_config": "default",
+      "subset_s": 0.0088,
+      "projected_full_s": 0.21,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "rsi",
+      "worst_config": "default",
+      "subset_s": 0.0077,
+      "projected_full_s": 0.19,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "psar",
+      "worst_config": "all_max",
+      "subset_s": 0.0077,
+      "projected_full_s": 0.19,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "bandpass",
+      "worst_config": "default",
+      "subset_s": 0.0077,
+      "projected_full_s": 0.19,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "nvi",
+      "worst_config": "all_min",
+      "subset_s": 0.0071,
+      "projected_full_s": 0.17,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "pvi",
+      "worst_config": "all_min",
+      "subset_s": 0.0069,
+      "projected_full_s": 0.17,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "ema_trend",
+      "worst_config": "all_min",
+      "subset_s": 0.0063,
+      "projected_full_s": 0.15,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "cci",
+      "worst_config": "all_max",
+      "subset_s": 0.0062,
+      "projected_full_s": 0.15,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "zlema",
+      "worst_config": "all_min",
+      "subset_s": 0.006,
+      "projected_full_s": 0.15,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "chaikin_vol",
+      "worst_config": "all_min",
+      "subset_s": 0.006,
+      "projected_full_s": 0.15,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "chaikin_osc",
+      "worst_config": "default",
+      "subset_s": 0.0061,
+      "projected_full_s": 0.15,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "demand_index",
+      "worst_config": "all_min",
+      "subset_s": 0.0061,
+      "projected_full_s": 0.15,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "vzo",
+      "worst_config": "default",
+      "subset_s": 0.006,
+      "projected_full_s": 0.15,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "fractals",
+      "worst_config": "default",
+      "subset_s": 0.0063,
+      "projected_full_s": 0.15,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "super_smoother",
+      "worst_config": "all_min",
+      "subset_s": 0.0062,
+      "projected_full_s": 0.15,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "apo",
+      "worst_config": "all_min",
+      "subset_s": 0.0059,
+      "projected_full_s": 0.14,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "expma",
+      "worst_config": "all_max",
+      "subset_s": 0.0059,
+      "projected_full_s": 0.14,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "vol_osc",
+      "worst_config": "default",
+      "subset_s": 0.0059,
+      "projected_full_s": 0.14,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "pivot_floor",
+      "worst_config": "default",
+      "subset_s": 0.0053,
+      "projected_full_s": 0.13,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "pivot_woodie",
+      "worst_config": "default",
+      "subset_s": 0.0054,
+      "projected_full_s": 0.13,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "pivot_demark",
+      "worst_config": "default",
+      "subset_s": 0.0054,
+      "projected_full_s": 0.13,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "pivot_camarilla",
+      "worst_config": "default",
+      "subset_s": 0.0054,
+      "projected_full_s": 0.13,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "pivot_fib",
+      "worst_config": "default",
+      "subset_s": 0.0054,
+      "projected_full_s": 0.13,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "cpr",
+      "worst_config": "default",
+      "subset_s": 0.0054,
+      "projected_full_s": 0.13,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "pvt",
+      "worst_config": "all_min",
+      "subset_s": 0.0049,
+      "projected_full_s": 0.12,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "vwap",
+      "worst_config": "default",
+      "subset_s": 0.0044,
+      "projected_full_s": 0.11,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "anchored_vwap",
+      "worst_config": "default",
+      "subset_s": 0.0046,
+      "projected_full_s": 0.11,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "structure_trend",
+      "worst_config": "default",
+      "subset_s": 0.0041,
+      "projected_full_s": 0.1,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "fvg",
+      "worst_config": "all_max",
+      "subset_s": 0.0042,
+      "projected_full_s": 0.1,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "cisd",
+      "worst_config": "default",
+      "subset_s": 0.0039,
+      "projected_full_s": 0.1,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "tvi",
+      "worst_config": "all_min",
+      "subset_s": 0.0041,
+      "projected_full_s": 0.1,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "zscore",
+      "worst_config": "all_max",
+      "subset_s": 0.004,
+      "projected_full_s": 0.1,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "mfi",
+      "worst_config": "all_max",
+      "subset_s": 0.0037,
+      "projected_full_s": 0.09,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "bollinger",
+      "worst_config": "all_max",
+      "subset_s": 0.0033,
+      "projected_full_s": 0.08,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "pgo",
+      "worst_config": "all_min",
+      "subset_s": 0.0032,
+      "projected_full_s": 0.08,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "autocorr",
+      "worst_config": "all_max",
+      "subset_s": 0.0033,
+      "projected_full_s": 0.08,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "kalman",
+      "worst_config": "all_max",
+      "subset_s": 0.0031,
+      "projected_full_s": 0.08,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "elder_ray",
+      "worst_config": "default",
+      "subset_s": 0.0031,
+      "projected_full_s": 0.07,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "force_index",
+      "worst_config": "all_min",
+      "subset_s": 0.003,
+      "projected_full_s": 0.07,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "breaker",
+      "worst_config": "all_min",
+      "subset_s": 0.0025,
+      "projected_full_s": 0.06,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "td_sequential",
+      "worst_config": "default",
+      "subset_s": 0.0024,
+      "projected_full_s": 0.06,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "td_combo",
+      "worst_config": "default",
+      "subset_s": 0.0025,
+      "projected_full_s": 0.06,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "kst",
+      "worst_config": "all_min",
+      "subset_s": 0.0008,
+      "projected_full_s": 0.02,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "trend_intensity",
+      "worst_config": "all_min",
+      "subset_s": 0.0007,
+      "projected_full_s": 0.02,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "ultimate_osc",
+      "worst_config": "default",
+      "subset_s": 0.0009,
+      "projected_full_s": 0.02,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "obv",
+      "worst_config": "all_min",
+      "subset_s": 0.0003,
+      "projected_full_s": 0.01,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "vwma",
+      "worst_config": "default",
+      "subset_s": 0.0003,
+      "projected_full_s": 0.01,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "ma_envelope",
+      "worst_config": "all_min",
+      "subset_s": 0.0002,
+      "projected_full_s": 0.01,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "vortex",
+      "worst_config": "all_min",
+      "subset_s": 0.0005,
+      "projected_full_s": 0.01,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "dma",
+      "worst_config": "default",
+      "subset_s": 0.0003,
+      "projected_full_s": 0.01,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "bbi",
+      "worst_config": "default",
+      "subset_s": 0.0003,
+      "projected_full_s": 0.01,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "rsi_cutler",
+      "worst_config": "all_min",
+      "subset_s": 0.0004,
+      "projected_full_s": 0.01,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "cmo",
+      "worst_config": "all_min",
+      "subset_s": 0.0004,
+      "projected_full_s": 0.01,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "psy",
+      "worst_config": "all_min",
+      "subset_s": 0.0002,
+      "projected_full_s": 0.01,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "ad_line",
+      "worst_config": "all_min",
+      "subset_s": 0.0003,
+      "projected_full_s": 0.01,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "cmf",
+      "worst_config": "all_min",
+      "subset_s": 0.0004,
+      "projected_full_s": 0.01,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "eom",
+      "worst_config": "all_min",
+      "subset_s": 0.0003,
+      "projected_full_s": 0.01,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "twiggs_mf",
+      "worst_config": "all_min",
+      "subset_s": 0.0004,
+      "projected_full_s": 0.01,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "wvad",
+      "worst_config": "all_min",
+      "subset_s": 0.0002,
+      "projected_full_s": 0.01,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "volume_ratio_asia",
+      "worst_config": "all_min",
+      "subset_s": 0.0005,
+      "projected_full_s": 0.01,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "accel_osc",
+      "worst_config": "default",
+      "subset_s": 0.0003,
+      "projected_full_s": 0.01,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "demarker",
+      "worst_config": "all_min",
+      "subset_s": 0.0004,
+      "projected_full_s": 0.01,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "td_rei",
+      "worst_config": "default",
+      "subset_s": 0.0004,
+      "projected_full_s": 0.01,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "sma_trend",
+      "worst_config": "default",
+      "subset_s": 0.0001,
+      "projected_full_s": 0.0,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "ma_displaced",
+      "worst_config": "all_min",
+      "subset_s": 0.0002,
+      "projected_full_s": 0.0,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "dpo",
+      "worst_config": "all_min",
+      "subset_s": 0.0002,
+      "projected_full_s": 0.0,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "momentum",
+      "worst_config": "all_min",
+      "subset_s": 0.0001,
+      "projected_full_s": 0.0,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "roc",
+      "worst_config": "all_min",
+      "subset_s": 0.0001,
+      "projected_full_s": 0.0,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "disparity",
+      "worst_config": "all_min",
+      "subset_s": 0.0002,
+      "projected_full_s": 0.0,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "bias",
+      "worst_config": "all_min",
+      "subset_s": 0.0002,
+      "projected_full_s": 0.0,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "balance_of_power",
+      "worst_config": "all_min",
+      "subset_s": 0.0001,
+      "projected_full_s": 0.0,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "accel_bands",
+      "worst_config": "default",
+      "subset_s": 0.0002,
+      "projected_full_s": 0.0,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "bw_mfi",
+      "worst_config": "default",
+      "subset_s": 0.0002,
+      "projected_full_s": 0.0,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "ichimoku_chikou",
+      "worst_config": "all_min",
+      "subset_s": 0.0001,
+      "projected_full_s": 0.0,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "awesome_osc",
+      "worst_config": "default",
+      "subset_s": 0.0002,
+      "projected_full_s": 0.0,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "elliott_wave_osc",
+      "worst_config": "default",
+      "subset_s": 0.0001,
+      "projected_full_s": 0.0,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "rolling_corr",
+      "worst_config": "default",
+      "subset_s": 0.0,
+      "projected_full_s": 0.0,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "rolling_beta",
+      "worst_config": "default",
+      "subset_s": 0.0,
+      "projected_full_s": 0.0,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "cointegration",
+      "worst_config": "default",
+      "subset_s": 0.0,
+      "projected_full_s": 0.0,
+      "over_budget": false,
+      "notes": {}
+    },
+    {
+      "key": "pca_factor",
+      "worst_config": "default",
+      "subset_s": 0.0,
+      "projected_full_s": 0.0,
+      "over_budget": false,
+      "notes": {}
+    }
+  ],
+  "errors": {}
+}

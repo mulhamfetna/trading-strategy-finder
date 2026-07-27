@@ -23,6 +23,9 @@ identifiers:
   - type: doi
     value: "10.5281/zenodo.21473313"
     description: "The v5.0.0 version DOI."
+  - type: doi
+    value: "10.5281/zenodo.21495142"
+    description: "The v5.1.0 version DOI."
 url: "https://github.com/mulhamfetna/trading-strategy-finder"
 repository-code: "https://github.com/mulhamfetna/trading-strategy-finder"
 keywords:

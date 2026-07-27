@@ -1,0 +1,21 @@
+{
+  "n_bars": 486969,
+  "per_indicator": {
+    "autocorr": {
+      "n_max": 200,
+      "ref_s": 9.468,
+      "fast_s": 0.0814,
+      "speedup": 116.3,
+      "float_close": true,
+      "max_vote_flips": 0
+    },
+    "hurst_exp": {
+      "n_max": 400,
+      "ref_s": 5.237,
+      "fast_s": 0.2329,
+      "speedup": 22.5,
+      "float_close": true,
+      "max_vote_flips": 0
+    }
+  }
+}

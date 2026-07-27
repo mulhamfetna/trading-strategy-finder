@@ -106,9 +106,18 @@ Every one exists because skipping it produced a wrong, confident result that had
 | **Measure at the resolution of the DECISION** | A 1-minute study "proved" a release prices in a minute; at 1-second only 60% did. |
 | **Cross-instrument replication when the time-split is blocked** | The Asia-cell finding died the moment it met independent indices. |
 | **Gap-aware fills are the default** (`gap_fills=True`) | Filling a gapped stop at the line understates *risk*, not profit (drawdown +10%, NG +148%). |
+| **A pre-committed decision rule must gate on EDGE before it gates on SIZE** | `DAILY-BOX-01`: the rule branched on supply first (≥20% new trades ⇒ ship) and only consulted the edge test if supply was *small*. Daily boxes then returned **large supply with zero edge** — a case the rule never contemplated, so read literally it said "ship". More trades is not a result; more trades **that beat a dumb control** is. Order the branches so a failed edge test kills the option no matter how big the supply. |
+| **Test the DIFFERENCE, not two overlapping error bars** | `DAILY-BOX-01`: eyeballing per-arm CIs suggested "probably nothing"; bootstrapping *(real − control)* directly turned that into a firm **0 of 9**. Two CIs can overlap while their difference is significant, and vice versa — comparing them by eye is not a test. |
+| **Name the question your measurement does NOT answer** | `DAILY-BOX-01` measured whether *breaking through* a zone predicts continuation, which says nothing about whether *entering toward* one gets rejected. Closing "daily boxes" wholesale on that evidence would have buried an untested option. State the unanswered variant explicitly in the report. |
 
 Reports live in `docs/superpowers/`; the running standup is
 `subprojects/Parametric-Indicators/DAILY_REPORTS.md`.
+
+**The cost analogue of these rules is [`docs/EXPANSION_ROUND_PLAYBOOK.md`](docs/EXPANSION_ROUND_PLAYBOOK.md)
+— read it before ANY expansion round** (new indicators, instruments, timeframes, layers). Correctness is
+gated on every PR; **cost is gated on none**, which is how one indicator (`dfa`) silently became 81% of
+all optimizer compute — 12.6 minutes for a single compute — while the performance report still blamed
+three indicators that had already been fixed (#54).
 
 ---
 
@@ -155,6 +164,10 @@ milestone, a frozen finding, or a **new champion set** (only once verified).
 - [ ] `git worktree add .worktrees/<slug> -b feat/<issue>-<slug> dev`
 - [ ] Server dir `~/Mulham/<slug>` if compute is needed
 - [ ] Deep-research pass first (for a new question)
+- [ ] **If this is an EXPANSION round** (more indicators / instruments / timeframes / layers):
+      run the start-of-round checklist in [`docs/EXPANSION_ROUND_PLAYBOOK.md`](docs/EXPANSION_ROUND_PLAYBOOK.md)
+      — re-profile first (an old profile is invalid after growth), record the "before" number, and
+      multiply any per-bar cost by **486,969** before committing to it
 - [ ] Work; print params actually used; power / dumb-control / noise checks as applicable
 - [ ] Golden gate green on the server; CI green on the PR
 - [ ] PR to `dev` with `Closes #N`; delete the branch after merge

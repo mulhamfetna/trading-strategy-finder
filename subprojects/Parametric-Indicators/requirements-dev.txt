@@ -1,0 +1,9 @@
+# Dev/test-only. NOT imported at runtime by the engine/dashboard/optimizer.
+-r requirements.txt
+
+# Optional oracle libraries for scripts/gen_oracle.py ONLY. Indicator reference tests use
+# independent pandas/numpy expressions (see tests/oracle/), so these are NOT required to run the
+# test suite. Install if you want to cross-check against TA-Lib / pandas-ta. Note: older pandas-ta
+# may not import under pandas>=3 / numpy>=2 — that is why the tests do not depend on it.
+pandas-ta ; python_version < "4.0"
+TA-Lib ; platform_system != "Windows"

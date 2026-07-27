@@ -1,0 +1,619 @@
+{
+  "tf": "4h",
+  "instrument": "NQ",
+  "trials": 3,
+  "folds": 5,
+  "min_trades": 5,
+  "registry_size": 165,
+  "ind_1min": true,
+  "wall_seconds": 207.91,
+  "cold_seconds": 206.105646,
+  "cold_computes": 233,
+  "cold_frac_of_wall": 0.9913,
+  "hits": 0,
+  "misses": 233,
+  "hit_rate": 0.0,
+  "bytes_read": 0,
+  "bytes_written": 97394,
+  "per_indicator": {
+    "dfa": {
+      "computes": 2,
+      "cold_seconds": 166.993761
+    },
+    "autocorr": {
+      "computes": 2,
+      "cold_seconds": 3.674513
+    },
+    "hurst_exp": {
+      "computes": 3,
+      "cold_seconds": 2.943875
+    },
+    "ifvg": {
+      "computes": 1,
+      "cold_seconds": 2.486343
+    },
+    "proj_bands": {
+      "computes": 2,
+      "cold_seconds": 1.862737
+    },
+    "ou_halflife": {
+      "computes": 2,
+      "cold_seconds": 1.600584
+    },
+    "linreg_channel": {
+      "computes": 2,
+      "cold_seconds": 1.404204
+    },
+    "schaff_trend_cycle": {
+      "computes": 2,
+      "cold_seconds": 1.342522
+    },
+    "sinewave": {
+      "computes": 1,
+      "cold_seconds": 1.292791
+    },
+    "frama": {
+      "computes": 2,
+      "cold_seconds": 1.075494
+    },
+    "chande_kroll": {
+      "computes": 2,
+      "cold_seconds": 0.992379
+    },
+    "ulcer": {
+      "computes": 2,
+      "cold_seconds": 0.796669
+    },
+    "stoch_rsi": {
+      "computes": 3,
+      "cold_seconds": 0.770261
+    },
+    "cmo_chande_dmi": {
+      "computes": 1,
+      "cold_seconds": 0.766288
+    },
+    "hilbert_cycle": {
+      "computes": 2,
+      "cold_seconds": 0.723314
+    },
+    "ichimoku_cloud": {
+      "computes": 1,
+      "cold_seconds": 0.669192
+    },
+    "fisher": {
+      "computes": 2,
+      "cold_seconds": 0.666049
+    },
+    "ichimoku_tk_cross": {
+      "computes": 1,
+      "cold_seconds": 0.662544
+    },
+    "lsma": {
+      "computes": 1,
+      "cold_seconds": 0.611851
+    },
+    "rsi_connors": {
+      "computes": 2,
+      "cold_seconds": 0.6076
+    },
+    "hma": {
+      "computes": 2,
+      "cold_seconds": 0.574013
+    },
+    "breaker": {
+      "computes": 1,
+      "cold_seconds": 0.568504
+    },
+    "linreg_r2": {
+      "computes": 1,
+      "cold_seconds": 0.55906
+    },
+    "kdj": {
+      "computes": 2,
+      "cold_seconds": 0.542936
+    },
+    "aroon_osc": {
+      "computes": 3,
+      "cold_seconds": 0.528372
+    },
+    "mama_fama": {
+      "computes": 1,
+      "cold_seconds": 0.451857
+    },
+    "stochastic": {
+      "computes": 2,
+      "cold_seconds": 0.446648
+    },
+    "smi": {
+      "computes": 1,
+      "cold_seconds": 0.423218
+    },
+    "order_block": {
+      "computes": 2,
+      "cold_seconds": 0.403962
+    },
+    "kama": {
+      "computes": 3,
+      "cold_seconds": 0.305009
+    },
+    "atr_norm": {
+      "computes": 3,
+      "cold_seconds": 0.30399
+    },
+    "vol_ratio": {
+      "computes": 2,
+      "cold_seconds": 0.300386
+    },
+    "linreg_slope": {
+      "computes": 1,
+      "cold_seconds": 0.288058
+    },
+    "derivative_osc": {
+      "computes": 2,
+      "cold_seconds": 0.275458
+    },
+    "chandelier": {
+      "computes": 1,
+      "cold_seconds": 0.273996
+    },
+    "laguerre_rsi": {
+      "computes": 2,
+      "cold_seconds": 0.250822
+    },
+    "qqe": {
+      "computes": 1,
+      "cold_seconds": 0.245175
+    },
+    "wavetrend": {
+      "computes": 3,
+      "cold_seconds": 0.235758
+    },
+    "klinger": {
+      "computes": 3,
+      "cold_seconds": 0.225068
+    },
+    "donchian": {
+      "computes": 1,
+      "cold_seconds": 0.224126
+    },
+    "choppiness": {
+      "computes": 1,
+      "cold_seconds": 0.223161
+    },
+    "adx": {
+      "computes": 1,
+      "cold_seconds": 0.222203
+    },
+    "williams_r": {
+      "computes": 1,
+      "cold_seconds": 0.222171
+    },
+    "rvi_dorsey": {
+      "computes": 2,
+      "cold_seconds": 0.210924
+    },
+    "stddev": {
+      "computes": 3,
+      "cold_seconds": 0.197309
+    },
+    "trix": {
+      "computes": 2,
+      "cold_seconds": 0.188902
+    },
+    "hist_vol": {
+      "computes": 3,
+      "cold_seconds": 0.188156
+    },
+    "tma": {
+      "computes": 2,
+      "cold_seconds": 0.181696
+    },
+    "sine_wma": {
+      "computes": 2,
+      "cold_seconds": 0.181523
+    },
+    "aroon": {
+      "computes": 1,
+      "cold_seconds": 0.176075
+    },
+    "tema": {
+      "computes": 2,
+      "cold_seconds": 0.175324
+    },
+    "gmma": {
+      "computes": 1,
+      "cold_seconds": 0.167577
+    },
+    "ttm_squeeze": {
+      "computes": 2,
+      "cold_seconds": 0.165549
+    },
+    "rvgi": {
+      "computes": 1,
+      "cold_seconds": 0.1612
+    },
+    "vidya": {
+      "computes": 1,
+      "cold_seconds": 0.158745
+    },
+    "efficiency_ratio": {
+      "computes": 2,
+      "cold_seconds": 0.157013
+    },
+    "di_cross": {
+      "computes": 1,
+      "cold_seconds": 0.151299
+    },
+    "alligator": {
+      "computes": 1,
+      "cold_seconds": 0.150722
+    },
+    "gator": {
+      "computes": 1,
+      "cold_seconds": 0.1507
+    },
+    "cyber_cycle": {
+      "computes": 2,
+      "cold_seconds": 0.14127
+    },
+    "alma": {
+      "computes": 3,
+      "cold_seconds": 0.136684
+    },
+    "yang_zhang": {
+      "computes": 2,
+      "cold_seconds": 0.12781
+    },
+    "elder_impulse": {
+      "computes": 2,
+      "cold_seconds": 0.112799
+    },
+    "tsi": {
+      "computes": 1,
+      "cold_seconds": 0.107621
+    },
+    "psar": {
+      "computes": 3,
+      "cold_seconds": 0.106785
+    },
+    "rma": {
+      "computes": 1,
+      "cold_seconds": 0.104238
+    },
+    "starc": {
+      "computes": 2,
+      "cold_seconds": 0.101443
+    },
+    "supertrend": {
+      "computes": 1,
+      "cold_seconds": 0.099208
+    },
+    "wma": {
+      "computes": 1,
+      "cold_seconds": 0.09684
+    },
+    "ema_trend": {
+      "computes": 3,
+      "cold_seconds": 0.09097
+    },
+    "asi": {
+      "computes": 1,
+      "cold_seconds": 0.090051
+    },
+    "vol_osc": {
+      "computes": 3,
+      "cold_seconds": 0.085038
+    },
+    "roofing": {
+      "computes": 1,
+      "cold_seconds": 0.08329
+    },
+    "emd": {
+      "computes": 1,
+      "cold_seconds": 0.069003
+    },
+    "garch_ewma": {
+      "computes": 1,
+      "cold_seconds": 0.068426
+    },
+    "evwma": {
+      "computes": 1,
+      "cold_seconds": 0.064927
+    },
+    "keltner": {
+      "computes": 1,
+      "cold_seconds": 0.064919
+    },
+    "mcginley": {
+      "computes": 1,
+      "cold_seconds": 0.063987
+    },
+    "zlema": {
+      "computes": 2,
+      "cold_seconds": 0.058002
+    },
+    "vzo": {
+      "computes": 2,
+      "cold_seconds": 0.057774
+    },
+    "chaikin_osc": {
+      "computes": 2,
+      "cold_seconds": 0.056226
+    },
+    "dema": {
+      "computes": 1,
+      "cold_seconds": 0.055993
+    },
+    "parkinson": {
+      "computes": 1,
+      "cold_seconds": 0.05148
+    },
+    "rogers_satchell": {
+      "computes": 1,
+      "cold_seconds": 0.051363
+    },
+    "jma": {
+      "computes": 1,
+      "cold_seconds": 0.049828
+    },
+    "coppock": {
+      "computes": 1,
+      "cold_seconds": 0.047566
+    },
+    "pvt": {
+      "computes": 2,
+      "cold_seconds": 0.045199
+    },
+    "zscore": {
+      "computes": 2,
+      "cold_seconds": 0.044722
+    },
+    "cci": {
+      "computes": 3,
+      "cold_seconds": 0.043878
+    },
+    "macd": {
+      "computes": 1,
+      "cold_seconds": 0.042697
+    },
+    "tvi": {
+      "computes": 2,
+      "cold_seconds": 0.040738
+    },
+    "rsi": {
+      "computes": 1,
+      "cold_seconds": 0.035683
+    },
+    "bandpass": {
+      "computes": 1,
+      "cold_seconds": 0.035513
+    },
+    "structure_trend": {
+      "computes": 2,
+      "cold_seconds": 0.03477
+    },
+    "nvi": {
+      "computes": 1,
+      "cold_seconds": 0.033616
+    },
+    "bollinger": {
+      "computes": 2,
+      "cold_seconds": 0.03313
+    },
+    "pvi": {
+      "computes": 1,
+      "cold_seconds": 0.032638
+    },
+    "kalman": {
+      "computes": 2,
+      "cold_seconds": 0.031955
+    },
+    "fractals": {
+      "computes": 1,
+      "cold_seconds": 0.030206
+    },
+    "elder_ray": {
+      "computes": 2,
+      "cold_seconds": 0.030056
+    },
+    "pgo": {
+      "computes": 2,
+      "cold_seconds": 0.029965
+    },
+    "expma": {
+      "computes": 1,
+      "cold_seconds": 0.029681
+    },
+    "demand_index": {
+      "computes": 1,
+      "cold_seconds": 0.028844
+    },
+    "super_smoother": {
+      "computes": 1,
+      "cold_seconds": 0.028613
+    },
+    "mass_index": {
+      "computes": 1,
+      "cold_seconds": 0.028471
+    },
+    "apo": {
+      "computes": 1,
+      "cold_seconds": 0.028454
+    },
+    "force_index": {
+      "computes": 2,
+      "cold_seconds": 0.028127
+    },
+    "chaikin_vol": {
+      "computes": 2,
+      "cold_seconds": 0.027846
+    },
+    "cpr": {
+      "computes": 1,
+      "cold_seconds": 0.027157
+    },
+    "pivot_fib": {
+      "computes": 1,
+      "cold_seconds": 0.027031
+    },
+    "pivot_woodie": {
+      "computes": 1,
+      "cold_seconds": 0.026415
+    },
+    "pivot_demark": {
+      "computes": 1,
+      "cold_seconds": 0.026415
+    },
+    "pivot_floor": {
+      "computes": 1,
+      "cold_seconds": 0.026396
+    },
+    "pivot_camarilla": {
+      "computes": 1,
+      "cold_seconds": 0.026119
+    },
+    "fvg": {
+      "computes": 1,
+      "cold_seconds": 0.021029
+    },
+    "anchored_vwap": {
+      "computes": 1,
+      "cold_seconds": 0.020755
+    },
+    "cisd": {
+      "computes": 1,
+      "cold_seconds": 0.018148
+    },
+    "mfi": {
+      "computes": 1,
+      "cold_seconds": 0.016691
+    },
+    "td_combo": {
+      "computes": 1,
+      "cold_seconds": 0.01239
+    },
+    "td_sequential": {
+      "computes": 1,
+      "cold_seconds": 0.011115
+    },
+    "ultimate_osc": {
+      "computes": 2,
+      "cold_seconds": 0.008534
+    },
+    "td_rei": {
+      "computes": 3,
+      "cold_seconds": 0.006577
+    },
+    "cmo": {
+      "computes": 3,
+      "cold_seconds": 0.004795
+    },
+    "vortex": {
+      "computes": 2,
+      "cold_seconds": 0.004587
+    },
+    "trend_intensity": {
+      "computes": 2,
+      "cold_seconds": 0.003914
+    },
+    "volume_ratio_asia": {
+      "computes": 1,
+      "cold_seconds": 0.00304
+    },
+    "psy": {
+      "computes": 3,
+      "cold_seconds": 0.002768
+    },
+    "rsi_cutler": {
+      "computes": 1,
+      "cold_seconds": 0.002484
+    },
+    "eom": {
+      "computes": 2,
+      "cold_seconds": 0.002475
+    },
+    "twiggs_mf": {
+      "computes": 1,
+      "cold_seconds": 0.001867
+    },
+    "sma_trend": {
+      "computes": 2,
+      "cold_seconds": 0.001747
+    },
+    "cmf": {
+      "computes": 1,
+      "cold_seconds": 0.001529
+    },
+    "accel_osc": {
+      "computes": 1,
+      "cold_seconds": 0.001481
+    },
+    "demarker": {
+      "computes": 1,
+      "cold_seconds": 0.001468
+    },
+    "dma": {
+      "computes": 1,
+      "cold_seconds": 0.001246
+    },
+    "vwma": {
+      "computes": 1,
+      "cold_seconds": 0.001209
+    },
+    "bias": {
+      "computes": 2,
+      "cold_seconds": 0.001051
+    },
+    "bw_mfi": {
+      "computes": 1,
+      "cold_seconds": 0.000954
+    },
+    "wvad": {
+      "computes": 1,
+      "cold_seconds": 0.000878
+    },
+    "ad_line": {
+      "computes": 1,
+      "cold_seconds": 0.000832
+    },
+    "balance_of_power": {
+      "computes": 2,
+      "cold_seconds": 0.000796
+    },
+    "awesome_osc": {
+      "computes": 1,
+      "cold_seconds": 0.000791
+    },
+    "obv": {
+      "computes": 1,
+      "cold_seconds": 0.000729
+    },
+    "elliott_wave_osc": {
+      "computes": 1,
+      "cold_seconds": 0.00069
+    },
+    "ma_envelope": {
+      "computes": 1,
+      "cold_seconds": 0.000574
+    },
+    "dpo": {
+      "computes": 1,
+      "cold_seconds": 0.000423
+    },
+    "momentum": {
+      "computes": 2,
+      "cold_seconds": 0.000374
+    },
+    "ichimoku_chikou": {
+      "computes": 1,
+      "cold_seconds": 0.000196
+    }
+  },
+  "optimizer_result": {
+    "timeframe": "4h",
+    "n_trials": 3,
+    "front": 0,
+    "front_all": 0,
+    "dur_s": 207.65075659751892
+  }
+}

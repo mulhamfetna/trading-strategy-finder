@@ -40,8 +40,11 @@ def build_gate(ctx, box_dir, indicators, k, base_gate=None):
     n = len(box_dir)
     base = np.ones(n, dtype=bool) if base_gate is None else np.asarray(base_gate, dtype=bool)
     if indicators:
+        no_ref = getattr(ctx, "ref_close", None) is None
         votes_arr = np.stack([ind.vote(ctx, box_dir) for ind in indicators])
-        active = np.array([bool(ind.config.enabled) for ind in indicators])
+        # A needs_ref (cross-series) indicator with no reference is INACTIVE — it never tightens K.
+        active = np.array([bool(ind.config.enabled) and not (ind.needs_ref and no_ref)
+                           for ind in indicators])
     else:
         votes_arr = np.zeros((0, n), dtype=np.int8)
         active = np.zeros(0, dtype=bool)

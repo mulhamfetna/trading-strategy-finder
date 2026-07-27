@@ -1,0 +1,20 @@
+# systemd unit for optuna-dashboard (live Pareto/history/graphs) — issue #43/#20.
+# Install (needs sudo):
+#   sudo cp optimize/dashboard/wsh-optuna-dashboard.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now wsh-optuna-dashboard
+# Bound to DASH_BIND_IP (localhost) — reach it via an SSH tunnel on DASH_OPTUNA_PORT.
+[Unit]
+Description=optuna-dashboard for the Optimizer Control Center (live Pareto/history)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=dev
+WorkingDirectory=/home/dev/Mulham/code/subprojects/Parametric-Indicators
+ExecStart=/bin/bash /home/dev/Mulham/code/subprojects/Parametric-Indicators/optimize/dashboard/serve_optuna_dashboard.sh
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

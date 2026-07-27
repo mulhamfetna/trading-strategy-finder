@@ -12,11 +12,12 @@ import optimize.dashboard.app as APP
 client = TestClient(APP.app)
 
 
-def test_config_endpoint(monkeypatch):
+def test_config_endpoint_is_status_free(monkeypatch):
+    # /api/config must NOT embed the slow status query (#41) — it returns config only.
     monkeypatch.setattr(APP.control, "config", lambda: {"samplers": ["nsga3", "gp"], "engines": ["single"]})
-    monkeypatch.setattr(APP.control, "status", lambda: {"ok": True, "studies": []})
+    monkeypatch.setattr(APP.control, "status", lambda: (_ for _ in ()).throw(AssertionError("status must not be called")))
     r = client.get("/api/config")
-    assert r.status_code == 200 and "samplers" in r.json() and "status" in r.json()
+    assert r.status_code == 200 and "samplers" in r.json() and "status" not in r.json()
 
 
 def test_plan_endpoint(monkeypatch):
@@ -25,16 +26,47 @@ def test_plan_endpoint(monkeypatch):
     assert r.status_code == 200 and r.json()["recommended_trials"] == 5600
 
 
-def test_run_delegates(monkeypatch):
+def test_run_delegates_to_owned_runner(monkeypatch):
     seen = {}
-    monkeypatch.setattr(APP.control, "start", lambda cfg: seen.update({"cfg": cfg}) or {"ok": True, "launched": True})
-    r = client.post("/api/run", json={"sampler": "gp", "engine": "single"})
+    monkeypatch.setattr(APP.runner._MGR, "start", lambda cfg: seen.update({"cfg": cfg}) or {"ok": True, "pid": 42})
+    r = client.post("/api/run", json={"instrument": "NQ", "timeframes": ["4h"], "sampler": "gp"})
     assert r.status_code == 200 and r.json()["ok"] and seen["cfg"]["sampler"] == "gp"
 
 
+def test_run_reports_missing_fields(monkeypatch):
+    # real runner validation: an empty cfg returns ok:False + the missing fields (not a 500)
+    r = client.post("/api/run", json={})
+    assert r.status_code == 200 and r.json()["ok"] is False and "instrument" in r.json()["errors"]
+
+
 def test_stop_endpoint(monkeypatch):
-    monkeypatch.setattr(APP.control, "stop", lambda: {"ok": True})
+    monkeypatch.setattr(APP.runner._MGR, "stop", lambda: {"ok": True, "detail": "stopped"})
     assert client.post("/api/stop").json()["ok"]
+
+
+def test_run_state_endpoint():
+    st = client.get("/api/run/state").json()
+    assert "running" in st and "study" in st
+
+
+def test_run_state_surfaces_orphan_even_when_owned_run_finished(monkeypatch):
+    # #49: a FINISHED owned run must NOT mask a detached orphan
+    monkeypatch.setattr(APP.runner._MGR, "state",
+                        lambda: {"running": False, "pid": 100, "returncode": 0, "study": "ccold_4h", "tf": "4h", "target": 2})
+    monkeypatch.setattr(APP.runner, "detached_runs",
+                        lambda: [{"pid": 200, "pgid": 200, "prefix": "ccnew", "tf": "1h", "instrument": "NQ", "study": "ccnew_1h"}])
+    monkeypatch.setattr(APP.runner, "done_count_for", lambda prefix, tf: 5)
+    d = client.get("/api/run/state").json()
+    assert d["running"] is True and d["detached"] is True and d["study"] == "ccnew_1h"
+
+
+def test_run_state_shows_finished_run_when_no_orphan(monkeypatch):
+    monkeypatch.setattr(APP.runner._MGR, "state",
+                        lambda: {"running": False, "pid": 100, "returncode": 0, "study": "ccold_4h", "tf": "4h", "target": 2})
+    monkeypatch.setattr(APP.runner, "detached_runs", lambda: [])
+    monkeypatch.setattr(APP.runner._MGR, "done_count", lambda: 2)
+    d = client.get("/api/run/state").json()
+    assert d["running"] is False and d["detached"] is False and d["study"] == "ccold_4h"
 
 
 def test_resume_endpoint(monkeypatch):

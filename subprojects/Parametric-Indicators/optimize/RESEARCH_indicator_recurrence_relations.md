@@ -1,5 +1,13 @@
 # Research — Indicator Incremental-Recurrence Study
 
+> **⚠️ SCOPE NOTE (added 2026-07-27):** this study classifies the **original 21** indicator functions. The
+> library is now **165**, and the indicators that actually dominate cost today (`dfa`, `autocorr`,
+> `hurst_exp`, `sinewave`, `ifvg`, …) **are not covered here**. Its *conclusions remain valid for the
+> functions it examines* — and one of them proved directly load-bearing: it correctly identified that the
+> expensive cases are **batch recomputation**, not streaming, which is why the 2026-07 fixes used
+> closed-form/Numba rather than an incremental rewrite. For the current cost picture see
+> `REPORT_indicator_cache_acceleration.md` and `REPORT_post_dfa_tail.md`.
+
 **Date:** 2026-06-11 · task #210 side-research · branch `dev`
 **Question.** Our indicators are computed over a **moving window**. For each one, does it admit an
 **incremental recurrence** — i.e. can `Uₙ` be obtained from the *previous* output `Uₙ₋₁` (or a small,

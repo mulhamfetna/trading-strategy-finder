@@ -26,6 +26,26 @@ def test_plan_scales_with_split():
     assert split["recommended_trials"] == split["dims"] * base["trials_per_dim"]
 
 
+def test_plan_includes_command_string():
+    p = C.plan({"timeframes": ["1h"], "only_indicators": ["rsi", "macd"], "reference": "ES",
+                "instrument": "GC", "split_sltp": True, "cold_start": True, "max_enabled": 3,
+                "trials_mode": "one", "trials": 8000, "ind_1min": True})
+    cmd = p["command"]
+    assert "optimize/optimizer.py 1h" in cmd
+    assert "--only-indicators rsi,macd" in cmd and "--reference ES" in cmd
+    assert "--instrument GC" in cmd and "--split-sltp" in cmd and "--no-warm-start" in cmd
+    assert "--max-enabled 3" in cmd and "--ind-1min" in cmd and "--trials 8000" in cmd
+
+
+def test_preview_command_minimal_is_bare():
+    # No opt-in selections ⇒ command carries only the always-on flags (byte-identical to a bare run).
+    cmd = C.preview_command({"timeframes": ["4h"], "trials_mode": "auto"})
+    assert "optimize/optimizer.py 4h" in cmd and "--ind-1min" in cmd
+    for flag in ("--only-indicators", "--exclude-indicators", "--reference",
+                 "--instrument", "--split-sltp", "--no-warm-start", "--max-enabled"):
+        assert flag not in cmd
+
+
 def test_start_single_builds_env_and_calls_run(monkeypatch):
     seen = {}
     monkeypatch.setattr(C, "_run_remote", lambda args, timeout=120: seen.update({"args": args}) or
@@ -86,6 +106,30 @@ def test_status_bad_json_is_safe(monkeypatch):
                         {"ok": False, "stdout": "boom", "stderr": "", "code": 1})
     s = C.status()
     assert s["ok"] is False and s["studies"] == []
+
+
+def test_status_derives_running_and_study_count(monkeypatch):
+    sample = ('{"studies":[{"tf":"4h","complete":10,"running":3},'
+              '{"tf":"1h","complete":40,"running":0}]}')
+    monkeypatch.setattr(C, "_run_remote", lambda args, timeout=120:
+                        {"ok": True, "stdout": sample, "stderr": "", "code": 0})
+    s = C.status()
+    assert s["running"] is True and s["n_studies"] == 2      # any worker>0 ⇒ running
+
+
+def test_status_running_false_when_no_workers(monkeypatch):
+    monkeypatch.setattr(C, "_run_remote", lambda args, timeout=120:
+                        {"ok": True, "stdout": '{"studies":[{"tf":"4h","complete":10,"running":0}]}',
+                         "stderr": "", "code": 0})
+    assert C.status()["running"] is False
+
+
+def test_health_reports_studies_and_survives_no_psutil(monkeypatch):
+    monkeypatch.setattr(C, "_run_remote", lambda args, timeout=120:
+                        {"ok": True, "stdout": '{"studies":[{"tf":"4h","complete":10,"running":2}]}',
+                         "stderr": "", "code": 0})
+    h = C.health()
+    assert h["n_studies"] == 1 and h["running"] is True and "cpu_pct" in h and "mem_pct" in h
 
 
 def test_tail_logs(tmp_path, monkeypatch):

@@ -17,6 +17,22 @@ def test_tokens_and_point_values():
     assert not I.is_valid("QQQ-RTH")
 
 
+def test_import_has_no_registry_filesystem_dependency():
+    """Regression (#26): importing instruments for the static TOKENS/POINT_VALUE must NOT read the
+    no-mix registry file — the control plane imports it just for the token list. Run in a subprocess
+    with a bogus WSH_DATA_BASE so the registry path is invalid; import + TOKENS + NQ must still work."""
+    import subprocess
+    root = str(Path(__file__).resolve().parents[1])
+    code = ("from optimize import instruments as I;"
+            "assert I.TOKENS[0]=='NQ' and len(I.TOKENS)==9;"
+            "assert I.point_value('NQ')==20.0;"
+            "assert I.resolve_paths('NQ','4h')[0].endswith('NQ_4h.csv');"
+            "print('ok')")
+    env = {**os.environ, "WSH_DATA_BASE": "/nonexistent/registry/path", "PYTHONPATH": root}
+    r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, env=env)
+    assert r.returncode == 0 and "ok" in r.stdout, r.stderr
+
+
 def test_resolve_paths_nq_matches_current_data_module():
     dec, mn, box = I.resolve_paths("NQ", "4h")
     assert dec == str(D._RAW / "NQ_4h.csv")

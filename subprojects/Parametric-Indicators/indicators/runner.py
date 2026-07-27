@@ -19,14 +19,31 @@ from .confirm import build_gate
 from .timing import resolve_retrace_entry, resolve_entry_1min
 
 
-def market_context(df: pd.DataFrame) -> MarketContext:
-    """Build a MarketContext from a decision-timeframe OHLCV frame (session = calendar day)."""
+def _align_reference(df: pd.DataFrame, ref_df: pd.DataFrame) -> np.ndarray:
+    """Causally align a reference instrument's Close onto df's decision Dates.
+
+    merge_asof(direction='backward') matches each decision bar with the reference bar whose Date is
+    the LATEST at-or-before it — so a decision bar at time t only ever sees reference closes known by
+    t, NEVER a future reference bar. Leading decision bars with no prior reference bar → NaN.
+    """
+    left = pd.DataFrame({"Date": pd.to_datetime(df["Date"]).to_numpy()})
+    right = pd.DataFrame({"Date": pd.to_datetime(ref_df["Date"]).to_numpy(),
+                          "_ref": ref_df["Close"].to_numpy(float)}).sort_values("Date")
+    merged = pd.merge_asof(left, right, on="Date", direction="backward")  # left order preserved
+    return merged["_ref"].to_numpy(float)
+
+
+def market_context(df: pd.DataFrame, ref_df: pd.DataFrame | None = None) -> MarketContext:
+    """Build a MarketContext from a decision-timeframe OHLCV frame (session = calendar day).
+    `ref_df` (optional): a reference instrument's OHLCV at the same tf — causally aligned into
+    `ref_close` for the cross-series indicators. None ⇒ ref_close None ⇒ those indicators stay neutral."""
     sess = pd.to_datetime(df["Date"]).dt.normalize().astype("int64").to_numpy()
     return MarketContext(
         open=df["Open"].to_numpy(float), high=df["High"].to_numpy(float),
         low=df["Low"].to_numpy(float), close=df["Close"].to_numpy(float),
         volume=df["Volume"].to_numpy(float) if "Volume" in df.columns else np.zeros(len(df)),
         session_id=sess,
+        ref_close=(_align_reference(df, ref_df) if ref_df is not None else None),
     )
 
 
@@ -142,12 +159,13 @@ def _ind_vote(ind, ctx, bdir, src=None) -> np.ndarray:
     return _vote_from_1min(ind, ctx_1m, j_idx, bdir)
 
 
-def composite_gate(vol_gate, df, box, indicators, k):
+def composite_gate(vol_gate, df, box, indicators, k, ref_df=None):
     """vol_gate: per-bar bool (engine idx). indicators: list of Indicator instances (enabled+disabled).
-    Returns (gate, votes, active): gate = vol_gate ∧ (indicator allow, aligned to the signal bar)."""
+    Returns (gate, votes, active): gate = vol_gate ∧ (indicator allow, aligned to the signal bar).
+    `ref_df` (optional) supplies the cross-series reference instrument."""
     vg = np.asarray(vol_gate, dtype=bool)
     n = len(vg)
-    ctx = market_context(df)
+    ctx = market_context(df, ref_df)
     bdir = box_direction_int(df, box)
     allow, votes, active = build_gate(ctx, bdir, indicators, k, base_gate=None)
     # Entry at idx uses the just-closed bar idx-1, so align the allow-mask forward by one bar.
@@ -157,18 +175,19 @@ def composite_gate(vol_gate, df, box, indicators, k):
     return vg & aligned, votes, active
 
 
-def compute_votes(df, box, indicators, src=None) -> dict:
+def compute_votes(df, box, indicators, src=None, ref_df=None) -> dict:
     """Per-decision-bar vote array for every ENABLED indicator, keyed by id(ind). Computed ONCE so
     the veto gate, the confirm resolver and the attribution all reuse it (no 3× recompute). Disabled
     indicators are skipped entirely (they don't trade and aren't worth computing — esp. the costly
-    SMC ones on the 1-minute frame)."""
-    ctx = market_context(df)
+    SMC ones on the 1-minute frame). `ref_df` (optional) supplies a reference instrument for the
+    cross-series indicators; None ⇒ they see no reference and stay neutral."""
+    ctx = market_context(df, ref_df)
     bdir = box_direction_int(df, box)
     return {id(ind): _ind_vote(ind, ctx, bdir, src)
             for ind in indicators if ind.config.enabled}
 
 
-def veto_mask(df, box, indicators, src=None, votes=None):
+def veto_mask(df, box, indicators, src=None, votes=None, ref_df=None):
     """Per-decision-bar veto mask (Q5: veto lives in the gate). True where any ENABLED veto-capable
     (mode∈{veto,both}) indicator votes VETO, read at the just-closed signal bar and aligned to the
     entry bar (mask[idx] = veto at idx-1; idx 0 = False). No veto indicators ⇒ all False (parity).
@@ -177,11 +196,12 @@ def veto_mask(df, box, indicators, src=None, votes=None):
     n = len(df)
     out = np.zeros(n, dtype=bool)
     vetoers = [ind for ind in indicators
-               if ind.config.enabled and ind.config.mode in ("veto", "both")]
+               if ind.config.enabled and ind.config.mode in ("veto", "both")
+               and not (ind.needs_ref and ref_df is None)]     # cross-series inert without a reference
     if not vetoers:
         return out
     if votes is None:
-        votes = compute_votes(df, box, vetoers, src)
+        votes = compute_votes(df, box, vetoers, src, ref_df)
     raw = np.zeros(n, dtype=bool)
     for ind in vetoers:
         raw |= (votes[id(ind)] == VETO)
@@ -189,7 +209,7 @@ def veto_mask(df, box, indicators, src=None, votes=None):
     return out
 
 
-def confirm_mask(df, box, indicators, k, src=None, votes=None):
+def confirm_mask(df, box, indicators, k, src=None, votes=None, ref_df=None):
     """Per-decision-bar CONFIRM gate (vectorised, for the optimiser fast path — WS-I.7).
     True where ≥ K_eff enabled confirm-capable (mode∈{confirm,both}) indicators vote CONFIRM at the
     just-closed signal bar, aligned to the entry bar (mask[idx] = confirms at idx-1; idx 0 = True).
@@ -200,12 +220,13 @@ def confirm_mask(df, box, indicators, k, src=None, votes=None):
     n = len(df)
     out = np.ones(n, dtype=bool)
     confirmers = [ind for ind in indicators
-                  if ind.config.enabled and ind.config.mode in ("confirm", "both")]
+                  if ind.config.enabled and ind.config.mode in ("confirm", "both")
+                  and not (ind.needs_ref and ref_df is None)]     # cross-series inert without a reference
     k_eff = min(int(k), len(confirmers))
     if k_eff <= 0:
         return out                                # no confirm requirement (parity)
     if votes is None:
-        votes = compute_votes(df, box, confirmers, src)
+        votes = compute_votes(df, box, confirmers, src, ref_df)
     cc = np.zeros(n, dtype=np.int64)
     for ind in confirmers:
         cc += (votes[id(ind)] == CONFIRM).astype(np.int64)
@@ -214,18 +235,19 @@ def confirm_mask(df, box, indicators, k, src=None, votes=None):
     return out
 
 
-def confirm_count(df, box, indicators, src=None, votes=None):
+def confirm_count(df, box, indicators, src=None, votes=None, ref_df=None):
     """Entry-shifted per-bar CONFIRM count + #confirm-capable-enabled indicators. Mirrors confirm_mask's
     internals so confirm_mask(df,box,inds,k) == [True] + (cc_entry[1:] >= min(k, n_confirmers)). The
     cross-instrument topology combine needs the raw count (merged pools counts), not just the >=K gate."""
     n = len(df)
     confirmers = [ind for ind in indicators
-                  if ind.config.enabled and ind.config.mode in ("confirm", "both")]
+                  if ind.config.enabled and ind.config.mode in ("confirm", "both")
+                  and not (ind.needs_ref and ref_df is None)]     # cross-series inert without a reference
     cc_entry = np.zeros(n, dtype=np.int64)
     if not confirmers:
         return cc_entry, 0
     if votes is None:
-        votes = compute_votes(df, box, confirmers, src)
+        votes = compute_votes(df, box, confirmers, src, ref_df)
     cc = np.zeros(n, dtype=np.int64)
     for ind in confirmers:
         cc += (votes[id(ind)] == CONFIRM).astype(np.int64)
@@ -275,7 +297,8 @@ def build_entry_resolver(df, box, indicators, k,
     ctx = market_context(df)
     bdir = box_direction_int(df, box)
     confirmers = [ind for ind in indicators
-                  if ind.config.enabled and ind.config.mode in ("confirm", "both")]
+                  if ind.config.enabled and ind.config.mode in ("confirm", "both")
+                  and not (ind.needs_ref and ref_df is None)]     # cross-series inert without a reference
     n_confirm = len(confirmers)
     if votes is None:
         votes = {id(ind): _ind_vote(ind, ctx, bdir, src) for ind in confirmers}

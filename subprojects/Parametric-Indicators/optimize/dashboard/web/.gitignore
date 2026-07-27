@@ -1,0 +1,6 @@
+node_modules/
+dist/
+*.local
+
+# The repo-root .gitignore ignores *.html; index.html is the SPA entrypoint Vite needs — keep it.
+!index.html
