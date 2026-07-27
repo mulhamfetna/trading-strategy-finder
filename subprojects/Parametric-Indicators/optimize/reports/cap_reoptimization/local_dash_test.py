@@ -11,7 +11,14 @@ Exercises all four exit rules so the whole fix chain is covered:
 """
 import json
 
-from playwright.sync_api import sync_playwright
+import pytest
+
+# This is a manual BROWSER verification script, not a unit test — it needs both `playwright` and a running
+# local dashboard. pytest collects it because of the `*_test.py` name, so guard the import: without
+# playwright installed this SKIPS cleanly instead of erroring out collection for the entire suite.
+sync_playwright = pytest.importorskip("playwright.sync_api",
+                                      reason="playwright not installed — browser verification script"
+                                      ).sync_playwright
 
 # (market, tf, expected on-screen P/L, expected exit rule)  — from the shipped playbooks
 CHECKS = [
