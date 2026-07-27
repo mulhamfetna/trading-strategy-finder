@@ -668,7 +668,10 @@ series — verified as **zero flips**. The original implementations are retained
 `dfa_reference` / `autocorr_reference` / `hurst_exp_reference` (the parity oracles), and **without numba
 the code falls back to them**, so a missing optional dependency can never change a number.
 Regression-checked with a **control run** (identical suite on unmodified code): same 25 pre-existing
-failures, empty diff both ways ⇒ zero regressions.
+failures, empty diff both ways ⇒ zero regressions. **And the GOLDEN GATE is 6/6 byte-identical**
+(4h $151,655/277 · 2h $101,518/173 · 1h $110,038/353 · 15m $82,156/654 · 5m $20,092/314 ·
+2m $31,898/276) — three indicators rewritten up to 1,396× faster and **not one ledger or vote hash
+moved** (log: `optimize/perf/logs/goldengate_dev_2026-07-27.log`).
 
 ### 10.3 Worst-case parameter cost — the number to plan against (#56)
 

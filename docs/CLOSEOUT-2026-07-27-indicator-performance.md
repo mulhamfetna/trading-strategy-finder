@@ -123,6 +123,29 @@ code falls back to the reference**, so a missing optional dependency can never c
 
 ## 6. Correctness — how we know nothing changed
 
+### 6.0 The GOLDEN GATE — 6/6 byte-identical (the definitive proof)
+
+Run on the server against `dev` immediately before the `dev → main` promotion
+(`perf/check_golden.py`, log: `optimize/perf/logs/goldengate_dev_2026-07-27.log`). It re-runs every
+champion timeframe and asserts **exact** summary metrics, a **SHA-256 match on the taken-trade ledger**,
+and a **SHA-256 match on every enabled indicator's per-decision-bar vote array**:
+
+```
+[4h]  ✅ MATCH  (P/L $151,655, n=277, 8 indicators)
+[2h]  ✅ MATCH  (P/L $101,518, n=173, 8 indicators)
+[1h]  ✅ MATCH  (P/L $110,038, n=353, 7 indicators)
+[15m] ✅ MATCH  (P/L  $82,156, n=654, 8 indicators)
+[5m]  ✅ MATCH  (P/L  $20,092, n=314, 7 indicators)
+[2m]  ✅ MATCH  (P/L  $31,898, n=276, 7 indicators)
+
+✅ ALL GOLDEN BASELINES MATCH — results unchanged.
+```
+
+**This is the strongest statement available:** three indicators were rewritten and made up to 1,396×
+faster, and **not one hash moved**. It also independently corroborates that the 25 failing tests (§6, last
+bullet) are not real regressions — the golden gate exercises the actual champion path end-to-end and is
+clean.
+
 - **Parity contract:** these are **veto** indicators, so the binding requirement is the veto *decision*, not
   the float. `np.polyfit` goes through LAPACK, so bit-identity is impossible; **zero differing decisions
   across each indicator's entire searched threshold grid** on the real series is what was proven.
