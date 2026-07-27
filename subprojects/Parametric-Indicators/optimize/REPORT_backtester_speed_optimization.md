@@ -1,3 +1,22 @@
+> # ⚠️ SUPERSEDED — DO NOT OPTIMIZE FROM THIS PROFILE
+>
+> **Profile valid as of 2026-06-11, at ~21 indicators.** The library has since grown to **165**, and the
+> cost distribution moved **entirely**. This document's hot list (`smc.order_blocks` 18.5 s, `bollinger`
+> 10.7 s, `cci` 6 s) is **no longer where the time goes**.
+>
+> **What was actually true on 2026-07-27:** one indicator, **`dfa`, was 81% of all indicator compute**
+> (up to 756 s for a single compute) — it did not exist when this was written. See
+> **`REPORT_indicator_cache_acceleration.md`** for the current profile, and
+> **`REPORT_post_dfa_tail.md`** for the worst-case-parameter picture.
+>
+> This document is retained for its **method** (how to profile, the options taxonomy) and as the origin of
+> several still-valid conclusions — e.g. that GPU/Dask are the wrong tool for this workload, which the 2026-07
+> work independently re-confirmed. Its **numbers** are historical.
+>
+> Nearly optimizing from this stale report is the incident that produced
+> **`docs/EXPANSION_ROUND_PLAYBOOK.md`** (rule **P1**: never optimize from an old profile; re-profile after
+> every expansion round).
+
 # Backtester Speed Optimization — Deep Analysis & Improvement Study
 
 **Date:** 2026-06-11 · branch `dev` · relates to task #210
