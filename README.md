@@ -45,6 +45,6 @@ per release via Zenodo (badge above).
 
 ```
 Fetna, M. (2026). Trading Strategy Finder: a reproducible quantitative-analysis framework for futures
-trading-strategy discovery and validation (Version 5.1.0) [Software].
+trading-strategy discovery and validation (Version 5.2.0) [Software].
 https://github.com/mulhamfetna/trading-strategy-finder
 ```

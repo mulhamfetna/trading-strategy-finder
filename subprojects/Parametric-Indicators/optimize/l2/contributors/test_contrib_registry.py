@@ -16,7 +16,10 @@ def test_es_contributor_paths_resolve_from_instruments_registry():
     assert c.tick_threshold == 0.75
     assert c.candle_csv("4h").endswith("ES_Continuous_Data/ES_4h.csv")
     assert c.candle_csv("1m").endswith("ES_Continuous_Data/ES_1m.csv")
-    assert c.box_csv.endswith("BOXS/CME/ES/ES_full_data.csv")
+    # Non-NQ instruments read the -1-workday-SHIFTED box: instruments.py marks the raw box
+    # "retired" (2026-07-06) so delivered signals and the backtest share one box. This
+    # assertion still pinned the retired path (#66).
+    assert c.box_csv.endswith("shifted_boxes/ES_full_data_shifted.csv")
     assert c.delivery_csv("4h", "full").endswith("ES_SIGNALS_DELIVERY/2_holds_dropped/ES_4h_full.csv")
     # every resolved path must actually exist on disk (no typo'd path silently accepted)
     for p in (c.candle_csv("4h"), c.candle_csv("1m"), c.box_csv, c.delivery_csv("4h", "full")):

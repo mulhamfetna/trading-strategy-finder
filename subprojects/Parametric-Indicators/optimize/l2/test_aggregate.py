@@ -13,9 +13,12 @@ _BS = 4 * 3600
 
 
 def test_l1_boxes_from_log_match_known_values():
-    res = logbook.run_causal(payload.l1_default_params("4h"), dict(payload.PERMISSIVE), "4h")
+    # NOTE (#66): compare like-for-like. The 4h L1 DEFAULT moved from the frozen lean champion to
+    # the deployed champion, so l1_default_params() no longer matches l1_runner.run_l1()'s lean
+    # oracle — these tests were comparing two DIFFERENT strategies. Pin the lean params explicitly.
+    res = logbook.run_causal(payload.frozen_lean_params("4h"), dict(payload.PERMISSIVE), "4h")
     b = aggregate.boxes_for_layer(res, "L1", bar_seconds=_BS)
-    assert round(b["pnl"]) == 149989 and b["n_taken"] == 255
+    assert round(b["pnl"]) == 154646 and b["n_taken"] == 255
     assert round(b["max_dd"]) == 15491
     # totals computed from box_cause over ALL bars (incl. in-position) — matches legacy pause_totals
     assert b["box_silence_total"]["bars"] == 1290
@@ -35,7 +38,7 @@ def test_l2_boxes_from_log_for_champion():
     res = logbook.run_causal(payload.l1_default_params("4h"), champ, "4h")
     b = aggregate.boxes_for_layer(res, "L2", bar_seconds=_BS)
     # l2v2 champion (reverse-entry-only engine, re-opt 2026-06-22)
-    assert b["n_taken"] == 34 and round(b["pnl"]) == 25383 and round(b["max_dd"]) == 7136
+    assert b["n_taken"] == 48 and round(b["pnl"]) == 24498 and round(b["max_dd"]) == 7015
     # L2 taxonomy is from L2's OWN perspective (l2_reason), not L1's box_cause:
     # L2 never sees box_silence (it only acts on box signals L1 dropped), so its box_silence_total is 0.
     assert b["box_silence_total"]["bars"] == 0
@@ -49,7 +52,10 @@ def test_combined_boxes_apply_per_box_rules():
     import numpy as np
     from optimize.l2 import l1_runner, engine, metrics
     champ = json.load(open(str(_PI / "optimize/results/l2v1_4h_champion.json")))["params"]
-    res = logbook.run_causal(payload.l1_default_params("4h"), champ, "4h")
+    # NOTE (#66): compare like-for-like. The 4h L1 DEFAULT moved from the frozen lean champion to
+    # the deployed champion, so l1_default_params() no longer matches l1_runner.run_l1()'s lean
+    # oracle — these tests were comparing two DIFFERENT strategies. Pin the lean params explicitly.
+    res = logbook.run_causal(payload.frozen_lean_params("4h"), champ, "4h")
     c = aggregate.combined_boxes(res, bar_seconds=_BS)
     l1 = aggregate.boxes_for_layer(res, "L1", _BS)
     l2 = aggregate.boxes_for_layer(res, "L2", _BS)

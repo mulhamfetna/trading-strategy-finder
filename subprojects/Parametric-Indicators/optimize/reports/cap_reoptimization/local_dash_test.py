@@ -8,10 +8,16 @@ Exercises all four exit rules so the whole fix chain is covered:
     eod   — end-of-day close works
     both  — the brand-new "whichever fires first" rule (the dropdown could not even express this before)
     none  — no cap
-"""
-import json
 
-from playwright.sync_api import sync_playwright
+⚠️ THIS IS A MANUAL VERIFICATION SCRIPT, NOT A UNIT TEST. It needs `playwright`, a Chrome install, AND a
+running dashboard on localhost:8200. Its `*_test.py` filename makes pytest collect it, and it used to drive
+the browser at MODULE level — so merely importing it launched Chrome, and on any machine without Chrome
+that error aborted collection for the ENTIRE suite (#66). The body now lives in `main()` under a
+`__main__` guard, so pytest can import it harmlessly while `python3 local_dash_test.py` still works.
+
+Run:  python3 optimize/reports/cap_reoptimization/local_dash_test.py
+"""
+import json  # noqa: F401  (kept: handy when extending CHECKS from a playbook JSON)
 
 # (market, tf, expected on-screen P/L, expected exit rule)  — from the shipped playbooks
 CHECKS = [
@@ -27,23 +33,33 @@ READ = ("() => (typeof VIEWS!=='undefined' && VIEWS.l1 && VIEWS.l1.meta) ? "
 DONE = ("() => typeof VIEWS!=='undefined' && VIEWS.l1 && VIEWS.l1.meta && "
         "document.querySelector('#run') && !document.querySelector('#run').disabled")
 
-rows = []
-with sync_playwright() as p:
-    b = p.chromium.launch(headless=True, channel="chrome")
-    pg = b.new_page(viewport={"width": 1500, "height": 1600})
-    for inst, tf, expect, cap in CHECKS:
-        pg.goto("http://localhost:8200/", wait_until="networkidle", timeout=60000)
-        pg.select_option("#inst_select", inst); pg.wait_for_timeout(1200)
-        pg.select_option("#tf_select", tf); pg.wait_for_timeout(1600)
-        pg.click("#run")                                    # ZERO manual modification
-        pg.wait_for_function(DONE, timeout=1800000)
-        m = pg.evaluate(READ) or {}
-        got, gcap = m.get("pnl", 0), m.get("cap")
-        ok = abs(got - expect) < 1 and gcap == cap
-        rows.append(ok)
-        print(f"  {inst:3} {tf:4} on-screen ${got:>10,.0f}  playbook ${expect:>10,.0f}   "
-              f"cap={gcap}/{m.get('capn')} (want {cap})   n={m.get('n')}   "
-              f"{'OK' if ok else '*** MISMATCH ***'}", flush=True)
-    b.close()
 
-print(f"\nLOCAL DASHBOARD: {sum(rows)}/{len(rows)} reproduce the shipped numbers with zero manual changes")
+def main() -> int:
+    from playwright.sync_api import sync_playwright       # imported here, never at collection time
+
+    rows = []
+    with sync_playwright() as p:
+        b = p.chromium.launch(headless=True, channel="chrome")
+        pg = b.new_page(viewport={"width": 1500, "height": 1600})
+        for inst, tf, expect, cap in CHECKS:
+            pg.goto("http://localhost:8200/", wait_until="networkidle", timeout=60000)
+            pg.select_option("#inst_select", inst); pg.wait_for_timeout(1200)
+            pg.select_option("#tf_select", tf); pg.wait_for_timeout(1600)
+            pg.click("#run")                                    # ZERO manual modification
+            pg.wait_for_function(DONE, timeout=1800000)
+            m = pg.evaluate(READ) or {}
+            got, gcap = m.get("pnl", 0), m.get("cap")
+            ok = abs(got - expect) < 1 and gcap == cap
+            rows.append(ok)
+            print(f"  {inst:3} {tf:4} on-screen ${got:>10,.0f}  playbook ${expect:>10,.0f}   "
+                  f"cap={gcap}/{m.get('capn')} (want {cap})   n={m.get('n')}   "
+                  f"{'OK' if ok else '*** MISMATCH ***'}", flush=True)
+        b.close()
+
+    print(f"\nLOCAL DASHBOARD: {sum(rows)}/{len(rows)} reproduce the shipped numbers "
+          f"with zero manual changes")
+    return 0 if all(rows) else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

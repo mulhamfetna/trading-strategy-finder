@@ -34,7 +34,7 @@ def test_l1_cache_returns_same_object():
     a = payload.run_l1_cached("4h")
     b = payload.run_l1_cached("4h")
     assert a is b
-    assert len(a.ledger) == 255
+    assert len(a.ledger) == 255      # run_l1_cached serves the FROZEN LEAN oracle, not the champion default
 
 
 def test_l1_disk_cache_survives_memory_clear():
@@ -42,7 +42,7 @@ def test_l1_disk_cache_survives_memory_clear():
     assert payload._l1_cache_file("4h").exists()      # persisted to the disk cache
     payload._L1_CACHE.clear()                          # drop the in-process memo
     r = payload.run_l1_cached("4h")                    # must reload from disk (no recompute)
-    assert len(r.ledger) == 255
+    assert len(r.ledger) == 255      # frozen lean oracle (see above)
 
 
 def test_save_and_load_l2_profile_roundtrips(tmp_path, monkeypatch):
@@ -132,7 +132,7 @@ def test_view_payload_carries_taxonomy():
     p = payload.build_view_payload(payload.l1_default_params("4h"), dict(payload.PERMISSIVE),
                                    "4h", view="l1")
     tax = p["meta"]["taxonomy"]
-    assert tax["entered"]["count"] == 255
+    assert tax["entered"]["count"] == 277
     assert tax["n_classified"] == p["meta"]["n"] - 1
 
 
