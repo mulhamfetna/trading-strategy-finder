@@ -12,14 +12,14 @@ def test_es_default_uses_champion_when_present(tmp_path, monkeypatch):
     # isolate from the real results/ file: point the dashboard at a tmp champion
     cf = tmp_path / "wsh4_champions_full_ES.json"
     cf.write_text(json.dumps(_CHAMP))
-    monkeypatch.setattr(payload, "_instrument_champions_path", lambda inst: cf)
+    monkeypatch.setattr(payload, "_instrument_champions_path", lambda inst, cset=None: cf)
     p = payload.instrument_l1_default("ES", "4h")
     assert p["sl_soft"] == 41.0 and p["ind_1min"] is True     # champion box, not scaled-permissive
 
 
 def test_es_default_falls_back_when_champion_absent(tmp_path, monkeypatch):
     # no champion file → ES falls back to scaled-permissive (indicators empty, gate 0)
-    monkeypatch.setattr(payload, "_instrument_champions_path", lambda inst: tmp_path / "nope.json")
+    monkeypatch.setattr(payload, "_instrument_champions_path", lambda inst, cset=None: tmp_path / "nope.json")
     p = payload.instrument_l1_default("ES", "4h")
     assert p["indicators"] == [] and p["gate_pct"] == 0
 
@@ -28,6 +28,6 @@ def test_es_default_falls_back_for_tf_without_champion(tmp_path, monkeypatch):
     # champion file present but missing this TF → scaled-permissive for that TF
     cf = tmp_path / "wsh4_champions_full_ES.json"
     cf.write_text(json.dumps(_CHAMP))                          # only has 4h
-    monkeypatch.setattr(payload, "_instrument_champions_path", lambda inst: cf)
+    monkeypatch.setattr(payload, "_instrument_champions_path", lambda inst, cset=None: cf)
     p = payload.instrument_l1_default("ES", "2m")
     assert p["indicators"] == [] and p["gate_pct"] == 0
