@@ -1,0 +1,70 @@
+{
+  "n_files": 300,
+  "readers": 30,
+  "file_bytes_p50": 6527,
+  "file_bytes_max": 265759,
+  "arrays_total_bytes": 6773939,
+  "substrates": {
+    "dict": {
+      "n_reads": 300,
+      "p50_us": 0.04,
+      "p99_us": 0.1,
+      "mean_us": 0.05,
+      "MB_per_s": 489811.9
+    },
+    "npy_tmp": {
+      "n_reads": 300,
+      "p50_us": 15.32,
+      "p99_us": 50.58,
+      "mean_us": 16.85,
+      "MB_per_s": 1340.0
+    },
+    "npy_shm": {
+      "n_reads": 300,
+      "p50_us": 15.17,
+      "p99_us": 48.63,
+      "mean_us": 16.49,
+      "MB_per_s": 1369.4
+    },
+    "npy_mmap": {
+      "n_reads": 300,
+      "p50_us": 29.24,
+      "p99_us": 67.99,
+      "mean_us": 30.98,
+      "MB_per_s": 728.9
+    },
+    "shared_mem": {
+      "n_reads": 300,
+      "p50_us": 0.36,
+      "p99_us": 0.86,
+      "mean_us": 0.4,
+      "MB_per_s": 56638.4
+    },
+    "redis": {
+      "n_reads": 300,
+      "p50_us": 24.7,
+      "p99_us": 80.18,
+      "mean_us": 28.47,
+      "MB_per_s": 793.1
+    },
+    "npy_tmp_x30": {
+      "n_reads": 300,
+      "p50_us": 50.49,
+      "p99_us": 677.3,
+      "mean_us": 105.38,
+      "MB_per_s": 214.3,
+      "wall_s": 0.044
+    },
+    "npy_shm_x30": {
+      "n_reads": 300,
+      "p50_us": 46.79,
+      "p99_us": 696.61,
+      "mean_us": 84.25,
+      "MB_per_s": 268.0,
+      "wall_s": 0.042
+    }
+  },
+  "skipped": {
+    "arrow_plasma": "REMOVED from Apache Arrow in 12.0.0 (GH-33243) \u2014 not a valid option"
+  }
+}
