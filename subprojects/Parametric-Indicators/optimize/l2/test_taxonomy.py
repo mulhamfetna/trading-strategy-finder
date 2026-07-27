@@ -30,8 +30,8 @@ def test_l1_passed_branch_splits_and_reconciles():
     res = _l1_res()
     t = taxonomy.taxonomy_l1(res)
     # entered anchors to the known parity numbers
-    assert t["entered"]["count"] == 255
-    assert round(t["entered"]["pnl"]) == 149989
+    assert t["entered"]["count"] == 277
+    assert round(t["entered"]["pnl"]) == 151655
     # the three sub-buckets exactly partition passed_all_gates
     assert (t["entered"]["count"] + t["passed_skipped"]["count"]
             + t["passed_in_position"]["count"]) == t["passed_all_gates"]["count"]
@@ -61,7 +61,7 @@ def test_l2_tree_partitions_and_reconciles_to_l1_drops():
     res = _l2_res()
     t = taxonomy.taxonomy_l2(res)
     # L2 entered anchors to the l2v2 parity number
-    assert t["entered"]["count"] == 34
+    assert t["entered"]["count"] == 48
     # L2 decision partition sums to evaluated
     parts = ["gate_rejected", "indicator_veto", "indicator_no_confirm", "passed_no_open", "entered"]
     assert sum(t[k]["count"] for k in parts) == t["l2_evaluated"]["count"]

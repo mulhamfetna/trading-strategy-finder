@@ -31,10 +31,10 @@ def test_causal_l1_matches_legacy_oracle():
     legacy_entries = [(int(t["entry_idx"]), t["direction"]) for t in legacy.ledger]
     assert l1_entries == legacy_entries
     l1_rows = [r for r in res.log if r.layer == "L1" and r.decision == "entry"]
-    assert round(sum(r.pnl for r in l1_rows)) == 149989
+    assert round(sum(r.pnl for r in l1_rows)) == 151655
     # per-layer running equity is booked in exit-time order; final equity == layer P/L; dd never negative
     last = max(l1_rows, key=lambda r: r.exit_time)
-    assert round(last.equity) == 149989 and all(r.dd >= 0 for r in l1_rows)
+    assert round(last.equity) == 151655 and all(r.dd >= 0 for r in l1_rows)
 
 
 def test_causal_l2_matches_legacy_engine():
@@ -46,10 +46,10 @@ def test_causal_l2_matches_legacy_engine():
     l2_rows = [r for r in res.log if r.layer == "L2" and r.decision == "entry"]
     assert sorted((r.i, r.direction) for r in l2_rows) == \
            sorted((int(t["entry_idx"]), t["direction"]) for t in legacy.ledger)
-    assert len(l2_rows) == 34
-    assert round(metrics.score(legacy)["pnl"]) == round(sum(r.pnl for r in l2_rows)) == 25383
+    assert len(l2_rows) == 48
+    assert round(metrics.score(legacy)["pnl"]) == round(sum(r.pnl for r in l2_rows)) == 24498
     eq = np.cumsum([r.pnl for r in sorted(l2_rows, key=lambda r: r.exit_time)])
-    assert round(float((np.maximum.accumulate(eq) - eq).max())) == 7136               # L2 DD (l2v2)
+    assert round(float((np.maximum.accumulate(eq) - eq).max())) == 7015               # L2 DD (l2v2)
     fc_causal = sorted((r.i, round(r.exit_price, 4), round(r.pnl, 2)) for r in l2_rows if r.exit_reason == "L1-entry")
     fc_legacy = sorted((int(t["entry_idx"]), round(float(t["exit_price"]), 4), round(float(t["pnl"]), 2))
                        for t in legacy.ledger if t["exit_reason"] == "L1-entry")

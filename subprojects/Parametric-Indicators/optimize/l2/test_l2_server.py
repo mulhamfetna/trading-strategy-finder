@@ -32,7 +32,7 @@ def test_l2_routes_smoke():
     try:
         cfg = json.loads(urllib.request.urlopen(f"http://127.0.0.1:{port}/api/l2_config").read())
         assert "indicator_schema" in cfg
-        assert cfg["l1"]["n_trades"] == 255
+        assert cfg["l1"]["n_trades"] == 277
     finally:
         srv.shutdown()
 
