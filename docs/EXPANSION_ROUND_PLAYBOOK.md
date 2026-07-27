@@ -124,6 +124,10 @@ Copy this into the round's tracking Issue and tick it before writing code.
 | **C5** | **Attribute test failures with a CONTROL run before claiming "pre-existing".** | The suite had 25 failures. Rather than assume they predated the change, the same suite was run on an identical tree with the original code: same 25, empty diff both directions ⇒ provably zero regressions. Assuming would have been indistinguishable from hiding a real break. |
 | **C6** | **Bump `vote_cache.CACHE_VERSION` on any non-vote-identical maths change.** | The disk cache keys on *parameters*, not on the implementation. Change an indicator's maths without bumping the version and every worker silently loads arrays computed by the old code. |
 
+| **C7** | **When you adopt a champion or move a default, re-baseline the tests that pin it — in the SAME change.** | #66: the 2026-07-22 gap-fill adoption moved the 4h champion (214→277 trades) and the L1 default (lean→champion). ~20 tests pinned the old values and quietly failed for months, so "the suite is red" stopped meaning anything. An adoption is not finished until the pins move with it. |
+| **C8** | **A pinned number is meaningless without knowing WHICH path produced it. Verify per assertion — never `sed` across a directory.** | #66: a blanket `255 → 277` replace broke three *passing* tests, because `run_l1_cached()` serves the frozen **lean** oracle (255) while `run_causal(l1_default_params())` serves the **champion** (277). Two different L1s, one number. |
+| **C9** | **"Frozen" anchors are frozen only against the ENGINE that produced them.** | #66: gap-aware fills moved the frozen lean anchor's P/L $149,989 → $154,646 while its trade count and DD held. An engine change re-bases every anchor, including the ones named "frozen". |
+
 ---
 
 ## 5. Red flags — grep for these in any new indicator

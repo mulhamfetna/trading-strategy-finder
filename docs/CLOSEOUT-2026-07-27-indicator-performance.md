@@ -152,11 +152,9 @@ clean.
 - **15 tests** green, including end-to-end tests driving the real Indicator objects.
 - **Control runs:** the full suite was run on identical trees with and without the changes. **Same 25
   failures, empty diff both directions ⇒ zero regressions.**
-- **Those 25 failures are pre-existing** (`optimize/l2/*`, `test_intracandle_*`; none touch `quant`).
-  `test_parity_anchor.py` is a known-stale test; `test_intracandle_parity.py` had uncommitted local edits
-  before this work. Some may be an artifact of the server deploy excluding `*.csv`. **They were not
-  individually diagnosed** — the control established only that this work did not cause them. ⚠️ **This is
-  the top open risk for the next agent** (see §8).
+- **The 25 pre-existing failures were subsequently diagnosed and fixed** — see
+  `docs/CLOSEOUT-2026-07-27-test-suite-repair.md` (issue #66). None were caused by this work; all were
+  stale anchors and drift accumulated since the 2026-07-22 champion adoption.
 
 ---
 
