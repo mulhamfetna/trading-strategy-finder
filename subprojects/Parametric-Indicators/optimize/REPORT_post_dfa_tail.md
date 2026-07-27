@@ -96,6 +96,11 @@ each indicator's entire searched threshold grid (`autocorr` 0.01→0.50; `hurst_
 **Effect on the worst-case total:** **123.6 s → 111.1 s**; over-budget indicators **19 → 17**
 (summing 73.1 s → 60.2 s). Both fixed indicators dropped off the over-budget list entirely.
 
+**Full-suite regression check:** `25 failed, 854 passed, 1 skipped` — the failure set is **identical** to
+the control established in #54 (same 25, empty diff in both directions) ⇒ **zero regressions**. Those 25
+are pre-existing (`optimize/l2/*`, `test_intracandle_*`; none touch `quant`), and are unrelated to this
+work — see #54's report for their attribution.
+
 ---
 
 ## 4. So — how much is actually left, honestly?
