@@ -10,8 +10,12 @@ from research.intracandle.champion_run import run_champion_exact  # noqa: E402
 
 def test_off_is_champion_parity():
     base, s = run_champion_exact("4h", intracandle_veto_entry=False)
-    assert len(base) == 214            # champion trade count (NQ 4h)
-    assert s["pnl"] == 142203.0
+    # NQ 4h champion anchor. Was 214 / $142,203 before the gap-aware-fill champion adoption
+    # (2026-07-22) and left stale (#66). 277 / $151,655 is the frozen GOLDEN baseline
+    # (perf/golden/4h.json), independently verified by perf/check_golden.py — re-capture
+    # golden FIRST if a future adoption moves it, then update here.
+    assert len(base) == 277            # champion trade count (NQ 4h)
+    assert round(s["pnl"]) == 151655   # rounded: this path and the causal path differ by <$1 in float summation
 
 
 def test_on_adds_entries():

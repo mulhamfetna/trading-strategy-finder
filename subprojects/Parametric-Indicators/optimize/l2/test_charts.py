@@ -15,7 +15,7 @@ from optimize.l2 import logbook, payload, charts
 from volatility import gate_threshold
 
 _TF = "4h"
-_EXPECT = {"L1": 149989, "L2": 25383, "combined": 175372}   # l2v2 re-lock 2026-06-22 (reverse-entry-only)
+_EXPECT = {"L1": 151655, "L2": 24498, "combined": 176154}   # l2v2 re-lock 2026-06-22 (reverse-entry-only)
 
 
 @pytest.fixture(scope="module")

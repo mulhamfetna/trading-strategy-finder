@@ -5,7 +5,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from optimize.l2 import payload
 from optimize.l2 import l1_runner
 
-_W = Path(__file__).resolve().parents[1] / "results" / "wsh4_champions_full.json"
+# The DEPLOYED champion set, resolved through payload's own resolver rather than a hardcoded filename.
+# These tests used to read `wsh4_champions_full.json` directly. The deployed set has since moved to
+# `best` (DEFAULT_CHAMPION_SET = env WSH_CHAMPION_SET, default "best"; +31.6% 2026 OOS vs the incumbents,
+# UI-verified 31/31), so l1_default_params() serves `best_*` while these tests still asserted against the
+# superseded `wsh4_*` — they had been failing ever since (#66). Following the resolver keeps the real
+# contract under test (champion box -> layer params) and survives the next set change too.
+_W = payload._instrument_champions_path("NQ")
 
 
 def test_4h_default_is_now_the_champion_not_the_anchor():
@@ -33,7 +39,7 @@ def test_frozen_lean_anchor_still_exists_and_is_distinct():
     assert payload.is_frozen_lean(anchor, "4h", "ES") is False
 
 
-def test_per_tf_default_matches_wsh4_champion():
+def test_per_tf_default_matches_deployed_champion():
     champs = json.loads(_W.read_text())
     for tf in ("2h", "15m", "2m"):
         p = payload.l1_default_params(tf)
