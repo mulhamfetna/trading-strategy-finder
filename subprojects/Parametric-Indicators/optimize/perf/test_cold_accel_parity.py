@@ -32,8 +32,8 @@ THRESHOLDS = np.round(np.arange(0.30, 0.7001, 0.01), 2)
 @pytest.mark.parametrize("n", [100, 200])
 def test_dfa_fast_reproduces_vote_boolean(n):
     close = _random_walk(seed=n, n_bars=6000)
-    ref = Q.dfa(close, n)
-    fast = cold_accel.dfa_fast(close, n)
+    ref = Q.dfa_reference(close, n)      # the original loop (oracle)
+    fast = Q.dfa(close, n)               # what the DFA indicator now actually calls
 
     assert fast.shape == ref.shape
     fin_ref, fin_fast = np.isfinite(ref), np.isfinite(fast)
@@ -52,4 +52,27 @@ def test_dfa_fast_reproduces_vote_boolean(n):
 
 def test_dfa_fast_matches_reference_shape_on_short_input():
     close = _random_walk(seed=1, n_bars=300)
-    assert cold_accel.dfa_fast(close, 100).shape == Q.dfa(close, 100).shape
+    assert cold_accel.dfa_fast(close, 100).shape == Q.dfa_reference(close, 100).shape
+
+
+def test_dfa_indicator_votes_match_reference_end_to_end():
+    """The gate at the level that actually matters: the DFA Indicator's emitted veto directions."""
+    from indicators import library
+    from indicators.runner import market_context
+    import pandas as pd
+
+    close = _random_walk(seed=7, n_bars=4000)
+    df = pd.DataFrame({"Date": pd.date_range("2020", periods=len(close), freq="min"),
+                       "Open": close, "High": close + 2, "Low": close - 2,
+                       "Close": close, "Volume": np.ones(len(close))})
+    ctx = market_context(df)
+    ind = library.from_specs([{"key": "dfa", "enabled": True, "mode": "veto",
+                               "params": {"n": 100, "threshold": 0.5}}])[0]
+    cdir_fast, vdir_fast = ind.directions(ctx)
+
+    # recompute what the reference implementation would have voted
+    from indicators import votes as V
+    ref_alpha = Q.dfa_reference(close, 100)
+    cdir_ref, vdir_ref = V.both_veto(np.isfinite(ref_alpha) & (ref_alpha < 0.5))
+    assert np.array_equal(np.asarray(vdir_fast), np.asarray(vdir_ref))
+    assert np.array_equal(np.asarray(cdir_fast), np.asarray(cdir_ref))

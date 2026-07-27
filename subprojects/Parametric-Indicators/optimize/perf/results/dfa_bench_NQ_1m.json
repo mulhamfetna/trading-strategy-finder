@@ -1,0 +1,29 @@
+{
+  "n_bars": 486969,
+  "per_n": {
+    "20": {
+      "ref_s": 57.0,
+      "fast_s": 0.044,
+      "speedup": 1309.3,
+      "mask_match": true,
+      "float_close": true,
+      "max_vote_flips_over_grid": 0
+    },
+    "100": {
+      "ref_s": 248.276,
+      "fast_s": 0.178,
+      "speedup": 1396.1,
+      "mask_match": true,
+      "float_close": true,
+      "max_vote_flips_over_grid": 0
+    },
+    "400": {
+      "ref_s": 756.561,
+      "fast_s": 0.658,
+      "speedup": 1150.1,
+      "mask_match": true,
+      "float_close": true,
+      "max_vote_flips_over_grid": 0
+    }
+  }
+}
