@@ -1,0 +1,201 @@
+# Expansion-Round Playbook
+
+**Read this BEFORE adding indicators, instruments, timeframes, or layers — and again when you finish.**
+**Issue:** #57 · **Origin:** the `dfa` incident in #54 · **Status:** standing rules, not a one-off.
+
+---
+
+## 0. What an "expansion round" is, and why it has its own playbook
+
+An **expansion round** is any change that makes the system *do more of the same thing*:
+
+- adding indicators (21 → 165 is the one that bit us),
+- onboarding an instrument (NQ → ES/GC/CL/NG/HG/…),
+- adding a timeframe or a decision layer (L1 → L2, MTF fusion),
+- widening a parameter grid on something that already exists.
+
+Expansion rounds are dangerous in a specific, repeatable way: **each addition looks individually cheap,
+nobody re-measures the whole, and the cost profile silently moves somewhere nobody is looking.** Feature
+work has a natural verification gate (does it produce the right numbers?). Expansion has none for *cost*.
+
+> **In one line:** correctness is tested on every PR; **cost is tested on no PR at all**. This playbook is
+> that missing gate.
+
+---
+
+## 1. The incident this playbook exists to prevent
+
+**What happened (#54).** The indicator library grew **21 → 165**. Nobody re-profiled. Eight months later
+the optimizer spent **~98% of its wall-clock computing indicators**, and we set out to fix it with
+exotic storage and a GPU.
+
+**What was actually true, once measured:**
+
+| Fact | Number |
+|---|---|
+| Share of ALL indicator compute spent in **one** indicator (`dfa`) | **81%** |
+| Cost of a single `dfa` compute at its default `n=100` | **248 s** |
+| Cost of a single `dfa` compute at grid-max `n=400` | **756 s — 12.6 minutes** |
+| Cause | a triple-nested Python loop calling `np.polyfit` ~10⁸ times |
+| Fix | closed-form linear detrend + Numba → **1,396×**, **zero** decision changes |
+| Effect on the whole profile | **208 s → 40 s (5.1×)** on identical work |
+
+**The three near-misses — each one is a rule below:**
+
+1. **We nearly optimized from a stale report.** The existing performance report named
+   `order_blocks`/`bollinger`/`cci`. All were already fixed or no longer dominant. It was written *before*
+   the library tripled. Following it would have wasted the entire effort. → **Rule P1**
+2. **We nearly bought hardware to fix a Python loop.** The plan of record was "GPU-first". A GPU would
+   have delivered maybe 100×, at real cost, on a problem a one-function rewrite solved at 1,396× for
+   free. → **Rule P9**
+3. **We nearly built a cache that already existed, and nearly attempted one that was impossible.**
+   Two levels of caching were already in the repo; and "pre-compute every combination" would have needed
+   **3.9 PB** — 32,000× the server disk. Both were answerable by *reading and multiplying*, before any
+   code. → **Rules P5, P10**
+
+```mermaid
+graph TD
+    A["Expansion round<br/>21 → 165 indicators"] --> B["Each addition reviewed<br/>for CORRECTNESS ✅"]
+    A --> C["No one re-measured COST ❌"]
+    C --> D["dfa quietly becomes<br/>81% of all compute"]
+    D --> E["Old profile still blames<br/>order_blocks / bollinger / cci"]
+    E --> F["Plan: buy a GPU 💸"]
+    F -.->|"one 3-minute profile"| G["Actual fix: rewrite one function<br/>1,396× · free · 0 decisions changed"]
+```
+
+---
+
+## 2. START-of-round checklist
+
+Copy this into the round's tracking Issue and tick it before writing code.
+
+- [ ] **Is the current performance profile still valid?** Find the newest profile artifact. If the library
+      / instrument set / timeframe set changed since it was produced, it is **INVALID** — re-run it before
+      trusting any statement about what is slow.
+- [ ] **Record the "before" number.** One command, one artifact, committed
+      (`optimize/perf/run_baseline.py` produces `baseline_<inst>_<tf>.json`). You cannot claim an
+      improvement or detect a regression without it.
+- [ ] **Know the amplification factor.** Indicators are computed on the **1-minute frame ≈ 486,969 bars**,
+      not the decision frame (4h ≈ 2,119 bars). That is **~230×**. A "harmless" 1 ms per bar is **8
+      minutes**. Do this multiplication *before* writing the indicator, not after.
+- [ ] **Set a per-item cost budget.** State the number the round must not exceed (e.g. "no single
+      indicator over 2 s per compute on the 1-minute frame at ANY point in its parameter grid").
+- [ ] **If the round proposes storing/precomputing anything: multiply the grid out FIRST.** (§4, Rule P5.)
+- [ ] **Deep-research pass** for genuinely new questions (AGENTS.md §5).
+
+---
+
+## 3. END-of-round checklist
+
+- [ ] **Re-run the profile** and commit the "after" artifact next to the "before".
+- [ ] **Publish the new top-10 cost table** — the hot list *changes* after every round; that table is the
+      only thing the next round should trust.
+- [ ] **Retire or date-stamp the old performance report.** Add a header line: *"Profile valid as of
+      <date>, at <N> indicators / <M> instruments. Re-profile before using."* A stale perf report is
+      worse than none, because it is confidently wrong.
+- [ ] **Worst-case parameter check** on anything newly added (§4, Rule P4).
+- [ ] **Update `vote_cache.CACHE_VERSION`** if any indicator's maths changed in a non-vote-identical way.
+- [ ] **Record what moved** in the round's Issue: what got slower, what got faster, what is now #1.
+
+---
+
+## 4. The rules (each earned, with the incident behind it)
+
+### Performance rules
+
+| # | Rule | Why (the incident) |
+|---|---|---|
+| **P1** | **Never optimize from an old profile. Re-profile after every expansion round.** | The report in the repo blamed `order_blocks`/`bollinger`/`cci`; by then the real answer was `dfa` at 81%. The report was not wrong when written — it was wrong *by the time it was read*. |
+| **P2** | **No heavyweight NumPy call inside a per-bar loop.** Banned in that position: `np.polyfit`, `np.corrcoef`, `np.linalg.*`, and `np.std`/`np.mean`/`np.max` over a slice. Use a closed form, a vectorized rolling op, or Numba. | `dfa` called `np.polyfit` (which builds a matrix and calls LAPACK) hundreds of millions of times to fit a straight line — something that has a closed form costing a few sums. Result: 756 s for one compute. `autocorr`, `hurst_exp`, `linreg_r2` still carry this pattern (#56). |
+| **P3** | **Multiply by 486,969 before you commit.** Indicator cost is paid per **1-minute** bar (~230× the 4h decision frame), and `--ind-1min` is the production default. | Every per-bar cost in this system is amplified ~230×. This is why an indicator that feels instant in a notebook can cost 12 minutes in the sweep. |
+| **P4** | **Profile the WORST CASE of the parameter grid, not the default.** | `dfa` cost 57 s at `n=20` and **756 s at `n=400` — 13× spread**. An indicator can look mid-table at defaults and be pathological at a grid edge the optimizer *will* eventually sample. Average-case profiling cannot see this. |
+| **P5** | **Before proposing any "precompute / store everything" design, multiply the parameter grid out.** | Ours: ~4.0 **billion** combinations × ~1 MB ≈ **3.9 PB** for one instrument — 32,000× the disk. Two minutes of arithmetic killed an entire proposed architecture. |
+| **P9** | **Measure before you buy hardware or adopt infrastructure.** Compare every proposal against the dumb controls: *the cache we already have* and *just add more CPU workers*. | We were one decision away from provisioning a GPU box to accelerate a problem that was an interpreted loop, not an arithmetic-throughput limit. The CPU rewrite beat the published GPU speed-ups for comparable work — at zero cost. |
+| **P10** | **Read the code before building the thing you assume is missing.** | Two levels of caching (`core._VOTE_MEMO`, `optimize/vote_cache.py`) already existed and already worked. The proposed work was to build them again. |
+
+### Correctness-under-optimization rules
+
+| # | Rule | Why |
+|---|---|---|
+| **C1** | **Define the parity contract BEFORE optimizing, and make it the weakest true statement.** Usually the contract is the **discretized decision** (the vote), not raw float equality. | `np.polyfit` goes through LAPACK, so no rewrite can be bit-identical in the last float digits. Demanding float-identity would have blocked a safe 1,396× win; demanding *nothing* would have risked silently changing trades. The right contract — "the veto decision is identical across every threshold in the searched grid" — was both provable and sufficient. |
+| **C2** | **Keep the original implementation verbatim as a `*_reference` oracle. Never delete it.** | `dfa_reference` is now the thing every future change is tested against. Deleting the slow version destroys the only ground truth you have. |
+| **C3** | **Prove parity on REAL data across the WHOLE searched grid, not on a toy example at one setting.** | Synthetic tests passed first, but the claim that mattered was *zero* differing decisions over the real 486,969-bar series at every threshold from 0.30 to 0.70. |
+| **C4** | **An optional dependency must fall back to the reference, never to a different answer.** | If `numba` is absent, `dfa()` returns the original implementation's result. A missing optional package can slow things down; it must never change a number. |
+| **C5** | **Attribute test failures with a CONTROL run before claiming "pre-existing".** | The suite had 25 failures. Rather than assume they predated the change, the same suite was run on an identical tree with the original code: same 25, empty diff both directions ⇒ provably zero regressions. Assuming would have been indistinguishable from hiding a real break. |
+| **C6** | **Bump `vote_cache.CACHE_VERSION` on any non-vote-identical maths change.** | The disk cache keys on *parameters*, not on the implementation. Change an indicator's maths without bumping the version and every worker silently loads arrays computed by the old code. |
+
+---
+
+## 5. Red flags — grep for these in any new indicator
+
+If a review turns up any of these, ask for a measurement before approving:
+
+```python
+for i in range(n, N):            # a Python loop over the FULL series ...
+    win = x[i-n:i]
+    np.polyfit(...)              # ❌ P2 — least-squares solve per bar
+    np.corrcoef(...)             # ❌ P2 — covariance matrix per bar
+    np.linalg.lstsq(...)         # ❌ P2
+    np.std(win) / np.mean(win)   # ❌ P2 — use a rolling/cumsum form
+```
+
+**Cheap greps for a review or CI step:**
+
+```bash
+# heavyweight solvers anywhere in the indicator tree
+grep -rnE "np\.(polyfit|corrcoef|linalg\.|cov)\(" indicators/ --include='*.py'
+
+# the shape that actually hurts: a full-series per-bar loop
+grep -rnE "for [a-z]+ in range\(.*len\(|for [a-z]+ in range\(n" indicators/ --include='*.py'
+```
+
+**What that grep returns today (2026-07-27) — your baseline for "expected vs new":**
+
+```
+indicators/calc/quant.py:60   np.polyfit(t, seg, 1)          # inside dfa_reference — EXPECTED (kept oracle, not called)
+indicators/calc/quant.py:66   np.polyfit(np.log(ls), ...)    # inside dfa_reference — EXPECTED (kept oracle, not called)
+indicators/calc/quant.py:187  np.corrcoef(a, b)[0, 1]        # inside autocorr — REAL, still live (tracked in #56)
+```
+
+Three hits, two of them deliberate. **If a round adds a fourth, that is the thing to measure.**
+
+**The honest counter-rule:** a per-bar loop is *not* automatically wrong — some indicators are genuinely
+sequential (order blocks, structure trend, anything carrying state). The rule is not "no loops"; it is
+**"no heavyweight per-bar call that has a closed form"**, and **"if it must loop, compile it"** (Numba),
+**"and measure it"**.
+
+---
+
+## 6. Worked example — how `dfa` would have been caught in 90 seconds
+
+Had this playbook existed when `dfa` was added:
+
+1. **START checklist, amplification (P3):** "this computes a fit per segment per scale per bar; on
+   486,969 bars that is ~10⁸ fits" → flagged before merge.
+2. **Red-flag grep (P2):** `np.polyfit` inside `for i in range(...)` → automatic review stop.
+3. **Worst-case parameter check (P4):** time it at `n=400`, not `n=100` → **756 s**, instantly over any
+   sane budget.
+4. **Cost budget:** "no indicator over 2 s per compute" → rejected, sent back for a closed-form version.
+
+Total cost of catching it: **one timing run.** Actual cost of missing it: **eight months of every sweep
+paying up to 12.6 minutes per compute**, a stale performance report, and a near-miss hardware purchase.
+
+---
+
+## 7. The one-sentence version
+
+> **Correctness is gated on every PR; cost is gated on none — so at the start of every expansion round,
+> re-measure before you trust, multiply before you store, and profile before you buy.**
+
+---
+
+## 8. See also
+
+- `subprojects/Parametric-Indicators/optimize/REPORT_indicator_cache_acceleration.md` — the full #54
+  investigation and every number quoted here.
+- `subprojects/Parametric-Indicators/docs/PRIOR_ART_indicator_caching_gpu.md` — how vectorbt, Qlib,
+  talipp/wickra and RAPIDS handle the same problems.
+- `AGENTS.md` §5 (research discipline) and §9 (starter checklist) — this playbook is the **cost** analogue
+  of those **correctness** rules.
+- Open follow-ups: **#56** (is the post-`dfa` tail really diffuse? worst-case parameter sweep) ·
+  **#58** (cache substrate + cache-level re-keying, measured rather than reasoned).
