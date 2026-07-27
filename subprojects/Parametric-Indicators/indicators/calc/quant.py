@@ -15,8 +15,8 @@ def zscore(close, n):
         return (c - _sma(c, n)) / rolling_std(c, n)
 
 
-def hurst_exp(close, n):
-    """Rolling R/S Hurst of the window's returns. H≈0.5 random, >0.5 persistent, <0.5 mean-reverting."""
+def hurst_exp_reference(close, n):
+    """REFERENCE (slow) rolling R/S Hurst — kept verbatim as the parity oracle for `hurst_exp` (#56)."""
     c = np.asarray(close, float)
     N = len(c)
     out = np.full(N, np.nan)
@@ -174,8 +174,8 @@ def dfa(close, n):
     return _dfa_core(c, int(n), scales)
 
 
-def autocorr(close, n, lag=1):
-    """Lag-`lag` autocorrelation of returns over the last n returns."""
+def autocorr_reference(close, n, lag=1):
+    """REFERENCE (slow) lag-`lag` autocorrelation — kept verbatim as the parity oracle (#56)."""
     c = np.asarray(close, float)
     r = np.diff(c)
     N = len(c)
@@ -186,6 +186,103 @@ def autocorr(close, n, lag=1):
         if a.std() > 0 and b.std() > 0:
             out[i] = np.corrcoef(a, b)[0, 1]
     return out
+
+
+@_njit(cache=True, fastmath=False)
+def _autocorr_core(r, n, lag, N):
+    """Pearson r between w[lag:] and w[:-lag] per bar, via closed-form sums instead of np.corrcoef.
+    Mirrors the reference's guard (both legs must have non-zero population std)."""
+    out = np.full(N, np.nan)
+    m = n - lag                                  # length of each leg
+    if m < 2:
+        return out
+    for i in range(n + 1, N):
+        base = i - n
+        sa = 0.0
+        sb = 0.0
+        for k in range(m):
+            sa += r[base + lag + k]
+            sb += r[base + k]
+        ma = sa / m
+        mb = sb / m
+        vaa = 0.0
+        vbb = 0.0
+        vab = 0.0
+        for k in range(m):
+            da = r[base + lag + k] - ma
+            db = r[base + k] - mb
+            vaa += da * da
+            vbb += db * db
+            vab += da * db
+        if vaa > 0.0 and vbb > 0.0:              # == reference's a.std()>0 and b.std()>0
+            out[i] = vab / np.sqrt(vaa * vbb)
+    return out
+
+
+def autocorr(close, n, lag=1):
+    """Lag-`lag` autocorrelation of returns over the last n returns.
+
+    Fast path (numba, closed-form Pearson) when available; otherwise the verbatim reference. Proven
+    VOTE-identical to the reference across the searched threshold grid — see the parity note on `dfa`.
+    """
+    if not _HAVE_NUMBA:
+        return autocorr_reference(close, n, lag)
+    c = np.asarray(close, dtype=np.float64)
+    r = np.diff(c)
+    return _autocorr_core(r, int(n), int(lag), len(c))
+
+
+@_njit(cache=True, fastmath=False)
+def _hurst_core(c, n, N):
+    """Rolling R/S Hurst in one compiled pass (no per-bar numpy temporaries)."""
+    out = np.full(N, np.nan)
+    m = n - 1                                    # number of returns in the window
+    if m < 1:
+        return out
+    logm = np.log(float(m))
+    for i in range(n - 1, N):
+        base = i - n + 1
+        rmean = 0.0
+        for k in range(m):
+            rmean += c[base + 1 + k] - c[base + k]
+        rmean /= m
+        var = 0.0
+        for k in range(m):
+            d = (c[base + 1 + k] - c[base + k]) - rmean
+            var += d * d
+        s = np.sqrt(var / m)                     # population std, == ndarray.std()
+        if s <= 0.0:
+            continue
+        acc = 0.0
+        ymin = 0.0
+        ymax = 0.0
+        first = True
+        for k in range(m):
+            acc += (c[base + 1 + k] - c[base + k]) - rmean
+            if first:
+                ymin = acc
+                ymax = acc
+                first = False
+            else:
+                if acc < ymin:
+                    ymin = acc
+                if acc > ymax:
+                    ymax = acc
+        rng = ymax - ymin
+        if rng > 0.0:
+            out[i] = np.log(rng / s) / logm
+    return out
+
+
+def hurst_exp(close, n):
+    """Rolling R/S Hurst of the window's returns. H≈0.5 random, >0.5 persistent, <0.5 mean-reverting.
+
+    Fast path (numba) when available; otherwise the verbatim reference. Vote-identical — see `dfa`.
+    """
+    if not _HAVE_NUMBA:
+        return hurst_exp_reference(close, n)
+    c = np.asarray(close, dtype=np.float64)
+    return _hurst_core(c, int(n), len(c))
 
 
 def demarker(high, low, n):
