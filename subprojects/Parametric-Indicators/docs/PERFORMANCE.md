@@ -26,7 +26,12 @@ document **summarizes and cross-references** it rather than duplicating it. The 
 | ROI / "import-now-or-hold" decision | `perf/REPORT_optimization_roi_and_decision.md` |
 | Pinned status + golden baselines table | `perf/STATUS_optimization.md` |
 | Per-step before/after detail | `perf/UPDATE_step_*.md` (D, A1, A2, E, C′, B1, B2, B3a, B3b) |
-| Profiling deep analysis (where the 37 s went) | `optimize/REPORT_backtester_speed_optimization.md` |
+| Profiling deep analysis (where the 37 s went) | `optimize/REPORT_backtester_speed_optimization.md` ⚠️ **SUPERSEDED — 21-indicator era, see §8** |
+| **CURRENT indicator profile + the `dfa` fix (2026-07-27)** | **`optimize/REPORT_indicator_cache_acceleration.md`** |
+| **Worst-case-parameter cost of all 165 indicators** | **`optimize/REPORT_post_dfa_tail.md`** |
+| **Cache substrate / level — measured NO-GO** | **`optimize/REPORT_cache_substrate_and_level.md`** |
+| **Rules to run before/after any expansion round** | **`docs/EXPANSION_ROUND_PLAYBOOK.md`** |
+| **Perf harnesses + every measured artifact** | **`optimize/perf/README.md`** |
 | Vectorized fast engine (numpy first-touch exits) | `docs/VECTORIZATION.md` |
 | 1-minute indicator layer + its vectorization | `docs/ONEMIN_INDICATORS_AND_VECTORIZATION.md` |
 | Axis-B investigation + action plan | `perf/INVESTIGATION_axisB_per_decision_loop.md`, `perf/ACTION_PLAN_axisB.md` |
@@ -102,6 +107,14 @@ project's history:
   elsewhere (§7). The cache is still correct and useful (it eliminates a real recompute), but it was **not**
   the fleet bottleneck. Lesson, now a rule: **implement, measure, compare — do not declare a speedup from a
   plausible mechanism; prove it with a before/after rate.**
+- **The stale profile that nearly cost a GPU purchase (2026-07-27, #54).** After the library grew
+  **21 → 165 indicators** with no re-profiling, the standing hot list
+  (`order_blocks`/`bollinger`/`cci`) was **completely wrong**: one indicator, **`dfa`, was 81% of all
+  indicator compute** — a triple-nested Python loop calling `np.polyfit` ~10⁸ times, costing up to
+  **756 s (12.6 min) for a single compute**. The plan of record was to buy a GPU; a **3-minute profile**
+  redirected it to a one-function rewrite worth **1,396×**, free, with zero decision changes. Lesson, now
+  rule **P1** of `docs/EXPANSION_ROUND_PLAYBOOK.md`: **an old profile is INVALID after library growth —
+  re-profile before trusting any statement about what is slow.** See §8.
 
 ---
 
@@ -618,7 +631,92 @@ frequently-respawning sweeps. Votes are per-decision-bar (~2 KB), so the store i
 
 ---
 
-## 10. One-paragraph bottom line
+## 10. Indicator cold-compute — the 2026-07-27 re-profile (**CURRENT**)
+
+**Supersedes the hot list in `optimize/REPORT_backtester_speed_optimization.md`** (written at ~21
+indicators; the library is now **165** and the cost moved entirely). Full detail:
+`optimize/REPORT_indicator_cache_acceleration.md`, `REPORT_post_dfa_tail.md`,
+`REPORT_cache_substrate_and_level.md`; artifacts and harnesses: `optimize/perf/README.md`.
+
+### 10.1 What the measurement said (#54)
+
+A 3-trial NQ 4h profile (165 indicators, 1-minute frame, cold cache) on the AMD server:
+
+| | before | after the `dfa` fix |
+|---|---:|---:|
+| wall clock | 208 s | **40 s (5.1×)** |
+| cold indicator compute | 206 s (99% of wall) | 39 s |
+| cold computations | 233 | 233 *(identical work — apples-to-apples)* |
+| **`dfa`** | **167 s = 81% of all indicator time** | 0.161 s = 0.42% |
+
+`dfa` (`indicators/calc/quant.py`) was a triple-nested Python loop calling `np.polyfit` per segment per
+scale per bar — ~10⁸ least-squares solves. Replaced by the closed-form OLS slope + residual mean-square in
+one Numba pass:
+
+| `dfa` on the real 486,969-bar frame | before | after | speed-up | **vote flips** |
+|---|---:|---:|---:|:---:|
+| n=20 | 57.0 s | 0.044 s | 1,309× | **0** |
+| n=100 (default) | 248.3 s | 0.178 s | **1,396×** | **0** |
+| n=400 (grid max) | **756.6 s** | 0.658 s | 1,150× | **0** |
+
+### 10.2 The parity contract for this class of change
+
+`np.polyfit` solves via LAPACK, so a closed form is **not** bit-identical in the last float digits. The
+contract enforced is the **discretized decision**: `dfa`/`autocorr`/`hurst_exp` are **veto** indicators, so
+what must be identical is the veto boolean across the **entire searched threshold grid** on the real
+series — verified as **zero flips**. The original implementations are retained verbatim as
+`dfa_reference` / `autocorr_reference` / `hurst_exp_reference` (the parity oracles), and **without numba
+the code falls back to them**, so a missing optional dependency can never change a number.
+Regression-checked with a **control run** (identical suite on unmodified code): same 25 pre-existing
+failures, empty diff both ways ⇒ zero regressions.
+
+### 10.3 Worst-case parameter cost — the number to plan against (#56)
+
+Profiling at *sampled* parameters is what let `dfa` hide. Scanning **every** indicator at defaults /
+all-min / all-max (`optimize/perf/bench_worstcase.py`):
+
+| | all 165 indicators, full frame |
+|---|---:|
+| at sampled parameters | ~39 s |
+| **at worst-case parameters** | **123.6 s → 111.1 s** after the `autocorr`/`hurst_exp` fixes |
+| indicators over a 2 s budget | **19 → 17** (73.1 s → 60.2 s) |
+
+Fixed here: `autocorr` 9.47 s → 0.081 s (**116×**), `hurst_exp` 5.24 s → 0.233 s (**22×**), 0 vote flips.
+Remaining leaders: `sinewave` 6.6 s, `ifvg` 5.2 s, `proj_bands` 5.1 s, `ou_halflife` 4.4 s,
+`cmo_chande_dmi` 4.0 s — several expensive at **default** parameters, so paid on nearly every trial that
+enables them. (`ifvg` independently corroborates §9's ES-committee finding.) **Open follow-up: #62**, with
+a 2 s budget as the stopping rule (expected end state ~50 s worst-case).
+
+### 10.4 Caching: measured, and deliberately NOT changed (#58)
+
+| finding | number |
+|---|---|
+| cache **read** vs the **compute** it replaces | **15 µs vs ~167,000 µs = 0.009%** |
+| disk-cache **hit rate** in a fresh sweep | **0.00** over 1,995 lookups / 30 trials |
+| `.npy` (current) · tmpfs · `shared_memory` · **Redis** · mmap | 15.32 · 15.17 (noise) · 0.36 · **24.70 (1.6× slower)** · 29.24 µs |
+
+⇒ **NO-GO on every substrate and re-keying change.** Fresh sweeps never repeat parameters (~4-billion
+grid) and every fold is a distinct slice, so the disk cache is barely read; the caching that actually pays
+is the in-process `_VOTE_MEMO` (§7.4). The 201,354 files / 4.3 GB in the production cache are evidence of
+**misses written**, not hits. Two corrections to earlier claims: **`mode` is never searched** by
+`_suggest_indicators`, so there is no 3× confirm/veto/both duplication; and **precomputing all parameter
+combinations is impossible** — ~4.0 B combos ≈ **3.9 PB** for one instrument. *What would change this:* a
+replay-shaped workload (champion re-validation, ablation grids), where `shared_memory`'s 43× becomes worth
+revisiting.
+
+### 10.5 Standing rules produced by this work
+
+`docs/EXPANSION_ROUND_PLAYBOOK.md` — read before/after **any** expansion round. Most load-bearing:
+**P1** an old profile is invalid after growth · **P2** no `np.polyfit`/`np.corrcoef`/`np.linalg.*` inside a
+per-bar loop · **P3** multiply per-bar cost by **486,969** · **P4** profile the **worst-case** parameter ·
+**P5** multiply the grid out before proposing any "store everything" design · **P9** measure before buying
+hardware · **C5** run a **control** before calling a test failure "pre-existing". ⚠️ When timing anything,
+**warm up first** — an unwarmed benchmark extrapolated Numba JIT compile ×24 and reported `dfa` at 5.52 s
+against a measured 0.178 s.
+
+---
+
+## 11. One-paragraph bottom line
 
 Speed work here is governed by one rule — **prove byte-identical results, never assume them** — enforced by
 the 6-TF golden gate (L1 4h anchor ~$142,203 / 214 trades) and the fast↔slow engine parity locks. Two
@@ -634,4 +732,13 @@ fleet, golden 6/6 byte-identical. The newest measured finding (§9) is the **cro
 ES contributor per-trial cost**: alignment/state are cheap and cached (514 ms once/worker), but the ES
 indicator committee recomputes per trial, and **two indicators — `ifvg` (58 s) and `breaker` (38 s) — are
 90% of a 106 s full-committee trial**; excluding them from the ES search space is a ~10× cut with zero
-impact on the contributor-free golden path.
+impact on the contributor-free golden path. **The current headline (§10, 2026-07-27) is the indicator
+cold-compute re-profile**: after the library grew 21→165 the standing hot list was stale, and **one
+indicator (`dfa`) was 81% of all indicator time** — a per-bar `np.polyfit` loop costing up to **756 s** for
+a single compute. A closed-form + Numba rewrite gave **1,150–1,396×** with **zero** vote changes, taking a
+3-trial profile **208 s → 40 s (5.1×)**; `autocorr` (116×) and `hurst_exp` (22×) followed. Measurement also
+closed the storage question for good — a cache read is **0.009%** of the compute it replaces and the disk
+cache's hit rate in a fresh sweep is **0.00**, so every substrate change (tmpfs, Redis, shared-memory,
+re-keying) is a **NO-GO**, and no GPU/ARM hardware is needed. The standing defence is
+`docs/EXPANSION_ROUND_PLAYBOOK.md`: **re-profile after every expansion round, and profile the worst-case
+parameter, not the default.**
