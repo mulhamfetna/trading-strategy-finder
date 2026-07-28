@@ -1,0 +1,84 @@
+{
+  "tf": "4h",
+  "instrument": "NQ",
+  "reference": "ES",
+  "decision_bars": 2119,
+  "minute_bars": 486969,
+  "q2_decision_tf": {
+    "rolling_corr": {
+      "nonzero_votes": 0,
+      "bars": 2119
+    },
+    "rolling_beta": {
+      "nonzero_votes": 522,
+      "bars": 2119
+    },
+    "cointegration": {
+      "nonzero_votes": 802,
+      "bars": 2119
+    },
+    "pca_factor": {
+      "nonzero_votes": 765,
+      "bars": 2119
+    }
+  },
+  "q1_onemin_path": {
+    "rolling_corr": {
+      "nonzero_votes": 0,
+      "bars": 2119
+    },
+    "rolling_beta": {
+      "nonzero_votes": 0,
+      "bars": 2119
+    },
+    "cointegration": {
+      "nonzero_votes": 0,
+      "bars": 2119
+    },
+    "pca_factor": {
+      "nonzero_votes": 0,
+      "bars": 2119
+    }
+  },
+  "ref_reaches_1min_context": false,
+  "inert_in_production": true,
+  "q3_cost": [
+    {
+      "key": "rolling_corr",
+      "worst_config": "all_max",
+      "subset_s": 0.3091,
+      "notes": {
+        "default": "EMITTED NOTHING \u2014 the reference is not reaching it",
+        "all_min": "EMITTED NOTHING \u2014 the reference is not reaching it"
+      },
+      "projected_full_s": 7.53,
+      "over_budget": true
+    },
+    {
+      "key": "rolling_beta",
+      "worst_config": "default",
+      "subset_s": 0.2366,
+      "notes": {},
+      "projected_full_s": 5.76,
+      "over_budget": true
+    },
+    {
+      "key": "cointegration",
+      "worst_config": "all_max",
+      "subset_s": 0.3392,
+      "notes": {},
+      "projected_full_s": 8.26,
+      "over_budget": true
+    },
+    {
+      "key": "pca_factor",
+      "worst_config": "all_max",
+      "subset_s": 0.2392,
+      "notes": {},
+      "projected_full_s": 5.82,
+      "over_budget": true
+    }
+  ],
+  "n_over_budget": 4,
+  "total_projected_s": 27.4
+}

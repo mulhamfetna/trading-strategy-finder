@@ -1,0 +1,50 @@
+[xseries] loading NQ 4h + reference ES ...
+[xseries] primary: 2,119 decision bars / 486,969 1-minute bars | reference: 2,119 / 486,954
+
+[xseries] Q2 CONTROL — decision-TF path with the reference attached
+    rolling_corr     non-zero votes =      0 / 2119
+    rolling_beta     non-zero votes =    522 / 2119
+    cointegration    non-zero votes =    802 / 2119
+    pca_factor       non-zero votes =    765 / 2119
+
+[xseries] Q1 WIRING — production --ind-1min path, SAME reference
+    ctx_1min.ref_close is None  <-- no reference reaches the 1-minute context
+    rolling_corr     non-zero votes =      0 / 2119
+    rolling_beta     non-zero votes =      0 / 2119
+    cointegration    non-zero votes =      0 / 2119
+    pca_factor       non-zero votes =      0 / 2119
+
+[xseries] VERDICT: cross-series indicators are INERT on the production 1-minute path while ALIVE on the decision-TF path
+
+[xseries] Q3 COST — 1-minute frame, reference attached, 20,000-bar subset (×24.3 to the full frame), budget 2.0s
+    rolling_corr     worst=all_max  proj_full=     0.54s  {'default': 'EMITTED NOTHING — the reference is not reaching it', 'all_min': 'EMITTED NOTHING — the reference is not reaching it'}
+    rolling_beta     worst=all_max  proj_full=     0.38s  
+    cointegration    worst=all_max  proj_full=     0.58s  
+    pca_factor       worst=all_max  proj_full=     0.36s  
+
+[xseries] Q4 PARITY — accelerated vs reference on the FULL 1-minute frame, reference attached
+    parity frame = 486,969 bars (cost scan used 20,000 — not reused here)
+    rolling_corr n=5               bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    rolling_beta n=5               bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    spread_zscore n=5              bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    pca_factor n=5                 bit_identical=False differing= 190892 max|Δ|=5.684e-14  sign_flips=0  within_drift=267 (exact_zero=260)  min_nonzero_margin=8.129e-19
+    rolling_corr n=8               bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    rolling_beta n=8               bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    spread_zscore n=8              bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    pca_factor n=8                 bit_identical=False differing= 188535 max|Δ|=1.137e-13  sign_flips=0  within_drift=106 (exact_zero=106)  min_nonzero_margin=4.145e-06
+    rolling_corr n=20              bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    rolling_beta n=20              bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    spread_zscore n=20             bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    pca_factor n=20                bit_identical=False differing= 194910 max|Δ|=5.684e-14  sign_flips=0  within_drift=19 (exact_zero=19)  min_nonzero_margin=5.498e-06
+    rolling_corr n=50              bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    rolling_beta n=50              bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    spread_zscore n=50             bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    pca_factor n=50                bit_identical=False differing= 193687 max|Δ|=2.274e-13  sign_flips=0  within_drift=3 (exact_zero=3)  min_nonzero_margin=1.034e-05
+    rolling_corr n=300             bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    rolling_beta n=300             bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    spread_zscore n=300            bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    pca_factor n=300               bit_identical=False differing= 195160 max|Δ|=5.684e-14  sign_flips=0  within_drift=0 (exact_zero=0)  min_nonzero_margin=2.985e-05
+[xseries] non-PCA all bit-identical: True | pca_factor stance flips: 0
+
+[xseries] 0/4 over the 2.0s budget; 1.9s for the four together
+[xseries] WROTE optimize/perf/results/xseries_probe_after.json

@@ -97,13 +97,19 @@ Copy this into the round's tracking Issue and tick it before writing code.
       and it covers the WHOLE registry, not just what you added:
 
       ```bash
-      WSH_DATA_BASE=<data> python3 -m optimize.perf.bench_worstcase --bars 20000 --budget-s 2.0
+      WSH_DATA_BASE=<data> python3 -m optimize.perf.bench_worstcase \
+          --bars 20000 --budget-s 2.0 --reference ES
       ```
 
       It scans every registered indicator at defaults / all-min / all-max, projects to the full
       486,969-bar frame, and **exits non-zero if anything is over the budget**. Commit the JSON next to
       the previous round's. Standing budget: **no indicator over 2 s per compute at any point in its
-      grid** (met at 0/165 as of #62; the worst is `rsi_connors` at 1.51 s).
+      grid** (met at 0/165; the worst is `rsi_connors` at ~1.5 s).
+
+      **`--reference` is not optional.** Without it the four cross-series indicators short-circuit on a
+      missing `ref_close`, return instantly, and are reported at **0.00 s** — a pass meaning "never
+      ran". That hid **27.4 s** of real cost through the whole of #62. The scan now **exits non-zero**
+      rather than reporting a budget claim that silently excludes indicators (#74).
 - [ ] **Update `vote_cache.CACHE_VERSION`** if any indicator's maths changed in a non-vote-identical way.
 - [ ] **Record what moved** in the round's Issue: what got slower, what got faster, what is now #1.
 
@@ -145,6 +151,8 @@ Copy this into the round's tracking Issue and tick it before writing code.
 | **C14** | **When a reduction feeds a comparison, sum the way numpy sums.** `pw_sum` in `indicators/_numba.py` reproduces numpy's pairwise order bit-for-bit. | #62: a plain left-to-right window sum is *equally accurate* and *differently rounded*. That is invisible until the value is compared to something: `ou_halflife` vetoes on `b >= 0` and `lsma`/`frama` vote `sign(close − line)`. It flipped 1 real bar in `ou_halflife` and 2 in `frama` on the 486,969-bar frame. Matching numpy's order removed the entire class instead of measuring it away one indicator at a time. |
 | **C15** | **If a transcendental sits inside a loop-carried recurrence you cannot make it bit-identical — so measure the MARGIN, not just the flip count.** | #62: `frama`'s `log`/`exp` were hoistable into numpy and it became bit-identical. `dominant_cycle`/`mama_fama`/`hilbert_sinewave`'s `arctan`/`sin` are not — Numba's libm differs from numpy's by ~1 ULP. "Zero flips" alone would be luck; the shippable claim is that the closest any bar comes to its decision boundary is **3.5–15 million times** the observed drift (`bench_budget.py --phases exactness`). |
 | **C16** | **Check a result file's TIMESTAMP before quoting it. A log is not evidence of the code you think wrote it.** | #62: a run crashed at step 1 of 4 but its last step still completed, leaving a **complete, green golden-gate log** on disk from the broken build. The next poll read it as the current result. Only `stat` on the file, compared against the run actually in progress, caught it. Applies to every re-used artifact path. |
+| **C17** | **Never let a COST subset leak into a CORRECTNESS gate. A parity claim is only as big as the data it ran on — print the bar count next to the verdict.** | #74: the parity phase reused the cost scan's 20,000-bar context while its own log said "on the real 1-minute frame". It reported `pca_factor` drift 3e-14 and **0 flips**. Rebuilt on the full 486,969 bars, the same code showed drift **0.156** and **12 flipped stances**. The harness was not lying about the numbers, only about the population. |
+| **C18** | **When an accelerator replaces a numerically-delicate library call, gate the fallback on the CONDITION NUMBER, not on the output looking small.** | #74: `pca_factor`'s per-bar LAPACK `eigh` was replaced with a closed-form 2×2 solve. Three *independent* failure modes, each found only by measuring: the score sits on the sign boundary; the two eigenvalues nearly coincide so the eigenvector is undefined (drift **1.33** on a matrix whose score was nowhere near zero); and the principal LOADING is near zero so `sign(pc1[0])` is noise (a **well-conditioned** matrix, gap/trace = 0.14, came out exactly negated). Guarding only the output magnitude caught the first and missed the other two. Falling back to the reference on any of the three makes disagreement *impossible* rather than merely unobserved — and it fired on 0.4% of bars, so it was free. |
 
 ---
 
@@ -182,12 +190,16 @@ indicators/calc/quant.py:~179 np.corrcoef(a, b)[0, 1]        # inside autocorr_r
 **Three hits, all three deliberate — every one is inside a kept `*_reference` oracle, none on a live
 path.** If a round adds a fourth, that is the thing to measure.
 
-**The blind spot the scan cannot see.** `bench_worstcase.py` builds its context from ONE instrument, so
-the four cross-series indicators (`rolling_corr`, `rolling_beta`, `cointegration`, `pca_factor` in
-`indicators/calc/xseries.py`) short-circuit on a missing reference and time at **0.00 s** — a pass that
-means "never ran", not "cheap". They still carry live per-bar `np.mean`/`np.std`-over-a-slice loops.
-Before enabling a cross-instrument contributor, time them **with a reference series attached**; the scan
-will not warn you. (Tracked as a follow-up on #62.)
+**The blind spot, and how it was closed (#74).** `bench_worstcase.py` built its context from ONE
+instrument, so the four cross-series indicators (`rolling_corr`, `rolling_beta`, `cointegration`,
+`pca_factor` in `indicators/calc/xseries.py`) short-circuited on a missing reference and timed at
+**0.00 s** — a pass meaning "never ran". Measured properly they were **27.4 s**, all four over budget.
+The scan now takes `--reference` and **exits non-zero if any indicator was not actually measured**, so a
+budget claim can no longer silently exclude anything. Always pass it.
+
+> **The general rule: a 0.00 s result is a red flag, not a pass.** Ask what the indicator returned, not
+> just how long it took. An indicator that emitted nothing may have short-circuited on a missing input
+> rather than run fast — and the two are indistinguishable from the clock alone.
 
 **The honest counter-rule:** a per-bar loop is *not* automatically wrong — some indicators are genuinely
 sequential (order blocks, structure trend, anything carrying state). The rule is not "no loops"; it is
