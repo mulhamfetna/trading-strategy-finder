@@ -254,6 +254,131 @@ def cmd_noise(args, log):
             "p_value": round(float(p), 5), "verdict": verdict}
 
 
+def _pnl_by_entry(m):
+    """{entry bar index -> P/L} for one scored run. The entry BAR is the pairing key: two strategies
+    that take the same trade on the same bar contribute an exactly-zero difference.
+
+    `backtest_metrics` trades carry `entry_idx` (an index into the scored window), not `entry_time` —
+    the first version of this keyed on the latter, every lookup returned None, all 81 trades collapsed
+    into a single bucket, and the paired test silently degenerated to n=1. Missing keys now raise
+    instead of quietly producing a confident wrong answer.
+    """
+    out = {}
+    for t in (m.get("trades") or []):
+        if "entry_idx" not in t:
+            raise KeyError(f"trade record has no 'entry_idx' — cannot pair. keys={sorted(t)}")
+        k = int(t["entry_idx"])
+        out[k] = out.get(k, 0.0) + float(t.get("pnl", 0.0))
+    return out
+
+
+def paired_stats(a_map, b_map, alpha=0.05, power=0.80, n_boot=10000, seed=7):
+    """PAIRED comparison of two strategies on the same holdout, matched by entry bar.
+
+    Why this and not two P/L totals: an unpaired test carries the full per-trade volatility of BOTH
+    strategies (±$2,218 on NQ 4h), so it can only see an improvement of ~91% of the entire holdout
+    profit. But two variants of the same box strategy take mostly the SAME trades — and every shared
+    trade contributes a difference of exactly zero, carrying no variance at all. The signal lives
+    entirely in the bars where they disagree, and pairing is what isolates it.
+
+    Returns the difference series' t-test, a bootstrap CI on the TOTAL difference, and the paired MDE
+    next to the unpaired one so the gain in power is visible rather than asserted.
+    """
+    from scipy import stats
+    keys = sorted(set(a_map) | set(b_map))
+    d = np.array([a_map.get(k, 0.0) - b_map.get(k, 0.0) for k in keys], float)
+    n = int(d.size)
+    if n < 2:
+        return {"n_pairs": n, "note": "too few pairs"}
+    nz = d != 0.0
+    sd = float(d.std(ddof=1))
+    za, zb = float(stats.norm.ppf(1 - alpha / 2)), float(stats.norm.ppf(power))
+    mde = (za + zb) * sd / np.sqrt(n)
+    t = float(d.mean() / (sd / np.sqrt(n))) if sd > 0 else float("nan")
+    p = float(2 * (1 - stats.t.cdf(abs(t), n - 1))) if np.isfinite(t) else float("nan")
+
+    if sd == 0.0:
+        t, p = 0.0, 1.0                          # identical strategies: no difference, not "undefined"
+
+    rng = np.random.default_rng(seed)
+    boot = d[rng.integers(0, n, size=(n_boot, n))].sum(axis=1)
+
+    # Apples-to-apples power comparison: the STANDARD ERROR OF THE TOTAL difference under each scheme.
+    # (An earlier version compared a paired *total* against an unpaired *mean*, which are not the same
+    # quantity and made pairing look 100x worse than it is.)
+    #   paired    total = sum of per-bar differences        ⇒ SE = sd_d * sqrt(n_pairs)
+    #   unpaired  total = sum(a) - sum(b), independent sets ⇒ SE = sqrt(n_a*var_a + n_b*var_b)
+    a = np.array(list(a_map.values()), float)
+    b = np.array(list(b_map.values()), float)
+    se_paired = sd * np.sqrt(n)
+    se_unpaired = (float(np.sqrt(a.size * a.var(ddof=1) + b.size * b.var(ddof=1)))
+                   if (a.size > 1 and b.size > 1) else float("nan"))
+
+    return {
+        "n_pairs": n, "n_disagreeing_bars": int(nz.sum()),
+        "agreement_pct": round(100.0 * (1 - nz.sum() / n), 1),
+        "trades_a": int(a.size), "trades_b": int(b.size),
+        "total_diff": round(float(d.sum()), 2),
+        "mean_diff_per_bar": round(float(d.mean()), 2),
+        "sd_diff": round(sd, 2),
+        "t_stat": round(float(t), 3), "p_two_sided": round(float(p), 5),
+        "boot_ci95_total": [round(float(np.quantile(boot, 0.025)), 0),
+                            round(float(np.quantile(boot, 0.975)), 0)],
+        "se_total_paired": round(float(se_paired), 0),
+        "se_total_unpaired": round(float(se_unpaired), 0) if np.isfinite(se_unpaired) else None,
+        "mde_total_paired": round(float((za + zb) * se_paired), 0),
+        "mde_total_unpaired": (round(float((za + zb) * se_unpaired), 0)
+                               if np.isfinite(se_unpaired) else None),
+        "power_gain_x": (round(float(se_unpaired / se_paired), 2)
+                         if np.isfinite(se_unpaired) and se_paired > 0 else None),
+    }
+
+
+def cmd_paired(args, log):
+    """Paired holdout comparison. Two flavours, both reported:
+
+      A  treatment winner  vs  the deployed baseline champion — the issue's question.
+      B  the treatment winner with its indicators ON vs the SAME parameters with them OFF — an
+         ABLATION. Everything but the indicator layer is held fixed, so the pairing is near-total and
+         it answers the narrower, sharper question: did the INDICATORS contribute anything?
+    """
+    cand = json.loads(Path(args.params).read_text())
+    if "params" in cand:
+        cand = cand["params"]
+    cand.setdefault("ind_1min", True)
+    keys = [s["key"] for s in cand.get("indicators", []) if s.get("enabled")]
+
+    base = dict(l1_default_params(args.tf))
+    base["ind_1min"] = True
+
+    df_dec, df1, box, vf, n_split = _load(args.tf, args.instrument)
+    bar_td = TF.get(args.tf).bar_td
+
+    m_cand = _score(df_dec, df1, box, vf, n_split, cand, bar_td, "2026")
+    m_base = _score(df_dec, df1, box, vf, n_split, base, bar_td, "2026")
+
+    off = dict(cand)
+    off["indicators"] = [dict(s, enabled=False) for s in cand.get("indicators", [])]
+    m_off = _score(df_dec, df1, box, vf, n_split, off, bar_td, "2026")
+
+    log(f"[gate] candidate indicators {keys}")
+    log(f"[gate]   candidate  HOLDOUT P/L ${float(m_cand['pnl']):>10,.0f}  n={int(m_cand['n_taken']):>4d}")
+    log(f"[gate]   baseline   HOLDOUT P/L ${float(m_base['pnl']):>10,.0f}  n={int(m_base['n_taken']):>4d}")
+    log(f"[gate]   same-but-indicators-OFF ${float(m_off['pnl']):>10,.0f}  n={int(m_off['n_taken']):>4d}")
+
+    out = {"indicators": keys}
+    for tag, other in (("A_vs_baseline", m_base), ("B_ablation_indicators_off", m_off)):
+        st = paired_stats(_pnl_by_entry(m_cand), _pnl_by_entry(other))
+        out[tag] = st
+        log(f"[gate] {tag}: {st['n_pairs']} paired bars, {st['agreement_pct']}% identical  "
+            f"total diff ${st['total_diff']:,.0f}  95% CI [{st['boot_ci95_total'][0]:,.0f}, "
+            f"{st['boot_ci95_total'][1]:,.0f}]  p={st['p_two_sided']:.4f}")
+        log(f"[gate]   SE(total) paired ${st['se_total_paired']:,.0f} vs unpaired "
+            f"${st['se_total_unpaired']:,.0f}  ⇒ pairing is {st['power_gain_x']}× more sensitive "
+            f"(detectable: ${st['mde_total_paired']:,.0f} paired vs ${st['mde_total_unpaired']:,.0f})")
+    return out
+
+
 def params_from_trial(t):
     """Rebuild the engine params dict from a stored trial — from RECORDED values, never re-derived.
 
@@ -349,7 +474,7 @@ def cmd_evaluate(args, log):
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("cmd", choices=["baseline", "evaluate", "search", "extract", "noise"])
+    ap.add_argument("cmd", choices=["baseline", "evaluate", "search", "extract", "noise", "paired"])
     ap.add_argument("--tf", default="4h")
     ap.add_argument("--instrument", default="NQ")
     ap.add_argument("--params", default=None, help="params JSON (for `evaluate`)")
@@ -372,7 +497,8 @@ def main() -> int:
         print(m, flush=True)
 
     res = {"baseline": cmd_baseline, "evaluate": cmd_evaluate, "search": cmd_search,
-           "extract": cmd_extract, "noise": cmd_noise}[args.cmd](args, log)
+           "extract": cmd_extract, "noise": cmd_noise,
+           "paired": cmd_paired}[args.cmd](args, log)
     if args.out:
         Path(args.out).parent.mkdir(parents=True, exist_ok=True)
         Path(args.out).write_text(json.dumps(res, indent=2))
