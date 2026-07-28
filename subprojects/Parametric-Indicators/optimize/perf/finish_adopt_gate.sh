@@ -16,11 +16,11 @@ L=optimize/perf/logs
 SEED=20260728
 mkdir -p "$R" "$L"
 
-$PY -u -m optimize.adopt_gate extract --study adopt14treat_4h --top 5 \
+$PY -u -m optimize.adopt_gate extract --study adopt14v2treat_4h --top 5 \
     --out "$R/adoptgate_treatment_4h.json" > "$L/issue14_extract_treatment.log" 2>&1
 echo "EXTRACT_TREAT=$?"
 
-$PY -u -m optimize.adopt_gate extract --study adopt14ctrl_4h --top 5 --scramble-seed "$SEED" \
+$PY -u -m optimize.adopt_gate extract --study adopt14v2ctrl_4h --top 5 --scramble-seed "$SEED" \
     --out "$R/adoptgate_control_4h.json" > "$L/issue14_extract_control.log" 2>&1
 echo "EXTRACT_CTRL=$?"
 
