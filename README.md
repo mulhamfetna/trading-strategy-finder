@@ -45,6 +45,10 @@ per release via Zenodo (badge above).
 
 ```
 Fetna, M. (2026). Trading Strategy Finder: a reproducible quantitative-analysis framework for futures
-trading-strategy discovery and validation (Version 5.2.0) [Software].
-https://github.com/mulhamfetna/trading-strategy-finder
+trading-strategy discovery and validation (Version 5.2.0) [Software]. Zenodo.
+https://doi.org/10.5281/zenodo.21629856
 ```
+
+Cite the **version you actually used** (the DOI above is v5.2.0). To cite the project in general — always
+resolving to the newest release — use the concept DOI **`10.5281/zenodo.21473312`**. Every version DOI is
+listed in [`CITATION.cff`](CITATION.cff).
