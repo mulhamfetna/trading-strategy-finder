@@ -1,0 +1,25 @@
+[impact] NQ 4h: 2,119 decision bars / 486,969 1-min | reference ES | champion k=1 indicators=['macd', 'vwap', 'keltner', 'obv', 'mfi', 'bollinger', 'structure_trend', 'order_block']
+
+[impact] A — NO reference (the golden-gated path): must be byte-identical
+    {'pnl': 151655.4033, 'max_dd': 15560.177, 'n_taken': 277.0}
+    identical with ref_df1=None: True
+
+[impact] CONTROL — k=99 with 7 confirmers: entries 277 -> 13
+
+[impact] B — champion + one cross-series CONFIRM indicator, k = 8 (so the added indicator is PIVOTAL)
+    pre_fix      = the shipped bug: counted as a confirmer, reference never reaches it
+    post_unwired = fixed rule, no reference supplied ⇒ correctly inert, k_eff drops back
+    post_wired   = fixed rule, reference wired ⇒ genuinely votes
+    rolling_corr     [   veto] entries  pre_fix   13 | post_unwired   13 | post_wired   13   P/L $     7,396 | $     7,396 | $     7,396
+    rolling_beta     [confirm] entries  pre_fix    0 | post_unwired   13 | post_wired    2   P/L $         0 | $     7,396 | $       -60
+    cointegration    [   both] entries  pre_fix    0 | post_unwired   13 | post_wired    3   P/L $         0 | $     7,396 | $     4,157
+    pca_factor       [confirm] entries  pre_fix    0 | post_unwired   13 | post_wired    4   P/L $         0 | $     7,396 | $      -474
+
+[impact] C — per-call cost of a live cross-series indicator (never cached ⇒ every trial)
+    rolling_corr      0.078s per compute on the full 1-minute frame
+    rolling_beta      0.054s per compute on the full 1-minute frame
+    cointegration     0.082s per compute on the full 1-minute frame
+    pca_factor        0.059s per compute on the full 1-minute frame
+    all four together: 0.273s per trial (uncached)
+
+[impact] WROTE optimize/perf/results/xseries_wiring_impact.json

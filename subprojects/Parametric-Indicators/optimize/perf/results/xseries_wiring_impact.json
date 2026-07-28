@@ -1,0 +1,123 @@
+{
+  "tf": "4h",
+  "instrument": "NQ",
+  "reference": "ES",
+  "a_no_reference_identical": true,
+  "a_summary": {
+    "pnl": 151655.4033,
+    "max_dd": 15560.177,
+    "n_taken": 277.0
+  },
+  "control_k99": {
+    "pnl": 7396.1177,
+    "max_dd": 4255.0,
+    "n_taken": 13.0
+  },
+  "control_detects_gate": true,
+  "b_impact": [
+    {
+      "key": "rolling_corr",
+      "k": 7,
+      "mode": "veto",
+      "confirm_capable": false,
+      "pre_fix": {
+        "pnl": 7396.1177,
+        "max_dd": 4255.0,
+        "n_taken": 13.0
+      },
+      "post_unwired": {
+        "pnl": 7396.1177,
+        "max_dd": 4255.0,
+        "n_taken": 13.0
+      },
+      "post_wired": {
+        "pnl": 7396.1177,
+        "max_dd": 4255.0,
+        "n_taken": 13.0
+      }
+    },
+    {
+      "key": "rolling_beta",
+      "k": 8,
+      "mode": "confirm",
+      "confirm_capable": true,
+      "pre_fix": {
+        "pnl": 0.0,
+        "max_dd": 0.0,
+        "n_taken": 0.0
+      },
+      "post_unwired": {
+        "pnl": 7396.1177,
+        "max_dd": 4255.0,
+        "n_taken": 13.0
+      },
+      "post_wired": {
+        "pnl": -60.0,
+        "max_dd": 2310.0,
+        "n_taken": 2.0
+      }
+    },
+    {
+      "key": "cointegration",
+      "k": 8,
+      "mode": "both",
+      "confirm_capable": true,
+      "pre_fix": {
+        "pnl": 0.0,
+        "max_dd": 0.0,
+        "n_taken": 0.0
+      },
+      "post_unwired": {
+        "pnl": 7396.1177,
+        "max_dd": 4255.0,
+        "n_taken": 13.0
+      },
+      "post_wired": {
+        "pnl": 4157.4471,
+        "max_dd": 865.0,
+        "n_taken": 3.0
+      }
+    },
+    {
+      "key": "pca_factor",
+      "k": 8,
+      "mode": "confirm",
+      "confirm_capable": true,
+      "pre_fix": {
+        "pnl": 0.0,
+        "max_dd": 0.0,
+        "n_taken": 0.0
+      },
+      "post_unwired": {
+        "pnl": 7396.1177,
+        "max_dd": 4255.0,
+        "n_taken": 13.0
+      },
+      "post_wired": {
+        "pnl": -473.7765,
+        "max_dd": 2925.0,
+        "n_taken": 4.0
+      }
+    }
+  ],
+  "b_starvation_confirmed": true,
+  "c_cost_per_call_s": [
+    {
+      "key": "rolling_corr",
+      "seconds": 0.0778
+    },
+    {
+      "key": "rolling_beta",
+      "seconds": 0.0538
+    },
+    {
+      "key": "cointegration",
+      "seconds": 0.0822
+    },
+    {
+      "key": "pca_factor",
+      "seconds": 0.0595
+    }
+  ],
+  "c_total_if_all_four_enabled_s": 0.273
+}

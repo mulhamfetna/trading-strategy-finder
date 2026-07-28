@@ -74,9 +74,23 @@ def _decbar_1min_index(dec_dates: np.ndarray, min_dates: np.ndarray, bar_td: pd.
     return np.where(in_win, j, -1)
 
 
-def indicator_source_1min(df_dec: pd.DataFrame, df1: pd.DataFrame, bar_td: pd.Timedelta):
-    """Return a src tuple (ctx_1min, j_idx) for the 1-minute indicator mode (see note above)."""
-    ctx_1m = market_context(df1)
+def indicator_source_1min(df_dec: pd.DataFrame, df1: pd.DataFrame, bar_td: pd.Timedelta,
+                          ref_df1: pd.DataFrame | None = None):
+    """Return a src tuple (ctx_1min, j_idx) for the 1-minute indicator mode (see note above).
+
+    `ref_df1` (optional): the reference instrument's **1-MINUTE** frame — not its decision frame. The
+    alignment has to happen at the resolution the indicators actually read, or a 1-minute bar would be
+    paired with a reference close from up to one decision bar ago.
+
+    ISSUE #75. This argument did not exist, so the 1-minute context was always built reference-free and
+    every cross-series indicator short-circuited on `ctx.ref_close is None` — on the PRODUCTION path,
+    `--ind-1min`, regardless of `--reference`. That was not merely dormant: `confirm_mask` counts a
+    cross-series indicator among the confirmers whenever a reference is *configured*, and
+    `k_eff = min(k, len(confirmers))`, so enabling one added a confirmer that could never confirm and
+    made the K-rule strictly harder. Passing None keeps the old behaviour exactly (and remains the
+    default for every caller without a reference), so the golden gate is untouched.
+    """
+    ctx_1m = market_context(df1, ref_df1)
     j_idx = _decbar_1min_index(df_dec["Date"].to_numpy(), df1["Date"].to_numpy(), bar_td)
     return (ctx_1m, j_idx)
 
@@ -187,6 +201,24 @@ def compute_votes(df, box, indicators, src=None, ref_df=None) -> dict:
             for ind in indicators if ind.config.enabled}
 
 
+def _reference_reaches(src, ref_df) -> bool:
+    """Does a reference actually reach the context these votes will be computed from?
+
+    ISSUE #75 — the crux. Activity used to be decided by `ref_df is not None`, i.e. by whether a
+    reference was *configured*, while the votes came from whichever context `src` points at. On the
+    `--ind-1min` path those were different objects: the decision context carried the reference, the
+    1-minute context did not. A cross-series indicator was therefore counted among the confirmers —
+    tightening `k_eff = min(k, len(confirmers))` — while contributing zero confirmations forever.
+
+    Asking the vote-producing context directly makes the two agree by construction, so wiring a new
+    call site without threading the reference can no longer create a silent never-confirms indicator.
+    """
+    if src is not None:
+        ctx_1m, _j = src
+        return getattr(ctx_1m, "ref_close", None) is not None
+    return ref_df is not None
+
+
 def veto_mask(df, box, indicators, src=None, votes=None, ref_df=None):
     """Per-decision-bar veto mask (Q5: veto lives in the gate). True where any ENABLED veto-capable
     (mode∈{veto,both}) indicator votes VETO, read at the just-closed signal bar and aligned to the
@@ -197,7 +229,7 @@ def veto_mask(df, box, indicators, src=None, votes=None, ref_df=None):
     out = np.zeros(n, dtype=bool)
     vetoers = [ind for ind in indicators
                if ind.config.enabled and ind.config.mode in ("veto", "both")
-               and not (ind.needs_ref and ref_df is None)]     # cross-series inert without a reference
+               and not (ind.needs_ref and not _reference_reaches(src, ref_df))]   # inert without one
     if not vetoers:
         return out
     if votes is None:
@@ -221,7 +253,7 @@ def confirm_mask(df, box, indicators, k, src=None, votes=None, ref_df=None):
     out = np.ones(n, dtype=bool)
     confirmers = [ind for ind in indicators
                   if ind.config.enabled and ind.config.mode in ("confirm", "both")
-                  and not (ind.needs_ref and ref_df is None)]     # cross-series inert without a reference
+                  and not (ind.needs_ref and not _reference_reaches(src, ref_df))]   # inert without one
     k_eff = min(int(k), len(confirmers))
     if k_eff <= 0:
         return out                                # no confirm requirement (parity)
@@ -242,7 +274,7 @@ def confirm_count(df, box, indicators, src=None, votes=None, ref_df=None):
     n = len(df)
     confirmers = [ind for ind in indicators
                   if ind.config.enabled and ind.config.mode in ("confirm", "both")
-                  and not (ind.needs_ref and ref_df is None)]     # cross-series inert without a reference
+                  and not (ind.needs_ref and not _reference_reaches(src, ref_df))]   # inert without one
     cc_entry = np.zeros(n, dtype=np.int64)
     if not confirmers:
         return cc_entry, 0
@@ -257,7 +289,7 @@ def confirm_count(df, box, indicators, src=None, votes=None, ref_df=None):
 
 def build_layer(df, box, indicators, k, vol_gate,
                 retrace_amount=0.0, retrace_unit="atr_mult", wait_bars=0,
-                src=None, votes=None, veto_as_flip=False):
+                src=None, votes=None, veto_as_flip=False, ref_df=None):
     """Assemble the full indicator layer for a run (Q5 split):
       gate     = vol_gate ∧ ¬veto_mask   (eligibility)
       resolver = build_entry_resolver(confirm-capable indicators, k, GLOBAL retrace+wait)
@@ -266,19 +298,20 @@ def build_layer(df, box, indicators, k, vol_gate,
     Returns (gate, resolver, vmask). All-off ⇒ gate==vol_gate, vmask all-False, resolver immediate."""
     vg = np.asarray(vol_gate, dtype=bool)
     if votes is None:                            # compute each enabled indicator's vote ONCE, reuse
-        votes = compute_votes(df, box, indicators, src)
-    vmask = veto_mask(df, box, indicators, src=src, votes=votes)
+        votes = compute_votes(df, box, indicators, src, ref_df)
+    vmask = veto_mask(df, box, indicators, src=src, votes=votes, ref_df=ref_df)
     # default: veto removes the bar from the gate (drop). veto_as_flip: leave the gate vol-only so
     # vetoed bars stay eligible — the engine reverses their direction instead of dropping them.
     gate = vg if veto_as_flip else (vg & ~vmask)
     resolver = build_entry_resolver(df, box, indicators, k,
                                     retrace_amount=retrace_amount, retrace_unit=retrace_unit,
-                                    wait_bars=wait_bars, src=src, votes=votes)
+                                    wait_bars=wait_bars, src=src, votes=votes, ref_df=ref_df)
     return gate, resolver, vmask
 
 
 def build_entry_resolver(df, box, indicators, k,
-                         retrace_amount=0.0, retrace_unit="atr_mult", wait_bars=0, src=None, votes=None):
+                         retrace_amount=0.0, retrace_unit="atr_mult", wait_bars=0, src=None,
+                         votes=None, ref_df=None):
     """Build the engine `entry_resolver` closure: live-B1 confirm count + GLOBAL retrace/wait fill.
 
     GLOBAL controls (one value each, applied to ALL indicators — WS-I notes #3/#4):
@@ -294,11 +327,11 @@ def build_entry_resolver(df, box, indicators, k,
         (timing.resolve_entry_1min over the window's 1-min bars), else None (unfilled → re-evaluate).
     Veto is NOT handled here — it lives in the composite gate (Q5). Returns (fill_ts, fill_price)|None.
     """
-    ctx = market_context(df)
+    ctx = market_context(df, ref_df)
     bdir = box_direction_int(df, box)
     confirmers = [ind for ind in indicators
                   if ind.config.enabled and ind.config.mode in ("confirm", "both")
-                  and not (ind.needs_ref and ref_df is None)]     # cross-series inert without a reference
+                  and not (ind.needs_ref and not _reference_reaches(src, ref_df))]   # inert without one
     n_confirm = len(confirmers)
     if votes is None:
         votes = {id(ind): _ind_vote(ind, ctx, bdir, src) for ind in confirmers}

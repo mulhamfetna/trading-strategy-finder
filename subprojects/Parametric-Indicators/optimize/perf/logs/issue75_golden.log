@@ -1,0 +1,9 @@
+checking against golden baselines: ['4h', '2h', '1h', '15m', '5m', '2m']
+  [4h] ✅ MATCH  (P/L $151,655, n=277, 8 indicators)
+  [2h] ✅ MATCH  (P/L $101,518, n=173, 8 indicators)
+  [1h] ✅ MATCH  (P/L $110,038, n=353, 7 indicators)
+  [15m] ✅ MATCH  (P/L $82,156, n=654, 8 indicators)
+  [5m] ✅ MATCH  (P/L $20,092, n=314, 7 indicators)
+  [2m] ✅ MATCH  (P/L $31,898, n=276, 7 indicators)
+
+✅ ALL GOLDEN BASELINES MATCH — results unchanged.

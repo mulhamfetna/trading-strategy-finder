@@ -414,11 +414,17 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
     df_dec, df1, box, vf, n_split = data_mod.load_inputs(tf_name, instrument)
     sig_int = signals_to_int(sig_mod.decision_signals(df_dec, box))   # precompute once (param-independent)
     # Cross-series reference (#17): loaded ONCE; None ⇒ cross-series indicators stay neutral (parity).
-    ref_df = None
+    ref_df = ref_df1 = None
     if reference and reference != instrument:
         try:
-            ref_df, *_ = data_mod.load_inputs(tf_name, reference)
-            print(f"[{tf_name}] cross-series reference = {reference} ({len(ref_df)} bars, causally aligned)", flush=True)
+            # BOTH frames (#75). `ref_df` (decision) feeds the decision-TF path; `ref_df1` (1-MINUTE)
+            # feeds the `--ind-1min` path, which is the production default. Loading only the decision
+            # frame is exactly how the cross-series indicators ended up inert: `indicator_source_1min`
+            # had nothing to align against, so `ctx.ref_close` was None for every one of them.
+            ref_df, ref_df1, *_ = data_mod.load_inputs(tf_name, reference)
+            print(f"[{tf_name}] cross-series reference = {reference} "
+                  f"({len(ref_df)} decision bars / {len(ref_df1)} 1-minute bars, causally aligned)",
+                  flush=True)
         except Exception as exc:  # noqa: BLE001
             print(f"[{tf_name}] reference {reference} unavailable ({exc}); cross-series indicators inert", flush=True)
     # A cross-series indicator with NO reference can never confirm ⇒ enabling it would gate out every
@@ -504,14 +510,16 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
                                       for tok in contrib_tokens]
             _contrib = _cmask.precompute_contributor_masks(params, df_dec, df1, box, sig_int, tf.bar_td)
         r = score_walkforward(df_dec, df1, box, vf, params, tf.bar_td, k=folds, ref_df=ref_df,
-                              min_trades=min_trades, sig_int=sig_int, contrib=_contrib, pv=pv)
+                              ref_df1=ref_df1, min_trades=min_trades, sig_int=sig_int,
+                              contrib=_contrib, pv=pv)
         if not r["valid"]:
             raise optuna.TrialPruned()
         worst_dd = r["worst_dd"]; med_win = r["median_win"]; med_entries = r["median_entries"]
         # FULL-PERIOD feasibility (user): full-window max DD ≤ 25% of full-window P/L. One extra
         # backtest over the whole window (gate frozen causally on vf[:n_split]).
         full = backtest_metrics(df_dec, df1, box, vf, n_split, dict(params, window="full"),
-                                tf.bar_td, sig_int=sig_int, contrib=_contrib, pv=pv, ref_df=ref_df)
+                                tf.bar_td, sig_int=sig_int, contrib=_contrib, pv=pv, ref_df=ref_df,
+                                ref_df1=ref_df1)
         full_pnl = float(full["pnl"]); full_dd = float(full["max_dd"])
         dec_pause = float(full.get("max_no_entry_days_decision", full.get("max_no_entry_days", 0.0)))
         # ⚠️ RECORD THE EXIT RULE THIS TRIAL WAS SCORED WITH. Do not make anything downstream re-derive it
