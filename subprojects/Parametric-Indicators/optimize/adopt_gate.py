@@ -379,6 +379,92 @@ def cmd_paired(args, log):
     return out
 
 
+def cmd_verdict(args, log):
+    """Assemble every artifact and apply the adopt rule — including the distinction that matters most.
+
+    ADOPT requires ALL of:
+      1. treatment beats the baseline on the holdout;
+      2. treatment beats the DUMB CONTROL's holdout — beating zero is not enough when an identical
+         search over placebo votes also produces a positive number;
+      3. the noise permutation test rejects (p <= 0.05) — the edge must vanish when the winner's own
+         votes are scrambled;
+      4. the paired 95% CI on the difference excludes zero.
+
+    Anything else is DEFAULT-OFF. But a rejection is reported as one of two DIFFERENT things, because
+    they have opposite implications for what to do next:
+      NO EFFECT           the effect is measurable and it is not there.
+      CANNOT TELL         |effect| < the minimum detectable effect. The design could not have seen a
+                          real improvement of this size, so the null is uninformative
+                          (`feedback_power_analysis_mandatory`).
+    """
+    def _read(p):
+        return json.loads(Path(p).read_text()) if p and Path(p).exists() else None
+
+    base = _read(args.baseline)
+    treat = _read(args.treatment)
+    ctrl = _read(args.control)
+    noise = _read(args.noise_json)
+    paired = _read(args.paired_json)
+
+    v = {"criteria": {}, "inputs_present": {
+        "baseline": base is not None, "treatment": treat is not None,
+        "control": ctrl is not None, "noise": noise is not None, "paired": paired is not None}}
+
+    b_oos = float(base["holdout_2026"]["pnl"]) if base else None
+    t_sel = (treat or {}).get("selected") or {}
+    t_oos = float(t_sel["holdout_2026"]["pnl"]) if t_sel else None
+    c_sel = (ctrl or {}).get("selected") or {}
+    c_oos = float(c_sel["holdout_2026"]["pnl"]) if c_sel else None
+
+    log("[gate] ── ADOPT GATE VERDICT ──")
+    if b_oos is not None:
+        log(f"  baseline  holdout P/L ${b_oos:>11,.0f}")
+    if t_oos is not None:
+        log(f"  treatment holdout P/L ${t_oos:>11,.0f}   indicators {t_sel.get('enabled_indicators')}")
+    if c_oos is not None:
+        log(f"  CONTROL   holdout P/L ${c_oos:>11,.0f}   (placebo votes — the score a search "
+            f"manufactures from noise)   indicators {c_sel.get('enabled_indicators')}")
+
+    if b_oos is not None and t_oos is not None:
+        v["criteria"]["1_beats_baseline"] = bool(t_oos > b_oos)
+        log(f"  1. beats baseline?      {'YES' if t_oos > b_oos else 'NO'}  "
+            f"(Δ ${t_oos - b_oos:+,.0f})")
+    if c_oos is not None and t_oos is not None:
+        v["criteria"]["2_beats_dumb_control"] = bool(t_oos > c_oos)
+        log(f"  2. beats dumb control?  {'YES' if t_oos > c_oos else 'NO'}  "
+            f"(Δ ${t_oos - c_oos:+,.0f})")
+    if noise:
+        ok = float(noise["p_value"]) <= 0.05
+        v["criteria"]["3_noise_test_rejects"] = bool(ok)
+        log(f"  3. survives noise test? {'YES' if ok else 'NO'}  (permutation p={noise['p_value']}, "
+            f"null mean ${noise['null_mean']:,.0f})")
+    if paired:
+        st = paired.get("A_vs_baseline") or {}
+        lo, hi = st.get("boot_ci95_total", [None, None])
+        ok = bool(lo is not None and (lo > 0 or hi < 0))
+        v["criteria"]["4_paired_ci_excludes_zero"] = ok
+        log(f"  4. paired CI excludes 0?{'YES' if ok else ' NO'}  "
+            f"(Δ ${st.get('total_diff', 0):,.0f}, 95% CI [{lo:,.0f}, {hi:,.0f}], p={st.get('p_two_sided')})")
+        v["mde_total_paired"] = st.get("mde_total_paired")
+        v["observed_effect"] = st.get("total_diff")
+
+    passed = all(v["criteria"].values()) and len(v["criteria"]) == 4
+    v["adopt"] = bool(passed)
+    if passed:
+        v["verdict"] = "ADOPT"
+    else:
+        eff, mde = v.get("observed_effect"), v.get("mde_total_paired")
+        underpowered = (eff is not None and mde is not None and abs(eff) < mde)
+        v["verdict"] = "DEFAULT-OFF — CANNOT TELL (underpowered)" if underpowered else "DEFAULT-OFF — NO EFFECT"
+        v["underpowered"] = bool(underpowered)
+    log(f"  ⇒ {v['verdict']}")
+    if v.get("underpowered"):
+        log(f"     |observed ${abs(v['observed_effect']):,.0f}| < minimum detectable "
+            f"${v['mde_total_paired']:,.0f} ⇒ this design could NOT have seen an improvement of this "
+            f"size. The null says nothing about the indicators.")
+    return v
+
+
 def params_from_trial(t):
     """Rebuild the engine params dict from a stored trial — from RECORDED values, never re-derived.
 
@@ -411,8 +497,18 @@ def cmd_extract(args, log):
     would be selecting on the test set, which is the exact trap this whole exercise exists to avoid. So
     the front is ranked by the TRAIN objective and `selected` is its top member; the rest are reported
     only so the spread is visible.
+
+    ⚠️ `--scramble-seed` is REQUIRED when extracting a CONTROL study, and it must be the seed that
+    study was searched with. The dumb control asks "what does this search procedure score when the
+    indicators carry no information?" — that is a statement about the whole pipeline under the null, so
+    the holdout must be scored with the SAME placebo votes the search trained on. Scoring a control
+    winner with real votes silently answers a different question (what an arbitrarily-chosen real
+    configuration earns) and the resulting number is not a null at all.
     """
     import optuna
+    if args.scramble_seed is not None:
+        install_vote_scrambler(args.scramble_seed, log)
+        log(f"[gate] extracting under PLACEBO votes (seed {args.scramble_seed}) — this is a CONTROL study")
     storage = _storage()
     study = optuna.load_study(study_name=args.study, storage=storage)
 
@@ -474,7 +570,7 @@ def cmd_evaluate(args, log):
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("cmd", choices=["baseline", "evaluate", "search", "extract", "noise", "paired"])
+    ap.add_argument("cmd", choices=["baseline", "evaluate", "search", "extract", "noise", "paired", "verdict"])
     ap.add_argument("--tf", default="4h")
     ap.add_argument("--instrument", default="NQ")
     ap.add_argument("--params", default=None, help="params JSON (for `evaluate`)")
@@ -490,6 +586,13 @@ def main() -> int:
     ap.add_argument("--study", default=None, help="study name (for `extract`)")
     ap.add_argument("--top", type=int, default=5, help="front members to score (`extract`)")
     ap.add_argument("--perms", type=int, default=200, help="permutations for the noise check")
+    ap.add_argument("--scramble-seed", type=int, default=None,
+                    help="REQUIRED when extracting a CONTROL study: the seed it was searched\n                         with, so the holdout is scored under the SAME placebo votes.")
+    ap.add_argument("--baseline", default=None, help="baseline JSON (verdict)")
+    ap.add_argument("--treatment", default=None, help="treatment extract JSON (verdict)")
+    ap.add_argument("--control", default=None, help="control extract JSON (verdict)")
+    ap.add_argument("--noise-json", default=None, help="noise JSON (verdict)")
+    ap.add_argument("--paired-json", default=None, help="paired JSON (verdict)")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
 
@@ -498,7 +601,7 @@ def main() -> int:
 
     res = {"baseline": cmd_baseline, "evaluate": cmd_evaluate, "search": cmd_search,
            "extract": cmd_extract, "noise": cmd_noise,
-           "paired": cmd_paired}[args.cmd](args, log)
+           "paired": cmd_paired, "verdict": cmd_verdict}[args.cmd](args, log)
     if args.out:
         Path(args.out).parent.mkdir(parents=True, exist_ok=True)
         Path(args.out).write_text(json.dumps(res, indent=2))
