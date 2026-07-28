@@ -1,0 +1,253 @@
+{
+  "tf": "4h",
+  "instrument": "NQ",
+  "reference": "ES",
+  "decision_bars": 2119,
+  "minute_bars": 486969,
+  "q2_decision_tf": {
+    "rolling_corr": {
+      "nonzero_votes": 0,
+      "bars": 2119
+    },
+    "rolling_beta": {
+      "nonzero_votes": 522,
+      "bars": 2119
+    },
+    "cointegration": {
+      "nonzero_votes": 802,
+      "bars": 2119
+    },
+    "pca_factor": {
+      "nonzero_votes": 765,
+      "bars": 2119
+    }
+  },
+  "q1_onemin_path": {
+    "rolling_corr": {
+      "nonzero_votes": 0,
+      "bars": 2119
+    },
+    "rolling_beta": {
+      "nonzero_votes": 0,
+      "bars": 2119
+    },
+    "cointegration": {
+      "nonzero_votes": 0,
+      "bars": 2119
+    },
+    "pca_factor": {
+      "nonzero_votes": 0,
+      "bars": 2119
+    }
+  },
+  "ref_reaches_1min_context": false,
+  "inert_in_production": true,
+  "q3_cost": [
+    {
+      "key": "rolling_corr",
+      "worst_config": "all_max",
+      "subset_s": 0.0223,
+      "notes": {
+        "default": "EMITTED NOTHING \u2014 the reference is not reaching it",
+        "all_min": "EMITTED NOTHING \u2014 the reference is not reaching it"
+      },
+      "projected_full_s": 0.54,
+      "over_budget": false
+    },
+    {
+      "key": "rolling_beta",
+      "worst_config": "all_max",
+      "subset_s": 0.0154,
+      "notes": {},
+      "projected_full_s": 0.38,
+      "over_budget": false
+    },
+    {
+      "key": "cointegration",
+      "worst_config": "all_max",
+      "subset_s": 0.0236,
+      "notes": {},
+      "projected_full_s": 0.58,
+      "over_budget": false
+    },
+    {
+      "key": "pca_factor",
+      "worst_config": "all_max",
+      "subset_s": 0.0149,
+      "notes": {},
+      "projected_full_s": 0.36,
+      "over_budget": false
+    }
+  ],
+  "q4_parity": [
+    {
+      "case": "rolling_corr n=5",
+      "nan_mask_ok": true,
+      "n_differing": 0,
+      "max_abs_diff": 0.0,
+      "bit_identical": true
+    },
+    {
+      "case": "rolling_beta n=5",
+      "nan_mask_ok": true,
+      "n_differing": 0,
+      "max_abs_diff": 0.0,
+      "bit_identical": true
+    },
+    {
+      "case": "spread_zscore n=5",
+      "nan_mask_ok": true,
+      "n_differing": 0,
+      "max_abs_diff": 0.0,
+      "bit_identical": true
+    },
+    {
+      "case": "pca_factor n=5",
+      "nan_mask_ok": true,
+      "n_differing": 190892,
+      "max_abs_diff": 5.684341886080802e-14,
+      "bit_identical": false,
+      "sign_flips": 0,
+      "bars_within_drift": 267,
+      "bars_exactly_zero": 260,
+      "min_nonzero_margin": 8.129419882081727e-19,
+      "safety_factor": 1.4301426699875612e-05
+    },
+    {
+      "case": "rolling_corr n=8",
+      "nan_mask_ok": true,
+      "n_differing": 0,
+      "max_abs_diff": 0.0,
+      "bit_identical": true
+    },
+    {
+      "case": "rolling_beta n=8",
+      "nan_mask_ok": true,
+      "n_differing": 0,
+      "max_abs_diff": 0.0,
+      "bit_identical": true
+    },
+    {
+      "case": "spread_zscore n=8",
+      "nan_mask_ok": true,
+      "n_differing": 0,
+      "max_abs_diff": 0.0,
+      "bit_identical": true
+    },
+    {
+      "case": "pca_factor n=8",
+      "nan_mask_ok": true,
+      "n_differing": 188535,
+      "max_abs_diff": 1.1368683772161603e-13,
+      "bit_identical": false,
+      "sign_flips": 0,
+      "bars_within_drift": 106,
+      "bars_exactly_zero": 106,
+      "min_nonzero_margin": 4.145328646691128e-06,
+      "safety_factor": 36462696.38391876
+    },
+    {
+      "case": "rolling_corr n=20",
+      "nan_mask_ok": true,
+      "n_differing": 0,
+      "max_abs_diff": 0.0,
+      "bit_identical": true
+    },
+    {
+      "case": "rolling_beta n=20",
+      "nan_mask_ok": true,
+      "n_differing": 0,
+      "max_abs_diff": 0.0,
+      "bit_identical": true
+    },
+    {
+      "case": "spread_zscore n=20",
+      "nan_mask_ok": true,
+      "n_differing": 0,
+      "max_abs_diff": 0.0,
+      "bit_identical": true
+    },
+    {
+      "case": "pca_factor n=20",
+      "nan_mask_ok": true,
+      "n_differing": 194910,
+      "max_abs_diff": 5.684341886080802e-14,
+      "bit_identical": false,
+      "sign_flips": 0,
+      "bars_within_drift": 19,
+      "bars_exactly_zero": 19,
+      "min_nonzero_margin": 5.4976560491443065e-06,
+      "safety_factor": 96715788.02475567
+    },
+    {
+      "case": "rolling_corr n=50",
+      "nan_mask_ok": true,
+      "n_differing": 0,
+      "max_abs_diff": 0.0,
+      "bit_identical": true
+    },
+    {
+      "case": "rolling_beta n=50",
+      "nan_mask_ok": true,
+      "n_differing": 0,
+      "max_abs_diff": 0.0,
+      "bit_identical": true
+    },
+    {
+      "case": "spread_zscore n=50",
+      "nan_mask_ok": true,
+      "n_differing": 0,
+      "max_abs_diff": 0.0,
+      "bit_identical": true
+    },
+    {
+      "case": "pca_factor n=50",
+      "nan_mask_ok": true,
+      "n_differing": 193687,
+      "max_abs_diff": 2.2737367544323206e-13,
+      "bit_identical": false,
+      "sign_flips": 0,
+      "bars_within_drift": 3,
+      "bars_exactly_zero": 3,
+      "min_nonzero_margin": 1.0336411611507472e-05,
+      "safety_factor": 45460019.02532531
+    },
+    {
+      "case": "rolling_corr n=300",
+      "nan_mask_ok": true,
+      "n_differing": 0,
+      "max_abs_diff": 0.0,
+      "bit_identical": true
+    },
+    {
+      "case": "rolling_beta n=300",
+      "nan_mask_ok": true,
+      "n_differing": 0,
+      "max_abs_diff": 0.0,
+      "bit_identical": true
+    },
+    {
+      "case": "spread_zscore n=300",
+      "nan_mask_ok": true,
+      "n_differing": 0,
+      "max_abs_diff": 0.0,
+      "bit_identical": true
+    },
+    {
+      "case": "pca_factor n=300",
+      "nan_mask_ok": true,
+      "n_differing": 195160,
+      "max_abs_diff": 5.684341886080802e-14,
+      "bit_identical": false,
+      "sign_flips": 0,
+      "bars_within_drift": 0,
+      "bars_exactly_zero": 0,
+      "min_nonzero_margin": 2.9853460404943605e-05,
+      "safety_factor": 525187629.5133745
+    }
+  ],
+  "q4_all_bit_identical_except_pca": true,
+  "q4_pca_sign_flips": 0,
+  "n_over_budget": 0,
+  "total_projected_s": 1.9
+}

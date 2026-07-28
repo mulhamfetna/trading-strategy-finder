@@ -750,9 +750,37 @@ drift (their `arctan`/`sin` sit inside a loop-carried recurrence and cannot be h
 `frama`'s `log`/`exp` were) — zero vote flips, and the closest any bar comes to its decision boundary is
 **3.5–15 million times** the drift.
 
-⚠️ **Blind spot in the scan:** `bench_worstcase.py` builds a single-instrument context, so `rolling_corr`,
-`rolling_beta`, `cointegration` and `pca_factor` short-circuit and time at **0.00 s** — "never ran", not
-"cheap". They still carry per-bar `np.mean`/`np.std`-over-a-slice loops. The 0/165 claim excludes them.
+### 10.7 The cross-series blind spot — closed (#74, 2026-07-28)
+
+§10.6's "0 of 165" had a hole. `bench_worstcase.py` built a **single-instrument** context, so
+`rolling_corr`, `rolling_beta`, `cointegration` and `pca_factor` short-circuited on `ref_close is None`,
+returned instantly, and were reported at **0.00 s** — "never ran", not "cheap". Measured with an ES
+reference attached they were **27.4 s, all four over budget**, and cross-series votes are deliberately
+never cached, so that would be paid on **every trial**. Full detail:
+`docs/CLOSEOUT-2026-07-28-xseries-blindspot.md`.
+
+| | before | after |
+|---|---:|---:|
+| `cointegration` · `rolling_corr` · `pca_factor` · `rolling_beta` | 8.26 · 7.53 · 5.82 · 5.76 s | 0.57 · 0.53 · 0.35 · 0.37 s |
+| the four together | **27.4 s** | **1.9 s (14×)** |
+| over the 2 s budget | **4 of 4** | **0 of 4** |
+
+`rolling_corr` / `rolling_beta` / `spread_zscore` are **bit-identical** on the real frame (`pw_sum`).
+`pca_factor` cannot be — per-bar BLAS covariance + LAPACK `eigh` — and disagreed in **three independent
+ways**, each caught only by measuring: the score on the sign boundary; near-coincident eigenvalues
+(drift **1.33** at n=3, on scores nowhere near zero); and a near-zero primary loading making
+`sign(pc1[0])` noise on a **well-conditioned** matrix. It now falls back to the reference on any of the
+three, so disagreement is impossible rather than unobserved — 0 stance flips on the real frame and
+across 280 stress configurations, at a fallback rate of 0.4%.
+
+**The scan can no longer hide this:** it takes `--reference`, separates *void* (could not run) from
+*quiet* (ran, did not vote), and **exits non-zero** when anything was void. Verified: without
+`--reference` it exits 1 and names all four.
+
+⚠️ **This work also uncovered #75, a correctness bug:** `runner.indicator_source_1min` builds
+`market_context(df1)` with **no reference at any call site**, so on the production `--ind-1min` path all
+four cross-series indicators are inert regardless of `--reference` — while the optimizer still admits
+them to the search space. Deliberately not fixed in #74 (it changes results); see #75.
 
 ---
 

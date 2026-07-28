@@ -1,0 +1,33 @@
+[worstcase] 165 indicators | stage-1 on 20,000 bars (extrapolation ×24.3 to 486,969) | timeout 20s/config | reference ES
+[worstcase] scanned 25/165
+[worstcase] scanned 50/165
+[worstcase] scanned 75/165
+[worstcase] scanned 100/165
+[worstcase] scanned 125/165
+[worstcase] scanned 150/165
+
+[worstcase] === 0 indicator(s) OVER the 2.0s full-frame budget ===
+    rsi_connors              worst=default  proj_full=    1.53s
+    hma                      worst=all_max  proj_full=    1.42s
+    aroon                    worst=all_max  proj_full=    0.91s
+    aroon_osc                worst=all_max  proj_full=    0.91s
+    center_of_gravity        worst=all_max  proj_full=    0.82s
+    rvgi                     worst=default  proj_full=    0.81s
+    vidya                    worst=all_max  proj_full=    0.80s
+    dfa                      worst=all_max  proj_full=    0.62s
+    fisher                   worst=default  proj_full=    0.58s
+    cointegration            worst=all_max  proj_full=    0.58s
+    laguerre_rsi             worst=all_min  proj_full=    0.55s
+    rolling_corr             worst=all_max  proj_full=    0.54s
+    kama                     worst=all_min  proj_full=    0.51s
+    qqe                      worst=default  proj_full=    0.50s
+    wma                      worst=all_max  proj_full=    0.47s
+    sine_wma                 worst=all_max  proj_full=    0.46s
+    asi                      worst=all_max  proj_full=    0.46s
+    tma                      worst=all_max  proj_full=    0.45s
+    roofing                  worst=all_min  proj_full=    0.40s
+    efficiency_ratio         worst=all_min  proj_full=    0.39s
+[worstcase] WROTE optimize/perf/results/worstcase_issue74_withref.json
+
+[worstcase] note: 1 indicator(s) computed but voted nowhere at any grid corner (normal for a rarely-triggering veto): proj_bands
+[worstcase] PASS: every indicator is within the 2.0s budget (worst rsi_connors at 1.53s).

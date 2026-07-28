@@ -30,10 +30,11 @@ import pytest
 
 from indicators import _numba as NB, classic, library, smc
 from indicators import _reference as REF
-from indicators.calc import dsp as DSP, ma as MA, osc as OSC, quant as Q, tier2 as T2, trend as TR, vol as V
+from indicators.calc import (dsp as DSP, ma as MA, osc as OSC, quant as Q, tier2 as T2, trend as TR,
+                             vol as V, xseries as XS)
 from indicators.runner import market_context
 
-_NUMBA_FLAG_MODULES = (classic, smc, DSP, MA, OSC, Q, T2, TR, V)
+_NUMBA_FLAG_MODULES = (classic, smc, DSP, MA, OSC, Q, T2, TR, V, XS)
 
 
 @pytest.fixture(autouse=True)
@@ -260,6 +261,143 @@ def test_indicator_vote_identical(key, mod, attr, ref_attr, param_sets, monkeypa
     for params, (cf, vf), (cr, vr) in zip(param_sets, fast, ref):
         flips = int(np.sum(cf != cr)) + int(np.sum(vf != vr))
         assert flips == 0, f"{key} {params}: {flips} vote bars flipped vs the reference"
+
+
+# ---- cross-series (issue #74) -------------------------------------------------------------------
+def _pair(seed=5, n=1500):
+    """A primary and a correlated-but-not-identical reference close, plus a NaN-holed variant — the
+    leading NaNs are what causal `merge_asof` alignment actually produces."""
+    rng = np.random.default_rng(seed)
+    shared = rng.normal(0.0, 2.0, n)
+    c = 21000.0 + np.cumsum(shared + rng.normal(0.0, 1.0, n))
+    r = 5300.0 + np.cumsum(0.25 * shared + rng.normal(0.0, 0.3, n))
+    holed = r.copy()
+    holed[:7] = np.nan
+    holed[n // 2] = np.nan
+    return c, r, holed
+
+
+@pytest.mark.parametrize("n", [2, 5, 50, 120, 129, 300])
+@pytest.mark.parametrize("holes", [False, True])
+def test_xseries_bit_identical(n, holes):
+    """`rolling_corr` / `rolling_beta` / `spread_zscore` reproduce numpy's reductions via `pw_sum`, so
+    nothing may differ. They vote on ratios of similar-magnitude quantities — the case where a
+    differently-rounded sum flips real bars (#62)."""
+    c, r, holed = _pair(n)
+    ref = holed if holes else r
+    _assert_exact(f"rolling_corr n={n}", XS.rolling_corr(c, ref, n), XS.rolling_corr_reference(c, ref, n))
+    _assert_exact(f"rolling_beta n={n}", XS.rolling_beta(c, ref, n), XS.rolling_beta_reference(c, ref, n))
+    _assert_exact(f"spread_zscore n={n}", XS.spread_zscore(c, ref, n),
+                  XS.spread_zscore_reference(c, ref, n))
+
+
+@pytest.mark.parametrize("n", [3, 5, 50, 120, 300])
+def test_pca_factor_vote_identical_and_nan_matched(n):
+    """`pca_factor` canNOT be bit-identical — the reference builds the covariance with a BLAS product
+    and calls LAPACK `eigh` per bar. The contract is the emitted STANCE, which is `sign(out)`."""
+    c, r, _ = _pair(n + 1)
+    fast = np.asarray(XS.pca_factor(c, r, n), float)
+    ref = np.asarray(XS.pca_factor_reference(c, r, n), float)
+    assert np.array_equal(np.isnan(fast), np.isnan(ref)), "NaN pattern differs"
+    m = ~np.isnan(ref)
+    assert np.allclose(fast[m], ref[m], rtol=1e-6, atol=1e-12), "values not float-close"
+    flips = int(np.sum(np.sign(fast[m]) != np.sign(ref[m])))
+    assert flips == 0, f"pca_factor n={n}: {flips} stance bars flipped vs the reference"
+
+
+def _tick_pair(seed=31, n=6000):
+    """Quarter-tick-quantised prices. Real futures data is quantised, which is exactly what produces
+    the degenerate windows where the PCA score is mathematically zero — smooth Gaussian walks do not
+    reach them, so testing only on those would miss the failure this band exists to prevent."""
+    rng = np.random.default_rng(seed)
+    shared = np.round(rng.normal(0.0, 2.0, n) * 4) / 4
+    c = 21000.0 + np.cumsum(shared + np.round(rng.normal(0.0, 1.0, n) * 4) / 4)
+    r = 5300.0 + np.cumsum(np.round((0.25 * shared + rng.normal(0.0, 0.3, n)) * 4) / 4)
+    return c, r
+
+
+@pytest.mark.parametrize("n", [3, 5, 8, 20, 50, 300])
+def test_pca_factor_no_stance_flips_on_degenerate_windows(n):
+    """The regression this band exists for: at n=5 the plain closed form flipped 12 real stances on
+    the 486,969-bar frame, at bars whose score is mathematically zero (LAPACK snaps a near-diagonal
+    covariance to an exact axis vector; a closed form leaves a ~1e-18 residue)."""
+    c, r = _tick_pair(n)
+    fast = np.asarray(XS.pca_factor(c, r, n), float)
+    ref = np.asarray(XS.pca_factor_reference(c, r, n), float)
+    assert np.array_equal(np.isnan(fast), np.isnan(ref)), "NaN pattern differs"
+    m = ~np.isnan(ref)
+    flips = int(np.sum(np.sign(fast[m]) != np.sign(ref[m])))
+    assert flips == 0, f"pca_factor n={n}: {flips} stance bars flipped"
+
+
+def test_pca_fallback_band_is_live_and_covers_the_drift():
+    """Two ways this safety net could rot silently: it never fires (dead code proving nothing), or the
+    drift on the bars it does NOT cover grows into the sign boundary. Assert both."""
+    n = 3                                        # the most degenerate case, so the band must be busy
+    fired = total = 0
+    worst_drift = 0.0
+    for seed in (3, 5, 7):
+        c, r = _tick_pair(seed)
+        rc, rr = XS._returns(c), XS._returns(r)
+        _raw, refine = XS._pca_factor_core(np.ascontiguousarray(rc), np.ascontiguousarray(rr), n,
+                                           XS._window_has_nan(rc, rr, n))
+        fired += int(refine.sum())
+        total += len(rc)
+        fast = np.asarray(XS.pca_factor(c, r, n), float)
+        ref = np.asarray(XS.pca_factor_reference(c, r, n), float)
+        keep = np.isfinite(fast) & np.isfinite(ref) & ~refine      # the bars the band did NOT cover
+        if keep.any():
+            worst_drift = max(worst_drift, float(np.abs(fast[keep] - ref[keep]).max()))
+    assert fired > 0, "the fallback band never fired — it is dead code and proves nothing"
+    assert fired < total * 0.2, f"the band fires on {fired}/{total} bars — it is not a fallback any more"
+    assert worst_drift < XS._PCA_EPS / 1000, (
+        f"on bars the band does NOT cover, drift is {worst_drift:.3e} vs a sign-boundary guard of "
+        f"{XS._PCA_EPS:.0e} — the band no longer covers the sign-flip risk")
+
+
+@pytest.mark.parametrize("key,params", [
+    ("rolling_corr", {"n": 50, "threshold": 0.9}),
+    ("rolling_beta", {"n": 50, "lag": 5}),
+    ("cointegration", {"n": 50, "lower": -2, "upper": 2}),
+    ("pca_factor", {"n": 50}),
+])
+def test_xseries_end_to_end_with_a_reference(key, params, monkeypatch):
+    """The gate at the level that matters — and it must NOT be vacuous. A cross-series indicator on a
+    reference-free context returns all zeros, so this attaches a real reference and asserts the vote is
+    actually non-trivial before comparing fast against reference (issue #74)."""
+    c, r, _ = _pair(17)
+    n = len(c)
+    df = pd.DataFrame({"Date": pd.date_range("2020", periods=n, freq="min"),
+                       "Open": c, "High": c + 3, "Low": c - 3, "Close": c, "Volume": np.ones(n)})
+    ref_df = pd.DataFrame({"Date": df["Date"], "Open": r, "High": r + 1, "Low": r - 1,
+                           "Close": r, "Volume": np.ones(n)})
+    ctx = market_context(df, ref_df)
+    assert ctx.ref_close is not None and np.isfinite(ctx.ref_close).any()
+
+    cf, vf = _emit(key, params, ctx)
+    assert np.count_nonzero(cf) + np.count_nonzero(vf) > 0, \
+        f"{key} emitted nothing even WITH a reference — the gate would be vacuous"
+
+    for attr in ("rolling_corr", "rolling_beta", "spread_zscore", "pca_factor"):
+        monkeypatch.setattr(XS, attr, getattr(XS, f"{attr}_reference"))
+    cr, vr = _emit(key, params, ctx)
+    flips = int(np.sum(cf != cr)) + int(np.sum(vf != vr))
+    assert flips == 0, f"{key} {params}: {flips} vote bars flipped vs the reference"
+
+
+def test_xseries_are_inert_without_a_reference():
+    """Documents the behaviour that made every cost scan blind (issue #74) — and #75's bug surface.
+    Without a reference these emit NOTHING, so a 0.00 s timing is 'never ran', not 'cheap'."""
+    c, _r, _ = _pair(23)
+    n = len(c)
+    df = pd.DataFrame({"Date": pd.date_range("2020", periods=n, freq="min"),
+                       "Open": c, "High": c + 3, "Low": c - 3, "Close": c, "Volume": np.ones(n)})
+    ctx = market_context(df)                                  # no reference
+    assert ctx.ref_close is None
+    for key in ("rolling_corr", "rolling_beta", "cointegration", "pca_factor"):
+        cd, vd = _emit(key, {}, ctx)
+        assert np.count_nonzero(cd) == 0 and np.count_nonzero(vd) == 0, \
+            f"{key} emitted a vote with no reference — the inert-without-reference contract changed"
 
 
 def test_vote_gate_is_not_vacuous(monkeypatch):
