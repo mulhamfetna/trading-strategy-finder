@@ -386,6 +386,9 @@ def _load_json(p: Path) -> dict:
     return json.loads(p.read_text())
 
 
+PROGRESS_CALLBACK = None      # optional per-trial callback, set by a driver (see #14)
+
+
 def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         seed: int = 1, ind_1min: bool = False, study_prefix: str = "wsh3",
         split_sltp: bool = False, warm_start: bool = True, sampler: str = "nsga3",
@@ -394,7 +397,7 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         contrib_exclude=None, instrument: str = "NQ", intracandle: bool = False,
         freeze_indicators: bool = False, intracandle_always_on: bool = False,
         force_eod: bool = False, max_enabled: int | None = None,
-        reference: str | None = None) -> dict:
+        reference: str | None = None, train_window: str = "full") -> dict:
     # split_sltp (Q3 / E2): when True the optimizer searches SEPARATE long vs short SL/TP (long_*/short_*),
     # widening the space per the user's point-5 goal. Default False ⇒ shared SL/TP ⇒ identical to prior runs.
     # NOTE FOR THE NEXT FULL RUN (wsh5): launch with split_sltp=True to let longs and shorts get their own
@@ -412,7 +415,6 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
 
     print(f"[{tf_name}] loading inputs ({instrument}, pv={pv:g}) ...", flush=True)
     df_dec, df1, box, vf, n_split = data_mod.load_inputs(tf_name, instrument)
-    sig_int = signals_to_int(sig_mod.decision_signals(df_dec, box))   # precompute once (param-independent)
     # Cross-series reference (#17): loaded ONCE; None ⇒ cross-series indicators stay neutral (parity).
     ref_df = ref_df1 = None
     if reference and reference != instrument:
@@ -433,6 +435,29 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         _xs = tuple(library.lib_xseries.SCHEMA)
         exclude_inds = tuple(dict.fromkeys((*exclude_inds, *_xs)))
         print(f"[{tf_name}] no reference ⇒ cross-series indicators excluded from search: {list(_xs)}", flush=True)
+    # TRAIN WINDOW (#14). By default the walk-forward folds span the WHOLE series, so the second
+    # calendar year is part of training and there is no holdout to validate against. `train_window=
+    # "2025"` truncates every frame to the first year BEFORE anything is computed, so the optimizer
+    # cannot see 2026 at all — which is what makes a later `window="2026"` score genuinely
+    # out-of-sample. Required by the adopt gate; default "full" leaves every existing run unchanged.
+    if train_window and train_window != "full":
+        if train_window != "2025":
+            raise ValueError(f"train_window must be 'full' or '2025', got {train_window!r}")
+        t0 = df_dec["Date"].iloc[0]
+        t_end = df_dec["Date"].iloc[n_split - 1] + tf.bar_td
+        df_dec = df_dec.iloc[:n_split].reset_index(drop=True)
+        df1 = df1[(df1["Date"] >= t0) & (df1["Date"] < t_end)].reset_index(drop=True)
+        vf = vf[:n_split]
+        if ref_df is not None:
+            ref_df = ref_df[ref_df["Date"] < t_end].reset_index(drop=True)
+        if ref_df1 is not None:
+            ref_df1 = ref_df1[ref_df1["Date"] < t_end].reset_index(drop=True)
+        # The volatility gate freezes its threshold on vf[:n_split]; with no second year inside the
+        # training window, that reference is the whole window (still causal w.r.t. the 2026 holdout).
+        n_split = len(df_dec)
+        print(f"[{tf_name}] TRAIN WINDOW = 2025 only: {len(df_dec):,} decision bars / {len(df1):,} "
+              f"1-minute bars. 2026 is HELD OUT and never seen by this search.", flush=True)
+    sig_int = signals_to_int(sig_mod.decision_signals(df_dec, box))   # precompute once (param-independent)
     print(f"[{tf_name}] {len(df_dec)} decision bars; cooldown cap {cap}; "
           f"bounds sl_soft{b['sl_soft']} sl_hard{b['sl_hard']} tp{b['tp']}; "
           f"indicators on {'1-MINUTE frame' if ind_1min else 'decision TF'}", flush=True)
@@ -530,6 +555,13 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         # bell. Recording the resolved values here makes the extractor read the truth instead of guessing.
         trial.set_user_attr("cap_mode", cap_mode)
         trial.set_user_attr("cap_1min", cap_1min)
+        # The ENABLED indicator layer, verbatim (#14). Reconstructing it later from `trial.params` means
+        # replaying `_suggest_indicators` against a FixedTrial and trusting that the replay is faithful —
+        # the same class of "re-derive it downstream" mistake the comment above warns about. Recording it
+        # is exact and, with --max-enabled capped, tiny. Disabled specs are omitted: every consumer
+        # (`_cached_votes`, `veto_mask`, `confirm_mask`) filters on `config.enabled` anyway.
+        trial.set_user_attr("enabled_specs", [s for s in specs if s.get("enabled")])
+        trial.set_user_attr("k_rule", int(k_rule))
         trial.set_user_attr("worst_dd", worst_dd)
         trial.set_user_attr("median_pnl", r["median_pnl"])
         trial.set_user_attr("median_win", med_win)
@@ -609,7 +641,9 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
     # A transient store error (e.g. SQLite "database is locked" under many concurrent workers) fails
     # only THIS trial — it must never kill the worker, or the study loses capacity for the rest of the
     # run. See optimize/server/INCIDENT_wsh4_sqlite_contention.md.
-    study.optimize(objective, n_trials=n_trials, show_progress_bar=False,
+    # A caller (the #14 adopt gate) may install a heartbeat so a multi-hour run is observable.
+    _cbs = [PROGRESS_CALLBACK] if PROGRESS_CALLBACK is not None else None
+    study.optimize(objective, n_trials=n_trials, show_progress_bar=False, callbacks=_cbs,
                    catch=(optuna.exceptions.StorageInternalError,))
     dur = time.time() - t0
 
@@ -703,6 +737,11 @@ def main() -> int:
     ap.add_argument("--max-enabled", type=int, default=None,
                     help="Cap simultaneously-enabled indicators per trial (post-suggestion repair, REGISTRY order). "
                          "Keeps the ~125-key K-of-N search sparse/interpretable. Default: uncapped.")
+    ap.add_argument("--train-window", default="full", choices=["full", "2025"],
+                    help="Restrict the WHOLE search to a training window. 'full' (default) walk-forwards "
+                         "over the entire series, so there is no holdout. '2025' truncates every frame to "
+                         "the first calendar year, leaving 2026 genuinely UNSEEN — required for an "
+                         "out-of-sample adopt gate (#14). Score the winner afterwards with window='2026'.")
     ap.add_argument("--reference", default=None,
                     help="Reference instrument for the cross-series indicators (rolling_corr/beta, "
                          "cointegration, pca_factor), e.g. ES. Causally aligned; default: none (they stay inert).")
@@ -735,7 +774,8 @@ def main() -> int:
         contrib_tokens=contrib_tokens, instrument=a.instrument,
         intracandle=(a.intracandle or a.intracandle_on),
         freeze_indicators=a.freeze_indicators, intracandle_always_on=a.intracandle_on,
-        force_eod=a.force_eod, max_enabled=a.max_enabled, reference=a.reference)
+        force_eod=a.force_eod, max_enabled=a.max_enabled, reference=a.reference,
+        train_window=a.train_window)
     return 0
 
 
