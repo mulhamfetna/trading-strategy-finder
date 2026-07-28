@@ -78,8 +78,26 @@ def _suggest_indicators(trial, exclude=(), only=(), prefix="", max_enabled=None)
         specs.append({"key": key, "enabled": enabled, "mode": meta["mode"], "params": params, "_searched": True})
     if max_enabled is not None:
         on = [s for s in specs if s["enabled"]]
-        for s in on[int(max_enabled):]:      # deterministic REGISTRY order ⇒ reproducible repair
-            s["enabled"] = False
+        if len(on) > int(max_enabled):
+            # UNBIASED repair (#14). Keeping "the first max_enabled in REGISTRY order" sounds neutral
+            # and is not: the registry lists the ORIGINAL 18 indicators at positions 0-17 and the 147
+            # added by #12 from position 18 onward, so an original ALWAYS wins the tie. With ~50% of
+            # 165 flags enabled per trial, at least 3 originals are on ~99.9% of the time — so the cap
+            # keeps originals essentially always.
+            #
+            # MEASURED on a live 16,000-trial adopt-gate study: **0 of 1,500 sampled trials kept a
+            # single new-library indicator.** The ten most-kept keys were all registry positions 0-13.
+            # A search whose entire purpose was to evaluate the new library was testing only the old
+            # one — and it would have returned a confident, meaningless verdict.
+            #
+            # Seeded by the trial number: reproducible per trial (same trial ⇒ same repair, so resumes
+            # and re-scores are stable) but independent of registry position.
+            import random as _random
+            rnd = _random.Random(getattr(trial, "number", 0))
+            keep = {id(s) for s in rnd.sample(on, int(max_enabled))}
+            for s in on:
+                if id(s) not in keep:
+                    s["enabled"] = False
     return specs
 
 
