@@ -43,6 +43,11 @@ htmlcov/
 # Data
 *.csv
 *.log
+# ...except the performance evidence. Every number in the perf reports is traceable to one of these
+# raw server runs, and `optimize/perf/README.md` cites them by name — so they are ARTIFACTS, not
+# incidental output. (They were being silently dropped: the README listed a logs/ directory that had
+# never actually been committed. Found and fixed in #62.)
+!subprojects/Parametric-Indicators/optimize/perf/logs/*.log
 
 # Output
 *.html
