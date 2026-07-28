@@ -91,4 +91,6 @@ jobs:
             optimize/perf/test_budget_accel_parity.py \
             optimize/perf/test_cold_accel_parity.py \
             optimize/perf/test_tail_accel_parity.py \
+            optimize/test_xseries_wiring.py \
+            indicators/test_reference_alignment.py \
             tests/test_speedopt_equiv.py
