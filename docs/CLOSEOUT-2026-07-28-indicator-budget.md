@@ -73,22 +73,34 @@ frame. "worst cfg" is the grid point that produced the *before* number.
 | **all 165, worst case** | **110.2 s** | **22.4 s** | **4.9×** | |
 | **over the 2 s budget** | **17** | **0** | | |
 
-At **default** parameters, on the full frame, reference vs accelerated (`bench_budget --phases timing`):
+At **default** parameters, on the full frame, warmed, reference vs accelerated
+(`bench_budget --phases timing`, all 15 rows):
 
 | indicator | reference | accelerated | speed-up |
 |---|---:|---:|---:|
-| `ifvg` | **29.98 s** | 0.314 s | 95× |
-| `sinewave` | 6.20 s | 0.043 s | 144× |
-| `proj_bands` | 4.56 s | 0.013 s | **362×** |
-| `ou_halflife` | 4.10 s | 0.022 s | 185× |
-| `cmo_chande_dmi` | 3.95 s | 0.019 s | 208× |
-| `linreg_channel` | 3.51 s | 0.051 s | 68× |
-| `linreg_r2` | 2.80 s | 0.014 s | 204× |
-| `lsma` | 2.90 s | 0.021 s | 136× |
-| `order_block` | 2.85 s | 0.154 s | 19× |
+| `ifvg` | **29.90 s** | 0.314 s | 95× |
+| `sinewave` | 6.42 s | 0.042 s | **152×** |
+| `proj_bands` | 4.62 s | 0.028 s | **165×** |
+| `ou_halflife` | 4.06 s | 0.027 s | 148× |
+| `cmo_chande_dmi` | 3.89 s | 0.027 s | 145× |
+| `linreg_channel` | 3.46 s | 0.041 s | 84× |
+| `lsma` | 2.84 s | 0.032 s | 88× |
+| `order_block` | 2.82 s | 0.118 s | 24× |
+| `linreg_r2` | 2.79 s | 0.026 s | 107× |
+| `frama` | 2.70 s | 0.027 s | 100× |
+| `mama_fama` | 2.29 s | 0.026 s | 87× |
+| `hilbert_cycle` | 1.80 s | 0.022 s | 81× |
+| `ulcer` | 1.50 s | 0.012 s | 128× |
+| `linreg_slope` | 1.39 s | 0.014 s | 102× |
+| `schaff_trend_cycle` | 1.10 s | 0.013 s | 84× |
 
-`ifvg` at 30 s per compute at its *defaults* is the one that would have hurt most: it independently
+`ifvg` at **30 s per compute at its defaults** is the one that would have hurt most: it independently
 corroborates the ES-committee finding in `docs/PERFORMANCE.md` §9, where `ifvg` was 58 s of a 106 s trial.
+
+**What bit-identity cost.** An earlier build summed windows left-to-right and was faster still
+(`proj_bands` 362×, `lsma` 136×, `linreg_r2` 204×). Matching numpy's pairwise order (§5.1) gives some of
+that back — the library's worst case is 22.4 s rather than 21.7 s. Trading ~3% of the win for a provably
+unchanged trading decision is the right side of that trade, and it is still 4.9× and 0/165 over budget.
 
 ---
 
@@ -205,7 +217,25 @@ Recorded because each one produced a *green* result that meant nothing.
 
 ## 7. Verification results
 
-*(filled from the final server run — `optimize/perf/logs/issue62_*.log`)*
+All four gates run on the AMD server against the real 486,969-bar NQ 1-minute frame, on the **final**
+build (2026-07-28 12:52–13:12). Raw logs committed under `optimize/perf/logs/`.
+
+| gate | result | log |
+|---|---|---|
+| **Worst-case budget scan** (165 indicators × defaults/all-min/all-max) | **exit 0 — 0 over the 2 s budget**; worst `rsi_connors` 1.53 s; all-165 worst case **22.4 s** | `issue62_worstcase_after.log` |
+| **Primitive bit-identity** (`_roll_max`/`_roll_min`/`ema`/`rma`/`nan_ema` × 8 windows) | **40/40 bit-identical** | `issue62_budget_accel.log` |
+| **Exactness** (per-accelerator value diff on the real frame) | **0 differing values** for every accelerator except the three Ehlers filters; those carry a 10⁶–10⁷× margin | `issue62_budget_accel.log` |
+| **Dumb control** (every function compared to ITSELF) | **0 flips** — the harness is sound | `issue62_budget_accel.log` |
+| **Vote identity** (emitted confirm/veto arrays, fast vs reference, swept across the searched grid, 25 indicators) | **TOTAL VOTE FLIPS = 0** | `issue62_budget_accel.log` |
+| **Full test suite** | **963 passed · 1 skipped · 0 FAILED** (the skip is a missing 2024 data file, pre-existing) | `issue62_full_pytest.log` |
+| **Golden gate** | **6/6 ✅ byte-identical** — 4h $151,655/277 · 2h $101,518/173 · 1h $110,038/353 · 15m $82,156/654 · 5m $20,092/314 · 2m $31,898/276 | `issue62_golden.log` |
+
+The suite grew 879 → **963** because the 84 new parity tests are part of it.
+
+> **A near-miss worth recording:** the first attempt at this run produced a *complete, green* golden log —
+> from the build that had just segfaulted three commands earlier. It was only excluded by checking the
+> file's **timestamp** against the run that was actually in progress. A log file is not evidence of the
+> code you think produced it; check when it was written.
 
 ---
 

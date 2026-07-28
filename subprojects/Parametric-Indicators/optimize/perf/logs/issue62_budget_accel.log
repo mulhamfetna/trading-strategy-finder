@@ -1,0 +1,103 @@
+[budget] frame=486,969 bars | numba=True | phases=['primitives', 'exactness', 'control', 'votes', 'timing']
+[budget] phase primitives — bit-identity of the shared leaves
+    40/40 primitive cases bit-identical
+[budget] phase exactness — value diffs, and decision-boundary margins where 1 ULP remains
+    frama n=4                      bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    frama n=16                     bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    frama n=61                     bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    ou_coefficient n=10            bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    ou_coefficient n=50            bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    ou_coefficient n=150           bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    ulcer n=5                      bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    ulcer n=14                     bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    ulcer n=50                     bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    proj_bands n=14                bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    proj_bands n=60                bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    dynamic_dmi n=5                bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    dynamic_dmi n=14               bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    dynamic_dmi n=40               bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    linreg_dev n=20                bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    linreg_slope n=20              bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    linreg_dev n=100               bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    linreg_slope n=100             bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    linreg_r2 n=20                 bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    linreg_r2 n=80                 bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    lsma n=25                      bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    lsma n=100                     bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    schaff_trend_cycle             bit_identical=True  differing=      0 max|Δ|=0.000e+00
+    -- the Ehlers group: trig inside a loop-carried recurrence, so 1 ULP is unavoidable --
+    dominant_cycle                 bit_identical=False differing=  18970 max|Δ|=4.263e-14
+    mama_fama                      bit_identical=False differing=   2329 max|Δ|=1.091e-11
+    hilbert_sinewave               bit_identical=False differing=    125 max|Δ|=9.992e-16
+    sinewave sign(sine-lead)       min|margin|=5.129e-09  drift=9.992e-16  within_drift=0  safety=5.13e+06x
+    mama_fama sign(mama-fama)      min|margin|=3.876e-05  drift=1.091e-11  within_drift=0  safety=3.55e+06x
+    hilbert_cycle |per-thr| (grid) min|margin|=6.497e-07  drift=4.263e-14  within_drift=0  safety=1.52e+07x
+[budget] phase control — the same machinery comparing each function to ITSELF
+    sinewave             points=   1 ref_computes=   1 flips=0
+    hilbert_cycle        points=  27 ref_computes=   1 flips=0
+    mama_fama            points=  70 ref_computes=  70 flips=0
+    frama                points=  10 ref_computes=   8 flips=0
+    schaff_trend_cycle   points= 161 ref_computes=  65 flips=0
+    ifvg                 points=   1 ref_computes=   1 flips=0
+    order_block          points=  22 ref_computes=  20 flips=0
+    proj_bands           points=  10 ref_computes=   8 flips=0
+    ulcer                points=  43 ref_computes=   8 flips=0
+    ou_halflife          points=  10 ref_computes=   8 flips=0
+    cmo_chande_dmi       points= 106 ref_computes=   8 flips=0
+    linreg_channel       points=  55 ref_computes=   8 flips=0
+    linreg_slope         points=  10 ref_computes=   8 flips=0
+    linreg_r2            points=  17 ref_computes=   8 flips=0
+    lsma                 points=  17 ref_computes=   9 flips=0
+    ichimoku_cloud       points=  23 ref_computes=  38 flips=0
+    ichimoku_tk_cross    points=  17 ref_computes=  30 flips=0
+    chande_kroll         points=  26 ref_computes=  76 flips=0
+    smi                  points=  73 ref_computes= 248 flips=0
+    chandelier           points=  24 ref_computes=  24 flips=0
+    williams_r           points= 106 ref_computes=  16 flips=0
+    aroon                points=  10 ref_computes=   0 flips=0   !! reference never called — this indicator does not use the swapped function
+    donchian             points=  10 ref_computes=  16 flips=0
+    supertrend           points=  24 ref_computes=   8 flips=0
+[budget] CONTROL FLIPS = 0 (MUST be 0; anything else means the harness is broken)
+[budget] phase votes — emitted confirm/veto arrays, fast vs reference
+    sinewave             points=   1 ref_computes=   1 flips=0
+    hilbert_cycle        points=  27 ref_computes=   1 flips=0
+    mama_fama            points=  70 ref_computes=  70 flips=0
+    frama                points=  10 ref_computes=   8 flips=0
+    schaff_trend_cycle   points= 161 ref_computes=  65 flips=0
+    ifvg                 points=   1 ref_computes=   1 flips=0
+    order_block          points=  22 ref_computes=  20 flips=0
+    proj_bands           points=  10 ref_computes=   8 flips=0
+    ulcer                points=  43 ref_computes=   8 flips=0
+    ou_halflife          points=  10 ref_computes=   8 flips=0
+    cmo_chande_dmi       points= 106 ref_computes=   8 flips=0
+    linreg_channel       points=  55 ref_computes=   8 flips=0
+    linreg_slope         points=  10 ref_computes=   8 flips=0
+    linreg_r2            points=  17 ref_computes=   8 flips=0
+    lsma                 points=  17 ref_computes=   9 flips=0
+    ichimoku_cloud       points=  23 ref_computes=  38 flips=0
+    ichimoku_tk_cross    points=  17 ref_computes=  30 flips=0
+    chande_kroll         points=  26 ref_computes=  76 flips=0
+    smi                  points=  73 ref_computes= 248 flips=0
+    chandelier           points=  24 ref_computes=  24 flips=0
+    williams_r           points= 106 ref_computes=  16 flips=0
+    aroon                points=  10 ref_computes=   0 flips=0   !! reference never called — this indicator does not use the swapped function
+    donchian             points=  10 ref_computes=  16 flips=0
+    supertrend           points=  24 ref_computes=   8 flips=0
+[budget] TOTAL VOTE FLIPS = 0
+[budget] phase timing — full-frame wall-clock, warmed
+    sinewave             ref=   6.415s  fast=   0.042s  152.3x
+    hilbert_cycle        ref=   1.803s  fast=   0.022s  80.5x
+    mama_fama            ref=   2.293s  fast=   0.026s  86.8x
+    frama                ref=   2.701s  fast=   0.027s  100.0x
+    schaff_trend_cycle   ref=   1.100s  fast=   0.013s  83.9x
+    ifvg                 ref=  29.898s  fast=   0.314s  95.1x
+    order_block          ref=   2.818s  fast=   0.118s  23.9x
+    proj_bands           ref=   4.624s  fast=   0.028s  164.9x
+    ulcer                ref=   1.503s  fast=   0.012s  127.8x
+    ou_halflife          ref=   4.064s  fast=   0.027s  148.2x
+    cmo_chande_dmi       ref=   3.894s  fast=   0.027s  144.6x
+    linreg_channel       ref=   3.460s  fast=   0.041s  83.9x
+    linreg_slope         ref=   1.393s  fast=   0.014s  102.4x
+    linreg_r2            ref=   2.791s  fast=   0.026s  107.3x
+    lsma                 ref=   2.843s  fast=   0.032s  88.3x
+[budget] WROTE optimize/perf/results/budget_accel.json
