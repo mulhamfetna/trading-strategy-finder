@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from .._numba import HAVE_NUMBA as _HAVE_NUMBA, njit as _njit, pw_mean as _pw_mean, pw_sum as _pw_sum
 from ..classic import _roll_max, _roll_min
 from ..classic import atr as _atr
 from ..classic import ema as _ema
@@ -154,7 +155,8 @@ def trend_intensity(close, n):
         return 100.0 * sp / (sp + sn)
 
 
-def linreg_slope(close, n):
+def linreg_slope_reference(close, n):
+    """FROZEN reference for `linreg_slope` — the ORIGINAL per-bar OLS loop (issue #62)."""
     c = np.asarray(close, float)
     t = np.arange(n, dtype=float)
     tm = t.mean()
@@ -166,8 +168,33 @@ def linreg_slope(close, n):
     return out
 
 
-def linreg_dev(close, n):
-    """(close − regression endpoint, rolling std of that residual over n) — for the channel veto."""
+@_njit(cache=True, nogil=True, fastmath=False)
+def _linreg_slope_core(c, n, t, tm, ss):
+    N = c.shape[0]
+    out = np.full(N, np.nan)
+    prod = np.empty(n)
+    for i in range(n - 1, N):
+        ym = _pw_mean(c, i - n + 1, n)
+        for k in range(n):
+            prod[k] = (t[k] - tm) * (c[i - n + 1 + k] - ym)
+        out[i] = _pw_sum(prod, 0, n) / ss
+    return out
+
+
+def linreg_slope(close, n):
+    """OLS slope of close over the last n bars. Numba-accelerated (issue #62), summing with `pw_sum`
+    so it is bit-identical to `linreg_slope_reference` — which is used verbatim when Numba is absent."""
+    c = np.asarray(close, float)
+    if not _HAVE_NUMBA or n <= 0:
+        return linreg_slope_reference(c, n)
+    t = np.arange(n, dtype=float)
+    tm = t.mean()
+    ss = ((t - tm) ** 2).sum()
+    return _linreg_slope_core(np.ascontiguousarray(c), int(n), t, tm, ss)
+
+
+def linreg_dev_reference(close, n):
+    """FROZEN reference for `linreg_dev` — the ORIGINAL per-bar OLS + residual loop (issue #62)."""
     c = np.asarray(close, float)
     t = np.arange(n, dtype=float)
     tm = t.mean()
@@ -181,6 +208,43 @@ def linreg_dev(close, n):
         line = a + b * t
         reg[i] = line[-1]
         resid_std[i] = np.sqrt(np.mean((y - line) ** 2))
+    return c - reg, resid_std
+
+
+@_njit(cache=True, nogil=True, fastmath=False)
+def _linreg_dev_core(c, n, t, tm, ss):
+    N = c.shape[0]
+    reg = np.full(N, np.nan)
+    resid_std = np.full(N, np.nan)
+    prod = np.empty(n); sq = np.empty(n)
+    for i in range(n - 1, N):
+        ym = _pw_mean(c, i - n + 1, n)
+        for k in range(n):
+            prod[k] = (t[k] - tm) * (c[i - n + 1 + k] - ym)
+        b = _pw_sum(prod, 0, n) / ss
+        a = ym - b * tm
+        for k in range(n):
+            r = c[i - n + 1 + k] - (a + b * t[k])
+            sq[k] = r * r
+        reg[i] = a + b * t[n - 1]
+        resid_std[i] = np.sqrt(_pw_sum(sq, 0, n) / n)
+    return reg, resid_std
+
+
+def linreg_dev(close, n):
+    """(close − regression endpoint, rolling std of that residual over n) — for the channel veto.
+
+    Numba-accelerated (issue #62), summing with `pw_sum` so every reduction matches numpy's pairwise
+    order **bit-for-bit** — the vote compares two similar-magnitude quantities (|dev| > k·std), where
+    the last digit can decide. `linreg_dev_reference` is the oracle and is used when Numba is absent.
+    """
+    c = np.asarray(close, float)
+    if not _HAVE_NUMBA or n <= 0:
+        return linreg_dev_reference(c, n)
+    t = np.arange(n, dtype=float)
+    tm = t.mean()
+    ss = ((t - tm) ** 2).sum()
+    reg, resid_std = _linreg_dev_core(np.ascontiguousarray(c), int(n), t, tm, ss)
     return c - reg, resid_std
 
 

@@ -6,6 +6,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from .._numba import (HAVE_NUMBA as _HAVE_NUMBA, njit as _njit, pw_mean as _pw_mean,
+                      pw_var as _pw_var)
 from ..classic import _roll_max, _roll_min
 from ..classic import ema as _ema
 from ..classic import rma as _rma
@@ -15,9 +17,8 @@ from ..classic import true_range as _tr
 from .ma import _rolling_sum
 
 
-def nan_ema(x: np.ndarray, n: int) -> np.ndarray:
-    """EMA (alpha=2/(n+1)) that seeds at the first finite value and holds through interior NaNs.
-    Use when the input carries a NaN warm-up (RSI, stochastic) — classic.ema would go all-NaN."""
+def nan_ema_reference(x: np.ndarray, n: int) -> np.ndarray:
+    """FROZEN reference for `nan_ema` — the ORIGINAL per-bar Python recurrence (issue #62)."""
     x = np.asarray(x, dtype=float)
     out = np.full(len(x), np.nan)
     fin = np.where(~np.isnan(x))[0]
@@ -29,6 +30,31 @@ def nan_ema(x: np.ndarray, n: int) -> np.ndarray:
     for t in range(s + 1, len(x)):
         out[t] = out[t - 1] if np.isnan(x[t]) else a * x[t] + (1.0 - a) * out[t - 1]
     return out
+
+
+@_njit(cache=True, nogil=True, fastmath=False)
+def _nan_ema_core(x, a, s):
+    N = x.shape[0]
+    out = np.full(N, np.nan)
+    out[s] = x[s]
+    for t in range(s + 1, N):
+        out[t] = out[t - 1] if np.isnan(x[t]) else a * x[t] + (1.0 - a) * out[t - 1]
+    return out
+
+
+def nan_ema(x: np.ndarray, n: int) -> np.ndarray:
+    """EMA (alpha=2/(n+1)) that seeds at the first finite value and holds through interior NaNs.
+    Use when the input carries a NaN warm-up (RSI, stochastic) — classic.ema would go all-NaN.
+
+    Numba-accelerated (issue #62): a sequential recurrence, so same ops in the same order with
+    `fastmath=False` ⇒ **bit-identical** to `nan_ema_reference`, which is used verbatim when Numba
+    is absent. This is called twice per `smi`/`tsi`/`wavetrend` evaluation on a ~487k-bar frame.
+    """
+    x = np.asarray(x, dtype=float)
+    fin = np.where(~np.isnan(x))[0]
+    if len(fin) == 0 or not _HAVE_NUMBA:
+        return nan_ema_reference(x, n)
+    return _nan_ema_core(np.ascontiguousarray(x), 2.0 / (n + 1.0), int(fin[0]))
 
 
 def roll_sum_safe(x: np.ndarray, n: int) -> np.ndarray:
@@ -180,9 +206,8 @@ def rmi(close, n, m):
         return 100.0 - 100.0 / (1.0 + au / ad)
 
 
-def dynamic_dmi(close, n):
-    """Chande Dynamic Momentum Index — RSI whose period shrinks when volatility rises.
-    td = n / (std5 / SMA10(std5)), clamped to [3, 2n]; then Wilder RSI over td (per-bar period)."""
+def dynamic_dmi_reference(close, n):
+    """FROZEN reference for `dynamic_dmi` — the ORIGINAL two-loop implementation (issue #62)."""
     c = np.asarray(close, dtype=float)
     N = len(c)
     std5 = np.full(N, np.nan)
@@ -204,6 +229,64 @@ def dynamic_dmi(close, n):
         ad = dn[i - td:i].mean()
         out[i] = 100.0 if ad == 0 else 100.0 - 100.0 / (1.0 + au / ad)
     return out
+
+
+@_njit(cache=True, nogil=True, fastmath=False)
+def _std5_core(c):
+    """Rolling population std over a FIXED 5-bar window, computed the way `np.std` does it: the TWO-PASS
+    form (subtract the window mean, then average the squared deviations) — NOT the E[x²]−E[x]² shortcut,
+    which cancels catastrophically at price levels ~2e4 and would change the last digits."""
+    N = c.shape[0]
+    out = np.full(N, np.nan)
+    buf = np.empty(5)
+    for i in range(4, N):
+        out[i] = np.sqrt(_pw_var(c, i - 4, 5, buf))
+    return out
+
+
+@_njit(cache=True, nogil=True, fastmath=False)
+def _dynamic_dmi_core(vi, up, dn, n):
+    N = vi.shape[0]
+    out = np.full(N, np.nan)
+    for i in range(1, N):
+        if np.isnan(vi[i]) or vi[i] <= 0:
+            continue
+        # np.rint, not round(): both are round-half-to-even, but Numba's `round` builtin is not
+        # guaranteed to follow CPython's banker's rounding, and the reference uses CPython's.
+        td = int(np.rint(n / vi[i]))
+        if td < 3:
+            td = 3
+        elif td > 2 * n:
+            td = 2 * n
+        if i < td:
+            continue
+        au = _pw_mean(up, i - td, td)
+        ad = _pw_mean(dn, i - td, td)
+        out[i] = 100.0 if ad == 0 else 100.0 - 100.0 / (1.0 + au / ad)
+    return out
+
+
+def dynamic_dmi(close, n):
+    """Chande Dynamic Momentum Index — RSI whose period shrinks when volatility rises.
+    td = n / (std5 / SMA10(std5)), clamped to [3, 2n]; then Wilder RSI over td (per-bar period).
+
+    Numba-accelerated (issue #62), summing with `pw_sum`/`pw_var` so every window reduction matches
+    numpy's pairwise order **bit-for-bit**. `dynamic_dmi_reference` is the oracle and is used verbatim
+    when Numba is absent.
+    """
+    c = np.asarray(close, dtype=float)
+    if not _HAVE_NUMBA:
+        return dynamic_dmi_reference(c, n)
+    N = len(c)
+    if N == 0:
+        return np.full(0, np.nan)
+    std5 = _std5_core(np.ascontiguousarray(c))
+    vi = std5 / nan_sma(std5, 10)
+    d = np.diff(c)
+    up = np.where(d > 0, d, 0.0)
+    dn = np.where(d < 0, -d, 0.0)
+    return _dynamic_dmi_core(np.ascontiguousarray(vi), np.ascontiguousarray(up),
+                             np.ascontiguousarray(dn), int(n))
 
 
 # --- stochastic family ---
