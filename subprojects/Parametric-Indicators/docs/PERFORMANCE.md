@@ -29,6 +29,7 @@ document **summarizes and cross-references** it rather than duplicating it. The 
 | Profiling deep analysis (where the 37 s went) | `optimize/REPORT_backtester_speed_optimization.md` ⚠️ **SUPERSEDED — 21-indicator era, see §8** |
 | **CURRENT indicator profile + the `dfa` fix (2026-07-27)** | **`optimize/REPORT_indicator_cache_acceleration.md`** |
 | **Worst-case-parameter cost of all 165 indicators** | **`optimize/REPORT_post_dfa_tail.md`** |
+| **Clearing the 2 s budget — 0/165 over (#62)** | **`docs/CLOSEOUT-2026-07-28-indicator-budget.md`** |
 | **Cache substrate / level — measured NO-GO** | **`optimize/REPORT_cache_substrate_and_level.md`** |
 | **Rules to run before/after any expansion round** | **`docs/EXPANSION_ROUND_PLAYBOOK.md`** |
 | **Perf harnesses + every measured artifact** | **`optimize/perf/README.md`** |
@@ -687,8 +688,7 @@ all-min / all-max (`optimize/perf/bench_worstcase.py`):
 Fixed here: `autocorr` 9.47 s → 0.081 s (**116×**), `hurst_exp` 5.24 s → 0.233 s (**22×**), 0 vote flips.
 Remaining leaders: `sinewave` 6.6 s, `ifvg` 5.2 s, `proj_bands` 5.1 s, `ou_halflife` 4.4 s,
 `cmo_chande_dmi` 4.0 s — several expensive at **default** parameters, so paid on nearly every trial that
-enables them. (`ifvg` independently corroborates §9's ES-committee finding.) **Open follow-up: #62**, with
-a 2 s budget as the stopping rule (expected end state ~50 s worst-case).
+enables them. (`ifvg` independently corroborates §9's ES-committee finding.) → **all cleared in §10.6.**
 
 ### 10.4 Caching: measured, and deliberately NOT changed (#58)
 
@@ -717,6 +717,43 @@ hardware · **C5** run a **control** before calling a test failure "pre-existing
 **warm up first** — an unwarmed benchmark extrapolated Numba JIT compile ×24 and reported `dfa` at 5.52 s
 against a measured 0.178 s.
 
+### 10.6 The 2 s budget, met — 0/165 over (#62, 2026-07-28) ← **the current cost picture**
+
+The 17 indicators §10.3 left over budget are cleared. Full detail:
+`docs/CLOSEOUT-2026-07-28-indicator-budget.md`.
+
+| all 165 indicators, worst case over the full frame | |
+|---|---:|
+| after #56 | 110.2 s, **17 over the 2 s budget** (60.3 s) |
+| **after #62** | **22.4 s (4.9×), 0 over budget** |
+| new slowest indicator | `rsi_connors` **1.53 s** (never on the list, never touched) |
+
+**The biggest win was a shared LEAF, not an indicator.** `classic._roll_max`/`_roll_min` — a per-bar
+`np.max(slice)` loop with **19 call sites** — was on its own enough to put `ichimoku_cloud`,
+`ichimoku_tk_cross`, `chande_kroll` and `smi` over budget, and it also silently taxed a dozen indicators
+that never appeared on any cost table. Replaced with an O(N) monotonic deque; `ema`/`rma`/`nan_ema` got
+compiled recurrences. All bit-identical.
+
+**And unlike #54, this was not an algorithms problem.** Apart from the deque and a trig lookup table in
+`sinewave`, every fix is *the same arithmetic, compiled*. `dfa` needed a closed form because its per-bar
+work was heavyweight (a LAPACK solve); these were merely numerous. Worst offenders at **default**
+parameters: `ifvg` 29.98 s → 0.314 s (95×), `sinewave` 6.20 → 0.043 (144×), `proj_bands` 4.56 → 0.013
+(**362×**), `ou_halflife` 4.10 → 0.022 (185×), `cmo_chande_dmi` 3.95 → 0.019 (208×).
+
+**Parity is now stronger than the contract it inherited.** A left-to-right window sum is differently
+*rounded* from numpy's pairwise sum — invisible until the value meets a comparison, and `ou_halflife`
+vetoes on `b >= 0` while `lsma`/`frama` vote `sign(close − line)`. It flipped **1 real bar in
+`ou_halflife` and 2 in `frama`** on the 486,969-bar frame. `indicators/_numba.pw_sum` reproduces numpy's
+pairwise order bit-for-bit, so the **whole window-statistic family is now BIT-identical**, not merely
+vote-identical. Residual, stated plainly: `dominant_cycle` / `mama_fama` / `hilbert_sinewave` keep a ~1 ULP
+drift (their `arctan`/`sin` sit inside a loop-carried recurrence and cannot be hoisted into numpy the way
+`frama`'s `log`/`exp` were) — zero vote flips, and the closest any bar comes to its decision boundary is
+**3.5–15 million times** the drift.
+
+⚠️ **Blind spot in the scan:** `bench_worstcase.py` builds a single-instrument context, so `rolling_corr`,
+`rolling_beta`, `cointegration` and `pca_factor` short-circuit and time at **0.00 s** — "never ran", not
+"cheap". They still carry per-bar `np.mean`/`np.std`-over-a-slice loops. The 0/165 claim excludes them.
+
 ---
 
 ## 11. One-paragraph bottom line
@@ -742,6 +779,13 @@ a single compute. A closed-form + Numba rewrite gave **1,150–1,396×** with **
 3-trial profile **208 s → 40 s (5.1×)**; `autocorr` (116×) and `hurst_exp` (22×) followed. Measurement also
 closed the storage question for good — a cache read is **0.009%** of the compute it replaces and the disk
 cache's hit rate in a fresh sweep is **0.00**, so every substrate change (tmpfs, Redis, shared-memory,
-re-keying) is a **NO-GO**, and no GPU/ARM hardware is needed. The standing defence is
-`docs/EXPANSION_ROUND_PLAYBOOK.md`: **re-profile after every expansion round, and profile the worst-case
-parameter, not the default.**
+re-keying) is a **NO-GO**, and no GPU/ARM hardware is needed. **#62 then finished the job (§10.6): the
+2 s-per-compute budget is met at 0 of 165 indicators and the library's worst case fell 110.2 s → 22.4 s** —
+and the biggest single win was a five-line *shared leaf* (`_roll_max`/`_roll_min`, 19 call sites) that no
+indicator's name mentions, which alone had put four indicators over budget. Unlike `dfa`, almost none of
+that round needed a cleverer algorithm; it needed the same arithmetic out of the interpreter. Parity is now
+**bit-identical** for everything except three Ehlers filters whose transcendentals sit inside a
+loop-carried recurrence, and those ship with a measured decision-boundary margin of 10⁶–10⁷×. The standing
+defence is `docs/EXPANSION_ROUND_PLAYBOOK.md`: **re-profile after every expansion round, profile the
+worst-case parameter rather than the default, rank by function rather than by indicator, and run the
+worst-case scan as a gate (it now exits non-zero) instead of reading it as a report.**

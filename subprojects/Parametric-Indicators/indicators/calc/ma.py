@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from .._numba import HAVE_NUMBA as _HAVE_NUMBA, njit as _njit, pw_mean as _pw_mean, pw_sum as _pw_sum
 from ..classic import ema as _ema
 
 
@@ -100,8 +101,8 @@ def vwma(x: np.ndarray, vol: np.ndarray, n: int) -> np.ndarray:
         return num / den
 
 
-def lsma(x: np.ndarray, n: int) -> np.ndarray:
-    """Least-squares MA: value of the OLS line (y~t) at the window's last point."""
+def lsma_reference(x: np.ndarray, n: int) -> np.ndarray:
+    """FROZEN reference for `lsma` — the ORIGINAL per-bar OLS loop (issue #62)."""
     x = np.asarray(x, dtype=float)
     t = np.arange(n, dtype=float)
     tm = t.mean()
@@ -114,6 +115,36 @@ def lsma(x: np.ndarray, n: int) -> np.ndarray:
         a = ym - b * tm
         out[i] = a + b * (n - 1)
     return out
+
+
+@_njit(cache=True, nogil=True, fastmath=False)
+def _lsma_core(x, n, t, tm, ss):
+    N = x.shape[0]
+    out = np.full(N, np.nan)
+    prod = np.empty(n)
+    for i in range(n - 1, N):
+        ym = _pw_mean(x, i - n + 1, n)
+        for k in range(n):
+            prod[k] = (t[k] - tm) * (x[i - n + 1 + k] - ym)
+        b = _pw_sum(prod, 0, n) / ss
+        out[i] = (ym - b * tm) + b * (n - 1)
+    return out
+
+
+def lsma(x: np.ndarray, n: int) -> np.ndarray:
+    """Least-squares MA: value of the OLS line (y~t) at the window's last point.
+
+    Numba-accelerated (issue #62), summing with `pw_sum` so each window reduction matches numpy's
+    pairwise order **bit-for-bit** — the vote is `sign(close − line)`, which the last float digit can
+    decide. `lsma_reference` is the oracle and is used verbatim when Numba is absent.
+    """
+    x = np.asarray(x, dtype=float)
+    if not _HAVE_NUMBA or n <= 0:
+        return lsma_reference(x, n)
+    t = np.arange(n, dtype=float)
+    tm = t.mean()
+    ss = ((t - tm) ** 2).sum()
+    return _lsma_core(np.ascontiguousarray(x), int(n), t, tm, ss)
 
 
 def kama(x: np.ndarray, n: int, fast: int, slow: int) -> np.ndarray:

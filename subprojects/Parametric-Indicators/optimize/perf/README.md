@@ -1,6 +1,6 @@
 # `optimize/perf/` — performance harnesses & artifacts
 
-Everything here was produced by the 2026-07-27 indicator-performance workstream (**#54 → #56/#57/#58**).
+Everything here was produced by the indicator-performance workstream (**#54 → #56/#57/#58 → #62**).
 All measurements ran on the AMD server (`ssh amd-trading`, 32 cores / 123 GB RAM, no GPU) against the real
 **486,969-bar NQ 1-minute frame**. Nothing here runs in the production optimizer path; every accelerator
 lives in `indicators/calc/quant.py` behind a numba-optional fallback.
@@ -17,13 +17,24 @@ lives in `indicators/calc/quant.py` behind a numba-optional fallback.
 | `cache_probe.py` | **Result-neutral** instrumentation. Wraps `vote_cache.get/put` and `runner._ind_vote` to count cache hits/misses, bytes, and **cold-compute wall-clock per indicator**. Arrays pass through unchanged. | used by `run_baseline.py` |
 | `run_baseline.py` | Runs the **real optimizer** for N trials with the probe installed, isolated via a throwaway `WSH_JOURNAL_DIR` + cold `vote_cache` (zero production pollution). Emits the cold/warm/IO split + per-indicator cold-cost ranking. | `python3 -m optimize.perf.run_baseline --tf 4h --trials 30` |
 | `bench_dfa.py` | Times `dfa` reference vs accelerated at n∈{20,100,400} on the real frame and re-verifies **zero vote flips** across the full threshold grid. | `python3 -m optimize.perf.bench_dfa` |
-| `bench_worstcase.py` | Scans **every** registered indicator at defaults / all-min / all-max, projects to the full frame, flags anything over a budget. **The automated form of playbook rule P4.** | `python3 -m optimize.perf.bench_worstcase --bars 20000 --budget-s 2.0` |
+| `bench_worstcase.py` | Scans **every** registered indicator at defaults / all-min / all-max, projects to the full frame, and **exits non-zero if anything is over the budget** — so it is a gate, not a report. **The automated form of playbook rule P4.** ⚠️ It builds a single-instrument context, so the four cross-series indicators short-circuit and time at 0.00 s: that is "never ran", not "cheap". | `python3 -m optimize.perf.bench_worstcase --bars 20000 --budget-s 2.0` |
+| `bench_budget.py` | The **#62 evidence harness**. Five phases on the real frame: `primitives` (bit-identity of the shared leaves) · `exactness` (per-accelerator value diff, plus the decision-boundary MARGIN where 1 ULP is unavoidable) · **`control`** (compares every function to ITSELF — any non-zero flip means the harness is broken) · `votes` (emitted confirm/veto arrays, fast vs reference, swept across the searched grid) · `timing`. Swaps implementations by **identity across every loaded `indicators.*` module**, because the leaves are bound at import time. | `python3 -m optimize.perf.bench_budget --phases primitives,exactness,control,votes,timing` |
 | `bench_substrate.py` | Times cache retrieval through `.npy` / tmpfs / mmap / `shared_memory` / Redis / dict at 1 and N readers, on **real** cached arrays. | `python3 -m optimize.perf.bench_substrate --n-files 300 --readers 30` |
 | `cold_accel.py` | Thin aliases (`dfa_fast`, `dfa_reference`) so benchmarks read naturally and `indicators/` never imports `optimize/`. | — |
 
 **Tests:** `test_cache_probe.py` (probe is result-neutral), `test_cold_accel_parity.py` (`dfa` vote-identity),
-`test_tail_accel_parity.py` (`autocorr` / `hurst_exp` vote-identity). All gate on the **discretized vote**,
-not raw floats — see the parity note in `indicators/calc/quant.py`.
+`test_tail_accel_parity.py` (`autocorr` / `hurst_exp` vote-identity), `test_budget_accel_parity.py` (**#62** —
+bit-identity for the shared leaves, the SMC state machines and the whole window-statistic family; vote-identity
+for the three Ehlers filters; plus a `pw_sum`-matches-numpy test and a deliberately-wrong-implementation test
+so the gate cannot go vacuous).
+
+⚠️ **CI has no Numba, so every dispatcher falls back to its own reference and a naive parity test compares
+the reference to ITSELF — green, and proving nothing.** `test_budget_accel_parity.py` monkeypatches
+`_HAVE_NUMBA = True`; `njit` is then a no-op decorator, so the kernel body still runs (in pure Python) and its
+LOGIC is checked in both environments. This is not paranoia: 84 local tests passed and the server deploy
+immediately **segfaulted**, because a *recursive* `@njit` called from inside another kernel crashes under
+Numba 0.65 — locally it had been ordinary Python recursion. **Always run the accelerated path on a box that
+has the accelerator before believing a green suite** (playbook C11/C13).
 
 ⚠️ **When timing anything here, warm up first.** `bench_worstcase.py` calls each configuration twice and
 times only the second. The first version did not, so **Numba JIT compile time was extrapolated ×24** and it

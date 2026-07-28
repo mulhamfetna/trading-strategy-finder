@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from .._numba import HAVE_NUMBA as _HAVE_NUMBA, njit as _njit, pw_mean as _pw_mean, pw_sum as _pw_sum
 from ..classic import sma as _sma
 from .dsp import bandpass
 
@@ -121,8 +122,8 @@ def kalman(price, q, r):
     return out
 
 
-def ou_coefficient(close, n):
-    """OU mean-reversion coefficient b from ΔP = a + b·P[-1] over a rolling window (b<0 ⇒ reverting)."""
+def ou_coefficient_reference(close, n):
+    """FROZEN reference for `ou_coefficient` — the ORIGINAL per-bar window loop (issue #62)."""
     c = np.asarray(close, dtype=float)
     N = len(c)
     out = np.full(N, np.nan)
@@ -133,3 +134,39 @@ def ou_coefficient(close, n):
         if v > 0:
             out[i] = ((lag - lag.mean()) * (dy - dy.mean())).sum() / (n * v)
     return out
+
+
+@_njit(cache=True, nogil=True, fastmath=False)
+def _ou_coefficient_core(c, n):
+    N = c.shape[0]
+    out = np.full(N, np.nan)
+    lag = np.empty(n); dy = np.empty(n); prod = np.empty(n); sq = np.empty(n)
+    for i in range(n, N):
+        for k in range(n):
+            lag[k] = c[i - n + k]
+            dy[k] = c[i - n + k + 1] - c[i - n + k]
+        ml = _pw_mean(lag, 0, n)
+        md = _pw_mean(dy, 0, n)
+        for k in range(n):
+            d = lag[k] - ml
+            sq[k] = d * d
+            prod[k] = d * (dy[k] - md)
+        v = _pw_sum(sq, 0, n) / n              # ndarray.var() is the POPULATION variance (ddof=0)
+        if v > 0:
+            out[i] = _pw_sum(prod, 0, n) / (n * v)
+    return out
+
+
+def ou_coefficient(close, n):
+    """OU mean-reversion coefficient b from ΔP = a + b·P[-1] over a rolling window (b<0 ⇒ reverting).
+
+    Numba-accelerated (issue #62), summing with `pw_sum` so every reduction matches numpy's pairwise
+    order **bit-for-bit**. That is not pedantry here: the vote is `b >= 0`, a sign test, and the first
+    version — a plain left-to-right sum — flipped the veto on 1 bar of the real 486,969-bar frame
+    where `b` was within rounding distance of zero. `ou_coefficient_reference` is the oracle and is
+    used verbatim when Numba is absent.
+    """
+    c = np.asarray(close, dtype=float)
+    if not _HAVE_NUMBA or n <= 0:
+        return ou_coefficient_reference(c, n)
+    return _ou_coefficient_core(np.ascontiguousarray(c), int(n))

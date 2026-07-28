@@ -1,0 +1,1141 @@
+{
+  "bars": 486969,
+  "have_numba": true,
+  "primitives": [
+    {
+      "case": "_roll_max n=2",
+      "bit_identical": true
+    },
+    {
+      "case": "_roll_min n=2",
+      "bit_identical": true
+    },
+    {
+      "case": "ema n=2",
+      "bit_identical": true
+    },
+    {
+      "case": "rma n=2",
+      "bit_identical": true
+    },
+    {
+      "case": "nan_ema n=2",
+      "bit_identical": true
+    },
+    {
+      "case": "_roll_max n=5",
+      "bit_identical": true
+    },
+    {
+      "case": "_roll_min n=5",
+      "bit_identical": true
+    },
+    {
+      "case": "ema n=5",
+      "bit_identical": true
+    },
+    {
+      "case": "rma n=5",
+      "bit_identical": true
+    },
+    {
+      "case": "nan_ema n=5",
+      "bit_identical": true
+    },
+    {
+      "case": "_roll_max n=9",
+      "bit_identical": true
+    },
+    {
+      "case": "_roll_min n=9",
+      "bit_identical": true
+    },
+    {
+      "case": "ema n=9",
+      "bit_identical": true
+    },
+    {
+      "case": "rma n=9",
+      "bit_identical": true
+    },
+    {
+      "case": "nan_ema n=9",
+      "bit_identical": true
+    },
+    {
+      "case": "_roll_max n=14",
+      "bit_identical": true
+    },
+    {
+      "case": "_roll_min n=14",
+      "bit_identical": true
+    },
+    {
+      "case": "ema n=14",
+      "bit_identical": true
+    },
+    {
+      "case": "rma n=14",
+      "bit_identical": true
+    },
+    {
+      "case": "nan_ema n=14",
+      "bit_identical": true
+    },
+    {
+      "case": "_roll_max n=26",
+      "bit_identical": true
+    },
+    {
+      "case": "_roll_min n=26",
+      "bit_identical": true
+    },
+    {
+      "case": "ema n=26",
+      "bit_identical": true
+    },
+    {
+      "case": "rma n=26",
+      "bit_identical": true
+    },
+    {
+      "case": "nan_ema n=26",
+      "bit_identical": true
+    },
+    {
+      "case": "_roll_max n=52",
+      "bit_identical": true
+    },
+    {
+      "case": "_roll_min n=52",
+      "bit_identical": true
+    },
+    {
+      "case": "ema n=52",
+      "bit_identical": true
+    },
+    {
+      "case": "rma n=52",
+      "bit_identical": true
+    },
+    {
+      "case": "nan_ema n=52",
+      "bit_identical": true
+    },
+    {
+      "case": "_roll_max n=100",
+      "bit_identical": true
+    },
+    {
+      "case": "_roll_min n=100",
+      "bit_identical": true
+    },
+    {
+      "case": "ema n=100",
+      "bit_identical": true
+    },
+    {
+      "case": "rma n=100",
+      "bit_identical": true
+    },
+    {
+      "case": "nan_ema n=100",
+      "bit_identical": true
+    },
+    {
+      "case": "_roll_max n=200",
+      "bit_identical": true
+    },
+    {
+      "case": "_roll_min n=200",
+      "bit_identical": true
+    },
+    {
+      "case": "ema n=200",
+      "bit_identical": true
+    },
+    {
+      "case": "rma n=200",
+      "bit_identical": true
+    },
+    {
+      "case": "nan_ema n=200",
+      "bit_identical": true
+    }
+  ],
+  "primitives_all_bit_identical": true,
+  "exactness": {
+    "diffs": [
+      {
+        "case": "frama n=4",
+        "nan_mask_ok": true,
+        "n_differing": 0,
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      {
+        "case": "frama n=16",
+        "nan_mask_ok": true,
+        "n_differing": 0,
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      {
+        "case": "frama n=61",
+        "nan_mask_ok": true,
+        "n_differing": 0,
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      {
+        "case": "ou_coefficient n=10",
+        "nan_mask_ok": true,
+        "n_differing": 0,
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      {
+        "case": "ou_coefficient n=50",
+        "nan_mask_ok": true,
+        "n_differing": 0,
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      {
+        "case": "ou_coefficient n=150",
+        "nan_mask_ok": true,
+        "n_differing": 0,
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      {
+        "case": "ulcer n=5",
+        "nan_mask_ok": true,
+        "n_differing": 0,
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      {
+        "case": "ulcer n=14",
+        "nan_mask_ok": true,
+        "n_differing": 0,
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      {
+        "case": "ulcer n=50",
+        "nan_mask_ok": true,
+        "n_differing": 0,
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      {
+        "case": "proj_bands n=14",
+        "nan_mask_ok": true,
+        "n_differing": 0,
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      {
+        "case": "proj_bands n=60",
+        "nan_mask_ok": true,
+        "n_differing": 0,
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      {
+        "case": "dynamic_dmi n=5",
+        "nan_mask_ok": true,
+        "n_differing": 0,
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      {
+        "case": "dynamic_dmi n=14",
+        "nan_mask_ok": true,
+        "n_differing": 0,
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      {
+        "case": "dynamic_dmi n=40",
+        "nan_mask_ok": true,
+        "n_differing": 0,
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      {
+        "case": "linreg_dev n=20",
+        "nan_mask_ok": true,
+        "n_differing": 0,
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      {
+        "case": "linreg_slope n=20",
+        "nan_mask_ok": true,
+        "n_differing": 0,
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      {
+        "case": "linreg_dev n=100",
+        "nan_mask_ok": true,
+        "n_differing": 0,
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      {
+        "case": "linreg_slope n=100",
+        "nan_mask_ok": true,
+        "n_differing": 0,
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      {
+        "case": "linreg_r2 n=20",
+        "nan_mask_ok": true,
+        "n_differing": 0,
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      {
+        "case": "linreg_r2 n=80",
+        "nan_mask_ok": true,
+        "n_differing": 0,
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      {
+        "case": "lsma n=25",
+        "nan_mask_ok": true,
+        "n_differing": 0,
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      {
+        "case": "lsma n=100",
+        "nan_mask_ok": true,
+        "n_differing": 0,
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      {
+        "case": "schaff_trend_cycle",
+        "nan_mask_ok": true,
+        "n_differing": 0,
+        "max_abs_diff": 0.0,
+        "bit_identical": true
+      },
+      {
+        "case": "dominant_cycle",
+        "nan_mask_ok": true,
+        "n_differing": 18970,
+        "max_abs_diff": 4.263256414560601e-14,
+        "bit_identical": false
+      },
+      {
+        "case": "mama_fama",
+        "nan_mask_ok": true,
+        "n_differing": 2329,
+        "max_abs_diff": 1.0913936421275139e-11,
+        "bit_identical": false
+      },
+      {
+        "case": "hilbert_sinewave",
+        "nan_mask_ok": true,
+        "n_differing": 125,
+        "max_abs_diff": 9.992007221626409e-16,
+        "bit_identical": false
+      }
+    ],
+    "margins": [
+      {
+        "case": "sinewave sign(sine-lead)",
+        "min_margin": 5.128682145638663e-09,
+        "drift": 9.992007221626409e-16,
+        "bars_within_drift": 0,
+        "safety_factor": 5132784.666666667
+      },
+      {
+        "case": "mama_fama sign(mama-fama)",
+        "min_margin": 3.8758007576689124e-05,
+        "drift": 1.0913936421275139e-11,
+        "bars_within_drift": 0,
+        "safety_factor": 3551240.0
+      },
+      {
+        "case": "hilbert_cycle |per-thr| (grid)",
+        "min_margin": 6.497066493693637e-07,
+        "drift": 4.263256414560601e-14,
+        "bars_within_drift": 0,
+        "safety_factor": 15239680.333333334
+      }
+    ],
+    "all_bit_identical_except_ehlers": true
+  },
+  "control": {
+    "rows": [
+      {
+        "key": "sinewave",
+        "points": 1,
+        "sites_swapped": 1,
+        "ref_computes": 1,
+        "vote_flips": 0,
+        "exercised": true,
+        "note": null,
+        "worst_point": null,
+        "swept": []
+      },
+      {
+        "key": "hilbert_cycle",
+        "points": 27,
+        "sites_swapped": 1,
+        "ref_computes": 1,
+        "vote_flips": 0,
+        "exercised": true,
+        "note": null,
+        "worst_point": null,
+        "swept": [
+          "threshold:full(25)"
+        ]
+      },
+      {
+        "key": "mama_fama",
+        "points": 70,
+        "sites_swapped": 1,
+        "ref_computes": 70,
+        "vote_flips": 0,
+        "exercised": true,
+        "note": null,
+        "worst_point": null,
+        "swept": [
+          "fast:full(19)",
+          "slow:full(50)"
+        ]
+      },
+      {
+        "key": "frama",
+        "points": 10,
+        "sites_swapped": 1,
+        "ref_computes": 8,
+        "vote_flips": 0,
+        "exercised": true,
+        "note": null,
+        "worst_point": null,
+        "swept": [
+          "n:sampled(8/99)"
+        ]
+      },
+      {
+        "key": "schaff_trend_cycle",
+        "points": 161,
+        "sites_swapped": 1,
+        "ref_computes": 65,
+        "vote_flips": 0,
+        "exercised": true,
+        "note": null,
+        "worst_point": null,
+        "swept": [
+          "fast:sampled(8/99)",
+          "slow:sampled(8/199)",
+          "cycle:full(49)",
+          "lower:full(49)",
+          "upper:full(49)"
+        ]
+      },
+      {
+        "key": "ifvg",
+        "points": 1,
+        "sites_swapped": 1,
+        "ref_computes": 1,
+        "vote_flips": 0,
+        "exercised": true,
+        "note": null,
+        "worst_point": null,
+        "swept": []
+      },
+      {
+        "key": "order_block",
+        "points": 22,
+        "sites_swapped": 1,
+        "ref_computes": 20,
+        "vote_flips": 0,
+        "exercised": true,
+        "note": null,
+        "worst_point": null,
+        "swept": [
+          "swing_l:full(20)"
+        ]
+      },
+      {
+        "key": "proj_bands",
+        "points": 10,
+        "sites_swapped": 1,
+        "ref_computes": 8,
+        "vote_flips": 0,
+        "exercised": true,
+        "note": null,
+        "worst_point": null,
+        "swept": [
+          "n:sampled(8/199)"
+        ]
+      },
+      {
+        "key": "ulcer",
+        "points": 43,
+        "sites_swapped": 1,
+        "ref_computes": 8,
+        "vote_flips": 0,
+        "exercised": true,
+        "note": null,
+        "worst_point": null,
+        "swept": [
+          "n:sampled(8/199)",
+          "m:sampled(8/199)",
+          "threshold:full(27)"
+        ]
+      },
+      {
+        "key": "ou_halflife",
+        "points": 10,
+        "sites_swapped": 1,
+        "ref_computes": 8,
+        "vote_flips": 0,
+        "exercised": true,
+        "note": null,
+        "worst_point": null,
+        "swept": [
+          "n:sampled(8/291)"
+        ]
+      },
+      {
+        "key": "cmo_chande_dmi",
+        "points": 106,
+        "sites_swapped": 1,
+        "ref_computes": 8,
+        "vote_flips": 0,
+        "exercised": true,
+        "note": null,
+        "worst_point": null,
+        "swept": [
+          "n:sampled(8/99)",
+          "lower:full(49)",
+          "upper:full(49)"
+        ]
+      },
+      {
+        "key": "linreg_channel",
+        "points": 55,
+        "sites_swapped": 1,
+        "ref_computes": 8,
+        "vote_flips": 0,
+        "exercised": true,
+        "note": null,
+        "worst_point": null,
+        "swept": [
+          "n:sampled(8/391)",
+          "k:full(46)"
+        ]
+      },
+      {
+        "key": "linreg_slope",
+        "points": 10,
+        "sites_swapped": 1,
+        "ref_computes": 8,
+        "vote_flips": 0,
+        "exercised": true,
+        "note": null,
+        "worst_point": null,
+        "swept": [
+          "n:sampled(8/199)"
+        ]
+      },
+      {
+        "key": "linreg_r2",
+        "points": 17,
+        "sites_swapped": 1,
+        "ref_computes": 8,
+        "vote_flips": 0,
+        "exercised": true,
+        "note": null,
+        "worst_point": null,
+        "swept": [
+          "n:sampled(8/199)",
+          "threshold:sampled(8/91)"
+        ]
+      },
+      {
+        "key": "lsma",
+        "points": 17,
+        "sites_swapped": 1,
+        "ref_computes": 9,
+        "vote_flips": 0,
+        "exercised": true,
+        "note": null,
+        "worst_point": null,
+        "swept": [
+          "fast:sampled(8/399)",
+          "slow:sampled(8/399)"
+        ]
+      },
+      {
+        "key": "ichimoku_cloud",
+        "points": 23,
+        "sites_swapped": 25,
+        "ref_computes": 38,
+        "vote_flips": 0,
+        "exercised": true,
+        "note": null,
+        "worst_point": null,
+        "swept": [
+          "t:sampled(8/99)",
+          "k:sampled(8/199)",
+          "b:sampled(7/299)"
+        ]
+      },
+      {
+        "key": "ichimoku_tk_cross",
+        "points": 17,
+        "sites_swapped": 25,
+        "ref_computes": 30,
+        "vote_flips": 0,
+        "exercised": true,
+        "note": null,
+        "worst_point": null,
+        "swept": [
+          "t:sampled(8/99)",
+          "k:sampled(8/199)"
+        ]
+      },
+      {
+        "key": "chande_kroll",
+        "points": 26,
+        "sites_swapped": 25,
+        "ref_computes": 76,
+        "vote_flips": 0,
+        "exercised": true,
+        "note": null,
+        "worst_point": null,
+        "swept": [
+          "n:sampled(8/99)",
+          "m:full(10)",
+          "p:sampled(8/99)"
+        ]
+      },
+      {
+        "key": "smi",
+        "points": 73,
+        "sites_swapped": 25,
+        "ref_computes": 248,
+        "vote_flips": 0,
+        "exercised": true,
+        "note": null,
+        "worst_point": null,
+        "swept": [
+          "n:sampled(8/99)",
+          "smooth:full(50)",
+          "lower:sampled(8/99)",
+          "upper:sampled(8/99)"
+        ]
+      },
+      {
+        "key": "chandelier",
+        "points": 24,
+        "sites_swapped": 25,
+        "ref_computes": 24,
+        "vote_flips": 0,
+        "exercised": true,
+        "note": null,
+        "worst_point": null,
+        "swept": [
+          "n:sampled(8/99)",
+          "m:full(15)"
+        ]
+      },
+      {
+        "key": "williams_r",
+        "points": 106,
+        "sites_swapped": 25,
+        "ref_computes": 16,
+        "vote_flips": 0,
+        "exercised": true,
+        "note": null,
+        "worst_point": null,
+        "swept": [
+          "n:sampled(8/99)",
+          "lower:full(49)",
+          "upper:full(49)"
+        ]
+      },
+      {
+        "key": "aroon",
+        "points": 10,
+        "sites_swapped": 25,
+        "ref_computes": 0,
+        "vote_flips": 0,
+        "exercised": false,
+        "note": "reference never called \u2014 this indicator does not use the swapped function",
+        "worst_point": null,
+        "swept": [
+          "n:sampled(8/199)"
+        ]
+      },
+      {
+        "key": "donchian",
+        "points": 10,
+        "sites_swapped": 25,
+        "ref_computes": 16,
+        "vote_flips": 0,
+        "exercised": true,
+        "note": null,
+        "worst_point": null,
+        "swept": [
+          "n:sampled(8/199)"
+        ]
+      },
+      {
+        "key": "supertrend",
+        "points": 24,
+        "sites_swapped": 25,
+        "ref_computes": 8,
+        "vote_flips": 0,
+        "exercised": true,
+        "note": null,
+        "worst_point": null,
+        "swept": [
+          "n:sampled(8/99)",
+          "m:full(15)"
+        ]
+      }
+    ],
+    "total_flips": 0
+  },
+  "votes": [
+    {
+      "key": "sinewave",
+      "points": 1,
+      "sites_swapped": 1,
+      "ref_computes": 1,
+      "vote_flips": 0,
+      "exercised": true,
+      "note": null,
+      "worst_point": null,
+      "swept": []
+    },
+    {
+      "key": "hilbert_cycle",
+      "points": 27,
+      "sites_swapped": 1,
+      "ref_computes": 1,
+      "vote_flips": 0,
+      "exercised": true,
+      "note": null,
+      "worst_point": null,
+      "swept": [
+        "threshold:full(25)"
+      ]
+    },
+    {
+      "key": "mama_fama",
+      "points": 70,
+      "sites_swapped": 1,
+      "ref_computes": 70,
+      "vote_flips": 0,
+      "exercised": true,
+      "note": null,
+      "worst_point": null,
+      "swept": [
+        "fast:full(19)",
+        "slow:full(50)"
+      ]
+    },
+    {
+      "key": "frama",
+      "points": 10,
+      "sites_swapped": 1,
+      "ref_computes": 8,
+      "vote_flips": 0,
+      "exercised": true,
+      "note": null,
+      "worst_point": null,
+      "swept": [
+        "n:sampled(8/99)"
+      ]
+    },
+    {
+      "key": "schaff_trend_cycle",
+      "points": 161,
+      "sites_swapped": 1,
+      "ref_computes": 65,
+      "vote_flips": 0,
+      "exercised": true,
+      "note": null,
+      "worst_point": null,
+      "swept": [
+        "fast:sampled(8/99)",
+        "slow:sampled(8/199)",
+        "cycle:full(49)",
+        "lower:full(49)",
+        "upper:full(49)"
+      ]
+    },
+    {
+      "key": "ifvg",
+      "points": 1,
+      "sites_swapped": 1,
+      "ref_computes": 1,
+      "vote_flips": 0,
+      "exercised": true,
+      "note": null,
+      "worst_point": null,
+      "swept": []
+    },
+    {
+      "key": "order_block",
+      "points": 22,
+      "sites_swapped": 1,
+      "ref_computes": 20,
+      "vote_flips": 0,
+      "exercised": true,
+      "note": null,
+      "worst_point": null,
+      "swept": [
+        "swing_l:full(20)"
+      ]
+    },
+    {
+      "key": "proj_bands",
+      "points": 10,
+      "sites_swapped": 1,
+      "ref_computes": 8,
+      "vote_flips": 0,
+      "exercised": true,
+      "note": null,
+      "worst_point": null,
+      "swept": [
+        "n:sampled(8/199)"
+      ]
+    },
+    {
+      "key": "ulcer",
+      "points": 43,
+      "sites_swapped": 1,
+      "ref_computes": 8,
+      "vote_flips": 0,
+      "exercised": true,
+      "note": null,
+      "worst_point": null,
+      "swept": [
+        "n:sampled(8/199)",
+        "m:sampled(8/199)",
+        "threshold:full(27)"
+      ]
+    },
+    {
+      "key": "ou_halflife",
+      "points": 10,
+      "sites_swapped": 1,
+      "ref_computes": 8,
+      "vote_flips": 0,
+      "exercised": true,
+      "note": null,
+      "worst_point": null,
+      "swept": [
+        "n:sampled(8/291)"
+      ]
+    },
+    {
+      "key": "cmo_chande_dmi",
+      "points": 106,
+      "sites_swapped": 1,
+      "ref_computes": 8,
+      "vote_flips": 0,
+      "exercised": true,
+      "note": null,
+      "worst_point": null,
+      "swept": [
+        "n:sampled(8/99)",
+        "lower:full(49)",
+        "upper:full(49)"
+      ]
+    },
+    {
+      "key": "linreg_channel",
+      "points": 55,
+      "sites_swapped": 1,
+      "ref_computes": 8,
+      "vote_flips": 0,
+      "exercised": true,
+      "note": null,
+      "worst_point": null,
+      "swept": [
+        "n:sampled(8/391)",
+        "k:full(46)"
+      ]
+    },
+    {
+      "key": "linreg_slope",
+      "points": 10,
+      "sites_swapped": 1,
+      "ref_computes": 8,
+      "vote_flips": 0,
+      "exercised": true,
+      "note": null,
+      "worst_point": null,
+      "swept": [
+        "n:sampled(8/199)"
+      ]
+    },
+    {
+      "key": "linreg_r2",
+      "points": 17,
+      "sites_swapped": 1,
+      "ref_computes": 8,
+      "vote_flips": 0,
+      "exercised": true,
+      "note": null,
+      "worst_point": null,
+      "swept": [
+        "n:sampled(8/199)",
+        "threshold:sampled(8/91)"
+      ]
+    },
+    {
+      "key": "lsma",
+      "points": 17,
+      "sites_swapped": 1,
+      "ref_computes": 9,
+      "vote_flips": 0,
+      "exercised": true,
+      "note": null,
+      "worst_point": null,
+      "swept": [
+        "fast:sampled(8/399)",
+        "slow:sampled(8/399)"
+      ]
+    },
+    {
+      "key": "ichimoku_cloud",
+      "points": 23,
+      "sites_swapped": 25,
+      "ref_computes": 38,
+      "vote_flips": 0,
+      "exercised": true,
+      "note": null,
+      "worst_point": null,
+      "swept": [
+        "t:sampled(8/99)",
+        "k:sampled(8/199)",
+        "b:sampled(7/299)"
+      ]
+    },
+    {
+      "key": "ichimoku_tk_cross",
+      "points": 17,
+      "sites_swapped": 25,
+      "ref_computes": 30,
+      "vote_flips": 0,
+      "exercised": true,
+      "note": null,
+      "worst_point": null,
+      "swept": [
+        "t:sampled(8/99)",
+        "k:sampled(8/199)"
+      ]
+    },
+    {
+      "key": "chande_kroll",
+      "points": 26,
+      "sites_swapped": 25,
+      "ref_computes": 76,
+      "vote_flips": 0,
+      "exercised": true,
+      "note": null,
+      "worst_point": null,
+      "swept": [
+        "n:sampled(8/99)",
+        "m:full(10)",
+        "p:sampled(8/99)"
+      ]
+    },
+    {
+      "key": "smi",
+      "points": 73,
+      "sites_swapped": 25,
+      "ref_computes": 248,
+      "vote_flips": 0,
+      "exercised": true,
+      "note": null,
+      "worst_point": null,
+      "swept": [
+        "n:sampled(8/99)",
+        "smooth:full(50)",
+        "lower:sampled(8/99)",
+        "upper:sampled(8/99)"
+      ]
+    },
+    {
+      "key": "chandelier",
+      "points": 24,
+      "sites_swapped": 25,
+      "ref_computes": 24,
+      "vote_flips": 0,
+      "exercised": true,
+      "note": null,
+      "worst_point": null,
+      "swept": [
+        "n:sampled(8/99)",
+        "m:full(15)"
+      ]
+    },
+    {
+      "key": "williams_r",
+      "points": 106,
+      "sites_swapped": 25,
+      "ref_computes": 16,
+      "vote_flips": 0,
+      "exercised": true,
+      "note": null,
+      "worst_point": null,
+      "swept": [
+        "n:sampled(8/99)",
+        "lower:full(49)",
+        "upper:full(49)"
+      ]
+    },
+    {
+      "key": "aroon",
+      "points": 10,
+      "sites_swapped": 25,
+      "ref_computes": 0,
+      "vote_flips": 0,
+      "exercised": false,
+      "note": "reference never called \u2014 this indicator does not use the swapped function",
+      "worst_point": null,
+      "swept": [
+        "n:sampled(8/199)"
+      ]
+    },
+    {
+      "key": "donchian",
+      "points": 10,
+      "sites_swapped": 25,
+      "ref_computes": 16,
+      "vote_flips": 0,
+      "exercised": true,
+      "note": null,
+      "worst_point": null,
+      "swept": [
+        "n:sampled(8/199)"
+      ]
+    },
+    {
+      "key": "supertrend",
+      "points": 24,
+      "sites_swapped": 25,
+      "ref_computes": 8,
+      "vote_flips": 0,
+      "exercised": true,
+      "note": null,
+      "worst_point": null,
+      "swept": [
+        "n:sampled(8/99)",
+        "m:full(15)"
+      ]
+    }
+  ],
+  "total_vote_flips": 0,
+  "timing": [
+    {
+      "key": "sinewave",
+      "reference_s": 6.4147,
+      "accelerated_s": 0.0421,
+      "speedup": 152.3
+    },
+    {
+      "key": "hilbert_cycle",
+      "reference_s": 1.8032,
+      "accelerated_s": 0.0224,
+      "speedup": 80.5
+    },
+    {
+      "key": "mama_fama",
+      "reference_s": 2.2932,
+      "accelerated_s": 0.0264,
+      "speedup": 86.8
+    },
+    {
+      "key": "frama",
+      "reference_s": 2.7013,
+      "accelerated_s": 0.027,
+      "speedup": 100.0
+    },
+    {
+      "key": "schaff_trend_cycle",
+      "reference_s": 1.0996,
+      "accelerated_s": 0.0131,
+      "speedup": 83.9
+    },
+    {
+      "key": "ifvg",
+      "reference_s": 29.898,
+      "accelerated_s": 0.3144,
+      "speedup": 95.1
+    },
+    {
+      "key": "order_block",
+      "reference_s": 2.8178,
+      "accelerated_s": 0.1178,
+      "speedup": 23.9
+    },
+    {
+      "key": "proj_bands",
+      "reference_s": 4.6235,
+      "accelerated_s": 0.028,
+      "speedup": 164.9
+    },
+    {
+      "key": "ulcer",
+      "reference_s": 1.5029,
+      "accelerated_s": 0.0118,
+      "speedup": 127.8
+    },
+    {
+      "key": "ou_halflife",
+      "reference_s": 4.0635,
+      "accelerated_s": 0.0274,
+      "speedup": 148.2
+    },
+    {
+      "key": "cmo_chande_dmi",
+      "reference_s": 3.8942,
+      "accelerated_s": 0.0269,
+      "speedup": 144.6
+    },
+    {
+      "key": "linreg_channel",
+      "reference_s": 3.4605,
+      "accelerated_s": 0.0413,
+      "speedup": 83.9
+    },
+    {
+      "key": "linreg_slope",
+      "reference_s": 1.3931,
+      "accelerated_s": 0.0136,
+      "speedup": 102.4
+    },
+    {
+      "key": "linreg_r2",
+      "reference_s": 2.791,
+      "accelerated_s": 0.026,
+      "speedup": 107.3
+    },
+    {
+      "key": "lsma",
+      "reference_s": 2.8428,
+      "accelerated_s": 0.0322,
+      "speedup": 88.3
+    }
+  ]
+}

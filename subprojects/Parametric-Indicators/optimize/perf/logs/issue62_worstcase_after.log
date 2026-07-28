@@ -1,0 +1,31 @@
+[worstcase] 165 indicators | stage-1 on 20,000 bars (extrapolation ×24.3 to 486,969) | timeout 20s/config
+[worstcase] scanned 25/165
+[worstcase] scanned 50/165
+[worstcase] scanned 75/165
+[worstcase] scanned 100/165
+[worstcase] scanned 125/165
+[worstcase] scanned 150/165
+
+[worstcase] === 0 indicator(s) OVER the 2.0s full-frame budget ===
+    rsi_connors              worst=default  proj_full=    1.53s
+    hma                      worst=all_max  proj_full=    1.43s
+    aroon                    worst=all_max  proj_full=    0.92s
+    aroon_osc                worst=all_max  proj_full=    0.92s
+    rvgi                     worst=default  proj_full=    0.83s
+    vidya                    worst=all_max  proj_full=    0.80s
+    center_of_gravity        worst=all_max  proj_full=    0.70s
+    dfa                      worst=all_max  proj_full=    0.63s
+    fisher                   worst=default  proj_full=    0.58s
+    laguerre_rsi             worst=all_min  proj_full=    0.56s
+    kama                     worst=all_max  proj_full=    0.51s
+    qqe                      worst=all_max  proj_full=    0.51s
+    wma                      worst=all_max  proj_full=    0.48s
+    tma                      worst=all_max  proj_full=    0.46s
+    sine_wma                 worst=all_max  proj_full=    0.46s
+    asi                      worst=default  proj_full=    0.46s
+    roofing                  worst=all_max  proj_full=    0.41s
+    efficiency_ratio         worst=all_max  proj_full=    0.40s
+    cyber_cycle              worst=all_min  proj_full=    0.39s
+    emd                      worst=all_min  proj_full=    0.35s
+[worstcase] WROTE optimize/perf/results/worstcase_issue62_after.json
+[worstcase] PASS: every indicator is within the 2.0s budget (worst rsi_connors at 1.53s).

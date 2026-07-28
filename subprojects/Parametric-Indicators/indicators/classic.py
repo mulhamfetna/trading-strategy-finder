@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from ._numba import HAVE_NUMBA as _HAVE_NUMBA, njit as _njit
+
 
 def _nan_like(x) -> np.ndarray:
     return np.full(len(x), np.nan, dtype=float)
@@ -28,17 +30,30 @@ def sma(close: np.ndarray, n: int) -> np.ndarray:
     return out
 
 
-def ema(close: np.ndarray, n: int) -> np.ndarray:
-    """Exponential MA, alpha = 2/(n+1), seeded with close[0]."""
-    x = np.asarray(close, dtype=float)
-    out = _nan_like(x)
-    if len(x) == 0:
-        return out
-    a = 2.0 / (n + 1.0)
+@_njit(cache=True, nogil=True, fastmath=False)
+def _ema_core(x, a):
+    N = x.shape[0]
+    out = np.full(N, np.nan)
     out[0] = x[0]
-    for t in range(1, len(x)):
+    for t in range(1, N):
         out[t] = a * x[t] + (1.0 - a) * out[t - 1]
     return out
+
+
+def ema(close: np.ndarray, n: int) -> np.ndarray:
+    """Exponential MA, alpha = 2/(n+1), seeded with close[0].
+
+    The recurrence is sequential, so the Numba kernel performs the SAME operations in the SAME order
+    with `fastmath=False` — bit-identical, not merely close (issue #62). Reference: `_reference.ema_ref`.
+    """
+    x = np.asarray(close, dtype=float)
+    if len(x) == 0:
+        return _nan_like(x)
+    a = 2.0 / (n + 1.0)
+    if not _HAVE_NUMBA:
+        from ._reference import ema_ref
+        return ema_ref(x, n)
+    return _ema_core(np.ascontiguousarray(x), a)
 
 
 def rma(x: np.ndarray, n: int) -> np.ndarray:
@@ -52,8 +67,19 @@ def rma(x: np.ndarray, n: int) -> np.ndarray:
         return out
     a = 1.0 / n
     s = int(finite[0])
+    if not _HAVE_NUMBA:
+        from ._reference import rma_ref
+        return rma_ref(v, n)
+    return _rma_core(np.ascontiguousarray(v), a, s)
+
+
+@_njit(cache=True, nogil=True, fastmath=False)
+def _rma_core(v, a, s):
+    """Sequential recurrence — same ops, same order, `fastmath=False` ⇒ bit-identical (issue #62)."""
+    N = v.shape[0]
+    out = np.full(N, np.nan)
     out[s] = v[s]
-    for t in range(s + 1, len(v)):
+    for t in range(s + 1, N):
         if np.isnan(v[t]):
             out[t] = out[t - 1]
         else:
@@ -128,18 +154,63 @@ def obv(close: np.ndarray, volume: np.ndarray) -> np.ndarray:
     return out
 
 
-def _roll_max(x, n):
-    out = np.full(len(x), np.nan)
-    for t in range(n - 1, len(x)):
-        out[t] = np.max(x[t - n + 1:t + 1])
+@_njit(cache=True, nogil=True, fastmath=False)
+def _roll_extreme_core(x, n, want_max):
+    """O(N) monotonic-deque rolling extreme. EXACT, not approximate: max/min select an existing element,
+    so there is no floating-point reassociation — the result is bit-identical to the per-bar `np.max`
+    loop it replaces. NaN is handled by an explicit in-window counter (numpy propagates NaN through
+    max/min, and NaN never enters the deque), so the NaN pattern matches exactly too."""
+    N = x.shape[0]
+    out = np.full(N, np.nan)
+    dq = np.empty(N, dtype=np.int64)          # indices, values monotonically decreasing (max) / increasing (min)
+    head = 0
+    tail = 0                                  # deque occupies dq[head:tail]
+    nan_count = 0
+    for i in range(N):
+        v = x[i]
+        if np.isnan(v):
+            nan_count += 1
+        else:
+            while tail > head and not (x[dq[tail - 1]] > v if want_max else x[dq[tail - 1]] < v):
+                tail -= 1
+            dq[tail] = i
+            tail += 1
+        drop = i - n                          # index leaving the window this bar
+        if drop >= 0:
+            if np.isnan(x[drop]):
+                nan_count -= 1
+            elif tail > head and dq[head] == drop:
+                head += 1
+        if i >= n - 1:
+            out[i] = np.nan if nan_count > 0 else x[dq[head]]
     return out
+
+
+def _roll_max(x, n):
+    """Rolling maximum over the last n values (NaN until the window fills, NaN if the window holds one).
+
+    PERFORMANCE (issue #62): this is the single most-shared primitive in the indicator library — 19 call
+    sites feeding ichimoku, smi, chande_kroll, chandelier, stochastic, frama, schaff and more. The original
+    per-bar `np.max(x[t-n+1:t+1])` loop paid Python interpreter overhead **once per bar**, which alone put
+    four indicators over the 2 s full-frame budget (`ichimoku_cloud` 3.43 s at DEFAULT parameters). The
+    monotonic-deque kernel is O(N) regardless of `n` and bit-identical — see `_roll_extreme_core`.
+    Frozen reference: `indicators/_reference.roll_max_ref`; gate: `tests/test_speedopt_equiv.py`.
+    """
+    if not _HAVE_NUMBA or n <= 0:            # a missing optional dep must never change a number
+        return _reference_roll("max", x, n)
+    return _roll_extreme_core(np.ascontiguousarray(np.asarray(x, dtype=float)), int(n), True)
 
 
 def _roll_min(x, n):
-    out = np.full(len(x), np.nan)
-    for t in range(n - 1, len(x)):
-        out[t] = np.min(x[t - n + 1:t + 1])
-    return out
+    """Rolling minimum over the last n values. See `_roll_max` for the performance note."""
+    if not _HAVE_NUMBA or n <= 0:
+        return _reference_roll("min", x, n)
+    return _roll_extreme_core(np.ascontiguousarray(np.asarray(x, dtype=float)), int(n), False)
+
+
+def _reference_roll(which, x, n):
+    from ._reference import roll_max_ref, roll_min_ref
+    return (roll_max_ref if which == "max" else roll_min_ref)(np.asarray(x, dtype=float), n)
 
 
 def stochastic(high, low, close, n: int, d: int):

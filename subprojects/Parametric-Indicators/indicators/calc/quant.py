@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from .._numba import HAVE_NUMBA as _HAVE_NUMBA, njit as _njit, pw_mean as _pw_mean, pw_sum as _pw_sum
 from ..classic import sma as _sma
 from .osc import _shift, roll_sum_safe
 from .vol import rolling_std
@@ -76,16 +77,7 @@ def dfa_reference(close, n):
 # that the DOWNSTREAM VETO VOTE — both_veto(isfinite(alpha) & (alpha < threshold)) — is IDENTICAL across
 # the entire threshold grid [0.30, 0.70]. Without numba we fall back to the reference (slow but correct),
 # so a missing optional dependency can never change a result.
-try:                                                        # pragma: no cover - trivial import guard
-    from numba import njit as _njit
-    _HAVE_NUMBA = True
-except Exception:                                           # pragma: no cover
-    _HAVE_NUMBA = False
-
-    def _njit(*args, **kwargs):
-        def deco(f):
-            return f
-        return deco
+# (The import guard itself moved to indicators/_numba.py in issue #62 — one place to look.)
 
 
 @_njit(cache=True, fastmath=False)
@@ -309,7 +301,8 @@ def td_rei(high, low, n=5):
         return 100.0 * num / den
 
 
-def linreg_r2(close, n):
+def linreg_r2_reference(close, n):
+    """FROZEN reference for `linreg_r2` — the ORIGINAL per-bar OLS loop (issue #62)."""
     c = np.asarray(close, float)
     t = np.arange(n, dtype=float)
     tm = t.mean()
@@ -323,6 +316,43 @@ def linreg_r2(close, n):
         sst = ((y - ym) ** 2).sum()
         out[i] = 1.0 - ((y - pred) ** 2).sum() / sst if sst > 0 else 0.0
     return out
+
+
+@_njit(cache=True, nogil=True, fastmath=False)
+def _linreg_r2_core(c, n, t, tm, tss):
+    N = c.shape[0]
+    out = np.full(N, np.nan)
+    prod = np.empty(n); dsq = np.empty(n); rsq = np.empty(n)
+    for i in range(n - 1, N):
+        ym = _pw_mean(c, i - n + 1, n)
+        for k in range(n):
+            prod[k] = (t[k] - tm) * (c[i - n + 1 + k] - ym)
+        b = _pw_sum(prod, 0, n) / tss
+        a = ym - b * tm
+        for k in range(n):
+            y = c[i - n + 1 + k]
+            d = y - ym
+            dsq[k] = d * d
+            r = y - (a + b * t[k])
+            rsq[k] = r * r
+        sst = _pw_sum(dsq, 0, n)
+        out[i] = 1.0 - _pw_sum(rsq, 0, n) / sst if sst > 0 else 0.0
+    return out
+
+
+def linreg_r2(close, n):
+    """Rolling OLS coefficient of determination R² over the last n closes.
+
+    Numba-accelerated (issue #62), summing with `pw_sum` so every reduction matches numpy's pairwise
+    order **bit-for-bit**. `linreg_r2_reference` is the oracle and is used when Numba is absent.
+    """
+    c = np.asarray(close, float)
+    if not _HAVE_NUMBA or n <= 0:
+        return linreg_r2_reference(c, n)
+    t = np.arange(n, dtype=float)
+    tm = t.mean()
+    tss = ((t - tm) ** 2).sum()
+    return _linreg_r2_core(np.ascontiguousarray(c), int(n), t, tm, tss)
 
 
 def efficiency_ratio(close, n):

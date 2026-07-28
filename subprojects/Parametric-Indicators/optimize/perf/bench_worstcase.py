@@ -98,6 +98,8 @@ def main() -> int:
     ap.add_argument("--budget-s", type=float, default=2.0, help="full-frame budget per compute")
     ap.add_argument("--restage2", type=int, default=6, help="how many worst offenders to re-measure fully")
     ap.add_argument("--out", default=None)
+    ap.add_argument("--no-fail", action="store_true",
+                    help="report only; do not exit non-zero when something is over budget")
     args = ap.parse_args()
 
     base = os.environ.get("WSH_DATA_BASE", "/mnt/data/projects/trading")
@@ -147,6 +149,15 @@ def main() -> int:
     outp.parent.mkdir(parents=True, exist_ok=True)
     outp.write_text(json.dumps(out, indent=2))
     print(f"[worstcase] WROTE {outp}", flush=True)
+    if over and not args.no_fail:
+        # Exit non-zero so this can be a GATE in the END-of-round checklist rather than a report a
+        # tired reviewer skims (issue #62). --no-fail keeps it a pure measurement when that is wanted.
+        print(f"[worstcase] FAIL: {len(over)} indicator(s) over the {args.budget_s}s budget "
+              f"({sum(r['projected_full_s'] for r in over):.1f}s total). "
+              f"Accelerate them or justify raising the budget.", flush=True)
+        return 1
+    print(f"[worstcase] PASS: every indicator is within the {args.budget_s}s budget "
+          f"(worst {ranked[0]['key']} at {ranked[0]['projected_full_s']:.2f}s).", flush=True)
     return 0
 
 

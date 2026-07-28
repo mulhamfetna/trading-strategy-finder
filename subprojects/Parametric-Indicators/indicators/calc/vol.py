@@ -7,6 +7,7 @@ from __future__ import annotations
 import numpy as np
 
 from .. import classic
+from .._numba import HAVE_NUMBA as _HAVE_NUMBA, njit as _njit, pw_mean as _pw_mean, pw_sum as _pw_sum
 from ..classic import _roll_max, _roll_min
 from ..classic import atr as _atr
 from ..classic import ema as _ema
@@ -82,7 +83,8 @@ def yang_zhang(openp, high, low, close, n):
     return np.sqrt(np.maximum(vo + k * vc + (1.0 - k) * vrs, 0.0))
 
 
-def ulcer(close, n):
+def ulcer_reference(close, n):
+    """FROZEN reference for `ulcer` — the ORIGINAL per-bar window loop (issue #62)."""
     c = np.asarray(close, float)
     out = np.full(len(c), np.nan)
     for i in range(n - 1, len(c)):
@@ -91,6 +93,39 @@ def ulcer(close, n):
         dd = 100.0 * (w - peak) / peak
         out[i] = np.sqrt(np.mean(dd ** 2))
     return out
+
+
+@_njit(cache=True, nogil=True, fastmath=False)
+def _ulcer_core(c, n):
+    N = c.shape[0]
+    out = np.full(N, np.nan)
+    sq = np.empty(n)
+    for i in range(n - 1, N):
+        peak = c[i - n + 1]
+        for k in range(n):
+            v = c[i - n + 1 + k]
+            # `np.maximum.accumulate` POISONS the running peak from a NaN onward — reproduce that,
+            # rather than a bare `>` which would silently step over the NaN.
+            if np.isnan(peak) or np.isnan(v):
+                peak = np.nan
+            elif v > peak:
+                peak = v
+            dd = 100.0 * (v - peak) / peak
+            sq[k] = dd * dd
+        out[i] = np.sqrt(_pw_sum(sq, 0, n) / n)
+    return out
+
+
+def ulcer(close, n):
+    """Ulcer Index — RMS percentage drawdown from the running window peak.
+
+    Numba-accelerated (issue #62), summing with `pw_sum` so the reduction matches numpy's pairwise
+    order **bit-for-bit**. `ulcer_reference` is the oracle and is used verbatim when Numba is absent.
+    """
+    c = np.asarray(close, float)
+    if not _HAVE_NUMBA or n <= 0:
+        return ulcer_reference(c, n)
+    return _ulcer_core(np.ascontiguousarray(c), int(n))
 
 
 def vol_ratio(high, low, close, n_fast, n_slow):
@@ -155,8 +190,8 @@ def accel_bands(high, low, close, n, f):
     return _sma(h * (1.0 + f * hl), n), _sma(l * (1.0 - f * hl), n)
 
 
-def proj_bands(high, low, n):
-    """Mickey Jordan projection bands: each bar's high/low extended by its window regression slope."""
+def proj_bands_reference(high, low, n):
+    """FROZEN reference for `proj_bands` — the ORIGINAL per-bar regression loop (issue #62)."""
     h, l = np.asarray(high, float), np.asarray(low, float)
     N = len(h)
     upper = np.full(N, np.nan)
@@ -172,3 +207,52 @@ def proj_bands(high, low, n):
         upper[i] = np.max(wh + sh * fwd)
         lower[i] = np.min(wl + sl * fwd)
     return upper, lower
+
+
+@_njit(cache=True, nogil=True, fastmath=False)
+def _proj_bands_core(h, l, n, t, tm, ss):
+    N = h.shape[0]
+    upper = np.full(N, np.nan)
+    lower = np.full(N, np.nan)
+    ph = np.empty(n); pl = np.empty(n)
+    for i in range(n - 1, N):
+        mh = _pw_mean(h, i - n + 1, n)
+        ml = _pw_mean(l, i - n + 1, n)
+        for k in range(n):
+            w = t[k] - tm
+            ph[k] = w * (h[i - n + 1 + k] - mh)
+            pl[k] = w * (l[i - n + 1 + k] - ml)
+        sh = _pw_sum(ph, 0, n) / ss
+        sl = _pw_sum(pl, 0, n) / ss
+        hi = -np.inf
+        lo = np.inf
+        bad = False
+        for k in range(n):
+            fwd = n - 1 - t[k]
+            uv = h[i - n + 1 + k] + sh * fwd
+            lv = l[i - n + 1 + k] + sl * fwd
+            if np.isnan(uv) or np.isnan(lv):       # np.max/np.min propagate NaN; `>`/`<` do not
+                bad = True
+            if uv > hi:
+                hi = uv
+            if lv < lo:
+                lo = lv
+        upper[i] = np.nan if bad else hi
+        lower[i] = np.nan if bad else lo
+    return upper, lower
+
+
+def proj_bands(high, low, n):
+    """Mickey Jordan projection bands: each bar's high/low extended by its window regression slope.
+
+    Numba-accelerated (issue #62), summing with `pw_sum` so every reduction matches numpy's pairwise
+    order **bit-for-bit**, and propagating NaN through the window extremes the way `np.max`/`np.min`
+    do. `proj_bands_reference` is the oracle and is used verbatim when Numba is absent.
+    """
+    h, l = np.asarray(high, float), np.asarray(low, float)
+    if not _HAVE_NUMBA or n <= 0:
+        return proj_bands_reference(h, l, n)
+    t = np.arange(n, dtype=float)
+    tm = t.mean()
+    ss = ((t - tm) ** 2).sum()
+    return _proj_bands_core(np.ascontiguousarray(h), np.ascontiguousarray(l), int(n), t, tm, ss)
