@@ -777,10 +777,14 @@ across 280 stress configurations, at a fallback rate of 0.4%.
 *quiet* (ran, did not vote), and **exits non-zero** when anything was void. Verified: without
 `--reference` it exits 1 and names all four.
 
-⚠️ **This work also uncovered #75, a correctness bug:** `runner.indicator_source_1min` builds
-`market_context(df1)` with **no reference at any call site**, so on the production `--ind-1min` path all
-four cross-series indicators are inert regardless of `--reference` — while the optimizer still admits
-them to the search space. Deliberately not fixed in #74 (it changes results); see #75.
+✅ **#75 (the correctness bug this uncovered) is now FIXED** — see
+`docs/CLOSEOUT-2026-07-28-xseries-reference-wiring.md`. `runner.indicator_source_1min` built
+`market_context(df1)` with no reference at any call site, so on the production `--ind-1min` path all
+four cross-series indicators were inert regardless of `--reference`; worse, `confirm_mask` counted them
+among the confirmers anyway, so enabling one took the strategy from **13 entries to 0**. Activity now
+reads the vote-producing context rather than the configuration. Golden 6/6 unchanged (the no-reference
+path is untouched). Cost of running all four live: **0.28 s per trial**, uncached — which is only
+tolerable because of §10.7.
 
 ---
 
