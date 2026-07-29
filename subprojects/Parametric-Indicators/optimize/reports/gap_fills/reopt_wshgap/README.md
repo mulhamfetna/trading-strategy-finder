@@ -2,10 +2,17 @@
 
 Issue #2. These files were recovered on **2026-07-29** from the server, where they had survived only as
 **untracked** files in `~/Mulham/code/.worktrees/fundamental` and `~/Mulham/fa-m1/`. Nothing here was ever
-committed, and the Optuna studies themselves are gone (0 of 238 studies in `wsh-pg` match `%gap%`), so
-this directory is now the **only** record of that run. That is exactly the failure the
-"LOCAL = source of truth" rule exists to prevent: for a week the issue read *"Running now on the server"*
-while the only evidence lived on a box nobody was reading.
+committed. That is exactly the failure the "LOCAL = source of truth" rule exists to prevent: for a week
+the issue read *"Running now on the server"* while the only evidence lived on a box nobody was reading.
+
+> **Correction (2026-07-29).** An earlier version of this file said the Optuna studies themselves were
+> gone, citing "0 of 238 studies in `wsh-pg` match `%gap%`". **That was wrong — I queried the wrong
+> database.** The optimizer writes to Postgres only when `WSH_STORAGE_URL` is set; neither campaign sets
+> it, so studies go to **per-timeframe SQLite files** under `optimize/studies/wsh_<tf>[_<INST>].db`.
+> All **12 studies are intact** in the `fundamental` worktree with their full trial histories (5,900
+> trials each; `wshgap_4h` has 6,142). So the July run can be **re-extracted** — at full precision now
+> that `_exact` has replaced the 4-dp path — without re-running anything. It still should not be
+> *adopted*, for the reasons below, but it is not lost.
 
 ## What the run was
 

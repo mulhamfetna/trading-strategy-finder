@@ -18,10 +18,18 @@ honest, the natural question was: **if we re-tune the champions honestly, do we 
 
 An earlier note of mine said this work had vanished, because no trace of it existed in the optimizer
 database. **That was a bad conclusion.** The run had finished perfectly well — 12 studies, 8 hours 34
-minutes — but its results existed **only as loose, untracked files on the server**.
-
-The database records really were gone, so those loose files were the *only* surviving copy. They are now
+minutes — but its results existed **only as loose, untracked files on the server**. They are now
 committed to the repository at `optimize/reports/gap_fills/reopt_wshgap/`.
+
+> **And I got it wrong a second time.** I then reported that the optimizer's own database records were
+> gone too, because a search of our Postgres database found nothing. **I searched the wrong database.**
+> The optimizer only uses Postgres when specifically told to; by default it writes to ordinary files on
+> disk, one per timeframe. **All 12 studies are intact**, with every trial preserved (5,900 each).
+>
+> The practical upshot: July's run can be **re-read at full precision** without re-running it. It still
+> shouldn't be *adopted* — §3 and §5 are unaffected — but "lost" was wrong twice over, and both times I
+> concluded it from a search that came back empty rather than from checking where the data actually
+> lives. **An empty result only means "not here"; it never means "nowhere".**
 
 > This is exactly what the "the local repository is the source of truth" rule exists to prevent. For a
 > week the issue said *"Running now on the server"* while the only evidence sat on a machine nobody was
