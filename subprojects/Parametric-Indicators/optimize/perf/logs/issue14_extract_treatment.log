@@ -1,0 +1,7 @@
+[gate] study adopt14v2treat_4h: 47,100 trials, feasible front 108
+  front[0] ['apo', 'pivot_camarilla', 'dfa'] TRAIN(2025) P/L $    62,356 DD $  13,854 n= 389  |  HOLDOUT(2026) P/L $    18,827 DD $  12,679 n= 157
+  front[1] ['obv', 'structure_trend', 'order_block'] TRAIN(2025) P/L $    72,879 DD $  16,699 n= 248  |  HOLDOUT(2026) P/L $    52,438 DD $  14,214 n=  98
+  front[2] ['pvi', 'force_index', 'td_combo'] TRAIN(2025) P/L $    88,680 DD $   8,260 n= 421  |  HOLDOUT(2026) P/L $    20,295 DD $  19,272 n= 170
+  front[3] ['cci', 'structure_trend', 'order_block'] TRAIN(2025) P/L $    99,580 DD $  15,491 n= 186  |  HOLDOUT(2026) P/L $    55,066 DD $  10,048 n=  69
+  front[4] ['ppo', 'smi', 'disparity'] TRAIN(2025) P/L $    79,019 DD $   7,942 n= 355  |  HOLDOUT(2026) P/L $    18,820 DD $  22,571 n= 133
+[gate] WROTE optimize/results/adoptgate_treatment_4h.json

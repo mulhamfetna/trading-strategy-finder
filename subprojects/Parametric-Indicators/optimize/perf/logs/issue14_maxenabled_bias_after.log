@@ -1,0 +1,4 @@
+study adopt14v2treat_4h: 162 trials with a non-empty enabled set
+  trials containing ANY new-library indicator: 159 (98.1%)
+  mean registry position kept: 80.3  (unbiased expectation ~82)
+  most-kept NEW: [('pivot_floor', 10), ('pvi', 8), ('volume_ratio_asia', 7), ('anchored_vwap', 7), ('stoch_rsi', 7), ('rsi_connors', 6), ('emd', 6), ('asi', 6)]

@@ -1,0 +1,54 @@
+{
+  "indicators": [
+    "macd",
+    "vwap",
+    "keltner",
+    "obv",
+    "mfi",
+    "bollinger",
+    "structure_trend",
+    "order_block"
+  ],
+  "A_vs_baseline": {
+    "n_pairs": 81,
+    "n_disagreeing_bars": 0,
+    "agreement_pct": 100.0,
+    "trades_a": 81,
+    "trades_b": 81,
+    "total_diff": 0.0,
+    "mean_diff_per_bar": 0.0,
+    "sd_diff": 0.0,
+    "t_stat": 0.0,
+    "p_two_sided": 1.0,
+    "boot_ci95_total": [
+      0.0,
+      0.0
+    ],
+    "se_total_paired": 0.0,
+    "se_total_unpaired": 28228.0,
+    "mde_total_paired": 0.0,
+    "mde_total_unpaired": 79082.0,
+    "power_gain_x": null
+  },
+  "B_ablation_indicators_off": {
+    "n_pairs": 164,
+    "n_disagreeing_bars": 90,
+    "agreement_pct": 45.1,
+    "trades_a": 81,
+    "trades_b": 157,
+    "total_diff": 39462.71,
+    "mean_diff_per_bar": 240.63,
+    "sd_diff": 1799.5,
+    "t_stat": 1.712,
+    "p_two_sided": 0.08872,
+    "boot_ci95_total": [
+      -4548.0,
+      83514.0
+    ],
+    "se_total_paired": 23045.0,
+    "se_total_unpaired": 36352.0,
+    "mde_total_paired": 64562.0,
+    "mde_total_unpaired": 101844.0,
+    "power_gain_x": 1.58
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "indicators": [
+    "apo",
+    "pivot_camarilla",
+    "dfa"
+  ],
+  "A_vs_baseline": {
+    "n_pairs": 169,
+    "n_disagreeing_bars": 169,
+    "agreement_pct": 0.0,
+    "trades_a": 157,
+    "trades_b": 81,
+    "total_diff": -42773.62,
+    "mean_diff_per_bar": -253.1,
+    "sd_diff": 1954.48,
+    "t_stat": -1.683,
+    "p_two_sided": 0.09414,
+    "boot_ci95_total": [
+      -92499.0,
+      6432.0
+    ],
+    "se_total_paired": 25408.0,
+    "se_total_unpaired": 28650.0,
+    "mde_total_paired": 71183.0,
+    "mde_total_unpaired": 80266.0,
+    "power_gain_x": 1.13
+  },
+  "B_ablation_indicators_off": {
+    "n_pairs": 193,
+    "n_disagreeing_bars": 36,
+    "agreement_pct": 81.3,
+    "trades_a": 157,
+    "trades_b": 193,
+    "total_diff": 6555.9,
+    "mean_diff_per_bar": 33.97,
+    "sd_diff": 724.33,
+    "t_stat": 0.652,
+    "p_two_sided": 0.5155,
+    "boot_ci95_total": [
+      -12807.0,
+      27656.0
+    ],
+    "se_total_paired": 10063.0,
+    "se_total_unpaired": 30779.0,
+    "mde_total_paired": 28192.0,
+    "mde_total_unpaired": 86229.0,
+    "power_gain_x": 3.06
+  }
+}

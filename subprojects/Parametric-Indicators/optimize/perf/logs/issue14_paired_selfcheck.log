@@ -1,0 +1,9 @@
+[gate] candidate indicators ['macd', 'vwap', 'keltner', 'obv', 'mfi', 'bollinger', 'structure_trend', 'order_block']
+[gate]   candidate  HOLDOUT P/L $    61,601  n=  81
+[gate]   baseline   HOLDOUT P/L $    61,601  n=  81
+[gate]   same-but-indicators-OFF $    22,138  n= 157
+[gate] A_vs_baseline: 81 paired bars, 100.0% identical  total diff $0  95% CI [0, 0]  p=1.0000
+[gate]   SE(total) paired $0 vs unpaired $28,228  ⇒ pairing is None× more sensitive (detectable: $0 paired vs $79,082)
+[gate] B_ablation_indicators_off: 164 paired bars, 45.1% identical  total diff $39,463  95% CI [-4,548, 83,514]  p=0.0887
+[gate]   SE(total) paired $23,045 vs unpaired $36,352  ⇒ pairing is 1.58× more sensitive (detectable: $64,562 paired vs $101,844)
+[gate] WROTE optimize/results/adoptgate_paired_selfcheck_4h.json
