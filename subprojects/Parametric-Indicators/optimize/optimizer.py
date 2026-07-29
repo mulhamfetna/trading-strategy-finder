@@ -218,15 +218,31 @@ def _cap_switches(box: dict) -> dict:
     return dict(en_cap_bars=mode in ("bars", "both"), en_cap_eod=mode in ("eod", "both"))
 
 
+def searchable_indicators(only_inds: tuple = (), exclude_inds: tuple = ()) -> list:
+    """The indicator keys this run will ACTUALLY search, after --only-indicators / --exclude-indicators.
+
+    Exists because the trial budget must be computed from the real search space. `--auto-trials` used to
+    size itself from the whole REGISTRY regardless: restricting a run to the original 18 indicators still
+    budgeted 47,100 trials for a 59-dimension space — an 8x over-budget that costs ~20 hours per study
+    instead of ~45 minutes, silently. Nothing failed, it was just enormously wasteful, which is the
+    hardest kind of bug to notice."""
+    keys = list(only_inds) if only_inds else list(library.REGISTRY)
+    keys = [k for k in keys if k in library.REGISTRY and k not in set(exclude_inds)]
+    return keys
+
+
 def search_dims(split_sltp: bool, intracandle: bool = False, freeze_indicators: bool = False,
-                force_eod: bool = False) -> dict:
+                force_eod: bool = False, only_inds: tuple = (), exclude_inds: tuple = ()) -> dict:
     """Breakdown of the tunable search dimensions for the current REGISTRY/SCHEMA.
     base continuous (sl_soft, sl_hard_delta, tp, gate_pct, dd_limit)=5;
     categorical (flip, en_cap_bars, en_cap_eod)=3;
-    integer (cooldown, k, cap_1min)=3; one on/off flag per indicator; every indicator param; +6 if split_sltp;
-    +3 if intracandle. --freeze-indicators drops the indicator flags+params and k (indicator layer fixed)."""
-    en_flags = 0 if freeze_indicators else len(library.REGISTRY)
-    ind_params = 0 if freeze_indicators else sum(len(library.SCHEMA[k].get("params", [])) for k in library.REGISTRY)
+    integer (cooldown, k, cap_1min)=3; one on/off flag per SEARCHED indicator; every searched indicator's
+    params; +6 if split_sltp; +3 if intracandle. --freeze-indicators drops the indicator flags+params and k
+    (indicator layer fixed). --only-indicators/--exclude-indicators shrink the indicator dimensions, and
+    therefore the dimension-proportional trial budget, accordingly."""
+    _keys = searchable_indicators(only_inds, exclude_inds)
+    en_flags = 0 if freeze_indicators else len(_keys)
+    ind_params = 0 if freeze_indicators else sum(len(library.SCHEMA[k].get("params", [])) for k in _keys)
     split = 6 if split_sltp else 0
     # base_cat = flip + en_cap_bars + en_cap_eod. --force-eod pins en_cap_eod ON ⇒ it is no longer
     # SEARCHED, so it stops being a dimension (and the trial budget shrinks accordingly).
@@ -238,18 +254,26 @@ def search_dims(split_sltp: bool, intracandle: bool = False, freeze_indicators: 
 
 
 def recommended_trials(split_sltp: bool, per_dim: int = TRIALS_PER_DIM, intracandle: bool = False,
-                       freeze_indicators: bool = False, force_eod: bool = False) -> int:
+                       freeze_indicators: bool = False, force_eod: bool = False,
+                       only_inds: tuple = (), exclude_inds: tuple = ()) -> int:
     """Dimension-proportional trial budget: total search dimensions × per_dim."""
-    return search_dims(split_sltp, intracandle, freeze_indicators, force_eod)["total"] * int(per_dim)
+    return search_dims(split_sltp, intracandle, freeze_indicators, force_eod,
+                       only_inds, exclude_inds)["total"] * int(per_dim)
 
 
 def print_plan(tf_name: str, split_sltp: bool, per_dim: int = TRIALS_PER_DIM, n_trials: int | None = None,
                sampler: str = "nsga3", intracandle: bool = False, freeze_indicators: bool = False,
-               force_eod: bool = False):
+               force_eod: bool = False, only_inds: tuple = (), exclude_inds: tuple = ()):
     """Print the search-space size + recommended (dimension-proportional) trial budget. Used by the
     `--plan` dry-run and before every real launch so the budget is reported and can be accepted."""
-    d = search_dims(split_sltp, intracandle, freeze_indicators, force_eod)
-    rec = recommended_trials(split_sltp, per_dim, intracandle, freeze_indicators, force_eod)
+    d = search_dims(split_sltp, intracandle, freeze_indicators, force_eod, only_inds, exclude_inds)
+    rec = recommended_trials(split_sltp, per_dim, intracandle, freeze_indicators, force_eod,
+                             only_inds, exclude_inds)
+    if only_inds or exclude_inds:
+        _n = len(searchable_indicators(only_inds, exclude_inds))
+        print(f"   indicator scope: {_n} of {len(library.REGISTRY)} searchable"
+              f"{' (--only-indicators)' if only_inds else ''}"
+              f"{' (--exclude-indicators)' if exclude_inds else ''}", flush=True)
     print(f"── OPTIMIZER PLAN [{tf_name}] {'SPLIT long/short SL/TP' if split_sltp else 'shared SL/TP'} "
           f"· sampler={sampler} ──", flush=True)
     print(f"   dimensions: base {d['base_cont']}c+{d['base_cat']}cat+{d['base_int']}i = "
@@ -800,18 +824,21 @@ def main() -> int:
     if not _inst.is_valid(a.instrument):
         print(f"unknown instrument {a.instrument!r}; known {list(_inst.TOKENS)}", flush=True); return 2
     contrib_tokens = tuple(t.strip() for t in a.contributors.split(",") if t.strip())
+    # Parsed BEFORE the plan: the budget is dimension-proportional, so it must see the indicator scope.
+    # (These used to be parsed after, which is how --auto-trials came to budget 47,100 trials for a
+    # 59-dimension search — 8x over — whenever --only-indicators was used.)
+    _excl = tuple(x for x in a.exclude_indicators.split(",") if x)
+    _only = tuple(x for x in a.only_indicators.split(",") if x)
     # report the plan (search size + recommended trials) — always, so the budget is visible
     rec = print_plan(a.timeframe, a.split_sltp, a.trials_per_dim,
                      n_trials=(None if a.auto_trials else a.trials), sampler=a.sampler,
                      intracandle=(a.intracandle or a.intracandle_on), freeze_indicators=a.freeze_indicators,
-                     force_eod=a.force_eod)
+                     force_eod=a.force_eod, only_inds=_only, exclude_inds=_excl)
     if a.plan:
         print("   [--plan] dry run — not launching. Re-run without --plan (optionally --auto-trials) to start.",
               flush=True)
         return 0
     n_trials = rec if a.auto_trials else a.trials
-    _excl = tuple(x for x in a.exclude_indicators.split(",") if x)
-    _only = tuple(x for x in a.only_indicators.split(",") if x)
     if contrib_tokens:
         from optimize import contributor_search as _cs
         print(f"[{a.timeframe}] **searching cross-instrument contributors {list(contrib_tokens)} on L1 "
