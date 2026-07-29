@@ -1,6 +1,6 @@
 # Closeout — The Adopt Gate for the 143-Indicator Library (2026-07-28)
 
-**Issue:** #14 (part of #12) · **Branch:** `research/14-adopt-gate` · **Status:** *(pending verdict)*
+**Issue:** #14 (part of #12) · **Branch:** `research/14-adopt-gate` · **Status:** ✅ **CLOSED — DEFAULT-OFF**
 
 ---
 
@@ -26,7 +26,7 @@ says nothing either.
 
 ---
 
-## 2. Three defects found before a single verdict was produced
+## 2. Four defects found — three before any verdict existed, one in the verdict itself
 
 This is the part worth reading. Each was found by measuring something rather than assuming it, and each
 would have produced a **confident, meaningless** result.
@@ -250,8 +250,27 @@ result.
 
 ## 7. The through-line
 
-Every one of the three defects had the same shape: **something that looked like neutral bookkeeping was
-silently answering a different question.** Walk-forward folds that quietly included the holdout. A cap
-that quietly excluded the entire library under test. A control that would quietly have been scored with
-real data. None was visible by reading the code; each took a measurement — and the measurement was
-cheap compared to the four hours of compute it saved or the wrong conclusion it prevented.
+Every one of the four defects had the same shape: **something that looked like neutral bookkeeping was
+silently answering a different question.**
+
+* Walk-forward folds that quietly included the holdout.
+* A cap that quietly excluded the entire library under test — 0.00% of 1,500 trials.
+* A control that would quietly have been scored with real data.
+* A cache that quietly served permutation #1's votes to all 200 permutations.
+
+None was visible by reading the code. Each took a measurement, and each measurement was cheap next to
+the compute it saved or the confident wrong answer it prevented. Three of the four produced results
+that *looked fine* — a plausible p-value, a rising best-on-train, a clean null. **The tell was never
+that a number looked wrong; it was that a number looked too good.**
+
+### What to do next, concretely
+
+1. **Do not adopt anything from the new library on this evidence** — and equally, do not conclude it is
+   worthless. The gate could not resolve an effect of the size observed.
+2. **The gate needs power before it is worth re-running.** NQ 4h alone sits at 347% of the edge. The
+   cheapest real improvement is the **paired ablation** (§3), 1.58–3.06× more sensitive than comparing
+   P/L totals, combined with **pooling volatility-standardized trades across instruments**. Even all 33
+   live slots only reach 79% — so a genuinely powered gate needs a longer holdout, not just a wider one.
+3. **Re-check anything that used `--max-enabled`.** The bias was pre-existing (#12), so any earlier
+   conclusion about "searching the 143 indicators" came from a search containing only 18 of them.
+   `optimize/perf/check_max_enabled_bias.py` answers that for any study in one command.
