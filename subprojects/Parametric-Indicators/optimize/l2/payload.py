@@ -478,7 +478,13 @@ def _scaled_permissive(instrument: str) -> dict:
     p = dict(PERMISSIVE)
     for f in ("sl_soft", "sl_hard", "tp", "dd_limit"):
         if p.get(f) is not None:
-            p[f] = round(float(p[f]) * sf, 4)
+            # NOT rounded. This was the last surviving round(x, 4) on a price param, and it sat exactly
+            # where the bug does its damage: scaling a NQ-sized stop DOWN to a cheap market. A 40-point
+            # NQ stop scaled to natural gas is ~0.0071, and 4 dp leaves that two significant digits.
+            # The file-scanning guard in test_param_precision.py could not see it because the field name
+            # is a loop variable rather than a literal — so the regex matched nothing and it survived
+            # the cleanup that quarantined every other copy.
+            p[f] = float(p[f]) * sf
     return validate_layer_params(p)
 
 

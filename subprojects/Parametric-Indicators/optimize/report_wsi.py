@@ -119,22 +119,33 @@ def _cap_mode_of(pr: dict, ua: dict | None = None) -> str:
     return "bars" if int(pr.get("cap_1min", 0) or 0) > 0 else "none"    # (3) legacy
 
 
-def _sig(v, digits: int = 12):
-    """Round to SIGNIFICANT DIGITS — the only scale-free way to persist a searched price parameter.
+def _exact(v):
+    """Persist a searched price parameter EXACTLY. No rounding, at any scale.
 
-    A champion's stop is ~10 points on the Dow ($44,452) and ~0.0008 on natural gas ($3.57). round(x, N)
-    keeps N digits AFTER THE POINT, so it silently discards most of a low-priced market's stop while leaving
-    a high-priced one untouched. round-to-significant-digits keeps the same RELATIVE precision everywhere.
+    History, because this bug got 'fixed' twice and came back both times:
+      * `round(x, 1)` destroyed silver (tp 0.04 -> 0.0, a zero-width target).
+      * So it became `round(x, 4)` — which fixed silver and destroyed natural gas instead
+        (sl 0.00080919 -> 0.0008, a 1.1% shift that flipped NG 5m from +$38,079 to -$1,714).
+      * So it became round-to-12-SIGNIFICANT-digits, which is scale-free and ~10 orders of magnitude
+        safer — but its docstring claimed to "round-trip a float64 losslessly", and that was simply
+        FALSE. Measured: 12 significant digits reproduces the searched float exactly ~0.01% of the
+        time. float64 needs 17 significant digits in the worst case.
 
-    12 digits round-trips a float64 through CSV losslessly (float64 carries ~15-17), so this is exact for
-    every market rather than merely adequate for the ones we happened to test.
+    Each fix repaired the market that had just broken and left a smaller version of the same flaw. The
+    pattern only ends by removing the rounding, not by choosing a better amount of it.
+
+    There is no cost to exactness here. csv.DictWriter formats a float with str(), which in Python 3 is
+    the SHORTEST string that round-trips exactly (repr). So writing the raw float is simultaneously the
+    most precise option and the most compact honest one — measured at 10,000/10,000 exact round-trips
+    across NG-to-YM price scales, versus 1/10,000 for the 12-digit version.
+
+    This function is deliberately near-identity: it exists so the persistence path has ONE named place
+    that documents why nothing is rounded, and so a future 'let's just round it a bit' has somewhere
+    obvious to be rejected.
     """
     if v is None:
         return None
-    v = float(v)
-    if v == 0.0 or not math.isfinite(v):
-        return v
-    return round(v, -int(math.floor(math.log10(abs(v)))) + (digits - 1))
+    return float(v)
 
 
 def _row(t) -> dict:
@@ -154,8 +165,8 @@ def _row(t) -> dict:
         # it moved the champion's P/L by $39,793 and FLIPPED ITS SIGN (+$38,079 measured -> -$1,714 shipped),
         # and we spent a day blaming the optimizer's fast engine for "lying". The engine was right every time.
         # Significant digits are scale-free: 12 of them round-trip float64 losslessly at any price level.
-        sl_soft=_sig(pr["sl_soft"]), sl_hard=_sig(pr["sl_soft"] + pr["sl_hard_delta"]),
-        tp=_sig(pr["tp"]), gate_pct=_sig(pr["gate_pct"]), dd_limit=_sig(pr["dd_limit"]),
+        sl_soft=_exact(pr["sl_soft"]), sl_hard=_exact(pr["sl_soft"] + pr["sl_hard_delta"]),
+        tp=_exact(pr["tp"]), gate_pct=_exact(pr["gate_pct"]), dd_limit=_exact(pr["dd_limit"]),
         cooldown=pr["cooldown"], flip=pr["flip"], k=pr["k"],
         # Time caps. BOTH are searched, so both must round-trip or the rebuilt champion mis-exits.
         # cap_1min is only meaningful when a BAR cap is armed — zero it otherwise so a stale "how many
