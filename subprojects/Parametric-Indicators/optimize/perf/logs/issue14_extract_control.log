@@ -1,0 +1,9 @@
+[gate] PLACEBO: vote cache isolated at /tmp/adoptgate_placebo_votecache_951tgq6m (a scrambled vote must never reach the real cache)
+[gate] extracting under PLACEBO votes (seed 20260728) — this is a CONTROL study
+[gate] study adopt14v2ctrl_4h: 47,100 trials, feasible front 24
+  front[0] ['hma', 'vidya', 'mama_fama'] TRAIN(2025) P/L $    16,831 DD $  12,203 n= 182  |  HOLDOUT(2026) P/L $    14,039 DD $   8,355 n=  80
+  front[1] ['alma', 'evwma', 'force_index'] TRAIN(2025) P/L $    18,936 DD $  11,640 n= 247  |  HOLDOUT(2026) P/L $    17,999 DD $   8,950 n= 103
+  front[2] ['alma', 'tvi', 'ichimoku_chikou'] TRAIN(2025) P/L $    72,558 DD $   7,250 n= 225  |  HOLDOUT(2026) P/L $    12,691 DD $   7,515 n=  98
+  front[3] ['vidya', 'parkinson', 'ad_line'] TRAIN(2025) P/L $    24,342 DD $   8,920 n= 111  |  HOLDOUT(2026) P/L $    10,265 DD $   3,765 n=  43
+  front[4] ['mfi', 'alma', 'twiggs_mf'] TRAIN(2025) P/L $    35,817 DD $  11,245 n= 177  |  HOLDOUT(2026) P/L $     4,027 DD $  13,410 n=  77
+[gate] WROTE optimize/results/adoptgate_control_4h.json

@@ -1,0 +1,466 @@
+{
+  "study": "adopt14v2treat_4h",
+  "front": 108,
+  "selected": {
+    "label": "front[0] ['apo', 'pivot_camarilla', 'dfa']",
+    "train_2025": {
+      "pnl": 62356.4251,
+      "max_dd": 13853.6346,
+      "n_taken": 389.0,
+      "win": 43.2,
+      "pf": 1.36,
+      "exposure": 100.0
+    },
+    "holdout_2026": {
+      "pnl": 18827.3089,
+      "max_dd": 12678.6346,
+      "n_taken": 157.0,
+      "win": 35.7,
+      "pf": 1.21,
+      "exposure": 100.0
+    },
+    "trial_number": 44979,
+    "train_objective": 21418.42355881061,
+    "enabled_indicators": [
+      "apo",
+      "pivot_camarilla",
+      "dfa"
+    ],
+    "params": {
+      "sl_soft": 30.067067563128774,
+      "sl_hard": 198.92254159945736,
+      "tp": 154.5682722425659,
+      "gate_pct": 89.67575947159797,
+      "dd_limit": 375.86237214458805,
+      "cooldown": 1,
+      "flip": false,
+      "k": 1,
+      "indicators": [
+        {
+          "key": "apo",
+          "enabled": true,
+          "mode": "confirm",
+          "params": {
+            "fast": 170,
+            "slow": 324
+          }
+        },
+        {
+          "key": "pivot_camarilla",
+          "enabled": true,
+          "mode": "confirm",
+          "params": {}
+        },
+        {
+          "key": "dfa",
+          "enabled": true,
+          "mode": "veto",
+          "params": {
+            "n": 214,
+            "threshold": 0.35
+          }
+        }
+      ],
+      "cap_mode": "both",
+      "cap_1min": 181,
+      "ind_1min": true
+    },
+    "power_oos": {
+      "n": 157,
+      "mean_per_trade": 119.92,
+      "sd_per_trade": 1640.32,
+      "t_stat": 0.916,
+      "p_two_sided": 0.36107,
+      "mde_per_trade": 366.76,
+      "mde_total": 57581.0,
+      "alpha": 0.05,
+      "power": 0.8
+    }
+  },
+  "members": [
+    {
+      "label": "front[0] ['apo', 'pivot_camarilla', 'dfa']",
+      "train_2025": {
+        "pnl": 62356.4251,
+        "max_dd": 13853.6346,
+        "n_taken": 389.0,
+        "win": 43.2,
+        "pf": 1.36,
+        "exposure": 100.0
+      },
+      "holdout_2026": {
+        "pnl": 18827.3089,
+        "max_dd": 12678.6346,
+        "n_taken": 157.0,
+        "win": 35.7,
+        "pf": 1.21,
+        "exposure": 100.0
+      },
+      "trial_number": 44979,
+      "train_objective": 21418.42355881061,
+      "enabled_indicators": [
+        "apo",
+        "pivot_camarilla",
+        "dfa"
+      ],
+      "params": {
+        "sl_soft": 30.067067563128774,
+        "sl_hard": 198.92254159945736,
+        "tp": 154.5682722425659,
+        "gate_pct": 89.67575947159797,
+        "dd_limit": 375.86237214458805,
+        "cooldown": 1,
+        "flip": false,
+        "k": 1,
+        "indicators": [
+          {
+            "key": "apo",
+            "enabled": true,
+            "mode": "confirm",
+            "params": {
+              "fast": 170,
+              "slow": 324
+            }
+          },
+          {
+            "key": "pivot_camarilla",
+            "enabled": true,
+            "mode": "confirm",
+            "params": {}
+          },
+          {
+            "key": "dfa",
+            "enabled": true,
+            "mode": "veto",
+            "params": {
+              "n": 214,
+              "threshold": 0.35
+            }
+          }
+        ],
+        "cap_mode": "both",
+        "cap_1min": 181,
+        "ind_1min": true
+      },
+      "power_oos": {
+        "n": 157,
+        "mean_per_trade": 119.92,
+        "sd_per_trade": 1640.32,
+        "t_stat": 0.916,
+        "p_two_sided": 0.36107,
+        "mde_per_trade": 366.76,
+        "mde_total": 57581.0,
+        "alpha": 0.05,
+        "power": 0.8
+      }
+    },
+    {
+      "label": "front[1] ['obv', 'structure_trend', 'order_block']",
+      "train_2025": {
+        "pnl": 72879.312,
+        "max_dd": 16699.024,
+        "n_taken": 248.0,
+        "win": 58.1,
+        "pf": 1.36,
+        "exposure": 100.0
+      },
+      "holdout_2026": {
+        "pnl": 52438.144,
+        "max_dd": 14213.952,
+        "n_taken": 98.0,
+        "win": 64.3,
+        "pf": 1.69,
+        "exposure": 100.0
+      },
+      "trial_number": 0,
+      "train_objective": 20677.144000000044,
+      "enabled_indicators": [
+        "obv",
+        "structure_trend",
+        "order_block"
+      ],
+      "params": {
+        "sl_soft": 128.577,
+        "sl_hard": 151.4424,
+        "tp": 125.5612,
+        "gate_pct": 89.66,
+        "dd_limit": 4119.4948,
+        "cooldown": 1,
+        "flip": false,
+        "k": 1,
+        "indicators": [
+          {
+            "key": "obv",
+            "enabled": true,
+            "mode": "confirm",
+            "params": {
+              "slope": 120
+            }
+          },
+          {
+            "key": "structure_trend",
+            "enabled": true,
+            "mode": "both",
+            "params": {
+              "swing_l": 6
+            }
+          },
+          {
+            "key": "order_block",
+            "enabled": true,
+            "mode": "both",
+            "params": {
+              "swing_l": 12
+            }
+          }
+        ],
+        "cap_mode": "bars",
+        "cap_1min": 451,
+        "ind_1min": true
+      },
+      "power_oos": {
+        "n": 98,
+        "mean_per_trade": 535.08,
+        "sd_per_trade": 2275.73,
+        "t_stat": 2.328,
+        "p_two_sided": 0.02201,
+        "mde_per_trade": 644.04,
+        "mde_total": 63116.0,
+        "alpha": 0.05,
+        "power": 0.8
+      }
+    },
+    {
+      "label": "front[2] ['pvi', 'force_index', 'td_combo']",
+      "train_2025": {
+        "pnl": 88679.6178,
+        "max_dd": 8260.0,
+        "n_taken": 421.0,
+        "win": 46.8,
+        "pf": 1.49,
+        "exposure": 100.0
+      },
+      "holdout_2026": {
+        "pnl": 20295.0398,
+        "max_dd": 19271.8073,
+        "n_taken": 170.0,
+        "win": 41.8,
+        "pf": 1.19,
+        "exposure": 100.0
+      },
+      "trial_number": 44436,
+      "train_objective": 19110.240836384946,
+      "enabled_indicators": [
+        "pvi",
+        "force_index",
+        "td_combo"
+      ],
+      "params": {
+        "sl_soft": 34.304748736675464,
+        "sl_hard": 203.16022277300405,
+        "tp": 154.5682722425659,
+        "gate_pct": 89.67575947159797,
+        "dd_limit": 3928.0117890520714,
+        "cooldown": 1,
+        "flip": false,
+        "k": 1,
+        "indicators": [
+          {
+            "key": "pvi",
+            "enabled": true,
+            "mode": "confirm",
+            "params": {
+              "n": 299
+            }
+          },
+          {
+            "key": "force_index",
+            "enabled": true,
+            "mode": "confirm",
+            "params": {
+              "n": 3
+            }
+          },
+          {
+            "key": "td_combo",
+            "enabled": true,
+            "mode": "both",
+            "params": {}
+          }
+        ],
+        "cap_mode": "both",
+        "cap_1min": 181,
+        "ind_1min": true
+      },
+      "power_oos": {
+        "n": 170,
+        "mean_per_trade": 119.38,
+        "sd_per_trade": 1750.27,
+        "t_stat": 0.889,
+        "p_two_sided": 0.37509,
+        "mde_per_trade": 376.08,
+        "mde_total": 63934.0,
+        "alpha": 0.05,
+        "power": 0.8
+      }
+    },
+    {
+      "label": "front[3] ['cci', 'structure_trend', 'order_block']",
+      "train_2025": {
+        "pnl": 99580.0,
+        "max_dd": 15491.0,
+        "n_taken": 186.0,
+        "win": 66.1,
+        "pf": 1.49,
+        "exposure": 100.0
+      },
+      "holdout_2026": {
+        "pnl": 55066.0,
+        "max_dd": 10048.0,
+        "n_taken": 69.0,
+        "win": 72.5,
+        "pf": 1.85,
+        "exposure": 100.0
+      },
+      "trial_number": 1,
+      "train_objective": 17595.000000000582,
+      "enabled_indicators": [
+        "cci",
+        "structure_trend",
+        "order_block"
+      ],
+      "params": {
+        "sl_soft": 149.8,
+        "sl_hard": 167.1,
+        "tp": 120.2,
+        "gate_pct": 86.9,
+        "dd_limit": 4747.0,
+        "cooldown": 0,
+        "flip": false,
+        "k": 1,
+        "indicators": [
+          {
+            "key": "cci",
+            "enabled": true,
+            "mode": "both",
+            "params": {
+              "n": 138,
+              "threshold": 35
+            }
+          },
+          {
+            "key": "structure_trend",
+            "enabled": true,
+            "mode": "both",
+            "params": {
+              "swing_l": 6
+            }
+          },
+          {
+            "key": "order_block",
+            "enabled": true,
+            "mode": "both",
+            "params": {
+              "swing_l": 10
+            }
+          }
+        ],
+        "cap_mode": "none",
+        "cap_1min": 0,
+        "ind_1min": true
+      },
+      "power_oos": {
+        "n": 69,
+        "mean_per_trade": 798.06,
+        "sd_per_trade": 2649.22,
+        "t_stat": 2.502,
+        "p_two_sided": 0.01475,
+        "mde_per_trade": 893.51,
+        "mde_total": 61652.0,
+        "alpha": 0.05,
+        "power": 0.8
+      }
+    },
+    {
+      "label": "front[4] ['ppo', 'smi', 'disparity']",
+      "train_2025": {
+        "pnl": 79019.156,
+        "max_dd": 7942.2691,
+        "n_taken": 355.0,
+        "win": 45.6,
+        "pf": 1.52,
+        "exposure": 100.0
+      },
+      "holdout_2026": {
+        "pnl": 18819.578,
+        "max_dd": 22570.9037,
+        "n_taken": 133.0,
+        "win": 41.4,
+        "pf": 1.23,
+        "exposure": 100.0
+      },
+      "trial_number": 44547,
+      "train_objective": 16539.789003661936,
+      "enabled_indicators": [
+        "ppo",
+        "smi",
+        "disparity"
+      ],
+      "params": {
+        "sl_soft": 34.304748736675464,
+        "sl_hard": 203.16022277300405,
+        "tp": 154.5682722425659,
+        "gate_pct": 89.67575947159797,
+        "dd_limit": 514.5427389564633,
+        "cooldown": 1,
+        "flip": false,
+        "k": 1,
+        "indicators": [
+          {
+            "key": "ppo",
+            "enabled": true,
+            "mode": "confirm",
+            "params": {
+              "fast": 2,
+              "slow": 161,
+              "signal": 12
+            }
+          },
+          {
+            "key": "smi",
+            "enabled": true,
+            "mode": "both",
+            "params": {
+              "n": 21,
+              "smooth": 42,
+              "lower": -92,
+              "upper": 61
+            }
+          },
+          {
+            "key": "disparity",
+            "enabled": true,
+            "mode": "confirm",
+            "params": {
+              "n": 59
+            }
+          }
+        ],
+        "cap_mode": "both",
+        "cap_1min": 181,
+        "ind_1min": true
+      },
+      "power_oos": {
+        "n": 133,
+        "mean_per_trade": 141.5,
+        "sd_per_trade": 1763.96,
+        "t_stat": 0.925,
+        "p_two_sided": 0.3566,
+        "mde_per_trade": 428.52,
+        "mde_total": 56993.0,
+        "alpha": 0.05,
+        "power": 0.8
+      }
+    }
+  ]
+}

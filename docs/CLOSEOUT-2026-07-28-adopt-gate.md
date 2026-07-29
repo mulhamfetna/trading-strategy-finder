@@ -152,9 +152,64 @@ test, not about the indicators.
 
 ---
 
-## 5. Verdict
+## 5. Verdict — **DEFAULT-OFF**
 
-*(filled when the corrected searches complete)*
+47,100 trials of treatment and 47,100 of dumb control, both on the 2025 training window only, both
+warm-started, `--max-enabled 3`, scored on the never-seen 2026 holdout.
+
+| | holdout P/L | trades | indicators |
+|---|---:|---:|---|
+| **baseline** (deployed champion) | **$61,601** | 81 | the 8 original |
+| **treatment** (best-on-train of 47,100) | **$18,827** | 157 | `apo`, `pivot_camarilla`, `dfa` |
+| **dumb control** (placebo votes) | $14,039 | — | `hma`, `vidya`, `mama_fama` |
+
+| # | criterion | result |
+|---|---|---|
+| 1 | beats baseline? | **NO** — Δ **−$42,774** |
+| 2 | beats the dumb control? | YES — Δ +$4,788 |
+| 3 | edge vanishes when its own votes are scrambled? | **NO** — permutation p = **0.124** (null mean $6,655, n=200) |
+| 4 | paired 95% CI excludes zero? | **NO** — Δ −$42,774, CI **[−$92,499, +$6,432]**, p = 0.094 |
+
+**⇒ DEFAULT-OFF. Nothing from the new library is adopted.**
+
+### Read the rejection correctly
+
+The verdict classifies itself as **CANNOT TELL**, not **NO EFFECT**: |−$42,774| < the minimum
+detectable $71,183. Two different statements follow, and conflating them would be the mistake:
+
+* **The decision is solid.** A candidate that lost by $42,774, cannot be shown to beat a placebo by
+  more than $4,788, and whose edge does not survive scrambling its own votes, does not get adopted.
+* **The scientific claim is not.** This design could not have detected a *real* improvement of the
+  size observed, so the result is **not evidence that the 143 indicators are useless.** It is evidence
+  that *this test cannot answer the question.*
+
+### The pattern in the front — descriptive, and it should not be over-read
+
+All five feasible front members, scored on the holdout:
+
+| indicators | train (2025) | **holdout (2026)** | composition |
+|---|---:|---:|---|
+| `cci`, `structure_trend`, `order_block` | $99,580 | **$55,066** | all ORIGINAL |
+| `obv`, `structure_trend`, `order_block` | $72,879 | **$52,438** | all ORIGINAL |
+| `pvi`, `force_index`, `td_combo` | $88,680 | $20,295 | all NEW |
+| `apo`, `pivot_camarilla`, `dfa` ← selected | $62,356 | $18,827 | all NEW |
+| `ppo`, `smi`, `disparity` | $79,019 | $18,820 | all NEW |
+
+Front members built from the **original** indicators hold out at ~$52–55k; those built from the **new**
+library hold out at ~$19–20k, despite comparable or better training scores. That is a clean
+train/holdout divergence in exactly the direction the multiple-comparisons trap predicts.
+
+**Three caveats, all load-bearing:**
+1. **n = 5.** This is a suggestive pattern, not a measurement.
+2. Reading the best-*holdout* member would be **selecting on the test set** — the very trap the gate
+   exists to prevent. $55,066 is a post-hoc observation, not "the treatment result".
+3. **Even that best holdout member still loses to the baseline** ($55,066 vs $61,601).
+
+### Why `selected` is not the highest train P/L in that table
+
+The gate ranks the front by the optimizer's own objective — **median fold P/L** (walk-forward) — not by
+the full-2025-window backtest shown in the column. They rank differently. Ranking by the optimizer's
+objective is the defensible choice: it is the quantity the search actually maximised.
 
 ---
 
@@ -167,6 +222,29 @@ test, not about the indicators.
 | `optimize/test_max_enabled_unbiased.py` | pins the anti-bias repair; verified to fail on the old one |
 | `optimize/perf/check_max_enabled_bias.py` | reads a LIVE study and reports what the cap actually kept — run it before trusting any `--max-enabled` verdict |
 | `optimize/perf/finish_adopt_gate.sh` | the closing pipeline as a real file, not a string through three layers of shell quoting |
+
+---
+
+## 6a. A fourth defect — caught because the number was too clean
+
+The first verdict reported criterion 3 as `p = 1.0000, null mean $18,827` — the null mean *exactly*
+equalling the observed value. Checking the distribution: **sd = $0.00.** All 200 permutations returned
+the identical number. That is not a null distribution; it is a point mass wearing a p-value.
+
+The two candidate causes were distinguished rather than guessed:
+
+* *are the winner's indicators simply inert?* No — ON $18,827 / 157 trades vs OFF $12,271 / 193 trades.
+* *is the harness broken?* **Yes.** `vote_cache`'s key is `(slice, indicator, mode, params)` — it knows
+  nothing about the scramble seed. Permutation #1 wrote its scrambled votes to disk and permutations
+  #2–200 read them straight back.
+
+Redirecting the cache (which the code already did) is **not** enough — it has to be bypassed. Fixed,
+plus a guard that now refuses to emit a p-value from a zero-spread null. The corrected run gives a real
+distribution: **mean $6,655, sd $7,740, p = 0.124**.
+
+The verdict's *direction* did not change — criteria 1 and 4 already failed decisively — but the reason
+recorded for criterion 3 was wrong, and in a research record a wrong reason is worth as much as a wrong
+result.
 
 ---
 

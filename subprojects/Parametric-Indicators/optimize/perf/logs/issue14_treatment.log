@@ -1,0 +1,45 @@
+[gate] TREATMENT search: tf=4h trials=47100 max_enabled=3 train_window=2025 prefix=adopt14v2treat
+[4h] loading inputs (NQ, pv=20) ...
+[4h] no reference ⇒ cross-series indicators excluded from search: ['rolling_corr', 'rolling_beta', 'cointegration', 'pca_factor']
+[4h] TRAIN WINDOW = 2025 only: 1,534 decision bars / 352,564 1-minute bars. 2026 is HELD OUT and never seen by this search.
+[4h] 1534 decision bars; cooldown cap 2; bounds sl_soft[25, 153] sl_hard[34, 204] tp[32, 236]; indicators on 1-MINUTE frame
+/home/dev/Mulham/14-adopt-gate/subprojects/Parametric-Indicators/optimize/optimizer.py:288: ExperimentalWarning: NSGAIIISampler is experimental (supported from v3.2.0). The interface can change in the future.
+  return optuna.samplers.NSGAIIISampler(seed=seed, constraints_func=constraints_func)
+[4h] sampler = nsga3 → NSGAIIISampler  objective=<function run.<locals>.objective at 0x7429a42380e0>  dd_pnl_cap=0.25
+[4h] warm-started 3 known-champion seed trial(s) — the front is guaranteed ≥ their score
+[gate] treatment 2,000/47,100 trials (135/min, ETA 334 min) best-on-train $20,677
+[gate] treatment 4,000/47,100 trials (156/min, ETA 275 min) best-on-train $20,677
+[gate] treatment 6,000/47,100 trials (168/min, ETA 244 min) best-on-train $20,677
+[gate] treatment 8,000/47,100 trials (175/min, ETA 224 min) best-on-train $20,677
+[gate] treatment 10,000/47,100 trials (179/min, ETA 207 min) best-on-train $20,677
+[gate] treatment 12,000/47,100 trials (182/min, ETA 193 min) best-on-train $20,677
+[gate] treatment 14,000/47,100 trials (183/min, ETA 181 min) best-on-train $20,677
+[gate] treatment 16,000/47,100 trials (185/min, ETA 168 min) best-on-train $20,677
+[gate] treatment 18,000/47,100 trials (185/min, ETA 157 min) best-on-train $20,677
+[gate] treatment 20,000/47,100 trials (186/min, ETA 146 min) best-on-train $20,677
+[gate] treatment 22,000/47,100 trials (187/min, ETA 134 min) best-on-train $20,677
+[gate] treatment 24,000/47,100 trials (187/min, ETA 124 min) best-on-train $20,677
+[gate] treatment 26,000/47,100 trials (187/min, ETA 113 min) best-on-train $20,677
+[gate] treatment 28,000/47,100 trials (186/min, ETA 102 min) best-on-train $20,677
+[gate] treatment 30,000/47,100 trials (186/min, ETA 92 min) best-on-train $20,677
+[gate] treatment 32,000/47,100 trials (185/min, ETA 82 min) best-on-train $20,677
+[gate] treatment 34,000/47,100 trials (185/min, ETA 71 min) best-on-train $20,677
+[gate] treatment 36,000/47,100 trials (184/min, ETA 60 min) best-on-train $20,677
+[gate] treatment 38,000/47,100 trials (183/min, ETA 50 min) best-on-train $20,677
+[gate] treatment 40,000/47,100 trials (182/min, ETA 39 min) best-on-train $20,677
+[gate] treatment 42,000/47,100 trials (181/min, ETA 28 min) best-on-train $20,677
+[gate] treatment 44,000/47,100 trials (180/min, ETA 17 min) best-on-train $20,677
+[gate] treatment 46,000/47,100 trials (179/min, ETA 6 min) best-on-train $21,418
+[4h] 47100 trials in 15840s; feasible Pareto front 108/108 (DD≤25%·P&L):
+   P/L(med) $ 21,418  maxDD $12,435  win 43.9%  pause  8.7d  | full P/L $ 62,356 DD $13,854 (22%) | slS 30 slH 199 tp 155 gate 90 dd 376 cd 1 flip False K1 +74ind
+   P/L(med) $ 20,677  maxDD $ 8,263  win 61.1%  pause  9.7d  | full P/L $ 72,879 DD $16,699 (23%) | slS 129 slH 151 tp 126 gate 90 dd 4119 cd 1 flip False K1 +9ind
+   P/L(med) $ 19,110  maxDD $ 7,745  win 47.0%  pause  8.7d  | full P/L $ 88,680 DD $ 8,260 (9%) | slS 34 slH 203 tp 155 gate 90 dd 3928 cd 1 flip False K1 +84ind
+   P/L(med) $ 17,595  maxDD $12,149  win 65.6%  pause 11.5d  | full P/L $ 99,580 DD $15,491 (16%) | slS 150 slH 167 tp 120 gate 87 dd 4747 cd 0 flip False K1 +3ind
+   P/L(med) $ 16,540  maxDD $ 6,810  win 47.4%  pause 10.8d  | full P/L $ 79,019 DD $ 7,942 (10%) | slS 34 slH 203 tp 155 gate 90 dd 515 cd 1 flip False K1 +82ind
+   P/L(med) $ 16,476  maxDD $ 7,515  win 49.0%  pause  9.2d  | full P/L $ 69,617 DD $ 7,860 (11%) | slS 34 slH 203 tp 198 gate 90 dd 515 cd 1 flip False K1 +86ind
+   P/L(med) $ 16,467  maxDD $ 6,810  win 48.2%  pause 10.8d  | full P/L $ 82,254 DD $10,667 (13%) | slS 34 slH 203 tp 155 gate 90 dd 3928 cd 1 flip False K1 +84ind
+   P/L(med) $ 16,396  maxDD $ 5,975  win 50.0%  pause 12.0d  | full P/L $ 68,911 DD $ 9,272 (13%) | slS 34 slH 203 tp 155 gate 90 dd 376 cd 1 flip False K1 +77ind
+   P/L(med) $ 15,746  maxDD $ 6,995  win 51.6%  pause  9.3d  | full P/L $ 53,079 DD $10,750 (20%) | slS 34 slH 203 tp 198 gate 90 dd 3928 cd 1 flip False K1 +83ind
+   P/L(med) $ 15,642  maxDD $ 5,600  win 45.5%  pause 12.0d  | full P/L $ 68,239 DD $13,018 (19%) | slS 30 slH 77 tp 155 gate 90 dd 376 cd 1 flip False K1 +84ind
+   P/L(med) $ 15,596  maxDD $ 5,945  win 49.6%  pause 10.7d  | full P/L $ 81,391 DD $ 5,945 (7%) | slS 34 slH 203 tp 198 gate 90 dd 515 cd 1 flip False K1 +83ind
+   P/L(med) $ 15,482  maxDD $ 6,995  win 52.1%  pause  9.3d  | full P/L $ 53,582 DD $11,399 (21%) | slS 34 slH 81 tp 198 gate 90 dd 3928 cd 1 flip False K1 +80ind

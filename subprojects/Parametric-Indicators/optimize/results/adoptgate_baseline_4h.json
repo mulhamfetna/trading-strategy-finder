@@ -1,0 +1,41 @@
+{
+  "label": "baseline champion",
+  "train_2025": {
+    "pnl": 90054.4764,
+    "max_dd": 11697.624,
+    "n_taken": 196.0,
+    "win": 60.2,
+    "pf": 1.65,
+    "exposure": 100.0
+  },
+  "holdout_2026": {
+    "pnl": 61600.927,
+    "max_dd": 15560.177,
+    "n_taken": 81.0,
+    "win": 69.1,
+    "pf": 2.14,
+    "exposure": 100.0
+  },
+  "enabled_indicators": [
+    "macd",
+    "vwap",
+    "keltner",
+    "obv",
+    "mfi",
+    "bollinger",
+    "structure_trend",
+    "order_block"
+  ],
+  "k": 1,
+  "power_oos": {
+    "n": 81,
+    "mean_per_trade": 760.51,
+    "sd_per_trade": 2217.77,
+    "t_stat": 3.086,
+    "p_two_sided": 0.00278,
+    "mde_per_trade": 690.36,
+    "mde_total": 55920.0,
+    "alpha": 0.05,
+    "power": 0.8
+  }
+}

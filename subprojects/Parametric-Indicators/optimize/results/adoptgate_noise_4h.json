@@ -1,0 +1,15 @@
+{
+  "indicators": [
+    "apo",
+    "pivot_camarilla",
+    "dfa"
+  ],
+  "real_holdout_pnl": 18827.31,
+  "null_n": 200,
+  "null_mean": 6654.63,
+  "null_sd": 10449.23,
+  "null_p95": 23369.79,
+  "null_max": 30868.21,
+  "p_value": 0.12438,
+  "verdict": "the edge SURVIVES scrambling \u21d2 it does not come from the indicators"
+}

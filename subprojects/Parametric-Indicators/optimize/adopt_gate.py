@@ -180,10 +180,22 @@ def cmd_search(args, log):
 
 
 def _score_scrambled(tf, instrument, params, seed):
-    """Score `params` on the 2026 holdout with every indicator vote circularly shifted by `seed`."""
+    """Score `params` on the 2026 holdout with every indicator vote circularly shifted by `seed`.
+
+    ⚠️ The disk vote-cache MUST be bypassed here, not merely redirected. Its key is
+    (slice, use1, indicator, mode, params) — it knows nothing about the scramble seed. Redirecting it
+    to a scratch directory (which the first version did) means permutation #1 writes its scrambled
+    votes and permutations #2..N read them straight back: every draw returns the identical number.
+    That is exactly what happened — a 200-permutation null with **sd = $0.00** and p = 1.0000, which
+    reads like a decisive result and is in fact no distribution at all.
+    """
     from indicators import runner
+    from optimize import vote_cache
     import numpy as _np
     orig = runner._ind_vote
+    orig_get, orig_put = vote_cache.get, vote_cache.put
+    vote_cache.get = lambda dkey: None          # force a genuine recompute for every permutation
+    vote_cache.put = lambda dkey, arr: None
     try:
         def scrambled(ind, ctx, bdir, src=None):
             v = _np.asarray(orig(ind, ctx, bdir, src))
@@ -198,6 +210,7 @@ def _score_scrambled(tf, instrument, params, seed):
         return float(m["pnl"]), int(m["n_taken"])
     finally:
         runner._ind_vote = orig
+        vote_cache.get, vote_cache.put = orig_get, orig_put
         core._clear_caches()
 
 
@@ -238,6 +251,16 @@ def cmd_noise(args, log):
         if (i + 1) % max(1, args.perms // 10) == 0:
             log(f"[gate] noise {i+1}/{args.perms} … null mean ${np.mean(null):,.0f}")
     null = np.asarray(null, float)
+    # A null with no spread is not a null. If every permutation returns the same number, the scramble
+    # is not reaching the engine — say so instead of reporting a confident p-value off a point mass.
+    if null.size < 2 or float(null.std(ddof=1)) == 0.0:
+        log(f"[gate] !! DEGENERATE NULL: all {null.size} permutations returned "
+            f"${null[0]:,.2f} (sd = 0). The scramble is not affecting the backtest — this p-value "
+            f"would be meaningless. Check that the vote cache is bypassed.")
+        return {"indicators": keys, "real_holdout_pnl": round(real_pnl, 2), "null_n": int(null.size),
+                "null_sd": 0.0, "p_value": None, "degenerate": True,
+                "verdict": "INVALID — the permutation null has zero spread; the scramble never reached "
+                           "the engine, so this says nothing either way"}
     ge = int((null >= real_pnl).sum())
     p = (ge + 1) / (len(null) + 1)               # add-one: an empirical p can never be exactly 0
     log(f"[gate] NULL n={len(null)}  mean ${null.mean():,.0f}  sd ${null.std(ddof=1):,.0f}  "
