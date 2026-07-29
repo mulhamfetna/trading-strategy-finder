@@ -26,6 +26,7 @@ if str(_PARENT) not in sys.path:
 
 import optuna  # noqa: E402
 from indicators import library  # noqa: E402
+from optimize import storage  # noqa: E402  — the ONE module that knows Optuna's private table names
 
 # Stable, full list of every indicator's internal param column: "<key>_<param>" across all
 # registered indicators (rectangular — present for every row, filled only when that indicator is
@@ -46,18 +47,11 @@ _SUF = "" if _INSTRUMENT == "NQ" else f"_{_INSTRUMENT}"
 
 
 def _study_in(db_path: Path, study_name: str) -> bool:
-    """True iff an Optuna study named `study_name` already lives in the SQLite file `db_path`."""
-    if not db_path.exists():
-        return False
-    try:
-        con = sqlite3.connect(db_path)
-        try:
-            rows = con.execute("SELECT study_name FROM studies").fetchall()
-        finally:
-            con.close()
-        return any(r[0] == study_name for r in rows)
-    except Exception:
-        return False
+    """True iff an Optuna study named `study_name` already lives in the SQLite file `db_path`.
+
+    Delegates to storage.study_exists so Optuna's PRIVATE table names live in exactly one module —
+    this was one of six places that open-coded `SELECT ... FROM studies`."""
+    return storage.study_exists(db_path, study_name)
 
 
 def _db_for(tf: str, study_name: str) -> Path:

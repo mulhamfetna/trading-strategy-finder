@@ -111,6 +111,64 @@ def engine_kwargs(url: str) -> dict:
 # An empty result from one backend means "not here". It never means "nowhere".
 # ────────────────────────────────────────────────────────────────────────────────────────────────────
 
+# ── Optuna's INTERNAL tables, queried in exactly one place ──────────────────────────────────────────
+# These helpers exist because `studies` and `trials` are Optuna's PRIVATE schema, and we read them
+# directly rather than through Optuna's public API for a measured reason: get_all_study_summaries()
+# hangs on this project once there are ~100+ studies. Bypassing it is correct — but it was previously
+# open-coded in six modules, so an Optuna schema change would have broken six places silently, and
+# nobody could see that we depended on a private schema at all. One definition, one place to fix.
+
+def study_exists(db_path, study_name: str) -> bool:
+    """True iff a study of this name lives in this SQLite file. Missing/corrupt file ⇒ False."""
+    import sqlite3
+    from pathlib import Path as _P
+    if not _P(db_path).exists():
+        return False
+    try:
+        con = sqlite3.connect(db_path)
+        try:
+            return con.execute("select 1 from studies where study_name = ?", (study_name,)).fetchone() is not None
+        finally:
+            con.close()
+    except Exception:
+        return False
+
+
+def list_study_names(db_path) -> list[str]:
+    """Every study name in this SQLite file (empty on a missing/unreadable file)."""
+    import sqlite3
+    from pathlib import Path as _P
+    if not _P(db_path).exists():
+        return []
+    try:
+        con = sqlite3.connect(db_path)
+        try:
+            return [r[0] for r in con.execute("select study_name from studies")]
+        finally:
+            con.close()
+    except Exception:
+        return []
+
+
+def count_trials(db_path, study_name: str) -> int:
+    """Number of trials recorded for a study in this SQLite file (0 if absent)."""
+    import sqlite3
+    from pathlib import Path as _P
+    if not _P(db_path).exists():
+        return 0
+    try:
+        con = sqlite3.connect(db_path)
+        try:
+            row = con.execute("select study_id from studies where study_name = ?", (study_name,)).fetchone()
+            if not row:
+                return 0
+            return int(con.execute("select count(*) from trials where study_id = ?", (row[0],)).fetchone()[0])
+        finally:
+            con.close()
+    except Exception:
+        return 0
+
+
 def describe_backend(sqlite_db_path=None) -> str:
     """One-line, human-readable description of the storage actually in use. Print this at study start."""
     jd = journal_dir()

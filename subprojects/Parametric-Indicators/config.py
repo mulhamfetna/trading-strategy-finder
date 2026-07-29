@@ -39,5 +39,17 @@ WINNER = dict(
 )
 DD_CAP = 5000.0            # hard max-drawdown goal (manual kill-switch level)
 
+# NOTIONAL BACKTEST ACCOUNT (2026-07-29). Purely a REPORTING baseline: the engine trades exactly one
+# contract and never consults an account balance, so this changes no decision, no trade and no P&L.
+# It exists so a raw dollar figure can be read as a proportion of capital — e.g. the worst single CL
+# trade (-$7,710) is 7.7% of a $100k account rather than a number that looks catastrophic in isolation.
+#
+# ⚠️ It is deliberately NOT added to the equity curve. `equity` is a column in the golden trade ledger
+# (perf/golden/<tf>_trades.csv), so rebasing that series would change all six golden hashes and force a
+# full re-capture. Percentages are derived at report time instead; the ledger stays byte-identical.
+#
+# In a real-money stage this is where a genuine account size and any per-trade cap would live.
+ACCOUNT_SIZE = float(os.environ.get("WSH_ACCOUNT_SIZE", 100_000.0))
+
 # Robust alternative (more cushion): sl 35/40, tp 40 -> +$21,100 @ $3,130 maxDD, 58% win.
 ROBUST_ALT = dict(WINNER, sl_soft=35.0, sl_hard=40.0, tp=40.0)

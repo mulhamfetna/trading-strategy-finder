@@ -19,6 +19,7 @@ if str(_PARENT) not in sys.path:
     sys.path.insert(0, str(_PARENT))
 
 import optuna  # noqa: E402
+from optimize import storage  # noqa: E402  — the ONE module that knows Optuna's private table names
 
 _STUDIES = _HERE / "studies"
 
@@ -31,7 +32,7 @@ def _src_sqlite_url(tf: str, study_name: str, studies_dir: Path) -> str:
     def _has(db: Path) -> bool:
         try:
             return db.exists() and study_name in [
-                r[0] for r in sqlite3.connect(str(db)).execute("SELECT study_name FROM studies")]
+                r for r in storage.list_study_names(db)]   # storage owns Optuna's private table names
         except Exception:
             return False
 

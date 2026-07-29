@@ -567,6 +567,17 @@ def build_payload(df4, df1, box, vf, n2025, params=None, instrument: str = "NQ")
                    payoff=round(float(wins.mean() / abs(losses.mean())), 2) if len(wins) and len(losses) else None,
                    avg_win=round(float(wins.mean()), 0) if len(wins) else 0, avg_loss=round(float(losses.mean()), 0) if len(losses) else 0,
                    max_dd=round(float(uw.max()), 0) if len(eqc) else 0.0, n_locks=sum(1 for e in events if e["type"] == "LOCK"),
+                   # Notional-account view (config.ACCOUNT_SIZE, default $100k). REPORTING ONLY — the
+                   # engine trades one contract and never reads a balance, so nothing here feeds a
+                   # decision. It turns raw dollars into "what fraction of capital was that?", which is
+                   # the question a human actually asks. worst_trade_pct is the single-trade tail that
+                   # matters in a 1-contract system (the biggest loss any ONE fill can inflict).
+                   account_size=float(config.ACCOUNT_SIZE),
+                   max_dd_pct=round(100 * float(uw.max()) / config.ACCOUNT_SIZE, 2) if len(eqc) else 0.0,
+                   pnl_pct=round(100 * float(pnl.sum()) / config.ACCOUNT_SIZE, 2) if len(pnl) else 0.0,
+                   worst_trade=round(float(pnl.min()), 0) if len(pnl) else 0.0,
+                   worst_trade_pct=round(100 * float(pnl.min()) / config.ACCOUNT_SIZE, 2) if len(pnl) else 0.0,
+                   best_trade=round(float(pnl.max()), 0) if len(pnl) else 0.0,
                    noentry_streak_n=_best_n, noentry_streak_days=noentry_days, noentry_streak_start=noentry_start,
                    box_silence=_pm["box_silence"], position_hold=_pm["position_hold"],
                    gate_noentry=_pm["gate_noentry"], indicator_noentry=_pm["indicator_noentry"],

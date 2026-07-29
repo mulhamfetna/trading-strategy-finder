@@ -33,14 +33,9 @@ def _quiet_url(tf: str, study_name: str) -> str:
     per = _STUDIES / f"wsh_{tf}{_SUF}.db"
     shared = _STUDIES / "wsh.db"
 
-    def _has(db: Path) -> bool:
-        try:
-            return db.exists() and study_name in [
-                r[0] for r in sqlite3.connect(str(db)).execute("SELECT study_name FROM studies")]
-        except Exception:
-            return False
-
-    db = shared if (not per.exists() and _has(shared)) else per
+    # storage.study_exists owns Optuna's private table names (see storage.py) — this used to open-code
+    # `SELECT study_name FROM studies`, one of six copies.
+    db = shared if (not per.exists() and study_storage.study_exists(shared, study_name)) else per
     return study_storage.storage_url(db)
 
 

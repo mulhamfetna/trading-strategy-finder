@@ -118,18 +118,11 @@ _DB = _STUDIES / "wsh.db"          # legacy SHARED store (one file, all timefram
 
 
 def _study_in(db_path: Path, study_name: str) -> bool:
-    """True iff an Optuna study named `study_name` already lives in the SQLite file `db_path`."""
-    if not db_path.exists():
-        return False
-    try:
-        con = sqlite3.connect(db_path)
-        try:
-            rows = con.execute("SELECT study_name FROM studies").fetchall()
-        finally:
-            con.close()
-        return any(r[0] == study_name for r in rows)
-    except Exception:
-        return False
+    """True iff an Optuna study named `study_name` already lives in the SQLite file `db_path`.
+
+    Delegates to storage.study_exists so Optuna's PRIVATE table names live in exactly one module — this
+    was one of six places that open-coded `SELECT ... FROM studies`."""
+    return study_storage.study_exists(db_path, study_name)
 
 
 def _study_suffix(instrument: str) -> str:
