@@ -189,8 +189,8 @@ def run_l1(tf: str = "4h", params: dict | None = None, instrument: str = "NQ") -
         cap_mode=_cap_mode, eod_target=_eod_t, session_last=_eod_sl,
         **{k: params.get(k) for k in ("long_sl_soft", "long_sl_hard", "long_tp",
                                       "short_sl_soft", "short_sl_hard", "short_tp")},
-        m_open=df1["Open"].to_numpy(float),                  # gap-aware fills (GAP-01)
-        gap_fills=bool(params.get("gap_fills", True)))
+        m_open=df1["Open"].to_numpy(float),                  # gap-aware fills (GAP-01) — MANDATORY
+        gap_fills=True)
     pv = float(instruments.point_value(instrument))
     taken, _skipped, _locks = apply_breaker(cand, pv, params["dd_limit"], params["cooldown"])
 

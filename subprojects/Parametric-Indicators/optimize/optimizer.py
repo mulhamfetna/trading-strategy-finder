@@ -668,6 +668,11 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
     # a worker WAIT for the lock instead of erroring out.
     study_name = f"{study_prefix}_{tf_name}{_study_suffix(instrument)}"
     db_path = _db_for(tf_name, study_name, instrument)
+    # WHERE THIS RUN'S TRIALS WILL LIVE — printed unconditionally. Three backends are selectable by two
+    # usually-unset env vars, and the study files are named the same in each. Leaving that implicit is
+    # how a finished 12-study campaign got reported as LOST twice in one session: Postgres was searched,
+    # the studies were in SQLite. `optimize/storage.py: find_study()` searches all three.
+    print(f"[{tf_name}] trial store → {study_storage.describe_backend(db_path)}", flush=True)
     # Tier 1: one source of truth for the store URL. WSH_STORAGE_URL (e.g. postgresql://…) overrides the
     # per-TF sqlite path; unset ⇒ the per-TF sqlite file, byte-identical to before. WAL/busy_timeout file
     # hardening applies only to a sqlite file; a served RDB (Postgres) uses MVCC + a connection pool.

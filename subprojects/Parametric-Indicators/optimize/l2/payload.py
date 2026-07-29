@@ -173,12 +173,38 @@ def _validate_window(w):
     return w
 
 
+def _reject_gap_fills(p: dict) -> None:
+    """Gap-aware fills are MANDATORY. Asking to turn them off is an error, not an option.
+
+    When a one-minute bar opens BEYOND a hard stop or target, that stop price never traded. The old
+    engine filled you there anyway — a price that did not exist. Measured across all 54 champions that
+    flattered our risk by ~10% overall and 148% on natural gas (GAP-02), which is how a whole sizing
+    workstream came to be built on drawdowns that were never real.
+
+    So there is no `gap_fills=False` anywhere a user or a study can reach: not in the backtester, not in
+    the optimizer, not in either dashboard. The flag is not defaulted-true-but-overridable; it is gone.
+
+    We RAISE rather than ignore. Silently serving honest fills to a caller who explicitly asked for the
+    optimistic model would mean their results are not what they think they are — the exact failure this
+    change exists to end.
+    """
+    if "gap_fills" in p and not bool(p["gap_fills"]):
+        raise L2ParamError(
+            "gap_fills=False is no longer supported anywhere in the system. Gap-aware fills are "
+            "mandatory: a hard SL/TP whose bar OPENED beyond the line fills at the OPEN, because the "
+            "line never traded. Remove the parameter. (The pre-2026-07-20 fill-at-the-line model is "
+            "retained ONLY inside the archived GAP-01/02 measurement scripts, which reproduce the "
+            "one-time before/after study — see docs/superpowers/GAP-01-how-the-engine-fills-a-gapped-"
+            "stop.md.)")
+
+
 def validate_layer_params(p: dict) -> dict:
     """Validate one layer's levers (L1 or L2 — identical schema); return a clean engine-ready dict.
     window defaults to 'full' (the frozen default round-trips so run_causal/build_view_payload still hit
     the cached oracle). Raise on any bad/missing value (no silent fallback)."""
     if not isinstance(p, dict):
         raise L2ParamError("params must be an object")
+    _reject_gap_fills(p)
 
     def num(key, lo=None, hi=None):
         if key not in p or p[key] is None:
@@ -207,10 +233,10 @@ def validate_layer_params(p: dict) -> dict:
         l2_intracandle_max_wait=int(p.get("l2_intracandle_max_wait", 240) or 240),
         # E3b (cheap probe): also rescue L2's OWN vetoed signals mid-candle when L2's own veto clears.
         l2_intracandle_self=bool(p.get("l2_intracandle_self", False)),
-        # GAP-AWARE FILLS (GAP-01). THIS DICT IS AN ALLOW-LIST — any key not named here is silently
-        # DROPPED. gap_fills must be carried explicitly or the flag can never be turned off through
-        # the L2 path, and a before/after comparison silently compares the SAME config twice.
-        gap_fills=bool(p.get("gap_fills", True)),
+        # GAP-AWARE FILLS (GAP-01) — MANDATORY. Always True; never read from the request. Anyone who
+        # asks for False is rejected above by _reject_gap_fills() rather than silently served the
+        # honest model, because silently ignoring a risk-model request is its own kind of lie.
+        gap_fills=True,
     )
     # optional split long/short SL/TP overrides — each None => fall back to the shared sl_soft/sl_hard/tp
     # (so the default carries all-None and is byte-identical + the use_frozen round-trip still holds).

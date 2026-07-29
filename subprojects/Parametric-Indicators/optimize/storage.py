@@ -101,6 +101,81 @@ def engine_kwargs(url: str) -> dict:
 
 
 # ────────────────────────────────────────────────────────────────────────────────────────────────────
+# WHERE DOES A STUDY ACTUALLY LIVE? (2026-07-29)
+#
+# There are THREE possible backends — journal files, Postgres, and per-TF SQLite — selected by two
+# environment variables that are usually unset. Nothing announced which one was live, and the study
+# FILES are named identically regardless. That is not hypothetical: twice in one session a completed
+# 12-study campaign was reported as LOST because Postgres was searched while the studies sat in SQLite.
+#
+# An empty result from one backend means "not here". It never means "nowhere".
+# ────────────────────────────────────────────────────────────────────────────────────────────────────
+
+def describe_backend(sqlite_db_path=None) -> str:
+    """One-line, human-readable description of the storage actually in use. Print this at study start."""
+    jd = journal_dir()
+    if jd:
+        return f"journal files in {os.path.expanduser(jd)} (WSH_JOURNAL_DIR)"
+    url = os.environ.get(ENV_VAR)
+    if url:
+        safe = url.split("@")[-1] if "@" in url else url        # never echo credentials
+        return f"served RDB at {safe} ({ENV_VAR})"
+    return f"SQLite file {sqlite_db_path} (default — {ENV_VAR} unset)"
+
+
+def find_study(study_name: str, studies_dir=None, journal=None, url=None) -> list[dict]:
+    """Search EVERY backend for a study and report where each copy lives.
+
+    Answers "does this study exist?" without the caller having to know, or guess, which backend was in
+    use when it was created. Returns one dict per location found: {backend, location, trials}.
+    Never raises on an unreachable backend — an unreadable Postgres must not hide a SQLite hit.
+    """
+    import sqlite3
+    out: list[dict] = []
+
+    # 1. journal files — one .log per study
+    jd = journal or journal_dir()
+    if jd:
+        p = Path(os.path.expanduser(jd)) / f"{study_name}.log"
+        if p.exists():
+            out.append({"backend": "journal", "location": str(p), "trials": None})
+
+    # 2. served RDB (Postgres/MySQL)
+    u = url or os.environ.get(ENV_VAR)
+    if u:
+        try:
+            import sqlalchemy as sa
+            eng = sa.create_engine(u, **engine_kwargs(u))
+            with eng.connect() as c:
+                row = c.execute(sa.text(
+                    "select count(t.trial_id) from studies s left join trials t "
+                    "on t.study_id = s.study_id where s.study_name = :n"), {"n": study_name}).scalar()
+                if row is not None and int(row) >= 0:
+                    exists = c.execute(sa.text(
+                        "select 1 from studies where study_name = :n"), {"n": study_name}).scalar()
+                    if exists:
+                        out.append({"backend": "rdb", "location": u.split("@")[-1], "trials": int(row)})
+        except Exception:
+            pass                                                # unreachable RDB must not mask a hit
+
+    # 3. per-TF SQLite files (the DEFAULT, and the one most often forgotten)
+    sd = Path(studies_dir) if studies_dir else Path(__file__).resolve().parent / "studies"
+    if sd.is_dir():
+        for f in sorted(sd.glob("*.db")):
+            try:
+                con = sqlite3.connect(f)
+                hit = con.execute("select study_id from studies where study_name = ?",
+                                  (study_name,)).fetchone()
+                if hit:
+                    n = con.execute("select count(*) from trials where study_id = ?", (hit[0],)).fetchone()[0]
+                    out.append({"backend": "sqlite", "location": str(f), "trials": int(n)})
+                con.close()
+            except Exception:
+                continue
+    return out
+
+
+# ────────────────────────────────────────────────────────────────────────────────────────────────────
 # REQUIRED POSTGRES TUNING (2026-07-11) — do not lose this when the DB is rebuilt.
 #
 #     ALTER DATABASE wsh SET synchronous_commit = off;

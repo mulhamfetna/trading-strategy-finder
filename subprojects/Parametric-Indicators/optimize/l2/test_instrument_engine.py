@@ -42,6 +42,9 @@ def test_instrument_defaults_scaled():
     # instrument_l1_default("ES",tf) returns the champion when present, else this scaled-permissive)
     es = payload._scaled_permissive("ES")
     sf = instruments.scale_factor("ES")
-    assert abs(es["sl_soft"] - round(149.8 * sf, 4)) < 1e-6  # point-fields scaled
+    # EXACT, not rounded (2026-07-29). This used to assert against round(149.8 * sf, 4), which encoded
+    # the last surviving round(x, 4) on a price param — the bug that once flipped NG 5m's sign. The
+    # scaled default is now the exact product; see optimize/test_param_precision.py.
+    assert es["sl_soft"] == 149.8 * sf                       # point-fields scaled, bit-for-bit
     assert es["indicators"] == [] and es["gate_pct"] == 0   # permissive, scale-free fields untouched
     assert payload.instrument_l2_default("NQ") == payload.l2_default_params()
