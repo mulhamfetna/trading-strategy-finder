@@ -8,6 +8,8 @@ everyday language.
 | report | issue | state | one-line summary |
 |---|---|---|---|
 | [glossary](./00-GLOSSARY-plain-language.md) | — | — | what every term and percentage means, in dollars |
+| ⭐ [**trilingual + governance**](./01-TRILINGUAL-f-R-ruin-drawdown.md) | — | — | `f`/`R`/ruin/drawdown in **professional English, baby English and Arabic** — and the answer to "was a sizing layer added without my approval?" (**no**) |
+| [system analysis](./02-SYSTEM-ANALYSIS-orm-and-storage.md) | — | — | do we need an ORM (**no**), is the SQLite/Postgres split still right (**yes, keep both**) |
 | [#6](./ISSUE-06-ci-enforcement.md) | CI enforcement | ✅ **closed** | the code checker ran but nothing forced anyone to obey it. Now required. |
 | [#12](./ISSUE-12-indicator-library.md) | 143 new indicators | ✅ **closed** | library complete at 165 — but a safety valve meant **0 of 1,500 trials** ever tested a new one |
 | [#3](./ISSUE-03-risk-budget.md) | how much to bet | ✅ **closed** | **21.8% of trades lose more than their stop.** The limit is ruin, not drawdown |
