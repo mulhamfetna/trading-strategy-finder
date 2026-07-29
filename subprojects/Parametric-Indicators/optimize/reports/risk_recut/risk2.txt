@@ -1,0 +1,234 @@
+====================================================================================================
+RISK-02 — sizing re-cut on the DEPLOYED book (best_*), honest fills, CAP-AWARE
+====================================================================================================
+deployed set = 'best'
+
+--- CAP-AWARE ledger (each champion's own time-cap applied) ---
+   NQ  4h | file=best_champions_full.json     sl_hard=  151.4424 cap=bars 451   n=  541 stop-outs=  49 capped= 213 E=+0.0313R
+   NQ  2h | file=best_champions_full.json     sl_hard=  182.2844 cap=both 561   n=  617 stop-outs=   4 capped=  64 E=+0.0079R
+   NQ  1h | file=best_champions_full.json     sl_hard=  109.7378 cap=eod        n=  562 stop-outs=  14 capped=   0 E=+0.0391R
+   NQ 15m | file=best_champions_full.json     sl_hard=   69.7811 cap=eod        n= 2307 stop-outs= 165 capped=   0 E=-0.0008R
+   NQ  5m | file=best_champions_full.json     sl_hard=   26.6434 cap=both 126   n=  271 stop-outs=  64 capped=  51 E=+0.0441R
+   NQ  2m | file=best_champions_full.json     sl_hard=   14.6212 cap=both 859   n= 2317 stop-outs=1253 capped=   0 E=+0.0413R
+   ES  4h | file=best_champions_full_ES.json  sl_hard=   88.4833 cap=bars 825   n=  248 stop-outs=   0 capped= 150 E=+0.0405R
+   ES  2h | file=best_champions_full_ES.json  sl_hard=   21.6437 cap=both 803   n=  444 stop-outs= 145 capped=  54 E=+0.1385R
+   ES  1h | file=best_champions_full_ES.json  sl_hard=   19.6319 cap=eod        n=  455 stop-outs= 222 capped=   0 E=+0.0185R
+   ES 15m | file=best_champions_full_ES.json  sl_hard=   19.0410 cap=both 1416  n=  999 stop-outs=  22 capped=   0 E=-0.0134R
+   ES  5m | file=best_champions_full_ES.json  sl_hard=   12.4219 cap=bars 902   n= 2836 stop-outs=  66 capped=   0 E=-0.0147R
+   ES  2m | file=best_champions_full_ES.json  sl_hard=    4.5826 cap=bars 734   n= 5638 stop-outs=1241 capped=   0 E=+0.0160R
+   GC  4h | file=best_champions_full_GC.json  sl_hard=   34.3953 cap=eod        n=  791 stop-outs=   7 capped=   0 E=+0.0288R
+   GC  2h | file=best_champions_full_GC.json  sl_hard=   13.3135 cap=none       n=  807 stop-outs= 445 capped=   0 E=+0.0405R
+   GC  1h | file=best_champions_full_GC.json  sl_hard=   21.2640 cap=eod        n= 1387 stop-outs=  12 capped=   0 E=+0.0281R
+   GC 15m | file=best_champions_full_GC.json  sl_hard=    8.4364 cap=none       n= 3721 stop-outs= 495 capped=   0 E=+0.0089R
+   GC  5m | file=best_champions_full_GC.json  sl_hard=    5.4793 cap=eod        n= 3584 stop-outs= 123 capped=   0 E=+0.0052R
+   GC  2m | file=best_champions_full_GC.json  sl_hard=    4.1398 cap=both 589   n= 5581 stop-outs=1644 capped=   0 E=-0.0045R
+   SI  4h | file=best_champions_full_SI.json  sl_hard=    0.5576 cap=eod        n=  607 stop-outs=  11 capped=   0 E=+0.0075R
+   SI  2h | file=best_champions_full_SI.json  sl_hard=    0.2014 cap=both 655   n= 1172 stop-outs= 471 capped=   8 E=+0.0102R
+   SI  1h | file=best_champions_full_SI.json  sl_hard=    0.2521 cap=both 59    n= 1451 stop-outs=  40 capped= 386 E=+0.0283R
+   SI 15m | file=best_champions_full_SI.json  sl_hard=    0.1006 cap=bars 702   n= 3169 stop-outs= 984 capped=   0 E=+0.0396R
+   SI  5m | file=best_champions_full_SI.json  sl_hard=    0.0269 cap=eod        n= 5835 stop-outs=3805 capped=   0 E=+0.0763R
+   SI  2m | file=best_champions_full_SI.json  sl_hard=    0.0152 cap=both 77    n= 6033 stop-outs=4092 capped=   1 E=+0.2013R
+   HG  4h | file=best_champions_full_HG.json  sl_hard=    0.0234 cap=none       n=  746 stop-outs= 432 capped=   0 E=+0.0664R
+   HG  2h | file=best_champions_full_HG.json  sl_hard=    0.0081 cap=both 272   n= 1406 stop-outs= 988 capped=  30 E=+0.0790R
+   HG  1h | file=best_champions_full_HG.json  sl_hard=    0.0141 cap=both 1341  n= 2022 stop-outs= 630 capped=   0 E=+0.0242R
+   HG 15m | file=best_champions_full_HG.json  sl_hard=    0.0016 cap=both 110   n= 3210 stop-outs=2659 capped=  11 E=+0.2363R
+   HG  5m | file=best_champions_full_HG.json  sl_hard=    0.0015 cap=none       n= 5198 stop-outs=3611 capped=   0 E=+0.2260R
+   HG  2m | file=best_champions_full_HG.json  sl_hard=    0.0015 cap=both 598   n= 9089 stop-outs=5861 capped=   0 E=+0.2092R
+   CL  4h | file=best_champions_full_CL.json  sl_hard=    0.6424 cap=eod        n=  549 stop-outs=   8 capped=   0 E=+0.0119R
+   CL  2h | file=best_champions_full_CL.json  sl_hard=    0.4858 cap=both 202   n=  924 stop-outs=  16 capped=  67 E=+0.0192R
+   CL  1h | file=best_champions_full_CL.json  sl_hard=    0.2054 cap=both 995   n= 1234 stop-outs=  73 capped=   0 E=+0.0288R
+   CL 15m | file=best_champions_full_CL.json  sl_hard=    0.1107 cap=both 334   n= 1894 stop-outs= 656 capped=   0 E=+0.0638R
+   CL  5m | file=best_champions_full_CL.json  sl_hard=    0.0312 cap=both 591   n= 4302 stop-outs=2891 capped=   0 E=+0.1190R
+   CL  2m | file=best_champions_full_CL.json  sl_hard=    0.0305 cap=both 412   n= 4655 stop-outs=2797 capped=   0 E=+0.1673R
+   NG  4h | file=best_champions_full_NG.json  sl_hard=    0.0220 cap=both 1031  n=  885 stop-outs= 364 capped=   0 E=+0.1400R
+   NG  2h | file=best_champions_full_NG.json  sl_hard=    0.0093 cap=bars 940   n= 1318 stop-outs= 834 capped=   0 E=+0.1115R
+   NG  1h | file=best_champions_full_NG.json  sl_hard=    0.0061 cap=none       n= 1814 stop-outs=1138 capped=   0 E=+0.1203R
+   NG 15m | file=best_champions_full_NG.json  sl_hard=    0.0040 cap=none       n= 3296 stop-outs=1826 capped=   0 E=+0.1518R
+   NG  5m | file=best_champions_full_NG.json  sl_hard=    0.0010 cap=both 1263  n= 6948 stop-outs=4630 capped=   0 E=+0.4122R
+   NG  2m | file=best_champions_full_NG.json  sl_hard=    0.0021 cap=eod        n= 8828 stop-outs=4462 capped=   0 E=+0.1586R
+  RTY  4h | file=best_champions_full_RTY.json sl_hard=   18.7854 cap=both 941   n=  587 stop-outs=   7 capped=  24 E=+0.0702R
+  RTY  2h | file=best_champions_full_RTY.json sl_hard=   12.0972 cap=bars 473   n=  767 stop-outs= 101 capped=  88 E=-0.0031R
+  RTY  1h | file=best_champions_full_RTY.json sl_hard=   11.2052 cap=eod        n= 1455 stop-outs=  76 capped=   0 E=-0.0211R
+  RTY 15m | file=best_champions_full_RTY.json sl_hard=    3.0017 cap=none       n= 1033 stop-outs= 661 capped=   0 E=+0.0744R
+  RTY  5m | file=best_champions_full_RTY.json sl_hard=    3.2170 cap=bars 255   n= 2583 stop-outs= 666 capped=   8 E=+0.0372R
+  RTY  2m | file=best_champions_full_RTY.json sl_hard=    1.3010 cap=both 1398  n= 3433 stop-outs=1545 capped=   0 E=+0.0802R
+   YM  4h | file=best_champions_full_YM.json  sl_hard=  238.6932 cap=both 719   n=  559 stop-outs= 104 capped= 159 E=-0.0019R
+   YM  2h | file=best_champions_full_YM.json  sl_hard=  194.9040 cap=eod        n=  209 stop-outs= 101 capped=   0 E=-0.0854R
+   YM  1h | file=best_champions_full_YM.json  sl_hard=  303.8591 cap=both 689   n= 1064 stop-outs=   8 capped=  69 E=+0.0154R
+   YM 15m | file=best_champions_full_YM.json  sl_hard=   80.2416 cap=eod        n= 2665 stop-outs= 281 capped=   0 E=+0.0241R
+   YM  5m | file=best_champions_full_YM.json  sl_hard=   92.6505 cap=none       n= 1985 stop-outs=  34 capped=   0 E=+0.0210R
+   YM  2m | file=best_champions_full_YM.json  sl_hard=   55.3226 cap=none       n= 2412 stop-outs= 149 capped=   0 E=+0.0426R
+
+--- CAP-BLIND ledger (RISK-01's method, for comparison only) ---
+   NQ  4h | file=best_champions_full.json     sl_hard=  151.4424 cap=none       n=  445 stop-outs=  63 capped=   0 E=+0.0543R
+   NQ  2h | file=best_champions_full.json     sl_hard=  182.2844 cap=none       n=  547 stop-outs=   8 capped=   0 E=+0.0079R
+   NQ  1h | file=best_champions_full.json     sl_hard=  109.7378 cap=none       n=  522 stop-outs=  17 capped=   0 E=+0.0516R
+   NQ 15m | file=best_champions_full.json     sl_hard=   69.7811 cap=none       n= 2265 stop-outs= 179 capped=   0 E=-0.0075R
+   NQ  5m | file=best_champions_full.json     sl_hard=   26.6434 cap=none       n=  242 stop-outs=  67 capped=   0 E=+0.0883R
+   NQ  2m | file=best_champions_full.json     sl_hard=   14.6212 cap=none       n= 2296 stop-outs=1270 capped=   0 E=+0.0476R
+   ES  4h | file=best_champions_full_ES.json  sl_hard=   88.4833 cap=none       n=  174 stop-outs=   0 capped=   0 E=+0.0705R
+   ES  2h | file=best_champions_full_ES.json  sl_hard=   21.6437 cap=none       n=  341 stop-outs= 171 capped=   0 E=+0.2073R
+   ES  1h | file=best_champions_full_ES.json  sl_hard=   19.6319 cap=none       n=  396 stop-outs= 240 capped=   0 E=+0.0560R
+   ES 15m | file=best_champions_full_ES.json  sl_hard=   19.0410 cap=none       n=  962 stop-outs=  25 capped=   0 E=-0.0013R
+   ES  5m | file=best_champions_full_ES.json  sl_hard=   12.4219 cap=none       n= 2836 stop-outs=  66 capped=   0 E=-0.0147R
+   ES  2m | file=best_champions_full_ES.json  sl_hard=    4.5826 cap=none       n= 5638 stop-outs=1241 capped=   0 E=+0.0160R
+   GC  4h | file=best_champions_full_GC.json  sl_hard=   34.3953 cap=none       n=  731 stop-outs=   9 capped=   0 E=+0.0321R
+   GC  2h | file=best_champions_full_GC.json  sl_hard=   13.3135 cap=none       n=  807 stop-outs= 445 capped=   0 E=+0.0405R
+   GC  1h | file=best_champions_full_GC.json  sl_hard=   21.2640 cap=none       n= 1305 stop-outs=  16 capped=   0 E=+0.0406R
+   GC 15m | file=best_champions_full_GC.json  sl_hard=    8.4364 cap=none       n= 3721 stop-outs= 495 capped=   0 E=+0.0089R
+   GC  5m | file=best_champions_full_GC.json  sl_hard=    5.4793 cap=none       n= 3554 stop-outs= 126 capped=   0 E=+0.0079R
+   GC  2m | file=best_champions_full_GC.json  sl_hard=    4.1398 cap=none       n= 5528 stop-outs=1658 capped=   0 E=-0.0032R
+   SI  4h | file=best_champions_full_SI.json  sl_hard=    0.5576 cap=none       n=  545 stop-outs=  12 capped=   0 E=+0.0274R
+   SI  2h | file=best_champions_full_SI.json  sl_hard=    0.2014 cap=none       n= 1116 stop-outs= 488 capped=   0 E=+0.0144R
+   SI  1h | file=best_champions_full_SI.json  sl_hard=    0.2521 cap=none       n= 1285 stop-outs=  45 capped=   0 E=+0.0348R
+   SI 15m | file=best_champions_full_SI.json  sl_hard=    0.1006 cap=none       n= 3169 stop-outs= 984 capped=   0 E=+0.0396R
+   SI  5m | file=best_champions_full_SI.json  sl_hard=    0.0269 cap=none       n= 5822 stop-outs=3816 capped=   0 E=+0.0737R
+   SI  2m | file=best_champions_full_SI.json  sl_hard=    0.0152 cap=none       n= 6024 stop-outs=4104 capped=   0 E=+0.2055R
+   HG  4h | file=best_champions_full_HG.json  sl_hard=    0.0234 cap=none       n=  746 stop-outs= 432 capped=   0 E=+0.0664R
+   HG  2h | file=best_champions_full_HG.json  sl_hard=    0.0081 cap=none       n= 1353 stop-outs=1045 capped=   0 E=+0.0351R
+   HG  1h | file=best_champions_full_HG.json  sl_hard=    0.0141 cap=none       n= 2001 stop-outs= 643 capped=   0 E=+0.0221R
+   HG 15m | file=best_champions_full_HG.json  sl_hard=    0.0016 cap=none       n= 3191 stop-outs=2683 capped=   0 E=+0.2250R
+   HG  5m | file=best_champions_full_HG.json  sl_hard=    0.0015 cap=none       n= 5198 stop-outs=3611 capped=   0 E=+0.2260R
+   HG  2m | file=best_champions_full_HG.json  sl_hard=    0.0015 cap=none       n= 9079 stop-outs=5874 capped=   0 E=+0.2129R
+   CL  4h | file=best_champions_full_CL.json  sl_hard=    0.6424 cap=none       n=  533 stop-outs=  10 capped=   0 E=+0.0231R
+   CL  2h | file=best_champions_full_CL.json  sl_hard=    0.4858 cap=none       n=  886 stop-outs=  24 capped=   0 E=+0.0034R
+   CL  1h | file=best_champions_full_CL.json  sl_hard=    0.2054 cap=none       n= 1229 stop-outs=  74 capped=   0 E=+0.0308R
+   CL 15m | file=best_champions_full_CL.json  sl_hard=    0.1107 cap=none       n= 1883 stop-outs= 667 capped=   0 E=+0.0510R
+   CL  5m | file=best_champions_full_CL.json  sl_hard=    0.0312 cap=none       n= 4295 stop-outs=2908 capped=   0 E=+0.1284R
+   CL  2m | file=best_champions_full_CL.json  sl_hard=    0.0305 cap=none       n= 4648 stop-outs=2805 capped=   0 E=+0.1777R
+   NG  4h | file=best_champions_full_NG.json  sl_hard=    0.0220 cap=none       n=  873 stop-outs= 386 capped=   0 E=+0.1161R
+   NG  2h | file=best_champions_full_NG.json  sl_hard=    0.0093 cap=none       n= 1318 stop-outs= 834 capped=   0 E=+0.1115R
+   NG  1h | file=best_champions_full_NG.json  sl_hard=    0.0061 cap=none       n= 1814 stop-outs=1138 capped=   0 E=+0.1203R
+   NG 15m | file=best_champions_full_NG.json  sl_hard=    0.0040 cap=none       n= 3296 stop-outs=1826 capped=   0 E=+0.1518R
+   NG  5m | file=best_champions_full_NG.json  sl_hard=    0.0010 cap=none       n= 6946 stop-outs=4637 capped=   0 E=+0.4110R
+   NG  2m | file=best_champions_full_NG.json  sl_hard=    0.0021 cap=none       n= 8827 stop-outs=4465 capped=   0 E=+0.1531R
+  RTY  4h | file=best_champions_full_RTY.json sl_hard=   18.7854 cap=none       n=  523 stop-outs=   7 capped=   0 E=+0.0819R
+  RTY  2h | file=best_champions_full_RTY.json sl_hard=   12.0972 cap=none       n=  742 stop-outs= 109 capped=   0 E=-0.0038R
+  RTY  1h | file=best_champions_full_RTY.json sl_hard=   11.2052 cap=none       n= 1420 stop-outs=  82 capped=   0 E=-0.0175R
+  RTY 15m | file=best_champions_full_RTY.json sl_hard=    3.0017 cap=none       n= 1033 stop-outs= 661 capped=   0 E=+0.0744R
+  RTY  5m | file=best_champions_full_RTY.json sl_hard=    3.2170 cap=none       n= 2578 stop-outs= 667 capped=   0 E=+0.0375R
+  RTY  2m | file=best_champions_full_RTY.json sl_hard=    1.3010 cap=none       n= 3416 stop-outs=1566 capped=   0 E=+0.0761R
+   YM  4h | file=best_champions_full_YM.json  sl_hard=  238.6932 cap=none       n=  364 stop-outs= 147 capped=   0 E=-0.0468R
+   YM  2h | file=best_champions_full_YM.json  sl_hard=  194.9040 cap=none       n=  179 stop-outs= 116 capped=   0 E=-0.1481R
+   YM  1h | file=best_champions_full_YM.json  sl_hard=  303.8591 cap=none       n=  949 stop-outs=  12 capped=   0 E=+0.0314R
+   YM 15m | file=best_champions_full_YM.json  sl_hard=   80.2416 cap=none       n= 2637 stop-outs= 288 capped=   0 E=+0.0272R
+   YM  5m | file=best_champions_full_YM.json  sl_hard=   92.6505 cap=none       n= 1985 stop-outs=  34 capped=   0 E=+0.0210R
+   YM  2m | file=best_champions_full_YM.json  sl_hard=   55.3226 cap=none       n= 2412 stop-outs= 149 capped=   0 E=+0.0426R
+
+=== WHOLE BOOK, cap-aware (real gaps only) — 128,443 pooled trades, expectancy +0.1063 R/trade ===
+  tail: worst trade -182.84R | past 1R 21.77% | past 2R 0.36% | past 5R 0.054% | ONE worst trade at f=1% costs 182.8% of capital
+    f/trade  med growth  med maxDD   PnL:DD
+  ------------------------------------------
+      0.1%       1.113x       2.6%     4.29
+      0.2%       1.233x       5.3%     4.39
+      0.3%       1.367x       7.8%     4.73
+      0.4%       1.516x      10.3%     5.00
+      0.6%       1.842x      15.2%     5.55
+      0.8%       2.216x      19.6%     6.20
+      1.0%       2.640x      24.3%     6.74
+      1.2%       3.147x      28.4%     7.57
+      1.5%       3.894x      34.6%     8.37
+      2.0%       5.745x      44.2%    10.74
+      2.5%       7.675x      51.7%    12.91
+      3.0%       9.230x      60.1%    13.69
+      4.0%      13.200x      72.1%    16.91  <- growth-optimal (~full Kelly)  *** PnL:DD-optimal
+
+=== WHOLE BOOK, cap-aware + SYNTHETIC gap overlay (double-counts gaps) — 128,443 pooled trades, expectancy +0.1063 R/trade ===
+  tail: worst trade -182.84R | past 1R 21.77% | past 2R 0.36% | past 5R 0.054% | ONE worst trade at f=1% costs 182.8% of capital
+    f/trade  med growth  med maxDD   PnL:DD
+  ------------------------------------------
+      0.1%       1.102x       2.8%     3.63
+      0.2%       1.209x       5.5%     3.79
+      0.3%       1.334x       8.1%     4.12
+      0.4%       1.456x      10.9%     4.17
+      0.6%       1.727x      16.0%     4.53
+      0.8%       2.086x      20.7%     5.24
+      1.0%       2.376x      25.6%     5.37
+      1.2%       2.776x      30.2%     5.87
+      1.5%       3.341x      36.9%     6.34
+      2.0%       4.609x      46.2%     7.81
+      2.5%       5.842x      54.6%     8.87
+      3.0%       7.237x      62.6%     9.96
+      4.0%       8.644x      74.4%    10.27  <- growth-optimal (~full Kelly)  *** PnL:DD-optimal
+
+=== WHOLE BOOK, cap-blind (RISK-01 method) — 126,625 pooled trades, expectancy +0.1079 R/trade ===
+  tail: worst trade -182.84R | past 1R 22.31% | past 2R 0.40% | past 5R 0.068% | ONE worst trade at f=1% costs 182.8% of capital
+    f/trade  med growth  med maxDD   PnL:DD
+  ------------------------------------------
+      0.1%       1.116x       2.7%     4.29
+      0.2%       1.239x       5.3%     4.48
+      0.3%       1.374x       8.1%     4.63
+      0.4%       1.520x      10.6%     4.90
+      0.6%       1.865x      15.4%     5.64
+      0.8%       2.238x      20.4%     6.06
+      1.0%       2.653x      25.1%     6.60
+      1.2%       3.143x      29.7%     7.22
+      1.5%       3.943x      35.7%     8.24
+      2.0%       5.713x      44.8%    10.51
+      2.5%       7.609x      54.1%    12.21
+      3.0%       9.432x      61.5%    13.71
+      4.0%      12.164x      73.5%    15.19  <- growth-optimal (~full Kelly)  *** PnL:DD-optimal
+
+=== BOOK EXCLUDING NG, cap-aware — 105,354 pooled trades, expectancy +0.0798 R/trade ===
+  tail: worst trade -36.37R | past 1R 19.15% | past 2R 0.36% | past 5R 0.029% | ONE worst trade at f=1% costs 36.4% of capital
+    f/trade  med growth  med maxDD   PnL:DD
+  ------------------------------------------
+      0.1%       1.081x       2.7%     2.99
+      0.2%       1.168x       5.4%     3.14
+      0.3%       1.261x       7.9%     3.29
+      0.4%       1.360x      10.3%     3.50
+      0.6%       1.556x      15.3%     3.64
+      0.8%       1.797x      19.9%     4.01
+      1.0%       2.048x      24.2%     4.32
+      1.2%       2.247x      29.0%     4.30
+      1.5%       2.631x      35.2%     4.63
+      2.0%       3.435x      44.3%     5.49
+      2.5%       4.199x      52.7%     6.07
+      3.0%       4.739x      60.3%     6.20
+      4.0%       5.525x      72.9%     6.21  <- growth-optimal (~full Kelly)  *** PnL:DD-optimal
+
+=== NG ALONE, cap-aware — 23,089 pooled trades, expectancy +0.2275 R/trade ===
+  tail: worst trade -182.84R | past 1R 33.73% | past 2R 0.39% | past 5R 0.169% | ONE worst trade at f=1% costs 182.8% of capital
+    f/trade  med growth  med maxDD   PnL:DD
+  ------------------------------------------
+      0.1%       1.263x       3.0%     8.69
+      0.2%       1.588x       6.1%     9.68
+      0.3%       1.989x       9.2%    10.80
+      0.4%       2.458x      12.2%    11.99
+      0.6%       3.821x      17.6%    16.07
+      0.8%       5.864x      22.8%    21.32
+      1.0%       8.554x      28.7%    26.28
+      1.2%      12.499x      33.3%    34.56
+      1.5%      21.061x      41.0%    48.92
+      2.0%      47.727x      51.9%    90.03
+      2.5%      94.721x      61.5%   152.44
+      3.0%     145.720x      68.7%   210.55
+      4.0%     234.234x      82.8%   281.73  <- growth-optimal (~full Kelly)  *** PnL:DD-optimal
+
+====================================================================================================
+NOISE CHECK — where does the PnL:DD peak land across 8 independent MC seeds?
+====================================================================================================
+  whole book             peaks/seed (%) = [4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0]
+                         plateau within 3% of best: 4.0%–4.0% (best mean PnL:DD 17.045)
+  cap-blind              peaks/seed (%) = [4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0]
+                         plateau within 3% of best: 4.0%–4.0% (best mean PnL:DD 15.733)
+  excluding NG           peaks/seed (%) = [4.0, 3.0, 4.0, 4.0, 4.0, 4.0, 3.0, 3.0]
+                         plateau within 3% of best: 3.0%–4.0% (best mean PnL:DD 6.396)
+  NG alone               peaks/seed (%) = [4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0]
+                         plateau within 3% of best: 4.0%–4.0% (best mean PnL:DD 271.010)
+
+====================================================================================================
+PER-MARKET expectancy and stop-out rate (cap-aware)
+====================================================================================================
+   mkt   trades  stop-outs  %stopped      E[R]   worst R
+    NQ    6,615      1,549     23.4%   +0.0226    -24.14
+    ES   10,620      1,696     16.0%   +0.0108     -2.93
+    GC   15,871      2,726     17.2%   +0.0076     -9.08
+    SI   18,267      9,403     51.5%   +0.1009    -23.06
+    HG   21,671     14,181     65.4%   +0.1866    -36.37
+    CL   13,558      6,441     47.5%   +0.1085    -17.96
+    NG   23,089     13,254     57.4%   +0.2275   -182.84
+   RTY    9,858      3,056     31.0%   +0.0463    -14.99
+    YM    8,894        677      7.6%   +0.0232     -2.12
+
+WROTE /home/dev/Mulham/risk2/risk_recut_v2.json
