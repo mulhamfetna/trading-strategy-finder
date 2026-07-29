@@ -3,7 +3,50 @@
 **Date:** 2026-07-22
 **Branch / Issue:** `fundamental-analysis` · GitHub Issue #2 (champion re-optimization under honest fills)
 **Depends on:** [GAP-01 / GAP-02](./GAP-02-gap-aware-fills.md) (the gap-aware fill change)
-**Status:** re-optimization COMPLETE (12/12 studies, 0 failures) · 3 winners headless-verified · browser click-through pending (extension offline) · adoption + risk re-cut (Issue #3) next.
+**Status:** ⛔ **RETRACTED 2026-07-29 — the baseline in this report is the wrong champion set. Do not
+quote its verdicts or its portfolio numbers.** The run itself completed (12/12 studies); what is wrong is
+what it was measured against.
+
+---
+
+## ⛔ CORRECTION (2026-07-29) — read this before anything below
+
+Everything in this report calls `wsh4_champions_full*.json` "deployed". **It is not.** The deployed set
+moved to `best_*` on **2026-07-14** — eight days *before* this run — via `DEFAULT_CHAMPION_SET`
+(commit `4585648`). Two consequences, one procedural and one substantive:
+
+1. **The search was floored against the wrong incumbent.** `warm_start_seeds()` read `wsh4_*` by name,
+   so Optuna's "front is guaranteed ≥ the seed" promise held against a *retired* set. Fixed on
+   2026-07-29 — the seed now resolves through the same resolver the dashboard uses
+   (`optimize/test_warm_start_seed_set.py`, verified to fail on the old code).
+2. **The before/after table below compares against that same retired set.** Re-scored against the
+   champions we actually run, the picture inverts on the axis that matters:
+
+| | full-history | 2026 OOS |
+|---|---:|---:|
+| this report's claim ("vs deployed" = `wsh4`) | **+$52,443** | **+$35,475** |
+| **vs the truly deployed `best_*`** | **+$94,522** | **−$12,832** |
+
+Per adopted slot, against the real deployed champions: **NQ 1h +$10,805** · **GC 15m +$2,226** ·
+**NQ 2h −$14,017** → **net −$986 out-of-sample.** The trio is a wash, and **NQ 2h is materially worse
+than the champion it was meant to replace.**
+
+The evidence was already on disk: `best_vs_wsh4.log` was produced on 2026-07-22 at **16:05**, forty
+minutes *after* the adoption commit, and was never acted on. It is now archived with the rest of the run
+in [`optimize/reports/gap_fills/reopt_wshgap/`](../../optimize/reports/gap_fills/reopt_wshgap/README.md).
+
+**What was NOT harmed.** The adoption (`105a2da`) wrote into `wsh4_champions_full*.json` — the retired
+set — so **the deployed book never changed**. No live champion was replaced by any of this. The golden
+baselines for 1h/2h were re-captured to match (`96eb8de`), leaving the gate self-consistent with `wsh4`
+rather than with what is deployed.
+
+**Also note:** these champions are persisted at 4 decimal places (the precision fix was not in the
+`fundamental-analysis` worktree). For NQ and GC that is provenance-only — the smallest stop, GC 2m
+`sl_soft=2.2426`, still carries 5 significant figures. It would be fatal on NG or HG.
+
+**Superseded by:** a re-run seeded from `best_*` on the current engine. #62/#74/#75 changed indicator
+computation and fixed cross-series wiring outright after this run, so these numbers would not reproduce
+today even with correct seeding.
 
 ---
 
@@ -165,9 +208,16 @@ forward.*
 
 ## 10. Next
 
-1. Browser click-through of the 3 winners (unblock the extension) → file champion-proposal, adopt into the
-   deployed registry (swap **only** NQ 1h, NQ 2h, GC 15m; keep the other 9 as-is).
-2. **Issue #3 — re-cut the risk budget** on the adopted set's honest drawdowns (the old sizing was derived
-   on ~10%-optimistic risk).
-3. Cut **v5.1.0** = gap-aware fills (GAP-01/02) + the adopted champions (merge `fundamental-analysis` → `dev`
-   → `main`, tag + Release + Zenodo DOI).
+⛔ **Superseded by the 2026-07-29 correction at the top of this file.** The original plan below is kept
+only as a record of what was intended; steps 1 and 3 were both wrong or already overtaken.
+
+1. ~~Browser click-through of the 3 winners → adopt into the deployed registry.~~ **Do not adopt.**
+   Against the truly deployed `best_*` set the trio is **−$986 out-of-sample**, with **NQ 2h −$14,017**.
+   The adoption that did happen (`105a2da`) landed in the retired `wsh4_*` file and never reached the
+   deployed book.
+2. **Issue #3 — re-cut the risk budget** on honest drawdowns. Still valid, and it does **not** depend on
+   this run: the honest-drawdown measurement it needs is [GAP-02](../../../../docs/superpowers/GAP-02-champion-before-after.md),
+   across all 54 deployed champions (P&L −0.2%, drawdown **+9.8%**, NG +148%). That measurement stands.
+3. ~~Cut v5.1.0 with the adopted champions.~~ v5.1.0 and v5.2.0 both shipped without them.
+4. **New:** re-run the re-optimization seeded from `best_*` on the current engine, then judge adoption
+   against the deployed set on the 2026 holdout.

@@ -1,0 +1,35 @@
+########## NQ: pareto export ##########
+WS-I.10 report — feasible Pareto fronts per timeframe:
+  2m: 5586 complete, 4535 feasible, front 174
+  5m: 5003 complete, 3292 feasible, front 262
+  15m: 4887 complete, 2381 feasible, front 370
+  1h: 5250 complete, 2627 feasible, front 246
+  2h: 4741 complete, 3120 feasible, front 136
+  4h: 5156 complete, 3729 feasible, front 189
+wrote /home/dev/Mulham/code/.worktrees/fundamental/subprojects/Parametric-Indicators/optimize/results/wsi_leaderboard.csv + reports/WS-I_RESULTS.md
+########## NQ: build champions -> wshgap_champions_full.json ##########
+  4h: median $41,175  full $151,655 DD 10.3%  +8ind
+  2h: median $23,032  full $101,517 DD 8.6%  +8ind
+  1h: median $33,175  full $110,038 DD 14.1%  +7ind
+  15m: median $22,628  full $81,290 DD 10.0%  +8ind
+  5m: median $7,353  full $23,056 DD 14.5%  +5ind
+  2m: median $6,310  full $31,898 DD 10.1%  +7ind
+wrote optimize/results/wshgap_champions_full.json  (6 timeframes)
+########## GC: pareto export ##########
+WS-I.10 report — feasible Pareto fronts per timeframe:
+  2m: 5025 complete, 2069 feasible, front 309
+  5m: 4298 complete, 1659 feasible, front 363
+  15m: 5311 complete, 3733 feasible, front 316
+  1h: 5194 complete, 3805 feasible, front 159
+  2h: 4710 complete, 2952 feasible, front 198
+  4h: 5173 complete, 4255 feasible, front 603
+wrote /home/dev/Mulham/code/.worktrees/fundamental/subprojects/Parametric-Indicators/optimize/results/wsi_leaderboard_GC.csv + reports/WS-I_RESULTS_GC.md
+########## GC: build champions -> wshgap_champions_full_GC.json ##########
+  4h: median $39,653  full $113,466 DD 21.2%  +5ind
+  2h: median $31,987  full $84,928 DD 18.4%  +9ind
+  1h: median $28,604  full $86,969 DD 24.2%  +8ind
+  15m: median $22,266  full $87,894 DD 8.8%  +5ind
+  5m: median $5,131  full $18,131 DD 22.7%  +12ind
+  2m: median $11,381  full $38,706 DD 11.8%  +7ind
+wrote optimize/results/wshgap_champions_full_GC.json  (6 timeframes)
+##### EXTRACT COMPLETE #####

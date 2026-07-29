@@ -346,26 +346,58 @@ def _native_seed(box: dict, inds: dict, split_sltp: bool, b: dict) -> dict:
     return seed
 
 
+def _deployed_champion_file(instrument: str) -> Path | None:
+    """The champion file for the set that is ACTUALLY DEPLOYED, resolved through the dashboard's own
+    resolver rather than a hardcoded name.
+
+    THE BUG THIS LOCKS OUT (issue #2). This used to read `wsh4_champions_full*.json` outright. The
+    deployed set moved to `best_*` on 2026-07-14 (`DEFAULT_CHAMPION_SET`, commit 4585648) and nothing
+    updated this, so for the next fortnight every warm-started re-optimization seeded from a RETIRED set.
+    Optuna's warm start only guarantees the front is >= its seed, so the guarantee kept holding — against
+    the wrong incumbent. The gap-aware re-optimization (`wshgap`) shipped a champion trio that beat
+    `wsh4` by $94,522 while LOSING $12,832 out-of-sample to the champions we actually run; see
+    optimize/reports/gap_fills/reopt_wshgap/README.md. Following the resolver survives the next set
+    change too."""
+    try:
+        from optimize.l2 import payload as _P
+        return _P._instrument_champions_path(instrument)
+    except Exception:
+        return None
+
+
 def warm_start_seeds(tf_name: str, split_sltp: bool, b: dict, instrument: str = "NQ") -> list[dict]:
     """Known champions to enqueue as the optimizer's FIRST trials so the returned front is provably ≥ their
-    score (defeats the 'larger space sampled worse' trap). Reads the per-TF wsh4 champion + (4h) the wsh5
-    split champion from optimize/results/*.json. Missing files ⇒ fewer/no seeds (safe)."""
+    score (defeats the 'larger space sampled worse' trap). Seeds from the DEPLOYED champion set + (4h) the
+    wsh5 split champion from optimize/results/*.json. Missing files ⇒ fewer/no seeds (safe)."""
     seeds = []
-    # Per-instrument champion file: NQ = wsh4_champions_full.json, others = ..._<INST>.json. This lets a
-    # re-optimization of GC (or any onboarded market) warm-start from ITS OWN champions, so the front is
-    # guaranteed >= the prior champion re-scored under the current engine (e.g. gap-aware fills, GAP-01).
+    # Per-instrument champion file, from the deployed set: NQ is unsuffixed, others are ..._<INST>.json.
+    # This lets a re-optimization of GC (or any onboarded market) warm-start from ITS OWN champions, so the
+    # front is guaranteed >= the champion we actually run, re-scored under the current engine.
     _suffix = "" if instrument == "NQ" else f"_{instrument}"
-    _champ_files = ([f"wsh4_champions_full{_suffix}.json"] if instrument != "NQ"
-                    else ["wsh4_champions_full.json", "wsi_champions_full.json"])
+    _deployed = _deployed_champion_file(instrument)
+    # Legacy names are a FALLBACK ONLY (a checkout that predates the champion-set registry). They are
+    # announced loudly rather than used silently — seeding from a retired set is exactly the failure above.
+    _legacy = ([f"wsh4_champions_full{_suffix}.json"] if instrument != "NQ"
+               else ["wsh4_champions_full.json", "wsi_champions_full.json"])
+    _champ_files = ([_deployed.name] if _deployed is not None else []) + _legacy
     for fn in _champ_files:
         f = _RESULTS_DIR / fn
         if f.exists():
             try:
                 c = json.loads(f.read_text()).get(tf_name)
                 if c:
-                    seeds.append(_native_seed(c["box"], c.get("indicators", {}), split_sltp, b)); break
+                    seeds.append(_native_seed(c["box"], c.get("indicators", {}), split_sltp, b))
+                    _how = "DEPLOYED set" if (_deployed is not None and fn == _deployed.name) else \
+                           "!! LEGACY FALLBACK — deployed set unavailable, front is NOT guaranteed >= the "\
+                           "champion we run !!"
+                    print(f"[warm-start] {instrument} {tf_name}: seeded from {fn} ({_how})", flush=True)
+                    break
             except Exception:
                 pass
+    else:
+        print(f"[warm-start] {instrument} {tf_name}: NO champion seed found "
+              f"(tried {', '.join(_champ_files) or 'nothing'}) — front is NOT floored by any incumbent",
+              flush=True)
     split_f = _RESULTS_DIR / f"wsh5_{tf_name}_split_champion.json"
     if split_sltp and split_f.exists():
         try:
