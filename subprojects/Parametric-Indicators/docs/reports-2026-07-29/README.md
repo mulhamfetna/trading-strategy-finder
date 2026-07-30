@@ -10,6 +10,8 @@ everyday language.
 | [glossary](./00-GLOSSARY-plain-language.md) | — | — | what every term and percentage means, in dollars |
 | ⭐ [**trilingual + governance**](./01-TRILINGUAL-f-R-ruin-drawdown.md) | — | — | `f`/`R`/ruin/drawdown in **professional English, baby English and Arabic** — and the answer to "was a sizing layer added without my approval?" (**no**) |
 | [system analysis](./02-SYSTEM-ANALYSIS-orm-and-storage.md) | — | — | do we need an ORM (**no**), is the SQLite/Postgres split still right (**yes, keep both**) |
+| ⭐ [**silent scaling debt**](./06-TRILINGUAL-silent-scaling-debt.md) | #81 #88 #89 #90 | — | **the pattern behind 7 defects** — a constant correct at 18 indicators, silently wrong at 165, five times in two days, none of which raised an error. Trilingual, with every measurement |
+| [why not all 165?](./05-TRILINGUAL-why-not-all-165.md) | — | — | we DO search all 165, we never USE all 165 — and the real trial budgets (47,100 combined vs ~18,700 two-stage). Trilingual |
 | ⭐ [**how the search works**](./03-HOW-MAP-ELITES-SEARCHES.md) | #81 | — | does it try different indicator combinations, and is it Darwinian? Yes — but it deliberately does **not** concentrate on winners. Includes the simulation showing it **cannot reach** the 3–10 indicator region our champions live in |
 | [#6](./ISSUE-06-ci-enforcement.md) | CI enforcement | ✅ **closed** | the code checker ran but nothing forced anyone to obey it. Now required. |
 | [#12](./ISSUE-12-indicator-library.md) | 143 new indicators | ✅ **closed** | library complete at 165 — but a safety valve meant **0 of 1,500 trials** ever tested a new one |
