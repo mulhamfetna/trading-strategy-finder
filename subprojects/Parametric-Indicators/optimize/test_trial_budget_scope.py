@@ -60,9 +60,25 @@ def test_budget_follows_the_restricted_scope():
 def test_scoped_budget_reproduces_the_july_campaign_exactly():
     """The July `wshgap` run printed 'TOTAL 59 dims' / 'RECOMMENDED 5,900 trials' on a tree whose registry
     held only these 18. Reproducing those numbers is what proves the accounting is right rather than
-    merely smaller."""
-    assert O.search_dims(False, only_inds=ORIGINAL_18)["total"] == 59
-    assert O.recommended_trials(False, only_inds=ORIGINAL_18) == 5_900
+    merely smaller.
+
+    ⚠️ July's configuration must be pinned EXPLICITLY, not inherited from today's defaults. It searched
+    the end-of-day close as a dimension; since 2026-07-30 that is pinned ON for all training (#79), which
+    legitimately removes one dimension (59 → 58). A historical-reproduction test that silently tracks the
+    current default stops reproducing history the moment a default changes — which is exactly what it is
+    supposed to notice.
+    """
+    july = dict(only_inds=ORIGINAL_18, force_eod=False)      # as it actually ran
+    assert O.search_dims(False, **july)["total"] == 59
+    assert O.recommended_trials(False, **july) == 5_900
+
+
+def test_todays_default_is_one_dimension_smaller_than_july():
+    """The deliberate difference, asserted rather than left implicit: the end-of-day close is now pinned,
+    so it is no longer searched."""
+    july = O.search_dims(False, only_inds=ORIGINAL_18, force_eod=False)["total"]
+    today = O.search_dims(False, only_inds=ORIGINAL_18)["total"]
+    assert today == july - 1 == 58
 
 
 @pytest.mark.parametrize("freeze", [True, False])

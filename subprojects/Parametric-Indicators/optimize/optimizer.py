@@ -225,7 +225,7 @@ def searchable_indicators(only_inds: tuple = (), exclude_inds: tuple = ()) -> li
 
 
 def search_dims(split_sltp: bool, intracandle: bool = False, freeze_indicators: bool = False,
-                force_eod: bool = False, only_inds: tuple = (), exclude_inds: tuple = ()) -> dict:
+                force_eod: bool = True, only_inds: tuple = (), exclude_inds: tuple = ()) -> dict:
     """Breakdown of the tunable search dimensions for the current REGISTRY/SCHEMA.
     base continuous (sl_soft, sl_hard_delta, tp, gate_pct, dd_limit)=5;
     categorical (flip, en_cap_bars, en_cap_eod)=3;
@@ -247,7 +247,7 @@ def search_dims(split_sltp: bool, intracandle: bool = False, freeze_indicators: 
 
 
 def recommended_trials(split_sltp: bool, per_dim: int = TRIALS_PER_DIM, intracandle: bool = False,
-                       freeze_indicators: bool = False, force_eod: bool = False,
+                       freeze_indicators: bool = False, force_eod: bool = True,
                        only_inds: tuple = (), exclude_inds: tuple = ()) -> int:
     """Dimension-proportional trial budget: total search dimensions × per_dim."""
     return search_dims(split_sltp, intracandle, freeze_indicators, force_eod,
@@ -256,7 +256,7 @@ def recommended_trials(split_sltp: bool, per_dim: int = TRIALS_PER_DIM, intracan
 
 def print_plan(tf_name: str, split_sltp: bool, per_dim: int = TRIALS_PER_DIM, n_trials: int | None = None,
                sampler: str = "nsga3", intracandle: bool = False, freeze_indicators: bool = False,
-               force_eod: bool = False, only_inds: tuple = (), exclude_inds: tuple = ()):
+               force_eod: bool = True, only_inds: tuple = (), exclude_inds: tuple = ()):
     """Print the search-space size + recommended (dimension-proportional) trial budget. Used by the
     `--plan` dry-run and before every real launch so the budget is reported and can be accepted."""
     d = search_dims(split_sltp, intracandle, freeze_indicators, force_eod, only_inds, exclude_inds)
@@ -463,7 +463,7 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         dd_pnl_cap: float = DD_PNL_CAP, contrib_tokens: tuple = (),
         contrib_exclude=None, instrument: str = "NQ", intracandle: bool = False,
         freeze_indicators: bool = False, intracandle_always_on: bool = False,
-        force_eod: bool = False, max_enabled: int | None = None,
+        force_eod: bool = True, max_enabled: int | None = None,
         reference: str | None = None, train_window: str = "full") -> dict:
     # split_sltp (Q3 / E2): when True the optimizer searches SEPARATE long vs short SL/TP (long_*/short_*),
     # widening the space per the user's point-5 goal. Default False ⇒ shared SL/TP ⇒ identical to prior runs.
@@ -666,6 +666,12 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
     # how a finished 12-study campaign got reported as LOST twice in one session: Postgres was searched,
     # the studies were in SQLite. `optimize/storage.py: find_study()` searches all three.
     print(f"[{tf_name}] trial store → {study_storage.describe_backend(db_path)}", flush=True)
+    # The overnight-exposure decision, stated in every run rather than inferred from a flag's absence.
+    print(f"[{tf_name}] end-of-day close: "
+          + ("PINNED ON (standard — never holds overnight, so a weekend gap cannot jump the stop)"
+             if force_eod else
+             "⚠️  SEARCHED (--no-force-eod) — overnight holds allowed; this re-opens the weekend-gap "
+             "exposure documented in #79. RESEARCH ONLY."), flush=True)
     # Tier 1: one source of truth for the store URL. WSH_STORAGE_URL (e.g. postgresql://…) overrides the
     # per-TF sqlite path; unset ⇒ the per-TF sqlite file, byte-identical to before. WAL/busy_timeout file
     # hardening applies only to a sqlite file; a served RDB (Postgres) uses MVCC + a connection pool.
@@ -751,12 +757,29 @@ def main() -> int:
     ap.add_argument("--ind-1min", action="store_true",
                     help="indicators read the 1-minute frame (sampled at each decision bar's last "
                          "closed minute) instead of the decision timeframe")
-    ap.add_argument("--force-eod", action="store_true",
-                    help="NEVER hold overnight: pin the end-of-day close ON for every trial "
+    # END-OF-DAY CLOSE IS THE STANDARD (user decision, 2026-07-30) — the default for ALL training.
+    #
+    # WHY. Holding overnight is what makes a stop-loss stop working: a stop is an instruction that the
+    # market walks INTO, and it cannot execute while the market is shut. NG's worst trade lost 182.84x
+    # its intended risk to a +5.52% weekend reopen gap (#79) — the stop was 0.03% of price, the gap was
+    # 5.52%. Closing at the bell removes that exposure structurally rather than pricing it.
+    #
+    # MEASURED COST, honestly bracketed. The forced-EOD campaign scored $631,999 on the 2026 OOS year
+    # versus $638,462 for the incumbents — about −1.0%. It is tempting to quote −24.8% against the
+    # deployed "best" set ($840,037), but that set is best-of-three-per-slot CHOSEN ON the 2026 year it
+    # is scored on, so that number carries a selection effect and is not a fair comparison.
+    #
+    # `--no-force-eod` remains for research (e.g. re-validating an algorithm against its old evidence),
+    # and announces itself loudly rather than being a silent option.
+    ap.add_argument("--force-eod", dest="force_eod", action="store_true", default=True,
+                    help="(DEFAULT) NEVER hold overnight: pin the end-of-day close ON for every trial "
                          "(it stops being a searched dimension). Each champion is then TUNED for "
                          "the bell — its stops/targets/indicator gate adapt to the shorter "
                          "horizon — instead of having the rule bolted onto a strategy optimized "
                          "to hold overnight (measured cost of bolting it on: −$40,429 OOS).")
+    ap.add_argument("--no-force-eod", dest="force_eod", action="store_false",
+                    help="RESEARCH ONLY: allow overnight holds by searching the end-of-day close as a "
+                         "dimension again. This re-opens the weekend-gap exposure that #79 documents.")
     ap.add_argument("--study-prefix", default="wsh3",
                     help="study name prefix (use a fresh one, e.g. wsh4, for a new regime so it "
                          "doesn't mix with prior trials)")
