@@ -31,13 +31,21 @@ def test_score_window_in_sample_vs_oos():
     assert s_in["n"] + s_oos["n"] == len(full.ledger)
 
 
+# A SMOKE test proves the study runs and returns the right shape — it is not a search. Scoping it to a
+# few cheap indicators is what keeps that true: with the full 165-indicator registry on the 1-minute
+# frame this test stopped finishing at all (#80), spinning at ~100% CPU for 30+ minutes and stalling
+# every run of `pytest optimize/l2/` — which silently removed ~120 tests from any "run everything" check.
+# The registry grew 18 -> 165 and nothing re-derived what a "small study" costs.
+_SMOKE_INDS = ("ema_trend", "rsi", "macd")
+
+
 def test_run_small_study_smoke(tmp_path):
     db = tmp_path / "l2v1_smoke.db"
     res = l2opt.run(n_trials=3, study_prefix="l2v1smoke", seed=1, min_trades=1,
-                    storage_url=f"sqlite:///{db}")
+                    storage_url=f"sqlite:///{db}", only_inds=_SMOKE_INDS)
     assert res["n_trials"] >= 1
     assert "champion" in res
-    if res["champion"] is not None:                # feasible winner found in the 8 trials
+    if res["champion"] is not None:                # feasible winner found in the 3 trials
         c = res["champion"]
         assert {"pnl", "max_dd", "n", "win"} <= set(c["in_sample"])
         assert {"pnl", "max_dd", "n", "win"} <= set(c["oos"])

@@ -41,11 +41,18 @@ _suggest_contributor = _csearch.suggest_contributor
 
 
 def suggest_l2_params(trial, b: dict, cap: int, contrib_tokens=(),
-                      contrib_exclude=SMC_COMMITTEE_KEYS, intracandle: bool = False) -> dict:
+                      contrib_exclude=SMC_COMMITTEE_KEYS, intracandle: bool = False,
+                      only_inds=(), exclude_inds=()) -> dict:
     """Engine-ready L2 param dict from an Optuna trial — mirrors optimizer.objective's space (shared
     SL/TP; indicators on the 1-minute frame to match the lean L1 regime). `contrib_tokens` (opt-in) adds
     a searchable cross-instrument contributor block + topology; empty ⇒ byte-identical to the prior space.
-    `contrib_exclude` keys are dropped from EACH contributor's committee search (default = slow SMC family)."""
+    `contrib_exclude` keys are dropped from EACH contributor's committee search (default = slow SMC family).
+
+    `only_inds` / `exclude_inds` scope the indicator search, exactly as the L1 optimizer's
+    --only-indicators / --exclude-indicators do. They were missing here, so L2 always searched the FULL
+    registry with every internal parameter, on the 1-MINUTE frame. That was affordable when the registry
+    held 18 indicators; at 165 it is the reason `test_run_small_study_smoke` stopped finishing (#80).
+    Empty (the default) ⇒ the whole registry, byte-identical to the prior space."""
     sl_soft = trial.suggest_float("sl_soft", float(b["sl_soft"][0]), float(b["sl_soft"][1]))
     delta = trial.suggest_float("sl_hard_delta", 0.0, float(b["sl_hard"][1]))
     tp = trial.suggest_float("tp", float(b["tp"][0]), float(b["tp"][1]))
@@ -54,7 +61,7 @@ def suggest_l2_params(trial, b: dict, cap: int, contrib_tokens=(),
     cooldown = trial.suggest_int("cooldown", 0, cap)
     flip = trial.suggest_categorical("flip", [False, True])
     specs = [{k: v for k, v in s.items() if k != "_searched"}
-             for s in OPT._suggest_indicators(trial)]
+             for s in OPT._suggest_indicators(trial, exclude=tuple(exclude_inds), only=tuple(only_inds))]
     k_rule = trial.suggest_int("k", 1, 5)
     cap_1min = trial.suggest_int("cap_1min", 0, OPT.CAP_1MIN_MAX)   # max-hold (traded 1-min bars); 0 = off
     params = dict(sl_soft=sl_soft, sl_hard=sl_soft + delta, tp=tp, gate_pct=gate_pct,
@@ -78,7 +85,7 @@ def run(n_trials: int = 200, tf: str = "4h", study_prefix: str = "l2v1", seed: i
         min_trades: int = 5, sampler: str = "nsga3", storage_url: str | None = None,
         dd_pnl_cap: float = OPT.DD_PNL_CAP, l1_params: dict | None = None,
         contrib_tokens=(), contrib_exclude=SMC_COMMITTEE_KEYS, instrument: str = "NQ",
-        intracandle: bool = False) -> dict:
+        intracandle: bool = False, only_inds=(), exclude_inds=()) -> dict:
     """NSGA-III search over L2 profiles. Objective = (in-sample L2 P/L, -in-sample max_dd, win-rate)
     with the DD<=dd_pnl_cap*P/L feasibility constraint; OOS (2026) is scored only for the champion.
     `l1_params` (optional) scores L2 on a CANDIDATE L1's residuals (e.g. the wsh6 cap_1min champion)
@@ -88,8 +95,10 @@ def run(n_trials: int = 200, tf: str = "4h", study_prefix: str = "l2v1", seed: i
     w = WINDOWS(l1)
     caps = OPT._load_json(OPT._CAPS); bounds = OPT._load_json(OPT._BOUNDS)
     cap = int(caps[tf]["cooldown_cap"]); b = bounds[tf]
-    print(f"[l2:{tf}] in-sample bars {w['in']}  OOS {w['oos']}  trials={n_trials}  min_trades={min_trades}",
-          flush=True)
+    from indicators import library as _lib
+    _scope = OPT.searchable_indicators(tuple(only_inds), tuple(exclude_inds))
+    print(f"[l2:{tf}] in-sample bars {w['in']}  OOS {w['oos']}  trials={n_trials}  min_trades={min_trades}"
+          f"  indicators searched={len(_scope)}/{len(_lib.REGISTRY)}", flush=True)
     if contrib_tokens and contrib_exclude:
         print(f"[l2:{tf}] **NOTE: SMC indicators {list(contrib_exclude)} are EXCLUDED from the "
               f"cross-instrument committee search (speed — ifvg/breaker are ~90% of per-trial cost, "
@@ -97,7 +106,8 @@ def run(n_trials: int = 200, tf: str = "4h", study_prefix: str = "l2v1", seed: i
 
     def objective(trial):
         params = suggest_l2_params(trial, b, cap, contrib_tokens=contrib_tokens,
-                                   contrib_exclude=contrib_exclude, intracandle=intracandle)
+                                   contrib_exclude=contrib_exclude, intracandle=intracandle,
+                                   only_inds=only_inds, exclude_inds=exclude_inds)
         s = score_window(l1, params, *w["in"])
         if s["n"] < min_trades:
             raise optuna.TrialPruned()

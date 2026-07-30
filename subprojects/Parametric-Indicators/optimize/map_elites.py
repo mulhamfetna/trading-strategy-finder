@@ -11,8 +11,15 @@ Behavior descriptors (the niche axes) for us:
 Fitness (maximise) = median fold P/L, FEASIBLE only (full_dd ≤ 25%·full_pnl, full_pnl > 0).
 
 Genotype (reuses P3's frozen-indicator-params philosophy — tune WHICH indicators + execution knobs, not
-each indicator's internals): en[<key>] on/off (18), flip, and the continuous knobs (sl_soft, sl_hard_delta,
-tp, gate_pct, dd_limit, cooldown, k, +6 split). Indicator params are frozen at the warm-start champion.
+each indicator's internals): en[<key>] on/off (one per REGISTRY entry — 165 today, 18 when this was
+written), flip, and the continuous knobs (sl_soft, sl_hard_delta, tp, gate_pct, dd_limit, cooldown, k,
++6 split). Indicator params are frozen at the warm-start champion.
+
+⚠️ CAVEAT THAT SURVIVES THE #81 FIX: freezing the indicator params means an indicator is judged at ONE
+parameter setting, and for the ~157 indicators absent from the warm-start champion that setting is the
+SCHEMA DEFAULT (two_stage.py:83-86) — never tuned for this market. An indicator that would win at a
+different value is eliminated before its values are explored. Tracked in #85; MAP-Elites inherits the
+fix when two_stage._Ctx gets it.
 
 The wsh4 champion is enqueued as the FIRST elite ⇒ the archive provably contains a point ≥ it.
 
@@ -79,16 +86,40 @@ def _perturb_cont(cont: dict, space: dict, rng: random.Random) -> dict:
     return out
 
 
+# Genome shape targets. Deployed champions use 3–10 indicators, so a random genome should look like a
+# plausible strategy rather than a committee of everything.
+#
+# THE BUG THIS REPLACES (#81). `en = {k: rng.random() < 0.4 ...}` is a PROBABILITY, so the genome's size
+# is a function of how big the registry happens to be. At 18 indicators it meant "about 7 enabled" — a
+# realistic strategy. At 165 it means "about 66", which is nothing we would ever trade. Measured by
+# simulating the genome dynamics over a standard 400-evaluation run: with 18 indicators the archive
+# spanned 0–15 enabled and covered the champion region; with 165 it spanned 50–83 and NEVER reached it.
+# Mutation moves the count by ±1, so from ~66 it cannot walk to ~5 within any realistic budget.
+#
+# Sampling a COUNT and then choosing which indicators makes the genome shape independent of registry
+# size — it stays correct the next time the library grows.
+RAND_N_IND = (1, 15)     # inclusive range of enabled indicators in a bootstrap genome
+MUT_FRAC = 0.02          # mutation toggles ~this fraction of the genome (min 1 bit)
+
+
 def _rand_geno(ctx, space, rng):
-    en = {k: (rng.random() < 0.4) for k in library.REGISTRY}
+    keys = list(library.REGISTRY)
+    n_on = rng.randint(RAND_N_IND[0], min(RAND_N_IND[1], len(keys)))
+    on = set(rng.sample(keys, n_on))
+    en = {k: (k in on) for k in keys}
     return en, (rng.random() < 0.5), _rand_cont(space, rng)
 
 
 def _mutate(geno, space, rng):
     en, flip, cont = geno
     en = dict(en)
-    for _ in range(rng.choice([1, 1, 2])):          # toggle 1–2 indicator bits
-        en[rng.choice(list(library.REGISTRY))] ^= True
+    keys = list(library.REGISTRY)
+    # A FRACTION of the genome, not a fixed 1–2 bits: at 18 indicators 1–2 bits moved ~8% of the genome,
+    # at 165 the same 1–2 bits move ~1%, so the operator silently weakened ~9x when the library grew.
+    n_flip = max(1, int(round(MUT_FRAC * len(keys))))
+    n_flip = rng.choice([n_flip, n_flip, n_flip + 1])       # keep the old 1–1–2 shape, scaled
+    for k in rng.sample(keys, min(n_flip, len(keys))):
+        en[k] ^= True
     if rng.random() < 0.10:
         flip = not flip
     return en, flip, _perturb_cont(cont, space, rng)
