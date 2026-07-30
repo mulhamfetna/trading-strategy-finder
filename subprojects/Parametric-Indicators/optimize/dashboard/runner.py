@@ -22,6 +22,10 @@ from pathlib import Path
 
 _HERE = Path(__file__).resolve().parent
 _PI = _HERE.parent.parent                        # Parametric-Indicators root (cwd for the child)
+if str(_PI) not in sys.path:
+    sys.path.insert(0, str(_PI))
+
+from optimize import run_spec as RS              # noqa: E402 — the ONE invocation builder (#91)
 
 
 def _python() -> str:
@@ -103,34 +107,20 @@ def target_trials(cfg: dict, tf: str = "4h") -> int:
                                   int(cfg.get("trials_per_dim", OPT.TRIALS_PER_DIM)))
 
 
+def spec_for(cfg: dict, tf: str) -> "RS.RunSpec":
+    """The RunSpec this cfg launches — the single description both the preview and the launch use."""
+    return RS.from_cfg(cfg, tf, study_prefix=study_prefix(cfg))
+
+
 def build_command(cfg: dict, tf: str) -> list[str]:
-    """The optimizer.py argv equivalent to this cfg (mirrors remote_wsi.sh IND_ARGS)."""
-    cmd = [_python(), "-u", "optimize/optimizer.py", str(tf), "--folds", "5", "--min-trades", "5",
-           "--study-prefix", study_prefix(cfg)]
-    n = _explicit_trials(cfg, tf)
-    cmd += (["--trials", str(n)] if n is not None else ["--auto-trials"])
-    if cfg.get("ind_1min", True):
-        cmd.append("--ind-1min")
-    if cfg.get("split_sltp"):
-        cmd.append("--split-sltp")
-    if cfg.get("sampler"):
-        cmd += ["--sampler", str(cfg["sampler"])]
-    if cfg.get("exclude_indicators"):
-        cmd += ["--exclude-indicators", ",".join(map(str, cfg["exclude_indicators"]))]
-    if cfg.get("only_indicators"):
-        cmd += ["--only-indicators", ",".join(map(str, cfg["only_indicators"]))]
-    if cfg.get("reference"):
-        cmd += ["--reference", str(cfg["reference"])]
-    if cfg.get("max_enabled"):
-        cmd += ["--max-enabled", str(int(cfg["max_enabled"]))]
-    if cfg.get("cold_start"):
-        cmd.append("--no-warm-start")
-    if cfg.get("dd_cap") not in (None, ""):
-        cmd += ["--dd-pnl-cap", str(cfg["dd_cap"])]
-    inst = str(cfg.get("instrument", "NQ"))
-    if inst != "NQ":
-        cmd += ["--instrument", inst]
-    return cmd
+    """The optimizer.py argv this cfg executes.
+
+    Delegates to run_spec.build_argv — the ONE place an invocation is constructed (#91). This used to
+    hand-build the argv while `control.preview_command` hand-built a DIFFERENT one for display; measured
+    across four configurations, the two diverged on all four. There is now nothing to keep in sync.
+    """
+    return RS.build_argv(RS.from_cfg(cfg, tf, study_prefix=study_prefix(cfg)),
+                         python=_python(), unbuffered=True)
 
 
 def _child_env(cfg: dict) -> dict:

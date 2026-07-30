@@ -14,8 +14,6 @@ The wider point this protects: the optimizer's default is to search the WHOLE re
 is the operator's choice. That choice is only real if the cost estimate and the launched command both
 follow it.
 """
-import re
-
 import pytest
 
 from indicators import library
@@ -25,10 +23,17 @@ from optimize.dashboard import control
 ORIGINAL_18 = list(library.REGISTRY)[:18]
 
 
-def _trials_in(cmd: str) -> int:
-    m = re.search(r"--trials (\d+)", cmd)
-    assert m, f"no --trials in command: {cmd}"
-    return int(m.group(1))
+def _budget_of(cfg: dict, tf: str = "4h") -> int:
+    """The trial budget this cfg actually results in.
+
+    ⚠️ This used to parse `--trials N` out of the preview string. That encoded an IMPLEMENTATION DETAIL,
+    not the contract: after #91 the command emits `--auto-trials` and the optimizer computes the budget
+    itself — one place instead of two, which is strictly better and is what makes preview and execution
+    identical. The intent being asserted was always "the budget follows the indicator scope", so ask the
+    spec that question directly instead of scraping a string.
+    """
+    from optimize.dashboard import runner
+    return runner.spec_for(cfg, tf).effective_trials()
 
 
 def test_default_searches_the_whole_registry():
@@ -53,30 +58,31 @@ def test_exclude_indicators_shrinks_the_plan():
 
 
 def test_launched_command_carries_the_scoped_budget():
-    """THE REGRESSION: the command must not ask for a full-registry budget on a scoped search."""
-    p = control.plan({"timeframes": ["4h"], "only_indicators": ORIGINAL_18})
-    launched = _trials_in(p["command"])
+    """THE REGRESSION: a scoped search must not be charged the full-registry budget."""
+    cfg = {"timeframes": ["4h"], "only_indicators": ORIGINAL_18}
+    p = control.plan(cfg)
+    launched = _budget_of(cfg)
     assert launched == p["recommended_trials"]
     assert launched == OPT.recommended_trials(False, only_inds=tuple(ORIGINAL_18))
     assert launched < OPT.recommended_trials(False), (
-        f"command launches {launched} trials for an 18-indicator search — the full-registry budget")
+        f"run resolves to {launched} trials for an 18-indicator search — the full-registry budget")
 
 
 def test_plan_and_command_never_disagree():
-    """Whatever the scope, the number shown and the number launched must be the same number."""
+    """Whatever the scope, the number SHOWN and the number the run resolves to must be the same."""
     for cfg in ({"timeframes": ["4h"]},
                 {"timeframes": ["4h"], "only_indicators": ORIGINAL_18},
                 {"timeframes": ["4h"], "exclude_indicators": ORIGINAL_18[:3]},
                 {"timeframes": ["4h"], "only_indicators": ORIGINAL_18[:4], "split_sltp": True}):
         p = control.plan(cfg)
-        assert _trials_in(p["command"]) == p["recommended_trials"], f"mismatch for cfg={cfg}"
+        assert _budget_of(cfg) == p["recommended_trials"], f"mismatch for cfg={cfg}"
 
 
 def test_explicit_trial_count_still_wins():
     """An operator who types a number gets that number — scoping must not override an explicit choice."""
-    p = control.plan({"timeframes": ["4h"], "only_indicators": ORIGINAL_18,
-                      "trials_mode": "one", "trials": 250})
-    assert _trials_in(p["command"]) == 250
+    cfg = {"timeframes": ["4h"], "only_indicators": ORIGINAL_18, "trials_mode": "one", "trials": 250}
+    assert _budget_of(cfg) == 250
+    assert "--trials 250" in control.plan(cfg)["command"]
 
 
 @pytest.mark.parametrize("cfg_key", ["only_indicators", "exclude_indicators"])

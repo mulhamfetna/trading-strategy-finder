@@ -21,6 +21,7 @@ if str(_PI) not in sys.path:
 
 from optimize import optimizer as OPT               # SAMPLER_CHOICES, search_dims, recommended_trials, print_plan
 from optimize import instruments as INST            # TOKENS (tradeable instrument list)
+from optimize import run_spec as RS                 # the ONE invocation builder (#91)
 from indicators import library                      # schema()
 
 _REMOTE = _PI / "optimize" / "server" / "remote_wsi.sh"
@@ -88,42 +89,22 @@ def plan(cfg: dict) -> dict:
 
 
 def preview_command(cfg: dict) -> str:
-    """Render the optimizer.py invocation equivalent to this cfg — mirrors remote_wsi.sh's IND_ARGS
-    construction exactly (same flags, same order, opt-in flags omitted when unset). Representative of
-    the FIRST selected timeframe; a matrix launches one such command per (instrument, tf)."""
+    """Render the EXACT optimizer.py invocation this cfg will execute.
+
+    Delegates to `run_spec.build_argv` — the same function `runner.build_command` uses (#91), so the
+    displayed command and the executed one are the same call and cannot disagree. This previously
+    hand-built its own string ("mirrors remote_wsi.sh's IND_ARGS construction exactly"), and measured
+    across four configurations it diverged from the runner on all four: it showed `--trials N` while the
+    run used `--auto-trials`, and omitted the `--study-prefix` entirely, so an operator could not tell
+    which study their run would write to.
+
+    Representative of the FIRST selected timeframe; a matrix launches one such command per
+    (instrument, tf).
+    """
+    from optimize.dashboard import runner as _runner          # local: avoids an import cycle
     tfs = cfg.get("timeframes") or ([cfg["timeframe"]] if cfg.get("timeframe") else ["4h"])
-    tf = str(tfs[0])
-    # trials: 'one' ⇒ user count; otherwise the ∝-dim recommended target the watchdog drives toward.
-    if cfg.get("trials_mode") == "one" and cfg.get("trials"):
-        trials = str(int(cfg["trials"]))
-    else:
-        _only, _excl = _scope(cfg)                       # budget the search we are ACTUALLY launching
-        trials = str(OPT.recommended_trials(bool(cfg.get("split_sltp")),
-                                            int(cfg.get("trials_per_dim", OPT.TRIALS_PER_DIM)),
-                                            only_inds=_only, exclude_inds=_excl))
-    parts = ["python3 optimize/optimizer.py", tf, "--trials", trials, "--folds 5", "--min-trades 5"]
-    if cfg.get("ind_1min", True):
-        parts.append("--ind-1min")
-    if cfg.get("split_sltp"):
-        parts.append("--split-sltp")
-    if cfg.get("sampler"):
-        parts.append(f"--sampler {cfg['sampler']}")
-    if cfg.get("exclude_indicators"):
-        parts.append("--exclude-indicators " + ",".join(str(x) for x in cfg["exclude_indicators"]))
-    if cfg.get("only_indicators"):
-        parts.append("--only-indicators " + ",".join(str(x) for x in cfg["only_indicators"]))
-    if cfg.get("reference"):
-        parts.append(f"--reference {cfg['reference']}")
-    if cfg.get("max_enabled"):
-        parts.append(f"--max-enabled {int(cfg['max_enabled'])}")
-    if cfg.get("cold_start"):
-        parts.append("--no-warm-start")
-    if cfg.get("dd_cap") not in (None, ""):
-        parts.append(f"--dd-pnl-cap {cfg['dd_cap']}")
-    inst = str(cfg.get("instrument", "NQ"))
-    if inst != "NQ":
-        parts.append(f"--instrument {inst}")
-    return " ".join(parts)
+    spec = RS.from_cfg(cfg, str(tfs[0]), study_prefix=_runner.study_prefix(cfg))
+    return " ".join(RS.build_argv(spec))
 
 
 # ── lifecycle: start / stop(pause) / resume ──────────────────────────────────────────────────────
