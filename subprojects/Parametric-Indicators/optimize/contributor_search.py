@@ -17,14 +17,19 @@ SMC_COMMITTEE_KEYS = ("structure_trend", "order_block", "fvg", "ifvg", "breaker"
 L1_ES_EXCLUDE = SMC_COMMITTEE_KEYS + ("stochastic", "adx")
 
 
-def suggest_contributor(trial, token: str, exclude_committee=SMC_COMMITTEE_KEYS) -> dict:
+def suggest_contributor(trial, token: str, exclude_committee=SMC_COMMITTEE_KEYS,
+                        only_committee=()) -> dict:
     """Searchable cross-instrument contributor cfg (B1 gate schema): master enable, state definition,
     composite signal voter (BOTH encodings searched), the namespaced indicator committee, k_es.
     The 6-cell truth table is keyed by JSON-safe 'dir|state' strings (the objective serialises params).
-    `exclude_committee` keys are forced OFF (not searched) — defaults to the slow SMC family."""
+    `exclude_committee` keys are forced OFF (not searched) — defaults to the slow SMC family.
+    `only_committee` restricts the committee to those keys (empty ⇒ the whole registry, unchanged) —
+    the same scoping the L1 optimizer's --only-indicators provides, needed because this committee is a
+    SECOND full-registry search on top of the strategy's own (#80/#81)."""
     pre = f"{token.lower()}_"
     specs = [{k: v for k, v in s.items() if k != "_searched"}
-             for s in OPT._suggest_indicators(trial, prefix=pre, exclude=exclude_committee)]
+             for s in OPT._suggest_indicators(trial, prefix=pre, exclude=exclude_committee,
+                                              only=tuple(only_committee))]
     enc = trial.suggest_categorical(f"{pre}sig_enc", ["none", "stance", "truthtable"])
     mode = trial.suggest_categorical(f"{pre}sig_mode", ["confirm", "veto", "both"])
     table = {f"{d}|{s}": trial.suggest_categorical(f"{pre}tt_{d}_{s}", ["confirm", "veto", "ignore"])

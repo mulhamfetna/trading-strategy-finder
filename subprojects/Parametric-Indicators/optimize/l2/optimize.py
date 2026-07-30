@@ -70,7 +70,8 @@ def suggest_l2_params(trial, b: dict, cap: int, contrib_tokens=(),
     if contrib_tokens:
         params["contributor_topology"] = trial.suggest_categorical(
             "contributor_topology", ["separate_and", "merged", "or_boost"])
-        params["contributors"] = [_suggest_contributor(trial, tok, exclude_committee=contrib_exclude)
+        params["contributors"] = [_suggest_contributor(trial, tok, exclude_committee=contrib_exclude,
+                                                       only_committee=tuple(only_inds))
                                    for tok in contrib_tokens]
     if intracandle:
         # E3a focused study: force the intra-candle timing ON for L2's vetoed stream and search the wait
