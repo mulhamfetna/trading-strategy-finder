@@ -1,0 +1,42 @@
+[NQ] deployed=best_champions_full.json  candidate=wshgap4_champions_full.json
+done NQ 4h
+done NQ 2h
+done NQ 1h
+done NQ 15m
+done NQ 5m
+done NQ 2m
+[GC] deployed=best_champions_full_GC.json  candidate=wshgap4_champions_full_GC.json
+done GC 4h
+done GC 2h
+done GC 1h
+done GC 15m
+done GC 5m
+done GC 2m
+
+============================================================================================================
+DEPLOYED (best_*) vs RE-OPTIMIZED (wshgap4) — both on the current engine, honest fills
+============================================================================================================
+slot      |              train2025 P/L |           HOLDOUT 2026 P/L |           holdout dd
+------------------------------------------------------------------------------------------
+NQ 4h     |     90,054 ->     90,054 |     61,601 ->     61,601 |   15,560 ->   15,560
+NQ 2h     |     41,657 ->     97,898 |     40,745 ->    -21,830 |    5,645 ->   24,266  <-- WORSE OOS
+NQ 1h     |     56,620 ->     75,245 |     27,203 ->      5,040 |    7,825 ->   10,784  <-- WORSE OOS
+NQ 15m    |     22,515 ->     29,835 |     21,306 ->       -298 |    4,939 ->    2,853  <-- WORSE OOS
+NQ 5m     |     13,091 ->     21,109 |      2,600 ->       -343 |    1,521 ->    3,295  <-- WORSE OOS
+NQ 2m     |     26,010 ->     25,608 |      4,545 ->     -5,003 |    3,833 ->    9,993  <-- WORSE OOS
+GC 4h     |     54,782 ->    121,292 |     34,290 ->    -16,090 |    7,969 ->   16,178  <-- WORSE OOS
+GC 2h     |     58,828 ->    134,191 |     26,101 ->    -20,524 |   15,649 ->   24,863  <-- WORSE OOS
+GC 1h     |     58,228 ->     88,632 |     28,740 ->     12,301 |   21,007 ->   21,091  <-- WORSE OOS
+GC 15m    |     44,713 ->     44,713 |     37,897 ->     37,897 |    7,583 ->    7,583
+GC 5m     |      9,619 ->      7,884 |     10,346 ->        971 |    3,905 ->    1,116  <-- WORSE OOS
+GC 2m     |     25,008 ->     25,008 |     13,699 ->     13,699 |    3,825 ->    3,825
+------------------------------------------------------------------------------------------
+TOTAL train2025 | deployed      501,126  reopt      761,472  delta     +260,346
+TOTAL holdout2026 | deployed      309,072  reopt       67,419  delta     -241,653
+============================================================================================================
+
+The train2025 column is where the optimizer was allowed to look — a gain there is expected and
+proves nothing. Only the HOLDOUT 2026 column is evidence. A slot may be proposed for adoption
+only if it improves the holdout AND does not worsen holdout drawdown.
+
+WROTE /home/dev/Mulham/gap4/compare_gap2.json

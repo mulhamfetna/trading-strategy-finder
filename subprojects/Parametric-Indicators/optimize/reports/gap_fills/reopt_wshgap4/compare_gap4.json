@@ -1,0 +1,1242 @@
+{
+ "NQ_4h": {
+  "deployed": {
+   "train2025": {
+    "pnl": 90054.47637956197,
+    "max_dd": 11697.624041539966,
+    "win": 60.2,
+    "pf": 1.65,
+    "payoff": 1.09,
+    "n_taken": 196,
+    "exposure": 100.0
+   },
+   "holdout2026": {
+    "pnl": 61600.92695798114,
+    "max_dd": 15560.176976779912,
+    "win": 69.1,
+    "pf": 2.14,
+    "payoff": 0.95,
+    "n_taken": 81,
+    "exposure": 100.0
+   },
+   "full": {
+    "pnl": 151655.4033375431,
+    "max_dd": 15560.176976779912,
+    "win": 62.8,
+    "pf": 1.79,
+    "payoff": 1.06,
+    "n_taken": 277,
+    "exposure": 100.0
+   },
+   "box": {
+    "sl_soft": 128.577008338,
+    "sl_hard": 151.442378696,
+    "tp": 125.561176619,
+    "cap_mode": "bars",
+    "cap_1min": 451,
+    "gate_pct": 89.6628039906,
+    "dd_limit": 4119.49483449,
+    "flip": false,
+    "k": 1
+   },
+   "indicators": [
+    "bollinger",
+    "keltner",
+    "macd",
+    "mfi",
+    "obv",
+    "order_block",
+    "structure_trend",
+    "vwap"
+   ]
+  },
+  "reopt": {
+   "train2025": {
+    "pnl": 90054.47637956197,
+    "max_dd": 11697.624041539966,
+    "win": 60.2,
+    "pf": 1.65,
+    "payoff": 1.09,
+    "n_taken": 196,
+    "exposure": 100.0
+   },
+   "holdout2026": {
+    "pnl": 61600.92695798114,
+    "max_dd": 15560.176976779912,
+    "win": 69.1,
+    "pf": 2.14,
+    "payoff": 0.95,
+    "n_taken": 81,
+    "exposure": 100.0
+   },
+   "full": {
+    "pnl": 151655.4033375431,
+    "max_dd": 15560.176976779912,
+    "win": 62.8,
+    "pf": 1.79,
+    "payoff": 1.06,
+    "n_taken": 277,
+    "exposure": 100.0
+   },
+   "box": {
+    "sl_soft": 128.577008338,
+    "sl_hard": 151.442378696,
+    "tp": 125.561176619,
+    "cap_mode": "bars",
+    "cap_1min": 451,
+    "gate_pct": 89.6628039906,
+    "dd_limit": 4119.49483449,
+    "flip": false,
+    "k": 1
+   },
+   "indicators": [
+    "bollinger",
+    "keltner",
+    "macd",
+    "mfi",
+    "obv",
+    "order_block",
+    "structure_trend",
+    "vwap"
+   ]
+  },
+  "deployed_file": "best_champions_full.json",
+  "candidate_file": "wshgap4_champions_full.json"
+ },
+ "NQ_2h": {
+  "deployed": {
+   "train2025": {
+    "pnl": 41657.304708694646,
+    "max_dd": 9419.2458890938,
+    "win": 58.8,
+    "pf": 1.47,
+    "payoff": 1.03,
+    "n_taken": 136,
+    "exposure": 100.0
+   },
+   "holdout2026": {
+    "pnl": 40744.77432889631,
+    "max_dd": 5645.0,
+    "win": 70.0,
+    "pf": 2.79,
+    "payoff": 1.2,
+    "n_taken": 50,
+    "exposure": 100.0
+   },
+   "full": {
+    "pnl": 82752.07903759096,
+    "max_dd": 9419.2458890938,
+    "win": 62.2,
+    "pf": 1.75,
+    "payoff": 1.06,
+    "n_taken": 185,
+    "exposure": 100.0
+   },
+   "box": {
+    "sl_soft": 83.6760646471,
+    "sl_hard": 182.284425066,
+    "tp": 97.0777723889,
+    "cap_mode": "both",
+    "cap_1min": 561,
+    "gate_pct": 85.1859817041,
+    "dd_limit": 2334.10743718,
+    "flip": false,
+    "k": 5
+   },
+   "indicators": [
+    "bollinger",
+    "cci",
+    "ema_trend",
+    "fvg",
+    "keltner",
+    "mfi",
+    "obv",
+    "order_block",
+    "rsi",
+    "vwap"
+   ]
+  },
+  "reopt": {
+   "train2025": {
+    "pnl": 97897.7794390409,
+    "max_dd": 16023.683538377518,
+    "win": 56.4,
+    "pf": 1.44,
+    "payoff": 1.11,
+    "n_taken": 241,
+    "exposure": 82.3
+   },
+   "holdout2026": {
+    "pnl": -21830.230810954963,
+    "max_dd": 24265.998660228506,
+    "win": 41.6,
+    "pf": 0.78,
+    "payoff": 1.1,
+    "n_taken": 77,
+    "exposure": 51.7
+   },
+   "full": {
+    "pnl": 76067.54862808593,
+    "max_dd": 24265.998660228506,
+    "win": 52.8,
+    "pf": 1.24,
+    "payoff": 1.1,
+    "n_taken": 318,
+    "exposure": 71.9
+   },
+   "box": {
+    "sl_soft": 97.02586214940614,
+    "sl_hard": 119.3804809231158,
+    "tp": 121.78839246367572,
+    "cap_mode": "bars",
+    "cap_1min": 1280,
+    "gate_pct": 94.41933496915841,
+    "dd_limit": 4539.4072952540655,
+    "flip": false,
+    "k": 2
+   },
+   "indicators": [
+    "cci",
+    "ema_trend",
+    "keltner",
+    "macd",
+    "structure_trend"
+   ]
+  },
+  "deployed_file": "best_champions_full.json",
+  "candidate_file": "wshgap4_champions_full.json"
+ },
+ "NQ_1h": {
+  "deployed": {
+   "train2025": {
+    "pnl": 56620.13953317888,
+    "max_dd": 8815.127587500028,
+    "win": 53.8,
+    "pf": 2.05,
+    "payoff": 1.76,
+    "n_taken": 93,
+    "exposure": 73.8
+   },
+   "holdout2026": {
+    "pnl": 27202.818870679475,
+    "max_dd": 7824.756966819987,
+    "win": 57.9,
+    "pf": 2.24,
+    "payoff": 1.63,
+    "n_taken": 38,
+    "exposure": 80.9
+   },
+   "full": {
+    "pnl": 78823.21357885841,
+    "max_dd": 8815.127587500028,
+    "win": 54.3,
+    "pf": 2.04,
+    "payoff": 1.72,
+    "n_taken": 129,
+    "exposure": 75.4
+   },
+   "box": {
+    "sl_soft": 59.6962700398,
+    "sl_hard": 109.737848341,
+    "tp": 124.993620625,
+    "cap_mode": "eod",
+    "cap_1min": 0,
+    "gate_pct": 79.794730824,
+    "dd_limit": 4725.81648627,
+    "flip": false,
+    "k": 1
+   },
+   "indicators": [
+    "bollinger",
+    "breaker",
+    "cci",
+    "cisd",
+    "fvg",
+    "order_block",
+    "rsi",
+    "sma_trend",
+    "structure_trend",
+    "vwap"
+   ]
+  },
+  "reopt": {
+   "train2025": {
+    "pnl": 75245.16195308694,
+    "max_dd": 7428.949799300899,
+    "win": 61.7,
+    "pf": 2.04,
+    "payoff": 1.27,
+    "n_taken": 128,
+    "exposure": 81.5
+   },
+   "holdout2026": {
+    "pnl": 5039.577308039661,
+    "max_dd": 10783.949799300899,
+    "win": 47.1,
+    "pf": 1.13,
+    "payoff": 1.27,
+    "n_taken": 51,
+    "exposure": 70.8
+   },
+   "full": {
+    "pnl": 81574.7392611266,
+    "max_dd": 10783.949799300899,
+    "win": 57.9,
+    "pf": 1.75,
+    "payoff": 1.27,
+    "n_taken": 178,
+    "exposure": 77.7
+   },
+   "box": {
+    "sl_soft": 63.670615777194996,
+    "sl_hard": 113.8948968544511,
+    "tp": 89.65125501747642,
+    "cap_mode": "none",
+    "cap_1min": 0,
+    "gate_pct": 88.45956925312461,
+    "dd_limit": 3064.792117574233,
+    "flip": false,
+    "k": 4
+   },
+   "indicators": [
+    "bollinger",
+    "cci",
+    "ema_trend",
+    "fvg",
+    "mfi",
+    "order_block",
+    "sma_trend",
+    "structure_trend",
+    "vwap"
+   ]
+  },
+  "deployed_file": "best_champions_full.json",
+  "candidate_file": "wshgap4_champions_full.json"
+ },
+ "NQ_15m": {
+  "deployed": {
+   "train2025": {
+    "pnl": 22515.345302423084,
+    "max_dd": 7326.365077332084,
+    "win": 51.5,
+    "pf": 1.41,
+    "payoff": 1.33,
+    "n_taken": 130,
+    "exposure": 39.9
+   },
+   "holdout2026": {
+    "pnl": 21305.631406295433,
+    "max_dd": 4939.290436012016,
+    "win": 56.2,
+    "pf": 1.83,
+    "payoff": 1.43,
+    "n_taken": 73,
+    "exposure": 43.7
+   },
+   "full": {
+    "pnl": 35195.30019681464,
+    "max_dd": 7326.365077332084,
+    "win": 51.3,
+    "pf": 1.44,
+    "payoff": 1.37,
+    "n_taken": 193,
+    "exposure": 39.1
+   },
+   "box": {
+    "sl_soft": 33.9232848642,
+    "sl_hard": 69.781123063,
+    "tp": 60.0354781994,
+    "cap_mode": "eod",
+    "cap_1min": 0,
+    "gate_pct": 99.4309621818,
+    "dd_limit": 103.790770321,
+    "flip": false,
+    "k": 1
+   },
+   "indicators": [
+    "bollinger",
+    "breaker",
+    "fvg",
+    "keltner",
+    "macd",
+    "mfi",
+    "rsi",
+    "structure_trend"
+   ]
+  },
+  "reopt": {
+   "train2025": {
+    "pnl": 29835.297978375747,
+    "max_dd": 1632.9532569175353,
+    "win": 43.0,
+    "pf": 2.63,
+    "payoff": 3.48,
+    "n_taken": 100,
+    "exposure": 100.0
+   },
+   "holdout2026": {
+    "pnl": -298.3069070978672,
+    "max_dd": 2852.9862302351103,
+    "win": 22.2,
+    "pf": 0.96,
+    "payoff": 3.36,
+    "n_taken": 27,
+    "exposure": 100.0
+   },
+   "full": {
+    "pnl": 29536.99107127788,
+    "max_dd": 2852.9862302351103,
+    "win": 38.6,
+    "pf": 2.14,
+    "payoff": 3.4,
+    "n_taken": 127,
+    "exposure": 100.0
+   },
+   "box": {
+    "sl_soft": 11.736343838746256,
+    "sl_hard": 21.049220948625013,
+    "tp": 61.14601417999631,
+    "cap_mode": "both",
+    "cap_1min": 472,
+    "gate_pct": 69.5996510445494,
+    "dd_limit": 4719.463138918981,
+    "flip": true,
+    "k": 1
+   },
+   "indicators": [
+    "bollinger",
+    "cci",
+    "cisd",
+    "fvg",
+    "keltner",
+    "obv",
+    "rsi",
+    "sma_trend",
+    "stochastic"
+   ]
+  },
+  "deployed_file": "best_champions_full.json",
+  "candidate_file": "wshgap4_champions_full.json"
+ },
+ "NQ_5m": {
+  "deployed": {
+   "train2025": {
+    "pnl": 13090.508375383652,
+    "max_dd": 1722.9856358480174,
+    "win": 65.5,
+    "pf": 2.08,
+    "payoff": 1.1,
+    "n_taken": 87,
+    "exposure": 100.0
+   },
+   "holdout2026": {
+    "pnl": 2600.226189295936,
+    "max_dd": 1520.735665743996,
+    "win": 62.5,
+    "pf": 2.26,
+    "payoff": 1.36,
+    "n_taken": 16,
+    "exposure": 100.0
+   },
+   "full": {
+    "pnl": 15216.239332799596,
+    "max_dd": 1722.9856358480174,
+    "win": 65.3,
+    "pf": 2.08,
+    "payoff": 1.1,
+    "n_taken": 101,
+    "exposure": 100.0
+   },
+   "box": {
+    "sl_soft": 21.3712196233,
+    "sl_hard": 26.6433916436,
+    "tp": 25.724761594,
+    "cap_mode": "both",
+    "cap_1min": 126,
+    "gate_pct": 30.3758434152,
+    "dd_limit": 2608.29656707,
+    "flip": false,
+    "k": 2
+   },
+   "indicators": [
+    "cci",
+    "cisd",
+    "ema_trend",
+    "ifvg",
+    "macd",
+    "obv",
+    "order_block",
+    "sma_trend",
+    "vwap"
+   ]
+  },
+  "reopt": {
+   "train2025": {
+    "pnl": 21108.73309232782,
+    "max_dd": 3239.1616842473013,
+    "win": 57.1,
+    "pf": 1.76,
+    "payoff": 1.28,
+    "n_taken": 219,
+    "exposure": 100.0
+   },
+   "holdout2026": {
+    "pnl": -342.76499560037337,
+    "max_dd": 3294.8823465179157,
+    "win": 45.0,
+    "pf": 0.95,
+    "payoff": 1.16,
+    "n_taken": 40,
+    "exposure": 100.0
+   },
+   "full": {
+    "pnl": 20765.968096727447,
+    "max_dd": 3294.8823465179157,
+    "win": 55.2,
+    "pf": 1.6,
+    "payoff": 1.26,
+    "n_taken": 259,
+    "exposure": 100.0
+   },
+   "box": {
+    "sl_soft": 16.658992643449267,
+    "sl_hard": 36.458084212366245,
+    "tp": 28.23198344323632,
+    "cap_mode": "both",
+    "cap_1min": 53,
+    "gate_pct": 41.646255617310814,
+    "dd_limit": 3833.6965061387373,
+    "flip": false,
+    "k": 1
+   },
+   "indicators": [
+    "breaker",
+    "keltner",
+    "mfi",
+    "obv",
+    "sma_trend"
+   ]
+  },
+  "deployed_file": "best_champions_full.json",
+  "candidate_file": "wshgap4_champions_full.json"
+ },
+ "NQ_2m": {
+  "deployed": {
+   "train2025": {
+    "pnl": 26009.619825408226,
+    "max_dd": 3740.5391633648105,
+    "win": 52.3,
+    "pf": 1.5,
+    "payoff": 1.37,
+    "n_taken": 375,
+    "exposure": 100.0
+   },
+   "holdout2026": {
+    "pnl": 4544.901701475537,
+    "max_dd": 3833.0655340105295,
+    "win": 46.3,
+    "pf": 1.2,
+    "payoff": 1.39,
+    "n_taken": 149,
+    "exposure": 100.0
+   },
+   "full": {
+    "pnl": 31724.217440123903,
+    "max_dd": 3833.0655340105295,
+    "win": 51.0,
+    "pf": 1.43,
+    "payoff": 1.37,
+    "n_taken": 520,
+    "exposure": 100.0
+   },
+   "box": {
+    "sl_soft": 13.2499763856,
+    "sl_hard": 14.6211989155,
+    "tp": 20.1541403219,
+    "cap_mode": "both",
+    "cap_1min": 859,
+    "gate_pct": 76.4624050328,
+    "dd_limit": 4304.65398441,
+    "flip": false,
+    "k": 2
+   },
+   "indicators": [
+    "breaker",
+    "cisd",
+    "ifvg",
+    "mfi",
+    "order_block",
+    "sma_trend",
+    "vwap"
+   ]
+  },
+  "reopt": {
+   "train2025": {
+    "pnl": 25608.36870268955,
+    "max_dd": 4789.8518830223475,
+    "win": 44.7,
+    "pf": 1.25,
+    "payoff": 1.55,
+    "n_taken": 696,
+    "exposure": 92.7
+   },
+   "holdout2026": {
+    "pnl": -5003.483872925208,
+    "max_dd": 9993.071896912079,
+    "win": 40.0,
+    "pf": 0.89,
+    "payoff": 1.34,
+    "n_taken": 250,
+    "exposure": 79.1
+   },
+   "full": {
+    "pnl": 25121.53986335521,
+    "max_dd": 5425.118789983171,
+    "win": 44.5,
+    "pf": 1.24,
+    "payoff": 1.55,
+    "n_taken": 712,
+    "exposure": 66.7
+   },
+   "box": {
+    "sl_soft": 13.274460944074837,
+    "sl_hard": 13.290191774667566,
+    "tp": 20.71209515599036,
+    "cap_mode": "both",
+    "cap_1min": 997,
+    "gate_pct": 82.13720415432884,
+    "dd_limit": 4590.623239624974,
+    "flip": false,
+    "k": 3
+   },
+   "indicators": [
+    "adx",
+    "cci",
+    "fvg",
+    "macd",
+    "rsi",
+    "sma_trend",
+    "vwap"
+   ]
+  },
+  "deployed_file": "best_champions_full.json",
+  "candidate_file": "wshgap4_champions_full.json"
+ },
+ "GC_4h": {
+  "deployed": {
+   "train2025": {
+    "pnl": 54781.856056729404,
+    "max_dd": 9142.00830159025,
+    "win": 54.6,
+    "pf": 1.39,
+    "payoff": 1.15,
+    "n_taken": 229,
+    "exposure": 100.0
+   },
+   "holdout2026": {
+    "pnl": 34289.75420902102,
+    "max_dd": 7969.059323379861,
+    "win": 56.1,
+    "pf": 1.62,
+    "payoff": 1.27,
+    "n_taken": 82,
+    "exposure": 100.0
+   },
+   "full": {
+    "pnl": 89071.61026575041,
+    "max_dd": 9142.00830159025,
+    "win": 55.0,
+    "pf": 1.45,
+    "payoff": 1.19,
+    "n_taken": 311,
+    "exposure": 100.0
+   },
+   "box": {
+    "sl_soft": 14.6536525647,
+    "sl_hard": 34.3953371455,
+    "tp": 19.1547033831,
+    "cap_mode": "eod",
+    "cap_1min": 0,
+    "gate_pct": 97.6394402895,
+    "dd_limit": 707.122894445,
+    "flip": false,
+    "k": 1
+   },
+   "indicators": [
+    "adx",
+    "breaker",
+    "ema_trend",
+    "order_block",
+    "sma_trend",
+    "structure_trend",
+    "vwap"
+   ]
+  },
+  "reopt": {
+   "train2025": {
+    "pnl": 121292.44317530876,
+    "max_dd": 11622.194894503678,
+    "win": 69.6,
+    "pf": 2.41,
+    "payoff": 1.05,
+    "n_taken": 115,
+    "exposure": 100.0
+   },
+   "holdout2026": {
+    "pnl": -16090.487236259014,
+    "max_dd": 16178.292341755332,
+    "win": 38.5,
+    "pf": 0.61,
+    "payoff": 0.98,
+    "n_taken": 26,
+    "exposure": 100.0
+   },
+   "full": {
+    "pnl": 105201.95593904975,
+    "max_dd": 18914.38978900724,
+    "win": 63.8,
+    "pf": 1.82,
+    "payoff": 1.03,
+    "n_taken": 141,
+    "exposure": 100.0
+   },
+   "box": {
+    "sl_soft": 23.00259346947315,
+    "sl_hard": 55.64732562844701,
+    "tp": 25.319512763741,
+    "cap_mode": "none",
+    "cap_1min": 0,
+    "gate_pct": 91.75379027229552,
+    "dd_limit": 223.99242099824818,
+    "flip": false,
+    "k": 2
+   },
+   "indicators": [
+    "adx",
+    "ema_trend",
+    "keltner",
+    "order_block",
+    "rsi",
+    "sma_trend",
+    "structure_trend",
+    "vwap"
+   ]
+  },
+  "deployed_file": "best_champions_full_GC.json",
+  "candidate_file": "wshgap4_champions_full_GC.json"
+ },
+ "GC_2h": {
+  "deployed": {
+   "train2025": {
+    "pnl": 58827.63227697869,
+    "max_dd": 7921.792560260583,
+    "win": 51.0,
+    "pf": 1.37,
+    "payoff": 1.31,
+    "n_taken": 245,
+    "exposure": 100.0
+   },
+   "holdout2026": {
+    "pnl": 26100.622063238006,
+    "max_dd": 15648.536153120585,
+    "win": 51.7,
+    "pf": 1.47,
+    "payoff": 1.37,
+    "n_taken": 87,
+    "exposure": 100.0
+   },
+   "full": {
+    "pnl": 84928.25434021669,
+    "max_dd": 15648.5361531206,
+    "win": 51.2,
+    "pf": 1.39,
+    "payoff": 1.33,
+    "n_taken": 332,
+    "exposure": 100.0
+   },
+   "box": {
+    "sl_soft": 13.2671258053,
+    "sl_hard": 13.3134728488,
+    "tp": 17.4609192246,
+    "cap_mode": "none",
+    "cap_1min": 0,
+    "gate_pct": 93.3829494436,
+    "dd_limit": 168.208572055,
+    "flip": false,
+    "k": 1
+   },
+   "indicators": [
+    "adx",
+    "bollinger",
+    "cci",
+    "ema_trend",
+    "macd",
+    "obv",
+    "rsi",
+    "structure_trend",
+    "vwap"
+   ]
+  },
+  "reopt": {
+   "train2025": {
+    "pnl": 134191.37572183894,
+    "max_dd": 14957.639030803803,
+    "win": 51.5,
+    "pf": 1.75,
+    "payoff": 1.64,
+    "n_taken": 262,
+    "exposure": 100.0
+   },
+   "holdout2026": {
+    "pnl": -20524.25556504354,
+    "max_dd": 24863.09807337284,
+    "win": 31.4,
+    "pf": 0.76,
+    "payoff": 1.66,
+    "n_taken": 86,
+    "exposure": 100.0
+   },
+   "full": {
+    "pnl": 113667.12015679537,
+    "max_dd": 26066.015165784193,
+    "win": 46.6,
+    "pf": 1.43,
+    "payoff": 1.64,
+    "n_taken": 348,
+    "exposure": 100.0
+   },
+   "box": {
+    "sl_soft": 12.250928833350908,
+    "sl_hard": 21.371281528290275,
+    "tp": 23.923609691961715,
+    "cap_mode": "bars",
+    "cap_1min": 1359,
+    "gate_pct": 92.81667114060964,
+    "dd_limit": 598.165895902482,
+    "flip": false,
+    "k": 1
+   },
+   "indicators": [
+    "bollinger",
+    "cci",
+    "ema_trend",
+    "rsi",
+    "structure_trend",
+    "vwap"
+   ]
+  },
+  "deployed_file": "best_champions_full_GC.json",
+  "candidate_file": "wshgap4_champions_full_GC.json"
+ },
+ "GC_1h": {
+  "deployed": {
+   "train2025": {
+    "pnl": 58228.46409355092,
+    "max_dd": 15385.082906400203,
+    "win": 45.8,
+    "pf": 1.29,
+    "payoff": 1.53,
+    "n_taken": 367,
+    "exposure": 100.0
+   },
+   "holdout2026": {
+    "pnl": 28740.43516039719,
+    "max_dd": 21007.143114150316,
+    "win": 44.6,
+    "pf": 1.22,
+    "payoff": 1.52,
+    "n_taken": 204,
+    "exposure": 100.0
+   },
+   "full": {
+    "pnl": 86968.89925394813,
+    "max_dd": 21007.143114150284,
+    "win": 45.4,
+    "pf": 1.26,
+    "payoff": 1.52,
+    "n_taken": 571,
+    "exposure": 100.0
+   },
+   "box": {
+    "sl_soft": 9.16423004906,
+    "sl_hard": 21.2639570965,
+    "tp": 18.774585468,
+    "cap_mode": "eod",
+    "cap_1min": 0,
+    "gate_pct": 97.5176969948,
+    "dd_limit": 689.855495942,
+    "flip": false,
+    "k": 4
+   },
+   "indicators": [
+    "breaker",
+    "cci",
+    "cisd",
+    "macd",
+    "obv",
+    "rsi",
+    "sma_trend",
+    "structure_trend"
+   ]
+  },
+  "reopt": {
+   "train2025": {
+    "pnl": 88632.45139299944,
+    "max_dd": 12175.44182034153,
+    "win": 44.0,
+    "pf": 1.43,
+    "payoff": 1.82,
+    "n_taken": 434,
+    "exposure": 100.0
+   },
+   "holdout2026": {
+    "pnl": 12300.886185130686,
+    "max_dd": 21091.03990763315,
+    "win": 37.4,
+    "pf": 1.08,
+    "payoff": 1.81,
+    "n_taken": 257,
+    "exposure": 100.0
+   },
+   "full": {
+    "pnl": 100933.3375781301,
+    "max_dd": 21091.039907633138,
+    "win": 41.5,
+    "pf": 1.28,
+    "payoff": 1.8,
+    "n_taken": 691,
+    "exposure": 100.0
+   },
+   "box": {
+    "sl_soft": 7.324493512051806,
+    "sl_hard": 17.38899521822895,
+    "tp": 18.84691540296266,
+    "cap_mode": "both",
+    "cap_1min": 903,
+    "gate_pct": 98.89734565685147,
+    "dd_limit": 651.3495198340939,
+    "flip": false,
+    "k": 4
+   },
+   "indicators": [
+    "cisd",
+    "macd",
+    "obv",
+    "rsi",
+    "sma_trend",
+    "structure_trend"
+   ]
+  },
+  "deployed_file": "best_champions_full_GC.json",
+  "candidate_file": "wshgap4_champions_full_GC.json"
+ },
+ "GC_15m": {
+  "deployed": {
+   "train2025": {
+    "pnl": 44713.499388243144,
+    "max_dd": 10093.82884882766,
+    "win": 65.8,
+    "pf": 1.15,
+    "payoff": 0.6,
+    "n_taken": 1234,
+    "exposure": 100.0
+   },
+   "holdout2026": {
+    "pnl": 37896.73232669916,
+    "max_dd": 7583.151677125716,
+    "win": 68.2,
+    "pf": 1.2,
+    "payoff": 0.56,
+    "n_taken": 784,
+    "exposure": 100.0
+   },
+   "full": {
+    "pnl": 82610.2317149423,
+    "max_dd": 10093.82884882766,
+    "win": 66.7,
+    "pf": 1.17,
+    "payoff": 0.58,
+    "n_taken": 2018,
+    "exposure": 100.0
+   },
+   "box": {
+    "sl_soft": 5.57789576565,
+    "sl_hard": 8.43643059794,
+    "tp": 4.16265905461,
+    "cap_mode": "none",
+    "cap_1min": 0,
+    "gate_pct": 98.8973456569,
+    "dd_limit": 384.340125457,
+    "flip": false,
+    "k": 3
+   },
+   "indicators": [
+    "cisd",
+    "ema_trend",
+    "keltner",
+    "macd",
+    "rsi",
+    "sma_trend",
+    "vwap"
+   ]
+  },
+  "reopt": {
+   "train2025": {
+    "pnl": 44713.499388243144,
+    "max_dd": 10093.82884882766,
+    "win": 65.8,
+    "pf": 1.15,
+    "payoff": 0.6,
+    "n_taken": 1234,
+    "exposure": 100.0
+   },
+   "holdout2026": {
+    "pnl": 37896.73232669916,
+    "max_dd": 7583.151677125716,
+    "win": 68.2,
+    "pf": 1.2,
+    "payoff": 0.56,
+    "n_taken": 784,
+    "exposure": 100.0
+   },
+   "full": {
+    "pnl": 82610.2317149423,
+    "max_dd": 10093.82884882766,
+    "win": 66.7,
+    "pf": 1.17,
+    "payoff": 0.58,
+    "n_taken": 2018,
+    "exposure": 100.0
+   },
+   "box": {
+    "sl_soft": 5.57789576565,
+    "sl_hard": 8.43643059794,
+    "tp": 4.16265905461,
+    "cap_mode": "none",
+    "cap_1min": 0,
+    "gate_pct": 98.8973456569,
+    "dd_limit": 384.340125457,
+    "flip": false,
+    "k": 3
+   },
+   "indicators": [
+    "cisd",
+    "ema_trend",
+    "keltner",
+    "macd",
+    "rsi",
+    "sma_trend",
+    "vwap"
+   ]
+  },
+  "deployed_file": "best_champions_full_GC.json",
+  "candidate_file": "wshgap4_champions_full_GC.json"
+ },
+ "GC_5m": {
+  "deployed": {
+   "train2025": {
+    "pnl": 9619.14224937359,
+    "max_dd": 4305.3819936475065,
+    "win": 38.4,
+    "pf": 1.18,
+    "payoff": 1.89,
+    "n_taken": 352,
+    "exposure": 100.0
+   },
+   "holdout2026": {
+    "pnl": 10346.205869732466,
+    "max_dd": 3904.6149079359566,
+    "win": 50.0,
+    "pf": 1.67,
+    "payoff": 1.67,
+    "n_taken": 106,
+    "exposure": 100.0
+   },
+   "full": {
+    "pnl": 19965.348119106056,
+    "max_dd": 4305.3819936475065,
+    "win": 41.0,
+    "pf": 1.29,
+    "payoff": 1.85,
+    "n_taken": 458,
+    "exposure": 100.0
+   },
+   "box": {
+    "sl_soft": 1.47823753296,
+    "sl_hard": 5.47933442366,
+    "tp": 4.93846273016,
+    "cap_mode": "eod",
+    "cap_1min": 0,
+    "gate_pct": 87.6441413802,
+    "dd_limit": 380.011129843,
+    "flip": false,
+    "k": 4
+   },
+   "indicators": [
+    "bollinger",
+    "cci",
+    "cisd",
+    "ema_trend",
+    "fvg",
+    "ifvg",
+    "keltner",
+    "macd",
+    "mfi",
+    "rsi",
+    "sma_trend",
+    "vwap"
+   ]
+  },
+  "reopt": {
+   "train2025": {
+    "pnl": 7884.411184284909,
+    "max_dd": 1719.5938961137472,
+    "win": 64.9,
+    "pf": 1.36,
+    "payoff": 0.73,
+    "n_taken": 154,
+    "exposure": 25.0
+   },
+   "holdout2026": {
+    "pnl": 971.3275628976589,
+    "max_dd": 1116.4811141497012,
+    "win": 61.4,
+    "pf": 1.14,
+    "payoff": 0.72,
+    "n_taken": 44,
+    "exposure": 26.8
+   },
+   "full": {
+    "pnl": 8550.75351385376,
+    "max_dd": 1719.5938961137472,
+    "win": 63.9,
+    "pf": 1.3,
+    "payoff": 0.73,
+    "n_taken": 194,
+    "exposure": 24.9
+   },
+   "box": {
+    "sl_soft": 2.9376465215545675,
+    "sl_hard": 4.229828795122374,
+    "tp": 2.984834679664288,
+    "cap_mode": "none",
+    "cap_1min": 0,
+    "gate_pct": 85.80467227304531,
+    "dd_limit": 336.13003073464984,
+    "flip": true,
+    "k": 3
+   },
+   "indicators": [
+    "breaker",
+    "cisd",
+    "ema_trend",
+    "fvg",
+    "mfi"
+   ]
+  },
+  "deployed_file": "best_champions_full_GC.json",
+  "candidate_file": "wshgap4_champions_full_GC.json"
+ },
+ "GC_2m": {
+  "deployed": {
+   "train2025": {
+    "pnl": 25007.798005536868,
+    "max_dd": 4576.803906585928,
+    "win": 54.7,
+    "pf": 1.27,
+    "payoff": 1.05,
+    "n_taken": 598,
+    "exposure": 100.0
+   },
+   "holdout2026": {
+    "pnl": 13699.339208334504,
+    "max_dd": 3824.6328712675677,
+    "win": 56.6,
+    "pf": 1.29,
+    "payoff": 0.99,
+    "n_taken": 288,
+    "exposure": 100.0
+   },
+   "full": {
+    "pnl": 38707.13721387138,
+    "max_dd": 4576.803906585928,
+    "win": 55.3,
+    "pf": 1.28,
+    "payoff": 1.03,
+    "n_taken": 886,
+    "exposure": 100.0
+   },
+   "box": {
+    "sl_soft": 2.24264241593,
+    "sl_hard": 4.13975566383,
+    "tp": 3.72841581952,
+    "cap_mode": "both",
+    "cap_1min": 589,
+    "gate_pct": 94.7490063798,
+    "dd_limit": 659.308412315,
+    "flip": true,
+    "k": 3
+   },
+   "indicators": [
+    "cci",
+    "ema_trend",
+    "fvg",
+    "obv",
+    "rsi",
+    "stochastic",
+    "structure_trend"
+   ]
+  },
+  "reopt": {
+   "train2025": {
+    "pnl": 25007.798005536868,
+    "max_dd": 4576.803906585928,
+    "win": 54.7,
+    "pf": 1.27,
+    "payoff": 1.05,
+    "n_taken": 598,
+    "exposure": 100.0
+   },
+   "holdout2026": {
+    "pnl": 13699.339208334504,
+    "max_dd": 3824.6328712675677,
+    "win": 56.6,
+    "pf": 1.29,
+    "payoff": 0.99,
+    "n_taken": 288,
+    "exposure": 100.0
+   },
+   "full": {
+    "pnl": 38707.13721387138,
+    "max_dd": 4576.803906585928,
+    "win": 55.3,
+    "pf": 1.28,
+    "payoff": 1.03,
+    "n_taken": 886,
+    "exposure": 100.0
+   },
+   "box": {
+    "sl_soft": 2.24264241593,
+    "sl_hard": 4.13975566383,
+    "tp": 3.72841581952,
+    "cap_mode": "both",
+    "cap_1min": 589,
+    "gate_pct": 94.7490063798,
+    "dd_limit": 659.308412315,
+    "flip": true,
+    "k": 3
+   },
+   "indicators": [
+    "cci",
+    "ema_trend",
+    "fvg",
+    "obv",
+    "rsi",
+    "stochastic",
+    "structure_trend"
+   ]
+  },
+  "deployed_file": "best_champions_full_GC.json",
+  "candidate_file": "wshgap4_champions_full_GC.json"
+ }
+}

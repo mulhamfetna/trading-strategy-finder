@@ -1,0 +1,27 @@
+15:53:59  CAMPAIGN START  prefix=wshgap4 train-window=2025 only-inds=original18 (2026 held out)
+15:53:59  engine commit: d4d6570 fix(optimizer): --auto-trials must budget for the indicators actually searched
+15:53:59  START  NQ 4h
+16:29:52  DONE   NQ 4h  (35m, rc=0)  seed: best_champions_full.json (DEPLOYED set)
+16:29:52  START  NQ 2h
+16:46:47  DONE   NQ 2h  (16m, rc=0)  seed: best_champions_full.json (DEPLOYED set)
+16:46:47  START  NQ 1h
+17:04:06  DONE   NQ 1h  (17m, rc=0)  seed: best_champions_full.json (DEPLOYED set)
+17:04:06  START  NQ 15m
+17:37:39  DONE   NQ 15m  (33m, rc=0)  seed: best_champions_full.json (DEPLOYED set)
+17:37:39  START  NQ 5m
+18:11:35  DONE   NQ 5m  (33m, rc=0)  seed: best_champions_full.json (DEPLOYED set)
+18:11:35  START  NQ 2m
+18:36:52  DONE   NQ 2m  (25m, rc=0)  seed: best_champions_full.json (DEPLOYED set)
+18:36:52  START  GC 4h
+18:52:07  DONE   GC 4h  (15m, rc=0)  seed: best_champions_full_GC.json (DEPLOYED set)
+18:52:07  START  GC 2h
+19:23:46  DONE   GC 2h  (31m, rc=0)  seed: best_champions_full_GC.json (DEPLOYED set)
+19:23:46  START  GC 1h
+19:54:56  DONE   GC 1h  (31m, rc=0)  seed: best_champions_full_GC.json (DEPLOYED set)
+19:54:56  START  GC 15m
+20:27:52  DONE   GC 15m  (32m, rc=0)  seed: best_champions_full_GC.json (DEPLOYED set)
+20:27:52  START  GC 5m
+21:03:52  DONE   GC 5m  (36m, rc=0)  seed: best_champions_full_GC.json (DEPLOYED set)
+21:03:52  START  GC 2m
+21:33:22  DONE   GC 2m  (29m, rc=0)  seed: best_champions_full_GC.json (DEPLOYED set)
+21:33:22  ##### CAMPAIGN COMPLETE #####
