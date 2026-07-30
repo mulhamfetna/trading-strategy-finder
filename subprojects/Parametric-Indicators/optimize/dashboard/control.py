@@ -56,14 +56,34 @@ def config() -> dict:
             "optuna_port": int(os.environ.get("DASH_OPTUNA_PORT", 8082))}   # live Pareto/graphs (separate tunnel)
 
 
+def _scope(cfg: dict) -> tuple[tuple, tuple]:
+    """(only_inds, exclude_inds) as the UI selected them.
+
+    THE BUG THIS FIXES. `plan()` and `preview_command()` computed the search size from the WHOLE
+    registry while the very same cfg passed `--only-indicators` to the launched command. Selecting the
+    original 18 indicators showed "471 dims / 47,100 trials" and launched `--trials 47100` for a search
+    that could only ever touch **59 dimensions / 5,900 trials** — an 8x over-budget, i.e. ~20 hours per
+    study instead of ~45 minutes.
+
+    This is the same defect fixed in the CLI's --auto-trials path (#2), which I missed here: the fix went
+    in at `main()` and the control plane builds its own budget. The control plane is the path a HUMAN
+    actually uses, so this was the copy that mattered.
+    """
+    return (tuple(cfg.get("only_indicators") or ()), tuple(cfg.get("exclude_indicators") or ()))
+
+
 def plan(cfg: dict) -> dict:
     """Acceptance preview: search dimensions → recommended (∝-dimension) trial budget + the exact
     optimizer command the run will execute (so the UI shows what the launch actually does)."""
     split = bool(cfg.get("split_sltp", False))
     per_dim = int(cfg.get("trials_per_dim", OPT.TRIALS_PER_DIM))
-    dims = OPT.search_dims(split)
+    only, excl = _scope(cfg)
+    dims = OPT.search_dims(split, only_inds=only, exclude_inds=excl)
+    n_scoped = len(OPT.searchable_indicators(only, excl))
     return {"dims": dims["total"], "breakdown": dims, "trials_per_dim": per_dim,
-            "recommended_trials": OPT.recommended_trials(split, per_dim),
+            "recommended_trials": OPT.recommended_trials(split, per_dim, only_inds=only, exclude_inds=excl),
+            # so the UI can SHOW the scope it is charging for, rather than the user inferring it
+            "indicators_searched": n_scoped, "indicators_total": len(library.REGISTRY),
             "command": preview_command(cfg)}
 
 
@@ -77,8 +97,10 @@ def preview_command(cfg: dict) -> str:
     if cfg.get("trials_mode") == "one" and cfg.get("trials"):
         trials = str(int(cfg["trials"]))
     else:
+        _only, _excl = _scope(cfg)                       # budget the search we are ACTUALLY launching
         trials = str(OPT.recommended_trials(bool(cfg.get("split_sltp")),
-                                            int(cfg.get("trials_per_dim", OPT.TRIALS_PER_DIM))))
+                                            int(cfg.get("trials_per_dim", OPT.TRIALS_PER_DIM)),
+                                            only_inds=_only, exclude_inds=_excl))
     parts = ["python3 optimize/optimizer.py", tf, "--trials", trials, "--folds 5", "--min-trades 5"]
     if cfg.get("ind_1min", True):
         parts.append("--ind-1min")

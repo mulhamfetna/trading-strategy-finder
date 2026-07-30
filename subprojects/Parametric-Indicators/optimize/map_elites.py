@@ -98,13 +98,22 @@ def _perturb_cont(cont: dict, space: dict, rng: random.Random) -> dict:
 #
 # Sampling a COUNT and then choosing which indicators makes the genome shape independent of registry
 # size — it stays correct the next time the library grows.
+# ⚠️ RAND_N_IND IS A PRIOR, NOT A LIMIT — and it should be a human's choice, not a hidden constant.
+# It shapes only where the search STARTS. Mutation freely adds indicators, and the archive's second axis
+# is the indicator count, so higher-count niches still get colonised (measured: bootstrapping at 1–15
+# still fills the archive out to ~54 enabled). But it does encode a belief — "strategies worth finding
+# look like the ones we deploy, which use 3–10" — and a belief that cannot be changed from the outside
+# is indistinguishable from a bug. Override with --rand-n-ind LO,HI.
 RAND_N_IND = (1, 15)     # inclusive range of enabled indicators in a bootstrap genome
 MUT_FRAC = 0.02          # mutation toggles ~this fraction of the genome (min 1 bit)
 
 
-def _rand_geno(ctx, space, rng):
+def _rand_geno(ctx, space, rng, n_ind_range=None):
     keys = list(library.REGISTRY)
-    n_on = rng.randint(RAND_N_IND[0], min(RAND_N_IND[1], len(keys)))
+    lo, hi = n_ind_range or RAND_N_IND
+    lo = max(0, min(int(lo), len(keys)))
+    hi = max(lo, min(int(hi), len(keys)))
+    n_on = rng.randint(lo, hi)
     on = set(rng.sample(keys, n_on))
     en = {k: (k in on) for k in keys}
     return en, (rng.random() < 0.5), _rand_cont(space, rng)
@@ -127,7 +136,7 @@ def _mutate(geno, space, rng):
 
 def run(tf_name: str, n_evals: int = 400, folds: int = 5, min_trades: int = 5, seed: int = 1,
         ind_1min: bool = False, split_sltp: bool = False, warm_start: bool = True,
-        save: bool = False) -> dict:
+        save: bool = False, n_ind_range=None) -> dict:
     t0 = time.time()
     ctx = TS._Ctx(tf_name, split_sltp, ind_1min, folds, min_trades, warm_start)
     space = cont_space(ctx)
@@ -156,9 +165,12 @@ def run(tf_name: str, n_evals: int = 400, folds: int = 5, min_trades: int = 5, s
         consider((dict(ctx.champ_en), ctx.champ_flip, dict(ctx.champ_cont))); evals += 1
     n_boot = min(max(10, n_evals // 10), n_evals - evals)
     for _ in range(n_boot):
-        consider(_rand_geno(ctx, space, rng)); evals += 1
+        consider(_rand_geno(ctx, space, rng, n_ind_range)); evals += 1
 
+    _lo, _hi = n_ind_range or RAND_N_IND
     print(f"[{tf_name}] MAP-ELITES  evals={n_evals}  (bootstrap {evals}; archive {len(archive)} cells)  "
+          f"bootstrap genome = {_lo}-{_hi} of {len(library.REGISTRY)} indicators; "
+          f"mutation {max(1, round(MUT_FRAC * len(library.REGISTRY)))} bits  "
           f"{'[champion seeded]' if ctx.has_champion else '[no champion]'}", flush=True)
 
     # ── main loop: select a random elite, mutate, place if it wins its cell ──
@@ -168,7 +180,7 @@ def run(tf_name: str, n_evals: int = 400, folds: int = 5, min_trades: int = 5, s
             parent = rng.choice(list(archive.values()))["geno"]
             child = _mutate(parent, space, rng)
         else:
-            child = _rand_geno(ctx, space, rng)
+            child = _rand_geno(ctx, space, rng, n_ind_range)
         if consider(child):
             improvements += 1
         evals += 1
@@ -222,9 +234,21 @@ def main() -> int:
     ap.add_argument("--split-sltp", action="store_true")
     ap.add_argument("--no-warm-start", action="store_true")
     ap.add_argument("--save", action="store_true", help="write archive to optimize/results/mapelites_<tf>.json")
+    ap.add_argument("--rand-n-ind", default=None, metavar="LO,HI",
+                    help=f"bootstrap genome size range (default {RAND_N_IND[0]},{RAND_N_IND[1]}). This is a "
+                         f"PRIOR on where the search starts, not a limit — mutation still reaches higher "
+                         f"counts. Pass e.g. 1,165 to bootstrap across the whole registry.")
     a = ap.parse_args()
+    _rng_ind = None
+    if a.rand_n_ind:
+        try:
+            lo, hi = (int(x) for x in str(a.rand_n_ind).split(","))
+        except Exception:
+            raise SystemExit(f"--rand-n-ind expects LO,HI (got {a.rand_n_ind!r})")
+        _rng_ind = (lo, hi)
     run(a.timeframe, n_evals=a.evals, folds=a.folds, min_trades=a.min_trades, seed=a.seed,
-        ind_1min=a.ind_1min, split_sltp=a.split_sltp, warm_start=not a.no_warm_start, save=a.save)
+        ind_1min=a.ind_1min, split_sltp=a.split_sltp, warm_start=not a.no_warm_start, save=a.save,
+        n_ind_range=_rng_ind)
     return 0
 
 
