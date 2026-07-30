@@ -5,6 +5,54 @@
 
 ---
 
+## ⛔ CORRECTION (2026-07-30, hours after publication) — the comparison is NOT symmetric
+
+Two errors of mine, found by checking the data range before acting on this report. **The decision below
+survives; the headline number does not.**
+
+### Error 1 — the baseline had no holdout either
+
+`optimize/folds.py: score_walkforward` calls `split_folds(df_dec, k)` over the **whole** series. The
+deployed `best_*` champions were therefore *selected* using folds that **include 2026**. `wshgap4` was
+truncated to 2025 by `--train-window 2025`.
+
+> So the "holdout 2026" column is **in-sample for the deployed set and out-of-sample for the
+> challenger.** I built a genuine holdout for the candidate and forgot the incumbent never had one —
+> the exact trap #14 documented, reproduced in my own experiment.
+
+**The −$241,653 / −78% figure is therefore not a fair measure of what re-optimization is worth.** It
+compares an out-of-sample result against an in-sample one.
+
+### Error 2 — "less than half the training data" was wrong
+
+| | bars | share |
+|---|---:|---:|
+| total decision bars (2025-01-01 → 2026-05-19) | 2,119 | 100% |
+| `wshgap4` training window (2025) | 1,534 | **72.4%** |
+| "holdout" 2026 | 585 | 27.6% (138 days) |
+
+`wshgap4` had **72%** of the data, not "less than half". The confound I flagged is real but milder than
+I stated — and it is dwarfed by Error 1.
+
+### What still stands, and why
+
+**ADOPT NOTHING is unchanged**, on an *absolute* criterion that does not depend on the baseline at all:
+
+> **6 of the 12 re-optimized champions LOSE MONEY on data they never saw** (NQ 2h −$21,830, GC 2h
+> −$20,524, GC 4h −$16,090, NQ 2m −$5,003, NQ 5m −$343, NQ 15m −$298).
+
+A strategy that is negative out-of-sample is not adoptable regardless of what it is compared against.
+And **0 of 12 improved** the unseen year. That verdict is safe.
+
+### What this reveals about the dataset
+
+There are only **1.38 years** of history, and the deployed champions have effectively seen **all of it**.
+So there is **no period on which a fair head-to-head can be run at all** — not a shortcoming of the
+experiment's design, but of the data available to it. This re-scopes #87 entirely: the blocker is
+**history length**, not training-window choice.
+
+---
+
 ## Verdict
 
 **No champion is adopted. The deployed set wins on every slot that moved.**
@@ -51,17 +99,17 @@ training year.
 **It proves:** none of these twelve re-optimized champions should be adopted. That decision is solid —
 zero of them improve the untouched year, and half of them lose money in it.
 
-**It does NOT prove that re-optimizing under honest fills is worthless**, and the reason is a limitation
-of my own design, not of the result:
+**It does NOT prove that re-optimizing under honest fills is worthless.** See the correction at the top:
+the deployed champions were *selected* on folds spanning 2026, so they are being scored on their own
+training data while the challenger is not. The comparison is asymmetric in the incumbent's favour, and
+no number in the table below measures what re-tuning is actually worth.
 
-> The deployed champions were tuned on the **full history**. `wshgap4` was restricted to **2025 only**
-> (`--train-window 2025`), because that is what creates a genuine 2026 holdout. So the comparison
-> confounds two changes: *honest fills* and *a training window less than half as long*.
+What *has* been established, and stands on its own:
 
-Less training data over-fits more. A fair test of "does honest-fill re-tuning help?" would need either a
-longer training window with a later holdout, or walk-forward folds that preserve a true out-of-sample
-year at each step. **That experiment has not been run.** What has been established is that **one year of
-training is not enough for this search space** — 471 dimensions against 1,534 decision bars.
+* **one year is not enough training for this search space** — 471 dimensions against 1,534 decision
+  bars, and half the resulting champions lose money out-of-sample;
+* **the dataset cannot support a fair head-to-head at all** — 1.38 years total, all of it seen by the
+  incumbent. Fixing that needs more history, not a cleverer split (#87).
 
 ## How this run differed from the retracted July one
 
@@ -101,6 +149,11 @@ July reported **+$35,475 "out-of-sample"**. Measured properly, the same exercise
   every one of them was a mirage — exactly the outcome the July run was structurally unable to detect.
   Three defects (retired seed, 8× over-budget, wrong indicator scope) were caught *before* the run rather
   than after.
-* **Went wrong:** the training-window confound above is mine. I chose 2025-only to buy a clean holdout
-  and did not flag loudly enough, at the time, that it also halves the training data — which makes the
-  headline number partly a statement about data volume rather than about honest fills.
+* **Went wrong — twice, and the second is worse.** I chose 2025-only to buy a clean holdout, described
+  it as "less than half the training data" (it is **72%**), and — the real error — **never checked
+  whether the incumbent had a holdout too.** It does not: `split_folds` spans the whole series, so the
+  deployed champions were selected on folds including 2026 and are scored here on their own training
+  data. I reproduced the exact defect #14 exists to document, in the experiment built to avoid it.
+* **What caught it:** checking the data's actual date range before starting the follow-up work — which
+  is something I should have done *before* publishing, not after. The tell was available the whole time:
+  a "holdout year" that is 138 days long should have prompted the question of how much history exists.
