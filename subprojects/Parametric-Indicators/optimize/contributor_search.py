@@ -5,15 +5,28 @@ from __future__ import annotations
 
 from optimize import optimizer as OPT
 
-# SMC structural indicators — EXCLUDED from the cross-instrument committee SEARCH by default because they do
-# not vectorise over the long contributor 1-minute frame: on the 486,954-bar ES frame `ifvg`=58.1s and
-# `breaker`=37.9s ALONE are 90% of a 106.4s 18-indicator committee trial (PERFORMANCE.md §9). Dropping the
-# SMC family keeps each contributor-search trial ~10× faster. Still available in the dashboard backtester.
+# SMC structural indicators — EXCLUDED from the cross-instrument committee SEARCH by default.
+#
+# ⚠️ THE COST THAT JUSTIFIED THIS EXCLUSION NO LONGER EXISTS (#89 sweep, 2026-07-31). The original
+# rationale was that these "do not vectorise over the long contributor 1-minute frame": on the
+# 486,954-bar ES frame `ifvg`=58.1s and `breaker`=37.9s ALONE were 90% of a 106.4s 18-indicator
+# committee trial (PERFORMANCE.md §9). Then #62 rewrote the SMC family as Numba state machines and
+# re-measured on the full frame: `ifvg` **29.90s → 0.314s (95×)** and `order_block` **2.82s → 0.118s
+# (24×)** (docs/CLOSEOUT-2026-07-28-indicator-budget.md). The 90%-of-a-trial claim is a PRE-
+# ACCELERATION number describing code that has since been replaced.
+#
+# This is therefore a live restriction of the SEARCH SPACE resting on a stale measurement — six
+# structural indicators are never offered to the cross-instrument committee, for a speed reason that
+# has been engineered away. It is left ON deliberately rather than flipped here: changing a default
+# changes what every contributor search explores, and that is a measured decision, not a cleanup.
+# Re-measure on the ES frame, then decide — tracked as its own issue. Still available in the
+# dashboard backtester either way.
 SMC_COMMITTEE_KEYS = ("structure_trend", "order_block", "fvg", "ifvg", "breaker", "cisd")
 
 # The L1 optimizer scores K walk-forward folds + a full backtest per trial, so the ES committee compute is
 # multiplied — also drop the two heaviest non-SMC indicators (stochastic≈2.2s, adx≈2.2s on the 487k-bar ES
 # frame). L2 (single-window) keeps the SMC-only default.
+# ⚠️ Same caveat: those 2.2s figures are pre-#62 as well, and inherit whatever SMC_COMMITTEE_KEYS becomes.
 L1_ES_EXCLUDE = SMC_COMMITTEE_KEYS + ("stochastic", "adx")
 
 

@@ -26,6 +26,7 @@ if str(_PARENT) not in sys.path:
 
 import optuna  # noqa: E402
 from indicators import library  # noqa: E402
+from optimize import optimizer as OPT  # noqa: E402  — searchable_indicators: the ONE scope resolver
 from optimize import storage  # noqa: E402  — the ONE module that knows Optuna's private table names
 
 # Stable, full list of every indicator's internal param column: "<key>_<param>" across all
@@ -266,6 +267,29 @@ def main(argv):
     return 0
 
 
+def _scope_sentence() -> str:
+    """Describe the indicator scope this run ACTUALLY searched, rather than asserting a number.
+
+    The header used to read "all 15 indicators" — a literal from when the registry held 15. It stayed
+    put through 18 and then 165, and it survived onto every generated report including campaigns that
+    deliberately restricted the search: the rescued wshgap4 report claims "all 15" for a run that
+    searched the original 18 under --only-indicators (#89 sweep). A generated report that hardcodes a
+    fact about the search is a report that eventually lies about it.
+    """
+    only = tuple(x for x in os.environ.get("WSH_ONLY", "").split(",") if x)
+    excl = tuple(x for x in os.environ.get("WSH_EXCLUDE", "").split(",") if x)
+    total = len(library.REGISTRY)
+    if not only and not excl:
+        return f"all {total} indicators in the registry"
+    n = len(OPT.searchable_indicators(only, excl))
+    how = []
+    if only:
+        how.append(f"--only-indicators {','.join(only)}")
+    if excl:
+        how.append(f"--exclude-indicators {','.join(excl)}")
+    return f"{n} of {total} indicators (scoped by `{'` `'.join(how)}`)"
+
+
 def _write_md(summ):
     lines = ["---", "name: ws-i-results-report",
              "description: WS-I.10 results — per-TF NSGA-III indicator search (feasible Pareto fronts; "
@@ -273,8 +297,9 @@ def _write_md(summ):
              "type: report", "status: complete", "workstream: WS-I", "---", "",
              "# WS-I.10 — All-timeframe indicator search: results", "",
              "NSGA-III, 3 objectives (median fold P/L ↑, worst-fold maxDD ↓, median win-rate ↑), "
-             "feasibility = full-period maxDD ≤ 25% of full-period P/L. Search = box params + all 15 "
-             "indicators on/off + their params + K. Champion per TF = max median fold P/L among feasible.", "",
+             "feasibility = full-period maxDD ≤ 25% of full-period P/L. Search = box params + "
+             f"{_scope_sentence()} on/off + their params + K. "
+             "Champion per TF = max median fold P/L among feasible.", "",
              "## Per-timeframe champion (feasible)", "",
              "| TF | complete | feasible | front | med P/L | worst DD | win% | full P/L | DD%·P/L | K | #ind | indicators |",
              "|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|---|"]
