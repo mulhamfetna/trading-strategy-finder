@@ -193,7 +193,10 @@ def test_engine_fast_parity_with_both_caps_on():
 # ---------------------------------------------------------------- search space
 
 def test_cap_switches_are_counted_dimensions():
-    d = OPT.search_dims(split_sltp=False)
+    # force_eod=False stated explicitly: the end-of-day close became the training default on
+    # 2026-07-30 (#79), which legitimately drops en_cap_eod from the searched dimensions.
+    # This test describes the UNFORCED shape, so it must pin it rather than inherit it.
+    d = OPT.search_dims(split_sltp=False, force_eod=False)
     assert d["base_cat"] == 3            # flip, en_cap_bars, en_cap_eod
     assert d["base_int"] == 3            # cooldown, k, cap_1min
     assert d["total"] == sum(v for k, v in d.items() if k != "total")

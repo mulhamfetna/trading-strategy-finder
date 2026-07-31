@@ -22,14 +22,19 @@ from optimize import optimizer as OPT  # noqa: E402
 
 
 def test_forcing_eod_removes_it_as_a_searched_dimension():
-    """Pinned ON ⇒ it is no longer a CHOICE ⇒ it is no longer a dimension, and the budget shrinks."""
-    normal = OPT.search_dims(split_sltp=False)
+    """Pinned ON ⇒ it is no longer a CHOICE ⇒ it is no longer a dimension, and the budget shrinks.
+
+    ⚠️ `normal` must state force_eod=False EXPLICITLY. Since 2026-07-30 the end-of-day close is the
+    training standard and force_eod defaults to True (#79), so relying on the default would compare
+    forced-against-forced and assert nothing at all.
+    """
+    normal = OPT.search_dims(split_sltp=False, force_eod=False)
     forced = OPT.search_dims(split_sltp=False, force_eod=True)
     assert normal["base_cat"] == 3        # flip, en_cap_bars, en_cap_eod
     assert forced["base_cat"] == 2        # flip, en_cap_bars  (en_cap_eod is pinned, not searched)
     assert forced["total"] == normal["total"] - 1
     assert OPT.recommended_trials(False, force_eod=True) == \
-        OPT.recommended_trials(False) - OPT.TRIALS_PER_DIM
+        OPT.recommended_trials(False, force_eod=False) - OPT.TRIALS_PER_DIM
 
 
 def test_the_bar_cap_is_still_searched_under_force_eod():
