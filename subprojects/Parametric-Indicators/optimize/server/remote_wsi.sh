@@ -74,7 +74,10 @@ STORAGE_URL="${WSH_STORAGE_URL:-}"
 # server has a $WSI/pg.env (written by the Postgres provisioning), source it so the secret never leaves the
 # box; otherwise empty ⇒ per-TF sqlite. Used by parity/counts/stats/pull and (mirrored) by launch.sh.
 _PG_FALLBACK="[ -z \"\$WSH_STORAGE_URL\" ] && [ -f '$WSI/pg.env' ] && { set -a; . '$WSI/pg.env'; set +a; }"
-REMOTE_ENV="source $REMOTE_VENV/bin/activate; export WSH_DATA_BASE='$WSI' WSG_DATA_ROOT='$WSI/data' WSH_STORAGE_URL='$STORAGE_URL' WSI_INSTRUMENT='$INSTRUMENT'; $_PG_FALLBACK"
+# WSH_ONLY / WSH_EXCLUDE are exported so the REMOTE side can size the search it is actually running.
+# Without them the budget below was computed over the whole registry while the launch passed
+# --only-indicators, giving a target ~8x the trials the study needs (#89 sweep; same defect as #2).
+REMOTE_ENV="source $REMOTE_VENV/bin/activate; export WSH_DATA_BASE='$WSI' WSG_DATA_ROOT='$WSI/data' WSH_STORAGE_URL='$STORAGE_URL' WSI_INSTRUMENT='$INSTRUMENT' WSH_ONLY='${WSH_ONLY:-}' WSH_EXCLUDE='${WSH_EXCLUDE:-}'; $_PG_FALLBACK"
 
 cmd_push() {
   log "creating scratch + pushing code/data → $WSI"
@@ -135,7 +138,10 @@ cmd_run() {
   # Dimension-proportional budget (anti 'bigger space, fewer samples' trap — see the superset-paradox report):
   # default TARGET = recommended_trials(dims) for the current split mode; pass an explicit number to override.
   local split_py="False"; [ -n "${WSH_SPLIT:-}" ] && split_py="True"
-  local rec; rec=$(srv "$REMOTE_ENV; cd '$CODE' && python3 -c \"from optimize import optimizer as O; print(O.recommended_trials($split_py))\"" 2>/dev/null | tr -dc '0-9')
+  # Budget the search we are ACTUALLY launching: honour --only-indicators / --exclude-indicators, which
+  # this previously ignored (#89 sweep — the fourth site with this defect after --auto-trials, the
+  # control plane's plan(), and the watchdog's target_trials).
+  local rec; rec=$(srv "$REMOTE_ENV; cd '$CODE' && python3 -c \"import os; from optimize import optimizer as O; _o=tuple(x for x in os.environ.get('WSH_ONLY','').split(',') if x); _e=tuple(x for x in os.environ.get('WSH_EXCLUDE','').split(',') if x); print(O.recommended_trials($split_py, only_inds=_o, exclude_inds=_e))\"" 2>/dev/null | tr -dc '0-9')
   local total="${1:-auto}"; { [ "$total" = "auto" ] || [ -z "$total" ]; } && total="${rec:-5000}"
   log "PLAN: prefix=$PREFIX  TFs=[${tfs[*]}]  split=${WSH_SPLIT:+on}${WSH_SPLIT:-off}  warm-start=ON"
   log "      recommended ${rec:-?} trials/TF (∝ dimensions)  →  TARGET ${total} trials/TF"

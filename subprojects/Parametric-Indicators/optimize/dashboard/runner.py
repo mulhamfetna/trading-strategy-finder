@@ -99,12 +99,18 @@ def _explicit_trials(cfg: dict, tf: str) -> int | None:
 
 
 def target_trials(cfg: dict, tf: str = "4h") -> int:
-    from optimize import optimizer as OPT
-    n = _explicit_trials(cfg, tf)
-    if n is not None:
-        return n
-    return OPT.recommended_trials(bool(cfg.get("split_sltp")),
-                                  int(cfg.get("trials_per_dim", OPT.TRIALS_PER_DIM)))
+    """The trial count the watchdog drives toward — which must be the count the RUN actually needs.
+
+    THE BUG THIS FIXES (#89 sweep). This computed its own budget via `recommended_trials(split, per_dim)`
+    with **no indicator scope**, so a run restricted to the original 18 indicators was given a target of
+    **47,000** while the study is sized for **5,800** — an 8.1x mismatch. The watchdog would have kept
+    respawning the optimizer chasing a target the search could never be sized for.
+
+    This is the SAME defect as #2's `--auto-trials` and the control plane's `plan()`, now at its third
+    call site. Fixing a bug at one call site is not fixing the bug — hence the systematic sweep (#89).
+    Routing through the spec means there is one resolution, not a fourth copy.
+    """
+    return spec_for(cfg, tf).effective_trials()
 
 
 def spec_for(cfg: dict, tf: str) -> "RS.RunSpec":
