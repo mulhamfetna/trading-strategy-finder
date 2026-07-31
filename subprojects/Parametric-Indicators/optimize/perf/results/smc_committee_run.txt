@@ -1,0 +1,28 @@
+[smc] ES committee frame: 486,954 1-minute bars (4h decision bars sampled from it). Stage 1 on 40,000 bars -> x12.2 to full. 174 decision bars in the subset.
+[smc] accelerator: numba PRESENT
+[smc]   structure_trend    worst=all_min  subset=  0.0080s  proj_full=0.1s
+[smc]   order_block        worst=all_min  subset=  0.0022s  proj_full=0.03s
+[smc]   fvg                worst=all_max  subset=  0.0086s  proj_full=0.1s
+[smc]   ifvg               worst=default  subset=  0.0048s  proj_full=0.06s
+[smc]   breaker            worst=all_min  subset=  0.0046s  proj_full=0.06s
+[smc]   cisd               worst=all_max  subset=  0.0079s  proj_full=0.1s
+[smc]   stochastic         worst=default  subset=  0.0016s  proj_full=0.02s
+[smc]   adx                worst=all_min  subset=  0.0098s  proj_full=0.12s
+
+[smc] committee trial cost at DEFAULT params, 40,000-bar subset:
+[smc]   committee as searched today (157 indicators): 1.56s subset -> 19.0s full
+[smc]   the 8 EXCLUDED indicators:              0.04s subset -> 0.5s full
+[smc]   admitting them would make the trial 2.9% more expensive; they would be 2.8% of it (the original claim was 90%)
+
+[smc] FULL-FRAME confirmation on all 486,954 1-minute bars (the projections above are extrapolations; these are measurements):
+[smc]   structure_trend    default=0.091s  WORST=all_min=0.096s
+[smc]   order_block        default=0.058s  WORST=all_min=0.081s
+[smc]   fvg                default=0.1s  WORST=all_max=0.101s
+[smc]   ifvg               default=0.224s  WORST=default=0.224s
+[smc]   breaker            default=0.133s  WORST=all_min=0.198s
+[smc]   cisd               default=0.092s  WORST=all_min=0.092s
+[smc]   stochastic         default=0.021s  WORST=default=0.021s
+[smc]   adx                default=0.126s  WORST=all_min=0.129s
+[smc]   --> all 8 excluded indicators at their WORST grid corner, measured on the full frame: 0.94s
+
+[smc] wrote optimize/perf/results/smc_committee.json
