@@ -212,13 +212,25 @@ def main() -> int:
               f"(the projections above are extrapolations; these are measurements):", flush=True)
         fctx, fj, fbd, fdec = _context(full_bars)
         full = {}
+        # ALL THREE grid corners, not just defaults. The first version of this bench measured defaults
+        # at full scale and worst-case only on the subset — and the subset extrapolation UNDER-predicted
+        # `ifvg` by 3.7x (0.06s projected vs 0.223s measured). An extrapolation that is wrong in the
+        # cheap direction is exactly the one you must not lean on when arguing "cheap enough to admit".
         for key in UNDER_TEST:
-            secs, err, _ = _time_vote(key, {p["name"]: p["default"]
-                                            for p in library.SCHEMA[key].get("params", [])},
-                                      fctx, fj, fbd, max(args.timeout, 600))
-            full[key] = {"default_s": None if err else round(secs, 3), "error": err}
-            print(f"[smc]   {key:18s} default on full frame: "
-                  f"{'ERR ' + err if err else f'{secs:.3f}s'}", flush=True)
+            per_cfg, worst_label, worst_s = {}, None, -1.0
+            for label, params in _param_sets(key):
+                secs, err, _ = _time_vote(key, params, fctx, fj, fbd, max(args.timeout, 900))
+                per_cfg[label] = {"s": None if err else round(secs, 3), "error": err}
+                if err is None and secs > worst_s:
+                    worst_label, worst_s = label, secs
+            full[key] = {"default_s": per_cfg["default"]["s"], "by_config": per_cfg,
+                         "worst_config": worst_label,
+                         "worst_s": round(worst_s, 3) if worst_s >= 0 else None}
+            print(f"[smc]   {key:18s} default={per_cfg['default']['s']}s  "
+                  f"WORST={worst_label}={round(worst_s, 3) if worst_s >= 0 else 'ERR'}s", flush=True)
+        tot_worst = sum(v["worst_s"] for v in full.values() if v["worst_s"] is not None)
+        print(f"[smc]   --> all {len(full)} excluded indicators at their WORST grid corner, "
+              f"measured on the full frame: {tot_worst:.2f}s", flush=True)
 
     out = {"token": args.token, "tf": args.tf, "full_1min_bars": full_bars,
            "subset_bars": args.bars, "scale": round(scale, 3),
