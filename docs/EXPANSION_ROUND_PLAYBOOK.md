@@ -131,6 +131,43 @@ Copy this into the round's tracking Issue and tick it before writing code.
 | **P11** | **Rank by FUNCTION, not by indicator. The most expensive thing is often a shared leaf that no indicator's name mentions.** | #62: `_roll_max`/`_roll_min` — a five-line per-bar `np.max(slice)` loop with **19 call sites** — was on its own enough to put `ichimoku_cloud`, `ichimoku_tk_cross`, `chande_kroll` and `smi` over the 2 s budget. Four "slow indicators" were one slow primitive. Fixing it also halved the cost of a dozen indicators that were never on the list. |
 | **P12** | **Before writing a clever algorithm, check whether the cost is the ALGORITHM or the INTERPRETER.** Ranked O(N·n) work at 486,969 bars is ~10⁸ Python-level steps; a JIT of the identical loop is often the whole fix. | #62: 17 indicators went under budget with **no algorithmic change at all** except `_roll_max`/`_roll_min` (deque, O(N)) and a trig lookup table in `sinewave`. The rest were the same arithmetic, compiled. Contrast #54, where `dfa` genuinely needed a closed form — the tell is whether the per-bar work is heavyweight (`polyfit`) or just numerous. |
 
+### Registry-scaling rules — constants calibrated when the library was small
+
+Performance rules ask *"is the new indicator fast enough?"*. These ask the question nobody asked for
+three expansion rounds: **"what did the OLD code assume about how many indicators exist?"** The library
+went 15 → 18 → 143 → 165. Every one of these defects was written correct, kept compiling, kept passing
+its tests, and silently changed meaning underneath.
+
+The common shape: **a constant that is really a ratio.** `0.4` is not "a probability", it is "about 7
+indicators" — but only at 18. `1–2 bits` is not "a small mutation", it is "8% of the genome" — but only
+at 18. Nothing errors when the denominator moves.
+
+| # | Rule | Why (the incident) |
+|---|---|---|
+| **S1** | **After the registry changes size, sweep for constants that were calibrated against the old size — before running anything.** A growth round is not finished when the indicators work; it is finished when everything that *counts* them has been re-derived. | #81/#89: MAP-Elites' bootstrap probability, its mutation width, the two-stage Stage-A budget, the `--auto-trials` budget (at **four** separate call sites), the MAP-Elites archive size and a generated report's header sentence were all calibrated at 15–18 indicators and silently wrong at 165. Not one of them raised an error. |
+| **S2** | **Express genome/search shape as a COUNT or a FRACTION, never as a per-indicator probability.** `rng.random() < p` makes the answer proportional to registry size. | #81: `en = {k: rng.random() < 0.4}` meant "≈7 enabled" at 18 and "**≈66 enabled**" at 165 — nothing anyone would trade. Measured over a 400-eval run, the archive spanned 50–83 enabled and **never reached** the 3–10 region where every deployed champion lives. Mutation moves ±1, so it could not walk there either. |
+| **S3** | **Fix a defect at EVERY call site in the same change, and pin it with a test that enumerates the consumers — not the site you found.** | #2/#89: `--auto-trials` ignoring `--only-indicators` was fixed once in `optimizer.main()`, then found again in `control.plan()`, then in `runner.target_trials()` (the **watchdog**, chasing 47,000 for a run needing 5,800), then in `remote_wsi.sh`. Four sites, one defect, found one at a time over two days. `test_budget_scope_everywhere.py` now asserts spec, UI plan and watchdog agree across four scopes, so a fifth site fails the day it appears. |
+| **S4** | **A cost-based EXCLUSION is a measurement with an expiry date. Re-check it after any acceleration round.** An exclusion silently restricts the search space long after its reason is gone. | #95: six SMC indicators are withheld from the contributor committee because `ifvg`=58.1 s and `breaker`=37.9 s were 90% of a trial. #62 then made `ifvg` **29.90 s → 0.314 s (95×)**. The exclusion still stands, on a number describing code that no longer exists — indicators eliminated before their parameters were ever searched. |
+| **S5** | **A generated report must DERIVE what it says about the search, never assert it from a literal.** | #89: every WS-I report opened with "Search = box params + **all 15 indicators**". True once; the registry went to 18 and then 165 and the sentence never moved. It also claimed "all" for campaigns explicitly restricted with `--only-indicators` — the rescued wshgap4 report describes a search that never happened, in the file whose job is to be the durable record. |
+| **S6** | **Re-derive the archive/bin cardinality whenever an axis is a registry-sized count.** Quality-diversity only works if niches get revisited. | #88: MAP-Elites' second behaviour axis is the indicator count, so the archive went from 9×19 = 171 niches to 9×166 = **1,494** — against a 400-evaluation budget. At ~0.27 evaluations per niche "keep the best per niche" degenerates into "keep the first thing that lands there". |
+| **S7** | **Results produced before a growth round are not comparable to results after it, even from the identical command line.** Say so, in writing, before comparing them. | #2: the July `wshgap` campaign searched 18 indicators (59 dims, 5,900 trials, 44 min/study) because its worktree predated the 143-indicator library. The same command on today's tree searches 165 (471 dims, 47,100 trials) over a differently-shaped space. Same flags, different experiment. |
+
+**Cheap greps when the registry changes size:**
+
+```bash
+# a per-indicator probability — the S2 shape
+grep -rn "rng\.random() <\|random\.random() <" optimize/ --include='*.py'
+
+# a budget or dimension count resolved without the indicator scope (S3)
+grep -rn "recommended_trials\|search_dims" optimize/ --include='*.py' --include='*.sh'
+
+# literal indicator counts in prose that will silently rot (S5)
+grep -rnE "all (1[0-9]|[0-9]{2,3}) indicators" optimize/ indicators/ docs/
+```
+
+Full inventory of every registry-sensitive constant, each marked *derived* / *exposed* / *justified
+safe*: `docs/AUDIT-2026-07-31-registry-sensitive-constants.md`.
+
 ### Correctness-under-optimization rules
 
 | # | Rule | Why |
