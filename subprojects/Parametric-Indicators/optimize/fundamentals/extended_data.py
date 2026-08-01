@@ -29,9 +29,10 @@ import time as _time
 from pathlib import Path
 
 import numpy as np
+import roots                                 # the ONE resolver for repo/data roots (#94)
 import pandas as pd
 
-_ROOT = Path(os.environ.get("WSH_DATA_BASE", "/mnt/data/projects/trading"))
+_ROOT = roots.DATA_ROOT                      # data: machine-specific (#94)
 _DATA = Path(os.environ.get("WSG_DATA_ROOT", str(_ROOT / "data")))
 
 # The 2025+2026 frame the engine uses (unchanged, untouched — golden-locked).

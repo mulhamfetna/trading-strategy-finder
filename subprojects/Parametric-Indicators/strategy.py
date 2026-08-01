@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 
 import config
+import roots                                 # the ONE resolver for repo/data roots (#94)
 from loader import load_data
 from engine import SimpleStrategy, SimpleStrategyParams
 from volatility import vol_forecast, gate_threshold
@@ -83,7 +84,7 @@ def load_inputs_plus20d_tf(tf_name: str):
     all-history files + the combined shared box (build_plus20d_data.py)."""
     import os
     from pathlib import Path
-    base = Path(os.environ.get("WSH_DATA_BASE", "/mnt/data/projects/trading"))
+    base = roots.DATA_ROOT                       # data: machine-specific (#94)
     raw = base / TF.RAW_DIR
     tf = TF.get(tf_name)
     df_dec = load_data(str(raw / f"NQ_{tf.name}_with20d.csv")).sort_values("Date").reset_index(drop=True)

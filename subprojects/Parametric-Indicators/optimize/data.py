@@ -25,13 +25,16 @@ if str(_PARENT) not in sys.path:
 
 import os               # noqa: E402
 import config            # noqa: E402
+import roots                                 # the ONE resolver for repo/data roots (#94)
 from loader import load_data  # noqa: E402
 from volatility import vol_forecast  # noqa: E402
 from optimize import timeframes as TF  # noqa: E402
 
 # Base dir holding the raw timeframe CSVs (Full_Canldes_Data/...). Overridable for the server
-# migration via WSH_DATA_BASE; defaults to the local repo root.
-_BASE = Path(os.environ.get("WSH_DATA_BASE", "/mnt/data/projects/trading"))
+# migration via WSH_DATA_ROOT / the legacy WSH_DATA_BASE. NEVER a hardcoded absolute path (#94):
+# the old literal default was one machine's layout, so anywhere else this resolved to a tree that
+# does not exist and the failure surfaced as "your code is broken".
+_BASE = roots.DATA_ROOT
 _RAW = _BASE / TF.RAW_DIR
 _BOX_CSV = config.DATA_ROOT / "full_data" / "NQ_full_data.csv"   # config.DATA_ROOT honours WSG_DATA_ROOT
 

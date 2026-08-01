@@ -13,10 +13,14 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
-# The parent trading repo root (override for the server migration via WSH_DATA_BASE; mirrors
-# optimize/data._BASE). The instruments registry + delivery bundles live under it.
-_TRADING = Path(os.environ.get("WSH_DATA_BASE", "/mnt/data/projects/trading"))
-_INST_PATH = _TRADING / "subprojects" / "all-stocks-signals" / "instruments.py"
+import roots                                 # the ONE resolver for repo/data roots (#94)
+
+# The instrument registry is CODE -> repo-relative. The delivery bundles are DATA -> data root.
+# These used to be the same variable with one hardcoded default, and because _load_instruments()
+# runs at MODULE level a wrong value raised at IMPORT, so pytest lost this whole file at
+# collection: an ABSENT test rather than a failing one (#94).
+_TRADING = roots.DATA_ROOT
+_INST_PATH = roots.INSTRUMENTS_PY
 
 
 def _load_instruments():

@@ -38,6 +38,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import numpy as np
+import roots                                 # the ONE resolver for repo/data roots (#94)
 
 from loader import load_data
 from indicators import classic, library, smc
@@ -382,7 +383,7 @@ def main() -> int:
     def log(msg):
         print(msg, flush=True)
 
-    base = os.environ.get("WSH_DATA_BASE", "/mnt/data/projects/trading")
+    base = str(roots.DATA_ROOT)                  # never a hardcoded absolute path (#94)
     df = load_data(str(Path(base) / TF.RAW_DIR / "NQ_1m.csv")).sort_values("Date").reset_index(drop=True)
     if args.bars:
         df = df.iloc[: args.bars]

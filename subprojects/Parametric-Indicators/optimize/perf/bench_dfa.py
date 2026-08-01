@@ -18,6 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import numpy as np
+import roots                                 # the ONE resolver for repo/data roots (#94)
 
 from loader import load_data
 from indicators.calc import quant as Q
@@ -28,7 +29,7 @@ THR = np.round(np.arange(0.30, 0.7001, 0.01), 2)
 
 
 def main() -> int:
-    base = os.environ.get("WSH_DATA_BASE", "/mnt/data/projects/trading")
+    base = str(roots.DATA_ROOT)                  # never a hardcoded absolute path (#94)
     csv = Path(base) / TF.RAW_DIR / "NQ_1m.csv"
     close = load_data(str(csv)).sort_values("Date")["Close"].to_numpy(float)
     print(f"[dfa-bench] loaded {len(close):,} 1-min closes from {csv}", flush=True)

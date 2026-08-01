@@ -27,9 +27,12 @@ from pathlib import Path
 import pandas as pd
 
 import config
+import roots                                 # the ONE resolver for repo/data roots (#94)
 from optimize import timeframes as TF
 
-REPO = Path("/mnt/data/projects/trading")
+# The drop lives with the DATA, not with the code, and this had no environment override at all — it was
+# a bare literal, so this script could only ever run on one machine (#94).
+REPO = roots.DATA_ROOT
 DROP = REPO / "2026_last_20_days_data"
 DROP_BOX = DROP / "NQ-2026-last-20-days-boxs" / "NQ-5-6-2026" / "NQ_full_data.csv"
 DROP_CANDLES = DROP / "NQ-2026-last-20-days-candles" / "NQ-5-6-2026_Continuous_Data"

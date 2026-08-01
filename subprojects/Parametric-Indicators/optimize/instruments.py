@@ -13,13 +13,17 @@ import sys
 from pathlib import Path
 
 import config                                   # noqa: E402 (top-level module on sys.path)
+import roots                                 # the ONE resolver for repo/data roots (#94)
 from optimize import timeframes as TF           # noqa: E402
 
 # Mirror optimize/data.py's constants WITHOUT importing it (data.py imports this module → avoid a cycle).
-_BASE = Path(os.environ.get("WSH_DATA_BASE", "/mnt/data/projects/trading"))
+_BASE = roots.DATA_ROOT                      # data: machine-specific (#94)
 _RAW = _BASE / TF.RAW_DIR
 _BOX_CSV = config.DATA_ROOT / "full_data" / "NQ_full_data.csv"
-_INST_PATH = _BASE / "subprojects" / "all-stocks-signals" / "instruments.py"
+# CODE, not data: the instrument registry belongs to the CHECKOUT, so it is repo-relative (#94).
+# It used to hang off the data root, which meant the server read an rsync snapshot under whichever
+# tree held the candles rather than the code actually running.
+_INST_PATH = roots.INSTRUMENTS_PY
 
 TOKENS: tuple[str, ...] = ("NQ", "ES", "GC", "SI", "HG", "CL", "NG", "RTY", "YM")   # COMEX metals (GC/SI/HG) + NYMEX energy (CL/NG) + CME RTY/YM
 POINT_VALUE: dict[str, float] = {"NQ": 20.0, "ES": 50.0, "GC": 100.0, "SI": 5000.0, "HG": 25000.0,

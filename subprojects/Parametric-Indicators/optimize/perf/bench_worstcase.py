@@ -31,6 +31,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import numpy as np
+import roots                                 # the ONE resolver for repo/data roots (#94)
 
 from loader import load_data
 from indicators import library
@@ -121,7 +122,7 @@ def main() -> int:
                          "means 'never ran', not 'cheap' (issue #74). They are flagged NOT EXERCISED.")
     args = ap.parse_args()
 
-    base = os.environ.get("WSH_DATA_BASE", "/mnt/data/projects/trading")
+    base = str(roots.DATA_ROOT)                  # never a hardcoded absolute path (#94)
     csv = Path(base) / TF.RAW_DIR / "NQ_1m.csv"
     df = load_data(str(csv)).sort_values("Date").reset_index(drop=True)
     scale = FULL_BARS / args.bars
