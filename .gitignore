@@ -56,6 +56,15 @@ htmlcov/
 # Explicitly requested by the repo owner, logs and plots included. Nothing under here is live code.
 !subprojects/Parametric-Indicators/server-audit/**
 
+# ...but the blanket un-ignore above also re-admitted __pycache__ INSIDE the archive, and the data
+# directory was never ignored at all. Both matter more than they look: they made `git status` on the
+# server permanently non-empty, so the #94 preflight gate would refuse EVERY run as "dirty".
+#
+# A gate that cries wolf is a gate everyone learns to pass --allow-dirty to, which is strictly worse
+# than no gate. Ignoring these is what keeps "dirty" meaning something.
+subprojects/Parametric-Indicators/server-audit/**/__pycache__/
+subprojects/Parametric-Indicators/data/
+
 # Output
 *.html
 *.pdf
