@@ -94,9 +94,22 @@ def test_the_scope_is_controllable_from_every_launcher(mod, flag):
 
 def test_the_old_opt_in_flag_is_gone():
     """`--contrib-include-smc` was an opt-IN, which only makes sense while withholding is the default.
-    Leaving it would let a run silently mean the opposite of what it says."""
-    src = pathlib.Path(__file__).resolve().parent / "l2" / "optimize.py"
-    assert "--contrib-include-smc" not in src.read_text()
+    Leaving it would let a run silently mean the opposite of what it says.
+
+    Checked through the AST, not by searching the text — the first version of this test failed on the
+    COMMENT that documents the flag's removal, which is the same false positive a regex gave in #89.
+    A code-shape check must look at code shapes.
+    """
+    import ast
+    src = (pathlib.Path(__file__).resolve().parent / "l2" / "optimize.py").read_text()
+    tree = ast.parse(src)
+    flags = [a.value for n in ast.walk(tree) if isinstance(n, ast.Call)
+             and getattr(n.func, "attr", None) == "add_argument"
+             for a in n.args if isinstance(a, ast.Constant) and isinstance(a.value, str)]
+    assert "--contrib-include-smc" not in flags, "the opt-IN flag is still declared"
+    assert "--contrib-exclude" in flags, "and the opt-OUT that replaced it must be there"
+    attrs = {n.attr for n in ast.walk(tree) if isinstance(n, ast.Attribute)}
+    assert "contrib_include_smc" not in attrs, "the removed flag is still being read"
 
 
 def test_suggest_contributor_defaults_to_the_full_registry():
