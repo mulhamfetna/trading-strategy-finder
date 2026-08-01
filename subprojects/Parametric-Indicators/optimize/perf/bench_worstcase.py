@@ -34,6 +34,7 @@ import numpy as np
 import roots                                 # the ONE resolver for repo/data roots (#94)
 
 from loader import load_data
+import provenance                            # every artifact says what produced it (#94)
 from indicators import library
 from indicators.runner import market_context
 from optimize import timeframes as TF
@@ -190,6 +191,7 @@ def main() -> int:
     outp = Path(args.out) if args.out else (
         Path(__file__).resolve().parent / "results" / "worstcase_scan.json")
     outp.parent.mkdir(parents=True, exist_ok=True)
+    out["provenance"] = provenance.snapshot(argv=sys.argv)   # what produced this (#94)
     outp.write_text(json.dumps(out, indent=2))
     print(f"[worstcase] WROTE {outp}", flush=True)
     void = [r["key"] for r in ranked if r.get("measurement_void")]
@@ -199,6 +201,7 @@ def main() -> int:
               f"corner (normal for a rarely-triggering veto): {', '.join(quiet)}", flush=True)
     out["measurement_void"] = void
     out["quiet_but_measured"] = quiet
+    out["provenance"] = provenance.snapshot(argv=sys.argv)   # what produced this (#94)
     outp.write_text(json.dumps(out, indent=2))
 
     if void:

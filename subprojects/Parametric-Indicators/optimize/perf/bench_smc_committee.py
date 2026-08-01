@@ -59,6 +59,7 @@ import pandas as pd
 from indicators import library
 from indicators import runner
 from loader import load_data
+import provenance                            # every artifact says what produced it (#94)
 from optimize import contributor_search as CS
 from optimize import instruments
 from optimize import timeframes as TF
@@ -246,6 +247,7 @@ def main() -> int:
            "full_frame_default": full}
     p = Path(args.out) if args.out else (Path(__file__).resolve().parent / "results" / "smc_committee.json")
     p.parent.mkdir(parents=True, exist_ok=True)
+    out["provenance"] = provenance.snapshot(argv=sys.argv)   # what produced this (#94)
     p.write_text(json.dumps(out, indent=2))
     print(f"\n[smc] wrote {p}", flush=True)
     return 0
