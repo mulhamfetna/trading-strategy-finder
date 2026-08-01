@@ -225,7 +225,8 @@ def searchable_indicators(only_inds: tuple = (), exclude_inds: tuple = ()) -> li
 
 
 def search_dims(split_sltp: bool, intracandle: bool = False, freeze_indicators: bool = False,
-                force_eod: bool = True, only_inds: tuple = (), exclude_inds: tuple = ()) -> dict:
+                force_eod: bool = True, only_inds: tuple = (), exclude_inds: tuple = (),
+                contrib_tokens: tuple = (), contrib_exclude: tuple = ()) -> dict:
     """Breakdown of the tunable search dimensions for the current REGISTRY/SCHEMA.
     base continuous (sl_soft, sl_hard_delta, tp, gate_pct, dd_limit)=5;
     categorical (flip, en_cap_bars, en_cap_eod)=3;
@@ -239,29 +240,45 @@ def search_dims(split_sltp: bool, intracandle: bool = False, freeze_indicators: 
     split = 6 if split_sltp else 0
     # base_cat = flip + en_cap_bars + en_cap_eod. --force-eod pins en_cap_eod ON ⇒ it is no longer
     # SEARCHED, so it stops being a dimension (and the trial budget shrinks accordingly).
+    # CROSS-INSTRUMENT CONTRIBUTORS (#95). This term did not exist, so `--contributors ES --plan`
+    # reported the same dimension count with and without the block — while the committee is a SECOND
+    # full-registry search that roughly DOUBLES the space. --auto-trials was therefore sizing every
+    # contributor run for about HALF the space it was actually searching.
+    #
+    # Found while sizing the two arms of the #95 comparison: both printed identical dimensions, which
+    # cannot be true, because the arms differ by exactly eight committee keys. A budget computed from
+    # something other than the search it is sizing is the same defect as #2 and #89, in a fifth place.
+    contrib = 0
+    if contrib_tokens:
+        from optimize import contributor_search as _cs   # local: _cs imports this module
+        contrib = _cs.contributor_dims(contrib_tokens, exclude_committee=contrib_exclude)
     d = dict(base_cont=5, base_cat=(2 if force_eod else 3),
              base_int=(2 if freeze_indicators else 3),   # k dropped when frozen
-             en_flags=en_flags, ind_params=ind_params, split=split, intracandle=(3 if intracandle else 0))
+             en_flags=en_flags, ind_params=ind_params, split=split, intracandle=(3 if intracandle else 0),
+             contributors=contrib)
     d["total"] = sum(d.values())
     return d
 
 
 def recommended_trials(split_sltp: bool, per_dim: int = TRIALS_PER_DIM, intracandle: bool = False,
                        freeze_indicators: bool = False, force_eod: bool = True,
-                       only_inds: tuple = (), exclude_inds: tuple = ()) -> int:
+                       only_inds: tuple = (), exclude_inds: tuple = (),
+                       contrib_tokens: tuple = (), contrib_exclude: tuple = ()) -> int:
     """Dimension-proportional trial budget: total search dimensions × per_dim."""
     return search_dims(split_sltp, intracandle, freeze_indicators, force_eod,
-                       only_inds, exclude_inds)["total"] * int(per_dim)
+                       only_inds, exclude_inds, contrib_tokens, contrib_exclude)["total"] * int(per_dim)
 
 
 def print_plan(tf_name: str, split_sltp: bool, per_dim: int = TRIALS_PER_DIM, n_trials: int | None = None,
                sampler: str = "nsga3", intracandle: bool = False, freeze_indicators: bool = False,
-               force_eod: bool = True, only_inds: tuple = (), exclude_inds: tuple = ()):
+               force_eod: bool = True, only_inds: tuple = (), exclude_inds: tuple = (),
+               contrib_tokens: tuple = (), contrib_exclude: tuple = ()):
     """Print the search-space size + recommended (dimension-proportional) trial budget. Used by the
     `--plan` dry-run and before every real launch so the budget is reported and can be accepted."""
-    d = search_dims(split_sltp, intracandle, freeze_indicators, force_eod, only_inds, exclude_inds)
+    d = search_dims(split_sltp, intracandle, freeze_indicators, force_eod, only_inds, exclude_inds,
+                    contrib_tokens, contrib_exclude)
     rec = recommended_trials(split_sltp, per_dim, intracandle, freeze_indicators, force_eod,
-                             only_inds, exclude_inds)
+                             only_inds, exclude_inds, contrib_tokens, contrib_exclude)
     if only_inds or exclude_inds:
         _n = len(searchable_indicators(only_inds, exclude_inds))
         print(f"   indicator scope: {_n} of {len(library.REGISTRY)} searchable"
@@ -271,7 +288,9 @@ def print_plan(tf_name: str, split_sltp: bool, per_dim: int = TRIALS_PER_DIM, n_
           f"· sampler={sampler} ──", flush=True)
     print(f"   dimensions: base {d['base_cont']}c+{d['base_cat']}cat+{d['base_int']}i = "
           f"{d['base_cont']+d['base_cat']+d['base_int']}  |  indicators {d['en_flags']} on/off + "
-          f"{d['ind_params']} params  |  split {d['split']}  →  TOTAL {d['total']} dims", flush=True)
+          f"{d['ind_params']} params  |  split {d['split']}"
+          + (f"  |  contributors {d['contributors']}" if d.get("contributors") else "")
+          + f"  →  TOTAL {d['total']} dims", flush=True)
     print(f"   trials/dim {per_dim}  →  RECOMMENDED {rec:,} trials  (∝ dimensions; grows if you add more)", flush=True)
     if n_trials is not None and n_trials != rec:
         print(f"   (requested --trials {n_trials:,} ⇒ {n_trials/d['total']:.0f}/dim)", flush=True)
@@ -870,11 +889,15 @@ def main() -> int:
     # 59-dimension search — 8x over — whenever --only-indicators was used.)
     _excl = tuple(x for x in a.exclude_indicators.split(",") if x)
     _only = tuple(x for x in a.only_indicators.split(",") if x)
+    # Same rule for the contributor scope: parsed BEFORE the plan, because the plan must cost the
+    # search that is actually launched (#2, #89, and now #95's missing contributor term).
+    _cexc = tuple(x for x in a.contrib_exclude.split(",") if x)
     # report the plan (search size + recommended trials) — always, so the budget is visible
     rec = print_plan(a.timeframe, a.split_sltp, a.trials_per_dim,
                      n_trials=(None if a.auto_trials else a.trials), sampler=a.sampler,
                      intracandle=(a.intracandle or a.intracandle_on), freeze_indicators=a.freeze_indicators,
-                     force_eod=a.force_eod, only_inds=_only, exclude_inds=_excl)
+                     force_eod=a.force_eod, only_inds=_only, exclude_inds=_excl,
+                     contrib_tokens=contrib_tokens, contrib_exclude=_cexc)
     if a.plan:
         print("   [--plan] dry run — not launching. Re-run without --plan (optionally --auto-trials) to start.",
               flush=True)
@@ -896,7 +919,6 @@ def main() -> int:
     n_trials = rec if a.auto_trials else a.trials
     if contrib_tokens:
         from optimize import contributor_search as _cs
-        _cexc = tuple(x for x in a.contrib_exclude.split(",") if x)
         print(f"[{a.timeframe}] **searching cross-instrument contributors {list(contrib_tokens)} on L1 "
               f"(ES SEARCHABLE, not forced; topology + es_committee). Committee scope: "
               f"{('EXCLUDING ' + ','.join(_cexc)) if _cexc else 'the FULL registry — nothing withheld (#95)'}.**",

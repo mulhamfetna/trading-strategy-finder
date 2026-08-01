@@ -79,10 +79,17 @@ def plan(cfg: dict) -> dict:
     split = bool(cfg.get("split_sltp", False))
     per_dim = int(cfg.get("trials_per_dim", OPT.TRIALS_PER_DIM))
     only, excl = _scope(cfg)
-    dims = OPT.search_dims(split, only_inds=only, exclude_inds=excl)
+    # #95: the cross-instrument contributor block was invisible to this plan. It is a SECOND
+    # full-registry search that roughly DOUBLES the space, so a contributor run was previewed — and
+    # launched — at about half the budget its own search space needs.
+    ctoks = tuple(cfg.get("contributors") or ())
+    cexcl = tuple(cfg.get("contrib_exclude") or ())
+    dims = OPT.search_dims(split, only_inds=only, exclude_inds=excl,
+                           contrib_tokens=ctoks, contrib_exclude=cexcl)
     n_scoped = len(OPT.searchable_indicators(only, excl))
     return {"dims": dims["total"], "breakdown": dims, "trials_per_dim": per_dim,
-            "recommended_trials": OPT.recommended_trials(split, per_dim, only_inds=only, exclude_inds=excl),
+            "recommended_trials": OPT.recommended_trials(split, per_dim, only_inds=only, exclude_inds=excl,
+                                                         contrib_tokens=ctoks, contrib_exclude=cexcl),
             # so the UI can SHOW the scope it is charging for, rather than the user inferring it
             "indicators_searched": n_scoped, "indicators_total": len(library.REGISTRY),
             "command": preview_command(cfg)}

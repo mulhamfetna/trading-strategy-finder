@@ -80,7 +80,12 @@ class RunSpec:
             return int(self.trials)
         return OPT.recommended_trials(self.split_sltp, self.trials_per_dim,
                                       only_inds=tuple(self.only_indicators),
-                                      exclude_inds=tuple(self.exclude_indicators))
+                                      exclude_inds=tuple(self.exclude_indicators),
+                                      # #95: the contributor committee is a SECOND full-registry
+                                      # search — it roughly doubles the space. Omitting it here sized
+                                      # every contributor run for about half of what it searched.
+                                      contrib_tokens=tuple(self.contributors),
+                                      contrib_exclude=tuple(self.contrib_exclude))
 
     def dims(self) -> dict:
         return OPT.search_dims(self.split_sltp, only_inds=tuple(self.only_indicators),

@@ -33,6 +33,17 @@ SCOPES = [
     ("only the original 18", {"only_indicators": ORIGINAL_18}),
     ("only three", {"only_indicators": ORIGINAL_18[:3]}),
     ("exclude five", {"exclude_indicators": ORIGINAL_18[:5]}),
+    # #95 — THE FIFTH INSTANCE, and the one this file was blind to. Every scope above runs WITHOUT
+    # cross-instrument contributors, so the missing contributor term could not fail any of them. The
+    # committee is a second full-registry search that roughly DOUBLES the space; `search_dims` had no
+    # term for it at all, so `--contributors ES --plan` reported the same 470 dimensions with and
+    # without the block, and --auto-trials sized every contributor run for about half its own space.
+    #
+    # Found by trying to size the two arms of the #95 comparison: both printed IDENTICAL dimensions,
+    # which cannot be true, because the arms differ by exactly eight committee keys.
+    ("with an ES contributor", {"contributors": ("ES",)}),
+    ("contributor, committee scoped", {"contributors": ("ES",),
+                                       "contrib_exclude": tuple(ORIGINAL_18[:8])}),
 ]
 
 
@@ -57,7 +68,9 @@ def test_budget_tracks_the_indicator_scope(label, scope):
     """A narrower search must cost less. The whole class of bug is a budget that ignores the scope."""
     spec = RS.from_cfg(_cfg(scope), "4h")
     expected = OPT.recommended_trials(False, only_inds=tuple(scope.get("only_indicators", ())),
-                                      exclude_inds=tuple(scope.get("exclude_indicators", ())))
+                                      exclude_inds=tuple(scope.get("exclude_indicators", ())),
+                                      contrib_tokens=tuple(scope.get("contributors", ())),
+                                      contrib_exclude=tuple(scope.get("contrib_exclude", ())))
     assert spec.effective_trials() == expected
     n_searched = spec.indicators_searched()
     if n_searched < len(library.REGISTRY):
@@ -114,3 +127,28 @@ def test_no_module_resolves_a_budget_without_the_scope():
     assert not offenders, (
         "these resolve a trial budget without the indicator scope — the 8x defect, again:\n  "
         + "\n  ".join(offenders))
+
+
+def test_a_contributor_run_costs_MORE_than_the_same_run_without_one():
+    """The contributor committee is a second full-registry search. If adding one does not raise the
+    budget, the budget is not seeing it — which is exactly the state this file was written to end."""
+    plain = OPT.recommended_trials(False)
+    withes = OPT.recommended_trials(False, contrib_tokens=("ES",))
+    assert withes > plain, "adding an ES contributor did not change the budget at all"
+    assert withes > 1.8 * plain, (
+        f"the committee roughly doubles the space, but the budget only moved {plain:,} -> {withes:,}")
+
+
+def test_scoping_the_COMMITTEE_shrinks_the_budget_too():
+    """The #95 comparison needs this to be true: its two arms differ ONLY by eight committee keys, and
+    a plan that cannot price that difference cannot size the comparison."""
+    full = OPT.recommended_trials(False, contrib_tokens=("ES",))
+    scoped = OPT.recommended_trials(False, contrib_tokens=("ES",),
+                                    contrib_exclude=tuple(ORIGINAL_18[:8]))
+    assert scoped < full, "excluding committee keys did not shrink the contributor dimensions"
+
+
+def test_the_contributor_term_is_zero_when_there_are_no_contributors():
+    """Byte-identical to every prior non-contributor run — the new term must not move an existing plan."""
+    assert OPT.search_dims(False)["contributors"] == 0
+    assert OPT.search_dims(False)["total"] == OPT.search_dims(False, contrib_tokens=())["total"]

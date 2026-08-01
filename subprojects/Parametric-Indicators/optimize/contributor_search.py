@@ -67,3 +67,33 @@ def suggest_contributor(trial, token: str, exclude_committee=DEFAULT_COMMITTEE_E
             "k_es": int(trial.suggest_int(f"{pre}k_es", 1, 5)),
             "signal": {"encoding": enc, "mode": mode, "table": table},
             "committee": specs}
+
+# Fixed dimensions ONE contributor token adds, outside its indicator committee:
+#   enabled, state_def, sig_enc, sig_mode, k_es          = 5
+#   tt_{long,short}_{long,short,hold} truth-table cells   = 6
+# Named here rather than counted at the call site so the SEARCH and the BUDGET read the same number
+# from the same place — the whole class of defect in #2/#89 was a budget computed from something other
+# than the search it was sizing.
+FIXED_DIMS_PER_TOKEN = 11
+
+
+def contributor_dims(tokens, exclude_committee=(), only_committee=()) -> int:
+    """Search dimensions added by the cross-instrument contributor block.
+
+    THE DEFECT THIS CLOSES (#95, 2026-08-01). `search_dims()` had NO contributor term at all, so
+    `--contributors ES --plan` reported the same 470 dimensions with and without the block. The
+    committee is a SECOND full-registry search — it roughly DOUBLES the space — and `--auto-trials`
+    was sizing runs for half of it.
+
+    Found while trying to size the two arms of the #95 with/without comparison: both arms printed
+    identical dimensions, which is impossible, because the arms differ by exactly eight committee keys.
+    A comparison budgeted from a plan that cannot see the difference between its arms is not a
+    comparison.
+    """
+    toks = tuple(tokens or ())
+    if not toks:
+        return 0
+    keys = OPT.searchable_indicators(tuple(only_committee), tuple(exclude_committee))
+    per_token = FIXED_DIMS_PER_TOKEN + len(keys) + sum(
+        len(OPT.library.SCHEMA[k].get("params", [])) for k in keys)
+    return per_token * len(toks)
