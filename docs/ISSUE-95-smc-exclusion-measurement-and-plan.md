@@ -2,7 +2,7 @@
 name: issue-95-smc-exclusion
 description: Measured — the SMC exclusion from the cross-instrument committee costs 4.4% per trial, not 90%. Investigation, control, and the implementation plan to admit them.
 type: report
-status: measurement complete, implementation pending approval
+status: OPTION A shipped 2026-08-01; the with/without comparison remains
 issue: 95
 date: 2026-07-31
 ---
@@ -160,7 +160,7 @@ say these indicators help. That is a separate question with a separate answer, a
 The goal is to remove a restriction that is no longer justified **without** silently widening the
 search space and calling the result an improvement.
 
-### Phase 0 — decide what "admitting them" means (needs your call)
+### Phase 0 — DECIDED 2026-08-01: **option A**, remove the exclusion entirely ✅
 
 Three options, and they are not equivalent:
 
@@ -228,3 +228,37 @@ Artifacts: `optimize/perf/results/smc_committee.json`, `optimize/perf/results/sm
 - `docs/AUDIT-2026-07-31-registry-sensitive-constants.md` §2.4 — this exclusion in the wider audit
 - `docs/EXPANSION_ROUND_PLAYBOOK.md` §4 rule **S4** — a cost-based exclusion has an expiry date
 - `docs/CLOSEOUT-2026-07-28-indicator-budget.md` — the #62 acceleration that expired it
+
+
+---
+
+## 9. Shipped — 2026-08-01
+
+**Decision: option A.** The exclusion is removed. Full suite **1,170 passed, 1 skipped, 0 failed**.
+
+| what | now |
+|---|---|
+| `DEFAULT_COMMITTEE_EXCLUDE` | `()` — nothing withheld |
+| `SMC_COMMITTEE_KEYS`, `L1_ES_EXCLUDE` | kept as **names**, so a pre-2026-08-01 run reproduces by asking for them explicitly |
+| control | `--contrib-exclude` on both optimizers **and** a `RunSpec` field, so the control centre can express it |
+| removed | `--contrib-include-smc`. An opt-**IN** only makes sense while withholding is the default; leaving it would let a run silently mean the opposite of what it says |
+| cost gate | `test_committee_cost_budget.py` turns the justification into assertions (rule **S4**) |
+
+> **The test that pins the removed flag had to be rewritten.** Its first version searched the source
+> text and failed on the **comment documenting the removal** — the identical false positive a regex
+> produced in #89. It now reads `add_argument` calls and attribute accesses through the AST, so prose
+> about the flag is invisible to it. Twice now, in two different issues: **a code-shape check must look
+> at code shapes.**
+
+### What is still NOT known
+
+**Whether these eight indicators help.** Option A removes a restriction whose stated *reason* no longer
+exists; it does not claim a benefit. The remaining phase is the comparison:
+
+- run the contributor search **with** and **without** the eight — same seed, same budget, same folds
+- judge on out-of-sample fold scores, and only where the holdout is a holdout **for both sides** (#87)
+- report either outcome: *"the search could reach them and did not choose them"* is a real result, and
+  it is the result the exclusion has been preventing anyone from obtaining
+
+Cost: a contributor-search campaign, server-side, hours. Not launched — it is a resource commitment
+worth deciding separately from the code change.
