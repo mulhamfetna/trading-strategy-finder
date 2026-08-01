@@ -17,7 +17,10 @@ def test_the_historical_exclusion_still_works_when_it_is_ASKED_FOR():
     study = optuna.create_study()
     t = study.ask()
     cs.suggest_contributor(t, "ES", exclude_committee=cs.L1_ES_EXCLUDE)
-    assert "es_enabled" in t.params                       # searchable, not forced
+    # es_enabled RETIRED from the search 2026-08-01: opting in IS the enable, so it must NOT appear
+    # as an Optuna parameter. Asserted in the negative on purpose — a leftover dimension would still
+    # cost 100 trials and would let the optimizer switch off a block the human deliberately turned on.
+    assert "es_enabled" not in t.params
     assert "es_en_stochastic" not in t.params and "es_en_ifvg" not in t.params
     assert "es_en_ema_trend" in t.params
 

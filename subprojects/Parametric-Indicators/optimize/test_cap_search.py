@@ -14,12 +14,15 @@ def test_cap_1min_is_a_counted_dimension():
     # force_eod=False stated explicitly: the end-of-day close became the training default on
     # 2026-07-30 (#79), which legitimately drops en_cap_eod from the searched dimensions.
     # This test describes the UNFORCED shape, so it must pin it rather than inherit it.
-    d = OPT.search_dims(split_sltp=False, force_eod=False)
-    assert d["base_int"] == 3                      # cooldown, k, cap_1min
+    # cap_1min is a dimension only when the bars cap is searchable — pin the cap ON for this test,
+    # since it describes the SHAPE of the bar-cap search rather than today's default.
+    d = OPT.search_dims(split_sltp=False, force_eod=False, search_cap_bars=True)
+    assert d["base_int"] == 2                      # k, cap_1min   (cooldown retired 2026-08-01)
     assert d["base_cat"] == 3                      # flip, en_cap_bars, en_cap_eod
     assert d["total"] == sum(v for k, v in d.items() if k != "total")
     # same pinning: d was computed unforced, so the budget must be too
-    assert OPT.recommended_trials(False, per_dim=200, force_eod=False) == d["total"] * 200
+    assert OPT.recommended_trials(False, per_dim=200, force_eod=False,
+                                  search_cap_bars=True) == d["total"] * 200
 
 
 def test_native_seed_carries_cap_1min():

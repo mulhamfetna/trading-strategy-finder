@@ -8,9 +8,9 @@ WHY "OFF BY DEFAULT" WAS NOT ENOUGH. `--contributors` was already empty by defau
 type a flag* is not the same as *cannot be switched on by accident*: `--contributors ES` is one word,
 and everything it costs is invisible until much later.
 
-    +471 search dimensions for ONE token — the strategy's own search is 470, so a single contributor
-    DOUBLES the problem. At the dimension-proportional budget that is 94,100 trials x 8.4 s measured,
-    about 9.1 DAYS for one run. And the resulting champion needs a second instrument's data to
+    +470 search dimensions for ONE token — the strategy's own search is 466, so a single contributor
+    DOUBLES the problem. At the dimension-proportional budget that is ~93,600 trials x 8.4 s measured,
+    about 9 DAYS for one run. And the resulting champion needs a second instrument's data to
     reproduce its own decisions.
 
 So enabling it now takes TWO deliberate acts: naming the tokens, and acknowledging the opt-in.
@@ -36,7 +36,7 @@ def test_naming_a_token_alone_is_refused():
         CS.require_fusion_optin(("ES",))
     msg = str(e.value)
     assert "FUSION-STUDY feature" in msg
-    assert "471" in msg, "the refusal must state the dimensional cost, not just say no"
+    assert "470" in msg, "the refusal must state the dimensional cost, not just say no"
     assert CS.FUSION_ACK_FLAG in msg, "and it must name the way through"
 
 

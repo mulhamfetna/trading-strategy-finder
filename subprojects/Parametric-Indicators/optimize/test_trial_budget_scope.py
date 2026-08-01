@@ -12,7 +12,7 @@ wrong answer, just an enormous silent waste that looks exactly like normal opera
 
 It also made two campaigns non-comparable without anyone noticing: the July `wshgap` run searched 18
 indicators (59 dims, 5,900 trials, 44 min/study) because its worktree predated the 143-indicator library,
-while a re-run on today's tree searched 165 (471 dims, 47,100 trials) — same command line, same flags,
+while a re-run on today's tree searched 165 (466 dims, 46,600 trials) — same command line, same flags,
 8x the budget over a differently-shaped space.
 """
 import pytest
@@ -57,28 +57,45 @@ def test_budget_follows_the_restricted_scope():
     assert O.recommended_trials(False) == full * O.TRIALS_PER_DIM
 
 
-def test_scoped_budget_reproduces_the_july_campaign_exactly():
-    """The July `wshgap` run printed 'TOTAL 59 dims' / 'RECOMMENDED 5,900 trials' on a tree whose registry
-    held only these 18. Reproducing those numbers is what proves the accounting is right rather than
-    merely smaller.
+def test_the_july_campaign_shape_is_recorded_even_though_it_can_no_longer_be_REPRODUCED():
+    """The July `wshgap` run printed 'TOTAL 59 dims' / 'RECOMMENDED 5,900 trials' on a tree whose
+    registry held only these 18. That shape is now UNREACHABLE, and saying so is the point of this test.
 
-    ⚠️ July's configuration must be pinned EXPLICITLY, not inherited from today's defaults. It searched
-    the end-of-day close as a dimension; since 2026-07-30 that is pinned ON for all training (#79), which
-    legitimately removes one dimension (59 → 58). A historical-reproduction test that silently tracks the
-    current default stops reproducing history the moment a default changes — which is exactly what it is
-    supposed to notice.
+    59 = base(5 continuous + 3 categorical + 3 integer = 11) + 18 flags + 30 indicator params.
+
+    Three of those base dimensions have since been retired, each deliberately and each for its own
+    reason, so the code can no longer be asked to produce 59:
+
+        en_cap_eod   pinned ON   2026-07-30  the end-of-day close is the training standard (#79)
+        dd_limit     pinned 0    2026-08-01  user decision — retired from the search
+        cooldown     pinned 0    2026-08-01  user decision — retired from the search
+        en_cap_bars  pinned OFF  2026-08-01  user decision — restorable with search_cap_bars=True
+        cap_1min     not drawn   2026-08-01  only a dimension when the bars cap can be on
+
+    A historical-reproduction test that quietly tracks the current default stops reproducing history
+    the moment a default moves — which is exactly what it exists to notice. So instead of asserting a
+    number the code can no longer make, this asserts the DRIFT, with the arithmetic that explains it.
     """
-    july = dict(only_inds=ORIGINAL_18, force_eod=False)      # as it actually ran
-    assert O.search_dims(False, **july)["total"] == 59
-    assert O.recommended_trials(False, **july) == 5_900
+    JULY_TOTAL = 59
+    # The closest today's code can come: everything July searched that still EXISTS as a dimension.
+    closest = O.search_dims(False, only_inds=ORIGINAL_18, force_eod=False, search_cap_bars=True)
+    assert closest["total"] == 57, (
+        f"expected 57 (July's 59 minus dd_limit and cooldown, both retired 2026-08-01); "
+        f"got {closest['total']}. If this moved, a base dimension changed and the list above is stale.")
+    assert JULY_TOTAL - closest["total"] == 2
+
+    today = O.search_dims(False, only_inds=ORIGINAL_18)
+    assert today["total"] == 54, (
+        "today's default also pins en_cap_eod ON and the bars cap OFF, dropping en_cap_bars and cap_1min")
+    assert O.recommended_trials(False, only_inds=ORIGINAL_18) == 5_400
 
 
-def test_todays_default_is_one_dimension_smaller_than_july():
-    """The deliberate difference, asserted rather than left implicit: the end-of-day close is now pinned,
-    so it is no longer searched."""
-    july = O.search_dims(False, only_inds=ORIGINAL_18, force_eod=False)["total"]
+def test_todays_default_is_five_dimensions_smaller_than_july():
+    """The deliberate difference, asserted rather than left implicit — and attributed dimension by
+    dimension, because 'the number changed' is not a finding, but 'these five knobs stopped being
+    searched, for these five reasons' is."""
     today = O.search_dims(False, only_inds=ORIGINAL_18)["total"]
-    assert today == july - 1 == 58
+    assert 59 - today == 5           # en_cap_eod, dd_limit, cooldown, en_cap_bars, cap_1min
 
 
 @pytest.mark.parametrize("freeze", [True, False])

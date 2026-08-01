@@ -30,8 +30,11 @@ def test_forcing_eod_removes_it_as_a_searched_dimension():
     """
     normal = OPT.search_dims(split_sltp=False, force_eod=False)
     forced = OPT.search_dims(split_sltp=False, force_eod=True)
-    assert normal["base_cat"] == 3        # flip, en_cap_bars, en_cap_eod
-    assert forced["base_cat"] == 2        # flip, en_cap_bars  (en_cap_eod is pinned, not searched)
+    # 2026-08-01: the bars cap is pinned OFF and no longer searched by default, so base_cat lost
+    # en_cap_bars too. Both sides of this comparison are measured with the bars cap in the SAME state,
+    # which is what makes the -1 attributable to en_cap_eod rather than to two changes at once.
+    assert normal["base_cat"] == 2        # flip, en_cap_eod
+    assert forced["base_cat"] == 1        # flip            (en_cap_eod pinned, not searched)
     assert forced["total"] == normal["total"] - 1
     assert OPT.recommended_trials(False, force_eod=True) == \
         OPT.recommended_trials(False, force_eod=False) - OPT.TRIALS_PER_DIM
@@ -41,7 +44,9 @@ def test_the_bar_cap_is_still_searched_under_force_eod():
     """Forcing the bell must NOT also pin the bar cap — 'both' (bell OR N bars, whichever first) has to stay
     reachable, otherwise we have quietly narrowed the search to one exit rule."""
     forced = OPT.search_dims(split_sltp=False, force_eod=True)
-    assert forced["base_int"] == 3        # cooldown, k, cap_1min — cap_1min still searched
+    # 2026-08-01: cooldown retired from the search, and cap_1min is only a dimension when the bars cap
+    # can be on — searching a holding-time cap while the cap itself is pinned off is a knob nothing reads.
+    assert forced["base_int"] == 1        # k
 
 
 def test_derive_cap_mode_under_forced_eod_can_still_reach_both():

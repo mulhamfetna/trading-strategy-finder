@@ -196,9 +196,12 @@ def test_cap_switches_are_counted_dimensions():
     # force_eod=False stated explicitly: the end-of-day close became the training default on
     # 2026-07-30 (#79), which legitimately drops en_cap_eod from the searched dimensions.
     # This test describes the UNFORCED shape, so it must pin it rather than inherit it.
-    d = OPT.search_dims(split_sltp=False, force_eod=False)
+    # search_cap_bars=True stated explicitly for the same reason: on 2026-08-01 the bars cap was pinned
+    # OFF by default, which legitimately drops en_cap_bars AND cap_1min from the searched dimensions.
+    # This test describes the shape of the CAP SEARCH, so it must ask for it rather than inherit it.
+    d = OPT.search_dims(split_sltp=False, force_eod=False, search_cap_bars=True)
     assert d["base_cat"] == 3            # flip, en_cap_bars, en_cap_eod
-    assert d["base_int"] == 3            # cooldown, k, cap_1min
+    assert d["base_int"] == 2            # k, cap_1min          (cooldown retired 2026-08-01)
     assert d["total"] == sum(v for k, v in d.items() if k != "total")
 
 
