@@ -49,6 +49,13 @@ htmlcov/
 # never actually been committed. Found and fixed in #62.)
 !subprojects/Parametric-Indicators/optimize/perf/logs/*.log
 
+# ...and except the harvested server archive (#94). This is a RECORD of work that existed only on the
+# server: the 2026-07-13 end-of-day cap campaign and the 2026-07-14 precision investigation that built
+# and verified the DEPLOYED champion set. The champions were committed; the code and logs that produced
+# and checked them were not, so the deployed set was running while no longer being reproducible.
+# Explicitly requested by the repo owner, logs and plots included. Nothing under here is live code.
+!subprojects/Parametric-Indicators/server-audit/**
+
 # Output
 *.html
 *.pdf

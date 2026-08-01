@@ -1,0 +1,298 @@
+{
+ "4h": {
+  "median_pnl": 34963.2,
+  "full_pnl": 85822.6,
+  "full_dd": 9142.0,
+  "win": 62.0,
+  "box": {
+   "sl_soft": 14.6537,
+   "sl_hard": 34.3953,
+   "tp": 19.1547,
+   "gate_pct": 97.64,
+   "dd_limit": 707.1229,
+   "cooldown": 0,
+   "flip": false,
+   "k": 1,
+   "cap_1min": 0,
+   "cap_mode": "eod"
+  },
+  "indicators": {
+   "adx": {
+    "n": 2,
+    "threshold": 50
+   },
+   "breaker": {
+    "swing_l": 15
+   },
+   "ema_trend": {
+    "fast": 238,
+    "slow": 380
+   },
+   "order_block": {
+    "swing_l": 5
+   },
+   "sma_trend": {
+    "fast": 45,
+    "slow": 9
+   },
+   "structure_trend": {
+    "swing_l": 7
+   },
+   "vwap": {}
+  }
+ },
+ "2h": {
+  "median_pnl": 31398.4,
+  "full_pnl": 81157.4,
+  "full_dd": 15648.5,
+  "win": 58.1,
+  "box": {
+   "sl_soft": 13.2671,
+   "sl_hard": 13.3135,
+   "tp": 17.4609,
+   "gate_pct": 93.38,
+   "dd_limit": 168.2086,
+   "cooldown": 0,
+   "flip": false,
+   "k": 1,
+   "cap_1min": 0,
+   "cap_mode": "none"
+  },
+  "indicators": {
+   "adx": {
+    "n": 5,
+    "threshold": 37
+   },
+   "bollinger": {
+    "n": 128,
+    "k": 5.0
+   },
+   "cci": {
+    "n": 36,
+    "threshold": 260
+   },
+   "ema_trend": {
+    "fast": 256,
+    "slow": 17
+   },
+   "macd": {
+    "fast": 50,
+    "slow": 50,
+    "signal": 37
+   },
+   "obv": {
+    "slope": 116
+   },
+   "rsi": {
+    "n": 92,
+    "lower": 34,
+    "upper": 73
+   },
+   "structure_trend": {
+    "swing_l": 3
+   },
+   "vwap": {}
+  }
+ },
+ "1h": {
+  "median_pnl": 28603.4,
+  "full_pnl": 86968.9,
+  "full_dd": 21007.1,
+  "win": 47.7,
+  "box": {
+   "sl_soft": 9.1642,
+   "sl_hard": 21.264,
+   "tp": 18.7746,
+   "gate_pct": 97.52,
+   "dd_limit": 689.8555,
+   "cooldown": 0,
+   "flip": false,
+   "k": 4,
+   "cap_1min": 0,
+   "cap_mode": "eod"
+  },
+  "indicators": {
+   "breaker": {
+    "swing_l": 6
+   },
+   "cci": {
+    "n": 150,
+    "threshold": 110
+   },
+   "cisd": {},
+   "macd": {
+    "fast": 50,
+    "slow": 171,
+    "signal": 54
+   },
+   "obv": {
+    "slope": 37
+   },
+   "rsi": {
+    "n": 47,
+    "lower": 44,
+    "upper": 96
+   },
+   "sma_trend": {
+    "fast": 68,
+    "slow": 279
+   },
+   "structure_trend": {
+    "swing_l": 3
+   }
+  }
+ },
+ "15m": {
+  "median_pnl": 21821.8,
+  "full_pnl": 80903.2,
+  "full_dd": 10097.6,
+  "win": 67.8,
+  "box": {
+   "sl_soft": 5.5779,
+   "sl_hard": 8.4364,
+   "tp": 4.1627,
+   "gate_pct": 98.9,
+   "dd_limit": 384.3401,
+   "cooldown": 0,
+   "flip": false,
+   "k": 3,
+   "cap_1min": 0,
+   "cap_mode": "none"
+  },
+  "indicators": {
+   "cisd": {},
+   "ema_trend": {
+    "fast": 151,
+    "slow": 54
+   },
+   "keltner": {
+    "n": 151,
+    "m": 4.1
+   },
+   "macd": {
+    "fast": 90,
+    "slow": 95,
+    "signal": 48
+   },
+   "rsi": {
+    "n": 52,
+    "lower": 43,
+    "upper": 67
+   },
+   "sma_trend": {
+    "fast": 344,
+    "slow": 5
+   },
+   "vwap": {}
+  }
+ },
+ "5m": {
+  "median_pnl": 8317.5,
+  "full_pnl": 19965.3,
+  "full_dd": 4305.4,
+  "win": 47.9,
+  "box": {
+   "sl_soft": 1.4782,
+   "sl_hard": 5.4793,
+   "tp": 4.9385,
+   "gate_pct": 87.64,
+   "dd_limit": 380.0111,
+   "cooldown": 1,
+   "flip": false,
+   "k": 4,
+   "cap_1min": 0,
+   "cap_mode": "eod"
+  },
+  "indicators": {
+   "bollinger": {
+    "n": 19,
+    "k": 4.9
+   },
+   "cci": {
+    "n": 86,
+    "threshold": 50
+   },
+   "cisd": {},
+   "ema_trend": {
+    "fast": 128,
+    "slow": 223
+   },
+   "fvg": {
+    "lookback": 45
+   },
+   "ifvg": {},
+   "keltner": {
+    "n": 59,
+    "m": 3.8
+   },
+   "macd": {
+    "fast": 52,
+    "slow": 155,
+    "signal": 94
+   },
+   "mfi": {
+    "n": 10,
+    "lower": 17,
+    "upper": 56
+   },
+   "rsi": {
+    "n": 17,
+    "lower": 20,
+    "upper": 72
+   },
+   "sma_trend": {
+    "fast": 45,
+    "slow": 222
+   },
+   "vwap": {}
+  }
+ },
+ "2m": {
+  "median_pnl": 11381.5,
+  "full_pnl": 38640.2,
+  "full_dd": 4576.8,
+  "win": 58.4,
+  "box": {
+   "sl_soft": 2.2426,
+   "sl_hard": 4.1398,
+   "tp": 3.7284,
+   "gate_pct": 94.75,
+   "dd_limit": 659.3084,
+   "cooldown": 1,
+   "flip": true,
+   "k": 3,
+   "cap_1min": 589,
+   "cap_mode": "both"
+  },
+  "indicators": {
+   "cci": {
+    "n": 26,
+    "threshold": 120
+   },
+   "ema_trend": {
+    "fast": 44,
+    "slow": 50
+   },
+   "fvg": {
+    "lookback": 26
+   },
+   "obv": {
+    "slope": 180
+   },
+   "rsi": {
+    "n": 35,
+    "lower": 49,
+    "upper": 92
+   },
+   "stochastic": {
+    "n": 100,
+    "d": 34,
+    "lower": 44,
+    "upper": 97
+   },
+   "structure_trend": {
+    "swing_l": 13
+   }
+  }
+ }
+}

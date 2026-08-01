@@ -1,0 +1,188 @@
+{
+ "id": "HG_2m",
+ "instrument": "HG",
+ "timeframe": "2m",
+ "label": "Copper (HG) 2m \u00b7 box + 9-indicator gate \u00b7 max-hold 598 bars OR end-of-day \u2014 whichever fires first \u00b7 1-minute-frame indicators \u2014 +$62,210 full / $1,315 DD / 34.8% win \u00b7 OOS-2026 +$21,279 \u00b7 incumbent (held \u2014 no challenger beat it out-of-sample)",
+ "preset": {
+  "indicators": [
+   {
+    "key": "ema_trend",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 8,
+     "slow": 179
+    }
+   },
+   {
+    "key": "sma_trend",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 290,
+     "slow": 116
+    }
+   },
+   {
+    "key": "macd",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 78,
+     "slow": 59,
+     "signal": 49
+    }
+   },
+   {
+    "key": "vwap",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "keltner",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "n": 46,
+     "m": 1.9
+    }
+   },
+   {
+    "key": "obv",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {
+     "slope": 20
+    }
+   },
+   {
+    "key": "cci",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 26,
+     "threshold": 160
+    }
+   },
+   {
+    "key": "rsi",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "n": 14,
+     "lower": 30,
+     "upper": 70
+    }
+   },
+   {
+    "key": "stochastic",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "n": 14,
+     "d": 3,
+     "lower": 20,
+     "upper": 80
+    }
+   },
+   {
+    "key": "mfi",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "n": 14,
+     "lower": 20,
+     "upper": 80
+    }
+   },
+   {
+    "key": "bollinger",
+    "enabled": true,
+    "mode": "veto",
+    "params": {
+     "n": 103,
+     "k": 2.4
+    }
+   },
+   {
+    "key": "adx",
+    "enabled": false,
+    "mode": "veto",
+    "params": {
+     "n": 14,
+     "threshold": 25
+    }
+   },
+   {
+    "key": "structure_trend",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "swing_l": 2
+    }
+   },
+   {
+    "key": "order_block",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "swing_l": 2
+    }
+   },
+   {
+    "key": "fvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "lookback": 3
+    }
+   },
+   {
+    "key": "ifvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "breaker",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "swing_l": 20
+    }
+   },
+   {
+    "key": "cisd",
+    "enabled": true,
+    "mode": "both",
+    "params": {}
+   }
+  ],
+  "k": 1,
+  "gate_pct": 96.9509570934,
+  "sl_soft": 0.00123273732617,
+  "sl_hard": 0.00151290474319,
+  "tp": 0.00384945009528,
+  "dd_limit": 0.86478223202,
+  "cooldown": 1,
+  "cap_1min": 598,
+  "cap_mode": "both",
+  "eod_margin_min": 15,
+  "intracandle_veto_entry": false,
+  "intracandle_max_wait": 240,
+  "flip": true,
+  "ind_1min": true,
+  "window": "full",
+  "timeframe": "2m",
+  "pv": 25000.0,
+  "dd_cap": 5000.0,
+  "retrace_amount": 0,
+  "retrace_unit": "atr_mult",
+  "wait_bars": 0,
+  "gen": {
+   "swing_l": 2,
+   "golf_n": 3
+  }
+ }
+}

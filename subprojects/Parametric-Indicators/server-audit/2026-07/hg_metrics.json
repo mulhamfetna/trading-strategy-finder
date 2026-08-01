@@ -1,0 +1,1886 @@
+[
+ {
+  "inst": "HG",
+  "tf": "4h",
+  "full": {
+   "boxes": {
+    "pnl": 50159.99999999853,
+    "max_dd": 3472.5000000000073,
+    "win": 77.7,
+    "pf": 2.21,
+    "payoff": 0.62,
+    "n_taken": 224,
+    "noentry_streak_n": 37,
+    "noentry_streak_days": 13.8,
+    "noentry_streak_start": "2025-04-02",
+    "box_silence": {
+     "bars": 43,
+     "seconds": 619200,
+     "hours": 172,
+     "days": 7.17
+    },
+    "gate_noentry": {
+     "bars": 10,
+     "seconds": 144000,
+     "hours": 40,
+     "days": 1.67
+    },
+    "indicator_noentry": {
+     "bars": 8,
+     "seconds": 115200,
+     "hours": 32,
+     "days": 1.33
+    },
+    "position_hold": {
+     "bars": 8,
+     "seconds": 115200,
+     "hours": 32,
+     "days": 1.33
+    },
+    "box_silence_total": {
+     "bars": 1247,
+     "seconds": 17956800,
+     "hours": 4988,
+     "days": 207.83
+    },
+    "gate_noentry_total": {
+     "bars": 260,
+     "seconds": 3744000,
+     "hours": 1040,
+     "days": 43.33
+    },
+    "indicator_noentry_total": {
+     "bars": 593,
+     "seconds": 8539200,
+     "hours": 2372,
+     "days": 98.83
+    },
+    "position_hold_total": {
+     "bars": 326,
+     "seconds": 4694400,
+     "hours": 1304,
+     "days": 54.33
+    },
+    "noentry_total": {
+     "bars": 2100,
+     "seconds": 30240000,
+     "hours": 8400,
+     "days": 350
+    },
+    "n_candidates": 224,
+    "n_locks": 117,
+    "exposure": 100,
+    "warmup": {
+     "bars": 386,
+     "seconds": 5558400,
+     "hours": 1544,
+     "days": 64.33
+    },
+    "indicator_req": {
+     "bars": 386,
+     "seconds": 5558400,
+     "hours": 1544,
+     "days": 64.33
+    }
+   },
+   "summary": {
+    "pnl": 52270,
+    "pnl_2025": 33070,
+    "pnl_2026": 19200,
+    "n_taken": 227,
+    "n_candidates": 227,
+    "n_skipped_breaker": 0,
+    "exposure": 100,
+    "win": 78.4,
+    "pf": 2.26,
+    "payoff": 0.62,
+    "avg_win": 528,
+    "avg_loss": -849,
+    "max_dd": 3472,
+    "n_locks": 116,
+    "noentry_streak_n": 37,
+    "noentry_streak_days": 13.8,
+    "noentry_streak_start": "2025-04-02",
+    "box_silence": {
+     "bars": 44,
+     "seconds": 633600,
+     "hours": 176,
+     "days": 7.33
+    },
+    "position_hold": {
+     "bars": 14,
+     "seconds": 201600,
+     "hours": 56,
+     "days": 2.33
+    },
+    "gate_noentry": {
+     "bars": 10,
+     "seconds": 144000,
+     "hours": 40,
+     "days": 1.67
+    },
+    "indicator_noentry": {
+     "bars": 8,
+     "seconds": 115200,
+     "hours": 32,
+     "days": 1.33
+    },
+    "noentry_total": {
+     "bars": 2218,
+     "seconds": 31939200,
+     "hours": 8872,
+     "days": 369.67
+    },
+    "box_silence_total": {
+     "bars": 1248,
+     "seconds": 17971200,
+     "hours": 4992,
+     "days": 208
+    },
+    "position_hold_total": {
+     "bars": 353,
+     "seconds": 5083200,
+     "hours": 1412,
+     "days": 58.83
+    },
+    "gate_noentry_total": {
+     "bars": 230,
+     "seconds": 3312000,
+     "hours": 920,
+     "days": 38.33
+    },
+    "indicator_noentry_total": {
+     "bars": 740,
+     "seconds": 10656000,
+     "hours": 2960,
+     "days": 123.33
+    }
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 50159.99999999853,
+    "max_dd": 3472.5000000000073,
+    "win": 77.7,
+    "pf": 2.21,
+    "payoff": 0.62,
+    "n_taken": 224,
+    "noentry_streak_n": 37,
+    "noentry_streak_days": 13.8,
+    "noentry_streak_start": "2025-04-02",
+    "box_silence": {
+     "bars": 43,
+     "seconds": 619200,
+     "hours": 172,
+     "days": 7.17
+    },
+    "gate_noentry": {
+     "bars": 10,
+     "seconds": 144000,
+     "hours": 40,
+     "days": 1.67
+    },
+    "indicator_noentry": {
+     "bars": 8,
+     "seconds": 115200,
+     "hours": 32,
+     "days": 1.33
+    },
+    "position_hold": {
+     "bars": 8,
+     "seconds": 115200,
+     "hours": 32,
+     "days": 1.33
+    },
+    "box_silence_total": {
+     "bars": 1247,
+     "seconds": 17956800,
+     "hours": 4988,
+     "days": 207.83
+    },
+    "gate_noentry_total": {
+     "bars": 260,
+     "seconds": 3744000,
+     "hours": 1040,
+     "days": 43.33
+    },
+    "indicator_noentry_total": {
+     "bars": 593,
+     "seconds": 8539200,
+     "hours": 2372,
+     "days": 98.83
+    },
+    "position_hold_total": {
+     "bars": 326,
+     "seconds": 4694400,
+     "hours": 1304,
+     "days": 54.33
+    },
+    "noentry_total": {
+     "bars": 2100,
+     "seconds": 30240000,
+     "hours": 8400,
+     "days": 350
+    },
+    "n_candidates": 224,
+    "n_locks": 117,
+    "exposure": 100,
+    "warmup": {
+     "bars": 386,
+     "seconds": 5558400,
+     "hours": 1544,
+     "days": 64.33
+    },
+    "indicator_req": {
+     "bars": 386,
+     "seconds": 5558400,
+     "hours": 1544,
+     "days": 64.33
+    }
+   },
+   "summary": {
+    "pnl": 19200,
+    "pnl_2025": 0,
+    "pnl_2026": 19200,
+    "n_taken": 67,
+    "n_candidates": 67,
+    "n_skipped_breaker": 0,
+    "exposure": 100,
+    "win": 82.1,
+    "pf": 2.96,
+    "payoff": 0.65,
+    "avg_win": 528,
+    "avg_loss": -818,
+    "max_dd": 3472,
+    "n_locks": 28,
+    "noentry_streak_n": 32,
+    "noentry_streak_days": 13.2,
+    "noentry_streak_start": "2026-03-17",
+    "box_silence": {
+     "bars": 44,
+     "seconds": 633600,
+     "hours": 176,
+     "days": 7.33
+    },
+    "position_hold": {
+     "bars": 3,
+     "seconds": 43200,
+     "hours": 12,
+     "days": 0.5
+    },
+    "gate_noentry": {
+     "bars": 10,
+     "seconds": 144000,
+     "hours": 40,
+     "days": 1.67
+    },
+    "indicator_noentry": {
+     "bars": 8,
+     "seconds": 115200,
+     "hours": 32,
+     "days": 1.33
+    },
+    "noentry_total": {
+     "bars": 755,
+     "seconds": 10872000,
+     "hours": 3020,
+     "days": 125.83
+    },
+    "box_silence_total": {
+     "bars": 414,
+     "seconds": 5961600,
+     "hours": 1656,
+     "days": 69
+    },
+    "position_hold_total": {
+     "bars": 75,
+     "seconds": 1080000,
+     "hours": 300,
+     "days": 12.5
+    },
+    "gate_noentry_total": {
+     "bars": 140,
+     "seconds": 2016000,
+     "hours": 560,
+     "days": 23.33
+    },
+    "indicator_noentry_total": {
+     "bars": 201,
+     "seconds": 2894400,
+     "hours": 804,
+     "days": 33.5
+    }
+   }
+  }
+ },
+ {
+  "inst": "HG",
+  "tf": "2h",
+  "full": {
+   "boxes": {
+    "pnl": 25534.999999998996,
+    "max_dd": 3880.0000000001874,
+    "win": 59.4,
+    "pf": 1.46,
+    "payoff": 0.99,
+    "n_taken": 244,
+    "noentry_streak_n": 58,
+    "noentry_streak_days": 13.5,
+    "noentry_streak_start": "2025-04-01",
+    "box_silence": {
+     "bars": 86,
+     "seconds": 619200,
+     "hours": 172,
+     "days": 7.17
+    },
+    "gate_noentry": {
+     "bars": 8,
+     "seconds": 57600,
+     "hours": 16,
+     "days": 0.67
+    },
+    "indicator_noentry": {
+     "bars": 9,
+     "seconds": 64800,
+     "hours": 18,
+     "days": 0.75
+    },
+    "position_hold": {
+     "bars": 11,
+     "seconds": 79200,
+     "hours": 22,
+     "days": 0.92
+    },
+    "box_silence_total": {
+     "bars": 3050,
+     "seconds": 21960000,
+     "hours": 6100,
+     "days": 254.17
+    },
+    "gate_noentry_total": {
+     "bars": 423,
+     "seconds": 3045600,
+     "hours": 846,
+     "days": 35.25
+    },
+    "indicator_noentry_total": {
+     "bars": 928,
+     "seconds": 6681600,
+     "hours": 1856,
+     "days": 77.33
+    },
+    "position_hold_total": {
+     "bars": 455,
+     "seconds": 3276000,
+     "hours": 910,
+     "days": 37.92
+    },
+    "noentry_total": {
+     "bars": 4401,
+     "seconds": 31687200,
+     "hours": 8802,
+     "days": 366.75
+    },
+    "n_candidates": 244,
+    "n_locks": 188,
+    "exposure": 100,
+    "warmup": {
+     "bars": 326,
+     "seconds": 2347200,
+     "hours": 652,
+     "days": 27.17
+    },
+    "indicator_req": {
+     "bars": 326,
+     "seconds": 2347200,
+     "hours": 652,
+     "days": 27.17
+    }
+   },
+   "summary": {
+    "pnl": 25347.5,
+    "pnl_2025": 11150,
+    "pnl_2026": 14197.5,
+    "n_taken": 243,
+    "n_candidates": 243,
+    "n_skipped_breaker": 0,
+    "exposure": 100,
+    "win": 59.3,
+    "pf": 1.45,
+    "payoff": 1,
+    "avg_win": 565,
+    "avg_loss": -566,
+    "max_dd": 3880,
+    "n_locks": 187,
+    "noentry_streak_n": 58,
+    "noentry_streak_days": 13.5,
+    "noentry_streak_start": "2025-04-01",
+    "box_silence": {
+     "bars": 87,
+     "seconds": 626400,
+     "hours": 174,
+     "days": 7.25
+    },
+    "position_hold": {
+     "bars": 28,
+     "seconds": 201600,
+     "hours": 56,
+     "days": 2.33
+    },
+    "gate_noentry": {
+     "bars": 8,
+     "seconds": 57600,
+     "hours": 16,
+     "days": 0.67
+    },
+    "indicator_noentry": {
+     "bars": 9,
+     "seconds": 64800,
+     "hours": 18,
+     "days": 0.75
+    },
+    "noentry_total": {
+     "bars": 4550,
+     "seconds": 32760000,
+     "hours": 9100,
+     "days": 379.17
+    },
+    "box_silence_total": {
+     "bars": 3051,
+     "seconds": 21967200,
+     "hours": 6102,
+     "days": 254.25
+    },
+    "position_hold_total": {
+     "bars": 529,
+     "seconds": 3808800,
+     "hours": 1058,
+     "days": 44.08
+    },
+    "gate_noentry_total": {
+     "bars": 367,
+     "seconds": 2642400,
+     "hours": 734,
+     "days": 30.58
+    },
+    "indicator_noentry_total": {
+     "bars": 1132,
+     "seconds": 8150400,
+     "hours": 2264,
+     "days": 94.33
+    }
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 25534.999999998996,
+    "max_dd": 3880.0000000001874,
+    "win": 59.4,
+    "pf": 1.46,
+    "payoff": 0.99,
+    "n_taken": 244,
+    "noentry_streak_n": 58,
+    "noentry_streak_days": 13.5,
+    "noentry_streak_start": "2025-04-01",
+    "box_silence": {
+     "bars": 86,
+     "seconds": 619200,
+     "hours": 172,
+     "days": 7.17
+    },
+    "gate_noentry": {
+     "bars": 8,
+     "seconds": 57600,
+     "hours": 16,
+     "days": 0.67
+    },
+    "indicator_noentry": {
+     "bars": 9,
+     "seconds": 64800,
+     "hours": 18,
+     "days": 0.75
+    },
+    "position_hold": {
+     "bars": 11,
+     "seconds": 79200,
+     "hours": 22,
+     "days": 0.92
+    },
+    "box_silence_total": {
+     "bars": 3050,
+     "seconds": 21960000,
+     "hours": 6100,
+     "days": 254.17
+    },
+    "gate_noentry_total": {
+     "bars": 423,
+     "seconds": 3045600,
+     "hours": 846,
+     "days": 35.25
+    },
+    "indicator_noentry_total": {
+     "bars": 928,
+     "seconds": 6681600,
+     "hours": 1856,
+     "days": 77.33
+    },
+    "position_hold_total": {
+     "bars": 455,
+     "seconds": 3276000,
+     "hours": 910,
+     "days": 37.92
+    },
+    "noentry_total": {
+     "bars": 4401,
+     "seconds": 31687200,
+     "hours": 8802,
+     "days": 366.75
+    },
+    "n_candidates": 244,
+    "n_locks": 188,
+    "exposure": 100,
+    "warmup": {
+     "bars": 326,
+     "seconds": 2347200,
+     "hours": 652,
+     "days": 27.17
+    },
+    "indicator_req": {
+     "bars": 326,
+     "seconds": 2347200,
+     "hours": 652,
+     "days": 27.17
+    }
+   },
+   "summary": {
+    "pnl": 14197.5,
+    "pnl_2025": 0,
+    "pnl_2026": 14197.5,
+    "n_taken": 83,
+    "n_candidates": 83,
+    "n_skipped_breaker": 0,
+    "exposure": 100,
+    "win": 65.1,
+    "pf": 1.87,
+    "payoff": 1,
+    "avg_win": 565,
+    "avg_loss": -562,
+    "max_dd": 1958,
+    "n_locks": 51,
+    "noentry_streak_n": 49,
+    "noentry_streak_days": 12.3,
+    "noentry_streak_start": "2026-01-28",
+    "box_silence": {
+     "bars": 87,
+     "seconds": 626400,
+     "hours": 174,
+     "days": 7.25
+    },
+    "position_hold": {
+     "bars": 25,
+     "seconds": 180000,
+     "hours": 50,
+     "days": 2.08
+    },
+    "gate_noentry": {
+     "bars": 7,
+     "seconds": 50400,
+     "hours": 14,
+     "days": 0.58
+    },
+    "indicator_noentry": {
+     "bars": 6,
+     "seconds": 43200,
+     "hours": 12,
+     "days": 0.5
+    },
+    "noentry_total": {
+     "bars": 1540,
+     "seconds": 11088000,
+     "hours": 3080,
+     "days": 128.33
+    },
+    "box_silence_total": {
+     "bars": 1019,
+     "seconds": 7336800,
+     "hours": 2038,
+     "days": 84.92
+    },
+    "position_hold_total": {
+     "bars": 132,
+     "seconds": 950400,
+     "hours": 264,
+     "days": 11
+    },
+    "gate_noentry_total": {
+     "bars": 201,
+     "seconds": 1447200,
+     "hours": 402,
+     "days": 16.75
+    },
+    "indicator_noentry_total": {
+     "bars": 320,
+     "seconds": 2304000,
+     "hours": 640,
+     "days": 26.67
+    }
+   }
+  }
+ },
+ {
+  "inst": "HG",
+  "tf": "1h",
+  "full": {
+   "boxes": {
+    "pnl": 4969.999999999299,
+    "max_dd": 1190.0000000000464,
+    "win": 85.8,
+    "pf": 1.77,
+    "payoff": 0.29,
+    "n_taken": 113,
+    "noentry_streak_n": 147,
+    "noentry_streak_days": 26.9,
+    "noentry_streak_start": "2025-03-20",
+    "box_silence": {
+     "bars": 165,
+     "seconds": 594000,
+     "hours": 165,
+     "days": 6.88
+    },
+    "gate_noentry": {
+     "bars": 8,
+     "seconds": 28800,
+     "hours": 8,
+     "days": 0.33
+    },
+    "indicator_noentry": {
+     "bars": 4,
+     "seconds": 14400,
+     "hours": 4,
+     "days": 0.17
+    },
+    "position_hold": {
+     "bars": 7,
+     "seconds": 25200,
+     "hours": 7,
+     "days": 0.29
+    },
+    "box_silence_total": {
+     "bars": 6598,
+     "seconds": 23752800,
+     "hours": 6598,
+     "days": 274.92
+    },
+    "gate_noentry_total": {
+     "bars": 1400,
+     "seconds": 5040000,
+     "hours": 1400,
+     "days": 58.33
+    },
+    "indicator_noentry_total": {
+     "bars": 690,
+     "seconds": 2484000,
+     "hours": 690,
+     "days": 28.75
+    },
+    "position_hold_total": {
+     "bars": 145,
+     "seconds": 522000,
+     "hours": 145,
+     "days": 6.04
+    },
+    "noentry_total": {
+     "bars": 8688,
+     "seconds": 31276800,
+     "hours": 8688,
+     "days": 362
+    },
+    "n_candidates": 233,
+    "n_locks": 60,
+    "exposure": 48.5,
+    "warmup": {
+     "bars": 305,
+     "seconds": 1098000,
+     "hours": 305,
+     "days": 12.71
+    },
+    "indicator_req": {
+     "bars": 305,
+     "seconds": 1098000,
+     "hours": 305,
+     "days": 12.71
+    }
+   },
+   "summary": {
+    "pnl": 4970,
+    "pnl_2025": 5647.5,
+    "pnl_2026": -677.5,
+    "n_taken": 113,
+    "n_candidates": 233,
+    "n_skipped_breaker": 120,
+    "exposure": 48.5,
+    "win": 85.8,
+    "pf": 1.77,
+    "payoff": 0.29,
+    "avg_win": 118,
+    "avg_loss": -402,
+    "max_dd": 1190,
+    "n_locks": 60,
+    "noentry_streak_n": 170,
+    "noentry_streak_days": 33.2,
+    "noentry_streak_start": "2025-03-20",
+    "box_silence": {
+     "bars": 166,
+     "seconds": 597600,
+     "hours": 166,
+     "days": 6.92
+    },
+    "position_hold": {
+     "bars": 7,
+     "seconds": 25200,
+     "hours": 7,
+     "days": 0.29
+    },
+    "gate_noentry": {
+     "bars": 8,
+     "seconds": 28800,
+     "hours": 8,
+     "days": 0.33
+    },
+    "indicator_noentry": {
+     "bars": 5,
+     "seconds": 18000,
+     "hours": 5,
+     "days": 0.21
+    },
+    "noentry_total": {
+     "bars": 8848,
+     "seconds": 31852800,
+     "hours": 8848,
+     "days": 368.67
+    },
+    "box_silence_total": {
+     "bars": 6599,
+     "seconds": 23756400,
+     "hours": 6599,
+     "days": 274.96
+    },
+    "position_hold_total": {
+     "bars": 277,
+     "seconds": 997200,
+     "hours": 277,
+     "days": 11.54
+    },
+    "gate_noentry_total": {
+     "bars": 1260,
+     "seconds": 4536000,
+     "hours": 1260,
+     "days": 52.5
+    },
+    "indicator_noentry_total": {
+     "bars": 989,
+     "seconds": 3560400,
+     "hours": 989,
+     "days": 41.21
+    }
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 4969.999999999299,
+    "max_dd": 1190.0000000000464,
+    "win": 85.8,
+    "pf": 1.77,
+    "payoff": 0.29,
+    "n_taken": 113,
+    "noentry_streak_n": 147,
+    "noentry_streak_days": 26.9,
+    "noentry_streak_start": "2025-03-20",
+    "box_silence": {
+     "bars": 165,
+     "seconds": 594000,
+     "hours": 165,
+     "days": 6.88
+    },
+    "gate_noentry": {
+     "bars": 8,
+     "seconds": 28800,
+     "hours": 8,
+     "days": 0.33
+    },
+    "indicator_noentry": {
+     "bars": 4,
+     "seconds": 14400,
+     "hours": 4,
+     "days": 0.17
+    },
+    "position_hold": {
+     "bars": 7,
+     "seconds": 25200,
+     "hours": 7,
+     "days": 0.29
+    },
+    "box_silence_total": {
+     "bars": 6598,
+     "seconds": 23752800,
+     "hours": 6598,
+     "days": 274.92
+    },
+    "gate_noentry_total": {
+     "bars": 1400,
+     "seconds": 5040000,
+     "hours": 1400,
+     "days": 58.33
+    },
+    "indicator_noentry_total": {
+     "bars": 690,
+     "seconds": 2484000,
+     "hours": 690,
+     "days": 28.75
+    },
+    "position_hold_total": {
+     "bars": 145,
+     "seconds": 522000,
+     "hours": 145,
+     "days": 6.04
+    },
+    "noentry_total": {
+     "bars": 8688,
+     "seconds": 31276800,
+     "hours": 8688,
+     "days": 362
+    },
+    "n_candidates": 233,
+    "n_locks": 60,
+    "exposure": 48.5,
+    "warmup": {
+     "bars": 305,
+     "seconds": 1098000,
+     "hours": 305,
+     "days": 12.71
+    },
+    "indicator_req": {
+     "bars": 305,
+     "seconds": 1098000,
+     "hours": 305,
+     "days": 12.71
+    }
+   },
+   "summary": {
+    "pnl": -677.5,
+    "pnl_2025": 0,
+    "pnl_2026": -677.5,
+    "n_taken": 14,
+    "n_candidates": 38,
+    "n_skipped_breaker": 24,
+    "exposure": 36.8,
+    "win": 71.4,
+    "pf": 0.63,
+    "payoff": 0.25,
+    "avg_win": 118,
+    "avg_loss": -463,
+    "max_dd": 1030,
+    "n_locks": 12,
+    "noentry_streak_n": 123,
+    "noentry_streak_days": 22,
+    "noentry_streak_start": "2026-01-27",
+    "box_silence": {
+     "bars": 166,
+     "seconds": 597600,
+     "hours": 166,
+     "days": 6.92
+    },
+    "position_hold": {
+     "bars": 4,
+     "seconds": 14400,
+     "hours": 4,
+     "days": 0.17
+    },
+    "gate_noentry": {
+     "bars": 8,
+     "seconds": 28800,
+     "hours": 8,
+     "days": 0.33
+    },
+    "indicator_noentry": {
+     "bars": 3,
+     "seconds": 10800,
+     "hours": 3,
+     "days": 0.12
+    },
+    "noentry_total": {
+     "bars": 3009,
+     "seconds": 10832400,
+     "hours": 3009,
+     "days": 125.38
+    },
+    "box_silence_total": {
+     "bars": 2219,
+     "seconds": 7988400,
+     "hours": 2219,
+     "days": 92.46
+    },
+    "position_hold_total": {
+     "bars": 43,
+     "seconds": 154800,
+     "hours": 43,
+     "days": 1.79
+    },
+    "gate_noentry_total": {
+     "bars": 602,
+     "seconds": 2167200,
+     "hours": 602,
+     "days": 25.08
+    },
+    "indicator_noentry_total": {
+     "bars": 188,
+     "seconds": 676800,
+     "hours": 188,
+     "days": 7.83
+    }
+   }
+  }
+ },
+ {
+  "inst": "HG",
+  "tf": "15m",
+  "full": {
+   "boxes": {
+    "pnl": 3247.4999999993806,
+    "max_dd": 662.5000000001658,
+    "win": 45,
+    "pf": 1.55,
+    "payoff": 1.89,
+    "n_taken": 240,
+    "noentry_streak_n": 131,
+    "noentry_streak_days": 6.6,
+    "noentry_streak_start": "2026-01-28",
+    "box_silence": {
+     "bars": 656,
+     "seconds": 590400,
+     "hours": 164,
+     "days": 6.83
+    },
+    "gate_noentry": {
+     "bars": 9,
+     "seconds": 8100,
+     "hours": 2,
+     "days": 0.09
+    },
+    "indicator_noentry": {
+     "bars": 5,
+     "seconds": 4500,
+     "hours": 1,
+     "days": 0.05
+    },
+    "position_hold": {
+     "bars": 3,
+     "seconds": 2700,
+     "hours": 0,
+     "days": 0.03
+    },
+    "box_silence_total": {
+     "bars": 30820,
+     "seconds": 27738000,
+     "hours": 7705,
+     "days": 321.04
+    },
+    "gate_noentry_total": {
+     "bars": 1575,
+     "seconds": 1417500,
+     "hours": 393,
+     "days": 16.41
+    },
+    "indicator_noentry_total": {
+     "bars": 2488,
+     "seconds": 2239200,
+     "hours": 622,
+     "days": 25.92
+    },
+    "position_hold_total": {
+     "bars": 244,
+     "seconds": 219600,
+     "hours": 61,
+     "days": 2.54
+    },
+    "noentry_total": {
+     "bars": 34883,
+     "seconds": 31394700,
+     "hours": 8720,
+     "days": 363.36
+    },
+    "n_candidates": 795,
+    "n_locks": 185,
+    "exposure": 30.2,
+    "warmup": {
+     "bars": 104,
+     "seconds": 93600,
+     "hours": 26,
+     "days": 1.08
+    },
+    "indicator_req": {
+     "bars": 104,
+     "seconds": 93600,
+     "hours": 26,
+     "days": 1.08
+    }
+   },
+   "summary": {
+    "pnl": 3247.5,
+    "pnl_2025": 2322.5,
+    "pnl_2026": 925,
+    "n_taken": 240,
+    "n_candidates": 795,
+    "n_skipped_breaker": 555,
+    "exposure": 30.2,
+    "win": 45,
+    "pf": 1.55,
+    "payoff": 1.89,
+    "avg_win": 85,
+    "avg_loss": -45,
+    "max_dd": 662,
+    "n_locks": 185,
+    "noentry_streak_n": 131,
+    "noentry_streak_days": 6.6,
+    "noentry_streak_start": "2026-01-28",
+    "box_silence": {
+     "bars": 657,
+     "seconds": 591300,
+     "hours": 164,
+     "days": 6.84
+    },
+    "position_hold": {
+     "bars": 3,
+     "seconds": 2700,
+     "hours": 0,
+     "days": 0.03
+    },
+    "gate_noentry": {
+     "bars": 9,
+     "seconds": 8100,
+     "hours": 2,
+     "days": 0.09
+    },
+    "indicator_noentry": {
+     "bars": 5,
+     "seconds": 4500,
+     "hours": 1,
+     "days": 0.05
+    },
+    "noentry_total": {
+     "bars": 35513,
+     "seconds": 31961700,
+     "hours": 8878,
+     "days": 369.93
+    },
+    "box_silence_total": {
+     "bars": 30821,
+     "seconds": 27738900,
+     "hours": 7705,
+     "days": 321.05
+    },
+    "position_hold_total": {
+     "bars": 800,
+     "seconds": 720000,
+     "hours": 200,
+     "days": 8.33
+    },
+    "gate_noentry_total": {
+     "bars": 1390,
+     "seconds": 1251000,
+     "hours": 347,
+     "days": 14.48
+    },
+    "indicator_noentry_total": {
+     "bars": 3302,
+     "seconds": 2971800,
+     "hours": 825,
+     "days": 34.4
+    }
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 3247.4999999993806,
+    "max_dd": 662.5000000001658,
+    "win": 45,
+    "pf": 1.55,
+    "payoff": 1.89,
+    "n_taken": 240,
+    "noentry_streak_n": 131,
+    "noentry_streak_days": 6.6,
+    "noentry_streak_start": "2026-01-28",
+    "box_silence": {
+     "bars": 656,
+     "seconds": 590400,
+     "hours": 164,
+     "days": 6.83
+    },
+    "gate_noentry": {
+     "bars": 9,
+     "seconds": 8100,
+     "hours": 2,
+     "days": 0.09
+    },
+    "indicator_noentry": {
+     "bars": 5,
+     "seconds": 4500,
+     "hours": 1,
+     "days": 0.05
+    },
+    "position_hold": {
+     "bars": 3,
+     "seconds": 2700,
+     "hours": 0,
+     "days": 0.03
+    },
+    "box_silence_total": {
+     "bars": 30820,
+     "seconds": 27738000,
+     "hours": 7705,
+     "days": 321.04
+    },
+    "gate_noentry_total": {
+     "bars": 1575,
+     "seconds": 1417500,
+     "hours": 393,
+     "days": 16.41
+    },
+    "indicator_noentry_total": {
+     "bars": 2488,
+     "seconds": 2239200,
+     "hours": 622,
+     "days": 25.92
+    },
+    "position_hold_total": {
+     "bars": 244,
+     "seconds": 219600,
+     "hours": 61,
+     "days": 2.54
+    },
+    "noentry_total": {
+     "bars": 34883,
+     "seconds": 31394700,
+     "hours": 8720,
+     "days": 363.36
+    },
+    "n_candidates": 795,
+    "n_locks": 185,
+    "exposure": 30.2,
+    "warmup": {
+     "bars": 104,
+     "seconds": 93600,
+     "hours": 26,
+     "days": 1.08
+    },
+    "indicator_req": {
+     "bars": 104,
+     "seconds": 93600,
+     "hours": 26,
+     "days": 1.08
+    }
+   },
+   "summary": {
+    "pnl": 925,
+    "pnl_2025": 0,
+    "pnl_2026": 925,
+    "n_taken": 69,
+    "n_candidates": 219,
+    "n_skipped_breaker": 150,
+    "exposure": 31.5,
+    "win": 44.9,
+    "pf": 1.54,
+    "payoff": 1.89,
+    "avg_win": 85,
+    "avg_loss": -45,
+    "max_dd": 275,
+    "n_locks": 50,
+    "noentry_streak_n": 131,
+    "noentry_streak_days": 6.6,
+    "noentry_streak_start": "2026-01-28",
+    "box_silence": {
+     "bars": 657,
+     "seconds": 591300,
+     "hours": 164,
+     "days": 6.84
+    },
+    "position_hold": {
+     "bars": 3,
+     "seconds": 2700,
+     "hours": 0,
+     "days": 0.03
+    },
+    "gate_noentry": {
+     "bars": 9,
+     "seconds": 8100,
+     "hours": 2,
+     "days": 0.09
+    },
+    "indicator_noentry": {
+     "bars": 5,
+     "seconds": 4500,
+     "hours": 1,
+     "days": 0.05
+    },
+    "noentry_total": {
+     "bars": 12042,
+     "seconds": 10837800,
+     "hours": 3010,
+     "days": 125.44
+    },
+    "box_silence_total": {
+     "bars": 10399,
+     "seconds": 9359100,
+     "hours": 2599,
+     "days": 108.32
+    },
+    "position_hold_total": {
+     "bars": 221,
+     "seconds": 198900,
+     "hours": 55,
+     "days": 2.3
+    },
+    "gate_noentry_total": {
+     "bars": 737,
+     "seconds": 663300,
+     "hours": 184,
+     "days": 7.68
+    },
+    "indicator_noentry_total": {
+     "bars": 906,
+     "seconds": 815400,
+     "hours": 226,
+     "days": 9.44
+    }
+   }
+  }
+ },
+ {
+  "inst": "HG",
+  "tf": "5m",
+  "full": {
+   "boxes": {
+    "pnl": 3102.4999999985234,
+    "max_dd": 1065.0000000002055,
+    "win": 51.8,
+    "pf": 1.22,
+    "payoff": 1.13,
+    "n_taken": 247,
+    "noentry_streak_n": 223,
+    "noentry_streak_days": 6.1,
+    "noentry_streak_start": "2026-01-28",
+    "box_silence": {
+     "bars": 1958,
+     "seconds": 587400,
+     "hours": 163,
+     "days": 6.8
+    },
+    "gate_noentry": {
+     "bars": 7,
+     "seconds": 2100,
+     "hours": 0,
+     "days": 0.02
+    },
+    "indicator_noentry": {
+     "bars": 5,
+     "seconds": 1500,
+     "hours": 0,
+     "days": 0.02
+    },
+    "position_hold": {
+     "bars": 23,
+     "seconds": 6900,
+     "hours": 1,
+     "days": 0.08
+    },
+    "box_silence_total": {
+     "bars": 98704,
+     "seconds": 29611200,
+     "hours": 8225,
+     "days": 342.72
+    },
+    "gate_noentry_total": {
+     "bars": 3422,
+     "seconds": 1026600,
+     "hours": 285,
+     "days": 11.88
+    },
+    "indicator_noentry_total": {
+     "bars": 3195,
+     "seconds": 958500,
+     "hours": 266,
+     "days": 11.09
+    },
+    "position_hold_total": {
+     "bars": 581,
+     "seconds": 174300,
+     "hours": 48,
+     "days": 2.02
+    },
+    "noentry_total": {
+     "bars": 105321,
+     "seconds": 31596300,
+     "hours": 8776,
+     "days": 365.7
+    },
+    "n_candidates": 1320,
+    "n_locks": 215,
+    "exposure": 18.7,
+    "warmup": {
+     "bars": 112,
+     "seconds": 33600,
+     "hours": 9,
+     "days": 0.39
+    },
+    "indicator_req": {
+     "bars": 112,
+     "seconds": 33600,
+     "hours": 9,
+     "days": 0.39
+    }
+   },
+   "summary": {
+    "pnl": 3102.5,
+    "pnl_2025": 2857.5,
+    "pnl_2026": 245,
+    "n_taken": 247,
+    "n_candidates": 1320,
+    "n_skipped_breaker": 1073,
+    "exposure": 18.7,
+    "win": 51.8,
+    "pf": 1.22,
+    "payoff": 1.13,
+    "avg_win": 135,
+    "avg_loss": -119,
+    "max_dd": 1065,
+    "n_locks": 215,
+    "noentry_streak_n": 279,
+    "noentry_streak_days": 7.8,
+    "noentry_streak_start": "2026-01-28",
+    "box_silence": {
+     "bars": 1959,
+     "seconds": 587700,
+     "hours": 163,
+     "days": 6.8
+    },
+    "position_hold": {
+     "bars": 880,
+     "seconds": 264000,
+     "hours": 73,
+     "days": 3.06
+    },
+    "gate_noentry": {
+     "bars": 7,
+     "seconds": 2100,
+     "hours": 0,
+     "days": 0.02
+    },
+    "indicator_noentry": {
+     "bars": 5,
+     "seconds": 1500,
+     "hours": 0,
+     "days": 0.02
+    },
+    "noentry_total": {
+     "bars": 106581,
+     "seconds": 31974300,
+     "hours": 8881,
+     "days": 370.07
+    },
+    "box_silence_total": {
+     "bars": 98705,
+     "seconds": 29611500,
+     "hours": 8225,
+     "days": 342.73
+    },
+    "position_hold_total": {
+     "bars": 5812,
+     "seconds": 1743600,
+     "hours": 484,
+     "days": 20.18
+    },
+    "gate_noentry_total": {
+     "bars": 2907,
+     "seconds": 872100,
+     "hours": 242,
+     "days": 10.09
+    },
+    "indicator_noentry_total": {
+     "bars": 4969,
+     "seconds": 1490700,
+     "hours": 414,
+     "days": 17.25
+    }
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 3102.4999999985234,
+    "max_dd": 1065.0000000002055,
+    "win": 51.8,
+    "pf": 1.22,
+    "payoff": 1.13,
+    "n_taken": 247,
+    "noentry_streak_n": 223,
+    "noentry_streak_days": 6.1,
+    "noentry_streak_start": "2026-01-28",
+    "box_silence": {
+     "bars": 1958,
+     "seconds": 587400,
+     "hours": 163,
+     "days": 6.8
+    },
+    "gate_noentry": {
+     "bars": 7,
+     "seconds": 2100,
+     "hours": 0,
+     "days": 0.02
+    },
+    "indicator_noentry": {
+     "bars": 5,
+     "seconds": 1500,
+     "hours": 0,
+     "days": 0.02
+    },
+    "position_hold": {
+     "bars": 23,
+     "seconds": 6900,
+     "hours": 1,
+     "days": 0.08
+    },
+    "box_silence_total": {
+     "bars": 98704,
+     "seconds": 29611200,
+     "hours": 8225,
+     "days": 342.72
+    },
+    "gate_noentry_total": {
+     "bars": 3422,
+     "seconds": 1026600,
+     "hours": 285,
+     "days": 11.88
+    },
+    "indicator_noentry_total": {
+     "bars": 3195,
+     "seconds": 958500,
+     "hours": 266,
+     "days": 11.09
+    },
+    "position_hold_total": {
+     "bars": 581,
+     "seconds": 174300,
+     "hours": 48,
+     "days": 2.02
+    },
+    "noentry_total": {
+     "bars": 105321,
+     "seconds": 31596300,
+     "hours": 8776,
+     "days": 365.7
+    },
+    "n_candidates": 1320,
+    "n_locks": 215,
+    "exposure": 18.7,
+    "warmup": {
+     "bars": 112,
+     "seconds": 33600,
+     "hours": 9,
+     "days": 0.39
+    },
+    "indicator_req": {
+     "bars": 112,
+     "seconds": 33600,
+     "hours": 9,
+     "days": 0.39
+    }
+   },
+   "summary": {
+    "pnl": -240,
+    "pnl_2025": 0,
+    "pnl_2026": -240,
+    "n_taken": 70,
+    "n_candidates": 372,
+    "n_skipped_breaker": 302,
+    "exposure": 18.8,
+    "win": 45.7,
+    "pf": 0.95,
+    "payoff": 1.12,
+    "avg_win": 135,
+    "avg_loss": -120,
+    "max_dd": 900,
+    "n_locks": 61,
+    "noentry_streak_n": 280,
+    "noentry_streak_days": 7.8,
+    "noentry_streak_start": "2026-01-28",
+    "box_silence": {
+     "bars": 1959,
+     "seconds": 587700,
+     "hours": 163,
+     "days": 6.8
+    },
+    "position_hold": {
+     "bars": 22,
+     "seconds": 6600,
+     "hours": 1,
+     "days": 0.08
+    },
+    "gate_noentry": {
+     "bars": 6,
+     "seconds": 1800,
+     "hours": 0,
+     "days": 0.02
+    },
+    "indicator_noentry": {
+     "bars": 3,
+     "seconds": 900,
+     "hours": 0,
+     "days": 0.01
+    },
+    "noentry_total": {
+     "bars": 36119,
+     "seconds": 10835700,
+     "hours": 3009,
+     "days": 125.41
+    },
+    "box_silence_total": {
+     "bars": 33267,
+     "seconds": 9980100,
+     "hours": 2772,
+     "days": 115.51
+    },
+    "position_hold_total": {
+     "bars": 703,
+     "seconds": 210900,
+     "hours": 58,
+     "days": 2.44
+    },
+    "gate_noentry_total": {
+     "bars": 1469,
+     "seconds": 440700,
+     "hours": 122,
+     "days": 5.1
+    },
+    "indicator_noentry_total": {
+     "bars": 1383,
+     "seconds": 414900,
+     "hours": 115,
+     "days": 4.8
+    }
+   }
+  }
+ },
+ {
+  "inst": "HG",
+  "tf": "2m",
+  "full": {
+   "boxes": {
+    "pnl": 31787.499999988635,
+    "max_dd": 2037.5000000002863,
+    "win": 26.1,
+    "pf": 1.18,
+    "payoff": 3.33,
+    "n_taken": 6494,
+    "noentry_streak_n": 54,
+    "noentry_streak_days": 0.3,
+    "noentry_streak_start": "2026-01-29",
+    "box_silence": {
+     "bars": 4804,
+     "seconds": 576480,
+     "hours": 160,
+     "days": 6.67
+    },
+    "gate_noentry": {
+     "bars": 9,
+     "seconds": 1080,
+     "hours": 0,
+     "days": 0.01
+    },
+    "indicator_noentry": {
+     "bars": 4,
+     "seconds": 480,
+     "hours": 0,
+     "days": 0.01
+    },
+    "position_hold": {
+     "bars": 32,
+     "seconds": 3840,
+     "hours": 1,
+     "days": 0.04
+    },
+    "box_silence_total": {
+     "bars": 250536,
+     "seconds": 30064320,
+     "hours": 8351,
+     "days": 347.97
+    },
+    "gate_noentry_total": {
+     "bars": 1295,
+     "seconds": 155400,
+     "hours": 43,
+     "days": 1.8
+    },
+    "indicator_noentry_total": {
+     "bars": 3720,
+     "seconds": 446400,
+     "hours": 124,
+     "days": 5.17
+    },
+    "position_hold_total": {
+     "bars": 10531,
+     "seconds": 1263720,
+     "hours": 351,
+     "days": 14.63
+    },
+    "noentry_total": {
+     "bars": 255551,
+     "seconds": 30666120,
+     "hours": 8518,
+     "days": 354.93
+    },
+    "n_candidates": 6494,
+    "n_locks": 6047,
+    "exposure": 100,
+    "warmup": {
+     "bars": 185,
+     "seconds": 22200,
+     "hours": 6,
+     "days": 0.26
+    },
+    "indicator_req": {
+     "bars": 185,
+     "seconds": 22200,
+     "hours": 6,
+     "days": 0.26
+    }
+   },
+   "summary": {
+    "pnl": 31825,
+    "pnl_2025": 18137.5,
+    "pnl_2026": 13687.5,
+    "n_taken": 6492,
+    "n_candidates": 6492,
+    "n_skipped_breaker": 0,
+    "exposure": 100,
+    "win": 26.1,
+    "pf": 1.18,
+    "payoff": 3.33,
+    "avg_win": 125,
+    "avg_loss": -38,
+    "max_dd": 2038,
+    "n_locks": 6041,
+    "noentry_streak_n": 54,
+    "noentry_streak_days": 0.3,
+    "noentry_streak_start": "2026-01-29",
+    "box_silence": {
+     "bars": 4805,
+     "seconds": 576600,
+     "hours": 160,
+     "days": 6.67
+    },
+    "position_hold": {
+     "bars": 2193,
+     "seconds": 263160,
+     "hours": 73,
+     "days": 3.05
+    },
+    "gate_noentry": {
+     "bars": 9,
+     "seconds": 1080,
+     "hours": 0,
+     "days": 0.01
+    },
+    "indicator_noentry": {
+     "bars": 4,
+     "seconds": 480,
+     "hours": 0,
+     "days": 0.01
+    },
+    "noentry_total": {
+     "bars": 261565,
+     "seconds": 31387800,
+     "hours": 8718,
+     "days": 363.28
+    },
+    "box_silence_total": {
+     "bars": 250537,
+     "seconds": 30064440,
+     "hours": 8351,
+     "days": 347.97
+    },
+    "position_hold_total": {
+     "bars": 14673,
+     "seconds": 1760760,
+     "hours": 489,
+     "days": 20.38
+    },
+    "gate_noentry_total": {
+     "bars": 938,
+     "seconds": 112560,
+     "hours": 31,
+     "days": 1.3
+    },
+    "indicator_noentry_total": {
+     "bars": 10090,
+     "seconds": 1210800,
+     "hours": 336,
+     "days": 14.01
+    }
+   }
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 31787.499999988635,
+    "max_dd": 2037.5000000002863,
+    "win": 26.1,
+    "pf": 1.18,
+    "payoff": 3.33,
+    "n_taken": 6494,
+    "noentry_streak_n": 54,
+    "noentry_streak_days": 0.3,
+    "noentry_streak_start": "2026-01-29",
+    "box_silence": {
+     "bars": 4804,
+     "seconds": 576480,
+     "hours": 160,
+     "days": 6.67
+    },
+    "gate_noentry": {
+     "bars": 9,
+     "seconds": 1080,
+     "hours": 0,
+     "days": 0.01
+    },
+    "indicator_noentry": {
+     "bars": 4,
+     "seconds": 480,
+     "hours": 0,
+     "days": 0.01
+    },
+    "position_hold": {
+     "bars": 32,
+     "seconds": 3840,
+     "hours": 1,
+     "days": 0.04
+    },
+    "box_silence_total": {
+     "bars": 250536,
+     "seconds": 30064320,
+     "hours": 8351,
+     "days": 347.97
+    },
+    "gate_noentry_total": {
+     "bars": 1295,
+     "seconds": 155400,
+     "hours": 43,
+     "days": 1.8
+    },
+    "indicator_noentry_total": {
+     "bars": 3720,
+     "seconds": 446400,
+     "hours": 124,
+     "days": 5.17
+    },
+    "position_hold_total": {
+     "bars": 10531,
+     "seconds": 1263720,
+     "hours": 351,
+     "days": 14.63
+    },
+    "noentry_total": {
+     "bars": 255551,
+     "seconds": 30666120,
+     "hours": 8518,
+     "days": 354.93
+    },
+    "n_candidates": 6494,
+    "n_locks": 6047,
+    "exposure": 100,
+    "warmup": {
+     "bars": 185,
+     "seconds": 22200,
+     "hours": 6,
+     "days": 0.26
+    },
+    "indicator_req": {
+     "bars": 185,
+     "seconds": 22200,
+     "hours": 6,
+     "days": 0.26
+    }
+   },
+   "summary": {
+    "pnl": 13687.5,
+    "pnl_2025": 0,
+    "pnl_2026": 13687.5,
+    "n_taken": 2287,
+    "n_candidates": 2287,
+    "n_skipped_breaker": 0,
+    "exposure": 100,
+    "win": 26.8,
+    "pf": 1.22,
+    "payoff": 3.33,
+    "avg_win": 125,
+    "avg_loss": -38,
+    "max_dd": 1862,
+    "n_locks": 2108,
+    "noentry_streak_n": 54,
+    "noentry_streak_days": 0.3,
+    "noentry_streak_start": "2026-01-29",
+    "box_silence": {
+     "bars": 4805,
+     "seconds": 576600,
+     "hours": 160,
+     "days": 6.67
+    },
+    "position_hold": {
+     "bars": 37,
+     "seconds": 4440,
+     "hours": 1,
+     "days": 0.05
+    },
+    "gate_noentry": {
+     "bars": 9,
+     "seconds": 1080,
+     "hours": 0,
+     "days": 0.01
+    },
+    "indicator_noentry": {
+     "bars": 4,
+     "seconds": 480,
+     "hours": 0,
+     "days": 0.01
+    },
+    "noentry_total": {
+     "bars": 89062,
+     "seconds": 10687440,
+     "hours": 2968,
+     "days": 123.7
+    },
+    "box_silence_total": {
+     "bars": 85065,
+     "seconds": 10207800,
+     "hours": 2835,
+     "days": 118.15
+    },
+    "position_hold_total": {
+     "bars": 3210,
+     "seconds": 385200,
+     "hours": 107,
+     "days": 4.46
+    },
+    "gate_noentry_total": {
+     "bars": 537,
+     "seconds": 64440,
+     "hours": 17,
+     "days": 0.75
+    },
+    "indicator_noentry_total": {
+     "bars": 3460,
+     "seconds": 415200,
+     "hours": 115,
+     "days": 4.81
+    }
+   }
+  }
+ }
+]

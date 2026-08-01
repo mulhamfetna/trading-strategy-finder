@@ -1,0 +1,7508 @@
+[
+ {
+  "inst": "NQ",
+  "tf": "4h",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 148670.2263607632,
+     "max_dd": 12284.024550699905,
+     "win": 62.8,
+     "n_taken": 277,
+     "n_candidates": 277,
+     "exposure": 100.0,
+     "pf": 1.79,
+     "payoff": 1.06,
+     "n_locks": 76,
+     "avg_win": 1938.0,
+     "avg_loss": -1830.0,
+     "position_hold_total": {
+      "bars": 571,
+      "seconds": 8222400,
+      "hours": 2284,
+      "days": 95.17
+     },
+     "pnl_2025": 83792.85999999997,
+     "pnl_2026": 64876.92
+    },
+    "oos": {
+     "pnl": 64877.079384061144,
+     "max_dd": 12284.024550699905,
+     "win": 69.1,
+     "n_taken": 81,
+     "n_candidates": 81,
+     "exposure": 100.0,
+     "pf": 2.27,
+     "payoff": 1.02,
+     "n_locks": 18,
+     "avg_win": 2068.0,
+     "avg_loss": -2037.0,
+     "position_hold_total": {
+      "bars": 138,
+      "seconds": 1987200,
+      "hours": 552,
+      "days": 23.0
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 64876.92
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 126071.83861088291,
+     "max_dd": 13220.176976779912,
+     "win": 59.8,
+     "n_taken": 286,
+     "n_candidates": 286,
+     "exposure": 100.0,
+     "pf": 1.64,
+     "payoff": 1.1,
+     "n_locks": 75,
+     "avg_win": 1889.0,
+     "avg_loss": -1713.0,
+     "position_hold_total": {
+      "bars": 395,
+      "seconds": 5688000,
+      "hours": 1580,
+      "days": 65.83
+     },
+     "pnl_2025": 69981.94999999998,
+     "pnl_2026": 56089.479999999996
+    },
+    "oos": {
+     "pnl": 56089.63231930109,
+     "max_dd": 12284.024550699905,
+     "win": 67.9,
+     "n_taken": 84,
+     "n_candidates": 84,
+     "exposure": 100.0,
+     "pf": 1.98,
+     "payoff": 0.94,
+     "n_locks": 21,
+     "avg_win": 1985.0,
+     "avg_loss": -2114.0,
+     "position_hold_total": {
+      "bars": 110,
+      "seconds": 1584000,
+      "hours": 440,
+      "days": 18.33
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 56089.479999999996
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 70495.79073151923,
+     "max_dd": 6670.0,
+     "win": 57.1,
+     "n_taken": 70,
+     "n_candidates": 70,
+     "exposure": 100.0,
+     "pf": 2.79,
+     "payoff": 2.09,
+     "n_locks": 21,
+     "avg_win": 2746.0,
+     "avg_loss": -1311.0,
+     "position_hold_total": {
+      "bars": 108,
+      "seconds": 1555200,
+      "hours": 432,
+      "days": 18.0
+     },
+     "pnl_2025": 49242.829999999994,
+     "pnl_2026": 21252.93
+    },
+    "oos": {
+     "pnl": 19132.938963359775,
+     "max_dd": 3820.0,
+     "win": 60.0,
+     "n_taken": 20,
+     "n_candidates": 20,
+     "exposure": 100.0,
+     "pf": 2.47,
+     "payoff": 1.65,
+     "n_locks": 4,
+     "avg_win": 2677.0,
+     "avg_loss": -1624.0,
+     "position_hold_total": {
+      "bars": 26,
+      "seconds": 374400,
+      "hours": 104,
+      "days": 4.33
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 19132.93
+    }
+   }
+  }
+ },
+ {
+  "inst": "NQ",
+  "tf": "2h",
+  "winner": "eod1",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 105461.3684211603,
+     "max_dd": 6663.506352083932,
+     "win": 72.8,
+     "n_taken": 302,
+     "n_candidates": 302,
+     "exposure": 100.0,
+     "pf": 1.75,
+     "payoff": 0.65,
+     "n_locks": 164,
+     "avg_win": 1108.0,
+     "avg_loss": -1722.0,
+     "position_hold_total": {
+      "bars": 330,
+      "seconds": 4752000,
+      "hours": 1320,
+      "days": 55.0
+     },
+     "pnl_2025": 45895.770000000004,
+     "pnl_2026": 29915.059999999998
+    },
+    "oos": {
+     "pnl": 15764.0272232586,
+     "max_dd": 6663.506352083932,
+     "win": 67.5,
+     "n_taken": 80,
+     "n_candidates": 80,
+     "exposure": 100.0,
+     "pf": 1.33,
+     "payoff": 0.64,
+     "n_locks": 55,
+     "avg_win": 1114.0,
+     "avg_loss": -1727.0,
+     "position_hold_total": {
+      "bars": 65,
+      "seconds": 936000,
+      "hours": 260,
+      "days": 10.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 29915.059999999998
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 105461.3684211603,
+     "max_dd": 6663.506352083932,
+     "win": 72.8,
+     "n_taken": 302,
+     "n_candidates": 302,
+     "exposure": 100.0,
+     "pf": 1.75,
+     "payoff": 0.65,
+     "n_locks": 164,
+     "avg_win": 1108.0,
+     "avg_loss": -1722.0,
+     "position_hold_total": {
+      "bars": 330,
+      "seconds": 4752000,
+      "hours": 1320,
+      "days": 55.0
+     },
+     "pnl_2025": 45895.770000000004,
+     "pnl_2026": 29915.059999999998
+    },
+    "oos": {
+     "pnl": 15764.0272232586,
+     "max_dd": 6663.506352083932,
+     "win": 67.5,
+     "n_taken": 80,
+     "n_candidates": 80,
+     "exposure": 100.0,
+     "pf": 1.33,
+     "payoff": 0.64,
+     "n_locks": 55,
+     "avg_win": 1114.0,
+     "avg_loss": -1727.0,
+     "position_hold_total": {
+      "bars": 65,
+      "seconds": 936000,
+      "hours": 260,
+      "days": 10.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 29915.059999999998
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 82752.07903759096,
+     "max_dd": 9419.2458890938,
+     "win": 62.2,
+     "n_taken": 185,
+     "n_candidates": 185,
+     "exposure": 100.0,
+     "pf": 1.75,
+     "payoff": 1.06,
+     "n_locks": 66,
+     "avg_win": 1563.0,
+     "avg_loss": -1335.0,
+     "position_hold_total": {
+      "bars": 131,
+      "seconds": 1886400,
+      "hours": 524,
+      "days": 21.83
+     },
+     "pnl_2025": 46865.47,
+     "pnl_2026": 25879.96
+    },
+    "oos": {
+     "pnl": 40744.77432889631,
+     "max_dd": 5645.0,
+     "win": 70.0,
+     "n_taken": 50,
+     "n_candidates": 50,
+     "exposure": 100.0,
+     "pf": 2.79,
+     "payoff": 1.2,
+     "n_locks": 9,
+     "avg_win": 1832.0,
+     "avg_loss": -1183.0,
+     "position_hold_total": {
+      "bars": 29,
+      "seconds": 417600,
+      "hours": 116,
+      "days": 4.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 25879.96
+    }
+   }
+  }
+ },
+ {
+  "inst": "NQ",
+  "tf": "1h",
+  "winner": "eod1",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 77439.22490460958,
+     "max_dd": 9144.47220941598,
+     "win": 52.3,
+     "n_taken": 222,
+     "n_candidates": 253,
+     "exposure": 87.7,
+     "pf": 1.67,
+     "payoff": 1.53,
+     "n_locks": 32,
+     "avg_win": 1660.0,
+     "avg_loss": -1112.0,
+     "position_hold_total": {
+      "bars": 321,
+      "seconds": 4622400,
+      "hours": 1284,
+      "days": 53.5
+     },
+     "pnl_2025": 80370.72,
+     "pnl_2026": 12159.32
+    },
+    "oos": {
+     "pnl": 21943.91023577642,
+     "max_dd": 8494.527987167967,
+     "win": 53.3,
+     "n_taken": 60,
+     "n_candidates": 77,
+     "exposure": 77.9,
+     "pf": 1.7,
+     "payoff": 1.49,
+     "n_locks": 17,
+     "avg_win": 1660.0,
+     "avg_loss": -1171.0,
+     "position_hold_total": {
+      "bars": 70,
+      "seconds": 1008000,
+      "hours": 280,
+      "days": 11.67
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 5089.500000000002
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 66795.11734864136,
+     "max_dd": 10354.47220941598,
+     "win": 52.1,
+     "n_taken": 217,
+     "n_candidates": 256,
+     "exposure": 84.8,
+     "pf": 1.63,
+     "payoff": 1.5,
+     "n_locks": 39,
+     "avg_win": 1521.0,
+     "avg_loss": -1035.0,
+     "position_hold_total": {
+      "bars": 234,
+      "seconds": 3369600,
+      "hours": 936,
+      "days": 39.0
+     },
+     "pnl_2025": 63181.68000000001,
+     "pnl_2026": 255.0399999999995
+    },
+    "oos": {
+     "pnl": 23318.966013528407,
+     "max_dd": 8784.63954267194,
+     "win": 53.8,
+     "n_taken": 65,
+     "n_candidates": 78,
+     "exposure": 83.3,
+     "pf": 1.76,
+     "payoff": 1.51,
+     "n_locks": 14,
+     "avg_win": 1549.0,
+     "avg_loss": -1091.0,
+     "position_hold_total": {
+      "bars": 54,
+      "seconds": 777600,
+      "hours": 216,
+      "days": 9.0
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 144.80000000000064
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 78823.21357885841,
+     "max_dd": 8815.127587500028,
+     "win": 54.3,
+     "n_taken": 129,
+     "n_candidates": 171,
+     "exposure": 75.4,
+     "pf": 2.04,
+     "payoff": 1.72,
+     "n_locks": 14,
+     "avg_win": 2190.0,
+     "avg_loss": -1344.0,
+     "position_hold_total": {
+      "bars": 175,
+      "seconds": 2520000,
+      "hours": 700,
+      "days": 29.17
+     },
+     "pnl_2025": 69695.01999999999,
+     "pnl_2026": 17043.55
+    },
+    "oos": {
+     "pnl": 27202.818870679475,
+     "max_dd": 7824.756966819987,
+     "win": 57.9,
+     "n_taken": 38,
+     "n_candidates": 47,
+     "exposure": 80.9,
+     "pf": 2.24,
+     "payoff": 1.63,
+     "n_locks": 3,
+     "avg_win": 2298.0,
+     "avg_loss": -1256.0,
+     "position_hold_total": {
+      "bars": 44,
+      "seconds": 633600,
+      "hours": 176,
+      "days": 7.33
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 22728.289999999994
+    }
+   }
+  }
+ },
+ {
+  "inst": "NQ",
+  "tf": "15m",
+  "winner": "eod1",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 83039.31717605388,
+     "max_dd": 11469.476270974264,
+     "win": 52.9,
+     "n_taken": 452,
+     "n_candidates": 452,
+     "exposure": 100.0,
+     "pf": 1.48,
+     "payoff": 1.32,
+     "n_locks": 98,
+     "avg_win": 1088.0,
+     "avg_loss": -818.0,
+     "position_hold_total": {
+      "bars": 320,
+      "seconds": 4608000,
+      "hours": 1280,
+      "days": 53.33
+     },
+     "pnl_2025": 32068.409999999993,
+     "pnl_2026": 7008.279999999999
+    },
+    "oos": {
+     "pnl": 16156.151826897403,
+     "max_dd": 11469.476270974264,
+     "win": 49.6,
+     "n_taken": 115,
+     "n_candidates": 115,
+     "exposure": 100.0,
+     "pf": 1.34,
+     "payoff": 1.37,
+     "n_locks": 41,
+     "avg_win": 1089.0,
+     "avg_loss": -790.0,
+     "position_hold_total": {
+      "bars": 73,
+      "seconds": 1051200,
+      "hours": 292,
+      "days": 12.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 7008.279999999999
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 83039.31717605388,
+     "max_dd": 11469.476270974264,
+     "win": 52.9,
+     "n_taken": 452,
+     "n_candidates": 452,
+     "exposure": 100.0,
+     "pf": 1.48,
+     "payoff": 1.32,
+     "n_locks": 98,
+     "avg_win": 1088.0,
+     "avg_loss": -818.0,
+     "position_hold_total": {
+      "bars": 320,
+      "seconds": 4608000,
+      "hours": 1280,
+      "days": 53.33
+     },
+     "pnl_2025": 32068.409999999993,
+     "pnl_2026": 7008.279999999999
+    },
+    "oos": {
+     "pnl": 16156.151826897403,
+     "max_dd": 11469.476270974264,
+     "win": 49.6,
+     "n_taken": 115,
+     "n_candidates": 115,
+     "exposure": 100.0,
+     "pf": 1.34,
+     "payoff": 1.37,
+     "n_locks": 41,
+     "avg_win": 1089.0,
+     "avg_loss": -790.0,
+     "position_hold_total": {
+      "bars": 73,
+      "seconds": 1051200,
+      "hours": 292,
+      "days": 12.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 7008.279999999999
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 35176.009760802626,
+     "max_dd": 7326.365077332084,
+     "win": 51.3,
+     "n_taken": 193,
+     "n_candidates": 493,
+     "exposure": 39.1,
+     "pf": 1.44,
+     "payoff": 1.37,
+     "n_locks": 151,
+     "avg_win": 1163.0,
+     "avg_loss": -910.0,
+     "position_hold_total": {
+      "bars": 353,
+      "seconds": 5083200,
+      "hours": 1412,
+      "days": 58.83
+     },
+     "pnl_2025": 22829.440000000002,
+     "pnl_2026": 5211.010000000001
+    },
+    "oos": {
+     "pnl": 21286.340970283418,
+     "max_dd": 4939.290436012016,
+     "win": 56.2,
+     "n_taken": 73,
+     "n_candidates": 167,
+     "exposure": 43.7,
+     "pf": 1.83,
+     "payoff": 1.43,
+     "n_locks": 48,
+     "avg_win": 1133.0,
+     "avg_loss": -882.0,
+     "position_hold_total": {
+      "bars": 106,
+      "seconds": 1526400,
+      "hours": 424,
+      "days": 17.67
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 6411.720000000001
+    }
+   }
+  }
+ },
+ {
+  "inst": "NQ",
+  "tf": "5m",
+  "winner": "eod1",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 15740.650452258778,
+     "max_dd": 2409.102583158019,
+     "win": 64.8,
+     "n_taken": 162,
+     "n_candidates": 192,
+     "exposure": 84.4,
+     "pf": 1.57,
+     "payoff": 0.85,
+     "n_locks": 5,
+     "avg_win": 411.0,
+     "avg_loss": -478.0,
+     "position_hold_total": {
+      "bars": 151,
+      "seconds": 2174400,
+      "hours": 604,
+      "days": 25.17
+     },
+     "pnl_2025": 11194.27,
+     "pnl_2026": 1526.49
+    },
+    "oos": {
+     "pnl": 1459.1177891278494,
+     "max_dd": 2174.102583158019,
+     "win": 61.9,
+     "n_taken": 21,
+     "n_candidates": 33,
+     "exposure": 63.6,
+     "pf": 1.38,
+     "payoff": 0.85,
+     "n_locks": 2,
+     "avg_win": 411.0,
+     "avg_loss": -464.0,
+     "position_hold_total": {
+      "bars": 36,
+      "seconds": 518400,
+      "hours": 144,
+      "days": 6.0
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 1526.49
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 15189.753035416798,
+     "max_dd": 2409.102583158019,
+     "win": 63.9,
+     "n_taken": 166,
+     "n_candidates": 196,
+     "exposure": 84.7,
+     "pf": 1.56,
+     "payoff": 0.88,
+     "n_locks": 5,
+     "avg_win": 407.0,
+     "avg_loss": -459.0,
+     "position_hold_total": {
+      "bars": 141,
+      "seconds": 2030400,
+      "hours": 564,
+      "days": 23.5
+     },
+     "pnl_2025": 11875.78,
+     "pnl_2026": 925.2900000000002
+    },
+    "oos": {
+     "pnl": 922.9159371018613,
+     "max_dd": 2357.900731132031,
+     "win": 56.5,
+     "n_taken": 23,
+     "n_candidates": 35,
+     "exposure": 65.7,
+     "pf": 1.23,
+     "payoff": 0.94,
+     "n_locks": 2,
+     "avg_win": 411.0,
+     "avg_loss": -403.0,
+     "position_hold_total": {
+      "bars": 26,
+      "seconds": 374400,
+      "hours": 104,
+      "days": 4.33
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 925.2900000000002
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 15216.239332799596,
+     "max_dd": 1722.9856358480174,
+     "win": 65.3,
+     "n_taken": 101,
+     "n_candidates": 101,
+     "exposure": 100.0,
+     "pf": 2.08,
+     "payoff": 1.1,
+     "n_locks": 0,
+     "avg_win": 430.0,
+     "avg_loss": -411.0,
+     "position_hold_total": {
+      "bars": 91,
+      "seconds": 1310400,
+      "hours": 364,
+      "days": 15.17
+     },
+     "pnl_2025": 6665.340000000001,
+     "pnl_2026": 927.26
+    },
+    "oos": {
+     "pnl": 2600.226189295936,
+     "max_dd": 1520.735665743996,
+     "win": 62.5,
+     "n_taken": 16,
+     "n_candidates": 16,
+     "exposure": 100.0,
+     "pf": 2.26,
+     "payoff": 1.36,
+     "n_locks": 0,
+     "avg_win": 446.0,
+     "avg_loss": -280.0,
+     "position_hold_total": {
+      "bars": 13,
+      "seconds": 187200,
+      "hours": 52,
+      "days": 2.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 1441.76
+    }
+   }
+  }
+ },
+ {
+  "inst": "NQ",
+  "tf": "2m",
+  "winner": "eod1",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 18722.896446111554,
+     "max_dd": 1959.1347906639567,
+     "win": 60.4,
+     "n_taken": 182,
+     "n_candidates": 182,
+     "exposure": 100.0,
+     "pf": 1.68,
+     "payoff": 1.1,
+     "n_locks": 0,
+     "avg_win": 419.0,
+     "avg_loss": -379.0,
+     "position_hold_total": {
+      "bars": 157,
+      "seconds": 2260800,
+      "hours": 628,
+      "days": 26.17
+     },
+     "pnl_2025": 10018.779999999999,
+     "pnl_2026": -942.7100000000005
+    },
+    "oos": {
+     "pnl": 1015.4628167182091,
+     "max_dd": 1180.2818629259127,
+     "win": 51.6,
+     "n_taken": 31,
+     "n_candidates": 31,
+     "exposure": 100.0,
+     "pf": 1.18,
+     "payoff": 1.1,
+     "n_locks": 0,
+     "avg_win": 419.0,
+     "avg_loss": -394.0,
+     "position_hold_total": {
+      "bars": 25,
+      "seconds": 360000,
+      "hours": 100,
+      "days": 4.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -93.8600000000003
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 19062.678855999548,
+     "max_dd": 1650.1153785799397,
+     "win": 59.9,
+     "n_taken": 187,
+     "n_candidates": 187,
+     "exposure": 100.0,
+     "pf": 1.72,
+     "payoff": 1.15,
+     "n_locks": 0,
+     "avg_win": 415.0,
+     "avg_loss": -379.0,
+     "position_hold_total": {
+      "bars": 157,
+      "seconds": 2260800,
+      "hours": 628,
+      "days": 26.17
+     },
+     "pnl_2025": 10018.779999999999,
+     "pnl_2026": 394.3499999999995
+    },
+    "oos": {
+     "pnl": 545.6293010641821,
+     "max_dd": 1650.1153785799397,
+     "win": 46.9,
+     "n_taken": 32,
+     "n_candidates": 32,
+     "exposure": 100.0,
+     "pf": 1.1,
+     "payoff": 1.25,
+     "n_locks": 0,
+     "avg_win": 393.0,
+     "avg_loss": -393.0,
+     "position_hold_total": {
+      "bars": 25,
+      "seconds": 360000,
+      "hours": 100,
+      "days": 4.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 394.3499999999995
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 31740.5350963799,
+     "max_dd": 3833.0655340105295,
+     "win": 51.0,
+     "n_taken": 520,
+     "n_candidates": 520,
+     "exposure": 100.0,
+     "pf": 1.43,
+     "payoff": 1.37,
+     "n_locks": 0,
+     "avg_win": 396.0,
+     "avg_loss": -289.0,
+     "position_hold_total": {
+      "bars": 482,
+      "seconds": 6940800,
+      "hours": 1928,
+      "days": 80.33
+     },
+     "pnl_2025": 16163.659999999989,
+     "pnl_2026": -4961.200000000001
+    },
+    "oos": {
+     "pnl": 4560.5605296035355,
+     "max_dd": 3833.0655340105295,
+     "win": 46.3,
+     "n_taken": 149,
+     "n_candidates": 149,
+     "exposure": 100.0,
+     "pf": 1.2,
+     "payoff": 1.39,
+     "n_locks": 0,
+     "avg_win": 374.0,
+     "avg_loss": -277.0,
+     "position_hold_total": {
+      "bars": 131,
+      "seconds": 1886400,
+      "hours": 524,
+      "days": 21.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -5435.380000000001
+    }
+   }
+  }
+ },
+ {
+  "inst": "ES",
+  "tf": "4h",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 68167.93148268043,
+     "max_dd": 13551.77895611996,
+     "win": 60.7,
+     "n_taken": 145,
+     "n_candidates": 145,
+     "exposure": 100.0,
+     "pf": 2.01,
+     "payoff": 1.28,
+     "n_locks": 89,
+     "avg_win": 1541.0,
+     "avg_loss": -1205.0,
+     "position_hold_total": {
+      "bars": 578,
+      "seconds": 8323200,
+      "hours": 2312,
+      "days": 96.33
+     },
+     "pnl_2025": 42042.609999999986,
+     "pnl_2026": 26125.530000000002
+    },
+    "oos": {
+     "pnl": 28187.968392610128,
+     "max_dd": 2500.0,
+     "win": 71.4,
+     "n_taken": 35,
+     "n_candidates": 35,
+     "exposure": 100.0,
+     "pf": 3.64,
+     "payoff": 1.46,
+     "n_locks": 9,
+     "avg_win": 1554.0,
+     "avg_loss": -1066.0,
+     "position_hold_total": {
+      "bars": 121,
+      "seconds": 1742400,
+      "hours": 484,
+      "days": 20.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 28188.03
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 62333.989394920354,
+     "max_dd": 11101.77895611996,
+     "win": 60.7,
+     "n_taken": 150,
+     "n_candidates": 150,
+     "exposure": 100.0,
+     "pf": 2.02,
+     "payoff": 1.26,
+     "n_locks": 81,
+     "avg_win": 1359.0,
+     "avg_loss": -1075.0,
+     "position_hold_total": {
+      "bars": 318,
+      "seconds": 4579200,
+      "hours": 1272,
+      "days": 53.0
+     },
+     "pnl_2025": 40195.25,
+     "pnl_2026": 22138.910000000003
+    },
+    "oos": {
+     "pnl": 24201.35787067011,
+     "max_dd": 2412.5,
+     "win": 69.4,
+     "n_taken": 36,
+     "n_candidates": 36,
+     "exposure": 100.0,
+     "pf": 3.16,
+     "payoff": 1.39,
+     "n_locks": 12,
+     "avg_win": 1417.0,
+     "avg_loss": -1019.0,
+     "position_hold_total": {
+      "bars": 80,
+      "seconds": 1152000,
+      "hours": 320,
+      "days": 13.33
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 24201.410000000003
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 71321.27114419927,
+     "max_dd": 4550.0,
+     "win": 61.8,
+     "n_taken": 123,
+     "n_candidates": 123,
+     "exposure": 100.0,
+     "pf": 2.28,
+     "payoff": 1.32,
+     "n_locks": 50,
+     "avg_win": 1682.0,
+     "avg_loss": -1310.0,
+     "position_hold_total": {
+      "bars": 318,
+      "seconds": 4579200,
+      "hours": 1272,
+      "days": 53.0
+     },
+     "pnl_2025": 48006.37999999999,
+     "pnl_2026": 19965.14
+    },
+    "oos": {
+     "pnl": 22952.63134325978,
+     "max_dd": 4550.0,
+     "win": 66.7,
+     "n_taken": 27,
+     "n_candidates": 27,
+     "exposure": 100.0,
+     "pf": 2.81,
+     "payoff": 1.41,
+     "n_locks": 9,
+     "avg_win": 1979.0,
+     "avg_loss": -1423.0,
+     "position_hold_total": {
+      "bars": 74,
+      "seconds": 1065600,
+      "hours": 296,
+      "days": 12.33
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 19965.14
+    }
+   }
+  }
+ },
+ {
+  "inst": "ES",
+  "tf": "2h",
+  "winner": "eod1",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 104340.35019008766,
+     "max_dd": 7314.123661160091,
+     "win": 48.1,
+     "n_taken": 262,
+     "n_candidates": 262,
+     "exposure": 100.0,
+     "pf": 1.74,
+     "payoff": 1.87,
+     "n_locks": 166,
+     "avg_win": 1954.0,
+     "avg_loss": -1044.0,
+     "position_hold_total": {
+      "bars": 769,
+      "seconds": 11073600,
+      "hours": 3076,
+      "days": 128.17
+     },
+     "pnl_2025": 62170.64,
+     "pnl_2026": -3145.2800000000025
+    },
+    "oos": {
+     "pnl": 12713.555036824255,
+     "max_dd": 7314.123661160102,
+     "win": 40.8,
+     "n_taken": 71,
+     "n_candidates": 71,
+     "exposure": 100.0,
+     "pf": 1.29,
+     "payoff": 1.87,
+     "n_locks": 53,
+     "avg_win": 1954.0,
+     "avg_loss": -1046.0,
+     "position_hold_total": {
+      "bars": 164,
+      "seconds": 2361600,
+      "hours": 656,
+      "days": 27.33
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -2120.2800000000025
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 61225.37475644794,
+     "max_dd": 12721.831522015418,
+     "win": 47.8,
+     "n_taken": 301,
+     "n_candidates": 301,
+     "exposure": 100.0,
+     "pf": 1.46,
+     "payoff": 1.56,
+     "n_locks": 202,
+     "avg_win": 1448.0,
+     "avg_loss": -922.0,
+     "position_hold_total": {
+      "bars": 450,
+      "seconds": 6480000,
+      "hours": 1800,
+      "days": 75.0
+     },
+     "pnl_2025": 56220.990000000005,
+     "pnl_2026": 594.8799999999997
+    },
+    "oos": {
+     "pnl": 9929.717701784375,
+     "max_dd": 7455.078654800263,
+     "win": 45.9,
+     "n_taken": 74,
+     "n_candidates": 74,
+     "exposure": 100.0,
+     "pf": 1.26,
+     "payoff": 1.48,
+     "n_locks": 55,
+     "avg_win": 1473.0,
+     "avg_loss": -948.0,
+     "position_hold_total": {
+      "bars": 111,
+      "seconds": 1598400,
+      "hours": 444,
+      "days": 18.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 594.8799999999997
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 68108.85975891005,
+     "max_dd": 9069.76943828513,
+     "win": 50.7,
+     "n_taken": 225,
+     "n_candidates": 225,
+     "exposure": 100.0,
+     "pf": 1.78,
+     "payoff": 1.7,
+     "n_locks": 107,
+     "avg_win": 1313.0,
+     "avg_loss": -865.0,
+     "position_hold_total": {
+      "bars": 311,
+      "seconds": 4478400,
+      "hours": 1244,
+      "days": 51.83
+     },
+     "pnl_2025": 66002.6,
+     "pnl_2026": 13467.46
+    },
+    "oos": {
+     "pnl": 24942.98054521009,
+     "max_dd": 7557.499929640107,
+     "win": 50.9,
+     "n_taken": 57,
+     "n_candidates": 57,
+     "exposure": 100.0,
+     "pf": 2.18,
+     "payoff": 2.11,
+     "n_locks": 26,
+     "avg_win": 1451.0,
+     "avg_loss": -948.0,
+     "position_hold_total": {
+      "bars": 70,
+      "seconds": 1008000,
+      "hours": 280,
+      "days": 11.67
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 13467.46
+    }
+   }
+  }
+ },
+ {
+  "inst": "ES",
+  "tf": "1h",
+  "winner": "eod1",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 56482.942774385265,
+     "max_dd": 5002.79552157499,
+     "win": 46.5,
+     "n_taken": 187,
+     "n_candidates": 187,
+     "exposure": 100.0,
+     "pf": 1.69,
+     "payoff": 1.94,
+     "n_locks": 117,
+     "avg_win": 1592.0,
+     "avg_loss": -849.0,
+     "position_hold_total": {
+      "bars": 401,
+      "seconds": 5774400,
+      "hours": 1604,
+      "days": 66.83
+     },
+     "pnl_2025": 45264.61000000001,
+     "pnl_2026": 11002.87
+    },
+    "oos": {
+     "pnl": 12015.138664745064,
+     "max_dd": 4213.053748284983,
+     "win": 42.9,
+     "n_taken": 56,
+     "n_candidates": 56,
+     "exposure": 100.0,
+     "pf": 1.46,
+     "payoff": 1.94,
+     "n_locks": 40,
+     "avg_win": 1592.0,
+     "avg_loss": -840.0,
+     "position_hold_total": {
+      "bars": 51,
+      "seconds": 734400,
+      "hours": 204,
+      "days": 8.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 8685.460000000001
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 48160.46477494019,
+     "max_dd": 5002.79552157499,
+     "win": 47.9,
+     "n_taken": 192,
+     "n_candidates": 192,
+     "exposure": 100.0,
+     "pf": 1.67,
+     "payoff": 1.81,
+     "n_locks": 111,
+     "avg_win": 1287.0,
+     "avg_loss": -777.0,
+     "position_hold_total": {
+      "bars": 217,
+      "seconds": 3124800,
+      "hours": 868,
+      "days": 36.17
+     },
+     "pnl_2025": 24411.500000000004,
+     "pnl_2026": 13597.960000000001
+    },
+    "oos": {
+     "pnl": 12690.692413030047,
+     "max_dd": 3800.0,
+     "win": 46.4,
+     "n_taken": 56,
+     "n_candidates": 56,
+     "exposure": 100.0,
+     "pf": 1.56,
+     "payoff": 1.8,
+     "n_locks": 35,
+     "avg_win": 1443.0,
+     "avg_loss": -802.0,
+     "position_hold_total": {
+      "bars": 48,
+      "seconds": 691200,
+      "hours": 192,
+      "days": 8.0
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 11547.960000000001
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 61507.05524534942,
+     "max_dd": 9385.025433274905,
+     "win": 50.4,
+     "n_taken": 240,
+     "n_candidates": 240,
+     "exposure": 100.0,
+     "pf": 1.6,
+     "payoff": 1.58,
+     "n_locks": 171,
+     "avg_win": 1373.0,
+     "avg_loss": -869.0,
+     "position_hold_total": {
+      "bars": 251,
+      "seconds": 3614400,
+      "hours": 1004,
+      "days": 41.83
+     },
+     "pnl_2025": 18316.86,
+     "pnl_2026": 9837.42
+    },
+    "oos": {
+     "pnl": 24160.74116636478,
+     "max_dd": 4671.786421064962,
+     "win": 54.0,
+     "n_taken": 63,
+     "n_candidates": 63,
+     "exposure": 100.0,
+     "pf": 1.91,
+     "payoff": 1.63,
+     "n_locks": 38,
+     "avg_win": 1437.0,
+     "avg_loss": -875.0,
+     "position_hold_total": {
+      "bars": 59,
+      "seconds": 849600,
+      "hours": 236,
+      "days": 9.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 9487.42
+    }
+   }
+  }
+ },
+ {
+  "inst": "ES",
+  "tf": "15m",
+  "winner": "eod1",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 13682.672898395322,
+     "max_dd": 1550.3504065560264,
+     "win": 77.1,
+     "n_taken": 105,
+     "n_candidates": 161,
+     "exposure": 65.2,
+     "pf": 2.19,
+     "payoff": 0.65,
+     "n_locks": 14,
+     "avg_win": 318.0,
+     "avg_loss": -452.0,
+     "position_hold_total": {
+      "bars": 84,
+      "seconds": 1209600,
+      "hours": 336,
+      "days": 14.0
+     },
+     "pnl_2025": 1987.1700000000005,
+     "pnl_2026": 1948.9800000000002
+    },
+    "oos": {
+     "pnl": 278.2322491839295,
+     "max_dd": 1966.7834688520088,
+     "win": 66.7,
+     "n_taken": 12,
+     "n_candidates": 35,
+     "exposure": 34.3,
+     "pf": 1.12,
+     "payoff": 0.56,
+     "n_locks": 6,
+     "avg_win": 321.0,
+     "avg_loss": -469.0,
+     "position_hold_total": {
+      "bars": 16,
+      "seconds": 230400,
+      "hours": 64,
+      "days": 2.67
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 2269.7000000000003
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 10825.50758691541,
+     "max_dd": 1708.5669377040176,
+     "win": 74.2,
+     "n_taken": 97,
+     "n_candidates": 161,
+     "exposure": 60.2,
+     "pf": 1.96,
+     "payoff": 0.68,
+     "n_locks": 16,
+     "avg_win": 310.0,
+     "avg_loss": -452.0,
+     "position_hold_total": {
+      "bars": 83,
+      "seconds": 1195200,
+      "hours": 332,
+      "days": 13.83
+     },
+     "pnl_2025": 1766.4500000000005,
+     "pnl_2026": 1948.9800000000002
+    },
+    "oos": {
+     "pnl": 82.51571803593833,
+     "max_dd": 1966.7834688520088,
+     "win": 66.7,
+     "n_taken": 12,
+     "n_candidates": 35,
+     "exposure": 34.3,
+     "pf": 1.04,
+     "payoff": 0.52,
+     "n_locks": 6,
+     "avg_win": 321.0,
+     "avg_loss": -469.0,
+     "position_hold_total": {
+      "bars": 16,
+      "seconds": 230400,
+      "hours": 64,
+      "days": 2.67
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 2269.7000000000003
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 25336.94082580583,
+     "max_dd": 5095.153688509981,
+     "win": 57.8,
+     "n_taken": 166,
+     "n_candidates": 227,
+     "exposure": 73.1,
+     "pf": 1.72,
+     "payoff": 1.26,
+     "n_locks": 61,
+     "avg_win": 595.0,
+     "avg_loss": -519.0,
+     "position_hold_total": {
+      "bars": 153,
+      "seconds": 2203200,
+      "hours": 612,
+      "days": 25.5
+     },
+     "pnl_2025": -2691.150000000001,
+     "pnl_2026": -70.19000000000028
+    },
+    "oos": {
+     "pnl": 9835.954318955237,
+     "max_dd": 2274.624574669997,
+     "win": 65.9,
+     "n_taken": 44,
+     "n_candidates": 55,
+     "exposure": 80.0,
+     "pf": 2.28,
+     "payoff": 1.18,
+     "n_locks": 11,
+     "avg_win": 665.0,
+     "avg_loss": -553.0,
+     "position_hold_total": {
+      "bars": 37,
+      "seconds": 532800,
+      "hours": 148,
+      "days": 6.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -1870.1900000000005
+    }
+   }
+  }
+ },
+ {
+  "inst": "ES",
+  "tf": "5m",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 5597.816271733973,
+     "max_dd": 1108.302124470174,
+     "win": 80.5,
+     "n_taken": 154,
+     "n_candidates": 224,
+     "exposure": 68.8,
+     "pf": 1.48,
+     "payoff": 0.36,
+     "n_locks": 7,
+     "avg_win": 138.0,
+     "avg_loss": -369.0,
+     "position_hold_total": {
+      "bars": 237,
+      "seconds": 3412800,
+      "hours": 948,
+      "days": 39.5
+     },
+     "pnl_2025": -1201.8899999999996,
+     "pnl_2026": -235.09999999999997
+    },
+    "oos": {
+     "pnl": 2700.5280649496854,
+     "max_dd": 1064.006590670033,
+     "win": 86.4,
+     "n_taken": 44,
+     "n_candidates": 64,
+     "exposure": 68.8,
+     "pf": 2.06,
+     "payoff": 0.32,
+     "n_locks": 2,
+     "avg_win": 138.0,
+     "avg_loss": -353.0,
+     "position_hold_total": {
+      "bars": 60,
+      "seconds": 864000,
+      "hours": 240,
+      "days": 10.0
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 79.30000000000013
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 5203.955176294039,
+     "max_dd": 1144.2118506101906,
+     "win": 80.0,
+     "n_taken": 145,
+     "n_candidates": 225,
+     "exposure": 64.4,
+     "pf": 1.48,
+     "payoff": 0.37,
+     "n_locks": 8,
+     "avg_win": 136.0,
+     "avg_loss": -378.0,
+     "position_hold_total": {
+      "bars": 239,
+      "seconds": 3441600,
+      "hours": 956,
+      "days": 39.83
+     },
+     "pnl_2025": -814.3899999999999,
+     "pnl_2026": -272.59999999999997
+    },
+    "oos": {
+     "pnl": 2700.5280649496854,
+     "max_dd": 1064.006590670033,
+     "win": 86.4,
+     "n_taken": 44,
+     "n_candidates": 64,
+     "exposure": 68.8,
+     "pf": 2.06,
+     "payoff": 0.32,
+     "n_locks": 2,
+     "avg_win": 138.0,
+     "avg_loss": -353.0,
+     "position_hold_total": {
+      "bars": 61,
+      "seconds": 878400,
+      "hours": 244,
+      "days": 10.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 217.60000000000014
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 9093.006638659608,
+     "max_dd": 777.6825778144485,
+     "win": 92.4,
+     "n_taken": 224,
+     "n_candidates": 224,
+     "exposure": 100.0,
+     "pf": 2.53,
+     "payoff": 0.21,
+     "n_locks": 0,
+     "avg_win": 73.0,
+     "avg_loss": -344.0,
+     "position_hold_total": {
+      "bars": 134,
+      "seconds": 1929600,
+      "hours": 536,
+      "days": 22.33
+     },
+     "pnl_2025": -1047.009999999999,
+     "pnl_2026": -192.22000000000003
+    },
+    "oos": {
+     "pnl": 838.5843941161966,
+     "max_dd": 777.6825778144485,
+     "win": 87.5,
+     "n_taken": 40,
+     "n_candidates": 40,
+     "exposure": 100.0,
+     "pf": 1.49,
+     "payoff": 0.21,
+     "n_locks": 0,
+     "avg_win": 64.0,
+     "avg_loss": -342.0,
+     "position_hold_total": {
+      "bars": 26,
+      "seconds": 374400,
+      "hours": 104,
+      "days": 4.33
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -1110.76
+    }
+   }
+  }
+ },
+ {
+  "inst": "ES",
+  "tf": "2m",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 12632.137020485243,
+     "max_dd": 1567.2464424611462,
+     "win": 80.4,
+     "n_taken": 873,
+     "n_candidates": 975,
+     "exposure": 89.5,
+     "pf": 1.32,
+     "payoff": 0.32,
+     "n_locks": 17,
+     "avg_win": 74.0,
+     "avg_loss": -227.0,
+     "position_hold_total": {
+      "bars": 935,
+      "seconds": 13464000,
+      "hours": 3740,
+      "days": 155.83
+     },
+     "pnl_2025": 1081.1900000000037,
+     "pnl_2026": -375.51999999999964
+    },
+    "oos": {
+     "pnl": 6913.136902524548,
+     "max_dd": 786.4948655218541,
+     "win": 83.9,
+     "n_taken": 279,
+     "n_candidates": 279,
+     "exposure": 100.0,
+     "pf": 1.67,
+     "payoff": 0.32,
+     "n_locks": 0,
+     "avg_win": 74.0,
+     "avg_loss": -228.0,
+     "position_hold_total": {
+      "bars": 267,
+      "seconds": 3844800,
+      "hours": 1068,
+      "days": 44.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -905.299999999999
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 13346.055772347836,
+     "max_dd": 1649.6959718439484,
+     "win": 80.4,
+     "n_taken": 899,
+     "n_candidates": 977,
+     "exposure": 92.0,
+     "pf": 1.34,
+     "payoff": 0.33,
+     "n_locks": 13,
+     "avg_win": 74.0,
+     "avg_loss": -226.0,
+     "position_hold_total": {
+      "bars": 935,
+      "seconds": 13464000,
+      "hours": 3740,
+      "days": 155.83
+     },
+     "pnl_2025": 3408.560000000004,
+     "pnl_2026": -905.299999999999
+    },
+    "oos": {
+     "pnl": 6753.565428193542,
+     "max_dd": 786.4948655218541,
+     "win": 83.5,
+     "n_taken": 279,
+     "n_candidates": 279,
+     "exposure": 100.0,
+     "pf": 1.65,
+     "payoff": 0.33,
+     "n_locks": 0,
+     "avg_win": 74.0,
+     "avg_loss": -228.0,
+     "position_hold_total": {
+      "bars": 267,
+      "seconds": 3844800,
+      "hours": 1068,
+      "days": 44.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -905.299999999999
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 5966.727364289591,
+     "max_dd": 432.8106453610417,
+     "win": 63.3,
+     "n_taken": 60,
+     "n_candidates": 60,
+     "exposure": 100.0,
+     "pf": 2.35,
+     "payoff": 1.3,
+     "n_locks": 0,
+     "avg_win": 281.0,
+     "avg_loss": -207.0,
+     "position_hold_total": {
+      "bars": 50,
+      "seconds": 720000,
+      "hours": 200,
+      "days": 8.33
+     },
+     "pnl_2025": 934.3300000000007,
+     "pnl_2026": 1876.17
+    },
+    "oos": {
+     "pnl": 1263.3110548389595,
+     "max_dd": 432.8106453610417,
+     "win": 77.8,
+     "n_taken": 9,
+     "n_candidates": 9,
+     "exposure": 100.0,
+     "pf": 3.92,
+     "payoff": 1.12,
+     "n_locks": 0,
+     "avg_win": 281.0,
+     "avg_loss": -216.0,
+     "position_hold_total": {
+      "bars": 12,
+      "seconds": 172800,
+      "hours": 48,
+      "days": 2.0
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 1876.17
+    }
+   }
+  }
+ },
+ {
+  "inst": "GC",
+  "tf": "4h",
+  "winner": "eod1",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 77874.57098309656,
+     "max_dd": 17163.87780045034,
+     "win": 77.3,
+     "n_taken": 251,
+     "n_candidates": 251,
+     "exposure": 100.0,
+     "pf": 1.51,
+     "payoff": 0.44,
+     "n_locks": 163,
+     "avg_win": 1184.0,
+     "avg_loss": -2663.0,
+     "position_hold_total": {
+      "bars": 619,
+      "seconds": 8913600,
+      "hours": 2476,
+      "days": 103.17
+     },
+     "pnl_2025": 66058.49000000002,
+     "pnl_2026": 11816.170000000007
+    },
+    "oos": {
+     "pnl": 11816.145680949103,
+     "max_dd": 17163.877800450337,
+     "win": 73.6,
+     "n_taken": 72,
+     "n_candidates": 72,
+     "exposure": 100.0,
+     "pf": 1.23,
+     "payoff": 0.44,
+     "n_locks": 60,
+     "avg_win": 1184.0,
+     "avg_loss": -2681.0,
+     "position_hold_total": {
+      "bars": 83,
+      "seconds": 1195200,
+      "hours": 332,
+      "days": 13.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 11816.170000000007
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 50640.657960547236,
+     "max_dd": 19450.55229425011,
+     "win": 69.7,
+     "n_taken": 261,
+     "n_candidates": 261,
+     "exposure": 100.0,
+     "pf": 1.35,
+     "payoff": 0.58,
+     "n_locks": 197,
+     "avg_win": 1082.0,
+     "avg_loss": -1852.0,
+     "position_hold_total": {
+      "bars": 364,
+      "seconds": 5241600,
+      "hours": 1456,
+      "days": 60.67
+     },
+     "pnl_2025": 38160.12000000002,
+     "pnl_2026": 12480.610000000006
+    },
+    "oos": {
+     "pnl": 12480.58751634917,
+     "max_dd": 14973.325506200126,
+     "win": 69.4,
+     "n_taken": 72,
+     "n_candidates": 72,
+     "exposure": 100.0,
+     "pf": 1.27,
+     "payoff": 0.56,
+     "n_locks": 59,
+     "avg_win": 1175.0,
+     "avg_loss": -2102.0,
+     "position_hold_total": {
+      "bars": 79,
+      "seconds": 1137600,
+      "hours": 316,
+      "days": 13.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 12480.610000000006
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 85822.55094237052,
+     "max_dd": 9142.00830159025,
+     "win": 55.0,
+     "n_taken": 311,
+     "n_candidates": 311,
+     "exposure": 100.0,
+     "pf": 1.44,
+     "payoff": 1.17,
+     "n_locks": 229,
+     "avg_win": 1656.0,
+     "avg_loss": -1409.0,
+     "position_hold_total": {
+      "bars": 432,
+      "seconds": 6220800,
+      "hours": 1728,
+      "days": 72.0
+     },
+     "pnl_2025": 54781.83000000001,
+     "pnl_2026": 31040.68
+    },
+    "oos": {
+     "pnl": 31040.694885641144,
+     "max_dd": 7969.059323379861,
+     "win": 56.1,
+     "n_taken": 82,
+     "n_candidates": 82,
+     "exposure": 100.0,
+     "pf": 1.56,
+     "payoff": 1.22,
+     "n_locks": 52,
+     "avg_win": 1883.0,
+     "avg_loss": -1544.0,
+     "position_hold_total": {
+      "bars": 90,
+      "seconds": 1296000,
+      "hours": 360,
+      "days": 15.0
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 31040.68
+    }
+   }
+  }
+ },
+ {
+  "inst": "GC",
+  "tf": "2h",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 81157.3666676366,
+     "max_dd": 15648.5361531206,
+     "win": 51.2,
+     "n_taken": 332,
+     "n_candidates": 332,
+     "exposure": 100.0,
+     "pf": 1.38,
+     "payoff": 1.31,
+     "n_locks": 257,
+     "avg_win": 1746.0,
+     "avg_loss": -1331.0,
+     "position_hold_total": {
+      "bars": 401,
+      "seconds": 5774400,
+      "hours": 1604,
+      "days": 66.83
+     },
+     "pnl_2025": 94400.38999999997,
+     "pnl_2026": 31823.450000000004
+    },
+    "oos": {
+     "pnl": 22657.550545737922,
+     "max_dd": 15648.536153120585,
+     "win": 51.7,
+     "n_taken": 87,
+     "n_candidates": 87,
+     "exposure": 100.0,
+     "pf": 1.41,
+     "payoff": 1.31,
+     "n_locks": 66,
+     "avg_win": 1746.0,
+     "avg_loss": -1331.0,
+     "position_hold_total": {
+      "bars": 93,
+      "seconds": 1339200,
+      "hours": 372,
+      "days": 15.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 31823.450000000004
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 52883.33003659746,
+     "max_dd": 13385.841583360525,
+     "win": 50.9,
+     "n_taken": 340,
+     "n_candidates": 340,
+     "exposure": 100.0,
+     "pf": 1.27,
+     "payoff": 1.22,
+     "n_locks": 280,
+     "avg_win": 1475.0,
+     "avg_loss": -1063.0,
+     "position_hold_total": {
+      "bars": 247,
+      "seconds": 3556800,
+      "hours": 988,
+      "days": 41.17
+     },
+     "pnl_2025": 90134.75999999998,
+     "pnl_2026": 33875.32
+    },
+    "oos": {
+     "pnl": 20047.735435378218,
+     "max_dd": 13385.841583360525,
+     "win": 52.9,
+     "n_taken": 87,
+     "n_candidates": 87,
+     "exposure": 100.0,
+     "pf": 1.39,
+     "payoff": 1.24,
+     "n_locks": 64,
+     "avg_win": 1648.0,
+     "avg_loss": -1212.0,
+     "position_hold_total": {
+      "bars": 58,
+      "seconds": 835200,
+      "hours": 232,
+      "days": 9.67
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 33875.32
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 62385.54423703831,
+     "max_dd": 14546.057235489752,
+     "win": 52.4,
+     "n_taken": 330,
+     "n_candidates": 330,
+     "exposure": 100.0,
+     "pf": 1.31,
+     "payoff": 1.19,
+     "n_locks": 272,
+     "avg_win": 1560.0,
+     "avg_loss": -1172.0,
+     "position_hold_total": {
+      "bars": 332,
+      "seconds": 4780800,
+      "hours": 1328,
+      "days": 55.33
+     },
+     "pnl_2025": 115476.13,
+     "pnl_2026": 41968.33
+    },
+    "oos": {
+     "pnl": 20597.166761279004,
+     "max_dd": 8710.000000000036,
+     "win": 52.7,
+     "n_taken": 74,
+     "n_candidates": 74,
+     "exposure": 100.0,
+     "pf": 1.44,
+     "payoff": 1.29,
+     "n_locks": 53,
+     "avg_win": 1697.0,
+     "avg_loss": -1365.0,
+     "position_hold_total": {
+      "bars": 59,
+      "seconds": 849600,
+      "hours": 236,
+      "days": 9.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 41968.33
+    }
+   }
+  }
+ },
+ {
+  "inst": "GC",
+  "tf": "1h",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 86968.89925394813,
+     "max_dd": 21007.143114150284,
+     "win": 45.4,
+     "n_taken": 571,
+     "n_candidates": 571,
+     "exposure": 100.0,
+     "pf": 1.26,
+     "payoff": 1.52,
+     "n_locks": 465,
+     "avg_win": 1627.0,
+     "avg_loss": -1045.0,
+     "position_hold_total": {
+      "bars": 358,
+      "seconds": 5155200,
+      "hours": 1432,
+      "days": 59.67
+     },
+     "pnl_2025": 28022.36,
+     "pnl_2026": 18149.04
+    },
+    "oos": {
+     "pnl": 28740.43516039719,
+     "max_dd": 21007.143114150316,
+     "win": 44.6,
+     "n_taken": 204,
+     "n_candidates": 204,
+     "exposure": 100.0,
+     "pf": 1.22,
+     "payoff": 1.52,
+     "n_locks": 164,
+     "avg_win": 1774.0,
+     "avg_loss": -1105.0,
+     "position_hold_total": {
+      "bars": 111,
+      "seconds": 1598400,
+      "hours": 444,
+      "days": 18.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 18149.04
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 86968.89925394813,
+     "max_dd": 21007.143114150284,
+     "win": 45.4,
+     "n_taken": 571,
+     "n_candidates": 571,
+     "exposure": 100.0,
+     "pf": 1.26,
+     "payoff": 1.52,
+     "n_locks": 465,
+     "avg_win": 1627.0,
+     "avg_loss": -1045.0,
+     "position_hold_total": {
+      "bars": 358,
+      "seconds": 5155200,
+      "hours": 1432,
+      "days": 59.67
+     },
+     "pnl_2025": 28022.36,
+     "pnl_2026": 18149.04
+    },
+    "oos": {
+     "pnl": 28740.43516039719,
+     "max_dd": 21007.143114150316,
+     "win": 44.6,
+     "n_taken": 204,
+     "n_candidates": 204,
+     "exposure": 100.0,
+     "pf": 1.22,
+     "payoff": 1.52,
+     "n_locks": 164,
+     "avg_win": 1774.0,
+     "avg_loss": -1105.0,
+     "position_hold_total": {
+      "bars": 111,
+      "seconds": 1598400,
+      "hours": 444,
+      "days": 18.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 18149.04
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 68013.1707369254,
+     "max_dd": 16340.991375679776,
+     "win": 47.0,
+     "n_taken": 774,
+     "n_candidates": 774,
+     "exposure": 100.0,
+     "pf": 1.2,
+     "payoff": 1.35,
+     "n_locks": 663,
+     "avg_win": 1092.0,
+     "avg_loss": -773.0,
+     "position_hold_total": {
+      "bars": 563,
+      "seconds": 8107200,
+      "hours": 2252,
+      "days": 93.83
+     },
+     "pnl_2025": 4014.5500000000147,
+     "pnl_2026": 11017.43000000001
+    },
+    "oos": {
+     "pnl": 30504.816039072604,
+     "max_dd": 8161.621765879863,
+     "win": 48.6,
+     "n_taken": 276,
+     "n_candidates": 276,
+     "exposure": 100.0,
+     "pf": 1.24,
+     "payoff": 1.32,
+     "n_locks": 224,
+     "avg_win": 1120.0,
+     "avg_loss": -809.0,
+     "position_hold_total": {
+      "bars": 182,
+      "seconds": 2620800,
+      "hours": 728,
+      "days": 30.33
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 11017.43000000001
+    }
+   }
+  }
+ },
+ {
+  "inst": "GC",
+  "tf": "15m",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 80903.20008273039,
+     "max_dd": 10097.562943366705,
+     "win": 66.7,
+     "n_taken": 2018,
+     "n_candidates": 2018,
+     "exposure": 100.0,
+     "pf": 1.17,
+     "payoff": 0.58,
+     "n_locks": 1656,
+     "avg_win": 416.0,
+     "avg_loss": -720.0,
+     "position_hold_total": {
+      "bars": 1597,
+      "seconds": 22996800,
+      "hours": 6388,
+      "days": 266.17
+     },
+     "pnl_2025": 20938.22,
+     "pnl_2026": 9875.959999999995
+    },
+    "oos": {
+     "pnl": 37283.30754533845,
+     "max_dd": 7583.151677125716,
+     "win": 68.2,
+     "n_taken": 784,
+     "n_candidates": 784,
+     "exposure": 100.0,
+     "pf": 1.2,
+     "payoff": 0.56,
+     "n_locks": 617,
+     "avg_win": 416.0,
+     "avg_loss": -753.0,
+     "position_hold_total": {
+      "bars": 568,
+      "seconds": 8179200,
+      "hours": 2272,
+      "days": 94.67
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 9875.959999999995
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 79441.3977896169,
+     "max_dd": 9767.56294336664,
+     "win": 66.0,
+     "n_taken": 2037,
+     "n_candidates": 2037,
+     "exposure": 100.0,
+     "pf": 1.17,
+     "payoff": 0.6,
+     "n_locks": 1677,
+     "avg_win": 409.0,
+     "avg_loss": -689.0,
+     "position_hold_total": {
+      "bars": 1483,
+      "seconds": 21355200,
+      "hours": 5932,
+      "days": 247.17
+     },
+     "pnl_2025": 17921.289999999994,
+     "pnl_2026": 8693.079999999996
+    },
+    "oos": {
+     "pnl": 36106.82336144427,
+     "max_dd": 7583.151677125716,
+     "win": 67.7,
+     "n_taken": 786,
+     "n_candidates": 786,
+     "exposure": 100.0,
+     "pf": 1.2,
+     "payoff": 0.57,
+     "n_locks": 623,
+     "avg_win": 412.0,
+     "avg_loss": -733.0,
+     "position_hold_total": {
+      "bars": 547,
+      "seconds": 7876800,
+      "hours": 2188,
+      "days": 91.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 8693.079999999996
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 20079.45357787121,
+     "max_dd": 3039.8916727545384,
+     "win": 66.7,
+     "n_taken": 417,
+     "n_candidates": 716,
+     "exposure": 58.2,
+     "pf": 1.38,
+     "payoff": 0.68,
+     "n_locks": 299,
+     "avg_win": 263.0,
+     "avg_loss": -395.0,
+     "position_hold_total": {
+      "bars": 378,
+      "seconds": 5443200,
+      "hours": 1512,
+      "days": 63.0
+     },
+     "pnl_2025": 5562.81,
+     "pnl_2026": -2423.84
+    },
+    "oos": {
+     "pnl": 3971.0114728373355,
+     "max_dd": 1388.1963136012018,
+     "win": 66.7,
+     "n_taken": 87,
+     "n_candidates": 147,
+     "exposure": 59.2,
+     "pf": 1.36,
+     "payoff": 0.68,
+     "n_locks": 60,
+     "avg_win": 266.0,
+     "avg_loss": -393.0,
+     "position_hold_total": {
+      "bars": 66,
+      "seconds": 950400,
+      "hours": 264,
+      "days": 11.0
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -1891.3400000000001
+    }
+   }
+  }
+ },
+ {
+  "inst": "GC",
+  "tf": "5m",
+  "winner": "eod1",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 18126.129549694815,
+     "max_dd": 4115.396352115204,
+     "win": 64.8,
+     "n_taken": 210,
+     "n_candidates": 614,
+     "exposure": 34.2,
+     "pf": 1.51,
+     "payoff": 0.82,
+     "n_locks": 135,
+     "avg_win": 390.0,
+     "avg_loss": -476.0,
+     "position_hold_total": {
+      "bars": 533,
+      "seconds": 7675200,
+      "hours": 2132,
+      "days": 88.83
+     },
+     "pnl_2025": 725.369999999999,
+     "pnl_2026": 294.72999999999956
+    },
+    "oos": {
+     "pnl": 7150.130036213932,
+     "max_dd": 4115.396352115204,
+     "win": 69.2,
+     "n_taken": 65,
+     "n_candidates": 187,
+     "exposure": 34.8,
+     "pf": 1.67,
+     "payoff": 0.74,
+     "n_locks": 41,
+     "avg_win": 388.0,
+     "avg_loss": -504.0,
+     "position_hold_total": {
+      "bars": 153,
+      "seconds": 2203200,
+      "hours": 612,
+      "days": 25.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -2040.3300000000004
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 18126.129549694815,
+     "max_dd": 4115.396352115204,
+     "win": 64.8,
+     "n_taken": 210,
+     "n_candidates": 614,
+     "exposure": 34.2,
+     "pf": 1.51,
+     "payoff": 0.82,
+     "n_locks": 135,
+     "avg_win": 390.0,
+     "avg_loss": -476.0,
+     "position_hold_total": {
+      "bars": 533,
+      "seconds": 7675200,
+      "hours": 2132,
+      "days": 88.83
+     },
+     "pnl_2025": 725.369999999999,
+     "pnl_2026": 294.72999999999956
+    },
+    "oos": {
+     "pnl": 7150.130036213932,
+     "max_dd": 4115.396352115204,
+     "win": 69.2,
+     "n_taken": 65,
+     "n_candidates": 187,
+     "exposure": 34.8,
+     "pf": 1.67,
+     "payoff": 0.74,
+     "n_locks": 41,
+     "avg_win": 388.0,
+     "avg_loss": -504.0,
+     "position_hold_total": {
+      "bars": 153,
+      "seconds": 2203200,
+      "hours": 612,
+      "days": 25.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -2040.3300000000004
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 19965.348119106056,
+     "max_dd": 4305.3819936475065,
+     "win": 41.0,
+     "n_taken": 458,
+     "n_candidates": 458,
+     "exposure": 100.0,
+     "pf": 1.29,
+     "payoff": 1.85,
+     "n_locks": 334,
+     "avg_win": 474.0,
+     "avg_loss": -259.0,
+     "position_hold_total": {
+      "bars": 271,
+      "seconds": 3902400,
+      "hours": 1084,
+      "days": 45.17
+     },
+     "pnl_2025": -1403.71,
+     "pnl_2026": -272.7099999999996
+    },
+    "oos": {
+     "pnl": 10346.205869732466,
+     "max_dd": 3904.6149079359566,
+     "win": 50.0,
+     "n_taken": 106,
+     "n_candidates": 106,
+     "exposure": 100.0,
+     "pf": 1.67,
+     "payoff": 1.67,
+     "n_locks": 46,
+     "avg_win": 494.0,
+     "avg_loss": -276.0,
+     "position_hold_total": {
+      "bars": 54,
+      "seconds": 777600,
+      "hours": 216,
+      "days": 9.0
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -272.7099999999996
+    }
+   }
+  }
+ },
+ {
+  "inst": "GC",
+  "tf": "2m",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 38640.21113920021,
+     "max_dd": 4576.803906585928,
+     "win": 55.3,
+     "n_taken": 886,
+     "n_candidates": 886,
+     "exposure": 100.0,
+     "pf": 1.28,
+     "payoff": 1.03,
+     "n_locks": 509,
+     "avg_win": 362.0,
+     "avg_loss": -350.0,
+     "position_hold_total": {
+      "bars": 735,
+      "seconds": 10584000,
+      "hours": 2940,
+      "days": 122.5
+     },
+     "pnl_2025": -4930.100000000011,
+     "pnl_2026": -12111.560000000003
+    },
+    "oos": {
+     "pnl": 13639.571551711333,
+     "max_dd": 3824.6328712675677,
+     "win": 56.6,
+     "n_taken": 288,
+     "n_candidates": 288,
+     "exposure": 100.0,
+     "pf": 1.29,
+     "payoff": 0.99,
+     "n_locks": 165,
+     "avg_win": 364.0,
+     "avg_loss": -371.0,
+     "position_hold_total": {
+      "bars": 215,
+      "seconds": 3096000,
+      "hours": 860,
+      "days": 35.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -12111.560000000003
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 38640.21113920021,
+     "max_dd": 4576.803906585928,
+     "win": 55.3,
+     "n_taken": 886,
+     "n_candidates": 886,
+     "exposure": 100.0,
+     "pf": 1.28,
+     "payoff": 1.03,
+     "n_locks": 509,
+     "avg_win": 362.0,
+     "avg_loss": -350.0,
+     "position_hold_total": {
+      "bars": 735,
+      "seconds": 10584000,
+      "hours": 2940,
+      "days": 122.5
+     },
+     "pnl_2025": -4930.100000000011,
+     "pnl_2026": -12111.560000000003
+    },
+    "oos": {
+     "pnl": 13639.571551711333,
+     "max_dd": 3824.6328712675677,
+     "win": 56.6,
+     "n_taken": 288,
+     "n_candidates": 288,
+     "exposure": 100.0,
+     "pf": 1.29,
+     "payoff": 0.99,
+     "n_locks": 165,
+     "avg_win": 364.0,
+     "avg_loss": -371.0,
+     "position_hold_total": {
+      "bars": 215,
+      "seconds": 3096000,
+      "hours": 860,
+      "days": 35.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -12111.560000000003
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 14084.353022558571,
+     "max_dd": 1422.6706004286825,
+     "win": 65.0,
+     "n_taken": 100,
+     "n_candidates": 100,
+     "exposure": 100.0,
+     "pf": 2.31,
+     "payoff": 1.24,
+     "n_locks": 39,
+     "avg_win": 381.0,
+     "avg_loss": -293.0,
+     "position_hold_total": {
+      "bars": 79,
+      "seconds": 1137600,
+      "hours": 316,
+      "days": 13.17
+     },
+     "pnl_2025": 4466.97,
+     "pnl_2026": 2725.03
+    },
+    "oos": {
+     "pnl": 2445.0493104871384,
+     "max_dd": 280.0000000000182,
+     "win": 87.5,
+     "n_taken": 8,
+     "n_candidates": 8,
+     "exposure": 100.0,
+     "pf": 9.73,
+     "payoff": 1.39,
+     "n_locks": 1,
+     "avg_win": 389.0,
+     "avg_loss": 0,
+     "position_hold_total": {
+      "bars": 7,
+      "seconds": 100800,
+      "hours": 28,
+      "days": 1.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 2725.03
+    }
+   }
+  }
+ },
+ {
+  "inst": "SI",
+  "tf": "4h",
+  "winner": "eod1",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 18511.746954561804,
+     "max_dd": 4586.185994601878,
+     "win": 75.6,
+     "n_taken": 221,
+     "n_candidates": 221,
+     "exposure": 100.0,
+     "pf": 1.36,
+     "payoff": 0.43,
+     "n_locks": 164,
+     "avg_win": 418.0,
+     "avg_loss": -969.0,
+     "position_hold_total": {
+      "bars": 233,
+      "seconds": 3355200,
+      "hours": 932,
+      "days": 38.83
+     },
+     "pnl_2025": 16062.600000000002,
+     "pnl_2026": 2448.4
+    },
+    "oos": {
+     "pnl": 2878.2567656305973,
+     "max_dd": 4586.185994601877,
+     "win": 77.5,
+     "n_taken": 71,
+     "n_candidates": 71,
+     "exposure": 100.0,
+     "pf": 1.14,
+     "payoff": 0.33,
+     "n_locks": 59,
+     "avg_win": 430.0,
+     "avg_loss": -1297.0,
+     "position_hold_total": {
+      "bars": 71,
+      "seconds": 1022400,
+      "hours": 284,
+      "days": 11.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 2878.0
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 17832.14228609577,
+     "max_dd": 4586.185994601878,
+     "win": 75.6,
+     "n_taken": 221,
+     "n_candidates": 221,
+     "exposure": 100.0,
+     "pf": 1.34,
+     "payoff": 0.43,
+     "n_locks": 166,
+     "avg_win": 417.0,
+     "avg_loss": -977.0,
+     "position_hold_total": {
+      "bars": 221,
+      "seconds": 3182400,
+      "hours": 884,
+      "days": 36.83
+     },
+     "pnl_2025": 15383.000000000004,
+     "pnl_2026": 2448.4
+    },
+    "oos": {
+     "pnl": 2878.2567656305973,
+     "max_dd": 4586.185994601877,
+     "win": 77.5,
+     "n_taken": 71,
+     "n_candidates": 71,
+     "exposure": 100.0,
+     "pf": 1.14,
+     "payoff": 0.33,
+     "n_locks": 59,
+     "avg_win": 430.0,
+     "avg_loss": -1297.0,
+     "position_hold_total": {
+      "bars": 71,
+      "seconds": 1022400,
+      "hours": 284,
+      "days": 11.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 2878.0
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 61523.70807120882,
+     "max_dd": 8715.708404724966,
+     "win": 59.8,
+     "n_taken": 204,
+     "n_candidates": 204,
+     "exposure": 100.0,
+     "pf": 1.55,
+     "payoff": 1.04,
+     "n_locks": 145,
+     "avg_win": 1426.0,
+     "avg_loss": -1368.0,
+     "position_hold_total": {
+      "bars": 270,
+      "seconds": 3888000,
+      "hours": 1080,
+      "days": 45.0
+     },
+     "pnl_2025": 49255.99999999999,
+     "pnl_2026": 13929.119999999995
+    },
+    "oos": {
+     "pnl": 13929.038811330123,
+     "max_dd": 3150.000000000049,
+     "win": 62.2,
+     "n_taken": 37,
+     "n_candidates": 37,
+     "exposure": 100.0,
+     "pf": 1.57,
+     "payoff": 0.96,
+     "n_locks": 21,
+     "avg_win": 1661.0,
+     "avg_loss": -1734.0,
+     "position_hold_total": {
+      "bars": 38,
+      "seconds": 547200,
+      "hours": 152,
+      "days": 6.33
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 15590.199999999997
+    }
+   }
+  }
+ },
+ {
+  "inst": "SI",
+  "tf": "2h",
+  "winner": "eod1",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 31822.104815893326,
+     "max_dd": 4454.639433534756,
+     "win": 26.6,
+     "n_taken": 290,
+     "n_candidates": 290,
+     "exposure": 100.0,
+     "pf": 1.49,
+     "payoff": 4.12,
+     "n_locks": 243,
+     "avg_win": 1273.0,
+     "avg_loss": -306.0,
+     "position_hold_total": {
+      "bars": 332,
+      "seconds": 4780800,
+      "hours": 1328,
+      "days": 55.33
+     },
+     "pnl_2025": 18076.450000000004,
+     "pnl_2026": 4056.7500000000005
+    },
+    "oos": {
+     "pnl": 6258.189108966722,
+     "max_dd": 3908.3259771508906,
+     "win": 25.0,
+     "n_taken": 64,
+     "n_candidates": 64,
+     "exposure": 100.0,
+     "pf": 1.42,
+     "payoff": 4.27,
+     "n_locks": 52,
+     "avg_win": 1312.0,
+     "avg_loss": -306.0,
+     "position_hold_total": {
+      "bars": 66,
+      "seconds": 950400,
+      "hours": 264,
+      "days": 11.0
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 4056.7500000000005
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 30427.57979879727,
+     "max_dd": 4884.985223768279,
+     "win": 29.8,
+     "n_taken": 292,
+     "n_candidates": 292,
+     "exposure": 100.0,
+     "pf": 1.49,
+     "payoff": 3.49,
+     "n_locks": 243,
+     "avg_win": 1030.0,
+     "avg_loss": -303.0,
+     "position_hold_total": {
+      "bars": 255,
+      "seconds": 3672000,
+      "hours": 1020,
+      "days": 42.5
+     },
+     "pnl_2025": 15178.400000000001,
+     "pnl_2026": 4056.7500000000005
+    },
+    "oos": {
+     "pnl": 6258.189108966722,
+     "max_dd": 3908.3259771508906,
+     "win": 25.0,
+     "n_taken": 64,
+     "n_candidates": 64,
+     "exposure": 100.0,
+     "pf": 1.42,
+     "payoff": 4.27,
+     "n_locks": 52,
+     "avg_win": 1312.0,
+     "avg_loss": -306.0,
+     "position_hold_total": {
+      "bars": 66,
+      "seconds": 950400,
+      "hours": 264,
+      "days": 11.0
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 4056.7500000000005
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 75357.30385205944,
+     "max_dd": 7477.037552270267,
+     "win": 55.2,
+     "n_taken": 201,
+     "n_candidates": 201,
+     "exposure": 100.0,
+     "pf": 1.93,
+     "payoff": 1.55,
+     "n_locks": 125,
+     "avg_win": 1352.0,
+     "avg_loss": -927.0,
+     "position_hold_total": {
+      "bars": 121,
+      "seconds": 1742400,
+      "hours": 484,
+      "days": 20.17
+     },
+     "pnl_2025": 40789.61000000002,
+     "pnl_2026": -2919.9199999999973
+    },
+    "oos": {
+     "pnl": 29853.52343627,
+     "max_dd": 4027.251910640075,
+     "win": 52.4,
+     "n_taken": 82,
+     "n_candidates": 82,
+     "exposure": 100.0,
+     "pf": 1.81,
+     "payoff": 1.65,
+     "n_locks": 54,
+     "avg_win": 1522.0,
+     "avg_loss": -972.0,
+     "position_hold_total": {
+      "bars": 45,
+      "seconds": 648000,
+      "hours": 180,
+      "days": 7.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -1356.2599999999975
+    }
+   }
+  }
+ },
+ {
+  "inst": "SI",
+  "tf": "1h",
+  "winner": "eod1",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 44008.99604811575,
+     "max_dd": 6375.853317360408,
+     "win": 28.8,
+     "n_taken": 368,
+     "n_candidates": 368,
+     "exposure": 100.0,
+     "pf": 1.61,
+     "payoff": 3.95,
+     "n_locks": 315,
+     "avg_win": 1148.0,
+     "avg_loss": -280.0,
+     "position_hold_total": {
+      "bars": 226,
+      "seconds": 3254400,
+      "hours": 904,
+      "days": 37.67
+     },
+     "pnl_2025": -11121.680000000002,
+     "pnl_2026": 13745.860000000002
+    },
+    "oos": {
+     "pnl": 15520.568570159561,
+     "max_dd": 6375.853317360409,
+     "win": 26.5,
+     "n_taken": 132,
+     "n_candidates": 132,
+     "exposure": 100.0,
+     "pf": 1.57,
+     "payoff": 4.34,
+     "n_locks": 114,
+     "avg_win": 1235.0,
+     "avg_loss": -282.0,
+     "position_hold_total": {
+      "bars": 75,
+      "seconds": 1080000,
+      "hours": 300,
+      "days": 12.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 13745.860000000002
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 44008.99604811575,
+     "max_dd": 6375.853317360408,
+     "win": 28.8,
+     "n_taken": 368,
+     "n_candidates": 368,
+     "exposure": 100.0,
+     "pf": 1.61,
+     "payoff": 3.95,
+     "n_locks": 315,
+     "avg_win": 1148.0,
+     "avg_loss": -280.0,
+     "position_hold_total": {
+      "bars": 226,
+      "seconds": 3254400,
+      "hours": 904,
+      "days": 37.67
+     },
+     "pnl_2025": -11121.680000000002,
+     "pnl_2026": 13745.860000000002
+    },
+    "oos": {
+     "pnl": 15520.568570159561,
+     "max_dd": 6375.853317360409,
+     "win": 26.5,
+     "n_taken": 132,
+     "n_candidates": 132,
+     "exposure": 100.0,
+     "pf": 1.57,
+     "payoff": 4.34,
+     "n_locks": 114,
+     "avg_win": 1235.0,
+     "avg_loss": -282.0,
+     "position_hold_total": {
+      "bars": 75,
+      "seconds": 1080000,
+      "hours": 300,
+      "days": 12.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 13745.860000000002
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 33111.79825993026,
+     "max_dd": 4611.631838514924,
+     "win": 50.0,
+     "n_taken": 370,
+     "n_candidates": 671,
+     "exposure": 55.1,
+     "pf": 1.39,
+     "payoff": 1.35,
+     "n_locks": 301,
+     "avg_win": 665.0,
+     "avg_loss": -496.0,
+     "position_hold_total": {
+      "bars": 397,
+      "seconds": 5716800,
+      "hours": 1588,
+      "days": 66.17
+     },
+     "pnl_2025": 3661.91,
+     "pnl_2026": 6390.81
+    },
+    "oos": {
+     "pnl": 19018.4881301791,
+     "max_dd": 2698.6108062551057,
+     "win": 65.2,
+     "n_taken": 69,
+     "n_candidates": 108,
+     "exposure": 63.9,
+     "pf": 2.07,
+     "payoff": 1.1,
+     "n_locks": 39,
+     "avg_win": 818.0,
+     "avg_loss": -736.0,
+     "position_hold_total": {
+      "bars": 75,
+      "seconds": 1080000,
+      "hours": 300,
+      "days": 12.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 6390.81
+    }
+   }
+  }
+ },
+ {
+  "inst": "SI",
+  "tf": "15m",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 76453.18232550344,
+     "max_dd": 10367.807379672275,
+     "win": 59.5,
+     "n_taken": 1790,
+     "n_candidates": 1790,
+     "exposure": 100.0,
+     "pf": 1.22,
+     "payoff": 0.83,
+     "n_locks": 1528,
+     "avg_win": 395.0,
+     "avg_loss": -472.0,
+     "position_hold_total": {
+      "bars": 1703,
+      "seconds": 24523200,
+      "hours": 6812,
+      "days": 283.83
+     },
+     "pnl_2025": 32969.840000000004,
+     "pnl_2026": 13045.240000000005
+    },
+    "oos": {
+     "pnl": 18089.657309041842,
+     "max_dd": 10367.807379672246,
+     "win": 58.9,
+     "n_taken": 616,
+     "n_candidates": 616,
+     "exposure": 100.0,
+     "pf": 1.14,
+     "payoff": 0.8,
+     "n_locks": 534,
+     "avg_win": 395.0,
+     "avg_loss": -495.0,
+     "position_hold_total": {
+      "bars": 553,
+      "seconds": 7963200,
+      "hours": 2212,
+      "days": 92.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 13045.240000000005
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 70839.24916976853,
+     "max_dd": 10367.807379672275,
+     "win": 59.1,
+     "n_taken": 1795,
+     "n_candidates": 1795,
+     "exposure": 100.0,
+     "pf": 1.21,
+     "payoff": 0.83,
+     "n_locks": 1547,
+     "avg_win": 392.0,
+     "avg_loss": -465.0,
+     "position_hold_total": {
+      "bars": 1644,
+      "seconds": 23673600,
+      "hours": 6576,
+      "days": 274.0
+     },
+     "pnl_2025": 32074.280000000006,
+     "pnl_2026": 13427.920000000006
+    },
+    "oos": {
+     "pnl": 17844.214644990265,
+     "max_dd": 10367.807379672246,
+     "win": 58.9,
+     "n_taken": 616,
+     "n_candidates": 616,
+     "exposure": 100.0,
+     "pf": 1.14,
+     "payoff": 0.8,
+     "n_locks": 534,
+     "avg_win": 394.0,
+     "avg_loss": -492.0,
+     "position_hold_total": {
+      "bars": 553,
+      "seconds": 7963200,
+      "hours": 2212,
+      "days": 92.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 13427.920000000006
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 59586.298322302624,
+     "max_dd": 4603.8570548767675,
+     "win": 52.7,
+     "n_taken": 933,
+     "n_candidates": 933,
+     "exposure": 100.0,
+     "pf": 1.4,
+     "payoff": 1.26,
+     "n_locks": 702,
+     "avg_win": 417.0,
+     "avg_loss": -335.0,
+     "position_hold_total": {
+      "bars": 558,
+      "seconds": 8035200,
+      "hours": 2232,
+      "days": 93.0
+     },
+     "pnl_2025": 29125.449999999997,
+     "pnl_2026": 6842.509999999999
+    },
+    "oos": {
+     "pnl": 18674.975216807325,
+     "max_dd": 4603.8570548768075,
+     "win": 51.2,
+     "n_taken": 365,
+     "n_candidates": 365,
+     "exposure": 100.0,
+     "pf": 1.31,
+     "payoff": 1.25,
+     "n_locks": 283,
+     "avg_win": 424.0,
+     "avg_loss": -337.0,
+     "position_hold_total": {
+      "bars": 226,
+      "seconds": 3254400,
+      "hours": 904,
+      "days": 37.67
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 6842.509999999999
+    }
+   }
+  }
+ },
+ {
+  "inst": "SI",
+  "tf": "5m",
+  "winner": "eod1",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 89181.05605174633,
+     "max_dd": 2896.4145839280245,
+     "win": 38.1,
+     "n_taken": 3056,
+     "n_candidates": 3056,
+     "exposure": 100.0,
+     "pf": 1.31,
+     "payoff": 2.13,
+     "n_locks": 2580,
+     "avg_win": 324.0,
+     "avg_loss": -152.0,
+     "position_hold_total": {
+      "bars": 2418,
+      "seconds": 34819200,
+      "hours": 9672,
+      "days": 403.0
+     },
+     "pnl_2025": 29431.950000000004,
+     "pnl_2026": 14912.849999999999
+    },
+    "oos": {
+     "pnl": 19127.15200543279,
+     "max_dd": 2734.3742867427045,
+     "win": 37.4,
+     "n_taken": 752,
+     "n_candidates": 752,
+     "exposure": 100.0,
+     "pf": 1.27,
+     "payoff": 2.12,
+     "n_locks": 644,
+     "avg_win": 324.0,
+     "avg_loss": -153.0,
+     "position_hold_total": {
+      "bars": 555,
+      "seconds": 7992000,
+      "hours": 2220,
+      "days": 92.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 14912.849999999999
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 88830.06886740503,
+     "max_dd": 2734.3742867425026,
+     "win": 38.3,
+     "n_taken": 3064,
+     "n_candidates": 3064,
+     "exposure": 100.0,
+     "pf": 1.31,
+     "payoff": 2.11,
+     "n_locks": 2586,
+     "avg_win": 319.0,
+     "avg_loss": -152.0,
+     "position_hold_total": {
+      "bars": 2419,
+      "seconds": 34833600,
+      "hours": 9676,
+      "days": 403.17
+     },
+     "pnl_2025": 30220.0,
+     "pnl_2026": 14965.699999999999
+    },
+    "oos": {
+     "pnl": 19180.002479160306,
+     "max_dd": 2734.3742867427045,
+     "win": 37.4,
+     "n_taken": 752,
+     "n_candidates": 752,
+     "exposure": 100.0,
+     "pf": 1.27,
+     "payoff": 2.12,
+     "n_locks": 644,
+     "avg_win": 324.0,
+     "avg_loss": -153.0,
+     "position_hold_total": {
+      "bars": 555,
+      "seconds": 7992000,
+      "hours": 2220,
+      "days": 92.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 14965.699999999999
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 51814.421349383425,
+     "max_dd": 3680.739427645798,
+     "win": 36.2,
+     "n_taken": 2581,
+     "n_candidates": 4871,
+     "exposure": 53.0,
+     "pf": 1.23,
+     "payoff": 2.17,
+     "n_locks": 2291,
+     "avg_win": 293.0,
+     "avg_loss": -134.0,
+     "position_hold_total": {
+      "bars": 3045,
+      "seconds": 43848000,
+      "hours": 12180,
+      "days": 507.5
+     },
+     "pnl_2025": 5748.1900000000205,
+     "pnl_2026": 11846.200000000012
+    },
+    "oos": {
+     "pnl": 22537.15660675845,
+     "max_dd": 3337.822850725737,
+     "win": 36.8,
+     "n_taken": 968,
+     "n_candidates": 1804,
+     "exposure": 53.7,
+     "pf": 1.27,
+     "payoff": 2.19,
+     "n_locks": 837,
+     "avg_win": 294.0,
+     "avg_loss": -134.0,
+     "position_hold_total": {
+      "bars": 1136,
+      "seconds": 16358400,
+      "hours": 4544,
+      "days": 189.33
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 12140.420000000013
+    }
+   }
+  }
+ },
+ {
+  "inst": "SI",
+  "tf": "2m",
+  "winner": "eod1",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 65986.89045963073,
+     "max_dd": 2246.259531102074,
+     "win": 36.8,
+     "n_taken": 3554,
+     "n_candidates": 3554,
+     "exposure": 100.0,
+     "pf": 1.29,
+     "payoff": 2.22,
+     "n_locks": 3098,
+     "avg_win": 225.0,
+     "avg_loss": -101.0,
+     "position_hold_total": {
+      "bars": 3565,
+      "seconds": 51336000,
+      "hours": 14260,
+      "days": 594.17
+     },
+     "pnl_2025": 38191.65999999998,
+     "pnl_2026": 11107.679999999997
+    },
+    "oos": {
+     "pnl": 10773.11772641991,
+     "max_dd": 1072.3877495279078,
+     "win": 41.7,
+     "n_taken": 312,
+     "n_candidates": 312,
+     "exposure": 100.0,
+     "pf": 1.58,
+     "payoff": 2.22,
+     "n_locks": 241,
+     "avg_win": 225.0,
+     "avg_loss": -101.0,
+     "position_hold_total": {
+      "bars": 328,
+      "seconds": 4723200,
+      "hours": 1312,
+      "days": 54.67
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 11107.679999999997
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 64621.812802435714,
+     "max_dd": 2271.2595311020887,
+     "win": 36.8,
+     "n_taken": 3563,
+     "n_candidates": 3563,
+     "exposure": 100.0,
+     "pf": 1.28,
+     "payoff": 2.2,
+     "n_locks": 3115,
+     "avg_win": 223.0,
+     "avg_loss": -101.0,
+     "position_hold_total": {
+      "bars": 3539,
+      "seconds": 50961600,
+      "hours": 14156,
+      "days": 589.83
+     },
+     "pnl_2025": 37026.37999999998,
+     "pnl_2026": 10959.219999999998
+    },
+    "oos": {
+     "pnl": 10624.665392874917,
+     "max_dd": 1072.3877495279078,
+     "win": 41.7,
+     "n_taken": 312,
+     "n_candidates": 312,
+     "exposure": 100.0,
+     "pf": 1.58,
+     "payoff": 2.21,
+     "n_locks": 239,
+     "avg_win": 223.0,
+     "avg_loss": -101.0,
+     "position_hold_total": {
+      "bars": 328,
+      "seconds": 4723200,
+      "hours": 1312,
+      "days": 54.67
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 10959.219999999998
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 71798.6898568739,
+     "max_dd": 2605.003480595951,
+     "win": 32.3,
+     "n_taken": 3496,
+     "n_candidates": 3496,
+     "exposure": 100.0,
+     "pf": 1.4,
+     "payoff": 2.93,
+     "n_locks": 3040,
+     "avg_win": 222.0,
+     "avg_loss": -76.0,
+     "position_hold_total": {
+      "bars": 2888,
+      "seconds": 41587200,
+      "hours": 11552,
+      "days": 481.33
+     },
+     "pnl_2025": 33246.630000000005,
+     "pnl_2026": 18078.52
+    },
+    "oos": {
+     "pnl": 21756.03135004586,
+     "max_dd": 1454.2642436873575,
+     "win": 35.2,
+     "n_taken": 739,
+     "n_candidates": 739,
+     "exposure": 100.0,
+     "pf": 1.6,
+     "payoff": 2.95,
+     "n_locks": 601,
+     "avg_win": 223.0,
+     "avg_loss": -76.0,
+     "position_hold_total": {
+      "bars": 585,
+      "seconds": 8424000,
+      "hours": 2340,
+      "days": 97.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 18002.64
+    }
+   }
+  }
+ },
+ {
+  "inst": "HG",
+  "tf": "4h",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 60412.52411632269,
+     "max_dd": 3461.487914672596,
+     "win": 56.2,
+     "n_taken": 242,
+     "n_candidates": 242,
+     "exposure": 100.0,
+     "pf": 1.97,
+     "payoff": 1.54,
+     "n_locks": 150,
+     "avg_win": 900.0,
+     "avg_loss": -585.0,
+     "position_hold_total": {
+      "bars": 521,
+      "seconds": 7502400,
+      "hours": 2084,
+      "days": 86.83
+     },
+     "pnl_2025": 37726.520000000004,
+     "pnl_2026": 24485.600000000002
+    },
+    "oos": {
+     "pnl": 22101.398916376736,
+     "max_dd": 2922.8626710875506,
+     "win": 58.2,
+     "n_taken": 79,
+     "n_candidates": 79,
+     "exposure": 100.0,
+     "pf": 2.15,
+     "payoff": 1.54,
+     "n_locks": 45,
+     "avg_win": 900.0,
+     "avg_loss": -585.0,
+     "position_hold_total": {
+      "bars": 108,
+      "seconds": 1555200,
+      "hours": 432,
+      "days": 18.0
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 23901.03
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 51223.30362359554,
+     "max_dd": 4073.6528079576174,
+     "win": 56.6,
+     "n_taken": 251,
+     "n_candidates": 251,
+     "exposure": 100.0,
+     "pf": 1.91,
+     "payoff": 1.46,
+     "n_locks": 164,
+     "avg_win": 761.0,
+     "avg_loss": -519.0,
+     "position_hold_total": {
+      "bars": 313,
+      "seconds": 4507200,
+      "hours": 1252,
+      "days": 52.17
+     },
+     "pnl_2025": 30407.77,
+     "pnl_2026": 22615.16
+    },
+    "oos": {
+     "pnl": 20230.954285816828,
+     "max_dd": 2638.2901368700477,
+     "win": 59.3,
+     "n_taken": 81,
+     "n_candidates": 81,
+     "exposure": 100.0,
+     "pf": 2.11,
+     "payoff": 1.45,
+     "n_locks": 47,
+     "avg_win": 804.0,
+     "avg_loss": -550.0,
+     "position_hold_total": {
+      "bars": 91,
+      "seconds": 1310400,
+      "hours": 364,
+      "days": 15.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 22030.59
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 23970.265081415215,
+     "max_dd": 2225.000000000029,
+     "win": 61.0,
+     "n_taken": 82,
+     "n_candidates": 82,
+     "exposure": 100.0,
+     "pf": 2.96,
+     "payoff": 1.89,
+     "n_locks": 41,
+     "avg_win": 724.0,
+     "avg_loss": -425.0,
+     "position_hold_total": {
+      "bars": 99,
+      "seconds": 1425600,
+      "hours": 396,
+      "days": 16.5
+     },
+     "pnl_2025": 18600.870000000003,
+     "pnl_2026": 3128.9700000000003
+    },
+    "oos": {
+     "pnl": 4249.207519282527,
+     "max_dd": 2225.0000000000323,
+     "win": 52.9,
+     "n_taken": 17,
+     "n_candidates": 17,
+     "exposure": 100.0,
+     "pf": 2.19,
+     "payoff": 1.95,
+     "n_locks": 11,
+     "avg_win": 868.0,
+     "avg_loss": -520.0,
+     "position_hold_total": {
+      "bars": 20,
+      "seconds": 288000,
+      "hours": 80,
+      "days": 3.33
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 3996.9400000000005
+    }
+   }
+  }
+ },
+ {
+  "inst": "HG",
+  "tf": "2h",
+  "winner": "eod1",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 45022.891857301714,
+     "max_dd": 4051.659410050008,
+     "win": 63.5,
+     "n_taken": 288,
+     "n_candidates": 288,
+     "exposure": 100.0,
+     "pf": 1.93,
+     "payoff": 1.11,
+     "n_locks": 178,
+     "avg_win": 503.0,
+     "avg_loss": -451.0,
+     "position_hold_total": {
+      "bars": 278,
+      "seconds": 4003200,
+      "hours": 1112,
+      "days": 46.33
+     },
+     "pnl_2025": 30074.479999999996,
+     "pnl_2026": 13046.78
+    },
+    "oos": {
+     "pnl": 16045.130619100553,
+     "max_dd": 4051.659410050012,
+     "win": 67.7,
+     "n_taken": 93,
+     "n_candidates": 93,
+     "exposure": 100.0,
+     "pf": 2.04,
+     "payoff": 0.97,
+     "n_locks": 55,
+     "avg_win": 510.0,
+     "avg_loss": -500.0,
+     "position_hold_total": {
+      "bars": 85,
+      "seconds": 1224000,
+      "hours": 340,
+      "days": 14.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 13046.78
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 45022.891857301714,
+     "max_dd": 4051.659410050008,
+     "win": 63.5,
+     "n_taken": 288,
+     "n_candidates": 288,
+     "exposure": 100.0,
+     "pf": 1.93,
+     "payoff": 1.11,
+     "n_locks": 178,
+     "avg_win": 503.0,
+     "avg_loss": -451.0,
+     "position_hold_total": {
+      "bars": 278,
+      "seconds": 4003200,
+      "hours": 1112,
+      "days": 46.33
+     },
+     "pnl_2025": 30074.479999999996,
+     "pnl_2026": 13046.78
+    },
+    "oos": {
+     "pnl": 16045.130619100553,
+     "max_dd": 4051.659410050012,
+     "win": 67.7,
+     "n_taken": 93,
+     "n_candidates": 93,
+     "exposure": 100.0,
+     "pf": 2.04,
+     "payoff": 0.97,
+     "n_locks": 55,
+     "avg_win": 510.0,
+     "avg_loss": -500.0,
+     "position_hold_total": {
+      "bars": 85,
+      "seconds": 1224000,
+      "hours": 340,
+      "days": 14.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 13046.78
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 34405.00898080868,
+     "max_dd": 5099.816813391338,
+     "win": 30.9,
+     "n_taken": 569,
+     "n_candidates": 569,
+     "exposure": 100.0,
+     "pf": 1.44,
+     "payoff": 3.2,
+     "n_locks": 489,
+     "avg_win": 534.0,
+     "avg_loss": -201.0,
+     "position_hold_total": {
+      "bars": 402,
+      "seconds": 5788800,
+      "hours": 1608,
+      "days": 67.0
+     },
+     "pnl_2025": -26946.1,
+     "pnl_2026": -8554.16
+    },
+    "oos": {
+     "pnl": 19868.84643284134,
+     "max_dd": 2066.986713935594,
+     "win": 34.0,
+     "n_taken": 194,
+     "n_candidates": 194,
+     "exposure": 100.0,
+     "pf": 1.78,
+     "payoff": 3.43,
+     "n_locks": 148,
+     "avg_win": 593.0,
+     "avg_loss": -202.0,
+     "position_hold_total": {
+      "bars": 134,
+      "seconds": 1929600,
+      "hours": 536,
+      "days": 22.33
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -8554.16
+    }
+   }
+  }
+ },
+ {
+  "inst": "HG",
+  "tf": "1h",
+  "winner": "eod1",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 27406.602281640662,
+     "max_dd": 3322.1755141469694,
+     "win": 69.3,
+     "n_taken": 1029,
+     "n_candidates": 1029,
+     "exposure": 100.0,
+     "pf": 1.27,
+     "payoff": 0.56,
+     "n_locks": 820,
+     "avg_win": 183.0,
+     "avg_loss": -327.0,
+     "position_hold_total": {
+      "bars": 447,
+      "seconds": 6436800,
+      "hours": 1788,
+      "days": 74.5
+     },
+     "pnl_2025": -1978.8499999999997,
+     "pnl_2026": -2642.8499999999995
+    },
+    "oos": {
+     "pnl": 3218.0149338553165,
+     "max_dd": 3322.1755141469966,
+     "win": 66.0,
+     "n_taken": 335,
+     "n_candidates": 335,
+     "exposure": 100.0,
+     "pf": 1.09,
+     "payoff": 0.56,
+     "n_locks": 290,
+     "avg_win": 183.0,
+     "avg_loss": -327.0,
+     "position_hold_total": {
+      "bars": 150,
+      "seconds": 2160000,
+      "hours": 600,
+      "days": 25.0
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -2642.8499999999995
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 26239.839988300235,
+     "max_dd": 3405.360606072456,
+     "win": 68.7,
+     "n_taken": 1030,
+     "n_candidates": 1030,
+     "exposure": 100.0,
+     "pf": 1.26,
+     "payoff": 0.57,
+     "n_locks": 823,
+     "avg_win": 181.0,
+     "avg_loss": -320.0,
+     "position_hold_total": {
+      "bars": 446,
+      "seconds": 6422400,
+      "hours": 1784,
+      "days": 74.33
+     },
+     "pnl_2025": -1084.4699999999998,
+     "pnl_2026": -2377.66
+    },
+    "oos": {
+     "pnl": 3144.5316089243383,
+     "max_dd": 3405.3606060724824,
+     "win": 65.7,
+     "n_taken": 335,
+     "n_candidates": 335,
+     "exposure": 100.0,
+     "pf": 1.08,
+     "payoff": 0.56,
+     "n_locks": 289,
+     "avg_win": 183.0,
+     "avg_loss": -323.0,
+     "position_hold_total": {
+      "bars": 150,
+      "seconds": 2160000,
+      "hours": 600,
+      "days": 25.0
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -2377.66
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 28475.44879273689,
+     "max_dd": 2145.666408249006,
+     "win": 69.3,
+     "n_taken": 440,
+     "n_candidates": 440,
+     "exposure": 100.0,
+     "pf": 1.63,
+     "payoff": 0.71,
+     "n_locks": 291,
+     "avg_win": 243.0,
+     "avg_loss": -340.0,
+     "position_hold_total": {
+      "bars": 287,
+      "seconds": 4132800,
+      "hours": 1148,
+      "days": 47.83
+     },
+     "pnl_2025": -7928.15,
+     "pnl_2026": -5319.14
+    },
+    "oos": {
+     "pnl": 8686.675528843989,
+     "max_dd": 1355.7977879834943,
+     "win": 68.5,
+     "n_taken": 143,
+     "n_candidates": 143,
+     "exposure": 100.0,
+     "pf": 1.58,
+     "payoff": 0.69,
+     "n_locks": 93,
+     "avg_win": 245.0,
+     "avg_loss": -350.0,
+     "position_hold_total": {
+      "bars": 91,
+      "seconds": 1310400,
+      "hours": 364,
+      "days": 15.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -5074.210000000001
+    }
+   }
+  }
+ },
+ {
+  "inst": "HG",
+  "tf": "15m",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 33351.41765548337,
+     "max_dd": 2562.5108972259995,
+     "win": 16.4,
+     "n_taken": 2752,
+     "n_candidates": 2752,
+     "exposure": 100.0,
+     "pf": 1.35,
+     "payoff": 6.9,
+     "n_locks": 2566,
+     "avg_win": 288.0,
+     "avg_loss": -41.0,
+     "position_hold_total": {
+      "bars": 1895,
+      "seconds": 27288000,
+      "hours": 7580,
+      "days": 315.83
+     },
+     "pnl_2025": 22320.090000000007,
+     "pnl_2026": 9044.890000000003
+    },
+    "oos": {
+     "pnl": 8439.718188306022,
+     "max_dd": 1896.4994918508519,
+     "win": 16.1,
+     "n_taken": 741,
+     "n_candidates": 741,
+     "exposure": 100.0,
+     "pf": 1.33,
+     "payoff": 6.96,
+     "n_locks": 695,
+     "avg_win": 284.0,
+     "avg_loss": -41.0,
+     "position_hold_total": {
+      "bars": 527,
+      "seconds": 7588800,
+      "hours": 2108,
+      "days": 87.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 9044.890000000003
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 33351.41765548337,
+     "max_dd": 2562.5108972259995,
+     "win": 16.4,
+     "n_taken": 2752,
+     "n_candidates": 2752,
+     "exposure": 100.0,
+     "pf": 1.35,
+     "payoff": 6.9,
+     "n_locks": 2566,
+     "avg_win": 288.0,
+     "avg_loss": -41.0,
+     "position_hold_total": {
+      "bars": 1895,
+      "seconds": 27288000,
+      "hours": 7580,
+      "days": 315.83
+     },
+     "pnl_2025": 22320.090000000007,
+     "pnl_2026": 9044.890000000003
+    },
+    "oos": {
+     "pnl": 8439.718188306022,
+     "max_dd": 1896.4994918508519,
+     "win": 16.1,
+     "n_taken": 741,
+     "n_candidates": 741,
+     "exposure": 100.0,
+     "pf": 1.33,
+     "payoff": 6.96,
+     "n_locks": 695,
+     "avg_win": 284.0,
+     "avg_loss": -41.0,
+     "position_hold_total": {
+      "bars": 527,
+      "seconds": 7588800,
+      "hours": 2108,
+      "days": 87.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 9044.890000000003
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 5126.80323707371,
+     "max_dd": 910.7730632601504,
+     "win": 69.0,
+     "n_taken": 358,
+     "n_candidates": 358,
+     "exposure": 100.0,
+     "pf": 1.22,
+     "payoff": 0.55,
+     "n_locks": 295,
+     "avg_win": 117.0,
+     "avg_loss": -217.0,
+     "position_hold_total": {
+      "bars": 241,
+      "seconds": 3470400,
+      "hours": 964,
+      "days": 40.17
+     },
+     "pnl_2025": -1284.8199999999997,
+     "pnl_2026": 2119.22
+    },
+    "oos": {
+     "pnl": 588.4514991527428,
+     "max_dd": 782.575488390047,
+     "win": 66.3,
+     "n_taken": 86,
+     "n_candidates": 86,
+     "exposure": 100.0,
+     "pf": 1.1,
+     "payoff": 0.56,
+     "n_locks": 74,
+     "avg_win": 116.0,
+     "avg_loss": -212.0,
+     "position_hold_total": {
+      "bars": 58,
+      "seconds": 835200,
+      "hours": 232,
+      "days": 9.67
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 2119.22
+    }
+   }
+  }
+ },
+ {
+  "inst": "HG",
+  "tf": "5m",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 24085.480187995006,
+     "max_dd": 736.9120573932814,
+     "win": 32.3,
+     "n_taken": 1698,
+     "n_candidates": 4450,
+     "exposure": 38.2,
+     "pf": 1.55,
+     "payoff": 3.25,
+     "n_locks": 1376,
+     "avg_win": 123.0,
+     "avg_loss": -38.0,
+     "position_hold_total": {
+      "bars": 2680,
+      "seconds": 38592000,
+      "hours": 10720,
+      "days": 446.67
+     },
+     "pnl_2025": 10778.16,
+     "pnl_2026": 2316.2000000000007
+    },
+    "oos": {
+     "pnl": 5726.939075780967,
+     "max_dd": 538.3234862337945,
+     "win": 30.7,
+     "n_taken": 495,
+     "n_candidates": 1321,
+     "exposure": 37.5,
+     "pf": 1.44,
+     "payoff": 3.25,
+     "n_locks": 413,
+     "avg_win": 123.0,
+     "avg_loss": -38.0,
+     "position_hold_total": {
+      "bars": 775,
+      "seconds": 11160000,
+      "hours": 3100,
+      "days": 129.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 2287.9800000000005
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 21061.228212548674,
+     "max_dd": 736.9120573932814,
+     "win": 31.6,
+     "n_taken": 1675,
+     "n_candidates": 4457,
+     "exposure": 37.6,
+     "pf": 1.49,
+     "payoff": 3.22,
+     "n_locks": 1391,
+     "avg_win": 122.0,
+     "avg_loss": -38.0,
+     "position_hold_total": {
+      "bars": 2669,
+      "seconds": 38433600,
+      "hours": 10676,
+      "days": 444.83
+     },
+     "pnl_2025": 10732.800000000001,
+     "pnl_2026": 2316.2000000000007
+    },
+    "oos": {
+     "pnl": 5691.759424592701,
+     "max_dd": 538.3234862337945,
+     "win": 30.7,
+     "n_taken": 495,
+     "n_candidates": 1321,
+     "exposure": 37.5,
+     "pf": 1.44,
+     "payoff": 3.25,
+     "n_locks": 413,
+     "avg_win": 123.0,
+     "avg_loss": -38.0,
+     "position_hold_total": {
+      "bars": 775,
+      "seconds": 11160000,
+      "hours": 3100,
+      "days": 129.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 2287.9800000000005
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 22167.882358979048,
+     "max_dd": 1223.3914250981688,
+     "win": 24.2,
+     "n_taken": 1765,
+     "n_candidates": 1765,
+     "exposure": 100.0,
+     "pf": 1.41,
+     "payoff": 4.39,
+     "n_locks": 1560,
+     "avg_win": 181.0,
+     "avg_loss": -41.0,
+     "position_hold_total": {
+      "bars": 1285,
+      "seconds": 18504000,
+      "hours": 5140,
+      "days": 214.17
+     },
+     "pnl_2025": 15775.450000000004,
+     "pnl_2026": 7054.590000000001
+    },
+    "oos": {
+     "pnl": 3541.727342151014,
+     "max_dd": 1088.3310596532287,
+     "win": 23.0,
+     "n_taken": 357,
+     "n_candidates": 357,
+     "exposure": 100.0,
+     "pf": 1.32,
+     "payoff": 4.4,
+     "n_locks": 324,
+     "avg_win": 183.0,
+     "avg_loss": -41.0,
+     "position_hold_total": {
+      "bars": 261,
+      "seconds": 3758400,
+      "hours": 1044,
+      "days": 43.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 7054.590000000001
+    }
+   }
+  }
+ },
+ {
+  "inst": "HG",
+  "tf": "2m",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 62210.33137042411,
+     "max_dd": 1315.017046787416,
+     "win": 34.8,
+     "n_taken": 7143,
+     "n_candidates": 7143,
+     "exposure": 100.0,
+     "pf": 1.35,
+     "payoff": 2.54,
+     "n_locks": 6114,
+     "avg_win": 96.0,
+     "avg_loss": -38.0,
+     "position_hold_total": {
+      "bars": 5849,
+      "seconds": 84225600,
+      "hours": 23396,
+      "days": 974.83
+     },
+     "pnl_2025": 32422.340000000004,
+     "pnl_2026": 20514.760000000002
+    },
+    "oos": {
+     "pnl": 21279.390090324516,
+     "max_dd": 1107.368718439155,
+     "win": 34.9,
+     "n_taken": 2403,
+     "n_candidates": 2403,
+     "exposure": 100.0,
+     "pf": 1.36,
+     "payoff": 2.53,
+     "n_locks": 2030,
+     "avg_win": 96.0,
+     "avg_loss": -38.0,
+     "position_hold_total": {
+      "bars": 1943,
+      "seconds": 27979200,
+      "hours": 7772,
+      "days": 323.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 20573.18
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 62210.33137042411,
+     "max_dd": 1315.017046787416,
+     "win": 34.8,
+     "n_taken": 7143,
+     "n_candidates": 7143,
+     "exposure": 100.0,
+     "pf": 1.35,
+     "payoff": 2.54,
+     "n_locks": 6114,
+     "avg_win": 96.0,
+     "avg_loss": -38.0,
+     "position_hold_total": {
+      "bars": 5849,
+      "seconds": 84225600,
+      "hours": 23396,
+      "days": 974.83
+     },
+     "pnl_2025": 32422.340000000004,
+     "pnl_2026": 20514.760000000002
+    },
+    "oos": {
+     "pnl": 21279.390090324516,
+     "max_dd": 1107.368718439155,
+     "win": 34.9,
+     "n_taken": 2403,
+     "n_candidates": 2403,
+     "exposure": 100.0,
+     "pf": 1.36,
+     "payoff": 2.53,
+     "n_locks": 2030,
+     "avg_win": 96.0,
+     "avg_loss": -38.0,
+     "position_hold_total": {
+      "bars": 1943,
+      "seconds": 27979200,
+      "hours": 7772,
+      "days": 323.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 20573.18
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 28349.437519353953,
+     "max_dd": 2140.616695464576,
+     "win": 27.6,
+     "n_taken": 5316,
+     "n_candidates": 5316,
+     "exposure": 100.0,
+     "pf": 1.18,
+     "payoff": 3.11,
+     "n_locks": 4928,
+     "avg_win": 125.0,
+     "avg_loss": -40.0,
+     "position_hold_total": {
+      "bars": 6217,
+      "seconds": 89524800,
+      "hours": 24868,
+      "days": 1036.17
+     },
+     "pnl_2025": 18819.5,
+     "pnl_2026": 13326.200000000003
+    },
+    "oos": {
+     "pnl": 11526.654475830037,
+     "max_dd": 1071.6175434238191,
+     "win": 28.1,
+     "n_taken": 1816,
+     "n_candidates": 1816,
+     "exposure": 100.0,
+     "pf": 1.22,
+     "payoff": 3.12,
+     "n_locks": 1656,
+     "avg_win": 125.0,
+     "avg_loss": -40.0,
+     "position_hold_total": {
+      "bars": 2167,
+      "seconds": 31204800,
+      "hours": 8668,
+      "days": 361.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 13451.600000000002
+    }
+   }
+  }
+ },
+ {
+  "inst": "CL",
+  "tf": "4h",
+  "winner": "bolt-on",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 21932.52031628835,
+     "max_dd": 3486.4108979600273,
+     "win": 63.3,
+     "n_taken": 384,
+     "n_candidates": 384,
+     "exposure": 100.0,
+     "pf": 1.38,
+     "payoff": 0.8,
+     "n_locks": 300,
+     "avg_win": 330.0,
+     "avg_loss": -413.0,
+     "position_hold_total": {
+      "bars": 562,
+      "seconds": 8092800,
+      "hours": 2248,
+      "days": 93.67
+     },
+     "pnl_2025": 16077.440000000002,
+     "pnl_2026": 5855.15
+    },
+    "oos": {
+     "pnl": 5855.128656754963,
+     "max_dd": 2290.8111641770292,
+     "win": 64.7,
+     "n_taken": 85,
+     "n_candidates": 85,
+     "exposure": 100.0,
+     "pf": 1.48,
+     "payoff": 0.81,
+     "n_locks": 63,
+     "avg_win": 330.0,
+     "avg_loss": -409.0,
+     "position_hold_total": {
+      "bars": 95,
+      "seconds": 1368000,
+      "hours": 380,
+      "days": 15.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 5855.15
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 17524.068587369384,
+     "max_dd": 3204.7885696060075,
+     "win": 61.5,
+     "n_taken": 392,
+     "n_candidates": 392,
+     "exposure": 100.0,
+     "pf": 1.32,
+     "payoff": 0.81,
+     "n_locks": 314,
+     "avg_win": 303.0,
+     "avg_loss": -372.0,
+     "position_hold_total": {
+      "bars": 441,
+      "seconds": 6350400,
+      "hours": 1764,
+      "days": 73.5
+     },
+     "pnl_2025": 11348.440000000002,
+     "pnl_2026": 6175.6900000000005
+    },
+    "oos": {
+     "pnl": 6505.399044813969,
+     "max_dd": 1630.5407761180177,
+     "win": 65.9,
+     "n_taken": 85,
+     "n_candidates": 85,
+     "exposure": 100.0,
+     "pf": 1.56,
+     "payoff": 0.81,
+     "n_locks": 62,
+     "avg_win": 325.0,
+     "avg_loss": -404.0,
+     "position_hold_total": {
+      "bars": 93,
+      "seconds": 1339200,
+      "hours": 372,
+      "days": 15.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 6505.42
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 19241.759294598065,
+     "max_dd": 1916.0754974039803,
+     "win": 53.4,
+     "n_taken": 356,
+     "n_candidates": 356,
+     "exposure": 100.0,
+     "pf": 1.43,
+     "payoff": 1.24,
+     "n_locks": 280,
+     "avg_win": 335.0,
+     "avg_loss": -270.0,
+     "position_hold_total": {
+      "bars": 384,
+      "seconds": 5529600,
+      "hours": 1536,
+      "days": 64.0
+     },
+     "pnl_2025": 12950.440000000002,
+     "pnl_2026": 6291.9400000000005
+    },
+    "oos": {
+     "pnl": 6291.777934074006,
+     "max_dd": 987.1419086529868,
+     "win": 55.8,
+     "n_taken": 77,
+     "n_candidates": 77,
+     "exposure": 100.0,
+     "pf": 1.65,
+     "payoff": 1.31,
+     "n_locks": 52,
+     "avg_win": 371.0,
+     "avg_loss": -284.0,
+     "position_hold_total": {
+      "bars": 81,
+      "seconds": 1166400,
+      "hours": 324,
+      "days": 13.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 6291.9400000000005
+    }
+   }
+  }
+ },
+ {
+  "inst": "CL",
+  "tf": "2h",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 6455.180435100267,
+     "max_dd": 1239.999999999995,
+     "win": 70.9,
+     "n_taken": 175,
+     "n_candidates": 175,
+     "exposure": 100.0,
+     "pf": 1.49,
+     "payoff": 0.61,
+     "n_locks": 125,
+     "avg_win": 156.0,
+     "avg_loss": -273.0,
+     "position_hold_total": {
+      "bars": 115,
+      "seconds": 1656000,
+      "hours": 460,
+      "days": 19.17
+     },
+     "pnl_2025": -3729.9000000000005,
+     "pnl_2026": -2504.7799999999997
+    },
+    "oos": {
+     "pnl": 2912.514281480106,
+     "max_dd": 650.7874697799712,
+     "win": 77.8,
+     "n_taken": 45,
+     "n_candidates": 45,
+     "exposure": 100.0,
+     "pf": 2.04,
+     "payoff": 0.58,
+     "n_locks": 24,
+     "avg_win": 167.0,
+     "avg_loss": -324.0,
+     "position_hold_total": {
+      "bars": 31,
+      "seconds": 446400,
+      "hours": 124,
+      "days": 5.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -2672.08
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 6455.180435100267,
+     "max_dd": 1239.999999999995,
+     "win": 70.9,
+     "n_taken": 175,
+     "n_candidates": 175,
+     "exposure": 100.0,
+     "pf": 1.49,
+     "payoff": 0.61,
+     "n_locks": 125,
+     "avg_win": 156.0,
+     "avg_loss": -273.0,
+     "position_hold_total": {
+      "bars": 115,
+      "seconds": 1656000,
+      "hours": 460,
+      "days": 19.17
+     },
+     "pnl_2025": -3729.9000000000005,
+     "pnl_2026": -2504.7799999999997
+    },
+    "oos": {
+     "pnl": 2912.514281480106,
+     "max_dd": 650.7874697799712,
+     "win": 77.8,
+     "n_taken": 45,
+     "n_candidates": 45,
+     "exposure": 100.0,
+     "pf": 2.04,
+     "payoff": 0.58,
+     "n_locks": 24,
+     "avg_win": 167.0,
+     "avg_loss": -324.0,
+     "position_hold_total": {
+      "bars": 31,
+      "seconds": 446400,
+      "hours": 124,
+      "days": 5.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -2672.08
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 8093.88031071547,
+     "max_dd": 550.6082059043962,
+     "win": 86.1,
+     "n_taken": 238,
+     "n_candidates": 238,
+     "exposure": 100.0,
+     "pf": 2.32,
+     "payoff": 0.36,
+     "n_locks": 110,
+     "avg_win": 69.0,
+     "avg_loss": -181.0,
+     "position_hold_total": {
+      "bars": 125,
+      "seconds": 1800000,
+      "hours": 500,
+      "days": 20.83
+     },
+     "pnl_2025": 1514.7299999999996,
+     "pnl_2026": -107.57000000000004
+    },
+    "oos": {
+     "pnl": 1912.6816158214767,
+     "max_dd": 232.38194209800167,
+     "win": 89.1,
+     "n_taken": 46,
+     "n_candidates": 46,
+     "exposure": 100.0,
+     "pf": 3.05,
+     "payoff": 0.37,
+     "n_locks": 16,
+     "avg_win": 69.0,
+     "avg_loss": -196.0,
+     "position_hold_total": {
+      "bars": 29,
+      "seconds": 417600,
+      "hours": 116,
+      "days": 4.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -107.57000000000004
+    }
+   }
+  }
+ },
+ {
+  "inst": "CL",
+  "tf": "1h",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 10387.705141479479,
+     "max_dd": 1644.0337853730043,
+     "win": 46.0,
+     "n_taken": 561,
+     "n_candidates": 561,
+     "exposure": 100.0,
+     "pf": 1.32,
+     "payoff": 1.54,
+     "n_locks": 469,
+     "avg_win": 164.0,
+     "avg_loss": -111.0,
+     "position_hold_total": {
+      "bars": 539,
+      "seconds": 7761600,
+      "hours": 2156,
+      "days": 89.83
+     },
+     "pnl_2025": -9907.959999999997,
+     "pnl_2026": -2582.3799999999997
+    },
+    "oos": {
+     "pnl": 4642.977946861869,
+     "max_dd": 1052.07418507399,
+     "win": 52.7,
+     "n_taken": 129,
+     "n_candidates": 129,
+     "exposure": 100.0,
+     "pf": 1.68,
+     "payoff": 1.5,
+     "n_locks": 90,
+     "avg_win": 169.0,
+     "avg_loss": -118.0,
+     "position_hold_total": {
+      "bars": 123,
+      "seconds": 1771200,
+      "hours": 492,
+      "days": 20.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -2413.0399999999995
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 10387.705141479479,
+     "max_dd": 1644.0337853730043,
+     "win": 46.0,
+     "n_taken": 561,
+     "n_candidates": 561,
+     "exposure": 100.0,
+     "pf": 1.32,
+     "payoff": 1.54,
+     "n_locks": 469,
+     "avg_win": 164.0,
+     "avg_loss": -111.0,
+     "position_hold_total": {
+      "bars": 539,
+      "seconds": 7761600,
+      "hours": 2156,
+      "days": 89.83
+     },
+     "pnl_2025": -9907.959999999997,
+     "pnl_2026": -2582.3799999999997
+    },
+    "oos": {
+     "pnl": 4642.977946861869,
+     "max_dd": 1052.07418507399,
+     "win": 52.7,
+     "n_taken": 129,
+     "n_candidates": 129,
+     "exposure": 100.0,
+     "pf": 1.68,
+     "payoff": 1.5,
+     "n_locks": 90,
+     "avg_win": 169.0,
+     "avg_loss": -118.0,
+     "position_hold_total": {
+      "bars": 123,
+      "seconds": 1771200,
+      "hours": 492,
+      "days": 20.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -2413.0399999999995
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 18178.328664498807,
+     "max_dd": 2469.458504289847,
+     "win": 47.0,
+     "n_taken": 483,
+     "n_candidates": 483,
+     "exposure": 100.0,
+     "pf": 1.36,
+     "payoff": 1.53,
+     "n_locks": 386,
+     "avg_win": 296.0,
+     "avg_loss": -204.0,
+     "position_hold_total": {
+      "bars": 305,
+      "seconds": 4392000,
+      "hours": 1220,
+      "days": 50.83
+     },
+     "pnl_2025": -3590.1999999999994,
+     "pnl_2026": -4922.299999999999
+    },
+    "oos": {
+     "pnl": 3787.300421402457,
+     "max_dd": 2469.458504289848,
+     "win": 44.9,
+     "n_taken": 176,
+     "n_candidates": 176,
+     "exposure": 100.0,
+     "pf": 1.18,
+     "payoff": 1.44,
+     "n_locks": 151,
+     "avg_win": 316.0,
+     "avg_loss": -233.0,
+     "position_hold_total": {
+      "bars": 113,
+      "seconds": 1627200,
+      "hours": 452,
+      "days": 18.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -4922.299999999999
+    }
+   }
+  }
+ },
+ {
+  "inst": "CL",
+  "tf": "15m",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 14138.220016576433,
+     "max_dd": 1195.2101463948281,
+     "win": 64.7,
+     "n_taken": 1177,
+     "n_candidates": 1177,
+     "exposure": 100.0,
+     "pf": 1.32,
+     "payoff": 0.71,
+     "n_locks": 944,
+     "avg_win": 77.0,
+     "avg_loss": -108.0,
+     "position_hold_total": {
+      "bars": 763,
+      "seconds": 10987200,
+      "hours": 3052,
+      "days": 127.17
+     },
+     "pnl_2025": 5104.079999999999,
+     "pnl_2026": 1832.0799999999995
+    },
+    "oos": {
+     "pnl": 3345.388991125162,
+     "max_dd": 818.6595268949668,
+     "win": 64.8,
+     "n_taken": 261,
+     "n_candidates": 261,
+     "exposure": 100.0,
+     "pf": 1.34,
+     "payoff": 0.72,
+     "n_locks": 202,
+     "avg_win": 78.0,
+     "avg_loss": -109.0,
+     "position_hold_total": {
+      "bars": 177,
+      "seconds": 2548800,
+      "hours": 708,
+      "days": 29.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 1832.0799999999995
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 14138.220016576433,
+     "max_dd": 1195.2101463948281,
+     "win": 64.7,
+     "n_taken": 1177,
+     "n_candidates": 1177,
+     "exposure": 100.0,
+     "pf": 1.32,
+     "payoff": 0.71,
+     "n_locks": 944,
+     "avg_win": 77.0,
+     "avg_loss": -108.0,
+     "position_hold_total": {
+      "bars": 763,
+      "seconds": 10987200,
+      "hours": 3052,
+      "days": 127.17
+     },
+     "pnl_2025": 5104.079999999999,
+     "pnl_2026": 1832.0799999999995
+    },
+    "oos": {
+     "pnl": 3345.388991125162,
+     "max_dd": 818.6595268949668,
+     "win": 64.8,
+     "n_taken": 261,
+     "n_candidates": 261,
+     "exposure": 100.0,
+     "pf": 1.34,
+     "payoff": 0.72,
+     "n_locks": 202,
+     "avg_win": 78.0,
+     "avg_loss": -109.0,
+     "position_hold_total": {
+      "bars": 177,
+      "seconds": 2548800,
+      "hours": 708,
+      "days": 29.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 1832.0799999999995
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 14000.852330300077,
+     "max_dd": 797.8254106905922,
+     "win": 49.5,
+     "n_taken": 1544,
+     "n_candidates": 1544,
+     "exposure": 100.0,
+     "pf": 1.36,
+     "payoff": 1.38,
+     "n_locks": 1245,
+     "avg_win": 69.0,
+     "avg_loss": -50.0,
+     "position_hold_total": {
+      "bars": 1194,
+      "seconds": 17193600,
+      "hours": 4776,
+      "days": 199.0
+     },
+     "pnl_2025": 7024.570000000002,
+     "pnl_2026": 2039.0400000000004
+    },
+    "oos": {
+     "pnl": 2685.011699450499,
+     "max_dd": 537.7964381854536,
+     "win": 48.4,
+     "n_taken": 341,
+     "n_candidates": 341,
+     "exposure": 100.0,
+     "pf": 1.31,
+     "payoff": 1.39,
+     "n_locks": 280,
+     "avg_win": 69.0,
+     "avg_loss": -50.0,
+     "position_hold_total": {
+      "bars": 265,
+      "seconds": 3816000,
+      "hours": 1060,
+      "days": 44.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 1969.7400000000005
+    }
+   }
+  }
+ },
+ {
+  "inst": "CL",
+  "tf": "5m",
+  "winner": "eod1",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 13733.072744627136,
+     "max_dd": 882.716867180563,
+     "win": 66.7,
+     "n_taken": 2249,
+     "n_candidates": 2249,
+     "exposure": 100.0,
+     "pf": 1.3,
+     "payoff": 0.65,
+     "n_locks": 1784,
+     "avg_win": 40.0,
+     "avg_loss": -61.0,
+     "position_hold_total": {
+      "bars": 1631,
+      "seconds": 23486400,
+      "hours": 6524,
+      "days": 271.83
+     },
+     "pnl_2025": 6932.65,
+     "pnl_2026": 2279.15
+    },
+    "oos": {
+     "pnl": 3148.3388259720614,
+     "max_dd": 592.0392552108638,
+     "win": 66.9,
+     "n_taken": 498,
+     "n_candidates": 498,
+     "exposure": 100.0,
+     "pf": 1.31,
+     "payoff": 0.65,
+     "n_locks": 380,
+     "avg_win": 40.0,
+     "avg_loss": -61.0,
+     "position_hold_total": {
+      "bars": 367,
+      "seconds": 5284800,
+      "hours": 1468,
+      "days": 61.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 2279.15
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 13526.624551662771,
+     "max_dd": 987.8166635876187,
+     "win": 66.4,
+     "n_taken": 2253,
+     "n_candidates": 2253,
+     "exposure": 100.0,
+     "pf": 1.3,
+     "payoff": 0.65,
+     "n_locks": 1792,
+     "avg_win": 39.0,
+     "avg_loss": -60.0,
+     "position_hold_total": {
+      "bars": 1624,
+      "seconds": 23385600,
+      "hours": 6496,
+      "days": 270.67
+     },
+     "pnl_2025": 6740.5,
+     "pnl_2026": 2259.55
+    },
+    "oos": {
+     "pnl": 3068.7356563077656,
+     "max_dd": 592.0392552108638,
+     "win": 66.7,
+     "n_taken": 499,
+     "n_candidates": 499,
+     "exposure": 100.0,
+     "pf": 1.3,
+     "payoff": 0.65,
+     "n_locks": 386,
+     "avg_win": 40.0,
+     "avg_loss": -61.0,
+     "position_hold_total": {
+      "bars": 367,
+      "seconds": 5284800,
+      "hours": 1468,
+      "days": 61.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 2259.55
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 15238.224048204265,
+     "max_dd": 961.1427488453701,
+     "win": 29.0,
+     "n_taken": 2353,
+     "n_candidates": 2353,
+     "exposure": 100.0,
+     "pf": 1.3,
+     "payoff": 3.17,
+     "n_locks": 2069,
+     "avg_win": 97.0,
+     "avg_loss": -31.0,
+     "position_hold_total": {
+      "bars": 1379,
+      "seconds": 19857600,
+      "hours": 5516,
+      "days": 229.83
+     },
+     "pnl_2025": 3176.8899999999994,
+     "pnl_2026": 2458.6299999999997
+    },
+    "oos": {
+     "pnl": 3565.7427097420964,
+     "max_dd": 992.3200060141432,
+     "win": 27.7,
+     "n_taken": 718,
+     "n_candidates": 718,
+     "exposure": 100.0,
+     "pf": 1.22,
+     "payoff": 3.18,
+     "n_locks": 648,
+     "avg_win": 98.0,
+     "avg_loss": -31.0,
+     "position_hold_total": {
+      "bars": 441,
+      "seconds": 6350400,
+      "hours": 1764,
+      "days": 73.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 2366.27
+    }
+   }
+  }
+ },
+ {
+  "inst": "CL",
+  "tf": "2m",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 23901.49120680835,
+     "max_dd": 732.0967837683984,
+     "win": 39.7,
+     "n_taken": 4655,
+     "n_candidates": 4655,
+     "exposure": 100.0,
+     "pf": 1.28,
+     "payoff": 1.94,
+     "n_locks": 3939,
+     "avg_win": 59.0,
+     "avg_loss": -30.0,
+     "position_hold_total": {
+      "bars": 4655,
+      "seconds": 67032000,
+      "hours": 18620,
+      "days": 775.83
+     },
+     "pnl_2025": 15915.379999999997,
+     "pnl_2026": 7981.999999999999
+    },
+    "oos": {
+     "pnl": 7983.033812179052,
+     "max_dd": 505.7143976649113,
+     "win": 40.6,
+     "n_taken": 1314,
+     "n_candidates": 1314,
+     "exposure": 100.0,
+     "pf": 1.34,
+     "payoff": 1.95,
+     "n_locks": 1072,
+     "avg_win": 59.0,
+     "avg_loss": -31.0,
+     "position_hold_total": {
+      "bars": 1314,
+      "seconds": 18921600,
+      "hours": 5256,
+      "days": 219.0
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 7981.999999999999
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 23901.49120680835,
+     "max_dd": 732.0967837683984,
+     "win": 39.7,
+     "n_taken": 4655,
+     "n_candidates": 4655,
+     "exposure": 100.0,
+     "pf": 1.28,
+     "payoff": 1.94,
+     "n_locks": 3939,
+     "avg_win": 59.0,
+     "avg_loss": -30.0,
+     "position_hold_total": {
+      "bars": 4655,
+      "seconds": 67032000,
+      "hours": 18620,
+      "days": 775.83
+     },
+     "pnl_2025": 15915.379999999997,
+     "pnl_2026": 7981.999999999999
+    },
+    "oos": {
+     "pnl": 7983.033812179052,
+     "max_dd": 505.7143976649113,
+     "win": 40.6,
+     "n_taken": 1314,
+     "n_candidates": 1314,
+     "exposure": 100.0,
+     "pf": 1.34,
+     "payoff": 1.95,
+     "n_locks": 1072,
+     "avg_win": 59.0,
+     "avg_loss": -31.0,
+     "position_hold_total": {
+      "bars": 1314,
+      "seconds": 18921600,
+      "hours": 5256,
+      "days": 219.0
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 7981.999999999999
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 15049.822075141705,
+     "max_dd": 713.9805219354921,
+     "win": 36.4,
+     "n_taken": 3395,
+     "n_candidates": 3395,
+     "exposure": 100.0,
+     "pf": 1.33,
+     "payoff": 2.33,
+     "n_locks": 2881,
+     "avg_win": 49.0,
+     "avg_loss": -21.0,
+     "position_hold_total": {
+      "bars": 2267,
+      "seconds": 32644800,
+      "hours": 9068,
+      "days": 377.83
+     },
+     "pnl_2025": 7752.460000000003,
+     "pnl_2026": 3109.800000000001
+    },
+    "oos": {
+     "pnl": 3493.8781379660777,
+     "max_dd": 425.60382720690626,
+     "win": 35.5,
+     "n_taken": 906,
+     "n_candidates": 906,
+     "exposure": 100.0,
+     "pf": 1.28,
+     "payoff": 2.33,
+     "n_locks": 776,
+     "avg_win": 49.0,
+     "avg_loss": -21.0,
+     "position_hold_total": {
+      "bars": 605,
+      "seconds": 8712000,
+      "hours": 2420,
+      "days": 100.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 3109.800000000001
+    }
+   }
+  }
+ },
+ {
+  "inst": "NG",
+  "tf": "4h",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 25128.225509578442,
+     "max_dd": 2564.07151423002,
+     "win": 57.5,
+     "n_taken": 603,
+     "n_candidates": 603,
+     "exposure": 100.0,
+     "pf": 1.47,
+     "payoff": 1.07,
+     "n_locks": 435,
+     "avg_win": 226.0,
+     "avg_loss": -211.0,
+     "position_hold_total": {
+      "bars": 657,
+      "seconds": 9460800,
+      "hours": 2628,
+      "days": 109.5
+     },
+     "pnl_2025": 17318.92,
+     "pnl_2026": 7587.439999999999
+    },
+    "oos": {
+     "pnl": 7816.421579857756,
+     "max_dd": 1532.1494317320094,
+     "win": 56.7,
+     "n_taken": 203,
+     "n_candidates": 203,
+     "exposure": 100.0,
+     "pf": 1.43,
+     "payoff": 1.07,
+     "n_locks": 145,
+     "avg_win": 225.0,
+     "avg_loss": -209.0,
+     "position_hold_total": {
+      "bars": 216,
+      "seconds": 3110400,
+      "hours": 864,
+      "days": 36.0
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 7815.829999999998
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 25128.225509578442,
+     "max_dd": 2564.07151423002,
+     "win": 57.5,
+     "n_taken": 603,
+     "n_candidates": 603,
+     "exposure": 100.0,
+     "pf": 1.47,
+     "payoff": 1.07,
+     "n_locks": 435,
+     "avg_win": 226.0,
+     "avg_loss": -211.0,
+     "position_hold_total": {
+      "bars": 657,
+      "seconds": 9460800,
+      "hours": 2628,
+      "days": 109.5
+     },
+     "pnl_2025": 17318.92,
+     "pnl_2026": 7587.439999999999
+    },
+    "oos": {
+     "pnl": 7816.421579857756,
+     "max_dd": 1532.1494317320094,
+     "win": 56.7,
+     "n_taken": 203,
+     "n_candidates": 203,
+     "exposure": 100.0,
+     "pf": 1.43,
+     "payoff": 1.07,
+     "n_locks": 145,
+     "avg_win": 225.0,
+     "avg_loss": -209.0,
+     "position_hold_total": {
+      "bars": 216,
+      "seconds": 3110400,
+      "hours": 864,
+      "days": 36.0
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 7815.829999999998
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 21912.178989391847,
+     "max_dd": 2077.0862368500075,
+     "win": 59.6,
+     "n_taken": 463,
+     "n_candidates": 463,
+     "exposure": 100.0,
+     "pf": 1.59,
+     "payoff": 1.06,
+     "n_locks": 299,
+     "avg_win": 213.0,
+     "avg_loss": -201.0,
+     "position_hold_total": {
+      "bars": 492,
+      "seconds": 7084800,
+      "hours": 1968,
+      "days": 82.0
+     },
+     "pnl_2025": 15836.18,
+     "pnl_2026": 5658.0
+    },
+    "oos": {
+     "pnl": 5658.13914391001,
+     "max_dd": 1125.4485340639912,
+     "win": 57.2,
+     "n_taken": 152,
+     "n_candidates": 152,
+     "exposure": 100.0,
+     "pf": 1.44,
+     "payoff": 1.04,
+     "n_locks": 104,
+     "avg_win": 212.0,
+     "avg_loss": -203.0,
+     "position_hold_total": {
+      "bars": 156,
+      "seconds": 2246400,
+      "hours": 624,
+      "days": 26.0
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 5873.009999999999
+    }
+   }
+  }
+ },
+ {
+  "inst": "NG",
+  "tf": "2h",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 17338.25393077561,
+     "max_dd": 1735.2079455062956,
+     "win": 41.5,
+     "n_taken": 675,
+     "n_candidates": 675,
+     "exposure": 100.0,
+     "pf": 1.47,
+     "payoff": 2.08,
+     "n_locks": 528,
+     "avg_win": 193.0,
+     "avg_loss": -93.0,
+     "position_hold_total": {
+      "bars": 425,
+      "seconds": 6120000,
+      "hours": 1700,
+      "days": 70.83
+     },
+     "pnl_2025": -1375.400000000001,
+     "pnl_2026": -1925.76
+    },
+    "oos": {
+     "pnl": 6119.646632781023,
+     "max_dd": 1417.9358475326658,
+     "win": 42.8,
+     "n_taken": 208,
+     "n_candidates": 208,
+     "exposure": 100.0,
+     "pf": 1.55,
+     "payoff": 2.08,
+     "n_locks": 161,
+     "avg_win": 193.0,
+     "avg_loss": -93.0,
+     "position_hold_total": {
+      "bars": 133,
+      "seconds": 1915200,
+      "hours": 532,
+      "days": 22.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -2018.6000000000001
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 17466.57094490339,
+     "max_dd": 1735.2079455062956,
+     "win": 42.4,
+     "n_taken": 675,
+     "n_candidates": 675,
+     "exposure": 100.0,
+     "pf": 1.49,
+     "payoff": 2.02,
+     "n_locks": 523,
+     "avg_win": 180.0,
+     "avg_loss": -91.0,
+     "position_hold_total": {
+      "bars": 365,
+      "seconds": 5256000,
+      "hours": 1460,
+      "days": 60.83
+     },
+     "pnl_2025": -1334.1200000000006,
+     "pnl_2026": -2348.6600000000003
+    },
+    "oos": {
+     "pnl": 5972.3745348074135,
+     "max_dd": 1375.3794370541882,
+     "win": 44.2,
+     "n_taken": 208,
+     "n_candidates": 208,
+     "exposure": 100.0,
+     "pf": 1.56,
+     "payoff": 1.96,
+     "n_locks": 160,
+     "avg_win": 181.0,
+     "avg_loss": -92.0,
+     "position_hold_total": {
+      "bars": 108,
+      "seconds": 1555200,
+      "hours": 432,
+      "days": 18.0
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -2441.5000000000005
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 21782.189740114103,
+     "max_dd": 1981.7788536429944,
+     "win": 52.0,
+     "n_taken": 742,
+     "n_candidates": 742,
+     "exposure": 100.0,
+     "pf": 1.41,
+     "payoff": 1.29,
+     "n_locks": 570,
+     "avg_win": 187.0,
+     "avg_loss": -148.0,
+     "position_hold_total": {
+      "bars": 513,
+      "seconds": 7387200,
+      "hours": 2052,
+      "days": 85.5
+     },
+     "pnl_2025": -7453.419999999998,
+     "pnl_2026": -5028.029999999999
+    },
+    "oos": {
+     "pnl": 3914.0489403090237,
+     "max_dd": 1981.7788536430055,
+     "win": 47.9,
+     "n_taken": 242,
+     "n_candidates": 242,
+     "exposure": 100.0,
+     "pf": 1.21,
+     "payoff": 1.3,
+     "n_locks": 211,
+     "avg_win": 190.0,
+     "avg_loss": -144.0,
+     "position_hold_total": {
+      "bars": 165,
+      "seconds": 2376000,
+      "hours": 660,
+      "days": 27.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -5028.029999999999
+    }
+   }
+  }
+ },
+ {
+  "inst": "NG",
+  "tf": "1h",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 16176.431680603571,
+     "max_dd": 2798.2925398668176,
+     "win": 30.4,
+     "n_taken": 1734,
+     "n_candidates": 1734,
+     "exposure": 100.0,
+     "pf": 1.22,
+     "payoff": 2.8,
+     "n_locks": 1587,
+     "avg_win": 169.0,
+     "avg_loss": -60.0,
+     "position_hold_total": {
+      "bars": 1744,
+      "seconds": 25113600,
+      "hours": 6976,
+      "days": 290.67
+     },
+     "pnl_2025": 10427.549999999996,
+     "pnl_2026": 2488.289999999998
+    },
+    "oos": {
+     "pnl": 4436.380310482193,
+     "max_dd": 2006.598805677524,
+     "win": 29.7,
+     "n_taken": 562,
+     "n_candidates": 562,
+     "exposure": 100.0,
+     "pf": 1.19,
+     "payoff": 2.81,
+     "n_locks": 518,
+     "avg_win": 169.0,
+     "avg_loss": -60.0,
+     "position_hold_total": {
+      "bars": 569,
+      "seconds": 8193600,
+      "hours": 2276,
+      "days": 94.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 2488.289999999998
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 16294.490186506167,
+     "max_dd": 2557.2704502217202,
+     "win": 30.9,
+     "n_taken": 1737,
+     "n_candidates": 1737,
+     "exposure": 100.0,
+     "pf": 1.23,
+     "payoff": 2.74,
+     "n_locks": 1585,
+     "avg_win": 164.0,
+     "avg_loss": -60.0,
+     "position_hold_total": {
+      "bars": 1696,
+      "seconds": 24422400,
+      "hours": 6784,
+      "days": 282.67
+     },
+     "pnl_2025": 10417.039999999995,
+     "pnl_2026": 2455.819999999998
+    },
+    "oos": {
+     "pnl": 4393.918817429496,
+     "max_dd": 1663.5325367422238,
+     "win": 30.1,
+     "n_taken": 562,
+     "n_candidates": 562,
+     "exposure": 100.0,
+     "pf": 1.19,
+     "payoff": 2.76,
+     "n_locks": 519,
+     "avg_win": 164.0,
+     "avg_loss": -60.0,
+     "position_hold_total": {
+      "bars": 544,
+      "seconds": 7833600,
+      "hours": 2176,
+      "days": 90.67
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 2455.819999999998
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 7534.19718443875,
+     "max_dd": 1534.4783796680058,
+     "win": 68.3,
+     "n_taken": 764,
+     "n_candidates": 764,
+     "exposure": 100.0,
+     "pf": 1.26,
+     "payoff": 0.59,
+     "n_locks": 632,
+     "avg_win": 69.0,
+     "avg_loss": -117.0,
+     "position_hold_total": {
+      "bars": 521,
+      "seconds": 7502400,
+      "hours": 2084,
+      "days": 86.83
+     },
+     "pnl_2025": 2886.2000000000003,
+     "pnl_2026": -901.6399999999999
+    },
+    "oos": {
+     "pnl": 1623.501389277801,
+     "max_dd": 1167.9431893290143,
+     "win": 65.7,
+     "n_taken": 268,
+     "n_candidates": 268,
+     "exposure": 100.0,
+     "pf": 1.15,
+     "payoff": 0.6,
+     "n_locks": 233,
+     "avg_win": 68.0,
+     "avg_loss": -116.0,
+     "position_hold_total": {
+      "bars": 173,
+      "seconds": 2491200,
+      "hours": 692,
+      "days": 28.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -901.6399999999999
+    }
+   }
+  }
+ },
+ {
+  "inst": "NG",
+  "tf": "15m",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 22805.258426350032,
+     "max_dd": 839.9039885209604,
+     "win": 43.8,
+     "n_taken": 2915,
+     "n_candidates": 2915,
+     "exposure": 100.0,
+     "pf": 1.35,
+     "payoff": 1.73,
+     "n_locks": 2425,
+     "avg_win": 70.0,
+     "avg_loss": -40.0,
+     "position_hold_total": {
+      "bars": 2064,
+      "seconds": 29721600,
+      "hours": 8256,
+      "days": 344.0
+     },
+     "pnl_2025": 10294.25,
+     "pnl_2026": 2204.8300000000004
+    },
+    "oos": {
+     "pnl": 5545.452991486385,
+     "max_dd": 839.9039885208613,
+     "win": 41.7,
+     "n_taken": 1010,
+     "n_candidates": 1010,
+     "exposure": 100.0,
+     "pf": 1.23,
+     "payoff": 1.73,
+     "n_locks": 882,
+     "avg_win": 70.0,
+     "avg_loss": -40.0,
+     "position_hold_total": {
+      "bars": 725,
+      "seconds": 10440000,
+      "hours": 2900,
+      "days": 120.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 2204.8300000000004
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 22677.304361782022,
+     "max_dd": 839.9039885209604,
+     "win": 43.9,
+     "n_taken": 2915,
+     "n_candidates": 2915,
+     "exposure": 100.0,
+     "pf": 1.35,
+     "payoff": 1.72,
+     "n_locks": 2422,
+     "avg_win": 69.0,
+     "avg_loss": -40.0,
+     "position_hold_total": {
+      "bars": 2042,
+      "seconds": 29404800,
+      "hours": 8168,
+      "days": 340.33
+     },
+     "pnl_2025": 10450.36,
+     "pnl_2026": 2208.3
+    },
+    "oos": {
+     "pnl": 5370.1721692719775,
+     "max_dd": 839.9039885208613,
+     "win": 41.7,
+     "n_taken": 1010,
+     "n_candidates": 1010,
+     "exposure": 100.0,
+     "pf": 1.23,
+     "payoff": 1.71,
+     "n_locks": 885,
+     "avg_win": 69.0,
+     "avg_loss": -40.0,
+     "position_hold_total": {
+      "bars": 703,
+      "seconds": 10123200,
+      "hours": 2812,
+      "days": 117.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 2208.3
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 841.5681615237382,
+     "max_dd": 192.55761123040372,
+     "win": 78.3,
+     "n_taken": 92,
+     "n_candidates": 150,
+     "exposure": 61.3,
+     "pf": 1.7,
+     "payoff": 0.47,
+     "n_locks": 58,
+     "avg_win": 28.0,
+     "avg_loss": -64.0,
+     "position_hold_total": {
+      "bars": 267,
+      "seconds": 3844800,
+      "hours": 1068,
+      "days": 44.5
+     },
+     "pnl_2025": 306.18000000000023,
+     "pnl_2026": -62.05999999999999
+    },
+    "oos": {
+     "pnl": 290.51054903398216,
+     "max_dd": 192.55761123040395,
+     "win": 82.1,
+     "n_taken": 28,
+     "n_candidates": 45,
+     "exposure": 62.2,
+     "pf": 1.8,
+     "payoff": 0.39,
+     "n_locks": 17,
+     "avg_win": 28.0,
+     "avg_loss": -63.0,
+     "position_hold_total": {
+      "bars": 83,
+      "seconds": 1195200,
+      "hours": 332,
+      "days": 13.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 61.46000000000008
+    }
+   }
+  }
+ },
+ {
+  "inst": "NG",
+  "tf": "5m",
+  "winner": "eod1",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 14761.7685753041,
+     "max_dd": 272.27719824222504,
+     "win": 53.3,
+     "n_taken": 2324,
+     "n_candidates": 2324,
+     "exposure": 100.0,
+     "pf": 1.66,
+     "payoff": 1.45,
+     "n_locks": 1655,
+     "avg_win": 30.0,
+     "avg_loss": -21.0,
+     "position_hold_total": {
+      "bars": 2119,
+      "seconds": 30513600,
+      "hours": 8476,
+      "days": 353.17
+     },
+     "pnl_2025": 8758.86,
+     "pnl_2026": 3861.0199999999995
+    },
+    "oos": {
+     "pnl": 4367.9572309099285,
+     "max_dd": 252.2771982422256,
+     "win": 51.0,
+     "n_taken": 851,
+     "n_candidates": 851,
+     "exposure": 100.0,
+     "pf": 1.51,
+     "payoff": 1.45,
+     "n_locks": 644,
+     "avg_win": 30.0,
+     "avg_loss": -21.0,
+     "position_hold_total": {
+      "bars": 780,
+      "seconds": 11232000,
+      "hours": 3120,
+      "days": 130.0
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 3861.0199999999995
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 14761.7685753041,
+     "max_dd": 272.27719824222504,
+     "win": 53.3,
+     "n_taken": 2324,
+     "n_candidates": 2324,
+     "exposure": 100.0,
+     "pf": 1.66,
+     "payoff": 1.45,
+     "n_locks": 1655,
+     "avg_win": 30.0,
+     "avg_loss": -21.0,
+     "position_hold_total": {
+      "bars": 2119,
+      "seconds": 30513600,
+      "hours": 8476,
+      "days": 353.17
+     },
+     "pnl_2025": 8758.86,
+     "pnl_2026": 3861.0199999999995
+    },
+    "oos": {
+     "pnl": 4367.9572309099285,
+     "max_dd": 252.2771982422256,
+     "win": 51.0,
+     "n_taken": 851,
+     "n_candidates": 851,
+     "exposure": 100.0,
+     "pf": 1.51,
+     "payoff": 1.45,
+     "n_locks": 644,
+     "avg_win": 30.0,
+     "avg_loss": -21.0,
+     "position_hold_total": {
+      "bars": 780,
+      "seconds": 11232000,
+      "hours": 3120,
+      "days": 130.0
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 3861.0199999999995
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 38079.307994731265,
+     "max_dd": 261.47462304152214,
+     "win": 32.0,
+     "n_taken": 6782,
+     "n_candidates": 6782,
+     "exposure": 100.0,
+     "pf": 1.81,
+     "payoff": 3.85,
+     "n_locks": 5362,
+     "avg_win": 39.0,
+     "avg_loss": -10.0,
+     "position_hold_total": {
+      "bars": 5160,
+      "seconds": 74304000,
+      "hours": 20640,
+      "days": 860.0
+     },
+     "pnl_2025": 20978.679999999993,
+     "pnl_2026": 8634.529999999999
+    },
+    "oos": {
+     "pnl": 11155.070991781438,
+     "max_dd": 261.4746230415153,
+     "win": 30.2,
+     "n_taken": 2367,
+     "n_candidates": 2367,
+     "exposure": 100.0,
+     "pf": 1.66,
+     "payoff": 3.85,
+     "n_locks": 1945,
+     "avg_win": 39.0,
+     "avg_loss": -10.0,
+     "position_hold_total": {
+      "bars": 1821,
+      "seconds": 26222400,
+      "hours": 7284,
+      "days": 303.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 8634.529999999999
+    }
+   }
+  }
+ },
+ {
+  "inst": "NG",
+  "tf": "2m",
+  "winner": "eod1",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 20852.635874656487,
+     "max_dd": 177.84713872863176,
+     "win": 49.2,
+     "n_taken": 4777,
+     "n_candidates": 4777,
+     "exposure": 100.0,
+     "pf": 1.84,
+     "payoff": 1.9,
+     "n_locks": 3382,
+     "avg_win": 19.0,
+     "avg_loss": -10.0,
+     "position_hold_total": {
+      "bars": 4185,
+      "seconds": 60264000,
+      "hours": 16740,
+      "days": 697.5
+     },
+     "pnl_2025": 11956.240000000002,
+     "pnl_2026": 5757.880000000001
+    },
+    "oos": {
+     "pnl": 6680.471938376437,
+     "max_dd": 177.84713872866223,
+     "win": 47.6,
+     "n_taken": 1709,
+     "n_candidates": 1709,
+     "exposure": 100.0,
+     "pf": 1.73,
+     "payoff": 1.9,
+     "n_locks": 1265,
+     "avg_win": 19.0,
+     "avg_loss": -10.0,
+     "position_hold_total": {
+      "bars": 1489,
+      "seconds": 21441600,
+      "hours": 5956,
+      "days": 248.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 5757.880000000001
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 20852.635874656487,
+     "max_dd": 177.84713872863176,
+     "win": 49.2,
+     "n_taken": 4777,
+     "n_candidates": 4777,
+     "exposure": 100.0,
+     "pf": 1.84,
+     "payoff": 1.9,
+     "n_locks": 3382,
+     "avg_win": 19.0,
+     "avg_loss": -10.0,
+     "position_hold_total": {
+      "bars": 4185,
+      "seconds": 60264000,
+      "hours": 16740,
+      "days": 697.5
+     },
+     "pnl_2025": 11956.240000000002,
+     "pnl_2026": 5757.880000000001
+    },
+    "oos": {
+     "pnl": 6680.471938376437,
+     "max_dd": 177.84713872866223,
+     "win": 47.6,
+     "n_taken": 1709,
+     "n_candidates": 1709,
+     "exposure": 100.0,
+     "pf": 1.73,
+     "payoff": 1.9,
+     "n_locks": 1265,
+     "avg_win": 19.0,
+     "avg_loss": -10.0,
+     "position_hold_total": {
+      "bars": 1489,
+      "seconds": 21441600,
+      "hours": 5956,
+      "days": 248.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 5757.880000000001
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 30179.181104647294,
+     "max_dd": 575.1332267156977,
+     "win": 48.4,
+     "n_taken": 8486,
+     "n_candidates": 8486,
+     "exposure": 100.0,
+     "pf": 1.34,
+     "payoff": 1.43,
+     "n_locks": 6965,
+     "avg_win": 29.0,
+     "avg_loss": -21.0,
+     "position_hold_total": {
+      "bars": 6521,
+      "seconds": 93902400,
+      "hours": 26084,
+      "days": 1086.83
+     },
+     "pnl_2025": 15925.160000000003,
+     "pnl_2026": 7463.590000000001
+    },
+    "oos": {
+     "pnl": 9541.048184424455,
+     "max_dd": 506.1498326357854,
+     "win": 47.6,
+     "n_taken": 2994,
+     "n_candidates": 2994,
+     "exposure": 100.0,
+     "pf": 1.3,
+     "payoff": 1.43,
+     "n_locks": 2505,
+     "avg_win": 29.0,
+     "avg_loss": -21.0,
+     "position_hold_total": {
+      "bars": 2323,
+      "seconds": 33451200,
+      "hours": 9292,
+      "days": 387.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 7463.590000000001
+    }
+   }
+  }
+ },
+ {
+  "inst": "RTY",
+  "tf": "4h",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 36687.831375665155,
+     "max_dd": 9091.939978790011,
+     "win": 48.8,
+     "n_taken": 297,
+     "n_candidates": 297,
+     "exposure": 100.0,
+     "pf": 1.52,
+     "payoff": 1.59,
+     "n_locks": 220,
+     "avg_win": 743.0,
+     "avg_loss": -468.0,
+     "position_hold_total": {
+      "bars": 490,
+      "seconds": 7056000,
+      "hours": 1960,
+      "days": 81.67
+     },
+     "pnl_2025": 12815.579999999996,
+     "pnl_2026": 23872.209999999995
+    },
+    "oos": {
+     "pnl": 23872.230825094946,
+     "max_dd": 3469.999999999978,
+     "win": 53.8,
+     "n_taken": 104,
+     "n_candidates": 104,
+     "exposure": 100.0,
+     "pf": 2.05,
+     "payoff": 1.76,
+     "n_locks": 57,
+     "avg_win": 833.0,
+     "avg_loss": -474.0,
+     "position_hold_total": {
+      "bars": 163,
+      "seconds": 2347200,
+      "hours": 652,
+      "days": 27.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 23872.209999999995
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 36687.831375665155,
+     "max_dd": 9091.939978790011,
+     "win": 48.8,
+     "n_taken": 297,
+     "n_candidates": 297,
+     "exposure": 100.0,
+     "pf": 1.52,
+     "payoff": 1.59,
+     "n_locks": 220,
+     "avg_win": 743.0,
+     "avg_loss": -468.0,
+     "position_hold_total": {
+      "bars": 490,
+      "seconds": 7056000,
+      "hours": 1960,
+      "days": 81.67
+     },
+     "pnl_2025": 12815.579999999996,
+     "pnl_2026": 23872.209999999995
+    },
+    "oos": {
+     "pnl": 23872.230825094946,
+     "max_dd": 3469.999999999978,
+     "win": 53.8,
+     "n_taken": 104,
+     "n_candidates": 104,
+     "exposure": 100.0,
+     "pf": 2.05,
+     "payoff": 1.76,
+     "n_locks": 57,
+     "avg_win": 833.0,
+     "avg_loss": -474.0,
+     "position_hold_total": {
+      "bars": 163,
+      "seconds": 2347200,
+      "hours": 652,
+      "days": 27.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 23872.209999999995
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 61703.80574577406,
+     "max_dd": 5913.187959025072,
+     "win": 58.9,
+     "n_taken": 280,
+     "n_candidates": 280,
+     "exposure": 100.0,
+     "pf": 1.85,
+     "payoff": 1.29,
+     "n_locks": 154,
+     "avg_win": 816.0,
+     "avg_loss": -634.0,
+     "position_hold_total": {
+      "bars": 521,
+      "seconds": 7502400,
+      "hours": 2084,
+      "days": 86.83
+     },
+     "pnl_2025": 43964.92,
+     "pnl_2026": 17870.84
+    },
+    "oos": {
+     "pnl": 18830.747639299647,
+     "max_dd": 4458.312565575012,
+     "win": 56.5,
+     "n_taken": 85,
+     "n_candidates": 85,
+     "exposure": 100.0,
+     "pf": 1.74,
+     "payoff": 1.34,
+     "n_locks": 45,
+     "avg_win": 920.0,
+     "avg_loss": -692.0,
+     "position_hold_total": {
+      "bars": 147,
+      "seconds": 2116800,
+      "hours": 588,
+      "days": 24.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 17870.84
+    }
+   }
+  }
+ },
+ {
+  "inst": "RTY",
+  "tf": "2h",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 18016.243008907986,
+     "max_dd": 2000.8342250350665,
+     "win": 77.4,
+     "n_taken": 177,
+     "n_candidates": 177,
+     "exposure": 100.0,
+     "pf": 1.86,
+     "payoff": 0.54,
+     "n_locks": 93,
+     "avg_win": 286.0,
+     "avg_loss": -513.0,
+     "position_hold_total": {
+      "bars": 119,
+      "seconds": 1713600,
+      "hours": 476,
+      "days": 19.83
+     },
+     "pnl_2025": 4344.960000000001,
+     "pnl_2026": 682.6200000000003
+    },
+    "oos": {
+     "pnl": 6688.259532238158,
+     "max_dd": 1267.9966316860373,
+     "win": 82.4,
+     "n_taken": 51,
+     "n_candidates": 51,
+     "exposure": 100.0,
+     "pf": 2.26,
+     "payoff": 0.49,
+     "n_locks": 18,
+     "avg_win": 288.0,
+     "avg_loss": -507.0,
+     "position_hold_total": {
+      "bars": 43,
+      "seconds": 619200,
+      "hours": 172,
+      "days": 7.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 682.6200000000003
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 17690.21851699149,
+     "max_dd": 2388.694626143581,
+     "win": 76.8,
+     "n_taken": 177,
+     "n_candidates": 177,
+     "exposure": 100.0,
+     "pf": 1.91,
+     "payoff": 0.58,
+     "n_locks": 91,
+     "avg_win": 273.0,
+     "avg_loss": -461.0,
+     "position_hold_total": {
+      "bars": 104,
+      "seconds": 1497600,
+      "hours": 416,
+      "days": 17.33
+     },
+     "pnl_2025": 4196.380000000001,
+     "pnl_2026": -66.09999999999968
+    },
+    "oos": {
+     "pnl": 5634.537887942656,
+     "max_dd": 1053.1370726560453,
+     "win": 76.5,
+     "n_taken": 51,
+     "n_candidates": 51,
+     "exposure": 100.0,
+     "pf": 2.03,
+     "payoff": 0.62,
+     "n_locks": 19,
+     "avg_win": 272.0,
+     "avg_loss": -414.0,
+     "position_hold_total": {
+      "bars": 32,
+      "seconds": 460800,
+      "hours": 128,
+      "days": 5.33
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -66.09999999999968
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 13738.259936227643,
+     "max_dd": 1453.3246248935257,
+     "win": 55.2,
+     "n_taken": 134,
+     "n_candidates": 134,
+     "exposure": 100.0,
+     "pf": 2.11,
+     "payoff": 1.71,
+     "n_locks": 85,
+     "avg_win": 354.0,
+     "avg_loss": -220.0,
+     "position_hold_total": {
+      "bars": 133,
+      "seconds": 1915200,
+      "hours": 532,
+      "days": 22.17
+     },
+     "pnl_2025": 11050.880000000001,
+     "pnl_2026": 3751.0
+    },
+    "oos": {
+     "pnl": 5281.64140342185,
+     "max_dd": 1377.7611584410351,
+     "win": 64.5,
+     "n_taken": 31,
+     "n_candidates": 31,
+     "exposure": 100.0,
+     "pf": 3.21,
+     "payoff": 1.77,
+     "n_locks": 15,
+     "avg_win": 370.0,
+     "avg_loss": -234.0,
+     "position_hold_total": {
+      "bars": 33,
+      "seconds": 475200,
+      "hours": 132,
+      "days": 5.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 3751.0
+    }
+   }
+  }
+ },
+ {
+  "inst": "RTY",
+  "tf": "1h",
+  "winner": "eod1",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 6845.405158490303,
+     "max_dd": 1671.370003814127,
+     "win": 57.4,
+     "n_taken": 190,
+     "n_candidates": 319,
+     "exposure": 59.6,
+     "pf": 1.73,
+     "payoff": 1.24,
+     "n_locks": 33,
+     "avg_win": 168.0,
+     "avg_loss": -134.0,
+     "position_hold_total": {
+      "bars": 161,
+      "seconds": 2318400,
+      "hours": 644,
+      "days": 26.83
+     },
+     "pnl_2025": 1277.3699999999994,
+     "pnl_2026": 1369.8999999999996
+    },
+    "oos": {
+     "pnl": 3385.221088451044,
+     "max_dd": 799.0925009535204,
+     "win": 56.5,
+     "n_taken": 69,
+     "n_candidates": 121,
+     "exposure": 57.0,
+     "pf": 1.85,
+     "payoff": 1.38,
+     "n_locks": 13,
+     "avg_win": 127.0,
+     "avg_loss": -161.0,
+     "position_hold_total": {
+      "bars": 52,
+      "seconds": 748800,
+      "hours": 208,
+      "days": 8.67
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -654.8100000000002
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 6845.405158490303,
+     "max_dd": 1671.370003814127,
+     "win": 57.4,
+     "n_taken": 190,
+     "n_candidates": 319,
+     "exposure": 59.6,
+     "pf": 1.73,
+     "payoff": 1.24,
+     "n_locks": 33,
+     "avg_win": 168.0,
+     "avg_loss": -134.0,
+     "position_hold_total": {
+      "bars": 161,
+      "seconds": 2318400,
+      "hours": 644,
+      "days": 26.83
+     },
+     "pnl_2025": 1277.3699999999994,
+     "pnl_2026": 1369.8999999999996
+    },
+    "oos": {
+     "pnl": 3385.221088451044,
+     "max_dd": 799.0925009535204,
+     "win": 56.5,
+     "n_taken": 69,
+     "n_candidates": 121,
+     "exposure": 57.0,
+     "pf": 1.85,
+     "payoff": 1.38,
+     "n_locks": 13,
+     "avg_win": 127.0,
+     "avg_loss": -161.0,
+     "position_hold_total": {
+      "bars": 52,
+      "seconds": 748800,
+      "hours": 208,
+      "days": 8.67
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -654.8100000000002
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 15953.798963150679,
+     "max_dd": 2219.766992675024,
+     "win": 60.6,
+     "n_taken": 213,
+     "n_candidates": 213,
+     "exposure": 100.0,
+     "pf": 1.48,
+     "payoff": 0.96,
+     "n_locks": 128,
+     "avg_win": 365.0,
+     "avg_loss": -387.0,
+     "position_hold_total": {
+      "bars": 179,
+      "seconds": 2577600,
+      "hours": 716,
+      "days": 29.83
+     },
+     "pnl_2025": 8701.689999999999,
+     "pnl_2026": -698.5100000000004
+    },
+    "oos": {
+     "pnl": 5444.296768925824,
+     "max_dd": 2219.7669926750223,
+     "win": 57.9,
+     "n_taken": 95,
+     "n_candidates": 95,
+     "exposure": 100.0,
+     "pf": 1.34,
+     "payoff": 0.97,
+     "n_locks": 63,
+     "avg_win": 387.0,
+     "avg_loss": -398.0,
+     "position_hold_total": {
+      "bars": 61,
+      "seconds": 878400,
+      "hours": 244,
+      "days": 10.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -698.5100000000004
+    }
+   }
+  }
+ },
+ {
+  "inst": "RTY",
+  "tf": "15m",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 10697.328396546141,
+     "max_dd": 1350.7829752004,
+     "win": 53.6,
+     "n_taken": 112,
+     "n_candidates": 112,
+     "exposure": 100.0,
+     "pf": 2.37,
+     "payoff": 2.05,
+     "n_locks": 22,
+     "avg_win": 308.0,
+     "avg_loss": -150.0,
+     "position_hold_total": {
+      "bars": 153,
+      "seconds": 2203200,
+      "hours": 612,
+      "days": 25.5
+     },
+     "pnl_2025": -2655.3900000000003,
+     "pnl_2026": -185.65999999999997
+    },
+    "oos": {
+     "pnl": 3899.598706288498,
+     "max_dd": 300.17399448897777,
+     "win": 62.1,
+     "n_taken": 29,
+     "n_candidates": 29,
+     "exposure": 100.0,
+     "pf": 3.36,
+     "payoff": 2.05,
+     "n_locks": 0,
+     "avg_win": 308.0,
+     "avg_loss": -150.0,
+     "position_hold_total": {
+      "bars": 55,
+      "seconds": 792000,
+      "hours": 220,
+      "days": 9.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -185.65999999999997
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 10699.31218130315,
+     "max_dd": 1190.6959779559202,
+     "win": 54.5,
+     "n_taken": 112,
+     "n_candidates": 112,
+     "exposure": 100.0,
+     "pf": 2.42,
+     "payoff": 2.02,
+     "n_locks": 19,
+     "avg_win": 308.0,
+     "avg_loss": -142.0,
+     "position_hold_total": {
+      "bars": 139,
+      "seconds": 2001600,
+      "hours": 556,
+      "days": 23.17
+     },
+     "pnl_2025": -3051.84,
+     "pnl_2026": 69.5200000000001
+    },
+    "oos": {
+     "pnl": 3621.234502067523,
+     "max_dd": 300.17399448897777,
+     "win": 62.1,
+     "n_taken": 29,
+     "n_candidates": 29,
+     "exposure": 100.0,
+     "pf": 3.19,
+     "payoff": 1.95,
+     "n_locks": 0,
+     "avg_win": 308.0,
+     "avg_loss": -142.0,
+     "position_hold_total": {
+      "bars": 44,
+      "seconds": 633600,
+      "hours": 176,
+      "days": 7.33
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 69.5200000000001
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 6021.9664620808435,
+     "max_dd": 1479.6156433305327,
+     "win": 59.3,
+     "n_taken": 123,
+     "n_candidates": 149,
+     "exposure": 82.6,
+     "pf": 1.67,
+     "payoff": 1.14,
+     "n_locks": 27,
+     "avg_win": 216.0,
+     "avg_loss": -182.0,
+     "position_hold_total": {
+      "bars": 114,
+      "seconds": 1641600,
+      "hours": 456,
+      "days": 19.0
+     },
+     "pnl_2025": -767.86,
+     "pnl_2026": -1614.0200000000004
+    },
+    "oos": {
+     "pnl": 2079.6486389971506,
+     "max_dd": 522.1286515889915,
+     "win": 59.1,
+     "n_taken": 44,
+     "n_candidates": 44,
+     "exposure": 100.0,
+     "pf": 1.63,
+     "payoff": 1.13,
+     "n_locks": 1,
+     "avg_win": 216.0,
+     "avg_loss": -180.0,
+     "position_hold_total": {
+      "bars": 41,
+      "seconds": 590400,
+      "hours": 164,
+      "days": 6.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -1767.2800000000007
+    }
+   }
+  }
+ },
+ {
+  "inst": "RTY",
+  "tf": "5m",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 21199.487640155407,
+     "max_dd": 2144.805423238351,
+     "win": 59.8,
+     "n_taken": 1416,
+     "n_candidates": 1416,
+     "exposure": 100.0,
+     "pf": 1.25,
+     "payoff": 0.84,
+     "n_locks": 859,
+     "avg_win": 123.0,
+     "avg_loss": -147.0,
+     "position_hold_total": {
+      "bars": 1370,
+      "seconds": 19728000,
+      "hours": 5480,
+      "days": 228.33
+     },
+     "pnl_2025": 9520.550000000003,
+     "pnl_2026": 2459.750000000001
+    },
+    "oos": {
+     "pnl": 6483.440903197561,
+     "max_dd": 1366.0324227374076,
+     "win": 59.6,
+     "n_taken": 480,
+     "n_candidates": 480,
+     "exposure": 100.0,
+     "pf": 1.22,
+     "payoff": 0.83,
+     "n_locks": 284,
+     "avg_win": 124.0,
+     "avg_loss": -149.0,
+     "position_hold_total": {
+      "bars": 450,
+      "seconds": 6480000,
+      "hours": 1800,
+      "days": 75.0
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 2459.750000000001
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 21646.85496038371,
+     "max_dd": 1913.9530695438116,
+     "win": 59.5,
+     "n_taken": 1431,
+     "n_candidates": 1431,
+     "exposure": 100.0,
+     "pf": 1.26,
+     "payoff": 0.85,
+     "n_locks": 857,
+     "avg_win": 121.0,
+     "avg_loss": -142.0,
+     "position_hold_total": {
+      "bars": 1327,
+      "seconds": 19108800,
+      "hours": 5308,
+      "days": 221.17
+     },
+     "pnl_2025": 10037.750000000004,
+     "pnl_2026": 2220.1000000000004
+    },
+    "oos": {
+     "pnl": 5753.102686146735,
+     "max_dd": 1366.0324227374076,
+     "win": 58.8,
+     "n_taken": 483,
+     "n_candidates": 483,
+     "exposure": 100.0,
+     "pf": 1.2,
+     "payoff": 0.83,
+     "n_locks": 301,
+     "avg_win": 122.0,
+     "avg_loss": -146.0,
+     "position_hold_total": {
+      "bars": 441,
+      "seconds": 6350400,
+      "hours": 1764,
+      "days": 73.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 2220.1000000000004
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 5308.429496911083,
+     "max_dd": 369.3513492960392,
+     "win": 41.9,
+     "n_taken": 136,
+     "n_candidates": 136,
+     "exposure": 100.0,
+     "pf": 2.1,
+     "payoff": 2.92,
+     "n_locks": 0,
+     "avg_win": 178.0,
+     "avg_loss": -62.0,
+     "position_hold_total": {
+      "bars": 118,
+      "seconds": 1699200,
+      "hours": 472,
+      "days": 19.67
+     },
+     "pnl_2025": -691.44,
+     "pnl_2026": 115.97999999999999
+    },
+    "oos": {
+     "pnl": 2634.6296473277334,
+     "max_dd": 184.6756746480196,
+     "win": 61.3,
+     "n_taken": 31,
+     "n_candidates": 31,
+     "exposure": 100.0,
+     "pf": 4.57,
+     "payoff": 2.88,
+     "n_locks": 0,
+     "avg_win": 178.0,
+     "avg_loss": -62.0,
+     "position_hold_total": {
+      "bars": 28,
+      "seconds": 403200,
+      "hours": 112,
+      "days": 4.67
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 189.1199999999999
+    }
+   }
+  }
+ },
+ {
+  "inst": "RTY",
+  "tf": "2m",
+  "winner": "eod1",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 3648.6197151276315,
+     "max_dd": 830.6569937040194,
+     "win": 61.4,
+     "n_taken": 249,
+     "n_candidates": 249,
+     "exposure": 100.0,
+     "pf": 1.43,
+     "payoff": 0.9,
+     "n_locks": 41,
+     "avg_win": 79.0,
+     "avg_loss": -87.0,
+     "position_hold_total": {
+      "bars": 214,
+      "seconds": 3081600,
+      "hours": 856,
+      "days": 35.67
+     },
+     "pnl_2025": 1010.2900000000003,
+     "pnl_2026": -520.72
+    },
+    "oos": {
+     "pnl": 1627.254877256496,
+     "max_dd": 430.7084378519903,
+     "win": 67.1,
+     "n_taken": 73,
+     "n_candidates": 73,
+     "exposure": 100.0,
+     "pf": 1.73,
+     "payoff": 0.85,
+     "n_locks": 5,
+     "avg_win": 79.0,
+     "avg_loss": -91.0,
+     "position_hold_total": {
+      "bars": 68,
+      "seconds": 979200,
+      "hours": 272,
+      "days": 11.33
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -599.4799999999999
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 4010.565291942646,
+     "max_dd": 830.6569937040194,
+     "win": 61.8,
+     "n_taken": 251,
+     "n_candidates": 251,
+     "exposure": 100.0,
+     "pf": 1.5,
+     "payoff": 0.92,
+     "n_locks": 36,
+     "avg_win": 78.0,
+     "avg_loss": -85.0,
+     "position_hold_total": {
+      "bars": 214,
+      "seconds": 3081600,
+      "hours": 856,
+      "days": 35.67
+     },
+     "pnl_2025": 777.7700000000002,
+     "pnl_2026": -377.34000000000003
+    },
+    "oos": {
+     "pnl": 1790.6309747875184,
+     "max_dd": 317.138958567989,
+     "win": 66.7,
+     "n_taken": 75,
+     "n_candidates": 75,
+     "exposure": 100.0,
+     "pf": 1.88,
+     "payoff": 0.9,
+     "n_locks": 0,
+     "avg_win": 78.0,
+     "avg_loss": -86.0,
+     "position_hold_total": {
+      "bars": 68,
+      "seconds": 979200,
+      "hours": 272,
+      "days": 11.33
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -456.1
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 18128.011318537905,
+     "max_dd": 1057.6437941581958,
+     "win": 55.4,
+     "n_taken": 2658,
+     "n_candidates": 2658,
+     "exposure": 100.0,
+     "pf": 1.24,
+     "payoff": 0.99,
+     "n_locks": 1666,
+     "avg_win": 64.0,
+     "avg_loss": -64.0,
+     "position_hold_total": {
+      "bars": 2080,
+      "seconds": 29952000,
+      "hours": 8320,
+      "days": 346.67
+     },
+     "pnl_2025": 6634.730000000006,
+     "pnl_2026": 1614.8400000000033
+    },
+    "oos": {
+     "pnl": 3667.4698113482236,
+     "max_dd": 997.389430937119,
+     "win": 53.1,
+     "n_taken": 858,
+     "n_candidates": 858,
+     "exposure": 100.0,
+     "pf": 1.14,
+     "payoff": 1.0,
+     "n_locks": 614,
+     "avg_win": 64.0,
+     "avg_loss": -64.0,
+     "position_hold_total": {
+      "bars": 694,
+      "seconds": 9993600,
+      "hours": 2776,
+      "days": 115.67
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 1614.8400000000033
+    }
+   }
+  }
+ },
+ {
+  "inst": "YM",
+  "tf": "4h",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 51916.72750243597,
+     "max_dd": 9125.684885009832,
+     "win": 56.4,
+     "n_taken": 188,
+     "n_candidates": 188,
+     "exposure": 100.0,
+     "pf": 1.74,
+     "payoff": 1.35,
+     "n_locks": 36,
+     "avg_win": 1152.0,
+     "avg_loss": -856.0,
+     "position_hold_total": {
+      "bars": 360,
+      "seconds": 5184000,
+      "hours": 1440,
+      "days": 60.0
+     },
+     "pnl_2025": 16996.049999999996,
+     "pnl_2026": 34920.5
+    },
+    "oos": {
+     "pnl": 34920.552175460325,
+     "max_dd": 3561.932112259965,
+     "win": 68.8,
+     "n_taken": 64,
+     "n_candidates": 64,
+     "exposure": 100.0,
+     "pf": 2.78,
+     "payoff": 1.26,
+     "n_locks": 0,
+     "avg_win": 1240.0,
+     "avg_loss": -983.0,
+     "position_hold_total": {
+      "bars": 124,
+      "seconds": 1785600,
+      "hours": 496,
+      "days": 20.67
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 34920.5
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 51916.72750243597,
+     "max_dd": 9125.684885009832,
+     "win": 56.4,
+     "n_taken": 188,
+     "n_candidates": 188,
+     "exposure": 100.0,
+     "pf": 1.74,
+     "payoff": 1.35,
+     "n_locks": 36,
+     "avg_win": 1152.0,
+     "avg_loss": -856.0,
+     "position_hold_total": {
+      "bars": 360,
+      "seconds": 5184000,
+      "hours": 1440,
+      "days": 60.0
+     },
+     "pnl_2025": 16996.049999999996,
+     "pnl_2026": 34920.5
+    },
+    "oos": {
+     "pnl": 34920.552175460325,
+     "max_dd": 3561.932112259965,
+     "win": 68.8,
+     "n_taken": 64,
+     "n_candidates": 64,
+     "exposure": 100.0,
+     "pf": 2.78,
+     "payoff": 1.26,
+     "n_locks": 0,
+     "avg_win": 1240.0,
+     "avg_loss": -983.0,
+     "position_hold_total": {
+      "bars": 124,
+      "seconds": 1785600,
+      "hours": 496,
+      "days": 20.67
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 34920.5
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 35046.82481201064,
+     "max_dd": 3954.1103165499226,
+     "win": 44.1,
+     "n_taken": 111,
+     "n_candidates": 111,
+     "exposure": 100.0,
+     "pf": 2.15,
+     "payoff": 2.72,
+     "n_locks": 0,
+     "avg_win": 1336.0,
+     "avg_loss": -491.0,
+     "position_hold_total": {
+      "bars": 208,
+      "seconds": 2995200,
+      "hours": 832,
+      "days": 34.67
+     },
+     "pnl_2025": 22715.420000000002,
+     "pnl_2026": 12331.49
+    },
+    "oos": {
+     "pnl": 12331.46584171518,
+     "max_dd": 3926.4620359749097,
+     "win": 48.4,
+     "n_taken": 31,
+     "n_candidates": 31,
+     "exposure": 100.0,
+     "pf": 2.54,
+     "payoff": 2.71,
+     "n_locks": 0,
+     "avg_win": 1354.0,
+     "avg_loss": -499.0,
+     "position_hold_total": {
+      "bars": 47,
+      "seconds": 676800,
+      "hours": 188,
+      "days": 7.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 12331.49
+    }
+   }
+  }
+ },
+ {
+  "inst": "YM",
+  "tf": "2h",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 20573.312813629636,
+     "max_dd": 1434.0401247300179,
+     "win": 77.8,
+     "n_taken": 36,
+     "n_candidates": 36,
+     "exposure": 100.0,
+     "pf": 3.96,
+     "payoff": 1.13,
+     "n_locks": 0,
+     "avg_win": 1147.0,
+     "avg_loss": -803.0,
+     "position_hold_total": {
+      "bars": 69,
+      "seconds": 993600,
+      "hours": 276,
+      "days": 11.5
+     },
+     "pnl_2025": 5213.08,
+     "pnl_2026": 4179.389999999999
+    },
+    "oos": {
+     "pnl": 11110.64375770984,
+     "max_dd": 974.5200623650089,
+     "win": 85.7,
+     "n_taken": 14,
+     "n_candidates": 14,
+     "exposure": 100.0,
+     "pf": 6.7,
+     "payoff": 1.12,
+     "n_locks": 0,
+     "avg_win": 1421.0,
+     "avg_loss": -975.0,
+     "position_hold_total": {
+      "bars": 13,
+      "seconds": 187200,
+      "hours": 52,
+      "days": 2.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 4179.389999999999
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 20573.312813629636,
+     "max_dd": 1434.0401247300179,
+     "win": 77.8,
+     "n_taken": 36,
+     "n_candidates": 36,
+     "exposure": 100.0,
+     "pf": 3.96,
+     "payoff": 1.13,
+     "n_locks": 0,
+     "avg_win": 1147.0,
+     "avg_loss": -803.0,
+     "position_hold_total": {
+      "bars": 69,
+      "seconds": 993600,
+      "hours": 276,
+      "days": 11.5
+     },
+     "pnl_2025": 5213.08,
+     "pnl_2026": 4179.389999999999
+    },
+    "oos": {
+     "pnl": 11110.64375770984,
+     "max_dd": 974.5200623650089,
+     "win": 85.7,
+     "n_taken": 14,
+     "n_candidates": 14,
+     "exposure": 100.0,
+     "pf": 6.7,
+     "payoff": 1.12,
+     "n_locks": 0,
+     "avg_win": 1421.0,
+     "avg_loss": -975.0,
+     "position_hold_total": {
+      "bars": 13,
+      "seconds": 187200,
+      "hours": 52,
+      "days": 2.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 4179.389999999999
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 36801.00845458139,
+     "max_dd": 6459.5175415799895,
+     "win": 51.4,
+     "n_taken": 259,
+     "n_candidates": 259,
+     "exposure": 100.0,
+     "pf": 1.4,
+     "payoff": 1.33,
+     "n_locks": 25,
+     "avg_win": 961.0,
+     "avg_loss": -758.0,
+     "position_hold_total": {
+      "bars": 328,
+      "seconds": 4723200,
+      "hours": 1312,
+      "days": 54.67
+     },
+     "pnl_2025": -12370.130000000001,
+     "pnl_2026": -11845.29
+    },
+    "oos": {
+     "pnl": 7162.546718890444,
+     "max_dd": 5563.388156184992,
+     "win": 43.7,
+     "n_taken": 71,
+     "n_candidates": 71,
+     "exposure": 100.0,
+     "pf": 1.24,
+     "payoff": 1.6,
+     "n_locks": 13,
+     "avg_win": 1009.0,
+     "avg_loss": -843.0,
+     "position_hold_total": {
+      "bars": 93,
+      "seconds": 1339200,
+      "hours": 372,
+      "days": 15.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -11845.29
+    }
+   }
+  }
+ },
+ {
+  "inst": "YM",
+  "tf": "1h",
+  "winner": "eod1",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 47341.170399433904,
+     "max_dd": 4490.38144129001,
+     "win": 49.5,
+     "n_taken": 297,
+     "n_candidates": 297,
+     "exposure": 100.0,
+     "pf": 1.53,
+     "payoff": 1.54,
+     "n_locks": 0,
+     "avg_win": 941.0,
+     "avg_loss": -628.0,
+     "position_hold_total": {
+      "bars": 397,
+      "seconds": 5716800,
+      "hours": 1588,
+      "days": 66.17
+     },
+     "pnl_2025": 13901.849999999991,
+     "pnl_2026": 2035.1199999999972
+    },
+    "oos": {
+     "pnl": 12526.649554849646,
+     "max_dd": 4490.38144129001,
+     "win": 45.1,
+     "n_taken": 91,
+     "n_candidates": 91,
+     "exposure": 100.0,
+     "pf": 1.42,
+     "payoff": 1.69,
+     "n_locks": 0,
+     "avg_win": 979.0,
+     "avg_loss": -658.0,
+     "position_hold_total": {
+      "bars": 116,
+      "seconds": 1670400,
+      "hours": 464,
+      "days": 19.33
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 2035.1199999999972
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 47341.170399433904,
+     "max_dd": 4490.38144129001,
+     "win": 49.5,
+     "n_taken": 297,
+     "n_candidates": 297,
+     "exposure": 100.0,
+     "pf": 1.53,
+     "payoff": 1.54,
+     "n_locks": 0,
+     "avg_win": 941.0,
+     "avg_loss": -628.0,
+     "position_hold_total": {
+      "bars": 397,
+      "seconds": 5716800,
+      "hours": 1588,
+      "days": 66.17
+     },
+     "pnl_2025": 13901.849999999991,
+     "pnl_2026": 2035.1199999999972
+    },
+    "oos": {
+     "pnl": 12526.649554849646,
+     "max_dd": 4490.38144129001,
+     "win": 45.1,
+     "n_taken": 91,
+     "n_candidates": 91,
+     "exposure": 100.0,
+     "pf": 1.42,
+     "payoff": 1.69,
+     "n_locks": 0,
+     "avg_win": 979.0,
+     "avg_loss": -658.0,
+     "position_hold_total": {
+      "bars": 116,
+      "seconds": 1670400,
+      "hours": 464,
+      "days": 19.33
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 2035.1199999999972
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 55529.64824641291,
+     "max_dd": 4710.0,
+     "win": 55.5,
+     "n_taken": 456,
+     "n_candidates": 456,
+     "exposure": 100.0,
+     "pf": 1.43,
+     "payoff": 1.15,
+     "n_locks": 0,
+     "avg_win": 761.0,
+     "avg_loss": -596.0,
+     "position_hold_total": {
+      "bars": 265,
+      "seconds": 3816000,
+      "hours": 1060,
+      "days": 44.17
+     },
+     "pnl_2025": 45592.4,
+     "pnl_2026": 44072.18
+    },
+    "oos": {
+     "pnl": 26367.860249121222,
+     "max_dd": 3011.3372051799524,
+     "win": 58.6,
+     "n_taken": 169,
+     "n_candidates": 169,
+     "exposure": 100.0,
+     "pf": 1.54,
+     "payoff": 1.09,
+     "n_locks": 0,
+     "avg_win": 795.0,
+     "avg_loss": -610.0,
+     "position_hold_total": {
+      "bars": 104,
+      "seconds": 1497600,
+      "hours": 416,
+      "days": 17.33
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 44072.18
+    }
+   }
+  }
+ },
+ {
+  "inst": "YM",
+  "tf": "15m",
+  "winner": "eod1",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 16406.76677026844,
+     "max_dd": 1508.8281779280442,
+     "win": 67.8,
+     "n_taken": 230,
+     "n_candidates": 230,
+     "exposure": 100.0,
+     "pf": 1.79,
+     "payoff": 0.85,
+     "n_locks": 0,
+     "avg_win": 239.0,
+     "avg_loss": -285.0,
+     "position_hold_total": {
+      "bars": 226,
+      "seconds": 3254400,
+      "hours": 904,
+      "days": 37.67
+     },
+     "pnl_2025": 4278.660000000001,
+     "pnl_2026": -203.93999999999963
+    },
+    "oos": {
+     "pnl": 3511.2492466995172,
+     "max_dd": 1508.8281779280442,
+     "win": 63.9,
+     "n_taken": 72,
+     "n_candidates": 72,
+     "exposure": 100.0,
+     "pf": 1.47,
+     "payoff": 0.83,
+     "n_locks": 0,
+     "avg_win": 239.0,
+     "avg_loss": -301.0,
+     "position_hold_total": {
+      "bars": 91,
+      "seconds": 1310400,
+      "hours": 364,
+      "days": 15.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -203.93999999999963
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 16212.465363396477,
+     "max_dd": 1268.8281779280442,
+     "win": 67.1,
+     "n_taken": 231,
+     "n_candidates": 231,
+     "exposure": 100.0,
+     "pf": 1.8,
+     "payoff": 0.87,
+     "n_locks": 0,
+     "avg_win": 227.0,
+     "avg_loss": -274.0,
+     "position_hold_total": {
+      "bars": 191,
+      "seconds": 2750400,
+      "hours": 764,
+      "days": 31.83
+     },
+     "pnl_2025": 3454.3400000000006,
+     "pnl_2026": -559.6799999999996
+    },
+    "oos": {
+     "pnl": 3562.6738949815262,
+     "max_dd": 1268.8281779280442,
+     "win": 63.9,
+     "n_taken": 72,
+     "n_candidates": 72,
+     "exposure": 100.0,
+     "pf": 1.49,
+     "payoff": 0.84,
+     "n_locks": 0,
+     "avg_win": 223.0,
+     "avg_loss": -284.0,
+     "position_hold_total": {
+      "bars": 70,
+      "seconds": 1008000,
+      "hours": 280,
+      "days": 11.67
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -559.6799999999996
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 26709.019159009767,
+     "max_dd": 4348.185883436963,
+     "win": 56.1,
+     "n_taken": 1027,
+     "n_candidates": 1157,
+     "exposure": 88.8,
+     "pf": 1.2,
+     "payoff": 0.94,
+     "n_locks": 65,
+     "avg_win": 270.0,
+     "avg_loss": -300.0,
+     "position_hold_total": {
+      "bars": 846,
+      "seconds": 12182400,
+      "hours": 3384,
+      "days": 141.0
+     },
+     "pnl_2025": -9466.960000000001,
+     "pnl_2026": 7693.41
+    },
+    "oos": {
+     "pnl": 18191.543142747396,
+     "max_dd": 2334.8350865724933,
+     "win": 58.3,
+     "n_taken": 448,
+     "n_candidates": 448,
+     "exposure": 100.0,
+     "pf": 1.33,
+     "payoff": 0.95,
+     "n_locks": 0,
+     "avg_win": 276.0,
+     "avg_loss": -288.0,
+     "position_hold_total": {
+      "bars": 315,
+      "seconds": 4536000,
+      "hours": 1260,
+      "days": 52.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": 16923.28
+    }
+   }
+  }
+ },
+ {
+  "inst": "YM",
+  "tf": "5m",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 16244.676238581233,
+     "max_dd": 1902.1317364303832,
+     "win": 65.2,
+     "n_taken": 558,
+     "n_candidates": 558,
+     "exposure": 100.0,
+     "pf": 1.33,
+     "payoff": 0.71,
+     "n_locks": 0,
+     "avg_win": 180.0,
+     "avg_loss": -252.0,
+     "position_hold_total": {
+      "bars": 425,
+      "seconds": 6120000,
+      "hours": 1700,
+      "days": 70.83
+     },
+     "pnl_2025": -2951.940000000001,
+     "pnl_2026": -786.4300000000001
+    },
+    "oos": {
+     "pnl": 2281.0761045369873,
+     "max_dd": 1714.691085771483,
+     "win": 61.7,
+     "n_taken": 188,
+     "n_candidates": 188,
+     "exposure": 100.0,
+     "pf": 1.12,
+     "payoff": 0.7,
+     "n_locks": 0,
+     "avg_win": 180.0,
+     "avg_loss": -254.0,
+     "position_hold_total": {
+      "bars": 156,
+      "seconds": 2246400,
+      "hours": 624,
+      "days": 26.0
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -1306.7000000000007
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 15536.587096296062,
+     "max_dd": 1892.8949727441068,
+     "win": 65.0,
+     "n_taken": 565,
+     "n_candidates": 565,
+     "exposure": 100.0,
+     "pf": 1.32,
+     "payoff": 0.71,
+     "n_locks": 0,
+     "avg_win": 176.0,
+     "avg_loss": -250.0,
+     "position_hold_total": {
+      "bars": 404,
+      "seconds": 5817600,
+      "hours": 1616,
+      "days": 67.33
+     },
+     "pnl_2025": -4331.900000000001,
+     "pnl_2026": 291.4000000000001
+    },
+    "oos": {
+     "pnl": 1544.2226191658847,
+     "max_dd": 1892.8949727441068,
+     "win": 61.1,
+     "n_taken": 190,
+     "n_candidates": 190,
+     "exposure": 100.0,
+     "pf": 1.08,
+     "payoff": 0.69,
+     "n_locks": 0,
+     "avg_win": 177.0,
+     "avg_loss": -242.0,
+     "position_hold_total": {
+      "bars": 145,
+      "seconds": 2088000,
+      "hours": 580,
+      "days": 24.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -1667.9400000000005
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 14900.146781490694,
+     "max_dd": 2726.979051717426,
+     "win": 41.6,
+     "n_taken": 522,
+     "n_candidates": 522,
+     "exposure": 100.0,
+     "pf": 1.39,
+     "payoff": 1.96,
+     "n_locks": 0,
+     "avg_win": 247.0,
+     "avg_loss": -116.0,
+     "position_hold_total": {
+      "bars": 323,
+      "seconds": 4651200,
+      "hours": 1292,
+      "days": 53.83
+     },
+     "pnl_2025": -6194.800000000001,
+     "pnl_2026": -2820.4300000000003
+    },
+    "oos": {
+     "pnl": 2465.0028243519773,
+     "max_dd": 2726.979051717426,
+     "win": 38.5,
+     "n_taken": 179,
+     "n_candidates": 179,
+     "exposure": 100.0,
+     "pf": 1.18,
+     "payoff": 1.88,
+     "n_locks": 0,
+     "avg_win": 251.0,
+     "avg_loss": -124.0,
+     "position_hold_total": {
+      "bars": 113,
+      "seconds": 1627200,
+      "hours": 452,
+      "days": 18.83
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -3390.1900000000005
+    }
+   }
+  }
+ },
+ {
+  "inst": "YM",
+  "tf": "2m",
+  "winner": "deployed",
+  "c": {
+   "deployed": {
+    "full": {
+     "pnl": 28715.87777835848,
+     "max_dd": 2383.366322243892,
+     "win": 59.0,
+     "n_taken": 1094,
+     "n_candidates": 1094,
+     "exposure": 100.0,
+     "pf": 1.36,
+     "payoff": 0.94,
+     "n_locks": 0,
+     "avg_win": 170.0,
+     "avg_loss": -181.0,
+     "position_hold_total": {
+      "bars": 1002,
+      "seconds": 14428800,
+      "hours": 4008,
+      "days": 167.0
+     },
+     "pnl_2025": -1205.8299999999963,
+     "pnl_2026": -3523.869999999998
+    },
+    "oos": {
+     "pnl": 10533.353431481664,
+     "max_dd": 2383.366322243892,
+     "win": 58.7,
+     "n_taken": 412,
+     "n_candidates": 412,
+     "exposure": 100.0,
+     "pf": 1.35,
+     "payoff": 0.94,
+     "n_locks": 0,
+     "avg_win": 170.0,
+     "avg_loss": -184.0,
+     "position_hold_total": {
+      "bars": 331,
+      "seconds": 4766400,
+      "hours": 1324,
+      "days": 55.17
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -3523.869999999998
+    }
+   },
+   "bolt-on": {
+    "full": {
+     "pnl": 28355.047279811406,
+     "max_dd": 2383.366322243892,
+     "win": 59.1,
+     "n_taken": 1110,
+     "n_candidates": 1110,
+     "exposure": 100.0,
+     "pf": 1.35,
+     "payoff": 0.93,
+     "n_locks": 0,
+     "avg_win": 165.0,
+     "avg_loss": -176.0,
+     "position_hold_total": {
+      "bars": 979,
+      "seconds": 14097600,
+      "hours": 3916,
+      "days": 163.17
+     },
+     "pnl_2025": -752.299999999997,
+     "pnl_2026": -4077.2699999999986
+    },
+    "oos": {
+     "pnl": 9420.919278529618,
+     "max_dd": 2383.366322243892,
+     "win": 58.2,
+     "n_taken": 414,
+     "n_candidates": 414,
+     "exposure": 100.0,
+     "pf": 1.31,
+     "payoff": 0.94,
+     "n_locks": 0,
+     "avg_win": 166.0,
+     "avg_loss": -181.0,
+     "position_hold_total": {
+      "bars": 333,
+      "seconds": 4795200,
+      "hours": 1332,
+      "days": 55.5
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -4077.2699999999986
+    }
+   },
+   "eod1": {
+    "full": {
+     "pnl": 4364.350172454033,
+     "max_dd": 275.0,
+     "win": 73.7,
+     "n_taken": 57,
+     "n_candidates": 57,
+     "exposure": 100.0,
+     "pf": 4.25,
+     "payoff": 1.52,
+     "n_locks": 0,
+     "avg_win": 131.0,
+     "avg_loss": -90.0,
+     "position_hold_total": {
+      "bars": 59,
+      "seconds": 849600,
+      "hours": 236,
+      "days": 9.83
+     },
+     "pnl_2025": 370.87000000000023,
+     "pnl_2026": -160.39999999999986
+    },
+    "oos": {
+     "pnl": 966.1297886000102,
+     "max_dd": 275.0,
+     "win": 62.5,
+     "n_taken": 16,
+     "n_candidates": 16,
+     "exposure": 100.0,
+     "pf": 3.3,
+     "payoff": 1.98,
+     "n_locks": 0,
+     "avg_win": 130.0,
+     "avg_loss": -108.0,
+     "position_hold_total": {
+      "bars": 20,
+      "seconds": 288000,
+      "hours": 80,
+      "days": 3.33
+     },
+     "pnl_2025": 0.0,
+     "pnl_2026": -21.78999999999985
+    }
+   }
+  }
+ }
+]

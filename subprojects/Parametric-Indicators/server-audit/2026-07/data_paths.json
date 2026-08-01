@@ -1,0 +1,194 @@
+{
+ "NQ": {
+  "4h": {
+   "dec": "/home/dev/Mulham/wsg-i/Full_Canldes_Data/drive-download-20260602T124702Z-3-001/NQ_4h.csv",
+   "min": "/home/dev/Mulham/wsg-i/Full_Canldes_Data/drive-download-20260602T124702Z-3-001/NQ_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/data/full_data/NQ_full_data.csv"
+  },
+  "2h": {
+   "dec": "/home/dev/Mulham/wsg-i/Full_Canldes_Data/drive-download-20260602T124702Z-3-001/NQ_2h.csv",
+   "min": "/home/dev/Mulham/wsg-i/Full_Canldes_Data/drive-download-20260602T124702Z-3-001/NQ_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/data/full_data/NQ_full_data.csv"
+  },
+  "1h": {
+   "dec": "/home/dev/Mulham/wsg-i/Full_Canldes_Data/drive-download-20260602T124702Z-3-001/NQ_1h.csv",
+   "min": "/home/dev/Mulham/wsg-i/Full_Canldes_Data/drive-download-20260602T124702Z-3-001/NQ_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/data/full_data/NQ_full_data.csv"
+  },
+  "15m": {
+   "dec": "/home/dev/Mulham/wsg-i/Full_Canldes_Data/drive-download-20260602T124702Z-3-001/NQ_15m.csv",
+   "min": "/home/dev/Mulham/wsg-i/Full_Canldes_Data/drive-download-20260602T124702Z-3-001/NQ_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/data/full_data/NQ_full_data.csv"
+  },
+  "5m": {
+   "dec": "/home/dev/Mulham/wsg-i/Full_Canldes_Data/drive-download-20260602T124702Z-3-001/NQ_5m.csv",
+   "min": "/home/dev/Mulham/wsg-i/Full_Canldes_Data/drive-download-20260602T124702Z-3-001/NQ_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/data/full_data/NQ_full_data.csv"
+  },
+  "2m": {
+   "dec": "/home/dev/Mulham/wsg-i/Full_Canldes_Data/drive-download-20260602T124702Z-3-001/NQ_2m.csv",
+   "min": "/home/dev/Mulham/wsg-i/Full_Canldes_Data/drive-download-20260602T124702Z-3-001/NQ_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/data/full_data/NQ_full_data.csv"
+  }
+ },
+ "ES": {
+  "4h": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/ES_Continuous_Data/ES_4h.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/ES_Continuous_Data/ES_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/ES_full_data_shifted.csv"
+  },
+  "2h": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/ES_Continuous_Data/ES_2h.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/ES_Continuous_Data/ES_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/ES_full_data_shifted.csv"
+  },
+  "1h": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/ES_Continuous_Data/ES_1h.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/ES_Continuous_Data/ES_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/ES_full_data_shifted.csv"
+  },
+  "15m": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/ES_Continuous_Data/ES_15m.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/ES_Continuous_Data/ES_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/ES_full_data_shifted.csv"
+  },
+  "5m": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/ES_Continuous_Data/ES_5m.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/ES_Continuous_Data/ES_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/ES_full_data_shifted.csv"
+  },
+  "2m": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/ES_Continuous_Data/ES_2m.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/ES_Continuous_Data/ES_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/ES_full_data_shifted.csv"
+  }
+ },
+ "GC": {
+  "4h": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/GC_Continuous_Data/GC_4h.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/GC_Continuous_Data/GC_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/GC_full_data_shifted.csv"
+  },
+  "2h": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/GC_Continuous_Data/GC_2h.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/GC_Continuous_Data/GC_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/GC_full_data_shifted.csv"
+  },
+  "1h": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/GC_Continuous_Data/GC_1h.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/GC_Continuous_Data/GC_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/GC_full_data_shifted.csv"
+  },
+  "15m": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/GC_Continuous_Data/GC_15m.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/GC_Continuous_Data/GC_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/GC_full_data_shifted.csv"
+  },
+  "5m": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/GC_Continuous_Data/GC_5m.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/GC_Continuous_Data/GC_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/GC_full_data_shifted.csv"
+  },
+  "2m": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/GC_Continuous_Data/GC_2m.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/GC_Continuous_Data/GC_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/GC_full_data_shifted.csv"
+  }
+ },
+ "SI": {
+  "4h": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/SI_Continuous_Data/SI_4h.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/SI_Continuous_Data/SI_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/SI_full_data_shifted.csv"
+  },
+  "2h": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/SI_Continuous_Data/SI_2h.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/SI_Continuous_Data/SI_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/SI_full_data_shifted.csv"
+  },
+  "1h": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/SI_Continuous_Data/SI_1h.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/SI_Continuous_Data/SI_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/SI_full_data_shifted.csv"
+  },
+  "15m": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/SI_Continuous_Data/SI_15m.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/SI_Continuous_Data/SI_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/SI_full_data_shifted.csv"
+  },
+  "5m": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/SI_Continuous_Data/SI_5m.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/SI_Continuous_Data/SI_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/SI_full_data_shifted.csv"
+  },
+  "2m": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/SI_Continuous_Data/SI_2m.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/SI_Continuous_Data/SI_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/SI_full_data_shifted.csv"
+  }
+ },
+ "RTY": {
+  "4h": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/RTY_Continuous_Data/RTY_4h.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/RTY_Continuous_Data/RTY_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/RTY_full_data_shifted.csv"
+  },
+  "2h": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/RTY_Continuous_Data/RTY_2h.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/RTY_Continuous_Data/RTY_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/RTY_full_data_shifted.csv"
+  },
+  "1h": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/RTY_Continuous_Data/RTY_1h.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/RTY_Continuous_Data/RTY_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/RTY_full_data_shifted.csv"
+  },
+  "15m": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/RTY_Continuous_Data/RTY_15m.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/RTY_Continuous_Data/RTY_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/RTY_full_data_shifted.csv"
+  },
+  "5m": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/RTY_Continuous_Data/RTY_5m.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/RTY_Continuous_Data/RTY_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/RTY_full_data_shifted.csv"
+  },
+  "2m": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/RTY_Continuous_Data/RTY_2m.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/RTY_Continuous_Data/RTY_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/RTY_full_data_shifted.csv"
+  }
+ },
+ "YM": {
+  "4h": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/YM_Continuous_Data/YM_4h.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/YM_Continuous_Data/YM_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/YM_full_data_shifted.csv"
+  },
+  "2h": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/YM_Continuous_Data/YM_2h.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/YM_Continuous_Data/YM_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/YM_full_data_shifted.csv"
+  },
+  "1h": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/YM_Continuous_Data/YM_1h.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/YM_Continuous_Data/YM_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/YM_full_data_shifted.csv"
+  },
+  "15m": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/YM_Continuous_Data/YM_15m.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/YM_Continuous_Data/YM_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/YM_full_data_shifted.csv"
+  },
+  "5m": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/YM_Continuous_Data/YM_5m.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/YM_Continuous_Data/YM_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/YM_full_data_shifted.csv"
+  },
+  "2m": {
+   "dec": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/YM_Continuous_Data/YM_2m.csv",
+   "min": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/YM_Continuous_Data/YM_1m.csv",
+   "box": "/home/dev/Mulham/wsg-i/subprojects/all-stocks-signals/shifted_boxes/YM_full_data_shifted.csv"
+  }
+ }
+}

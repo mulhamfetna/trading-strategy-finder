@@ -1,0 +1,16 @@
+/home/dev/Mulham/wsg-i/remeas_launch.sh: line 16: 782925 Killed                  python3 -u optimize/l2/optimize.py --tf "$TF" --prefix "$PREFIX" --l1-champion "$L1C" --trials 600 --min-trades 1 >> "$LOG" 2>&1
+/home/dev/Mulham/wsg-i/remeas_launch.sh: line 16: 782927 Killed                  python3 -u optimize/l2/optimize.py --tf "$TF" --prefix "$PREFIX" --l1-champion "$L1C" --trials 600 --min-trades 1 >> "$LOG" 2>&1
+/home/dev/Mulham/wsg-i/remeas_launch.sh: line 16: 782935 Killed                  python3 -u optimize/l2/optimize.py --tf "$TF" --prefix "$PREFIX" --l1-champion "$L1C" --trials 600 --min-trades 1 >> "$LOG" 2>&1
+/home/dev/Mulham/wsg-i/remeas_launch.sh: line 16: 782937 Killed                  python3 -u optimize/l2/optimize.py --tf "$TF" --prefix "$PREFIX" --l1-champion "$L1C" --trials 600 --min-trades 1 >> "$LOG" 2>&1
+/home/dev/Mulham/wsg-i/remeas_launch.sh: line 16: 782926 Killed                  python3 -u optimize/l2/optimize.py --tf "$TF" --prefix "$PREFIX" --l1-champion "$L1C" --trials 600 --min-trades 1 >> "$LOG" 2>&1
+/home/dev/Mulham/wsg-i/remeas_launch.sh: line 16: 782928 Killed                  python3 -u optimize/l2/optimize.py --tf "$TF" --prefix "$PREFIX" --l1-champion "$L1C" --trials 600 --min-trades 1 >> "$LOG" 2>&1
+/home/dev/Mulham/wsg-i/remeas_launch.sh: line 16: 782929 Killed                  python3 -u optimize/l2/optimize.py --tf "$TF" --prefix "$PREFIX" --l1-champion "$L1C" --trials 600 --min-trades 1 >> "$LOG" 2>&1
+/home/dev/Mulham/wsg-i/remeas_launch.sh: line 16: 782930 Killed                  python3 -u optimize/l2/optimize.py --tf "$TF" --prefix "$PREFIX" --l1-champion "$L1C" --trials 600 --min-trades 1 >> "$LOG" 2>&1
+/home/dev/Mulham/wsg-i/remeas_launch.sh: line 16: 782931 Killed                  python3 -u optimize/l2/optimize.py --tf "$TF" --prefix "$PREFIX" --l1-champion "$L1C" --trials 600 --min-trades 1 >> "$LOG" 2>&1
+/home/dev/Mulham/wsg-i/remeas_launch.sh: line 16: 782933 Killed                  python3 -u optimize/l2/optimize.py --tf "$TF" --prefix "$PREFIX" --l1-champion "$L1C" --trials 600 --min-trades 1 >> "$LOG" 2>&1
+/home/dev/Mulham/wsg-i/remeas_launch.sh: line 16: 782934 Killed                  python3 -u optimize/l2/optimize.py --tf "$TF" --prefix "$PREFIX" --l1-champion "$L1C" --trials 600 --min-trades 1 >> "$LOG" 2>&1
+/home/dev/Mulham/wsg-i/remeas_launch.sh: line 16: 782936 Killed                  python3 -u optimize/l2/optimize.py --tf "$TF" --prefix "$PREFIX" --l1-champion "$L1C" --trials 600 --min-trades 1 >> "$LOG" 2>&1
+/home/dev/Mulham/wsg-i/remeas_launch.sh: line 16: 782938 Killed                  python3 -u optimize/l2/optimize.py --tf "$TF" --prefix "$PREFIX" --l1-champion "$L1C" --trials 600 --min-trades 1 >> "$LOG" 2>&1
+/home/dev/Mulham/wsg-i/remeas_launch.sh: line 16: 782939 Killed                  python3 -u optimize/l2/optimize.py --tf "$TF" --prefix "$PREFIX" --l1-champion "$L1C" --trials 600 --min-trades 1 >> "$LOG" 2>&1
+/home/dev/Mulham/wsg-i/remeas_launch.sh: line 16: 782932 Killed                  python3 -u optimize/l2/optimize.py --tf "$TF" --prefix "$PREFIX" --l1-champion "$L1C" --trials 600 --min-trades 1 >> "$LOG" 2>&1
+/home/dev/Mulham/wsg-i/remeas_launch.sh: line 16: 782940 Killed                  python3 -u optimize/l2/optimize.py --tf "$TF" --prefix "$PREFIX" --l1-champion "$L1C" --trials 600 --min-trades 1 >> "$LOG" 2>&1
