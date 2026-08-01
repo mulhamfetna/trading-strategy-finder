@@ -72,15 +72,19 @@ def test_contributor_committee_excludes_smc_by_default():
     trial = study.ask()
     c = l2opt._suggest_contributor(trial, "ES")
     by_key = {s["key"]: s for s in c["committee"]}
+    # #95 FLIPPED THIS. SMC used to be forced OFF here; it is now searched like anything else, because
+    # the cost that justified withholding it fell ~100x and four of the six were never costly at all.
     for k in l2opt.SMC_COMMITTEE_KEYS:
-        assert by_key[k]["enabled"] is False                       # SMC forced OFF
-        assert f"es_en_{k}" not in trial.params                    # and NOT a search dimension
+        assert f"es_en_{k}" in trial.params, f"{k} must be a search dimension by default now"
     assert "es_en_ema_trend" in trial.params                       # a non-SMC key IS searched
+    assert by_key                                                  # committee is populated
 
 
-def test_contributor_committee_includes_smc_when_opted_in():
+def test_the_exclusion_can_still_be_reimposed_explicitly():
+    """Removed as a default, kept as a capability — that is what makes a pre-2026-08-01 run reproducible
+    and lets the restriction come back if the measurement ever changes again."""
     import optuna
     study = optuna.create_study()
     trial = study.ask()
-    l2opt._suggest_contributor(trial, "ES", exclude_committee=())
-    assert "es_en_ifvg" in trial.params and "es_en_breaker" in trial.params  # SMC searched on opt-in
+    l2opt._suggest_contributor(trial, "ES", exclude_committee=l2opt.SMC_COMMITTEE_KEYS)
+    assert "es_en_ifvg" not in trial.params and "es_en_breaker" not in trial.params

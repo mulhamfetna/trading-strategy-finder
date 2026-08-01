@@ -5,37 +5,52 @@ from __future__ import annotations
 
 from optimize import optimizer as OPT
 
-# SMC structural indicators — EXCLUDED from the cross-instrument committee SEARCH by default.
+# ─────────────────────────────────────────────────────────────────────────────────────────────────
+# COMMITTEE SCOPE (#95, decided 2026-08-01: option A — the exclusion is REMOVED).
 #
-# ⚠️ THE COST THAT JUSTIFIED THIS EXCLUSION NO LONGER EXISTS (#89 sweep, 2026-07-31). The original
-# rationale was that these "do not vectorise over the long contributor 1-minute frame": on the
-# 486,954-bar ES frame `ifvg`=58.1s and `breaker`=37.9s ALONE were 90% of a 106.4s 18-indicator
-# committee trial (PERFORMANCE.md §9). Then #62 rewrote the SMC family as Numba state machines and
-# re-measured on the full frame: `ifvg` **29.90s → 0.314s (95×)** and `order_block` **2.82s → 0.118s
-# (24×)** (docs/CLOSEOUT-2026-07-28-indicator-budget.md). The 90%-of-a-trial claim is a PRE-
-# ACCELERATION number describing code that has since been replaced.
+# WHAT WAS EXCLUDED AND WHY. Six SMC structural indicators (+ `stochastic`/`adx` for L1) were withheld
+# from the cross-instrument committee SEARCH because they "do not vectorise over the long contributor
+# 1-minute frame": on the 486,954-bar ES frame `ifvg`=58.1s and `breaker`=37.9s alone were 90% of a
+# 106.4s trial (PERFORMANCE.md §9).
 #
-# This is therefore a live restriction of the SEARCH SPACE resting on a stale measurement — six
-# structural indicators are never offered to the cross-instrument committee, for a speed reason that
-# has been engineered away. It is left ON deliberately rather than flipped here: changing a default
-# changes what every contributor search explores, and that is a measured decision, not a cleanup.
-# Re-measure on the ES frame, then decide — tracked as its own issue. Still available in the
-# dashboard backtester either way.
-SMC_COMMITTEE_KEYS = ("structure_trend", "order_block", "fvg", "ifvg", "breaker", "cisd")
+# WHY IT IS GONE. #62 rewrote the SMC family as Numba state machines, and #95 re-measured on the REAL
+# ES committee frame through the production call path (`bench_smc_committee.py`):
+#
+#     committee as searched before (157 indicators)   18.94 s
+#     the 8 excluded indicators                        0.83 s   ->  admitting them is +4.4% per trial
+#     the original justification                         90%
+#
+#     worst grid corner, all eight, measured full-frame: 0.94 s
+#
+# THE CONTROL FOUND MORE THAN A SPEED-UP. Re-measured with the accelerator forced off, FOUR of the six
+# were never expensive at all — `structure_trend`, `fvg`, `cisd` (and `stochastic`, `adx`) cost the same
+# with Numba off as on, because there was nothing to accelerate. They were excluded by FAMILY
+# MEMBERSHIP, not by measurement: swept up for sitting in the same source file as `ifvg`/`breaker`.
+# Only those two were ever slow, and they are now 0.224 s and 0.198 s (100x / 110x).
+#
+# WHAT THIS DOES AND DOES NOT CLAIM. It removes a restriction whose stated reason no longer exists. It
+# does NOT claim these indicators help — that is a separate question, and a search that cannot reach an
+# indicator can never learn that it is useless either. The scope stays CONTROLLABLE (--contrib-exclude,
+# and the RunSpec field behind the dashboard) so the restriction can be reimposed deliberately.
+# ─────────────────────────────────────────────────────────────────────────────────────────────────
 
-# The L1 optimizer scores K walk-forward folds + a full backtest per trial, so the ES committee compute is
-# multiplied — also drop the two heaviest non-SMC indicators (stochastic≈2.2s, adx≈2.2s on the 487k-bar ES
-# frame). L2 (single-window) keeps the SMC-only default.
-# ⚠️ Same caveat: those 2.2s figures are pre-#62 as well, and inherit whatever SMC_COMMITTEE_KEYS becomes.
+# Nothing is withheld by default any more. Kept as a NAME rather than inlined so a run can reimpose the
+# historical scope explicitly and so `test_committee_cost_budget.py` has something to price.
+DEFAULT_COMMITTEE_EXCLUDE: tuple[str, ...] = ()
+
+# The historical sets, retained for reproducing pre-2026-08-01 runs and for the cost gate. NOT applied
+# by default — referencing them is now an explicit choice.
+SMC_COMMITTEE_KEYS = ("structure_trend", "order_block", "fvg", "ifvg", "breaker", "cisd")
 L1_ES_EXCLUDE = SMC_COMMITTEE_KEYS + ("stochastic", "adx")
 
 
-def suggest_contributor(trial, token: str, exclude_committee=SMC_COMMITTEE_KEYS,
+def suggest_contributor(trial, token: str, exclude_committee=DEFAULT_COMMITTEE_EXCLUDE,
                         only_committee=()) -> dict:
     """Searchable cross-instrument contributor cfg (B1 gate schema): master enable, state definition,
     composite signal voter (BOTH encodings searched), the namespaced indicator committee, k_es.
     The 6-cell truth table is keyed by JSON-safe 'dir|state' strings (the objective serialises params).
-    `exclude_committee` keys are forced OFF (not searched) — defaults to the slow SMC family.
+    `exclude_committee` keys are forced OFF (not searched). Defaults to NOTHING excluded (#95);
+    pass L1_ES_EXCLUDE to reproduce a pre-2026-08-01 run.
     `only_committee` restricts the committee to those keys (empty ⇒ the whole registry, unchanged) —
     the same scoping the L1 optimizer's --only-indicators provides, needed because this committee is a
     SECOND full-registry search on top of the strategy's own (#80/#81)."""

@@ -9,7 +9,9 @@ optuna.logging.set_verbosity(optuna.logging.WARNING)
 from optimize import contributor_search as cs
 
 
-def test_l1_es_exclude_drops_smc_and_two_heavies():
+def test_the_historical_exclusion_still_works_when_it_is_ASKED_FOR():
+    """#95 removed this as the DEFAULT, not as a capability. Reproducing a pre-2026-08-01 run means
+    naming the keys explicitly, and that must keep working exactly as it did."""
     for k in ("structure_trend", "order_block", "fvg", "ifvg", "breaker", "cisd", "stochastic", "adx"):
         assert k in cs.L1_ES_EXCLUDE
     study = optuna.create_study()
@@ -18,6 +20,18 @@ def test_l1_es_exclude_drops_smc_and_two_heavies():
     assert "es_enabled" in t.params                       # searchable, not forced
     assert "es_en_stochastic" not in t.params and "es_en_ifvg" not in t.params
     assert "es_en_ema_trend" in t.params
+
+
+def test_nothing_is_withheld_by_DEFAULT_any_more():
+    """THE #95 CHANGE. The eight were excluded on a cost that has since fallen ~100x — and the control
+    showed four of the six were never expensive at all, excluded by FAMILY MEMBERSHIP rather than by
+    measurement. A search that cannot reach an indicator can never learn it is useless either."""
+    assert cs.DEFAULT_COMMITTEE_EXCLUDE == ()
+    study = optuna.create_study()
+    t = study.ask()
+    cs.suggest_contributor(t, "ES")                       # no exclude_committee argument at all
+    for k in ("ifvg", "breaker", "cisd", "fvg", "structure_trend", "order_block", "stochastic", "adx"):
+        assert f"es_en_{k}" in t.params, f"{k} is still not searchable by default"
 
 
 def test_lookahead_guard_via_masks():

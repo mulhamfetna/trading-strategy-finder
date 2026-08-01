@@ -36,17 +36,19 @@ def score_window(l1, l2_params: dict, lo: int, hi: int) -> dict:
 # Cross-instrument contributor search block now lives in optimize/contributor_search.py (shared with the L1
 # optimizer). Keep the original names as back-compat aliases so existing call-sites/tests are unchanged.
 from optimize import contributor_search as _csearch          # noqa: E402
-SMC_COMMITTEE_KEYS = _csearch.SMC_COMMITTEE_KEYS
+SMC_COMMITTEE_KEYS = _csearch.SMC_COMMITTEE_KEYS      # historical set; NOT the default (#95)
+DEFAULT_COMMITTEE_EXCLUDE = _csearch.DEFAULT_COMMITTEE_EXCLUDE
 _suggest_contributor = _csearch.suggest_contributor
 
 
 def suggest_l2_params(trial, b: dict, cap: int, contrib_tokens=(),
-                      contrib_exclude=SMC_COMMITTEE_KEYS, intracandle: bool = False,
+                      contrib_exclude=DEFAULT_COMMITTEE_EXCLUDE, intracandle: bool = False,
                       only_inds=(), exclude_inds=()) -> dict:
     """Engine-ready L2 param dict from an Optuna trial — mirrors optimizer.objective's space (shared
     SL/TP; indicators on the 1-minute frame to match the lean L1 regime). `contrib_tokens` (opt-in) adds
     a searchable cross-instrument contributor block + topology; empty ⇒ byte-identical to the prior space.
-    `contrib_exclude` keys are dropped from EACH contributor's committee search (default = slow SMC family).
+    `contrib_exclude` keys are dropped from EACH contributor's committee search. Default is NOTHING
+    dropped (#95 removed the SMC exclusion — its cost justification had fallen 100x).
 
     `only_inds` / `exclude_inds` scope the indicator search, exactly as the L1 optimizer's
     --only-indicators / --exclude-indicators do. They were missing here, so L2 always searched the FULL
@@ -85,7 +87,7 @@ def suggest_l2_params(trial, b: dict, cap: int, contrib_tokens=(),
 def run(n_trials: int = 200, tf: str = "4h", study_prefix: str = "l2v1", seed: int = 1,
         min_trades: int = 5, sampler: str = "nsga3", storage_url: str | None = None,
         dd_pnl_cap: float = OPT.DD_PNL_CAP, l1_params: dict | None = None,
-        contrib_tokens=(), contrib_exclude=SMC_COMMITTEE_KEYS, instrument: str = "NQ",
+        contrib_tokens=(), contrib_exclude=DEFAULT_COMMITTEE_EXCLUDE, instrument: str = "NQ",
         intracandle: bool = False, only_inds=(), exclude_inds=()) -> dict:
     """NSGA-III search over L2 profiles. Objective = (in-sample L2 P/L, -in-sample max_dd, win-rate)
     with the DD<=dd_pnl_cap*P/L feasibility constraint; OOS (2026) is scored only for the champion.
@@ -190,9 +192,15 @@ def main() -> int:
     ap.add_argument("--contributors", default="",
                     help="comma-separated cross-instrument contributor tokens to SEARCH (e.g. 'ES'); "
                          "empty ⇒ no contributor block (existing L2 space unchanged)")
-    ap.add_argument("--contrib-include-smc", action="store_true",
-                    help="include the slow SMC indicators (ifvg/breaker/...) in the contributor committee "
-                         "search (default: EXCLUDED for speed — ~10x slower per trial; PERFORMANCE.md §9)")
+    # #95 INVERTED THIS FLAG. It used to be --contrib-include-smc, an opt-IN, because the SMC family was
+    # excluded by default "for speed — ~10x slower per trial". That is measured false today: admitting all
+    # eight costs +4.4% of a trial, and four of the six were never expensive at all. Withholding is now the
+    # thing you ask for, and you ask for it by NAMING the keys rather than by invoking a family.
+    ap.add_argument("--contrib-exclude", default="",
+                    help="comma-separated indicators to withhold from the contributor committee SEARCH. "
+                         "Empty (default) ⇒ nothing withheld (#95). Pass "
+                         "'structure_trend,order_block,fvg,ifvg,breaker,cisd' to reproduce a "
+                         "pre-2026-08-01 run.")
     ap.add_argument("--out", default=str(_PI / "optimize" / "results"))
     ap.add_argument("--intracandle", action="store_true",
                     help="E3a: force L2 intra-candle entry timing ON for the vetoed stream + search the wait "
@@ -205,7 +213,7 @@ def main() -> int:
     if not _inst.is_valid(a.instrument):
         print(f"unknown instrument {a.instrument!r}; known {list(_inst.TOKENS)}", flush=True); return 2
     contrib_tokens = tuple(t.strip() for t in a.contributors.split(",") if t.strip())
-    contrib_exclude = () if a.contrib_include_smc else SMC_COMMITTEE_KEYS
+    contrib_exclude = tuple(x for x in a.contrib_exclude.split(',') if x)
     l1_params = _l1_params_from_champion(a.l1_champion, a.tf) if a.l1_champion else None
     if l1_params is not None:
         print(f"[l2:{a.tf}] scoring L2 on CANDIDATE L1 residuals from {a.l1_champion} "

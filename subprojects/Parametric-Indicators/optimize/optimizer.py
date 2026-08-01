@@ -597,7 +597,7 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
             from optimize import contributor_search as _cs, contributor_masks as _cmask
             params["contributor_topology"] = trial.suggest_categorical(
                 "contributor_topology", ["separate_and", "merged", "or_boost"])
-            exc = contrib_exclude if contrib_exclude is not None else _cs.L1_ES_EXCLUDE
+            exc = contrib_exclude if contrib_exclude is not None else _cs.DEFAULT_COMMITTEE_EXCLUDE
             params["contributors"] = [_cs.suggest_contributor(trial, tok, exclude_committee=exc)
                                       for tok in contrib_tokens]
             _contrib = _cmask.precompute_contributor_masks(params, df_dec, df1, box, sig_int, tf.bar_td)
@@ -842,6 +842,13 @@ def main() -> int:
     # NORMALLY and looks correct. Today's server was found 9 commits behind only because someone
     # happened to type `git status`. So the default is to STOP, and both escapes announce themselves
     # and are recorded in the provenance stamp, so an overridden run is still attributable.
+    # #95: the committee scope is a CHOICE now, not a constant. It used to be a hardcoded exclusion of
+    # the SMC family on a cost that has since fallen 100x; it is removed by default and reimposable here.
+    ap.add_argument("--contrib-exclude", default="",
+                    help="comma-separated indicators to withhold from the cross-instrument committee "
+                         "SEARCH. Empty (default) ⇒ nothing withheld (#95). Pass "
+                         "'structure_trend,order_block,fvg,ifvg,breaker,cisd,stochastic,adx' to "
+                         "reproduce a pre-2026-08-01 run.")
     ap.add_argument("--allow-dirty", action="store_true",
                     help="run even though the checkout has uncommitted changes. The result will not be "
                          "reproducible from any commit; recorded in the run's provenance.")
@@ -889,14 +896,16 @@ def main() -> int:
     n_trials = rec if a.auto_trials else a.trials
     if contrib_tokens:
         from optimize import contributor_search as _cs
+        _cexc = tuple(x for x in a.contrib_exclude.split(",") if x)
         print(f"[{a.timeframe}] **searching cross-instrument contributors {list(contrib_tokens)} on L1 "
-              f"(ES SEARCHABLE, not forced; topology + es_committee). Excluded committee keys: "
-              f"{list(_cs.L1_ES_EXCLUDE)} (SMC + stochastic + adx, fold-scored cost).**", flush=True)
+              f"(ES SEARCHABLE, not forced; topology + es_committee). Committee scope: "
+              f"{('EXCLUDING ' + ','.join(_cexc)) if _cexc else 'the FULL registry — nothing withheld (#95)'}.**",
+              flush=True)
     run(a.timeframe, n_trials=n_trials, folds=a.folds, min_trades=a.min_trades,
         ind_1min=a.ind_1min, study_prefix=a.study_prefix, split_sltp=a.split_sltp,
         warm_start=not a.no_warm_start, sampler=a.sampler,
         objective=a.objective, exclude_inds=_excl, only_inds=_only, dd_pnl_cap=a.dd_pnl_cap,
-        contrib_tokens=contrib_tokens, instrument=a.instrument,
+        contrib_tokens=contrib_tokens, contrib_exclude=_cexc, instrument=a.instrument,
         intracandle=(a.intracandle or a.intracandle_on),
         freeze_indicators=a.freeze_indicators, intracandle_always_on=a.intracandle_on,
         force_eod=a.force_eod, max_enabled=a.max_enabled, reference=a.reference,
