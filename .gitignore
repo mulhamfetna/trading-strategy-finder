@@ -63,7 +63,11 @@ htmlcov/
 # A gate that cries wolf is a gate everyone learns to pass --allow-dirty to, which is strictly worse
 # than no gate. Ignoring these is what keeps "dirty" meaning something.
 subprojects/Parametric-Indicators/server-audit/**/__pycache__/
-subprojects/Parametric-Indicators/data/
+# NO trailing slash: on the server this path is a SYMLINK into the data tree, and a pattern ending
+# in '/' matches directories only — so the slashed form silently failed to ignore the very case it
+# was written for. Locally it is a real directory and matches either way, which is exactly why
+# this had to be checked on the server rather than locally.
+subprojects/Parametric-Indicators/data
 
 # Output
 *.html
