@@ -2,7 +2,7 @@
 name: issue-94-sync-root-cause
 description: Why the same local/server sync errors keep recurring — the evidence, six root causes, and a design that makes divergence impossible to ignore rather than asking anyone to be careful.
 type: investigation
-status: investigation complete, design proposed, awaiting a decision on scope
+status: all four layers SHIPPED and verified; copies retired
 issue: 94
 date: 2026-07-31
 ---
@@ -262,3 +262,47 @@ decision about what is worth keeping.
   or size-specific fact frozen as a literal
 - `docs/EXPANSION_ROUND_PLAYBOOK.md` §4 — rules C5, C11, C13, C16 are all sync/environment incidents
 - `optimize/server/INCIDENT_ssh_connection_reset.md`, `INCIDENT_wsh4_sqlite_contention.md`
+
+
+---
+
+## 10. Delivered — 2026-08-01
+
+All four layers shipped. Verified by the full suite on the server with the complete data root.
+
+| layer | what shipped | kills |
+|---|---|---|
+| **1 — provenance** | `provenance.py` — every artifact carries commit, branch, dirty, host, repo root, **data root**, python, **numba version**, registry size, timestamp, argv. Embedded *inside* result JSON, not beside it | RC-6, and makes RC-1/RC-2 detectable |
+| **2 — preflight** | `provenance.preflight()` — **blocks** a dirty checkout, a checkout behind upstream, or a missing data root. Overrides land in the stamp, so an overridden run stays attributable | RC-2, RC-4 |
+| **3 — roots** | `roots.py` — repo root **derived**, data root **explicit** (`WSH_DATA_ROOT`, legacy `WSH_DATA_BASE` still honoured). AST sweep test | RC-1, RC-3 |
+| **4 — harvest** | `optimize/server/harvest.sh` — asks git what it does not track, instead of a maintained allow-list | RC-5 |
+
+### The copies
+
+| was | now |
+|---|---|
+| `wsg-h/wsg-strategy` (rsync, 06-03) | `wsg-h/checkout` — **git worktree**, `dev` |
+| `l2v2/Parametric-Indicators` (rsync, 06-19) | `l2v2/checkout` — **git worktree**, `dev` |
+| `fa-m1/Parametric-Indicators` (rsync, 07-11) | `fa-m1/checkout` — **git worktree, detached** (deliberately: `fundamental-analysis` is checked out elsewhere and belongs to another agent; a second worktree on a live branch invites two writers) |
+| `wsg-i` — git repo, no remote, 578 dirty | **data directory**. `.git` renamed to `.git-retired-2026-08-01`, fully reversible |
+
+Old trees renamed `*.rsync-retired-2026-08-01`, each with a `RETIRED-RSYNC-COPY.md` explaining why.
+**Nothing was deleted.** Data directories untouched. Verified before retiring that the three copies
+held no lost work: 104 stale snapshots, 34 duplicates under a flattened layout, and 3 stray
+fundamentals files — all harvested.
+
+### Three bugs inside the fix, and how they were caught
+
+Layer 4 reported a **clean tree while a real untracked report sat on the server** — three times, for
+three different reasons (`xargs` exit 123 under `set -e`; `find` wanting paths before its expression;
+a tab that did not survive the ssh quoting layers). Every one was found by a **live probe file**, not
+by reading the code, and each would have read as "everything is in sync".
+
+That is the whole thesis of this issue restated from the inside: **a sync mechanism that cannot be
+observed failing will be trusted while it fails.** The probe is now the acceptance test.
+
+### Still open
+
+Wiring `preflight()` into the long-running entry points (`optimizer.main`, the server launchers) so a
+stale or dirty run stops *before* it burns hours. The mechanism exists and is tested; adopting it
+changes how runs start, which is worth doing deliberately rather than as part of this change.
