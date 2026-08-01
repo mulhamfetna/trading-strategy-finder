@@ -1,0 +1,67 @@
+{
+  "trials": 400,
+  "seed": 1,
+  "n_indicators": 165,
+  "n_float_first_param": 9,
+  "n_without_numeric_params": 23,
+  "provenance": {
+    "git_commit": "ba8ddbb",
+    "git_branch": "dev",
+    "git_dirty": false,
+    "git_dirty_files": 0,
+    "host": "amd",
+    "repo_root": "/home/dev/Mulham/code",
+    "data_root": "/home/dev/Mulham/wsg-i",
+    "python": "3.12.3",
+    "numba": "0.65.1",
+    "registry_size": 165,
+    "started_utc": "2026-08-01T16:24:04Z",
+    "argv": [
+      "/home/dev/Mulham/code/subprojects/Parametric-Indicators/optimize/perf/poc_indicator_encoding.py",
+      "--trials",
+      "400"
+    ]
+  },
+  "arms": {
+    "A_flags": {
+      "optimizer": {
+        "min": 45,
+        "max": 105,
+        "mean_first50": 83.52,
+        "mean_last50": 53.1,
+        "reached_zero": false
+      },
+      "random_control": {
+        "min": 67,
+        "mean": 82.37
+      }
+    },
+    "B_value_encoded": {
+      "optimizer": {
+        "min": 153,
+        "max": 165,
+        "mean_first50": 163.6,
+        "mean_last50": 156.44,
+        "reached_zero": false
+      },
+      "random_control": {
+        "min": 160,
+        "mean": 163.655
+      }
+    },
+    "C_conditional": {
+      "optimizer": {
+        "min": 46,
+        "max": 95,
+        "mean_first50": 83.44,
+        "mean_last50": 56.28,
+        "reached_zero": false
+      },
+      "random_control": {
+        "min": 60,
+        "mean": 82.72
+      }
+    }
+  },
+  "verdict": "REFUTED \u2014 value encoding cannot switch indicators off even when that is the ONLY objective"
+}
