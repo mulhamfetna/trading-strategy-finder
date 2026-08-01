@@ -15,7 +15,22 @@ from dataclasses import dataclass
 from typing import Dict, List
 
 _REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-_ALL = os.path.join(_REPO_ROOT, 'ALL_STOCKS')
+
+# ALL_STOCKS is DATA, so it follows the data root — not this file's location (#94).
+#
+# THE REGRESSION THIS FIXES, which I caused. #94 moved the loading of this registry from the data root
+# to the CHECKOUT, on the reasoning that a registry is code and code should come from the checkout you
+# are running. Correct in itself — but this line derived the DATA location from where this FILE sits,
+# so moving the file moved the data with it. On the server the checkout (~/Mulham/code) has no
+# ALL_STOCKS; the data lives in a separate tree. Result: 30 test failures, every one a
+# FileNotFoundError on ES/GC/instrument data.
+#
+# The lesson is the one #94 is about, applied to itself: a path derived from __file__ is right for CODE
+# and wrong for DATA. Splitting the two is the whole point, and this line was the last place they were
+# still fused.
+_ALL = os.path.join(
+    os.environ.get('WSH_DATA_ROOT') or os.environ.get('WSH_DATA_BASE') or _REPO_ROOT,
+    'ALL_STOCKS')
 
 TIMEFRAMES: List[str] = ['1m', '2m', '5m', '15m', '1h', '2h', '4h']
 PRESETS: List[str] = ['full', '2025', '2026']
