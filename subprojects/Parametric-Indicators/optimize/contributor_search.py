@@ -3,6 +3,8 @@
 namespaced ES committee + signal voter + topology dims, so the two optimizers can't drift."""
 from __future__ import annotations
 
+import os
+
 from optimize import optimizer as OPT
 
 # ─────────────────────────────────────────────────────────────────────────────────────────────────
@@ -97,3 +99,55 @@ def contributor_dims(tokens, exclude_committee=(), only_committee=()) -> int:
     per_token = FIXED_DIMS_PER_TOKEN + len(keys) + sum(
         len(OPT.library.SCHEMA[k].get("params", [])) for k in keys)
     return per_token * len(toks)
+
+
+# ─────────────────────────────────────────────────────────────────────────────────────────────────
+# FUSION OPT-IN GATE (user decision, 2026-08-01).
+#
+# The cross-instrument contributor block is NOT a native indicator. It came out of the fusion studies —
+# the round where several separate ideas were tried as ways to combine instruments — and ES-as-an-input-
+# to-NQ was one of them. It is a research feature, and it must not leak into ordinary optimizer work.
+#
+# WHY A GATE AND NOT JUST A DEFAULT. It is already off by default (`--contributors` is empty), but "off
+# unless you type a flag" is not the same as "cannot be switched on by accident". Typing
+# `--contributors ES` is one word, and the consequence is invisible until much later:
+#
+#   * it adds 471 search dimensions for ONE token — the strategy's own search is 470, so a single
+#     contributor DOUBLES the problem
+#   * at the ∝-dimension budget that is 94,100 trials x 8.4 s ≈ 9.1 DAYS for one run (#96)
+#   * and it silently changes what a "champion" means: the resulting strategy needs a second
+#     instrument's live data to reproduce its own decisions
+#
+# So enabling it now takes TWO deliberate acts: naming the tokens AND acknowledging the fusion opt-in.
+# Usable, never accidental.
+# ─────────────────────────────────────────────────────────────────────────────────────────────────
+
+FUSION_ACK_FLAG = "--enable-fusion-contributors"
+FUSION_ACK_ENV = "WSH_ENABLE_FUSION_CONTRIBUTORS"
+
+
+class FusionNotEnabled(RuntimeError):
+    """Contributor tokens were requested without the fusion opt-in."""
+
+
+def require_fusion_optin(tokens, ack: bool = False) -> None:
+    """Raise unless the caller has deliberately opted into the fusion contributor block.
+
+    No-op when no tokens are requested, so every ordinary run is untouched.
+    """
+    toks = tuple(t for t in (tokens or ()) if t)
+    if not toks:
+        return
+    if ack or os.environ.get(FUSION_ACK_ENV) == "1":
+        return
+    raise FusionNotEnabled(
+        f"cross-instrument contributors {list(toks)} were requested, but the fusion opt-in was not "
+        f"given.\n"
+        f"    This is a FUSION-STUDY feature, not a native indicator: it feeds another instrument's\n"
+        f"    bars into this strategy's decisions.\n"
+        f"    Cost, so the choice is informed:\n"
+        f"      · +{contributor_dims(toks)} search dimensions ({len(toks)} token(s)) on top of the\n"
+        f"        strategy's own {OPT.search_dims(False)['total']} — one token roughly DOUBLES the search\n"
+        f"      · ~9 days per run at the dimension-proportional budget (#96)\n"
+        f"      · the resulting champion needs the other instrument's data to reproduce its decisions\n"
+        f"    Add {FUSION_ACK_FLAG} (or {FUSION_ACK_ENV}=1) if that is genuinely what you want.")

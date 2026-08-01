@@ -190,8 +190,11 @@ def main() -> int:
                     help="path to an L1 champion json; score L2 on THIS L1's residuals (candidate L1) "
                          "instead of the frozen production L1")
     ap.add_argument("--contributors", default="",
-                    help="comma-separated cross-instrument contributor tokens to SEARCH (e.g. 'ES'); "
-                         "empty ⇒ no contributor block (existing L2 space unchanged)")
+                    help="FUSION STUDY ONLY. Comma-separated cross-instrument contributor tokens to "
+                         "SEARCH (e.g. 'ES'). NOT a native indicator. Requires "
+                         "--enable-fusion-contributors. Empty (default) ⇒ no contributor block.")
+    ap.add_argument("--enable-fusion-contributors", action="store_true",
+                    help="acknowledge the fusion opt-in required by --contributors (#96)")
     # #95 INVERTED THIS FLAG. It used to be --contrib-include-smc, an opt-IN, because the SMC family was
     # excluded by default "for speed — ~10x slower per trial". That is measured false today: admitting all
     # eight costs +4.4% of a trial, and four of the six were never expensive at all. Withholding is now the
@@ -213,6 +216,11 @@ def main() -> int:
     if not _inst.is_valid(a.instrument):
         print(f"unknown instrument {a.instrument!r}; known {list(_inst.TOKENS)}", flush=True); return 2
     contrib_tokens = tuple(t.strip() for t in a.contributors.split(",") if t.strip())
+    try:
+        _csearch.require_fusion_optin(contrib_tokens, a.enable_fusion_contributors)
+    except _csearch.FusionNotEnabled as e:
+        print(f"\n{e}\n", flush=True)
+        return 4
     contrib_exclude = tuple(x for x in a.contrib_exclude.split(',') if x)
     l1_params = _l1_params_from_champion(a.l1_champion, a.tf) if a.l1_champion else None
     if l1_params is not None:

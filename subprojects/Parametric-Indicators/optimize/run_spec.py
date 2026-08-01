@@ -69,6 +69,9 @@ class RunSpec:
     # reimposes the historical exclusion. Here rather than only on the CLI so the control centre can
     # express it — a scope the UI cannot set is a scope the operator cannot choose.
     contrib_exclude: tuple[str, ...] = field(default_factory=tuple)
+    # The fusion opt-in (#96). Contributors are a research feature, not a native indicator; naming
+    # tokens is not enough on its own, here or on the CLI.
+    enable_fusion_contributors: bool = False
     allow_dirty: bool = False
     allow_behind: bool = False
 
@@ -142,6 +145,8 @@ def build_argv(spec: RunSpec, python: str = "python3", unbuffered: bool = False,
         argv.append("--freeze-indicators")
     if spec.contributors:
         argv += ["--contributors", ",".join(map(str, spec.contributors))]
+        if spec.enable_fusion_contributors:
+            argv.append("--enable-fusion-contributors")
     if spec.instrument and spec.instrument != "NQ":
         argv += ["--instrument", str(spec.instrument)]
     if spec.contrib_exclude:
@@ -192,6 +197,7 @@ def from_cfg(cfg: dict, tf: str | None = None, study_prefix: str | None = None) 
         freeze_indicators=bool(cfg.get("freeze_indicators", False)),
         contributors=tuple(cfg.get("contributors") or ()),
         contrib_exclude=tuple(cfg.get("contrib_exclude") or ()),
+        enable_fusion_contributors=bool(cfg.get("enable_fusion_contributors")),
         allow_dirty=bool(cfg.get("allow_dirty")),
         allow_behind=bool(cfg.get("allow_behind")),
     )

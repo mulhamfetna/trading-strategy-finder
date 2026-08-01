@@ -833,9 +833,15 @@ def main() -> int:
                     help=f"feasibility cap: max full-window DD as a fraction of full-window P/L (default "
                          f"{DD_PNL_CAP}; RELAX e.g. 0.5 to let shorter-pause/higher-DD strategies qualify)")
     ap.add_argument("--contributors", default="",
-                    help="comma-separated cross-instrument contributor tokens to SEARCH on L1 (e.g. 'ES'); "
-                         "ES is SEARCHABLE not forced (es_enabled is a categorical). Empty ⇒ no contributor "
-                         "block (existing L1 space unchanged). ES committee excludes SMC + stochastic + adx.")
+                    help="FUSION STUDY ONLY. Comma-separated cross-instrument contributor tokens to "
+                         "SEARCH on L1 (e.g. 'ES'). NOT a native indicator — it feeds another "
+                         "instrument's bars into this strategy. Requires --enable-fusion-contributors. "
+                         "One token adds ~471 dimensions (the strategy's own search is 470) ⇒ ~9 days at "
+                         "the ∝-dimension budget (#96). Empty (default) ⇒ no contributor block.")
+    ap.add_argument("--enable-fusion-contributors", action="store_true",
+                    help="acknowledge the fusion opt-in required by --contributors (#96). Two deliberate "
+                         "acts are needed because one word on a command line would otherwise double the "
+                         "search space invisibly.")
     ap.add_argument("--instrument", default="NQ",
                     help="instrument to optimize (NQ default, or ES). Non-NQ studies/DBs/champions are "
                          "suffixed (_ES) so NQ artifacts are untouched; SL/TP bounds auto-scale by price.")
@@ -884,6 +890,12 @@ def main() -> int:
     if not _inst.is_valid(a.instrument):
         print(f"unknown instrument {a.instrument!r}; known {list(_inst.TOKENS)}", flush=True); return 2
     contrib_tokens = tuple(t.strip() for t in a.contributors.split(",") if t.strip())
+    from optimize import contributor_search as _cs0
+    try:
+        _cs0.require_fusion_optin(contrib_tokens, a.enable_fusion_contributors)
+    except _cs0.FusionNotEnabled as e:
+        print(f"\n{e}\n", flush=True)
+        return 4
     # Parsed BEFORE the plan: the budget is dimension-proportional, so it must see the indicator scope.
     # (These used to be parsed after, which is how --auto-trials came to budget 47,100 trials for a
     # 59-dimension search — 8x over — whenever --only-indicators was used.)
