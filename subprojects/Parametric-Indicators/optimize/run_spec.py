@@ -62,6 +62,11 @@ class RunSpec:
     force_eod: bool = False
     freeze_indicators: bool = False
     contributors: tuple[str, ...] = field(default_factory=tuple)
+    # Preflight escapes (#94). Represented HERE, not only on the CLI, because the control centre
+    # launches through build_argv — an override the UI cannot express is an override the operator
+    # cannot use, and they would reach for --no-preflight (or stop using the UI) instead.
+    allow_dirty: bool = False
+    allow_behind: bool = False
 
     # ── derived, so the UI never computes a budget the launch does not use ──────────────────────────
     def effective_trials(self) -> int:
@@ -130,6 +135,10 @@ def build_argv(spec: RunSpec, python: str = "python3", unbuffered: bool = False,
         argv += ["--contributors", ",".join(map(str, spec.contributors))]
     if spec.instrument and spec.instrument != "NQ":
         argv += ["--instrument", str(spec.instrument)]
+    if spec.allow_dirty:
+        argv.append("--allow-dirty")
+    if spec.allow_behind:
+        argv.append("--allow-behind")
     return argv
 
 
@@ -171,6 +180,8 @@ def from_cfg(cfg: dict, tf: str | None = None, study_prefix: str | None = None) 
         force_eod=bool(cfg.get("force_eod", False)),
         freeze_indicators=bool(cfg.get("freeze_indicators", False)),
         contributors=tuple(cfg.get("contributors") or ()),
+        allow_dirty=bool(cfg.get("allow_dirty")),
+        allow_behind=bool(cfg.get("allow_behind")),
     )
 
 

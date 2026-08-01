@@ -837,6 +837,19 @@ def main() -> int:
                          "over the entire series, so there is no holdout. '2025' truncates every frame to "
                          "the first calendar year, leaving 2026 genuinely UNSEEN — required for an "
                          "out-of-sample adopt gate (#14). Score the winner afterwards with window='2026'.")
+    # PREFLIGHT (#94). A study runs for hours; the failures that make its result untrustworthy are all
+    # silent — a stale checkout, a dirty tree, the wrong data root. Each produces a run that COMPLETES
+    # NORMALLY and looks correct. Today's server was found 9 commits behind only because someone
+    # happened to type `git status`. So the default is to STOP, and both escapes announce themselves
+    # and are recorded in the provenance stamp, so an overridden run is still attributable.
+    ap.add_argument("--allow-dirty", action="store_true",
+                    help="run even though the checkout has uncommitted changes. The result will not be "
+                         "reproducible from any commit; recorded in the run's provenance.")
+    ap.add_argument("--allow-behind", action="store_true",
+                    help="run even though the checkout is behind its upstream. You are probably not "
+                         "running the code you think you are; recorded in the run's provenance.")
+    ap.add_argument("--no-preflight", action="store_true",
+                    help="skip the preflight checks entirely (escape hatch; recorded).")
     ap.add_argument("--reference", default=None,
                     help="Reference instrument for the cross-series indicators (rolling_corr/beta, "
                          "cointegration, pca_factor), e.g. ES. Causally aligned; default: none (they stay inert).")
@@ -859,6 +872,20 @@ def main() -> int:
         print("   [--plan] dry run — not launching. Re-run without --plan (optionally --auto-trials) to start.",
               flush=True)
         return 0
+    # Deliberately AFTER --plan: a dry run costs nothing and must stay usable on a dirty tree.
+    if not a.no_preflight:
+        import provenance
+        try:
+            provenance.preflight(allow_dirty=a.allow_dirty, allow_behind=a.allow_behind)
+        except provenance.PreflightError as e:
+            print(f"\n{e}\n", flush=True)
+            print("   Re-run with --allow-dirty / --allow-behind if that is genuinely what you want, "
+                  "or --no-preflight to skip these checks.", flush=True)
+            return 3
+    else:
+        import provenance
+        print(provenance.one_line() + "   [--no-preflight]", flush=True)
+
     n_trials = rec if a.auto_trials else a.trials
     if contrib_tokens:
         from optimize import contributor_search as _cs

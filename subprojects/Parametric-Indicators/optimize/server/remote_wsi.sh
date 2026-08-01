@@ -47,6 +47,10 @@ PREFIX="${WSH_PREFIX:-wsh4}"                           # study prefix; override 
 SPLIT_ARG="${WSH_SPLIT:+--split-sltp}"                 # set WSH_SPLIT=1 to search SEPARATE long/short SL/TP (Q3/E2)
 SAMPLER_ARG="${WSH_SAMPLER:+--sampler $WSH_SAMPLER}"   # optimizer brain (P2): nsga3*(default)|nsga2|tpe|motpe|gp; unset ⇒ nsga3 (unchanged)
 OBJ_ARG="${WSH_OBJECTIVE:+--objective $WSH_OBJECTIVE}" # α: winrate*(default)|decision_pause; unset ⇒ winrate (unchanged)
+# Preflight escapes (#94), off by default: a study runs for hours and a stale/dirty checkout makes
+# its result unattributable. Set WSH_ALLOW_DIRTY=1 / WSH_ALLOW_BEHIND=1 deliberately.
+DIRTY_ARG="${WSH_ALLOW_DIRTY:+--allow-dirty}"
+BEHIND_ARG="${WSH_ALLOW_BEHIND:+--allow-behind}"
 EXCL_ARG="${WSH_EXCLUDE:+--exclude-indicators $WSH_EXCLUDE}"  # α: e.g. ifvg,breaker,cisd reverts to wsh4-era 15
 ONLY_ARG="${WSH_ONLY:+--only-indicators $WSH_ONLY}"    # control-center: restrict the search to these indicators
 REF_ARG="${WSH_REFERENCE:+--reference $WSH_REFERENCE}" # control-center: cross-series reference instrument (#17)
@@ -57,7 +61,7 @@ DDCAP_ARG="${WSH_DD_CAP:+--dd-pnl-cap $WSH_DD_CAP}"    # α: relax the DD≤cap�
 INSTRUMENT="${WSH_INSTRUMENT:-NQ}"                     # NQ (default) or ES; non-NQ → suffixed studies/champions
 INST_ARG=""; [ "$INSTRUMENT" != "NQ" ] && INST_ARG="--instrument $INSTRUMENT"
 RSUF=""; [ "$INSTRUMENT" != "NQ" ] && RSUF="_$INSTRUMENT"   # study/db filename suffix mirrored into launch.sh + readers
-IND_ARGS="$IND1MIN_ARG --study-prefix $PREFIX $SPLIT_ARG $SAMPLER_ARG $OBJ_ARG $EXCL_ARG $ONLY_ARG $REF_ARG $MAXEN_ARG $NOWARM_ARG $DDCAP_ARG $INST_ARG"
+IND_ARGS="$IND1MIN_ARG --study-prefix $PREFIX $SPLIT_ARG $SAMPLER_ARG $OBJ_ARG $EXCL_ARG $ONLY_ARG $REF_ARG $MAXEN_ARG $NOWARM_ARG $DDCAP_ARG $INST_ARG $DIRTY_ARG $BEHIND_ARG"
 
 SSH_OPTS=(-p "$SRV_PORT" -i "$SRV_KEY" -o IdentitiesOnly=yes -o BatchMode=yes \
           -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 \
@@ -178,7 +182,15 @@ while :; do
   done=\$(python3 optimize/trial_count.py \"\$tf\" --prefix ${PREFIX} 2>/dev/null || echo 0)
   if [ \"\${done:-0}\" -ge \"\$TARGET\" ]; then echo \"[watchdog] \$tf reached \$done/\$TARGET — stop\" >> \"\$log\"; break; fi
   echo \"[watchdog] \$tf \$done/\$TARGET → +chunk \$(date +%H:%M:%S)\" >> \"\$log\"
-  python3 -u optimize/optimizer.py \"\$tf\" --trials 300 --folds 5 --min-trades 5 $IND_ARGS >> \"\$log\" 2>&1 || true
+  python3 -u optimize/optimizer.py \"\$tf\" --trials 300 --folds 5 --min-trades 5 $IND_ARGS >> \"\$log\" 2>&1
+  rc=\$?
+  # Exit 3 is the PREFLIGHT refusal (#94). Without this the '|| true' that used to be here would
+  # swallow it and 'while :' would respawn a refusing optimizer forever — a hot loop writing the same
+  # error into the log a thousand times a minute. A refusal is a reason to STOP, not to retry.
+  if [ \"\$rc\" -eq 3 ]; then
+    echo \"[watchdog] \$tf PREFLIGHT REFUSED (exit 3) — stopping. Fix the checkout, or relaunch with WSH_ALLOW_DIRTY=1.\" >> \"\$log\"
+    break
+  fi
 done
 EOS
 chmod +x '$WSI/worker.sh'"
