@@ -64,19 +64,27 @@ def suggest_contributor(trial, token: str, exclude_committee=DEFAULT_COMMITTEE_E
     mode = trial.suggest_categorical(f"{pre}sig_mode", ["confirm", "veto", "both"])
     table = {f"{d}|{s}": trial.suggest_categorical(f"{pre}tt_{d}_{s}", ["confirm", "veto", "ignore"])
              for d in ("long", "short") for s in ("long", "short", "hold")}
-    return {"token": token, "enabled": bool(trial.suggest_categorical(f"{pre}enabled", [False, True])),
+    return {"token": token,
+            # NOT searched (2026-08-01). Opting in IS the enable.
+            "enabled": True,
             "tf": "4h", "state_def": trial.suggest_categorical(f"{pre}state", ["touch", "traversal"]),
             "k_es": int(trial.suggest_int(f"{pre}k_es", 1, 5)),
             "signal": {"encoding": enc, "mode": mode, "table": table},
             "committee": specs}
 
 # Fixed dimensions ONE contributor token adds, outside its indicator committee:
-#   enabled, state_def, sig_enc, sig_mode, k_es          = 5
+#   state_def, sig_enc, sig_mode, k_es                    = 4
 #   tt_{long,short}_{long,short,hold} truth-table cells   = 6
+#
+# `enabled` is NO LONGER among them (user decision, 2026-08-01). Whether the fusion block participates
+# is a HUMAN switch, not something the optimizer decides: you have already had to name the token and
+# acknowledge the opt-in, and after two deliberate acts it would be absurd for the search to spend
+# trials re-deciding the question. It also removed a real waste — half of every trial's contributor
+# work was being done for genomes that had es_enabled=False.
 # Named here rather than counted at the call site so the SEARCH and the BUDGET read the same number
 # from the same place — the whole class of defect in #2/#89 was a budget computed from something other
 # than the search it was sizing.
-FIXED_DIMS_PER_TOKEN = 11
+FIXED_DIMS_PER_TOKEN = 10
 
 
 def contributor_dims(tokens, exclude_committee=(), only_committee=()) -> int:

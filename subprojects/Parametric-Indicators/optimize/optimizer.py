@@ -226,7 +226,8 @@ def searchable_indicators(only_inds: tuple = (), exclude_inds: tuple = ()) -> li
 
 def search_dims(split_sltp: bool, intracandle: bool = False, freeze_indicators: bool = False,
                 force_eod: bool = True, only_inds: tuple = (), exclude_inds: tuple = (),
-                contrib_tokens: tuple = (), contrib_exclude: tuple = ()) -> dict:
+                contrib_tokens: tuple = (), contrib_exclude: tuple = (),
+                search_cap_bars: bool = False) -> dict:
     """Breakdown of the tunable search dimensions for the current REGISTRY/SCHEMA.
     base continuous (sl_soft, sl_hard_delta, tp, gate_pct, dd_limit)=5;
     categorical (flip, en_cap_bars, en_cap_eod)=3;
@@ -252,8 +253,14 @@ def search_dims(split_sltp: bool, intracandle: bool = False, freeze_indicators: 
     if contrib_tokens:
         from optimize import contributor_search as _cs   # local: _cs imports this module
         contrib = _cs.contributor_dims(contrib_tokens, exclude_committee=contrib_exclude)
-    d = dict(base_cont=5, base_cat=(2 if force_eod else 3),
-             base_int=(2 if freeze_indicators else 3),   # k dropped when frozen
+    # base_cont: sl_soft, sl_hard_delta, tp, gate_pct.  dd_limit RETIRED from the search 2026-08-01.
+    # base_cat : flip (+ en_cap_bars only when --search-cap-bars; en_cap_eod pinned by --force-eod, #79).
+    # base_int : k, cap_1min.  cooldown RETIRED from the search 2026-08-01. cap_1min is only a dimension
+    #            when the bars cap can be on — otherwise it is a knob nothing reads.
+    _cat = 1 + (1 if search_cap_bars else 0) + (0 if force_eod else 1)
+    _int = (0 if freeze_indicators else 1) + (1 if search_cap_bars else 0)   # k (dropped when frozen), cap_1min
+    d = dict(base_cont=4, base_cat=_cat,
+             base_int=_int,
              en_flags=en_flags, ind_params=ind_params, split=split, intracandle=(3 if intracandle else 0),
              contributors=contrib)
     d["total"] = sum(d.values())
@@ -263,22 +270,25 @@ def search_dims(split_sltp: bool, intracandle: bool = False, freeze_indicators: 
 def recommended_trials(split_sltp: bool, per_dim: int = TRIALS_PER_DIM, intracandle: bool = False,
                        freeze_indicators: bool = False, force_eod: bool = True,
                        only_inds: tuple = (), exclude_inds: tuple = (),
-                       contrib_tokens: tuple = (), contrib_exclude: tuple = ()) -> int:
+                       contrib_tokens: tuple = (), contrib_exclude: tuple = (),
+                       search_cap_bars: bool = False) -> int:
     """Dimension-proportional trial budget: total search dimensions × per_dim."""
     return search_dims(split_sltp, intracandle, freeze_indicators, force_eod,
-                       only_inds, exclude_inds, contrib_tokens, contrib_exclude)["total"] * int(per_dim)
+                       only_inds, exclude_inds, contrib_tokens, contrib_exclude,
+                       search_cap_bars)["total"] * int(per_dim)
 
 
 def print_plan(tf_name: str, split_sltp: bool, per_dim: int = TRIALS_PER_DIM, n_trials: int | None = None,
                sampler: str = "nsga3", intracandle: bool = False, freeze_indicators: bool = False,
                force_eod: bool = True, only_inds: tuple = (), exclude_inds: tuple = (),
-               contrib_tokens: tuple = (), contrib_exclude: tuple = ()):
+               contrib_tokens: tuple = (), contrib_exclude: tuple = (),
+               search_cap_bars: bool = False):
     """Print the search-space size + recommended (dimension-proportional) trial budget. Used by the
     `--plan` dry-run and before every real launch so the budget is reported and can be accepted."""
     d = search_dims(split_sltp, intracandle, freeze_indicators, force_eod, only_inds, exclude_inds,
-                    contrib_tokens, contrib_exclude)
+                    contrib_tokens, contrib_exclude, search_cap_bars)
     rec = recommended_trials(split_sltp, per_dim, intracandle, freeze_indicators, force_eod,
-                             only_inds, exclude_inds, contrib_tokens, contrib_exclude)
+                             only_inds, exclude_inds, contrib_tokens, contrib_exclude, search_cap_bars)
     if only_inds or exclude_inds:
         _n = len(searchable_indicators(only_inds, exclude_inds))
         print(f"   indicator scope: {_n} of {len(library.REGISTRY)} searchable"
@@ -483,7 +493,8 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         contrib_exclude=None, instrument: str = "NQ", intracandle: bool = False,
         freeze_indicators: bool = False, intracandle_always_on: bool = False,
         force_eod: bool = True, max_enabled: int | None = None,
-        reference: str | None = None, train_window: str = "full") -> dict:
+        reference: str | None = None, train_window: str = "full",
+        search_cap_bars: bool = False) -> dict:
     # split_sltp (Q3 / E2): when True the optimizer searches SEPARATE long vs short SL/TP (long_*/short_*),
     # widening the space per the user's point-5 goal. Default False ⇒ shared SL/TP ⇒ identical to prior runs.
     # NOTE FOR THE NEXT FULL RUN (wsh5): launch with split_sltp=True to let longs and shorts get their own
@@ -562,8 +573,17 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         delta = trial.suggest_float("sl_hard_delta", 0.0, float(b["sl_hard"][1]))
         tp = trial.suggest_float("tp", float(b["tp"][0]), float(b["tp"][1]))
         gate_pct = trial.suggest_float("gate_pct", 0.0, 100.0)
-        dd_limit = trial.suggest_float("dd_limit", 0.0, _dd_limit_max)
-        cooldown = trial.suggest_int("cooldown", 0, cap)
+        # RETIRED FROM THE SEARCH (user decision, 2026-08-01). `dd_limit` (the drawdown breaker) and
+        # `cooldown` (bars to wait after an exit) are no longer searched dimensions; every NEW champion
+        # is trained with both OFF.
+        #
+        # ⚠️ THE ENGINE STILL HONOURS THEM when a params dict supplies them, and it must: all 54 deployed
+        # champions carry a non-zero `dd_limit` (54/54) and 40 of them a non-zero `cooldown` (74%).
+        # Ripping the terms out of the engine would change every deployed champion's trade ledger and
+        # break all six golden baselines at once. Training default and engine capability are separate
+        # things — the same split #79 made for the end-of-day close.
+        dd_limit = 0.0
+        cooldown = 0
         flip = trial.suggest_categorical("flip", [False, True])
         if freeze_indicators:
             specs = [dict(s) for s in frozen_specs]     # champion indicator layer, fixed (not searched)
@@ -577,13 +597,16 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         # bars cap. Rectangular space (cap_1min always suggested) so NSGA-III sees a fixed dimension set;
         # it is simply ignored when the bars cap is off. cap_1min starts at 1 — a 0-bar cap would be a
         # degenerate re-encoding of "off" and would burn trials on duplicates of en_cap_bars=False.
-        en_cap_bars = trial.suggest_categorical("en_cap_bars", [False, True])
+        # OFF and NOT SEARCHED by default (user decision, 2026-08-01) — same treatment the end-of-day
+        # close got in #79, in the opposite direction: pinned rather than explored, so it stops being a
+        # dimension. `--search-cap-bars` puts it back in the search.
+        en_cap_bars = trial.suggest_categorical("en_cap_bars", [False, True]) if search_cap_bars else False
         # --force-eod: NEVER hold overnight. Pinned ON, not searched — so every champion is TUNED
         # for the bell (its stops/targets/indicator gate adapt to the shorter horizon) rather than
         # having the rule bolted onto a strategy optimized to hold overnight. Measured: bolting it on
         # afterwards costs −$40,429 OOS across the suite; tuning FOR it should recover much of that.
         en_cap_eod = True if force_eod else trial.suggest_categorical("en_cap_eod", [False, True])
-        cap_n = trial.suggest_int("cap_1min", CAP_1MIN_MIN, CAP_1MIN_MAX)
+        cap_n = trial.suggest_int("cap_1min", CAP_1MIN_MIN, CAP_1MIN_MAX) if search_cap_bars else 0
         cap_1min = cap_n if en_cap_bars else 0
         cap_mode = derive_cap_mode(en_cap_bars, en_cap_eod)
         params = dict(sl_soft=sl_soft, sl_hard=sl_soft + delta, tp=tp, gate_pct=gate_pct,
@@ -838,6 +861,10 @@ def main() -> int:
                          "instrument's bars into this strategy. Requires --enable-fusion-contributors. "
                          "One token adds ~471 dimensions (the strategy's own search is 470) ⇒ ~9 days at "
                          "the ∝-dimension budget (#96). Empty (default) ⇒ no contributor block.")
+    ap.add_argument("--search-cap-bars", action="store_true",
+                    help="search the BARS time-cap (en_cap_bars + cap_1min) as dimensions. OFF by "
+                         "default since 2026-08-01: the bars cap is pinned off, which removes two "
+                         "dimensions. The end-of-day close (#79) remains the standard exit.")
     ap.add_argument("--enable-fusion-contributors", action="store_true",
                     help="acknowledge the fusion opt-in required by --contributors (#96). Two deliberate "
                          "acts are needed because one word on a command line would otherwise double the "
@@ -909,7 +936,8 @@ def main() -> int:
                      n_trials=(None if a.auto_trials else a.trials), sampler=a.sampler,
                      intracandle=(a.intracandle or a.intracandle_on), freeze_indicators=a.freeze_indicators,
                      force_eod=a.force_eod, only_inds=_only, exclude_inds=_excl,
-                     contrib_tokens=contrib_tokens, contrib_exclude=_cexc)
+                     contrib_tokens=contrib_tokens, contrib_exclude=_cexc,
+                     search_cap_bars=a.search_cap_bars)
     if a.plan:
         print("   [--plan] dry run — not launching. Re-run without --plan (optionally --auto-trials) to start.",
               flush=True)
@@ -943,7 +971,7 @@ def main() -> int:
         intracandle=(a.intracandle or a.intracandle_on),
         freeze_indicators=a.freeze_indicators, intracandle_always_on=a.intracandle_on,
         force_eod=a.force_eod, max_enabled=a.max_enabled, reference=a.reference,
-        train_window=a.train_window)
+        train_window=a.train_window, search_cap_bars=a.search_cap_bars)
     return 0
 
 
