@@ -29,10 +29,17 @@ import roots
 _PI = pathlib.Path(__file__).resolve().parent
 _REPO = _PI.parents[1]
 
-# The harvested server archive is a HISTORICAL record of code as it ran — rewriting it would destroy
-# the evidence it exists to preserve. `shareable/` is a vendored, self-contained bundle shipped to
-# third parties; it carries its own copy deliberately.
-_EXEMPT = ("server-audit/", "shareable/", "__pycache__/")
+# Exempt, each for a stated reason — not because they are inconvenient.
+#
+#   server-audit/     a harvested record of code EXACTLY as it ran on the server. Rewriting it would
+#                     destroy the evidence it exists to preserve.
+#   optimize/reports/ one-off analysis scripts rescued from the server. Same argument: they are the
+#                     provenance of a finished result, not code anyone runs again. They DO carry
+#                     server paths and would not run elsewhere — that is a property of the record.
+#   shareable/        a vendored, self-contained bundle shipped to third parties; it deliberately
+#                     carries its own copy of everything.
+#   this file         it necessarily contains the very prefixes it searches for.
+_EXEMPT = ("server-audit/", "optimize/reports/", "shareable/", "__pycache__/", "test_roots.py")
 
 
 def _py_files():

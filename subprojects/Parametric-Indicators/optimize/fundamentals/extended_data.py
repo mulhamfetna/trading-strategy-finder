@@ -60,7 +60,10 @@ _2024 = _DATA / "2024_data" / "NQ_1m_2024.csv"
 #   · identical schema and conventions to NQ (same assembler, same roll rule, same tz handling)
 #   · likewise NOT back-adjusted — same roll-gap caveat as above
 # Any instrument assembled into <ROOT>/<INST>_Continuous_Data/<INST>_<tf>.csv resolves automatically.
-_16Y_ROOT = Path("/home/dev/Mulham/data_2010_1s")
+# The 16-year second-resolution archive is SERVER-ONLY data that lives outside any checkout, so it
+# gets its own variable rather than a literal (#94). Absent locally -> the helpers below return a
+# non-existent path, which is the documented behaviour.
+_16Y_ROOT = Path(os.environ.get("WSH_16Y_ROOT") or (roots.DATA_ROOT.parent / "data_2010_1s"))
 
 
 def sixteen_year_path(instrument: str = "NQ", tf: str = "1m") -> Path:

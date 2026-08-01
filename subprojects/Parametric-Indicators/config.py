@@ -13,9 +13,13 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+import roots                                 # the ONE resolver for repo/data roots (#94)
+
 # --- DATA (external inputs; configurable) -------------------------------------------------
 # Default points at the repo's data directory. Override with: export WSG_DATA_ROOT=/path/to/data
-DATA_ROOT = Path(os.environ.get("WSG_DATA_ROOT", "/mnt/data/projects/trading/data"))
+# NEVER a hardcoded absolute path (#94): the literal was one machine's layout, so on any other
+# machine this resolved to a directory that does not exist and the failure looked like broken code.
+DATA_ROOT = Path(os.environ.get("WSG_DATA_ROOT") or (roots.REPO_ROOT / "data"))
 
 # Per-year files inside DATA_ROOT/<year>_data/ :
 #   NQ_4h_<year>.csv        4-hour OHLCV candles      (datetime,open,high,low,close,volume)
