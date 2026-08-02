@@ -996,7 +996,8 @@ def main() -> int:
         from optimize import contributor_search as _cs
         print(f"[{a.timeframe}] **searching cross-instrument contributors {list(contrib_tokens)} on L1 "
               f"(ES SEARCHABLE, not forced; topology + es_committee). Committee scope: "
-              f"{('EXCLUDING ' + ','.join(_cexc)) if _cexc else 'the FULL registry — nothing withheld (#95)'}.**",
+              f"{('ONLY ' + ','.join(_conly) + '; ') if _conly else 'the FULL registry'}"
+              f"{('EXCLUDING ' + ','.join(_cexc)) if _cexc else ('nothing withheld (#95)' if not _conly else '')}.**",
               flush=True)
     run(a.timeframe, n_trials=n_trials, folds=a.folds, min_trades=a.min_trades,
         ind_1min=a.ind_1min, study_prefix=a.study_prefix, split_sltp=a.split_sltp,
