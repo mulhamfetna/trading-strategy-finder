@@ -75,9 +75,33 @@ def _suggest_indicators(trial, exclude=(), only=(), prefix="", max_enabled=None,
             specs.append({"key": key, "enabled": False, "mode": meta["mode"], "params": params, "_searched": False})
             continue
         enabled = trial.suggest_categorical(f"{prefix}en_{key}", [False, True])
-        # CONDITIONAL PARAMETERS (#97). Rectangular by default — every indicator's parameters are drawn
-        # whether or not it is enabled, so NSGA-III sees a fixed dimension set and crossover between any
-        # two genomes is well defined.
+        # CONDITIONAL PARAMETERS (#97/#99). Rectangular by default — every indicator's parameters are
+        # drawn whether or not it is enabled, so NSGA-III sees a fixed dimension set and crossover
+        # between any two genomes is well defined.
+        #
+        # ⚠️ MEASURED 2026-08-02, AND THE ANSWER IS DO NOT TURN THIS ON. Two matched 46,600-trial NQ 4h
+        # studies (a full 100 trials/dimension), same seed, this flag the only difference:
+        #
+        #                          rectangular      conditional
+        #     completed              28,450            8,487      (61.1% vs 18.2%)
+        #     median fold P/L         8,192           -1,218      <- conditional median LOSES MONEY
+        #     p10                     6,483           -4,650
+        #     p90                    10,189            1,128      <- 9x worse
+        #     feasible Pareto front     756                9
+        #     wall clock             14,146s          10,480s     (conditional 26% faster)
+        #
+        # It is faster and far worse. Every percentile of the score distribution is degraded, not just
+        # the tail, and the median is negative.
+        #
+        # WHY, and it is the reason the rectangular design exists. When an indicator is off here, its
+        # parameters revert to schema defaults. So when crossover or mutation later switches that
+        # indicator ON, it arrives with FACTORY DEFAULTS instead of a value the search had been
+        # carrying. The rectangular space keeps a searched value alive for every indicator even while
+        # it is switched off — latent memory that becomes useful the moment the indicator is enabled.
+        # Conditional drawing throws that away, so the search must rediscover every parameter from
+        # scratch each time a switch flips.
+        #
+        # The ~30% speed-up is real and irrelevant: it buys wall clock by destroying the search.
         #
         # THE COST OF THAT, MEASURED: a champion runs ~7 indicators and a mid-search trial ~56, out of
         # 165. So on a typical trial roughly TWO-THIRDS of the 295 parameter draws are read by nothing.

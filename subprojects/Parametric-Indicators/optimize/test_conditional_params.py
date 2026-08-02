@@ -94,3 +94,41 @@ def test_it_is_off_by_default_because_crossover_is_unmeasured():
     import inspect
     assert inspect.signature(OPT._suggest_indicators).parameters["conditional_params"].default is False
     assert inspect.signature(OPT.run).parameters["conditional_params"].default is False
+
+
+# --- the measured verdict (#99, 2026-08-02) ------------------------------------------------------
+
+MEASURED_99 = {
+    # Two matched 46,600-trial NQ 4h studies, same seed, --conditional-params the only difference.
+    "rect_completed": 28450, "cond_completed": 8487,
+    "rect_median_pnl": 8192, "cond_median_pnl": -1218,
+    "rect_p90": 10189, "cond_p90": 1128,
+    "rect_feasible_front": 756, "cond_feasible_front": 9,
+    "rect_wall_s": 14146, "cond_wall_s": 10480,
+}
+
+
+def test_the_measurement_says_do_not_adopt():
+    """The pre-registered criterion was: adopt only if search quality shows no material degradation
+    AND selection behaviour is unchanged. BOTH failed, and not marginally.
+
+    Kept as assertions so that if anyone later proposes flipping the default, this is the evidence they
+    have to argue with — the same discipline applied to the SMC exclusion in #95, where a stale comment
+    justified a live restriction for months because nothing pinned the number.
+    """
+    m = MEASURED_99
+    assert m["cond_median_pnl"] < 0 < m["rect_median_pnl"], (
+        "the conditional arm's MEDIAN completed trial lost money while the rectangular arm's made it")
+    assert m["cond_completed"] < m["rect_completed"] / 3, "3.4x fewer trials scored at all"
+    assert m["cond_p90"] < m["rect_p90"] / 5, "even the upper decile is ~9x worse"
+    assert m["cond_feasible_front"] < 20 < m["rect_feasible_front"]
+    # and it WAS faster — which is exactly why speed alone was never allowed to carry the decision
+    assert m["cond_wall_s"] < m["rect_wall_s"]
+
+
+def test_the_flag_is_still_reachable_for_research():
+    """Refuted as a default, kept as a capability. Someone re-testing this — on another timeframe, or
+    after a change to how parameters are seeded — must not have to re-implement it first."""
+    import inspect
+    assert "conditional_params" in inspect.signature(OPT.run).parameters
+    assert "--conditional-params" in inspect.getsource(OPT.main)
