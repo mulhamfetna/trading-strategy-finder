@@ -72,6 +72,9 @@ class RunSpec:
     # The fusion opt-in (#96). Contributors are a research feature, not a native indicator; naming
     # tokens is not enough on its own, here or on the CLI.
     enable_fusion_contributors: bool = False
+    # #96: scope the COMMITTEE. --only-indicators never did this — it scoped the strategy
+    # layer and left the committee searching the whole registry, which is the ~9-day cost.
+    contrib_only: tuple[str, ...] = field(default_factory=tuple)
     allow_dirty: bool = False
     allow_behind: bool = False
 
@@ -88,7 +91,8 @@ class RunSpec:
                                       # search — it roughly doubles the space. Omitting it here sized
                                       # every contributor run for about half of what it searched.
                                       contrib_tokens=tuple(self.contributors),
-                                      contrib_exclude=tuple(self.contrib_exclude))
+                                      contrib_exclude=tuple(self.contrib_exclude),
+                                      contrib_only=tuple(self.contrib_only))
 
     def dims(self) -> dict:
         return OPT.search_dims(self.split_sltp, only_inds=tuple(self.only_indicators),
@@ -151,6 +155,8 @@ def build_argv(spec: RunSpec, python: str = "python3", unbuffered: bool = False,
         argv += ["--instrument", str(spec.instrument)]
     if spec.contrib_exclude:
         argv += ["--contrib-exclude", ",".join(map(str, spec.contrib_exclude))]
+    if spec.contrib_only:
+        argv += ["--contrib-only", ",".join(map(str, spec.contrib_only))]
     if spec.allow_dirty:
         argv.append("--allow-dirty")
     if spec.allow_behind:
@@ -198,6 +204,7 @@ def from_cfg(cfg: dict, tf: str | None = None, study_prefix: str | None = None) 
         contributors=tuple(cfg.get("contributors") or ()),
         contrib_exclude=tuple(cfg.get("contrib_exclude") or ()),
         enable_fusion_contributors=bool(cfg.get("enable_fusion_contributors")),
+        contrib_only=tuple(cfg.get("contrib_only") or ()),
         allow_dirty=bool(cfg.get("allow_dirty")),
         allow_behind=bool(cfg.get("allow_behind")),
     )

@@ -152,3 +152,27 @@ def test_the_contributor_term_is_zero_when_there_are_no_contributors():
     """Byte-identical to every prior non-contributor run — the new term must not move an existing plan."""
     assert OPT.search_dims(False)["contributors"] == 0
     assert OPT.search_dims(False)["total"] == OPT.search_dims(False, contrib_tokens=())["total"]
+
+
+def test_scoping_the_committee_is_what_actually_makes_a_contributor_run_affordable():
+    """#96's open question, pinned. `--only-indicators` scopes the STRATEGY layer and leaves the
+    committee searching the whole registry — that asymmetry is the ~9-day cost. `--contrib-only` is the
+    lever that was missing: `suggest_contributor` always accepted `only_committee`, but the L1 optimizer
+    never passed it, so there was no way to reach it from a command line."""
+    full = OPT.recommended_trials(False, contrib_tokens=("ES",))
+    # scoping the STRATEGY alone barely helps, because the committee is untouched
+    strat_only = OPT.recommended_trials(False, contrib_tokens=("ES",), only_inds=ORIGINAL_18)
+    # scoping BOTH is what collapses it
+    both = OPT.recommended_trials(False, contrib_tokens=("ES",), only_inds=ORIGINAL_18,
+                                  contrib_only=ORIGINAL_18)
+    assert both < strat_only < full
+    assert both < full / 4, (
+        f"scoping both layers should be a large cut, got {full:,} -> {both:,}")
+
+
+def test_only_indicators_alone_does_NOT_scope_the_committee():
+    """The asymmetry, asserted so it cannot be forgotten again: restricting the strategy layer leaves
+    the committee at full registry size."""
+    a = OPT.search_dims(False, contrib_tokens=("ES",), only_inds=ORIGINAL_18)["contributors"]
+    b = OPT.search_dims(False, contrib_tokens=("ES",))["contributors"]
+    assert a == b, "--only-indicators must not silently scope the committee; use --contrib-only"

@@ -268,7 +268,8 @@ def search_dims(split_sltp: bool, intracandle: bool = False, freeze_indicators: 
     contrib = 0
     if contrib_tokens:
         from optimize import contributor_search as _cs   # local: _cs imports this module
-        contrib = _cs.contributor_dims(contrib_tokens, exclude_committee=contrib_exclude)
+        contrib = _cs.contributor_dims(contrib_tokens, exclude_committee=contrib_exclude,
+                                       only_committee=contrib_only)
     # base_cont: sl_soft, sl_hard_delta, tp, gate_pct.  dd_limit RETIRED from the search 2026-08-01.
     # base_cat : flip (+ en_cap_bars only when --search-cap-bars; en_cap_eod pinned by --force-eod, #79).
     # base_int : k, cap_1min.  cooldown RETIRED from the search 2026-08-01. cap_1min is only a dimension
@@ -287,24 +288,25 @@ def recommended_trials(split_sltp: bool, per_dim: int = TRIALS_PER_DIM, intracan
                        freeze_indicators: bool = False, force_eod: bool = True,
                        only_inds: tuple = (), exclude_inds: tuple = (),
                        contrib_tokens: tuple = (), contrib_exclude: tuple = (),
-                       search_cap_bars: bool = False) -> int:
+                       search_cap_bars: bool = False, contrib_only: tuple = ()) -> int:
     """Dimension-proportional trial budget: total search dimensions × per_dim."""
     return search_dims(split_sltp, intracandle, freeze_indicators, force_eod,
                        only_inds, exclude_inds, contrib_tokens, contrib_exclude,
-                       search_cap_bars)["total"] * int(per_dim)
+                       search_cap_bars, contrib_only)["total"] * int(per_dim)
 
 
 def print_plan(tf_name: str, split_sltp: bool, per_dim: int = TRIALS_PER_DIM, n_trials: int | None = None,
                sampler: str = "nsga3", intracandle: bool = False, freeze_indicators: bool = False,
                force_eod: bool = True, only_inds: tuple = (), exclude_inds: tuple = (),
                contrib_tokens: tuple = (), contrib_exclude: tuple = (),
-               search_cap_bars: bool = False):
+               search_cap_bars: bool = False, contrib_only: tuple = ()):
     """Print the search-space size + recommended (dimension-proportional) trial budget. Used by the
     `--plan` dry-run and before every real launch so the budget is reported and can be accepted."""
     d = search_dims(split_sltp, intracandle, freeze_indicators, force_eod, only_inds, exclude_inds,
-                    contrib_tokens, contrib_exclude, search_cap_bars)
+                    contrib_tokens, contrib_exclude, search_cap_bars, contrib_only)
     rec = recommended_trials(split_sltp, per_dim, intracandle, freeze_indicators, force_eod,
-                             only_inds, exclude_inds, contrib_tokens, contrib_exclude, search_cap_bars)
+                             only_inds, exclude_inds, contrib_tokens, contrib_exclude, search_cap_bars,
+                             contrib_only)
     if only_inds or exclude_inds:
         _n = len(searchable_indicators(only_inds, exclude_inds))
         print(f"   indicator scope: {_n} of {len(library.REGISTRY)} searchable"
@@ -511,7 +513,7 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         force_eod: bool = True, max_enabled: int | None = None,
         reference: str | None = None, train_window: str = "full",
         search_cap_bars: bool = False,
-        conditional_params: bool = False) -> dict:
+        conditional_params: bool = False, contrib_only=()) -> dict:
     # split_sltp (Q3 / E2): when True the optimizer searches SEPARATE long vs short SL/TP (long_*/short_*),
     # widening the space per the user's point-5 goal. Default False ⇒ shared SL/TP ⇒ identical to prior runs.
     # NOTE FOR THE NEXT FULL RUN (wsh5): launch with split_sltp=True to let longs and shorts get their own
@@ -658,7 +660,11 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
             params["contributor_topology"] = trial.suggest_categorical(
                 "contributor_topology", ["separate_and", "merged", "or_boost"])
             exc = contrib_exclude if contrib_exclude is not None else _cs.DEFAULT_COMMITTEE_EXCLUDE
-            params["contributors"] = [_cs.suggest_contributor(trial, tok, exclude_committee=exc)
+            # contrib_only scopes the COMMITTEE, which --only-indicators never did: it scoped the
+            # strategy layer and left the committee searching the whole registry. That asymmetry is why
+            # a contributor run costs ~9 days (#96) — the committee is a second full-registry search.
+            params["contributors"] = [_cs.suggest_contributor(trial, tok, exclude_committee=exc,
+                                                              only_committee=tuple(contrib_only))
                                       for tok in contrib_tokens]
             _contrib = _cmask.precompute_contributor_masks(params, df_dec, df1, box, sig_int, tf.bar_td)
         r = score_walkforward(df_dec, df1, box, vf, params, tf.bar_td, k=folds, ref_df=ref_df,
@@ -879,6 +885,11 @@ def main() -> int:
                          "instrument's bars into this strategy. Requires --enable-fusion-contributors. "
                          "One token adds ~471 dimensions (the strategy's own search is 470) ⇒ ~9 days at "
                          "the ∝-dimension budget (#96). Empty (default) ⇒ no contributor block.")
+    ap.add_argument("--contrib-only", default="",
+                    help="restrict the cross-instrument COMMITTEE to these indicators (#96). Empty ⇒ the "
+                         "whole registry, which is a SECOND full-registry search and the reason a "
+                         "contributor run costs ~9 days. --only-indicators does NOT do this: it scopes "
+                         "the strategy layer and leaves the committee unscoped.")
     ap.add_argument("--conditional-params", action="store_true",
                     help="draw an indicator's parameters ONLY when it is enabled (#97). The strategy is "
                          "identical either way — a disabled indicator's parameters are never read — but "
@@ -954,13 +965,14 @@ def main() -> int:
     # Same rule for the contributor scope: parsed BEFORE the plan, because the plan must cost the
     # search that is actually launched (#2, #89, and now #95's missing contributor term).
     _cexc = tuple(x for x in a.contrib_exclude.split(",") if x)
+    _conly = tuple(x for x in a.contrib_only.split(",") if x)
     # report the plan (search size + recommended trials) — always, so the budget is visible
     rec = print_plan(a.timeframe, a.split_sltp, a.trials_per_dim,
                      n_trials=(None if a.auto_trials else a.trials), sampler=a.sampler,
                      intracandle=(a.intracandle or a.intracandle_on), freeze_indicators=a.freeze_indicators,
                      force_eod=a.force_eod, only_inds=_only, exclude_inds=_excl,
                      contrib_tokens=contrib_tokens, contrib_exclude=_cexc,
-                     search_cap_bars=a.search_cap_bars)
+                     search_cap_bars=a.search_cap_bars, contrib_only=_conly)
     if a.plan:
         print("   [--plan] dry run — not launching. Re-run without --plan (optionally --auto-trials) to start.",
               flush=True)
@@ -995,7 +1007,7 @@ def main() -> int:
         freeze_indicators=a.freeze_indicators, intracandle_always_on=a.intracandle_on,
         force_eod=a.force_eod, max_enabled=a.max_enabled, reference=a.reference,
         train_window=a.train_window, search_cap_bars=a.search_cap_bars,
-        conditional_params=a.conditional_params)
+        conditional_params=a.conditional_params, contrib_only=_conly)
     return 0
 
 
