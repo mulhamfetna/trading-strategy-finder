@@ -134,3 +134,48 @@ WSH_DATA_BASE=/home/dev/Mulham/wsg-i /home/dev/Mulham/.venv/bin/python3 \
 ```
 
 Artifact: `optimize/perf/results/poc97_encoding.json` (carries its own provenance stamp).
+
+---
+
+## 7. Conditional parameters — measured (2026-08-01)
+
+Shipped behind `--conditional-params`, **off by default**. Two matched studies, NQ 4h, 800 trials
+each, same seed, same budget, only the flag differing.
+
+### What is settled
+
+| | rectangular | conditional | change |
+|---|---:|---:|---:|
+| **wall clock, 800 trials** | **533 s** | **371 s** | **−30%** |
+| **parameters drawn per trial** | **454** | **301** | **−34%** |
+
+The mechanism does what it claimed: a third of the parameter draws were being read by nothing, and
+removing them takes a third off the wall clock at an identical trial count. Strategy identity is
+proven separately (`test_conditional_params.py`): same enabled set, same parameters for enabled keys,
+same objects out of `library.from_specs`.
+
+### What is NOT settled — and this is the part that matters
+
+**The crossover question remains open, and this run could not answer it.** Of 800 trials, only **2**
+(rectangular) and **4** (conditional) produced objective values at all; the rest were pruned. Comparing
+best-P&L across n=2 and n=4 would be comparing noise:
+
+| | rectangular | conditional |
+|---|---:|---:|
+| trials with values | **2** | **4** |
+| best median P&L | 3,865 | 3,508 |
+
+**Those numbers are reported so they are not quietly omitted, not because they mean anything.** Neither
+arm found a single feasible solution (DD ≤ 25% of P&L) — 800 trials over 466 dimensions is 1.7
+trials/dim against the 100/dim standard, and the same under-sampling that blocks #96's comparison
+blocks this one.
+
+So: **the flag stays OFF by default.** The speed saving is real and measured; the claim that NSGA-III's
+crossover is unharmed when parents carry different parameter sets is **still unsupported**, and a
+30% speed-up is not a reason to adopt an unmeasured change to how the search recombines.
+
+### What would settle it
+
+A budget where enough trials survive pruning to compare distributions — which is the same blocker as
+#96, and probably the same fix: scope the search (fewer indicators) so the trials/dim ratio is
+defensible, rather than buying more days.
