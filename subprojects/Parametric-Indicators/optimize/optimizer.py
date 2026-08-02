@@ -53,7 +53,8 @@ def _suggest_param(trial, name, p):
     return trial.suggest_float(name, lo, hi, step=st)
 
 
-def _suggest_indicators(trial, exclude=(), only=(), prefix="", max_enabled=None):
+def _suggest_indicators(trial, exclude=(), only=(), prefix="", max_enabled=None,
+                        conditional_params=False):
     """WS-I.8 search space: each registered indicator on/off + its params (rectangular — params always
     suggested so NSGA crossover stays well-defined). Mode = the schema default. Keys in `exclude`, or (when
     `only` is non-empty) keys NOT in `only`, are forced OFF with default params and NOT suggested (α: revert
@@ -74,7 +75,22 @@ def _suggest_indicators(trial, exclude=(), only=(), prefix="", max_enabled=None)
             specs.append({"key": key, "enabled": False, "mode": meta["mode"], "params": params, "_searched": False})
             continue
         enabled = trial.suggest_categorical(f"{prefix}en_{key}", [False, True])
-        params = {p["name"]: _suggest_param(trial, f"{prefix}{key}_{p['name']}", p) for p in meta["params"]}
+        # CONDITIONAL PARAMETERS (#97). Rectangular by default — every indicator's parameters are drawn
+        # whether or not it is enabled, so NSGA-III sees a fixed dimension set and crossover between any
+        # two genomes is well defined.
+        #
+        # THE COST OF THAT, MEASURED: a champion runs ~7 indicators and a mid-search trial ~56, out of
+        # 165. So on a typical trial roughly TWO-THIRDS of the 295 parameter draws are read by nothing.
+        #
+        # With conditional_params=True the parameters are drawn only for enabled indicators. The
+        # nominal dimension count is unchanged; the EFFECTIVE dimensionality of a trial collapses.
+        # Disabled indicators keep their schema defaults, which is exactly what the rectangular path
+        # already passes to the engine for a disabled key — so the STRATEGY is identical either way and
+        # only the sampling changes.
+        if conditional_params and not enabled:
+            params = {p["name"]: p["default"] for p in meta["params"]}
+        else:
+            params = {p["name"]: _suggest_param(trial, f"{prefix}{key}_{p['name']}", p) for p in meta["params"]}
         specs.append({"key": key, "enabled": enabled, "mode": meta["mode"], "params": params, "_searched": True})
     if max_enabled is not None:
         on = [s for s in specs if s["enabled"]]
@@ -227,7 +243,7 @@ def searchable_indicators(only_inds: tuple = (), exclude_inds: tuple = ()) -> li
 def search_dims(split_sltp: bool, intracandle: bool = False, freeze_indicators: bool = False,
                 force_eod: bool = True, only_inds: tuple = (), exclude_inds: tuple = (),
                 contrib_tokens: tuple = (), contrib_exclude: tuple = (),
-                search_cap_bars: bool = False) -> dict:
+                search_cap_bars: bool = False, conditional_params: bool = False) -> dict:
     """Breakdown of the tunable search dimensions for the current REGISTRY/SCHEMA.
     base continuous (sl_soft, sl_hard_delta, tp, gate_pct, dd_limit)=5;
     categorical (flip, en_cap_bars, en_cap_eod)=3;
@@ -591,7 +607,8 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         else:
             specs = [{k: v for k, v in s.items() if k != "_searched"}      # strip the test-hook key
                      for s in _suggest_indicators(trial, exclude_inds, only_inds,
-                                                  max_enabled=max_enabled)]   # α: scoped search space + K-cap
+                                                  max_enabled=max_enabled,
+                                                  conditional_params=conditional_params)]
             k_rule = trial.suggest_int("k", 1, 5)       # clamped to #confirmers by confirm_mask
         # Time caps, asked the way the indicators are asked: a yes/no per cap, plus "how much" for the
         # bars cap. Rectangular space (cap_1min always suggested) so NSGA-III sees a fixed dimension set;
@@ -861,6 +878,11 @@ def main() -> int:
                          "instrument's bars into this strategy. Requires --enable-fusion-contributors. "
                          "One token adds ~471 dimensions (the strategy's own search is 470) ⇒ ~9 days at "
                          "the ∝-dimension budget (#96). Empty (default) ⇒ no contributor block.")
+    ap.add_argument("--conditional-params", action="store_true",
+                    help="draw an indicator's parameters ONLY when it is enabled (#97). The strategy is "
+                         "identical either way — a disabled indicator's parameters are never read — but "
+                         "the EFFECTIVE dimensionality of a trial collapses from ~460 to ~20. Off by "
+                         "default until the crossover behaviour is measured.")
     ap.add_argument("--search-cap-bars", action="store_true",
                     help="search the BARS time-cap (en_cap_bars + cap_1min) as dimensions. OFF by "
                          "default since 2026-08-01: the bars cap is pinned off, which removes two "
@@ -971,7 +993,8 @@ def main() -> int:
         intracandle=(a.intracandle or a.intracandle_on),
         freeze_indicators=a.freeze_indicators, intracandle_always_on=a.intracandle_on,
         force_eod=a.force_eod, max_enabled=a.max_enabled, reference=a.reference,
-        train_window=a.train_window, search_cap_bars=a.search_cap_bars)
+        train_window=a.train_window, search_cap_bars=a.search_cap_bars,
+        conditional_params=a.conditional_params)
     return 0
 
 
