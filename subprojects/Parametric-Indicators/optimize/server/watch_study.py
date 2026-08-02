@@ -39,28 +39,38 @@ STATE = Path("/tmp/.watch_study_state.json")
 def _counts(study_name: str, db: str | None = None):
     """(total, completed, pruned) for a study, or None if it cannot be found.
 
-    `db` points at an explicit SQLite file. Needed because a run launched with WSH_STORAGE_URL puts its
-    study somewhere `find_study` does not look — which is exactly what happened when the #99 arms were
-    moved to isolated databases: the watcher reported NOT FOUND for two studies that were running fine.
-    A watcher that cannot see a live run is worse than no watcher, because 'NOT FOUND' reads as 'dead'.
+    BACKEND-AWARE ON PURPOSE. A study can live in a per-TF SQLite file, in an explicit SQLite file
+    (`--db`, for runs launched with WSH_STORAGE_URL), or in Postgres. The first version of this watcher
+    assumed SQLite and crashed the moment the #99 arms moved to Postgres — a monitor that dies when the
+    thing it monitors changes shape is not a monitor.
+
+    The trial-state table has the same shape in both backends, so one query serves both.
     """
+    SQL_ID = "SELECT study_id FROM studies WHERE study_name = :n"
+    SQL_STATES = "SELECT state, COUNT(*) FROM trials WHERE study_id = :s GROUP BY state"
+
     if db:
-        loc = db
+        url = f"sqlite:///{db}"
     else:
         hits = storage.find_study(study_name)
         if not hits:
             return None
-        loc = hits[0]["location"]
-    import sqlite3
-    con = sqlite3.connect(f"file:{loc}?mode=ro", uri=True)
+        h = hits[0]
+        loc = h["location"]
+        url = loc if "://" in str(loc) else f"sqlite:///{loc}"
+
     try:
-        sid = con.execute("SELECT study_id FROM studies WHERE study_name=?", (study_name,)).fetchone()
-        if not sid:
-            return None
-        rows = con.execute("SELECT state, COUNT(*) FROM trials WHERE study_id=? GROUP BY state",
-                           (sid[0],)).fetchall()
-    finally:
-        con.close()
+        from sqlalchemy import create_engine, text
+        eng = create_engine(url)
+        with eng.connect() as con:
+            row = con.execute(text(SQL_ID), {"n": study_name}).fetchone()
+            if not row:
+                return None
+            rows = con.execute(text(SQL_STATES), {"s": row[0]}).fetchall()
+        eng.dispose()
+    except Exception as e:                      # report the reason rather than vanishing
+        return ("ERROR", f"{type(e).__name__}: {str(e)[:60]}")
+
     by = {str(s): n for s, n in rows}
     total = sum(by.values())
     return total, by.get("TrialState.COMPLETE", by.get("COMPLETE", 0)), \
@@ -100,6 +110,9 @@ def main() -> int:
         if c is None:
             out.append({"study": name, "status": f"NOT FOUND{' in ' + db if db else ''}"})
             continue
+        if c and c[0] == "ERROR":
+            out.append({"study": name, "status": f"ERROR {c[1]}"})
+            continue
         total, complete, pruned = c
         new_state[name] = {"t": now, "n": total}
         p = prev.get(name)
@@ -128,7 +141,7 @@ def main() -> int:
         return 0
     print(f"[watch] {time.strftime('%Y-%m-%d %H:%M:%S')}")
     for r in out:
-        if str(r.get("status", "")).startswith("NOT FOUND"):
+        if str(r.get("status", "")).startswith(("NOT FOUND", "ERROR")):
             print(f"  {r['study']:16s} {r['status']}")
             continue
         # completed vs pruned matters: a counter climbing on pruned trials alone is not progress
