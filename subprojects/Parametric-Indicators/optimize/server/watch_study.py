@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -56,8 +57,16 @@ def _counts(study_name: str, db: str | None = None):
         if not hits:
             return None
         h = hits[0]
-        loc = h["location"]
-        url = loc if "://" in str(loc) else f"sqlite:///{loc}"
+        loc = str(h["location"])
+        if h.get("backend") == "rdb":
+            # find_study reports an RDB as a DISPLAY string ("127.0.0.1:55432/wsh") — no scheme, no
+            # credentials, not connectable. The connectable URL is the one the RUN used, so read the
+            # same environment variable rather than trying to reconstruct it.
+            url = os.environ.get("WSH_STORAGE_URL")
+            if not url:
+                return ("ERROR", f"study is in {loc} but WSH_STORAGE_URL is not set here")
+        else:
+            url = loc if "://" in loc else f"sqlite:///{loc}"
 
     try:
         from sqlalchemy import create_engine, text
