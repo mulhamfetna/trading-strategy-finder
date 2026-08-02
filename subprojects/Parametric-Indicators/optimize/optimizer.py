@@ -510,7 +510,8 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         freeze_indicators: bool = False, intracandle_always_on: bool = False,
         force_eod: bool = True, max_enabled: int | None = None,
         reference: str | None = None, train_window: str = "full",
-        search_cap_bars: bool = False) -> dict:
+        search_cap_bars: bool = False,
+        conditional_params: bool = False) -> dict:
     # split_sltp (Q3 / E2): when True the optimizer searches SEPARATE long vs short SL/TP (long_*/short_*),
     # widening the space per the user's point-5 goal. Default False ⇒ shared SL/TP ⇒ identical to prior runs.
     # NOTE FOR THE NEXT FULL RUN (wsh5): launch with split_sltp=True to let longs and shorts get their own
