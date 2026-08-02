@@ -36,12 +36,21 @@ from optimize import storage
 STATE = Path("/tmp/.watch_study_state.json")
 
 
-def _counts(study_name: str):
-    """(total, completed, pruned) for a study, or None if it cannot be found."""
-    hits = storage.find_study(study_name)
-    if not hits:
-        return None
-    loc = hits[0]["location"]
+def _counts(study_name: str, db: str | None = None):
+    """(total, completed, pruned) for a study, or None if it cannot be found.
+
+    `db` points at an explicit SQLite file. Needed because a run launched with WSH_STORAGE_URL puts its
+    study somewhere `find_study` does not look — which is exactly what happened when the #99 arms were
+    moved to isolated databases: the watcher reported NOT FOUND for two studies that were running fine.
+    A watcher that cannot see a live run is worse than no watcher, because 'NOT FOUND' reads as 'dead'.
+    """
+    if db:
+        loc = db
+    else:
+        hits = storage.find_study(study_name)
+        if not hits:
+            return None
+        loc = hits[0]["location"]
     import sqlite3
     con = sqlite3.connect(f"file:{loc}?mode=ro", uri=True)
     try:
@@ -69,6 +78,10 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("studies", nargs="+")
     ap.add_argument("--target", type=int, required=True, help="target trials per study")
+    ap.add_argument("--db", nargs="*", default=None,
+                    help="explicit SQLite file per study, in the same order as the study names. Use when "
+                         "the run was launched with WSH_STORAGE_URL, which puts the study where "
+                         "find_study does not look.")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
 
@@ -81,10 +94,11 @@ def main() -> int:
             prev = {}
 
     out, new_state = [], {}
-    for name in args.studies:
-        c = _counts(name)
+    for i, name in enumerate(args.studies):
+        db = args.db[i] if args.db and i < len(args.db) else None
+        c = _counts(name, db)
         if c is None:
-            out.append({"study": name, "status": "NOT FOUND"})
+            out.append({"study": name, "status": f"NOT FOUND{' in ' + db if db else ''}"})
             continue
         total, complete, pruned = c
         new_state[name] = {"t": now, "n": total}
@@ -114,8 +128,8 @@ def main() -> int:
         return 0
     print(f"[watch] {time.strftime('%Y-%m-%d %H:%M:%S')}")
     for r in out:
-        if r.get("status") == "NOT FOUND":
-            print(f"  {r['study']:16s} NOT FOUND")
+        if str(r.get("status", "")).startswith("NOT FOUND"):
+            print(f"  {r['study']:16s} {r['status']}")
             continue
         # completed vs pruned matters: a counter climbing on pruned trials alone is not progress
         print(f"  {r['study']:16s} {r['trials']:6,d}/{r['target']:,} ({r['pct']:5.1f}%)  "
