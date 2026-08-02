@@ -243,7 +243,7 @@ def searchable_indicators(only_inds: tuple = (), exclude_inds: tuple = ()) -> li
 def search_dims(split_sltp: bool, intracandle: bool = False, freeze_indicators: bool = False,
                 force_eod: bool = True, only_inds: tuple = (), exclude_inds: tuple = (),
                 contrib_tokens: tuple = (), contrib_exclude: tuple = (),
-                search_cap_bars: bool = False, conditional_params: bool = False) -> dict:
+                search_cap_bars: bool = False, contrib_only: tuple = ()) -> dict:
     """Breakdown of the tunable search dimensions for the current REGISTRY/SCHEMA.
     base continuous (sl_soft, sl_hard_delta, tp, gate_pct, dd_limit)=5;
     categorical (flip, en_cap_bars, en_cap_eod)=3;
