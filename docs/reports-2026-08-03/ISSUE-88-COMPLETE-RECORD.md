@@ -220,7 +220,23 @@ result about MAP-Elites.**
 Criterion for round 4: **identical to round 3, unchanged**, so the two are directly comparable.
 Pre-registered in `ISSUE-88-prereg-round4-coldstart.md`, committed before the run.
 
-→ **Result: see `ISSUE-88-ROUND4-coldstart-result.md`.**
+**Result: FAILED — 3 of 8.** In 3 of those 8 seeds *neither* arm produced a single 3–10-indicator elite
+at all, so the criterion is undefined there and, under the declared rule, scores as a non-win.
+
+| | warm (round 3) | cold (round 4) |
+|---|---:|---:|
+| treatment wins on the primary | **8/8** | **3/8** |
+| treatment wins on best-anywhere (secondary) | 6/8 | **8/8** (+55% median) |
+| evaluations discarded | ~68% | **~74%** |
+| seeds with an empty champion zone | 0 | **3** |
+
+**Consequence, applied as pre-registered:** #88's benefit is **withdrawn to warm-started search** and the
+issue is **reopened** with the narrower claim. The shape defect and its fix stand on their own; the claim
+that the fix improves outcomes *in general* does not.
+
+The secondary swept 8/8 cold and is a strong hint that the fix helps there too — but the pre-registration
+forbids promoting a secondary after seeing it pass, so it stays a hint. Full detail:
+`ISSUE-88-ROUND4-coldstart-result.md`.
 
 ---
 
@@ -310,4 +326,4 @@ any good?", and the first kind can point confidently in the wrong direction.
 | ❌ | That earlier MAP-Elites results are valid — they came from the broken shape (**#90**, open) |
 | ❌ | That MAP-Elites beats the ordinary optimizer — never compared |
 | ❌ | That the 68% discard rate is acceptable (**#101**, open) |
-| ⚠️ | That the benefit survives cold start — **round 4 answers this**; until it reports, the claim is scoped to warm-started search |
+| ❌ | **That the benefit survives cold start — it did not. 3/8, criterion failed.** The claim is scoped to warm-started search and #88 is reopened |
