@@ -190,7 +190,7 @@ def _mutate(geno, space, rng):
 
 def run(tf_name: str, n_evals: int = 400, folds: int = 5, min_trades: int = 5, seed: int = 1,
         ind_1min: bool = True, split_sltp: bool = False, warm_start: bool = False,
-        save: bool = False, n_ind_range=None) -> dict:
+        save: bool = False, n_ind_range=None, stepping_stones: bool = False) -> dict:
     t0 = time.time()
     ctx = TS._Ctx(tf_name, split_sltp, ind_1min, folds, min_trades, warm_start)
     space = cont_space(ctx)
@@ -213,7 +213,30 @@ def run(tf_name: str, n_evals: int = 400, folds: int = 5, min_trades: int = 5, s
     # Measured on NQ 4h these account for ~70% of all evaluations, which is why archive coverage is
     # capped by the feasibility rate rather than by the niche count.
     stats = {"first_fill": 0, "improvement": 0, "rejected": 0, "infeasible": 0,
-             "invalid": 0, "pnl_neg": 0, "dd_over": 0}
+             "invalid": 0, "pnl_neg": 0, "dd_over": 0, "stepping": 0}
+
+    # ── stepping stones (#101), OFF by default ────────────────────────────────────────────────────
+    # THE PROBLEM. ~70% of evaluations are discarded before reaching the archive, and MAP-Elites draws
+    # its parents FROM THE ARCHIVE — so the archive is the population. Measured: a 4,000-evaluation run
+    # mutates a pool of about 30 genomes, over and over. A method whose entire purpose is to resist
+    # collapsing into one basin is running with a population of thirty.
+    #
+    # THE IDEA. A genome that made money but drew down 26% of it is not garbage; it is a near-miss, and
+    # in a QD search near-misses are the stepping stones that reach the good regions. Keep them in a
+    # SEPARATE archive, ranked by how badly they miss, and let mutation use them as parents too.
+    #
+    # WHAT THIS DELIBERATELY DOES NOT DO: stepping stones NEVER enter the result archive. `best_overall`,
+    # `safest`, `simplest` and the saved portfolio stay feasible-only, so nothing downstream can adopt an
+    # infeasible strategy by accident. Only PARENT SELECTION widens.
+    #
+    # ⚠️ It cannot reach the biggest group. `invalid` (a fold under min_trades — 45% of a cold run) has
+    # NO metrics at all: score_walkforward returns nothing, so there is no niche to place it in. Those
+    # would need `evaluate` to score unconstrained, which changes more than parent selection.
+    stepping: dict[tuple[int, int], dict] = {}
+
+    def _violation(m: dict) -> float:
+        """How far outside feasibility, in dollars. Smaller is a better stepping stone."""
+        return max(0.0, m["full_dd"] - TS.DD_PNL_CAP * m["full_pnl"]) + max(0.0, -m["full_pnl"])
 
     def consider(geno):
         en, flip, cont = geno
@@ -224,6 +247,13 @@ def run(tf_name: str, n_evals: int = 400, folds: int = 5, min_trades: int = 5, s
         if not m["feasible"]:
             stats["pnl_neg" if m["full_pnl"] <= 0 else "dd_over"] += 1
             stats["infeasible"] += 1
+            if stepping_stones:
+                cell = behavior(m, n_enabled(en))
+                cur = stepping.get(cell)
+                v = _violation(m)
+                if cur is None or v < cur["violation"]:
+                    stepping[cell] = {"violation": v, "geno": (dict(en), flip, dict(cont))}
+                    stats["stepping"] += 1
             return False
         n_ind = n_enabled(en)
         cell = behavior(m, n_ind)
@@ -267,8 +297,9 @@ def run(tf_name: str, n_evals: int = 400, folds: int = 5, min_trades: int = 5, s
 
     # ── main loop: select a random elite, mutate, place if it wins its cell ──
     while evals < n_evals:
-        if archive:
-            parent = rng.choice(list(archive.values()))["geno"]
+        pool = list(archive.values()) + (list(stepping.values()) if stepping_stones else [])
+        if pool:
+            parent = rng.choice(pool)["geno"]
             child = _mutate(parent, space, rng)
         else:
             child = _rand_geno(ctx, space, rng, n_ind_range)
@@ -304,6 +335,9 @@ def run(tf_name: str, n_evals: int = 400, folds: int = 5, min_trades: int = 5, s
     print(f"   reach       : {_reached}/{n_evals} evals reached a niche ({100 * stats['infeasible'] / max(1, n_evals):.0f}% "
           f"infeasible) ⇒ {_reached / N_NICHES:.2f} ACHIEVED visits per niche, {len(archive)}/{N_NICHES} filled",
           flush=True)
+    print(f"   pool        : {len(archive)} elites + {len(stepping)} stepping stones = "
+          f"{len(archive) + (len(stepping) if stepping_stones else 0)} possible parents "
+          f"{'(stepping stones ON)' if stepping_stones else '(feasible only)'}", flush=True)
     print(f"   discarded   : {stats['invalid']} barely traded (<{min_trades}/fold) · "
           f"{stats['pnl_neg']} lost money · {stats['dd_over']} drew down > {100 * TS.DD_PNL_CAP:.0f}% of profit  "
           f"(#101)", flush=True)
@@ -331,6 +365,7 @@ def run(tf_name: str, n_evals: int = 400, folds: int = 5, min_trades: int = 5, s
               "n_niches": N_NICHES, "evals_per_niche": round(n_evals / N_NICHES, 2),
               # planned vs ACHIEVED — the second is the one the design argument rests on
               "reached_niche": _reached, "achieved_visits_per_niche": round(_reached / N_NICHES, 2),
+              "stepping_stones": stepping_stones, "parent_pool": len(archive) + (len(stepping) if stepping_stones else 0),
               "ind_bins": list(IND_BIN_LABELS), "selection": dict(stats),
               "selection_bootstrap": dict(boot_stats), "selection_mutation": dict(_mut),
               "best_overall": _portfolio_entry(best_overall), "safest": _portfolio_entry(safest),
@@ -361,6 +396,9 @@ def main() -> int:
     ap.add_argument("--split-sltp", action="store_true")
     OPT.add_warm_start_args(ap)
     ap.add_argument("--save", action="store_true", help="write archive to optimize/results/mapelites_<tf>.json")
+    ap.add_argument("--stepping-stones", action="store_true",
+                    help="#101: also use scored-but-INFEASIBLE genomes as mutation parents. They never\n"
+                         "enter the result archive — only the parent pool widens. OFF until measured.")
     ap.add_argument("--rand-n-ind", default=None, metavar="LO,HI",
                     help=f"bootstrap genome size range (default {RAND_N_IND[0]},{RAND_N_IND[1]}). This is a "
                          f"PRIOR on where the search starts, not a limit — mutation still reaches higher "
@@ -375,6 +413,7 @@ def main() -> int:
         _rng_ind = (lo, hi)
     run(a.timeframe, n_evals=a.evals, folds=a.folds, min_trades=a.min_trades, seed=a.seed,
         ind_1min=a.ind_1min, split_sltp=a.split_sltp, warm_start=a.warm_start, save=a.save,
+        stepping_stones=a.stepping_stones,
         n_ind_range=_rng_ind)
     return 0
 
