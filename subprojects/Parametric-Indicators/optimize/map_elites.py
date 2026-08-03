@@ -277,6 +277,15 @@ def run(tf_name: str, n_evals: int = 400, folds: int = 5, min_trades: int = 5, s
           f"{stats['rejected']} rejected · {stats['infeasible']} infeasible  "
           f"({100 * stats['improvement'] / max(1, _placed):.0f}% of placements were a real choice)",
           flush=True)
+    # ACHIEVED visits per niche, which is the number the design argument actually depends on — and it is
+    # NOT n_evals/N_NICHES. Measured on NQ 4h (2026-08-03): ~65% of evaluations come back INFEASIBLE, so
+    # only ~135 of 400 ever reach a niche. The planned 4.9 was really ~1.7. The binding constraint on
+    # archive coverage turned out to be the feasibility rate, not the niche count — worth knowing before
+    # anyone "fixes" coverage by adding more niches.
+    _reached = _placed + stats["rejected"]
+    print(f"   reach       : {_reached}/{n_evals} evals reached a niche ({100 * stats['infeasible'] / max(1, n_evals):.0f}% "
+          f"infeasible) ⇒ {_reached / N_NICHES:.2f} ACHIEVED visits per niche, {len(archive)}/{N_NICHES} filled",
+          flush=True)
     if best_overall:
         b = best_overall["metrics"]
         print(f"   best return : med ${b['median_pnl']:,.0f}  worstDD ${b['worst_dd']:,.0f}  "
@@ -291,6 +300,8 @@ def run(tf_name: str, n_evals: int = 400, folds: int = 5, min_trades: int = 5, s
               # Written to disk so the archive can be judged later WITHOUT rerunning it: a full-looking
               # archive with `improvements: 0` is the broken regime, and only these fields show it.
               "n_niches": N_NICHES, "evals_per_niche": round(n_evals / N_NICHES, 2),
+              # planned vs ACHIEVED — the second is the one the design argument rests on
+              "reached_niche": _reached, "achieved_visits_per_niche": round(_reached / N_NICHES, 2),
               "ind_bins": list(IND_BIN_LABELS), "selection": dict(stats),
               "best_overall": _portfolio_entry(best_overall), "safest": _portfolio_entry(safest),
               "simplest": _portfolio_entry(simplest),
