@@ -211,6 +211,36 @@ _BOUNDS = _HERE / "sl_tp_bounds.json"
 DD_LIMIT_MAX = 5000.0
 
 # ─────────────────────────────────────────────────────────────────────────────────────────────────
+# INDICATOR FRAME — the 1-minute frame is the default and the only frame you get unless you ask.
+#
+# WHY THIS IS A DEFAULT AND NOT A FLAG. Every champion in the deployed book was tuned with indicators
+# read off the 1-minute frame; the decision-timeframe frame is a research alternative, not production.
+# But the flag was `--ind-1min` / `ind_1min: bool = False` — opt-IN — so the wrong frame was what you
+# got by forgetting, and forgetting is silent: the run completes, the numbers look like numbers.
+#
+# It is not a small difference. Evaluating the DEPLOYED NQ 4h champion in the decision frame scores it
+# INFEASIBLE (full DD $23,579 against the $9,623 the 25% rule allows) where the 1-minute frame scores
+# it $147,191 with $14,043 DD. A MAP-Elites run in the wrong frame therefore returns an EMPTY archive
+# and looks like a broken algorithm rather than a mis-set flag — that is exactly how it presented.
+#
+# So the polarity is inverted: 1-minute is the default everywhere, and the other frame requires saying
+# `--tf-indicators` out loud. `--ind-1min` is still accepted so existing run scripts and playbooks keep
+# working, but it now only re-states the default. Same class as the "no silent defaults" rule: a
+# measurement parameter you can get wrong by omission is a defect, not a convenience.
+def add_indicator_frame_args(ap) -> None:
+    """Attach the indicator-frame flags. ONE definition shared by every CLI (optimizer, two_stage,
+    map_elites, benches) so the four cannot drift apart — four copies of a default is four chances for
+    one of them to be the old one."""
+    g = ap.add_mutually_exclusive_group()
+    g.add_argument("--ind-1min", dest="ind_1min", action="store_true", default=True,
+                   help="DEFAULT (kept for compatibility): indicators read the 1-minute frame, sampled "
+                        "at each decision bar's last closed minute")
+    g.add_argument("--tf-indicators", dest="ind_1min", action="store_false",
+                   help="RESEARCH ONLY: read indicators on the decision timeframe instead. The deployed "
+                        "book was NOT tuned this way and champions can score infeasible here")
+
+
+# ─────────────────────────────────────────────────────────────────────────────────────────────────
 # Search-space sizing + dimension-proportional trial budget (anti "bigger space, fewer samples" trap).
 # See study_range_regime/REPORT_optimizer_superset_paradox_and_system_breakdown.md: NSGA-III is a finite
 # stochastic search, so when dimensions grow the trial budget MUST grow with them or sampling thins out
@@ -528,7 +558,7 @@ PROGRESS_CALLBACK = None      # optional per-trial callback, set by a driver (se
 
 
 def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
-        seed: int = 1, ind_1min: bool = False, study_prefix: str = "wsh3",
+        seed: int = 1, ind_1min: bool = True, study_prefix: str = "wsh3",
         split_sltp: bool = False, warm_start: bool = True, sampler: str = "nsga3",
         objective: str = "winrate", exclude_inds: tuple = (), only_inds: tuple = (),
         dd_pnl_cap: float = DD_PNL_CAP, contrib_tokens: tuple = (),
@@ -844,9 +874,7 @@ def main() -> int:
     ap.add_argument("--trials", type=int, default=200)
     ap.add_argument("--folds", type=int, default=5)
     ap.add_argument("--min-trades", type=int, default=5)
-    ap.add_argument("--ind-1min", action="store_true",
-                    help="indicators read the 1-minute frame (sampled at each decision bar's last "
-                         "closed minute) instead of the decision timeframe")
+    add_indicator_frame_args(ap)
     # END-OF-DAY CLOSE IS THE STANDARD (user decision, 2026-07-30) — the default for ALL training.
     #
     # WHY. Holding overnight is what makes a stop-loss stop working: a stop is an instruction that the

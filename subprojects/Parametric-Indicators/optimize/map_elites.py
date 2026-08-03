@@ -23,7 +23,8 @@ fix when two_stage._Ctx gets it.
 
 The wsh4 champion is enqueued as the FIRST elite ⇒ the archive provably contains a point ≥ it.
 
-CLI:  python3 -m optimize.map_elites <tf> [--evals N] [--ind-1min] [--split-sltp] [--no-warm-start] [--seed S]
+CLI:  python3 -m optimize.map_elites <tf> [--evals N] [--split-sltp] [--no-warm-start] [--seed S]
+      Indicators read the 1-MINUTE frame by default; pass --tf-indicators for the decision frame.
 """
 from __future__ import annotations
 
@@ -107,11 +108,18 @@ def behavior(m: dict, n_ind: int) -> tuple[int, int]:
 
 
 def niche_label(cell: tuple[int, int]) -> str:
-    """Human-readable niche name, so a saved archive stays interpretable once the bin edges move."""
+    """Human-readable niche name, so a saved archive stays interpretable once the bin edges move.
+
+    Tolerates an indicator coordinate outside IND_BIN_LABELS instead of raising. The #88 A/B substitutes
+    the identity for `ind_bucket` to reproduce the old raw-count axis, which produces coordinates up to
+    the registry size — and an IndexError HERE would destroy a completed run's results at the very last
+    step, after every evaluation had already been paid for. Labelling is presentation; it must never be
+    able to lose the measurement."""
     dd, ind = cell
     dd_s = f"≥${DD_BIN_CAP * DD_BIN:,.0f}" if dd >= DD_BIN_CAP else \
            f"${dd * DD_BIN:,.0f}-${(dd + 1) * DD_BIN:,.0f}"
-    return f"dd {dd_s} · {IND_BIN_LABELS[ind]} ind"
+    lbl = IND_BIN_LABELS[ind] if 0 <= ind < len(IND_BIN_LABELS) else str(ind)
+    return f"dd {dd_s} · {lbl} ind"
 
 
 def _rand_cont(space: dict, rng: random.Random) -> dict:
@@ -181,7 +189,7 @@ def _mutate(geno, space, rng):
 
 
 def run(tf_name: str, n_evals: int = 400, folds: int = 5, min_trades: int = 5, seed: int = 1,
-        ind_1min: bool = False, split_sltp: bool = False, warm_start: bool = True,
+        ind_1min: bool = True, split_sltp: bool = False, warm_start: bool = True,
         save: bool = False, n_ind_range=None) -> dict:
     t0 = time.time()
     ctx = TS._Ctx(tf_name, split_sltp, ind_1min, folds, min_trades, warm_start)
@@ -308,7 +316,7 @@ def main() -> int:
     ap.add_argument("--folds", type=int, default=5)
     ap.add_argument("--min-trades", type=int, default=5)
     ap.add_argument("--seed", type=int, default=1)
-    ap.add_argument("--ind-1min", action="store_true")
+    OPT.add_indicator_frame_args(ap)
     ap.add_argument("--split-sltp", action="store_true")
     ap.add_argument("--no-warm-start", action="store_true")
     ap.add_argument("--save", action="store_true", help="write archive to optimize/results/mapelites_<tf>.json")

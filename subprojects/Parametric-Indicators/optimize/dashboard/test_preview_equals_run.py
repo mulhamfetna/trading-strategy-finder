@@ -118,4 +118,7 @@ def test_spec_round_trips_through_from_cfg():
     for expected in ("--instrument", "GC", "--split-sltp", "--sampler", "tpe", "--reference", "ES",
                      "--max-enabled", "4", "--no-warm-start", "--dd-pnl-cap", "0.4", "--trials", "123"):
         assert expected in argv, f"{expected} missing from built argv"
-    assert "--ind-1min" not in argv
+    # The frame is now ALWAYS stated. ind_1min=False must appear as the explicit opt-out, not as the
+    # ABSENCE of a flag — an absent flag used to mean "decision timeframe", and that silent meaning is
+    # exactly what scored the deployed champion infeasible.
+    assert "--ind-1min" not in argv and "--tf-indicators" in argv

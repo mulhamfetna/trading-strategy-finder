@@ -24,7 +24,8 @@ as a Stage-B seed ⇒ the result is provably ≥ the prior champion (the wsh5 tr
 The continuous dimensionality that broke wsh5 NEVER appears in a single search.
 
 CLI:  python3 -m optimize.two_stage <tf> [--stage-a-trials N] [--stage-b-trials M] [--top-k K]
-                                        [--stage-b {cmaes|gp}] [--split-sltp] [--ind-1min] [--no-warm-start]
+                                        [--stage-b {cmaes|gp}] [--split-sltp] [--no-warm-start]
+      Indicators read the 1-MINUTE frame by default; pass --tf-indicators for the decision frame.
 """
 from __future__ import annotations
 
@@ -64,8 +65,12 @@ CMAES_PENALTY = 1.0
 # ─────────────────────────────────────────────────────────────────────────────────────────────────
 class _Ctx:
     """Loaded-once per-TF context (data + frozen champion knobs/params) shared by both stages."""
-    def __init__(self, tf_name: str, split_sltp: bool, ind_1min: bool, folds: int, min_trades: int,
-                 warm_start: bool):
+    # Defaults are the PRODUCTION settings, so `_Ctx("4h")` means what the deployed book means. They
+    # were all required-positional, which reads as neutrality but is not: benches and one-off scripts
+    # build _Ctx directly, and each one had to re-state `ind_1min=True` or silently evaluate in the
+    # wrong frame. See optimize/test_indicator_frame_default.py for what that cost.
+    def __init__(self, tf_name: str, split_sltp: bool = False, ind_1min: bool = True, folds: int = 5,
+                 min_trades: int = 5, warm_start: bool = True):
         self.tf_name = tf_name; self.split_sltp = split_sltp; self.ind_1min = ind_1min
         self.folds = folds; self.min_trades = min_trades
         self.tf = TF.get(tf_name)
@@ -291,7 +296,7 @@ def stage_a_recommended_trials(per_dim: int = OPT.TRIALS_PER_DIM) -> int:
 
 def run(tf_name: str, stage_a_trials: int | None = None, stage_b_trials: int = 100, top_k: int = 3,
         stage_b_engine: str = "cmaes", folds: int = 5, min_trades: int = 5, seed: int = 1,
-        ind_1min: bool = False, split_sltp: bool = False, warm_start: bool = True) -> dict:
+        ind_1min: bool = True, split_sltp: bool = False, warm_start: bool = True) -> dict:
     if stage_b_engine not in STAGE_B_ENGINES:
         raise ValueError(f"unknown stage-b engine '{stage_b_engine}' (choices: {STAGE_B_ENGINES})")
     t0 = time.time()
@@ -351,7 +356,7 @@ def main() -> int:
                     help="continuous-tuning brain for stage B (cmaes = scalarized ES; gp = multi-objective BO)")
     ap.add_argument("--folds", type=int, default=5)
     ap.add_argument("--min-trades", type=int, default=5)
-    ap.add_argument("--ind-1min", action="store_true")
+    OPT.add_indicator_frame_args(ap)
     ap.add_argument("--split-sltp", action="store_true")
     ap.add_argument("--no-warm-start", action="store_true")
     a = ap.parse_args()

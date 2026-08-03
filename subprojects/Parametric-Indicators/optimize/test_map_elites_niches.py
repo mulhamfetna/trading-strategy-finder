@@ -109,3 +109,11 @@ def test_saved_archives_are_labelled_by_niche_not_by_index():
     assert "51+" in ME.niche_label((ME.DD_BIN_CAP, ME.IND_BIN_CAP))
     assert "≥" in ME.niche_label((ME.DD_BIN_CAP, 0)), "the capped DD bucket must read as a bound"
     assert inspect.getsource(ME.run).count("niche_label(c)") == 1
+
+
+def test_labelling_cannot_destroy_a_finished_run():
+    """Regression: the #88 A/B swaps in the old raw-count axis, whose coordinates run to the registry
+    size. `niche_label` indexed the 9-entry label tuple with that, so it raised at the LAST step — after
+    400 evaluations had already been spent. Presentation code must never be able to lose a measurement."""
+    assert ME.niche_label((2, 165)) == "dd $4,000-$6,000 · 165 ind"
+    assert ME.niche_label((0, ME.IND_BIN_CAP + 1))  # does not raise

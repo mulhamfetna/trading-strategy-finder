@@ -24,7 +24,8 @@ WHAT A PASS DOES NOT MEAN. It does not validate any earlier MAP-Elites result (t
 broken shape — that is #90), and it does not claim MAP-Elites beats the ordinary search. Nothing here
 compares the two.
 
-Usage:  python3 -m optimize.perf.bench_mapelites_niches 4h --evals 400 [--ind-1min] [--seed 1]
+Usage:  python3 -m optimize.perf.bench_mapelites_niches 4h --evals 400 [--seed 1]
+        (1-minute indicator frame is the default; --tf-indicators switches to the decision frame)
 """
 from __future__ import annotations
 
@@ -40,6 +41,7 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from optimize import map_elites as ME
+from optimize import optimizer as OPT
 from indicators import library
 
 
@@ -71,7 +73,7 @@ def main() -> int:
     ap.add_argument("timeframe")
     ap.add_argument("--evals", type=int, default=400)
     ap.add_argument("--seed", type=int, default=1)
-    ap.add_argument("--ind-1min", action="store_true")
+    OPT.add_indicator_frame_args(ap)
     ap.add_argument("--out", default=None, help="write the JSON verdict here")
     a = ap.parse_args()
 

@@ -123,8 +123,10 @@ def build_argv(spec: RunSpec, python: str = "python3", unbuffered: bool = False,
     if spec.study_prefix:
         argv += ["--study-prefix", str(spec.study_prefix)]
     argv += (["--trials", str(int(spec.trials))] if spec.trials is not None else ["--auto-trials"])
-    if spec.ind_1min:
-        argv.append("--ind-1min")
+    # ALWAYS state the frame, even though 1-minute is now the default (optimizer.add_indicator_frame_args).
+    # A launched command is a record of what was run — "no silent defaults" applies hardest to the
+    # parameter that silently scored the deployed champion as INFEASIBLE when it was wrong.
+    argv.append("--ind-1min" if spec.ind_1min else "--tf-indicators")
     if spec.split_sltp:
         argv.append("--split-sltp")
     if spec.sampler:
