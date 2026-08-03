@@ -7,7 +7,7 @@ rather than one point.
 
 Behavior descriptors (the niche axes) for us:
     bd1 = worst-fold drawdown bucket   (how SAFE)      — bins of $2,000, capped
-    bd2 = number of indicators enabled (how COMPLEX)   — raw count 0..N
+    bd2 = indicator-count BUCKET       (how COMPLEX)   — 9 groups, fine at 3–10, catch-all at 51+
 Fitness (maximise) = median fold P/L, FEASIBLE only (full_dd ≤ 25%·full_pnl, full_pnl > 0).
 
 Genotype (reuses P3's frozen-indicator-params philosophy — tune WHICH indicators + execution knobs, not
@@ -46,6 +46,43 @@ from indicators import library
 DD_BIN = 2000.0          # worst-fold DD bucket width ($)
 DD_BIN_CAP = 8           # cap the DD axis at 8 buckets (≥$16k all share the top cell)
 
+# ── the indicator axis (#88) ──────────────────────────────────────────────────────────────────────
+# THE DEFECT THIS REPLACES. The second axis used to be the RAW indicator count, so the archive had one
+# column per possible count and its width tracked the registry. At 18 indicators that was 19 columns —
+# 9 x 19 = 171 niches against a standard 400 evaluations, i.e. ~2.3 visits per niche, so "is the
+# newcomer better than the current elite?" was a question that actually got asked. At 165 indicators it
+# is 166 columns = 1,494 niches and ~0.27 visits: nearly every niche is filled by the FIRST genome that
+# happens to land in it and is never challenged again.
+#
+# That converts MAP-Elites from "keep the best per niche" into "keep the first per niche" WITHOUT
+# failing, erroring, or looking any different — the archive still comes back full and is still reported
+# as a portfolio of elites. Same class as the other registry-scaling defects (#81, #89 rules S2/S6): a
+# constant that is really a RATIO, correct at the size it was written for and silently wrong after.
+#
+# The counts themselves were never the point. Deployed champions use 3–10 indicators; a 61-indicator
+# genome and a 62-indicator one are not different KINDS of strategy, but they were given separate
+# niches and each stole visits from the region that matters. So: bucket the axis — fine where champions
+# live, coarse above — and end in an unbounded catch-all so the width is fixed at 9 no matter how big
+# the library gets. 9 x 9 = 81 niches ⇒ ~4.9 visits each at 400 evals.
+#
+# ⚠️ THIS FIXES THE ARCHIVE'S SHAPE, NOTHING ELSE. It does not make earlier MAP-Elites results valid —
+# those came from the broken shape and are UNVALIDATED (tracked in #90), which is a different and more
+# awkward status than wrong. And it makes no claim that MAP-Elites beats the ordinary search.
+IND_BINS = ((0, 0), (1, 2), (3, 4), (5, 7), (8, 10), (11, 15), (16, 25), (26, 50))
+IND_BIN_CAP = len(IND_BINS)          # index of the unbounded "51+" bucket
+IND_BIN_LABELS = tuple(f"{lo}" if lo == hi else f"{lo}-{hi}" for lo, hi in IND_BINS) + \
+                 (f"{IND_BINS[-1][1] + 1}+",)
+N_NICHES = (DD_BIN_CAP + 1) * (IND_BIN_CAP + 1)
+
+
+def ind_bucket(n_ind: int) -> int:
+    """Indicator count → bucket index. Registry-size independent BY CONSTRUCTION: the edges are absolute
+    counts and the last bucket is unbounded, so growing the library cannot widen the archive."""
+    for i, (lo, hi) in enumerate(IND_BINS):
+        if lo <= n_ind <= hi:
+            return i
+    return IND_BIN_CAP
+
 
 def cont_space(ctx) -> dict:
     """name -> (lo, hi, is_int) for every continuous knob, from the per-TF bounds. +split when enabled."""
@@ -64,8 +101,17 @@ def cont_space(ctx) -> dict:
 
 
 def behavior(m: dict, n_ind: int) -> tuple[int, int]:
-    """Map metrics → (dd_bucket, n_indicators) niche coordinate."""
-    return (min(int(m["worst_dd"] // DD_BIN), DD_BIN_CAP), int(n_ind))
+    """Map metrics → (dd_bucket, indicator_bucket) niche coordinate. BOTH axes are bounded, so the
+    archive has a fixed 81 niches whatever the registry size — see IND_BINS above for why."""
+    return (min(int(m["worst_dd"] // DD_BIN), DD_BIN_CAP), ind_bucket(int(n_ind)))
+
+
+def niche_label(cell: tuple[int, int]) -> str:
+    """Human-readable niche name, so a saved archive stays interpretable once the bin edges move."""
+    dd, ind = cell
+    dd_s = f"≥${DD_BIN_CAP * DD_BIN:,.0f}" if dd >= DD_BIN_CAP else \
+           f"${dd * DD_BIN:,.0f}-${(dd + 1) * DD_BIN:,.0f}"
+    return f"dd {dd_s} · {IND_BIN_LABELS[ind]} ind"
 
 
 def _rand_cont(space: dict, rng: random.Random) -> dict:
@@ -145,19 +191,32 @@ def run(tf_name: str, n_evals: int = 400, folds: int = 5, min_trades: int = 5, s
 
     archive: dict[tuple[int, int], dict] = {}     # niche -> {fitness, metrics, geno, n_ind}
 
+    # THE FALSIFICATION CRITERION FOR #88, counted rather than argued. These two events were previously
+    # summed into a single "improvements" number, which flattered the run: accepting a genome because
+    # its niche was EMPTY involves no comparison at all, while replacing a sitting elite is the only
+    # thing that makes this an elites archive. Counting shelves is arithmetic; this is the evidence.
+    # If `improvements` does not rise materially against the pre-fix run, the fix did not work.
+    stats = {"first_fill": 0, "improvement": 0, "rejected": 0, "infeasible": 0}
+
     def consider(geno):
         en, flip, cont = geno
         m = ctx.evaluate(ctx.build_params(en, flip, cont))
         if m is None or not m["feasible"]:
+            stats["infeasible"] += 1
             return False
         n_ind = n_enabled(en)
         cell = behavior(m, n_ind)
         cur = archive.get(cell)
-        if cur is None or m["median_pnl"] > cur["fitness"]:
-            archive[cell] = {"fitness": m["median_pnl"], "metrics": m, "n_ind": n_ind,
-                             "geno": (dict(en), flip, dict(cont))}
-            return True
-        return False
+        if cur is None:
+            stats["first_fill"] += 1                      # niche was empty — nothing was compared
+        elif m["median_pnl"] > cur["fitness"]:
+            stats["improvement"] += 1                     # beat a sitting elite — a real choice
+        else:
+            stats["rejected"] += 1
+            return False
+        archive[cell] = {"fitness": m["median_pnl"], "metrics": m, "n_ind": n_ind,
+                         "geno": (dict(en), flip, dict(cont))}
+        return True
 
     # ── seed: warm-start champion first (guarantees a ≥-champion elite), then random bootstrap ──
     evals = 0
@@ -172,21 +231,28 @@ def run(tf_name: str, n_evals: int = 400, folds: int = 5, min_trades: int = 5, s
           f"bootstrap genome = {_lo}-{_hi} of {len(library.REGISTRY)} indicators; "
           f"mutation {max(1, round(MUT_FRAC * len(library.REGISTRY)))} bits  "
           f"{'[champion seeded]' if ctx.has_champion else '[no champion]'}", flush=True)
+    # Printed because it is the number that silently went wrong: below ~1 the archive keeps first
+    # arrivals rather than elites, and nothing else in the output would say so (#88).
+    _per_niche = n_evals / N_NICHES
+    print(f"   niches {N_NICHES} = {DD_BIN_CAP + 1} dd x {IND_BIN_CAP + 1} ind "
+          f"[{', '.join(IND_BIN_LABELS)}] · {_per_niche:.1f} evals/niche"
+          f"{'  ⚠️ BELOW 1 — the archive will keep FIRST arrivals, not elites' if _per_niche < 1 else ''}",
+          flush=True)
 
     # ── main loop: select a random elite, mutate, place if it wins its cell ──
-    improvements = 0
     while evals < n_evals:
         if archive:
             parent = rng.choice(list(archive.values()))["geno"]
             child = _mutate(parent, space, rng)
         else:
             child = _rand_geno(ctx, space, rng, n_ind_range)
-        if consider(child):
-            improvements += 1
+        consider(child)
         evals += 1
         if evals % max(1, n_evals // 10) == 0:
-            print(f"   {evals}/{n_evals} evals · {len(archive)} cells filled · {improvements} improvements",
-                  flush=True)
+            # first-fills and improvements reported SEPARATELY — summing them was the old print, and it
+            # made a run that never compared anything look like a run that kept improving (#88).
+            print(f"   {evals}/{n_evals} evals · {len(archive)}/{N_NICHES} niches filled · "
+                  f"{stats['improvement']} improvements ({stats['first_fill']} first-fills)", flush=True)
 
     # ── summary: portfolio highlights ──
     cells = list(archive.values())
@@ -194,7 +260,15 @@ def run(tf_name: str, n_evals: int = 400, folds: int = 5, min_trades: int = 5, s
     safest = min(cells, key=lambda c: c["metrics"]["worst_dd"]) if cells else None
     simplest = min(cells, key=lambda c: c["n_ind"]) if cells else None
     dur = time.time() - t0
-    print(f"[{tf_name}] MAP-ELITES DONE ({dur:.0f}s): {len(archive)} niches filled", flush=True)
+    print(f"[{tf_name}] MAP-ELITES DONE ({dur:.0f}s): {len(archive)}/{N_NICHES} niches filled "
+          f"({100 * len(archive) / N_NICHES:.0f}% coverage)", flush=True)
+    # The #88 verdict line. `improvement` is the only count that means a comparison took place; if it
+    # stays near zero the archive is a collection of first arrivals however full it looks.
+    _placed = stats["first_fill"] + stats["improvement"]
+    print(f"   selection   : {stats['improvement']} improvements · {stats['first_fill']} first-fills · "
+          f"{stats['rejected']} rejected · {stats['infeasible']} infeasible  "
+          f"({100 * stats['improvement'] / max(1, _placed):.0f}% of placements were a real choice)",
+          flush=True)
     if best_overall:
         b = best_overall["metrics"]
         print(f"   best return : med ${b['median_pnl']:,.0f}  worstDD ${b['worst_dd']:,.0f}  "
@@ -206,9 +280,13 @@ def run(tf_name: str, n_evals: int = 400, folds: int = 5, min_trades: int = 5, s
               f"+{simplest['n_ind']}ind", flush=True)
 
     result = {"timeframe": tf_name, "evals": n_evals, "coverage": len(archive), "dur_s": dur,
+              # Written to disk so the archive can be judged later WITHOUT rerunning it: a full-looking
+              # archive with `improvements: 0` is the broken regime, and only these fields show it.
+              "n_niches": N_NICHES, "evals_per_niche": round(n_evals / N_NICHES, 2),
+              "ind_bins": list(IND_BIN_LABELS), "selection": dict(stats),
               "best_overall": _portfolio_entry(best_overall), "safest": _portfolio_entry(safest),
               "simplest": _portfolio_entry(simplest),
-              "archive": {f"{c}": _portfolio_entry(v) for c, v in archive.items()}}
+              "archive": {niche_label(c): _portfolio_entry(v) for c, v in archive.items()}}
     if save:
         out = OPT._RESULTS_DIR / f"mapelites_{tf_name}.json"
         out.write_text(json.dumps(result, indent=2)); print(f"   wrote {out}", flush=True)
