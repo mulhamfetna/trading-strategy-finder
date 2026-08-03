@@ -28,10 +28,10 @@ criterion did not merely fail to pass; it inverted.
 | | control (1,494 niches) | treatment (81 niches) |
 |---|---:|---:|
 | niches filled (median) | 260 | 33 |
-| improvements | 296 | 114 |
-| comparisons | 962 | 1,285 |
+| improvements | 299 | 112 |
+| comparisons | 962 | 1,291 |
 
-The treatment does **more** comparing (1,285 vs 962) and **wins fewer** of them. That is exactly what a
+The treatment does **more** comparing (1,291 vs 962) and **wins fewer** of them. That is exactly what a
 working elites archive looks like:
 
 > **An archive full of weak first arrivals is easy to improve. An archive of genuine elites is hard to
