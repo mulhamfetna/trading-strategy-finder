@@ -308,11 +308,13 @@ def run(tf_name: str, n_evals: int = 400, folds: int = 5, min_trades: int = 5, s
           f"{stats['pnl_neg']} lost money · {stats['dd_over']} drew down > {100 * TS.DD_PNL_CAP:.0f}% of profit  "
           f"(#101)", flush=True)
     _mut = {k: stats[k] - boot_stats[k] for k in stats}
-    _bn, _mn = sum(boot_stats[k] for k in ("invalid", "pnl_neg", "dd_over")), \
-               sum(_mut[k] for k in ("invalid", "pnl_neg", "dd_over"))
-    _bt, _mt = sum(boot_stats.values()) - boot_stats["infeasible"], sum(_mut.values()) - _mut["infeasible"]
-    print(f"   by phase    : random bootstrap {_bn}/{_bn + _bt} discarded · "
-          f"mutation of an elite {_mn}/{_mn + _mt} discarded", flush=True)
+    # `infeasible` is a TOTAL over invalid+pnl_neg+dd_over, so summing every key double-counts it. The
+    # phase total is placements + rejections + discards.
+    _tot = lambda d: d["first_fill"] + d["improvement"] + d["rejected"] + d["infeasible"]
+    _bn, _mn = boot_stats["infeasible"], _mut["infeasible"]
+    _bt, _mt = _tot(boot_stats), _tot(_mut)
+    print(f"   by phase    : random bootstrap {_bn}/{_bt} discarded ({100 * _bn / max(1, _bt):.0f}%) · "
+          f"mutation of an elite {_mn}/{_mt} discarded ({100 * _mn / max(1, _mt):.0f}%)", flush=True)
     if best_overall:
         b = best_overall["metrics"]
         print(f"   best return : med ${b['median_pnl']:,.0f}  worstDD ${b['worst_dd']:,.0f}  "
