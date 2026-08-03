@@ -77,6 +77,11 @@ dashboard_*.html
 !subprojects/Parametric-Indicators/frontend/index.html
 !subprojects/Parametric-Indicators/frontend/l2.html
 !subprojects/Parametric-Indicators/frontend/combined.html
+# Hand-written report pages under docs/reports-*/ are DOCUMENTS, not output — they are the HTML
+# siblings of the .md reports next to them and are authored, reviewed and committed the same way.
+# Without this they were silently untracked: `git status` stayed clean while the file existed only on
+# one machine, which is the exact failure #94 was about.
+!docs/reports-*/*.html
 
 # OS
 .DS_Store
