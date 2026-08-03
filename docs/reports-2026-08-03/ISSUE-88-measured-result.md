@@ -134,4 +134,17 @@ flowchart LR
   indicator frame. That is now impossible by default — see the commit flipping `--ind-1min` from opt-in
   to default with `--tf-indicators` as the explicit opt-out.
 
+---
+
+## 8. Regression status
+
+Full suite on the server (`WSH_DATA_BASE=~/Mulham/wsg-i`, numba present, the authoritative environment):
+
+**1,221 passed · 1 skipped · 0 failed** — 2 m 40 s.
+
+The single skip is `test_daily_boxes_extended_frame.py`, whose 2024 NQ 1h CSV is absent from that data
+root; it is not related to this change. The local run is not the reference: numba is not installed
+locally, so 10 SMC-parity tests skip there and MAP-Elites runs ~7× slower (400 evaluations took 42 s on
+the server against ~285 s for 24 locally).
+
 Raw results: `optimize/results/issue88/ab_4h_400_seed{1..8}.json`.
