@@ -464,6 +464,68 @@ footer{color:var(--muted);font-size:12.5px;text-align:center;padding:26px 20px;b
   collection of the first — while looking exactly the same from the outside.</div>
 </section>
 
+<!-- 10 — measured -->
+<section class="measured">
+  <div class="secno">SECTION 10 · MEASURED 2026-08-03</div>
+  <h2>What happened when it was actually tested</h2>
+  <p><b>The test in section 7 was the wrong test, and it took two failures to see it.</b></p>
+
+  <table>
+    <tr><th>round</th><th>what was counted</th><th>result</th></tr>
+    <tr class="lo"><td>1</td><td>improvements ≥ 2×</td><td><b>failed</b> — 1 of 8 seeds</td></tr>
+    <tr class="lo"><td>2</td><td>improvements ≥ 2×, at 10× the budget</td>
+        <td><b>failed, and inverted</b> — the broken cabinet scored <b>2.5× MORE</b></td></tr>
+    <tr class="hi"><td>3</td><td><b>how good the strategies on the shelves actually are</b></td>
+        <td><b>passed — 8 of 8</b></td></tr>
+  </table>
+
+  <div class="pull">A cabinet of junk is easy to improve on. A cabinet of genuinely good items is hard to
+  improve on.</div>
+
+  <p>So counting improvements <i>rewards</i> the broken cabinet. The counter went up as the thing got
+  worse — not a weak measurement, a <b>wrong</b> one.</p>
+
+  <h3 style="margin:24px 0 4px;font-size:16px">The number that settles it</h3>
+  <p>The run is <i>handed</i> a strategy before it starts — the current champion, worth
+  <b>$23,328</b>.</p>
+
+  <figure>
+    <div class="flow">
+      <div class="node">the run starts holding the champion<span class="sub">$23,328</span></div>
+      <div class="conn"></div>
+      <div class="split">
+        <div class="branch">
+          <div class="blabel">BROKEN CABINET · 4,000 TRIES</div>
+          <div class="node bad">gave back the strategy it started with
+            <span class="sub">in 5 of 8 runs — while filling 260 shelves and logging 299 “improvements”</span></div>
+        </div>
+        <div class="branch">
+          <div class="blabel">FIXED CABINET · 4,000 TRIES</div>
+          <div class="node good">beat it in 8 of 8
+            <span class="sub">median $29,522 — <b>+23%</b></span></div>
+        </div>
+      </div>
+    </div>
+  </figure>
+
+  <div class="stats">
+    <div class="stat good"><div class="n">8/8</div><div class="l">seeds where the fixed cabinet won</div></div>
+    <div class="stat bad"><div class="n">5/8</div><div class="l">runs where the broken one returned its own starting point</div></div>
+    <div class="stat good"><div class="n">+23%</div><div class="l">median uplift where champions are deployed from</div></div>
+  </div>
+
+  <h3 style="margin:24px 0 4px;font-size:16px">Two corrections to this page</h3>
+  <ul class="claims">
+    <li><span class="mark n">!</span><div><b>“4.9 visits per shelf” was optimistic.</b> It assumed every
+      try reaches a shelf. <b>68% never do</b> — they lose money, barely trade, or drop too hard. The real
+      figure is <b>1.46</b>. Still above the 1.0 that matters (the old cabinet achieved <b>0.08</b>), but
+      lower than the number drawn above.</div></li>
+    <li><span class="mark y">✓</span><div><b>Section 7's promise was kept, twice.</b> The criterion failed
+      and was reported as failed both times. The third criterion was written down and committed
+      <i>before</i> its run, so it could not be chosen for passing.</div></li>
+  </ul>
+</section>
+
 </div><!-- /en -->
 
 <!-- ============================== العربية ============================== -->
@@ -746,6 +808,65 @@ footer{color:var(--muted);font-size:12.5px;text-align:center;padding:26px 20px;b
   <h2>الأمر كله في سطر واحد</h2>
   <div class="pull">الخزانة التي رفوفها أكثر من قطعها تكفّ عن أن تكون مجموعةً للأفضل، وتصير مجموعةً للأول —
   وهي تبدو من الخارج كما هي تمامًا.</div>
+</section>
+
+<!-- 10 — القياس -->
+<section class="measured">
+  <div class="secno">القسم ١٠ · القياس 2026-08-03</div>
+  <h2>ماذا حدث عند الاختبار فعلًا</h2>
+  <p><b>الاختبار في القسم ٧ كان اختبارًا خاطئًا، ولزم فشلان لإدراك ذلك.</b></p>
+
+  <table>
+    <tr><th>الجولة</th><th>ما الذي عُدَّ</th><th>النتيجة</th></tr>
+    <tr class="lo"><td>١</td><td>التحسينات ≥ ضعفين</td><td><b>فشل</b> — بذرة واحدة من 8</td></tr>
+    <tr class="lo"><td>٢</td><td>التحسينات ≥ ضعفين، بميزانية عشرة أضعاف</td>
+        <td><b>فشل وانقلب</b> — الخزانة المكسورة سجّلت <b>2.5 ضعفًا أكثر</b></td></tr>
+    <tr class="hi"><td>٣</td><td><b>جودة الاستراتيجيات الموجودة على الرفوف فعلًا</b></td>
+        <td><b>نجح — 8 من 8</b></td></tr>
+  </table>
+
+  <div class="pull">من السهل تحسين خزانة مليئة بالرديء، ومن الصعب تحسين خزانة مليئة بالجيّد فعلًا.</div>
+
+  <p>فعدّ التحسينات إذن <i>يكافئ</i> الخزانة المكسورة. المؤشّر يرتفع كلما ساء الحال — وهذا ليس قياسًا
+  ضعيفًا، بل قياسًا <b>خاطئًا</b>.</p>
+
+  <h3 style="margin:24px 0 4px;font-size:16px">الرقم الذي يحسم الأمر</h3>
+  <p>تُسلَّم التجربة استراتيجيةً <i>قبل</i> أن تبدأ — البطل الحالي، وقيمته <b>23,328 دولارًا</b>.</p>
+
+  <figure>
+    <div class="flow">
+      <div class="node">التجربة تبدأ وهي تحمل البطل<span class="sub">23,328 دولارًا</span></div>
+      <div class="conn"></div>
+      <div class="split">
+        <div class="branch">
+          <div class="blabel">الخزانة المكسورة · 4,000 محاولة</div>
+          <div class="node bad">أعادت الاستراتيجية التي بدأت بها
+            <span class="sub">في 5 من 8 تجارب — بينما ملأت 260 رفًّا وسجّلت 299 «تحسينًا»</span></div>
+        </div>
+        <div class="branch">
+          <div class="blabel">الخزانة المُصلَحة · 4,000 محاولة</div>
+          <div class="node good">تفوّقت عليه في 8 من 8
+            <span class="sub">الوسيط 29,522 دولارًا — <b>‎+23%‎</b></span></div>
+        </div>
+      </div>
+    </div>
+  </figure>
+
+  <div class="stats">
+    <div class="stat good"><div class="n">8/8</div><div class="l">البذور التي فازت فيها الخزانة المُصلَحة</div></div>
+    <div class="stat bad"><div class="n">5/8</div><div class="l">تجارب أعادت فيها المكسورة نقطة انطلاقها</div></div>
+    <div class="stat good"><div class="n">‎+23%‎</div><div class="l">التحسّن الوسيط حيث يُنشَر الأبطال</div></div>
+  </div>
+
+  <h3 style="margin:24px 0 4px;font-size:16px">تصحيحان لهذه الصفحة</h3>
+  <ul class="claims">
+    <li><span class="mark n">!</span><div><b>«4.9 زيارة لكل رفّ» كان رقمًا متفائلًا.</b> فقد افترض أن كل
+      محاولة تصل إلى رفّ، والحقيقة أن <b>68% منها لا تصل</b> — إما تخسر مالًا، أو تكاد لا تتداول، أو يهبط
+      رأسمالها أكثر من اللازم. والرقم الحقيقي <b>1.46</b>، وهو ما زال فوق الـ1.0 التي تهمّ (القديمة حقّقت
+      <b>0.08</b>) لكنه أقل من الرقم المرسوم أعلاه.</div></li>
+    <li><span class="mark y">✓</span><div><b>الوعد في القسم ٧ نُفِّذ مرّتين.</b> فشل المعيار وأُبلغ عن
+      فشله في المرّتين. أما الثالث فكُتب وسُجّل <i>قبل</i> تشغيله، فلم يكن ممكنًا اختياره لأنه ناجح.</div></li>
+  </ul>
 </section>
 
 </div><!-- /ar -->

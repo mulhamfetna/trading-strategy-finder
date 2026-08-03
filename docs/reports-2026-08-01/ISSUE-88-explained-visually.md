@@ -209,3 +209,45 @@ is tracked separately.
 
 > **A cabinet with more shelves than items stops being a collection of the best and becomes a collection
 > of the first — while looking exactly the same from the outside.**
+
+---
+
+## 10. What happened when it was measured (2026-08-03)
+
+**The test in §7 was the wrong test, and it took two failures to see it.**
+
+| round | what was counted | result |
+|---|---|---|
+| 1 | improvements ≥ 2× | **failed** — 1 of 8 seeds |
+| 2 | improvements ≥ 2×, 10× the budget | **failed, and inverted** — the broken cabinet scored **2.5× MORE** |
+| 3 | **how good the strategies on the shelves actually are** | **passed — 8 of 8** |
+
+Why round 2 inverted, in one line:
+
+> **A cabinet of junk is easy to improve on. A cabinet of genuinely good items is hard to improve on.**
+
+So counting improvements *rewards* the broken cabinet. The counter went up as the thing got worse — not
+a weak measurement, a wrong one.
+
+### The number that settles it
+
+The run is *handed* a strategy before it starts — the current champion, worth **$23,328**.
+
+| | best strategy found in the part of the cabinet that matters |
+|---|---|
+| **broken cabinet** | **exactly the champion it started with, in 5 of 8 runs** |
+| **fixed cabinet** | beat it in **8 of 8**, by **+23%** |
+
+> **The broken cabinet spent 4,000 tries and handed back the strategy it was given** — while looking
+> busy the whole time: 260 shelves filled, 299 "improvements" logged.
+
+### Two corrections to this page
+
+- **"4.9 visits per shelf" was optimistic.** It assumed every try reaches a shelf. **68% never do** —
+  they lose money, barely trade, or drop too hard. The real figure is **1.46**. Still above the 1.0 that
+  matters (the old cabinet achieved **0.08**), but the honest number is lower than the one drawn above.
+- **§7's promise was kept, twice.** The criterion failed and was reported as failed both times. The
+  third criterion was written down and committed *before* its run, so it could not be chosen for
+  passing.
+
+Full detail: `../reports-2026-08-03/ISSUE-88-FINAL-round3.md`
