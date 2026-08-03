@@ -204,12 +204,25 @@ def run(tf_name: str, n_evals: int = 400, folds: int = 5, min_trades: int = 5, s
     # its niche was EMPTY involves no comparison at all, while replacing a sitting elite is the only
     # thing that makes this an elites archive. Counting shelves is arithmetic; this is the evidence.
     # If `improvements` does not rise materially against the pre-fix run, the fix did not work.
-    stats = {"first_fill": 0, "improvement": 0, "rejected": 0, "infeasible": 0}
+    #
+    # `infeasible` is a TOTAL over three different failures, split out because they call for completely
+    # different responses and were previously one number (#101):
+    #   invalid  — score_walkforward said not valid: a fold had fewer than min_trades. It barely traded.
+    #   pnl_neg  — it traded and LOST money over the full period.
+    #   dd_over  — it traded and made money, but drew down more than DD_PNL_CAP x that profit.
+    # Measured on NQ 4h these account for ~70% of all evaluations, which is why archive coverage is
+    # capped by the feasibility rate rather than by the niche count.
+    stats = {"first_fill": 0, "improvement": 0, "rejected": 0, "infeasible": 0,
+             "invalid": 0, "pnl_neg": 0, "dd_over": 0}
 
     def consider(geno):
         en, flip, cont = geno
         m = ctx.evaluate(ctx.build_params(en, flip, cont))
-        if m is None or not m["feasible"]:
+        if m is None:
+            stats["invalid"] += 1; stats["infeasible"] += 1
+            return False
+        if not m["feasible"]:
+            stats["pnl_neg" if m["full_pnl"] <= 0 else "dd_over"] += 1
             stats["infeasible"] += 1
             return False
         n_ind = n_enabled(en)
@@ -233,6 +246,11 @@ def run(tf_name: str, n_evals: int = 400, folds: int = 5, min_trades: int = 5, s
     n_boot = min(max(10, n_evals // 10), n_evals - evals)
     for _ in range(n_boot):
         consider(_rand_geno(ctx, space, rng, n_ind_range)); evals += 1
+
+    # Snapshot after the RANDOM bootstrap so the mutation phase can be read by subtraction (#101): a
+    # random genome failing is a different diagnosis from a MUTATION OF A SITTING ELITE failing — the
+    # first says the prior is wrong, the second says the neighbourhood of a good strategy is hostile.
+    boot_stats = dict(stats)
 
     _lo, _hi = n_ind_range or RAND_N_IND
     print(f"[{tf_name}] MAP-ELITES  evals={n_evals}  (bootstrap {evals}; archive {len(archive)} cells)  "
@@ -286,6 +304,15 @@ def run(tf_name: str, n_evals: int = 400, folds: int = 5, min_trades: int = 5, s
     print(f"   reach       : {_reached}/{n_evals} evals reached a niche ({100 * stats['infeasible'] / max(1, n_evals):.0f}% "
           f"infeasible) ⇒ {_reached / N_NICHES:.2f} ACHIEVED visits per niche, {len(archive)}/{N_NICHES} filled",
           flush=True)
+    print(f"   discarded   : {stats['invalid']} barely traded (<{min_trades}/fold) · "
+          f"{stats['pnl_neg']} lost money · {stats['dd_over']} drew down > {100 * TS.DD_PNL_CAP:.0f}% of profit  "
+          f"(#101)", flush=True)
+    _mut = {k: stats[k] - boot_stats[k] for k in stats}
+    _bn, _mn = sum(boot_stats[k] for k in ("invalid", "pnl_neg", "dd_over")), \
+               sum(_mut[k] for k in ("invalid", "pnl_neg", "dd_over"))
+    _bt, _mt = sum(boot_stats.values()) - boot_stats["infeasible"], sum(_mut.values()) - _mut["infeasible"]
+    print(f"   by phase    : random bootstrap {_bn}/{_bn + _bt} discarded · "
+          f"mutation of an elite {_mn}/{_mn + _mt} discarded", flush=True)
     if best_overall:
         b = best_overall["metrics"]
         print(f"   best return : med ${b['median_pnl']:,.0f}  worstDD ${b['worst_dd']:,.0f}  "
@@ -303,6 +330,7 @@ def run(tf_name: str, n_evals: int = 400, folds: int = 5, min_trades: int = 5, s
               # planned vs ACHIEVED — the second is the one the design argument rests on
               "reached_niche": _reached, "achieved_visits_per_niche": round(_reached / N_NICHES, 2),
               "ind_bins": list(IND_BIN_LABELS), "selection": dict(stats),
+              "selection_bootstrap": dict(boot_stats), "selection_mutation": dict(_mut),
               "best_overall": _portfolio_entry(best_overall), "safest": _portfolio_entry(safest),
               "simplest": _portfolio_entry(simplest),
               "archive": {niche_label(c): _portfolio_entry(v) for c, v in archive.items()}}
