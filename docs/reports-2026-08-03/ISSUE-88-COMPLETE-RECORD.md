@@ -238,6 +238,28 @@ The secondary swept 8/8 cold and is a strong hint that the fix helps there too �
 forbids promoting a secondary after seeing it pass, so it stays a hint. Full detail:
 `ISSUE-88-ROUND4-coldstart-result.md`.
 
+### Round 5 — cold, best-anywhere, FRESH seeds 9–16 (16 runs)
+
+Round 4's pre-declared secondary (best elite anywhere) swept 8/8 cold at +55%. Rather than promote it —
+which the round-4 pre-registration forbade — it was declared as the PRIMARY in advance and tested on
+**seeds never run before**, since rounds 1–4 and #101 all used seeds 1–8.
+
+**FAILED — 5 of 8** (threshold 6). Median best elite $25,173 → $24,176, **−4.0%**.
+
+| | seeds 1–8 (round 4) | seeds 9–16 (round 5) |
+|---|---:|---:|
+| bucketed wins on best-anywhere | **8/8** | **5/8** |
+| median uplift | **+55%** | **−4.0%** |
+
+**An 8/8 sweep with a +55% margin became 5/8 with −4%. Nothing changed but the seeds.** My prediction,
+recorded in the pre-registration, was that this would pass. It was wrong.
+
+> Two independent runs agreeing on the same seeds is not replication. It is the same eight rolls of the
+> same dice, counted twice.
+
+**#88's benefit is scoped to warm-started search, permanently.** Detail:
+`ISSUE-88-ROUND5-FINAL.md`.
+
 ---
 
 ## Part III — the apparatus was wrong three times
