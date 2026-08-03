@@ -56,7 +56,7 @@ class RunSpec:
     exclude_indicators: tuple[str, ...] = ()
     reference: str | None = None
     max_enabled: int | None = None
-    warm_start: bool = True
+    warm_start: bool = False
     dd_pnl_cap: float | None = None
     train_window: str | None = None
     force_eod: bool = False
@@ -139,8 +139,10 @@ def build_argv(spec: RunSpec, python: str = "python3", unbuffered: bool = False,
         argv += ["--reference", str(spec.reference)]
     if spec.max_enabled:
         argv += ["--max-enabled", str(int(spec.max_enabled))]
-    if not spec.warm_start:
-        argv.append("--no-warm-start")
+    # ALWAYS stated, like the indicator frame. Cold start is now the default (#102) and it REMOVES the
+    # ≥-champion guarantee, so which one a run used must be readable off the command itself rather than
+    # inferred from the version of the code that happens to read it later.
+    argv.append("--warm-start" if spec.warm_start else "--no-warm-start")
     if spec.dd_pnl_cap not in (None, ""):
         argv += ["--dd-pnl-cap", str(spec.dd_pnl_cap)]
     if spec.train_window:

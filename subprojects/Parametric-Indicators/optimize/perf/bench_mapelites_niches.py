@@ -45,7 +45,7 @@ from optimize import optimizer as OPT
 from indicators import library
 
 
-def _arm(name, tf, evals, ind_1min, seed, raw_axis):
+def _arm(name, tf, evals, ind_1min, seed, raw_axis, warm_start):
     """Run one arm. `raw_axis=True` restores the pre-#88 behaviour: niche column = the raw count."""
     original, original_n = ME.ind_bucket, ME.N_NICHES
     if raw_axis:
@@ -57,7 +57,7 @@ def _arm(name, tf, evals, ind_1min, seed, raw_axis):
         t0 = time.time()
         print(f"\n{'=' * 92}\nARM: {name}  (indicator axis = "
               f"{'RAW COUNT — pre-#88' if raw_axis else 'BUCKETED — post-#88'})\n{'=' * 92}", flush=True)
-        r = ME.run(tf, n_evals=evals, ind_1min=ind_1min, seed=seed, warm_start=True, save=False)
+        r = ME.run(tf, n_evals=evals, ind_1min=ind_1min, seed=seed, warm_start=warm_start, save=False)
         r["arm"] = name
         r["wall_s"] = round(time.time() - t0, 1)
         # the control's niche total is not ME.N_NICHES — its axis is the registry, so recompute honestly
@@ -103,6 +103,7 @@ def main() -> int:
     ap.add_argument("--evals", type=int, default=400)
     ap.add_argument("--seed", type=int, default=1)
     OPT.add_indicator_frame_args(ap)
+    OPT.add_warm_start_args(ap)
     ap.add_argument("--out", default=None, help="write the JSON verdict here")
     a = ap.parse_args()
 
@@ -110,13 +111,13 @@ def main() -> int:
           f"registry {len(library.REGISTRY)} indicators", flush=True)
 
     # control FIRST, so a crash in the treatment cannot be mistaken for a control that never ran
-    ctl = _arm("control_raw_axis", a.timeframe, a.evals, a.ind_1min, a.seed, raw_axis=True)
-    trt = _arm("treatment_bucketed", a.timeframe, a.evals, a.ind_1min, a.seed, raw_axis=False)
+    ctl = _arm("control_raw_axis", a.timeframe, a.evals, a.ind_1min, a.seed, True, a.warm_start)
+    trt = _arm("treatment_bucketed", a.timeframe, a.evals, a.ind_1min, a.seed, False, a.warm_start)
 
     c, t = ctl["selection"], trt["selection"]
     c_placed, t_placed = c["first_fill"] + c["improvement"], t["first_fill"] + t["improvement"]
     verdict = {
-        "timeframe": a.timeframe, "evals": a.evals, "seed": a.seed,
+        "timeframe": a.timeframe, "evals": a.evals, "seed": a.seed, "warm_start": a.warm_start,
         "registry": len(library.REGISTRY),
         "control": {"niches": ctl["true_niches"], "evals_per_niche": ctl["true_evals_per_niche"],
                     "filled": ctl["coverage"], **c, "wall_s": ctl["wall_s"], **ctl["quality"]},

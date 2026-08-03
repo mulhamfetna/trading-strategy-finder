@@ -70,7 +70,7 @@ class _Ctx:
     # build _Ctx directly, and each one had to re-state `ind_1min=True` or silently evaluate in the
     # wrong frame. See optimize/test_indicator_frame_default.py for what that cost.
     def __init__(self, tf_name: str, split_sltp: bool = False, ind_1min: bool = True, folds: int = 5,
-                 min_trades: int = 5, warm_start: bool = True):
+                 min_trades: int = 5, warm_start: bool = False):
         self.tf_name = tf_name; self.split_sltp = split_sltp; self.ind_1min = ind_1min
         self.folds = folds; self.min_trades = min_trades
         self.tf = TF.get(tf_name)
@@ -296,7 +296,7 @@ def stage_a_recommended_trials(per_dim: int = OPT.TRIALS_PER_DIM) -> int:
 
 def run(tf_name: str, stage_a_trials: int | None = None, stage_b_trials: int = 100, top_k: int = 3,
         stage_b_engine: str = "cmaes", folds: int = 5, min_trades: int = 5, seed: int = 1,
-        ind_1min: bool = True, split_sltp: bool = False, warm_start: bool = True) -> dict:
+        ind_1min: bool = True, split_sltp: bool = False, warm_start: bool = False) -> dict:
     if stage_b_engine not in STAGE_B_ENGINES:
         raise ValueError(f"unknown stage-b engine '{stage_b_engine}' (choices: {STAGE_B_ENGINES})")
     t0 = time.time()
@@ -358,11 +358,11 @@ def main() -> int:
     ap.add_argument("--min-trades", type=int, default=5)
     OPT.add_indicator_frame_args(ap)
     ap.add_argument("--split-sltp", action="store_true")
-    ap.add_argument("--no-warm-start", action="store_true")
+    OPT.add_warm_start_args(ap)
     a = ap.parse_args()
     run(a.timeframe, stage_a_trials=a.stage_a_trials, stage_b_trials=a.stage_b_trials, top_k=a.top_k,
         stage_b_engine=a.stage_b, folds=a.folds, min_trades=a.min_trades, ind_1min=a.ind_1min,
-        split_sltp=a.split_sltp, warm_start=not a.no_warm_start)
+        split_sltp=a.split_sltp, warm_start=a.warm_start)
     return 0
 
 

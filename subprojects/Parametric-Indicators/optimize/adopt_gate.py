@@ -172,7 +172,7 @@ def cmd_search(args, log):
         f"max_enabled={args.max_enabled} train_window={args.train_window} prefix={args.study_prefix}")
     res = _opt.run(args.tf, n_trials=args.trials, ind_1min=True, study_prefix=args.study_prefix,
                    max_enabled=args.max_enabled, train_window=args.train_window,
-                   instrument=args.instrument, warm_start=not args.no_warm_start)
+                   instrument=args.instrument, warm_start=args.warm_start)
     if stats is not None:
         log(f"[gate] PLACEBO: scrambled {stats['calls']:,} vote computations")
         assert stats["calls"] > 0, "placebo mode scrambled NOTHING — the control is vacuous"
@@ -603,7 +603,7 @@ def main() -> int:
     ap.add_argument("--max-enabled", type=int, default=3)
     ap.add_argument("--train-window", default="2025", choices=["full", "2025"])
     ap.add_argument("--study-prefix", default="adopt14")
-    ap.add_argument("--no-warm-start", action="store_true")
+    _opt.add_warm_start_args(ap)
     ap.add_argument("--seed", type=int, default=20260728, help="placebo shift seed")
     ap.add_argument("--progress-every", type=int, default=2000, help="heartbeat interval (trials)")
     ap.add_argument("--study", default=None, help="study name (for `extract`)")

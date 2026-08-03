@@ -189,7 +189,7 @@ def _mutate(geno, space, rng):
 
 
 def run(tf_name: str, n_evals: int = 400, folds: int = 5, min_trades: int = 5, seed: int = 1,
-        ind_1min: bool = True, split_sltp: bool = False, warm_start: bool = True,
+        ind_1min: bool = True, split_sltp: bool = False, warm_start: bool = False,
         save: bool = False, n_ind_range=None) -> dict:
     t0 = time.time()
     ctx = TS._Ctx(tf_name, split_sltp, ind_1min, folds, min_trades, warm_start)
@@ -359,7 +359,7 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=1)
     OPT.add_indicator_frame_args(ap)
     ap.add_argument("--split-sltp", action="store_true")
-    ap.add_argument("--no-warm-start", action="store_true")
+    OPT.add_warm_start_args(ap)
     ap.add_argument("--save", action="store_true", help="write archive to optimize/results/mapelites_<tf>.json")
     ap.add_argument("--rand-n-ind", default=None, metavar="LO,HI",
                     help=f"bootstrap genome size range (default {RAND_N_IND[0]},{RAND_N_IND[1]}). This is a "
@@ -374,7 +374,7 @@ def main() -> int:
             raise SystemExit(f"--rand-n-ind expects LO,HI (got {a.rand_n_ind!r})")
         _rng_ind = (lo, hi)
     run(a.timeframe, n_evals=a.evals, folds=a.folds, min_trades=a.min_trades, seed=a.seed,
-        ind_1min=a.ind_1min, split_sltp=a.split_sltp, warm_start=not a.no_warm_start, save=a.save,
+        ind_1min=a.ind_1min, split_sltp=a.split_sltp, warm_start=a.warm_start, save=a.save,
         n_ind_range=_rng_ind)
     return 0
 

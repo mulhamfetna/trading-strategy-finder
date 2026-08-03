@@ -227,6 +227,30 @@ DD_LIMIT_MAX = 5000.0
 # `--tf-indicators` out loud. `--ind-1min` is still accepted so existing run scripts and playbooks keep
 # working, but it now only re-states the default. Same class as the "no silent defaults" rule: a
 # measurement parameter you can get wrong by omission is a defect, not a convenience.
+# ─────────────────────────────────────────────────────────────────────────────────────────────────
+# WARM START — off by default. Seeding the champion must be asked for (#102, owner decision).
+#
+# WHAT WARM START DOES AND WHY IT WAS ON. It enqueues the deployed champion as a seed trial, so the
+# result is provably ≥ the prior champion. That floor was added after wsh5 returned something worse.
+#
+# WHY THE FLOOR IS NOT FREE. The search then starts inside one basin and evolves outward from it. The
+# population grows on ONE SIDE, and configurations that would have won from a different starting point
+# are eliminated before they are ever explored. A guaranteed floor is bought with an unmeasured ceiling,
+# and the ceiling was never measured — the default simply made every study a refinement of the incumbent.
+#
+# ⚠️ WHAT THIS CHANGE COSTS, STATED PLAINLY: cold start REMOVES the ≥-champion guarantee. A cold run can
+# return something worse than what is deployed and nothing downstream will catch it. Anything promoted
+# out of a cold run must be compared against the deployed set explicitly before adoption.
+def add_warm_start_args(ap) -> None:
+    """Attach the warm-start flags. ONE definition shared by every CLI, so the four cannot drift."""
+    g = ap.add_mutually_exclusive_group()
+    g.add_argument("--warm-start", dest="warm_start", action="store_true", default=False,
+                   help="seed the deployed champion as a starting point. Guarantees the result is ≥ the "
+                        "champion, at the cost of searching only that champion's neighbourhood")
+    g.add_argument("--no-warm-start", dest="warm_start", action="store_false",
+                   help="DEFAULT (kept for compatibility): start cold, from nothing")
+
+
 def add_indicator_frame_args(ap) -> None:
     """Attach the indicator-frame flags. ONE definition shared by every CLI (optimizer, two_stage,
     map_elites, benches) so the four cannot drift apart — four copies of a default is four chances for
@@ -559,7 +583,7 @@ PROGRESS_CALLBACK = None      # optional per-trial callback, set by a driver (se
 
 def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         seed: int = 1, ind_1min: bool = True, study_prefix: str = "wsh3",
-        split_sltp: bool = False, warm_start: bool = True, sampler: str = "nsga3",
+        split_sltp: bool = False, warm_start: bool = False, sampler: str = "nsga3",
         objective: str = "winrate", exclude_inds: tuple = (), only_inds: tuple = (),
         dd_pnl_cap: float = DD_PNL_CAP, contrib_tokens: tuple = (),
         contrib_exclude=None, instrument: str = "NQ", intracandle: bool = False,
@@ -913,9 +937,7 @@ def main() -> int:
     ap.add_argument("--plan", action="store_true",
                     help="DRY RUN: print the search-space size + dimension-proportional trial budget, then "
                          "exit WITHOUT running. Use this to review/accept the budget before launching.")
-    ap.add_argument("--no-warm-start", action="store_true",
-                    help="do NOT enqueue known champions as seed trials (warm-start is ON by default and "
-                         "guarantees the front is ≥ the prior champion's score)")
+    add_warm_start_args(ap)
     ap.add_argument("--sampler", default="nsga3", choices=SAMPLER_CHOICES,
                     help="optimizer 'brain' (default nsga3 = unchanged baseline). nsga2/tpe/motpe/gp are "
                          "drop-in multi-objective alternatives; cmaes is single-objective/continuous-only "
@@ -1053,7 +1075,7 @@ def main() -> int:
               flush=True)
     run(a.timeframe, n_trials=n_trials, folds=a.folds, min_trades=a.min_trades,
         ind_1min=a.ind_1min, study_prefix=a.study_prefix, split_sltp=a.split_sltp,
-        warm_start=not a.no_warm_start, sampler=a.sampler,
+        warm_start=a.warm_start, sampler=a.sampler,
         objective=a.objective, exclude_inds=_excl, only_inds=_only, dd_pnl_cap=a.dd_pnl_cap,
         contrib_tokens=contrib_tokens, contrib_exclude=_cexc, instrument=a.instrument,
         intracandle=(a.intracandle or a.intracandle_on),
