@@ -63,9 +63,38 @@ def _arm(name, tf, evals, ind_1min, seed, raw_axis):
         # the control's niche total is not ME.N_NICHES — its axis is the registry, so recompute honestly
         r["true_niches"] = ME.N_NICHES
         r["true_evals_per_niche"] = round(evals / r["true_niches"], 3)
+        r["quality"] = _quality(r)
         return r
     finally:
         ME.ind_bucket, ME.N_NICHES = original, original_n
+
+
+# Deployed champions use 3–10 indicators. An archive is not judged by how busy it was but by what is
+# IN it, and specifically by what is in the region anything would actually be deployed from.
+CHAMPION_ZONE = (3, 10)
+
+
+def _quality(r: dict) -> dict:
+    """What the archive CONTAINS, which is the only thing a portfolio of elites is for.
+
+    Round 1 and round 2 both measured the archive's process (how many improvements, how many
+    comparisons) and both criteria failed — the second in the OPPOSITE direction, because an archive
+    full of weak first arrivals is EASY to improve and therefore scores well on an improvement count.
+    The counter is anti-correlated with the quality it was standing in for. So: measure the contents."""
+    ents = [e for e in r["archive"].values() if e]
+    zone = [e for e in ents if CHAMPION_ZONE[0] <= e["n_ind"] <= CHAMPION_ZONE[1]]
+    best = lambda xs, k: max((e[k] for e in xs), default=None)
+    return {
+        "entries": len(ents),
+        "best_median_pnl": best(ents, "median_pnl"),
+        "best_full_pnl": best(ents, "full_pnl"),
+        "zone_entries": len(zone),
+        "zone_best_median_pnl": best(zone, "median_pnl"),
+        "zone_best_full_pnl": best(zone, "full_pnl"),
+        # sum of elite fitness over the champion zone: rewards an archive that is good ACROSS the
+        # region, not one that got a single lucky point
+        "zone_total_median_pnl": sum(e["median_pnl"] for e in zone) if zone else 0.0,
+    }
 
 
 def main() -> int:
@@ -90,9 +119,9 @@ def main() -> int:
         "timeframe": a.timeframe, "evals": a.evals, "seed": a.seed,
         "registry": len(library.REGISTRY),
         "control": {"niches": ctl["true_niches"], "evals_per_niche": ctl["true_evals_per_niche"],
-                    "filled": ctl["coverage"], **c, "wall_s": ctl["wall_s"]},
+                    "filled": ctl["coverage"], **c, "wall_s": ctl["wall_s"], **ctl["quality"]},
         "treatment": {"niches": trt["true_niches"], "evals_per_niche": trt["true_evals_per_niche"],
-                      "filled": trt["coverage"], **t, "wall_s": trt["wall_s"]},
+                      "filled": trt["coverage"], **t, "wall_s": trt["wall_s"], **trt["quality"]},
         "improvement_ratio": round(t["improvement"] / max(1, c["improvement"]), 2),
         # the pre-registered criterion, evaluated here rather than in prose afterwards
         "criterion": "improvements must rise materially (>=2x) over the control",
@@ -104,8 +133,16 @@ def main() -> int:
     for lbl, k in (("niches", "niches"), ("evals per niche", "evals_per_niche"),
                    ("niches filled", "filled"), ("first-fills", "first_fill"),
                    ("IMPROVEMENTS", "improvement"), ("rejected", "rejected"),
-                   ("infeasible", "infeasible"), ("wall seconds", "wall_s")):
-        print(f"{lbl:22s} {str(verdict['control'][k]):>18s} {str(verdict['treatment'][k]):>22s}")
+                   ("infeasible", "infeasible"), ("wall seconds", "wall_s"),
+                   # what the archive CONTAINS — the counters above describe its process, and #88
+                   # rounds 1 and 2 showed the process counters answer the wrong question
+                   ("archive entries", "entries"), ("best median P/L", "best_median_pnl"),
+                   ("3-10 ind entries", "zone_entries"),
+                   ("3-10 best median P/L", "zone_best_median_pnl"),
+                   ("3-10 total median P/L", "zone_total_median_pnl")):
+        cv, tv = verdict['control'][k], verdict['treatment'][k]
+        fmt = lambda v: f"{v:,.0f}" if isinstance(v, float) else str(v)
+        print(f"{lbl:22s} {fmt(cv):>18s} {fmt(tv):>22s}")
     print(f"{'real choices':22s} {100 * c['improvement'] / max(1, c_placed):17.0f}% "
           f"{100 * t['improvement'] / max(1, t_placed):21.0f}%")
     print(f"\nimprovement ratio: {verdict['improvement_ratio']}x  →  "

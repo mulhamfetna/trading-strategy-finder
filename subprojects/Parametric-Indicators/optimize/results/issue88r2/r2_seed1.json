@@ -1,0 +1,35 @@
+{
+  "timeframe": "4h",
+  "evals": 4000,
+  "seed": 1,
+  "registry": 165,
+  "control": {
+    "niches": 1494,
+    "evals_per_niche": 2.677,
+    "filled": 297,
+    "first_fill": 297,
+    "improvement": 320,
+    "rejected": 815,
+    "infeasible": 2568,
+    "invalid": 1230,
+    "pnl_neg": 350,
+    "dd_over": 988,
+    "wall_s": 92.4
+  },
+  "treatment": {
+    "niches": 81,
+    "evals_per_niche": 49.383,
+    "filled": 37,
+    "first_fill": 37,
+    "improvement": 129,
+    "rejected": 1147,
+    "infeasible": 2687,
+    "invalid": 1048,
+    "pnl_neg": 442,
+    "dd_over": 1197,
+    "wall_s": 97.6
+  },
+  "improvement_ratio": 0.4,
+  "criterion": "improvements must rise materially (>=2x) over the control",
+  "passes": false
+}
