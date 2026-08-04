@@ -11,7 +11,7 @@ branch: research/legacy-18-baseline
 
 **You are one of two agents working on this project on this device, at the same time.** The other
 agent works in `/mnt/data/projects/trading` on branch `dev`. You work **only** here, in
-`/mnt/data/projects/trading-legacy18`, on branch `research/legacy-18-baseline`.
+`/mnt/data/projects/trading/legacy18`, on branch `research/legacy-18-baseline`.
 
 Read this whole file before running anything. It is short on purpose; the deep material is linked.
 
@@ -64,7 +64,7 @@ exists so that when you get it, you start from solid ground.
 **Source `.wsenv/env.sh` before every command.** Nothing below works otherwise.
 
 ```bash
-cd /mnt/data/projects/trading-legacy18
+cd /mnt/data/projects/trading/legacy18
 source .wsenv/env.sh
 ```
 
@@ -228,7 +228,7 @@ prefer `roots.data_path(...)` and consider filing the residual.
 ## 9. Your first commands
 
 ```bash
-cd /mnt/data/projects/trading-legacy18
+cd /mnt/data/projects/trading/legacy18
 source .wsenv/env.sh
 
 # sanity: the 18 are what you think they are

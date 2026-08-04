@@ -7,7 +7,7 @@
 # WHY EACH LINE EXISTS. Two agents run on this device at the same time. Everything below is a
 # resource that is SHARED by default and would silently cross-contaminate the two workstreams.
 # ─────────────────────────────────────────────────────────────────────────────────────────────────
-export WS_ROOT="/mnt/data/projects/trading-legacy18"
+export WS_ROOT="/mnt/data/projects/trading/legacy18"
 export WS_NAME="legacy-18-baseline"
 
 # 1. THE L1 DISK CACHE — the dangerous one.
