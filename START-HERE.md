@@ -72,7 +72,7 @@ source .wsenv/env.sh
 |---|---|---|
 | code checkout | ✅ | separate git worktree, branch `research/legacy-18-baseline` |
 | Python env | ✅ | `.venv/` here — use `$WS_PY`, never bare `python3` |
-| **L1 disk cache** | ✅ | `TMPDIR` → `.wsenv/tmp`. **This is the one that would silently corrupt both workstreams.** See §4. |
+| **L1 disk cache** | ✅ | `TMPDIR` → `/tmp/ws-legacy18` (sibling uses `/tmp/wsh_l1_cache`). **This is the one that would silently corrupt both workstreams.** See §4. |
 | Optuna studies | ✅ | `optimize/studies/` resolves from `__file__`, so the worktree separates it. `WSH_STORAGE_URL` is force-unset. |
 | results | ✅ | `optimize/results/` — same mechanism |
 | study names | ✅ | always prefix with `$WS_PREFIX` (`lg18_`) |
@@ -140,7 +140,7 @@ Heavy compute goes here. **It is shared with the other workstream — check befo
 ssh amd-trading                      # 78.89.209.212 port 33362, user dev, key ~/.ssh/amd_trading
 ```
 
-- 32 cores, 123 GB RAM. Has **numba** (this box does not — local runs are ~7× slower).
+- 32 cores, 123 GB RAM, has numba. **Your local venv also has numba** (the sibling's does not) — see §8b.
 - Server checkout: `~/Mulham/code` — currently tracks `dev`. **You must not repoint it.** Create your
   own checkout or worktree for this workstream.
 - Data root on the server (required, or ~32 tests fail as fake regressions):
