@@ -15,7 +15,13 @@ export WS_NAME="legacy-18-baseline"
 #    Python's gettempdir() honours TMPDIR. Without this, BOTH workstreams read and write the same
 #    cached L1 results. If either one touches the engine, indicators, or fills, the other silently
 #    consumes poisoned P&L and every number it reports is wrong with no error.
-export TMPDIR="$WS_ROOT/.wsenv/tmp"
+#    NOTE ON LOCATION: this is /tmp/ws-legacy18, NOT a directory inside the worktree. pytest's
+#    tmp_path fixture refuses a temp root it does not own, and the worktree is root-owned, which
+#    produced 48 errors ("The temporary directory ... is not owned by the current user"). /tmp entries
+#    we create are owned by us. Isolation is unaffected: the cache lands at
+#    /tmp/ws-legacy18/wsh_l1_cache while the other workstream uses /tmp/wsh_l1_cache.
+export TMPDIR="${TMPDIR_WS:-/tmp/ws-legacy18}"
+mkdir -p "$TMPDIR"
 
 # 2. OPTUNA STORAGE — force the worktree-local per-TF SQLite under
 #    subprojects/Parametric-Indicators/optimize/studies/ (that path derives from __file__, so the

@@ -194,6 +194,37 @@ predate recalibration), **#103** + children **#104–#108**.
 
 ---
 
+## 8b. Environment facts you must know before comparing any number
+
+**This environment is NOT identical to the other workstream's local environment.** Three differences,
+all of which can move results:
+
+| | this workstream | main workstream (local) |
+|---|---|---|
+| **numba** | **0.66.0 — INSTALLED** | absent |
+| numpy / pandas / optuna | 2.4.6 / 3.0.5 / 4.9.0 | 2.3.5 / 3.0.2 / 4.8.0 |
+| suite result | **1,230 passed / 4 skipped / 0 failed** | 1,197 passed / 14 skipped |
+
+**Why numba matters:** with it present, the 10 SMC numba-parity tests actually RUN here (they *skip* in
+the other local env), and MAP-Elites is roughly 7× faster. It also means you exercise the compiled
+kernel paths, not the pure-Python reference. That is a genuine advantage — and a genuine reason your
+timings and any float-sensitive result are not directly comparable to the sibling workstream's local
+numbers. **Compare against the server, or against your own baseline.**
+
+The exact package set is frozen in `.wsenv/requirements-lock.txt`. If you need bit-comparability with
+the sibling workstream, pin from theirs instead — but say so out loud when you do.
+
+**Data is symlinked, not copied:** `ALL_STOCKS`, `Full_Canldes_Data` and `data` point at
+`/mnt/data/projects/trading`. A git worktree checks out tracked files only, and the price data is
+untracked. Treat it as **read-only**.
+
+⚠️ **A residual of #94 lives here:** at least one code path builds a data path from the *checkout*
+rather than from `roots.py`'s `DATA_ROOT` (`tests/test_smc_numba_parity.py` wanted
+`<worktree>/data/full_data/NQ_full_data.csv`). The symlinks work around it. If you touch data paths,
+prefer `roots.data_path(...)` and consider filing the residual.
+
+---
+
 ## 9. Your first commands
 
 ```bash
