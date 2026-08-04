@@ -28,7 +28,7 @@ is half-merged, no experiment is awaiting a result.
 | closed this session | #88, #94, #95, #96, #97, #99, #101 |
 | opened this session | #102, #103, #104, #105, #106, #107, #108 |
 | branches parked | `research/arch-a-one-stage-mixed`, `research/arch-b-two-stage-specialist` — **created, pushed, EMPTY of work** |
-| worktrees | none |
+| worktrees | `legacy18/` — nested worktree, branch `research/legacy-18-baseline` (a SEPARATE workstream; see `legacy18/START-HERE.md`) |
 
 **No compute is running on the server.** Run scripts left in place at `~/Mulham/run88*.sh`,
 `~/Mulham/run101ab.sh`, outputs under `~/Mulham/runs/issue{88,88r2,88r3,88r4,88r5,101}/`. All results
