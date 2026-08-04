@@ -138,4 +138,12 @@ vpn_kill.sh
 
 # Root-level data downloads / dumps (transient — never commit)
 /*.zip
-/data/
+# NO TRAILING SLASH — a slashed pattern matches DIRECTORIES ONLY, so it silently fails on the case it
+# most needs to catch: a data root that is a SYMLINK. Exactly the trap already recorded further up
+# this file for subprojects/Parametric-Indicators/data ("on the server this path is a SYMLINK"), and
+# it recurred verbatim when the legacy18 worktree symlinked these three back to the main checkout —
+# `/data/` ignored the real directory in the parent and missed the symlink in the worktree.
+# These are price-data roots. They must never be committed whether they are directories or links.
+/data
+/ALL_STOCKS
+/Full_Canldes_Data
