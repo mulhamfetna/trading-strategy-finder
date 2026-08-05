@@ -199,8 +199,17 @@ def main() -> int:
         "ℹ️ Rows marked `outside_span` are after 2026-05-19, where our local price file ends. **TradingView",
         "still has that data**, so you can check them normally; they simply are not usable for analysis yet.",
         "",
-        "| # | ticker | date | time (ET) | session | flag | NQ bar | verdict (✓ / ✗ / note) |",
-        "|---|--------|------|-----------|---------|------|--------|------------------------|",
+        "### ⚠️ Please write the time you actually SEE, even when it matches",
+        "",
+        "The most valuable column is **observed spike time**, not the tick. We have since discovered that",
+        "the SEC filing timestamp is *not* the announcement moment for every company — Intel's filing lags",
+        "its own press release by about **7 minutes**. Your observed times are how we measure that gap for",
+        "the 15 companies that publish no timestamp of their own.",
+        "",
+        "So: fill in the observed time on **every** row. A row that matches is data, not a non-event.",
+        "",
+        "| # | ticker | date | our time (ET) | session | flag | NQ bar | **observed spike time** | Δ |",
+        "|---|--------|------|---------------|---------|------|--------|------------------------|---|",
     ]
     n = 0
     for t in ranked:
@@ -210,7 +219,7 @@ def main() -> int:
             n += 1
             lines.append(
                 f"| {n} | **{t}** | {r['dt']:%Y-%m-%d} | **{r['dt']:%H:%M:%S}** | {r['session']} | "
-                f"{'⚠️ OUTLIER' if r['time_outlier'] else ''} | {r['nq_coverage']} |  |")
+                f"{'⚠️ OUTLIER' if r['time_outlier'] else ''} | {r['nq_coverage']} |  |  |")
     lines += [
         "",
         f"**Total rows to check: {n}.** Pass mark ≥ 34 within ±1 minute.",
@@ -237,11 +246,32 @@ def main() -> int:
                      f"{r['dev_from_median_min']:.0f} | {note} |")
     lines += [
         "",
-        "## If a row fails",
+        "---",
         "",
-        "Note the time you actually see the spike. A *consistent* per-company offset is criterion C5 —",
-        "it becomes a recorded correction. A *random* disagreement means the source is unreliable for",
-        "that company and it gets excluded, with the exclusion recorded.",
+        "## What we already know about each company's offset (so you know what to expect)",
+        "",
+        "Measured from company IR websites and independently corroborated by the price tape. **This is",
+        "context, not an answer key** — if what you see disagrees with this table, your observation wins",
+        "and we investigate.",
+        "",
+        "| company | expected gap | how we know |",
+        "|---------|--------------|-------------|",
+        "| **AAPL** | **0 min** — filing time IS the release | tape peaks exactly at our timestamp (6.95×) |",
+        "| **AMD** | ~1.5 min early | AMD's IR site (16:15:00) + tape peak at −1 |",
+        "| **INTC** | **~7 min early** ⚠️ | Intel's IR site (16:01:00) + tape peak at −7 |",
+        "| MSFT, NVDA | ~1 min early | tape only — **unmeasured documentarily** |",
+        "| META | ~3 min early | tape only — **unmeasured documentarily** |",
+        "| GOOGL, AMZN, AVGO, TSLA, MU, WMT, ASML | **unknown** | no published times; not yet measured |",
+        "",
+        "## If a row disagrees with our timestamp",
+        "",
+        "Write down the time you actually see — that *is* the result. A **consistent** per-company offset",
+        "is criterion C5 and becomes a recorded correction. A **random** disagreement means the source is",
+        "unreliable for that company, and it gets excluded with the exclusion recorded.",
+        "",
+        "🚫 **Do not adjust our timestamps to match what you see.** Record both. If we moved timestamps to",
+        "fit the price, the later analysis would be circular — we would 'discover' a spike exactly where we",
+        "had defined it to be.",
     ]
     OUT_MD.write_text("\n".join(lines) + "\n")
     print(f"wrote {n}-row worksheet -> {OUT_MD}")
