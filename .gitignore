@@ -56,6 +56,15 @@ htmlcov/
 # Explicitly requested by the repo owner, logs and plots included. Nothing under here is live code.
 !subprojects/Parametric-Indicators/server-audit/**
 
+# ...and except the WS-EARN earnings evidence (#110). These are ARTIFACTS, not incidental output: the
+# frozen Nasdaq-100 weight snapshot is what makes the company universe reproducible (index weights move
+# daily, so a live fetch would silently change the universe between runs), and the timestamp table is
+# the instrument every later stage of the earnings study depends on. Both are cited by name in
+# optimize/earnings/SOURCES.md. Under the blanket `*.csv` rule they would have been committed as
+# nothing at all — the deliverable would exist locally and vanish from the repo, which is precisely the
+# "LOCAL is the source of truth" rule inverted.
+!subprojects/Parametric-Indicators/optimize/earnings/data/*.csv
+
 # ...but the blanket un-ignore above also re-admitted __pycache__ INSIDE the archive, and the data
 # directory was never ignored at all. Both matter more than they look: they made `git status` on the
 # server permanently non-empty, so the #94 preflight gate would refuse EVERY run as "dirty".
