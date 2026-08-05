@@ -120,30 +120,73 @@ Our timestamps come from `{accession}-index-headers.html`. This check reads the 
 
 ---
 
-## Can we scrape the times that no API supplies? — tested, mostly **no**
+## Can we scrape the times that no API supplies? — yes, and it found a **material defect**
 
-The honest answer, with evidence rather than assertion.
+### ⚠️ Correction to an earlier version of this document
 
-**What works.** A *recent* Apple newsroom page carries JSON-LD `dateModified` = `2026-07-30T20:30:21Z`
-= **16:30:21 ET**, against our EDGAR value of **16:30:28** — **7 seconds apart.** Genuine independent
-corroboration. Intel's IR listing exposes `<time datetime="2026-07-23T16:01:00">`.
+An earlier revision reported *"2 of 8 IR listings usable"* and concluded scraping was **"mostly no"**.
+That figure came from a **partially-completed probe** whose output I read before it finished — the exact
+"never conclude from truncated output" mistake this project has a standing rule about. The complete
+probe of all 19 companies:
 
-**Why it does not generalise.**
+| verdict | n | companies |
+|---|---:|---|
+| **usable — clock times present** | **4** | MSFT, AMZN, **AMD**, **INTC** |
+| dates only | 1 | WMT |
+| no timestamps | 10 | AAPL, NVDA, GOOGL, META, ASML, CSCO, COST, LRCX, PLTR, NFLX |
+| connection refused | 4 | AVGO, TSLA, MU, AMAT |
 
-1. **The timestamp decays.** `datePublished` on Apple's pages carries a **date only** (`2026-07-30Z`).
-   The field that has a clock time is `dateModified` — a *modification* time. Re-fetching Apple's older
-   earnings pages returns `2026-05-13`, a bulk CMS republish that overwrote the original. **The signal
-   degrades with age, which is exactly backwards for a historical study.**
-2. **Coverage is poor.** Of 8 IR listing pages probed: 2 usable (MSFT, AMZN), 3 with no timestamps at
-   all (AAPL, NVDA, GOOGL, META), 2 refused the connection (AVGO, TSLA).
-3. **URL discovery is bespoke.** Guessing Apple's own slug pattern failed on **9 of 11** events.
-4. **It measures a third distinct moment** — website publication — which is neither the wire release nor
-   the SEC acceptance.
+More importantly, **AMD and INTC expose 10–12 clock-stamped releases from a single page fetch** — 60 and
+77 timestamps respectively, reaching back into 2024. That is a usable independent series, not a one-off.
 
-**Conclusion:** scraping can corroborate *individual recent* events and is worth using opportunistically
-if a specific row is disputed. It cannot produce a reliable independent minute-level series across
-2024–2026. The C5 question is better answered by V3's aggregate offset (≈ −1 minute) and by the human
-chart check.
+### 🔴 What it found: the acceptance timestamp is NOT the announcement time for every company
+
+| company | its own IR site | our EDGAR acceptance | measured gap |
+|---|---|---|---|
+| **AMD** | 16:15:00, every quarter | 16:16–16:17 | **+91 s** (median, 6 events) |
+| **INTC** | 16:01:00, every quarter | 16:04–16:13 | **+404 s ≈ 7 min** (median, 9 events) |
+
+### The triangulation — three unconnected sources agree
+
+The price tape has no relationship to either EDGAR or a corporate CMS. Volatility peak offset relative
+to **our** timestamps, each bar measured against a normal bar at the same clock time:
+
+| company | IR-site gap | **tape peak** | ratio at our timestamp |
+|---|---|---|---|
+| **AAPL** | (publishes no times) | **+0 min** | 6.95× |
+| **AMD** | +91 s (~1.5 min) | **−1 min** | 2.99× |
+| **INTC** | +404 s (~7 min) | **−7 min** ✓✓ | **1.32×** |
+| MSFT | — | −1 min | 3.69× |
+| NVDA | — | −1 min | 14.01× |
+| META | — | −3 min | 4.54× |
+
+**Intel's tape peak sits at exactly −7 minutes, matching the ~7-minute gap measured from Intel's own
+website.** Two independent sources, one corporate and one market, agree.
+
+The consequence is concrete: at our current Intel timestamps, Stage 4 would sample a nearly quiet minute
+(**1.32×**) and **miss the real event at 3.22×**.
+
+### What this does and does not license
+
+**Does:** the table remains a *correct record of 8-K acceptance times* — that is verified five ways
+above. But for C5 purposes, **acceptance ≠ announcement**, and the gap is company-specific and material.
+AMD and INTC now have **documentary** offsets from an independent source.
+
+**Does NOT:** licence shifting any timestamp using the tape. The tape is corroboration, never a source —
+shifting timestamps to fit observed volatility is precisely the circularity this workstream is
+pre-committed against. For the 15 companies with no published times the gap is **unmeasured**; the tape
+*hints* at −1 to −3 minutes but that hint may not be used as a correction.
+
+### Revised conclusion
+
+Scraping is **not** a way to replace EDGAR timestamps — coverage is too patchy and Apple-style
+`dateModified` fields decay (older Apple pages now return a `2026-05-13` bulk republish, so that route
+degrades with age, backwards from what a historical study needs).
+
+But it **is the only documentary route to the C5 per-company offset**, and it has already found a
+7-minute error that would have silently degraded Stage 4 for Intel. **Recommendation: extend the scrape
+to every company that publishes times, and treat companies with an unmeasured offset as carrying a known
+uncertainty rather than a known timestamp.**
 
 ---
 
