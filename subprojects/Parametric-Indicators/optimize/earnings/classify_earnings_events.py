@@ -156,7 +156,18 @@ def classify(text: str, docnames: str) -> tuple[str, list[str]]:
 
 
 def main() -> int:
-    argparse.ArgumentParser().parse_args()      # no options: the run is fully determined by the cache
+    ap = argparse.ArgumentParser()
+    # A tag keeps a second collection (e.g. the 16-year run) in its own files. Without it the 16-year
+    # pass would overwrite the verified 2.4-year artifacts in place — destroying the only table that
+    # has been through five verification checks.
+    ap.add_argument("--tag", default="", help="suffix for all data files, e.g. 16y")
+    a = ap.parse_args()
+    sfx = f"_{a.tag}" if a.tag else ""
+    global CACHE, TEXT_CACHE, OUT
+    CACHE = DATA / f"filing_documents{sfx}.json"
+    TEXT_CACHE = DATA / f"filing_text{sfx}.json"
+    OUT = DATA / f"earnings_events_classified{sfx}.json"
+    print(f"cache : {CACHE.name}\ntext  : {TEXT_CACHE.name}\nout   : {OUT.name}\n")
 
     filings = json.loads(CACHE.read_text())
     tcache = json.loads(TEXT_CACHE.read_text()) if TEXT_CACHE.exists() else {}

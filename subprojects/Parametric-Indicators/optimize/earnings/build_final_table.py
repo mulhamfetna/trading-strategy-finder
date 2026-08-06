@@ -60,6 +60,19 @@ def session_of(dt: datetime) -> str:
 
 
 def main() -> int:
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--tag", default="", help="suffix for all data files, e.g. 16y")
+    ap.add_argument("--no-worksheet", action="store_true",
+                    help="skip the TradingView worksheet (it is specific to the verified 2.4y set)")
+    a = ap.parse_args()
+    sfx = f"_{a.tag}" if a.tag else ""
+    global CLASSIFIED, AUTH, OUT_CSV
+    CLASSIFIED = DATA / f"earnings_events_classified{sfx}.json"
+    AUTH = DATA / f"authoritative_times{sfx}.json"
+    OUT_CSV = DATA / f"earnings_timestamps_FINAL{sfx}.csv"
+    print(f"classified : {CLASSIFIED.name}\nauth       : {AUTH.name}\nout        : {OUT_CSV.name}\n")
+
     events = json.loads(CLASSIFIED.read_text())
     rows = [e for e in events.values() if e["label"] == "earnings"]
     dropped = [e for e in events.values() if e["label"] != "earnings"]
@@ -273,8 +286,13 @@ def main() -> int:
         "fit the price, the later analysis would be circular — we would 'discover' a spike exactly where we",
         "had defined it to be.",
     ]
-    OUT_MD.write_text("\n".join(lines) + "\n")
-    print(f"wrote {n}-row worksheet -> {OUT_MD}")
+    # The worksheet is the human-verification instrument for the 2.4-year set. A 16-year rebuild must
+    # not overwrite it — the owner's pending C4 check is against those exact 36 rows.
+    if a.no_worksheet:
+        print("worksheet skipped (--no-worksheet): the existing one belongs to the verified 2.4y set")
+    else:
+        OUT_MD.write_text("\n".join(lines) + "\n")
+        print(f"wrote {n}-row worksheet -> {OUT_MD}")
     return 0
 
 

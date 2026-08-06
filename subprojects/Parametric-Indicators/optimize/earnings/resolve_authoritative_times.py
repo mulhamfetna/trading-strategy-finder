@@ -63,6 +63,16 @@ def fetch_acceptance(cik: int, acc: str) -> str | None:
 
 
 def main() -> int:
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--tag", default="", help="suffix for all data files, e.g. 16y")
+    a = ap.parse_args()
+    sfx = f"_{a.tag}" if a.tag else ""
+    global CLASSIFIED, CACHE
+    CLASSIFIED = DATA / f"earnings_events_classified{sfx}.json"
+    CACHE = DATA / f"authoritative_times{sfx}.json"
+    print(f"classified : {CLASSIFIED.name}\nout        : {CACHE.name}\n")
+
     events = json.loads(CLASSIFIED.read_text())
     earn = {a: v for a, v in events.items() if v["label"] == "earnings"}
     cache = json.loads(CACHE.read_text()) if CACHE.exists() else {}
