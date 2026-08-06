@@ -154,7 +154,23 @@ def main() -> int:
     print(f"  events with 1-second coverage: {covered} / {len(df)}")
 
     rows: list[dict] = []
-    run_cells(px, df, "ALL EVENTS", rows)
+    run_cells(px, df, "ARM A — ALL EVENTS (pre-registered headline)", rows)
+
+    # ---- ARM B: robustness, declared in #113 before any result was seen -------------------------
+    # Excludes events flagged by the time-of-day stability check. Those are demonstrably NOT the
+    # announcement moment: next-morning 8-K filings whose press release went out the prior evening,
+    # plus a few probable misclassifications. The criterion is deviation from the company's OWN median
+    # release time and uses NO price or outcome information, so it is data cleaning on a documented
+    # defect rather than outcome selection.
+    #
+    # It adds no tests: the SAME 8 cells on a cleaner subset. Arm A remains the headline.
+    if "time_outlier" in df.columns:
+        clean_idx = {i for i, (_, r) in enumerate(df.iterrows()) if str(r.time_outlier) != "YES"}
+        pxb = {i: v for i, v in px.items() if i in clean_idx}
+        n_drop = len(px) - len(pxb)
+        if n_drop:
+            print(f"\n  Arm B drops {n_drop} flagged events ({100*n_drop/len(px):.1f}%)")
+            run_cells(pxb, None, "ARM B — flagged time-outliers excluded (robustness)", rows)
 
     # ---- dumb control (S4-C4): same rule, non-announcement days, matched time-of-day --------------
     rng = np.random.default_rng(20260806)
@@ -201,7 +217,7 @@ def main() -> int:
         "results": rows,
     }, indent=1))
 
-    main_cells = [r for r in rows if r["set"] == "ALL EVENTS"]
+    main_cells = [r for r in rows if r["set"].startswith("ARM A")]
     passed = [r for r in main_cells if r["pass"]]
     print("\n" + "=" * 100)
     print("VERDICT")
