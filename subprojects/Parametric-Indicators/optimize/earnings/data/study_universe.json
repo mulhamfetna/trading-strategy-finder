@@ -1,0 +1,67 @@
+{
+ "decision_date": "2026-08-04",
+ "decided_by": "owner",
+ "source_table": "earnings_timestamps_FINAL.csv",
+ "dropped_ranks": {
+  "11": {
+   "ticker": "WMT",
+   "company": "Walmart",
+   "reason": "owner's selection; also the last pre-open reporter besides ASML"
+  },
+  "13": {
+   "ticker": "ASML",
+   "company": "ASML Holding",
+   "reason": "owner's selection; removes the only pre-open and only mid-session events"
+  },
+  "15": {
+   "ticker": "CSCO",
+   "company": "Cisco Systems",
+   "reason": "owner's selection"
+  },
+  "16": {
+   "ticker": "AMAT",
+   "company": "Applied Materials",
+   "reason": "owner's selection"
+  },
+  "17": {
+   "ticker": "COST",
+   "company": "Costco Wholesale",
+   "reason": "owner's selection"
+  },
+  "18": {
+   "ticker": "LRCX",
+   "company": "Lam Research",
+   "reason": "owner's selection"
+  },
+  "19": {
+   "ticker": "PLTR",
+   "company": "Palantir Technologies",
+   "reason": "owner's selection"
+  }
+ },
+ "kept_tickers": [
+  "AAPL",
+  "AMD",
+  "AMZN",
+  "AVGO",
+  "GOOGL",
+  "INTC",
+  "META",
+  "MSFT",
+  "MU",
+  "NFLX",
+  "NVDA",
+  "TSLA"
+ ],
+ "n_events": 128,
+ "n_events_with_price": 116,
+ "independent_windows": 83,
+ "session_mix": {
+  "AMC": 128
+ },
+ "consequences": [
+  "study universe is 100% after-the-close; pre-market announcements are out of scope",
+  "the BMO weak-signal question (1.36x, n=18) is now unasked, not answered",
+  "INTC retained and still needs the ~7-minute C5 correction before Stage 4"
+ ]
+}
