@@ -49,6 +49,24 @@ ARCHIVE_URL = "https://data.sec.gov/submissions/{name}"
 INDEX_URL = "https://www.sec.gov/Archives/edgar/data/{cik}/{acc}/index.json"
 TICKER_MAP_URL = "https://www.sec.gov/files/company_tickers.json"
 
+# ⚠️ CORPORATE REORGANISATIONS CHANGE THE CIK, AND EDGAR'S TICKER MAP ONLY KNOWS THE CURRENT ENTITY.
+#
+# A CIK-keyed collection therefore begins silently at the last reorganisation and loses everything
+# before it. Found on the 16-year run: GOOGL appeared to start in 2015-10 and AVGO in 2018-06, both
+# looking like perfectly ordinary short histories. They are not — they are the dates new CIKs were
+# created. ~52 events were missing, all of them in the early era.
+#
+# Verified against EDGAR directly (8-K date ranges from each entity's own submissions feed):
+#   1288776  GOOGLE INC.            -> Alphabet Inc.      (1652044)
+#   1441634  Avago Technologies LTD -> Broadcom Pte. Ltd. (1649338) -> Broadcom Inc. (1730168)
+#
+# Predecessor filings are harvested under the SUCCESSOR's ticker, because for a price study the
+# question is "what did this business announce", not "which legal shell filed it".
+PREDECESSOR_CIKS: dict[int, list[int]] = {
+    1652044: [1288776],                  # Alphabet <- Google Inc.
+    1730168: [1649338, 1441634],         # Broadcom Inc. <- Broadcom Pte/Ltd <- Avago
+}
+
 
 def _get(url: str) -> bytes:
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Encoding": "gzip, deflate"})
@@ -118,6 +136,9 @@ def filings_in_span(cik: int, start: str, end: str) -> list[dict]:
             if not (start <= dt_et.strftime("%Y-%m-%d") <= end):
                 continue
             out.append({
+                # The CIK that actually FILED this. Predecessor filings live under the predecessor's
+                # archive path, so fetching their documents with the successor's CIK 404s.
+                "source_cik": cik,
                 "form": b["form"][i],
                 "items": (b.get("items") or [""] * n)[i] or "",
                 "accession": b["accessionNumber"][i],
@@ -171,18 +192,25 @@ def main() -> int:
 
     for e in universe:
         tick = "+".join(e["tickers"])
+        ciks = [e["cik"]] + PREDECESSOR_CIKS.get(e["cik"], [])
+        fl = []
         try:
-            fl = filings_in_span(e["cik"], a.start, a.end)
+            for c in ciks:
+                got = filings_in_span(c, a.start, a.end)
+                if c != e["cik"]:
+                    print(f"  {tick:<12} + {len(got):>3} from predecessor CIK {c}")
+                fl.extend(got)
         except Exception as exc:
             print(f"  {tick:<12} SUBMISSIONS FAILED: {type(exc).__name__}: {exc}")
             continue
+        fl.sort(key=lambda r: r["event_et"])
 
         for f in fl:
             key = f["accession"]
             if key in cache and not cache[key].get("documents", [""])[0].startswith("__FETCH_FAILED__"):
                 continue
-            f["documents"] = document_names(e["cik"], key)
-            f["cik"] = e["cik"]
+            f["documents"] = document_names(f.get("source_cik", e["cik"]), key)
+            f["cik"] = f.get("source_cik", e["cik"])
             f["ticker"] = e["tickers"][0]
             f["all_tickers"] = "|".join(e["tickers"])
             f["company"] = e["company"]
