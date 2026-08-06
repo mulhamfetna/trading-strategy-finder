@@ -30,6 +30,13 @@ actually wanted. The rate is measured over the trailing --rate-window-min minute
 watcher that only greps for the happy path stays quiet through a crashloop, and quiet is exactly what
 a healthy run looks like.
 
+⚠️ GET THE PID FROM `$!`, NOT FROM `pgrep -f ... | head -1`.
+A launch like `nohup env VAR=x python script.py &` creates MORE THAN ONE matching process (the `env`
+wrapper and the interpreter). `pgrep -f | head -1` can return the wrapper, which exits immediately —
+and this watcher then correctly reports DIED for a job that is running perfectly well. A false DIED is
+almost as costly as a missed one, because it invites you to kill and restart healthy work. Capture
+`$!` at launch, or confirm with `pgrep -af <script>` that the PID you took is the interpreter.
+
     python3 optimize/earnings/watch_run.py --pid 88422 --log /tmp/ws-legacy18/classify16y.log \
         --done "wrote ->" --stall-min 10
 """
