@@ -109,6 +109,36 @@ def main() -> int:
     print(f"authoritative times  : {len(rows)-n_unresolved} resolved from SGML, "
           f"{n_corrected} CORRECTED vs the JSON field, {n_unresolved} unresolved")
 
+    # ---- de-duplicate: the SAME announcement filed twice -----------------------------------------
+    # ⚠️ INTC filed each quarter's earnings TWICE in 2010-2013: the wire service filed the press
+    # release in the evening (~16:1x) and Intel self-filed a duplicate the NEXT MORNING (~09:xx).
+    # 14 such pairs. This is not merely a double count — the duplicate carries a next-morning
+    # timestamp, so keeping it would place a real event hours after it actually happened.
+    #
+    # Keep the EARLIEST of any pair inside 24h: the announcement is the FIRST public disclosure.
+    # Applied to every company, not special-cased to INTC, so the same pattern elsewhere is caught.
+    by_tkr: dict[str, list] = defaultdict(list)
+    for r in rows:
+        by_tkr[r["ticker"]].append(r)
+    kept, dropped_dupes = [], []
+    for t, g in by_tkr.items():
+        g.sort(key=lambda r: r["dt"])
+        last = None
+        for r in g:
+            if last is not None and (r["dt"] - last["dt"]).total_seconds() < 24 * 3600:
+                r["dropped_as_duplicate_of"] = last["accession"]
+                dropped_dupes.append(r)
+                continue
+            kept.append(r)
+            last = r
+    if dropped_dupes:
+        cnt = defaultdict(int)
+        for r in dropped_dupes:
+            cnt[r["ticker"]] += 1
+        print(f"duplicate filings    : {len(dropped_dupes)} removed "
+              f"({dict(cnt)}) — kept the earliest of each pair")
+    rows = sorted(kept, key=lambda r: (r["ticker"], r["dt"]))
+
     print(f"classified filings   : {len(events)}")
     print(f"  labelled earnings  : {len(rows)}")
     for lab in sorted({e['label'] for e in dropped}):
