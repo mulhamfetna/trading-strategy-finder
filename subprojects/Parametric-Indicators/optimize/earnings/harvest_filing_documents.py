@@ -68,15 +68,31 @@ PREDECESSOR_CIKS: dict[int, list[int]] = {
 }
 
 
-def _get(url: str) -> bytes:
-    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Encoding": "gzip, deflate"})
-    with urllib.request.urlopen(req, timeout=60) as r:
-        raw = r.read()
-        if r.headers.get("Content-Encoding") == "gzip":
-            import gzip
-            raw = gzip.decompress(raw)
-    time.sleep(SEC_PAUSE)
-    return raw
+def _get(url: str, attempts: int = 4) -> bytes:
+    """Fetch with retries.
+
+    ⚠️ A SINGLE TRANSIENT SOCKET TIMEOUT USED TO KILL THE WHOLE RUN. `TimeoutError` from an SSL read is
+    not a `urllib.error.*`, so it escaped the handlers and took down a multi-hour harvest at ~90%.
+    Anything touching the network over hours WILL hit a flaky socket eventually; the question is only
+    whether it costs a retry or the entire job. Catch OSError (covers TimeoutError, URLError and
+    HTTPError) and back off.
+    """
+    last: Exception | None = None
+    for i in range(attempts):
+        try:
+            req = urllib.request.Request(
+                url, headers={"User-Agent": UA, "Accept-Encoding": "gzip, deflate"})
+            with urllib.request.urlopen(req, timeout=60) as r:
+                raw = r.read()
+                if r.headers.get("Content-Encoding") == "gzip":
+                    import gzip
+                    raw = gzip.decompress(raw)
+            time.sleep(SEC_PAUSE)
+            return raw
+        except OSError as exc:                       # TimeoutError, URLError, HTTPError all subclass it
+            last = exc
+            time.sleep(SEC_PAUSE + 2.0 * (i + 1))    # linear backoff, still well inside SEC's limit
+    raise last if last else RuntimeError("unreachable")
 
 
 def _get_json(url: str) -> dict:
@@ -157,7 +173,7 @@ def document_names(cik: int, accession: str) -> list[str]:
     url = INDEX_URL.format(cik=cik, acc=accession.replace("-", ""))
     try:
         d = _get_json(url)
-    except (urllib.error.HTTPError, urllib.error.URLError, json.JSONDecodeError) as exc:
+    except (OSError, json.JSONDecodeError) as exc:   # OSError covers TimeoutError/URLError/HTTPError
         return [f"__FETCH_FAILED__:{type(exc).__name__}"]
     return [it["name"] for it in d.get("directory", {}).get("item", [])]
 

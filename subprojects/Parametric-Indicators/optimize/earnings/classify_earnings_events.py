@@ -37,6 +37,7 @@ import time
 import urllib.error
 import urllib.request
 from collections import Counter
+from datetime import datetime
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -131,7 +132,7 @@ def pick_documents(v: dict, k: int = 2) -> list[str]:
     return sorted(cands, key=score)[:k]
 
 
-def classify(text: str, docnames: str) -> tuple[str, list[str]]:
+def classify(text: str, docnames: str, items: str = "", event_et: str = "") -> tuple[str, list[str]]:
     """Return (label, markers). Distinct-marker counting: one stray phrase cannot decide a row."""
     # Highest precedence: a periodic filing is not an announcement, whatever its text contains.
     if NON_EARNINGS_DOCNAME.search(docnames) and not EARNINGS_DOCNAME.search(docnames):
@@ -140,18 +141,38 @@ def classify(text: str, docnames: str) -> tuple[str, list[str]]:
     fin = [n for n, p in FIN_MARKERS if p.search(text)]
     del_ = [n for n, p in DEL_MARKERS if p.search(text)]
     named = bool(EARNINGS_DOCNAME.search(docnames))
+    has202 = "2.02" in [s.strip() for s in items.split(",") if s.strip()]
 
-    earn_score = len(fin) + (2 if named else 0)
+    # The item code is EVIDENCE, just not SUFFICIENT evidence. Ignoring it entirely (the earlier rule)
+    # dropped Tesla's 2012-11-05 Q3 earnings, where only one financial marker happened to fire in the
+    # captured text. AMAT's mis-tagged 2.01 quarter is still recovered, because it scores on content
+    # alone and needs no item bonus.
+    earn_score = len(fin) + (2 if named else 0) + (1 if has202 else 0)
     del_score = len(del_)
-    ev = [f"fin:{x}" for x in fin] + [f"del:{x}" for x in del_] + (["doc:named_earnings"] if named else [])
+    ev = ([f"fin:{x}" for x in fin] + [f"del:{x}" for x in del_]
+          + (["doc:named_earnings"] if named else []) + (["item:2.02"] if has202 else []))
 
-    # An earnings release carries SEVERAL financial-statement markers. A delivery report carries none.
-    if earn_score >= 2 and earn_score > del_score:
+    # ⚠️ CONTENT ALONE CANNOT SEPARATE TESLA'S TWO DISCLOSURES. Its quarterly SHAREHOLDER LETTER (an
+    # earnings release) reports delivery numbers too, so delivery markers fire on both and outranked
+    # the earnings score — which mislabelled Q4-2012 earnings as a delivery report.
+    #
+    # What DOES separate them is calendar position: Tesla publishes production/deliveries in the first
+    # days of a calendar quarter and earnings mid-quarter, weeks later. That is a structural property
+    # of the reporting calendar, not a pattern fitted to an outcome.
+    delivery_slot = False
+    if event_et:
+        try:
+            dt = datetime.fromisoformat(event_et)
+            delivery_slot = dt.month in (1, 4, 7, 10) and dt.day <= 5
+        except ValueError:
+            delivery_slot = False
+    if del_score >= 1 and delivery_slot:
+        return "production_delivery", ev + ["cal:quarter_open"]
+
+    if earn_score >= 2:
         return "earnings", ev
     if del_score >= 1:
         return "production_delivery", ev
-    if earn_score >= 2:
-        return "earnings", ev
     return "other", ev
 
 
@@ -220,7 +241,8 @@ def main() -> int:
             if n_fetch % 10 == 0:
                 TEXT_CACHE.write_text(json.dumps(tcache))
 
-        label, ev = classify(text, " ".join(v.get("documents", [])))
+        label, ev = classify(text, " ".join(v.get("documents", [])),
+                             v.get("items", ""), v.get("event_et", ""))
         results[acc] = {**{k: v[k] for k in ("ticker", "company", "company_rank", "combined_weight_pct",
                                              "cik", "form", "items", "event_et", "event_utc",
                                              "filing_date", "report_date")},
