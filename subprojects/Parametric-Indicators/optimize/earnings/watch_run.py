@@ -15,10 +15,16 @@ filter missed stderr, it presented as a silent crash with exit code 0.
 
 WHAT THIS EMITS (one stdout line per event, so a Monitor turns each into a notification)
 
+    PROG       periodic progress + throughput + ETA, every --report-min minutes
     STALL      log has not grown for --stall-min minutes while the process is still alive
     DIED       process is gone and the done-pattern never appeared
     ERROR      an error signature appeared in the log
     DONE       the done-pattern appeared
+
+⚠️ THE ETA USES A RECENT-WINDOW RATE, NOT THE AVERAGE SINCE START. These jobs are not uniform: the
+first stretch flies through cached items and then drops to network speed. An average-since-start ETA
+would be wildly optimistic exactly when the job is at its slowest, which is the moment an estimate is
+actually wanted. The rate is measured over the trailing --rate-window-min minutes instead.
 
 ⚠️ SILENCE IS NOT SUCCESS. This watcher deliberately reports failure states as loudly as success. A
 watcher that only greps for the happy path stays quiet through a crashloop, and quiet is exactly what
@@ -33,6 +39,8 @@ import argparse
 import os
 import re
 import time
+from collections import deque
+from datetime import datetime, timedelta
 from pathlib import Path
 
 ERROR_PAT = re.compile(r"Traceback|MemoryError|Killed|OOM|Errno|HTTPError|Too Many Requests|"
@@ -47,6 +55,14 @@ def alive(pid: int) -> bool:
     return True
 
 
+def _fmt(mins: float) -> str:
+    if mins < 1:
+        return "<1m"
+    if mins < 90:
+        return f"{mins:.0f}m"
+    return f"{mins/60:.1f}h"
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--pid", type=int, required=True)
@@ -56,11 +72,21 @@ def main() -> int:
                     help="minutes of no log growth before calling it stalled")
     ap.add_argument("--poll-s", type=float, default=60.0)
     ap.add_argument("--label", default="run")
+    ap.add_argument("--progress-re", default=r"(\d+)\s*/\s*(\d+)",
+                    help="regex with 2 groups (done, total); the LAST match in the log tail is used")
+    ap.add_argument("--report-min", type=float, default=10.0, help="minutes between PROG lines")
+    ap.add_argument("--rate-window-min", type=float, default=15.0,
+                    help="trailing window used to measure throughput for the ETA")
+    ap.add_argument("--unit", default="items")
     a = ap.parse_args()
 
     log = Path(a.log)
     last_size, last_change = -1, time.monotonic()
     reported_stall = False
+    prog_re = re.compile(a.progress_re)
+    samples: deque[tuple[float, int]] = deque()          # (monotonic seconds, position)
+    started = time.monotonic()
+    next_report = started + a.report_min * 60
 
     while True:
         size = log.stat().st_size if log.exists() else 0
@@ -93,12 +119,54 @@ def main() -> int:
                   flush=True)
             return 1
 
+        # Track position for throughput. The LAST match in the tail is the current position.
+        now = time.monotonic()
+        hits = prog_re.findall(text_tail)
+        pos = total = None
+        if hits:
+            try:
+                pos, total = int(hits[-1][0]), int(hits[-1][1])
+            except (ValueError, IndexError):
+                pos = total = None
+        if pos is not None:
+            if not samples or samples[-1][1] != pos:
+                samples.append((now, pos))
+            while samples and now - samples[0][0] > a.rate_window_min * 60:
+                samples.popleft()
+
         # Non-terminal but actionable: alive yet frozen.
-        idle_min = (time.monotonic() - last_change) / 60.0
+        idle_min = (now - last_change) / 60.0
         if idle_min >= a.stall_min and not reported_stall:
-            print(f"STALL [{a.label}] pid {a.pid} ALIVE but log frozen for {idle_min:.0f} min "
+            extra = f" at {pos}/{total}" if pos is not None else ""
+            print(f"STALL [{a.label}] pid {a.pid} ALIVE but log frozen for {idle_min:.0f} min{extra} "
                   f"— likely a hung socket, not slow progress", flush=True)
             reported_stall = True                            # report once per stall, not every poll
+
+        # Periodic progress + ETA.
+        if now >= next_report:
+            next_report = now + a.report_min * 60
+            elapsed = (now - started) / 60.0
+            if pos is not None and total:
+                pct = 100.0 * pos / total
+                # Rate over the TRAILING window, not since start — see the module docstring.
+                if len(samples) >= 2:
+                    dt = (samples[-1][0] - samples[0][0]) / 60.0
+                    dn = samples[-1][1] - samples[0][1]
+                    rate = dn / dt if dt > 0 else 0.0
+                else:
+                    rate = 0.0
+                if rate > 0:
+                    eta_min = (total - pos) / rate
+                    finish = (datetime.now() + timedelta(minutes=eta_min)).strftime("%H:%M")
+                    print(f"PROG  [{a.label}] {pos:,}/{total:,} {a.unit} ({pct:.0f}%) · "
+                          f"{rate:.1f}/min · elapsed {_fmt(elapsed)} · "
+                          f"ETA {_fmt(eta_min)} (~{finish})", flush=True)
+                else:
+                    print(f"PROG  [{a.label}] {pos:,}/{total:,} {a.unit} ({pct:.0f}%) · "
+                          f"rate not yet measurable · elapsed {_fmt(elapsed)}", flush=True)
+            else:
+                print(f"PROG  [{a.label}] alive, no position parsed from the log "
+                      f"({size:,} bytes) · elapsed {_fmt(elapsed)}", flush=True)
 
         time.sleep(a.poll_s)
 
