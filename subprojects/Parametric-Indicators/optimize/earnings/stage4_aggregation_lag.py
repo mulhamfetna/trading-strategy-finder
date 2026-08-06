@@ -159,13 +159,19 @@ def main() -> int:
     # ---- dumb control (S4-C4): same rule, non-announcement days, matched time-of-day --------------
     rng = np.random.default_rng(20260806)
     real_days = set(pd.DatetimeIndex(df.event_et).normalize())
-    span_lo, span_hi = s_all.index.min(), s_all.index.max()
+    # ⚠️ Bound by the ARCHIVE span, not by the span of the loaded event windows. Using the latter
+    # rejected almost every candidate for the earliest events (they fall before the first loaded
+    # window), which silently shrank the control to a handful of late-dated draws — a control that
+    # is not matched to the real sample is not a control.
+    span_lo, span_hi = pd.Timestamp("2010-06-07"), pd.Timestamp("2026-07-11")
     ctrl = []
     for t in df.event_et:
-        for _ in range(30):
-            shift = int(rng.integers(3, 400))
+        for _ in range(60):
+            shift = int(rng.integers(3, 400)) * (1 if rng.random() < 0.5 else -1)
             cand = pd.Timestamp(t) - pd.Timedelta(days=shift)
             if cand.normalize() in real_days or cand < span_lo or cand > span_hi:
+                continue
+            if cand.weekday() >= 5:                      # markets shut; the real events never are
                 continue
             ctrl.append(cand)
             break
