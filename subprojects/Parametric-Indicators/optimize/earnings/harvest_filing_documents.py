@@ -65,7 +65,7 @@ def _get_json(url: str) -> dict:
     return json.loads(_get(url))
 
 
-def load_universe(top_n: int) -> list[dict]:
+def load_universe(top_n: int, only_tickers: set[str] | None = None) -> list[dict]:
     """Same universe construction as the collector: merge share classes by CIK, rank by combined weight."""
     snaps = sorted(DATA.glob("ndx_weights_*.csv"))
     if not snaps:
@@ -87,6 +87,13 @@ def load_universe(top_n: int) -> list[dict]:
     merged = sorted(by_cik.values(), key=lambda e: -e["combined_weight"])
     for i, e in enumerate(merged, 1):
         e["company_rank"] = i
+    if only_tickers:
+        # Explicit study universe (optimize/earnings/data/study_universe.json) rather than a top-N cut.
+        sel = [e for e in merged if only_tickers & set(e["tickers"])]
+        missing = only_tickers - {t for e in sel for t in e["tickers"]}
+        if missing:
+            raise SystemExit(f"tickers not found in the weight snapshot: {sorted(missing)}")
+        return sel
     return merged[:top_n]
 
 
@@ -139,13 +146,24 @@ def main() -> int:
     ap.add_argument("--top", type=int, default=20)
     ap.add_argument("--start", default="2024-01-01")
     ap.add_argument("--end", default=datetime.now(ET).strftime("%Y-%m-%d"))
+    ap.add_argument("--study-universe", action="store_true",
+                    help="use the 12 companies recorded in data/study_universe.json instead of --top")
+    ap.add_argument("--cache", default=None, help="override the cache path (keeps runs separate)")
     a = ap.parse_args()
+
+    global CACHE
+    if a.cache:
+        CACHE = Path(a.cache)
+    only = None
+    if a.study_universe:
+        only = set(json.loads((DATA / "study_universe.json").read_text())["kept_tickers"])
+        print(f"universe : study set of {len(only)} — {', '.join(sorted(only))}")
 
     print(f"span   : {a.start} .. {a.end}")
     print(f"forms  : 8-K and 6-K — ALL of them, NO item-code filter")
     print(f"cache  : {CACHE}\n")
 
-    universe = load_universe(a.top)
+    universe = load_universe(a.top, only)
     cache: dict = {}
     if CACHE.exists():
         cache = json.loads(CACHE.read_text())
