@@ -1,1008 +1,1209 @@
 {
  "0000723125-10-000071": {
-  "sgml": null,
+  "sgml": "20100628160106",
   "json_et": "2010-06-28 16:01:06",
-  "ticker": "MU"
+  "ticker": "MU",
+  "delta_hours": 0.0
  },
  "0001157523-10-004005": {
-  "sgml": null,
+  "sgml": "20100713162032",
   "json_et": "2010-07-13 16:20:32",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0000050863-10-000065": {
-  "sgml": null,
+  "sgml": "20100714092504",
   "json_et": "2010-07-14 09:25:04",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0001193125-10-159465": {
-  "sgml": null,
+  "sgml": "20100715160244",
   "json_et": "2010-07-15 16:02:44",
-  "ticker": "GOOGL"
+  "ticker": "GOOGL",
+  "delta_hours": 0.0
  },
  "0001193125-10-159512": {
-  "sgml": null,
+  "sgml": "20100715164126",
   "json_et": "2010-07-15 16:41:26",
-  "ticker": "AMD"
+  "ticker": "AMD",
+  "delta_hours": 0.0
  },
  "0001193125-10-161807": {
-  "sgml": null,
+  "sgml": "20100720163328",
   "json_et": "2010-07-20 16:33:28",
-  "ticker": "AAPL"
+  "ticker": "AAPL",
+  "delta_hours": 0.0
  },
  "0001193125-10-162783": {
-  "sgml": null,
+  "sgml": "20100721161159",
   "json_et": "2010-07-21 16:11:59",
-  "ticker": "NFLX"
+  "ticker": "NFLX",
+  "delta_hours": 0.0
  },
  "0001193125-10-163839": {
-  "sgml": null,
+  "sgml": "20100722161932",
   "json_et": "2010-07-22 16:19:32",
-  "ticker": "MSFT"
+  "ticker": "MSFT",
+  "delta_hours": 0.0
  },
  "0001193125-10-163861": {
-  "sgml": null,
+  "sgml": "20100722163032",
   "json_et": "2010-07-22 16:30:32",
-  "ticker": "AMZN"
+  "ticker": "AMZN",
+  "delta_hours": 0.0
  },
  "0001193125-10-177203": {
-  "sgml": null,
+  "sgml": "20100804161549",
   "json_et": "2010-08-04 16:15:49",
-  "ticker": "TSLA"
+  "ticker": "TSLA",
+  "delta_hours": 0.0
  },
  "0001193125-10-184909": {
-  "sgml": null,
+  "sgml": "20100810165756",
   "json_et": "2010-08-10 12:57:56",
-  "ticker": "AVGO"
+  "ticker": "AVGO",
+  "delta_hours": 4.0
  },
  "0001045810-10-000022": {
-  "sgml": null,
+  "sgml": "20100812162458",
   "json_et": "2010-08-12 16:24:58",
-  "ticker": "NVDA"
+  "ticker": "NVDA",
+  "delta_hours": 0.0
  },
  "0001193125-10-195835": {
-  "sgml": null,
+  "sgml": "20100824163851",
   "json_et": "2010-08-24 12:38:51",
-  "ticker": "AVGO"
+  "ticker": "AVGO",
+  "delta_hours": 4.0
  },
  "0000723125-10-000146": {
-  "sgml": null,
+  "sgml": "20101007160158",
   "json_et": "2010-10-07 16:01:58",
-  "ticker": "MU"
+  "ticker": "MU",
+  "delta_hours": 0.0
  },
  "0001157523-10-005787": {
-  "sgml": null,
+  "sgml": "20101012163641",
   "json_et": "2010-10-12 16:36:41",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0000050863-10-000098": {
-  "sgml": null,
+  "sgml": "20101013102826",
   "json_et": "2010-10-13 10:28:26",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0001193125-10-229504": {
-  "sgml": null,
+  "sgml": "20101014160636",
   "json_et": "2010-10-14 16:06:36",
-  "ticker": "GOOGL"
+  "ticker": "GOOGL",
+  "delta_hours": 0.0
  },
  "0001193125-10-229536": {
-  "sgml": null,
+  "sgml": "20101014163120",
   "json_et": "2010-10-14 16:31:20",
-  "ticker": "AMD"
+  "ticker": "AMD",
+  "delta_hours": 0.0
  },
  "0001193125-10-230992": {
-  "sgml": null,
+  "sgml": "20101018162951",
   "json_et": "2010-10-18 16:29:51",
-  "ticker": "AAPL"
+  "ticker": "AAPL",
+  "delta_hours": 0.0
  },
  "0001193125-10-232617": {
-  "sgml": null,
+  "sgml": "20101020161153",
   "json_et": "2010-10-20 16:11:53",
-  "ticker": "NFLX"
+  "ticker": "NFLX",
+  "delta_hours": 0.0
  },
  "0001193125-10-233639": {
-  "sgml": null,
+  "sgml": "20101021160715",
   "json_et": "2010-10-21 16:07:15",
-  "ticker": "AMZN"
+  "ticker": "AMZN",
+  "delta_hours": 0.0
  },
  "0001193125-10-239800": {
-  "sgml": null,
+  "sgml": "20101028162849",
   "json_et": "2010-10-28 16:28:49",
-  "ticker": "MSFT"
+  "ticker": "MSFT",
+  "delta_hours": 0.0
  },
  "0001193125-10-254219": {
-  "sgml": null,
+  "sgml": "20101109163057",
   "json_et": "2010-11-09 16:30:57",
-  "ticker": "TSLA"
+  "ticker": "TSLA",
+  "delta_hours": 0.0
  },
  "0001045810-10-000038": {
-  "sgml": null,
+  "sgml": "20101112061124",
   "json_et": "2010-11-12 06:11:24",
-  "ticker": "NVDA"
+  "ticker": "NVDA",
+  "delta_hours": 0.0
  },
  "0000950123-10-110427": {
-  "sgml": null,
+  "sgml": "20101202162540",
   "json_et": "2010-12-02 11:25:40",
-  "ticker": "AVGO"
+  "ticker": "AVGO",
+  "delta_hours": 5.0
  },
  "0000723125-10-000197": {
-  "sgml": null,
+  "sgml": "20101222160124",
   "json_et": "2010-12-22 16:01:24",
-  "ticker": "MU"
+  "ticker": "MU",
+  "delta_hours": 0.0
  },
  "0001157523-11-000178": {
-  "sgml": null,
+  "sgml": "20110113162938",
   "json_et": "2011-01-13 16:29:38",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0000050863-11-000011": {
-  "sgml": null,
+  "sgml": "20110114101529",
   "json_et": "2011-01-14 10:15:29",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0001193125-11-009392": {
-  "sgml": null,
+  "sgml": "20110118163027",
   "json_et": "2011-01-18 16:30:27",
-  "ticker": "AAPL"
+  "ticker": "AAPL",
+  "delta_hours": 0.0
  },
  "0001193125-11-011026": {
-  "sgml": null,
+  "sgml": "20110120160106",
   "json_et": "2011-01-20 16:01:06",
-  "ticker": "GOOGL"
+  "ticker": "GOOGL",
+  "delta_hours": 0.0
  },
  "0001193125-11-011350": {
-  "sgml": null,
+  "sgml": "20110120213715",
   "json_et": "2011-01-20 21:37:15",
-  "ticker": "AMD"
+  "ticker": "AMD",
+  "delta_hours": 0.0
  },
  "0001193125-11-014840": {
-  "sgml": null,
+  "sgml": "20110126161059",
   "json_et": "2011-01-26 16:10:59",
-  "ticker": "NFLX"
+  "ticker": "NFLX",
+  "delta_hours": 0.0
  },
  "0001193125-11-015944": {
-  "sgml": null,
+  "sgml": "20110127155759",
   "json_et": "2011-01-27 15:57:59",
-  "ticker": "MSFT"
+  "ticker": "MSFT",
+  "delta_hours": 0.0
  },
  "0001193125-11-015972": {
-  "sgml": null,
+  "sgml": "20110127161100",
   "json_et": "2011-01-27 16:11:00",
-  "ticker": "AMZN"
+  "ticker": "AMZN",
+  "delta_hours": 0.0
  },
  "0000050863-11-000020": {
-  "sgml": null,
+  "sgml": "20110131100806",
   "json_et": "2011-01-31 10:08:06",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0001193125-11-036784": {
-  "sgml": null,
+  "sgml": "20110215162759",
   "json_et": "2011-02-15 16:27:59",
-  "ticker": "TSLA"
+  "ticker": "TSLA",
+  "delta_hours": 0.0
  },
  "0001045810-11-000006": {
-  "sgml": null,
+  "sgml": "20110216162217",
   "json_et": "2011-02-16 16:22:17",
-  "ticker": "NVDA"
+  "ticker": "NVDA",
+  "delta_hours": 0.0
  },
  "0000723125-11-000060": {
-  "sgml": null,
+  "sgml": "20110323160137",
   "json_et": "2011-03-23 16:01:37",
-  "ticker": "MU"
+  "ticker": "MU",
+  "delta_hours": 0.0
  },
  "0001193125-11-097898": {
-  "sgml": null,
+  "sgml": "20110414160240",
   "json_et": "2011-04-14 16:02:40",
-  "ticker": "GOOGL"
+  "ticker": "GOOGL",
+  "delta_hours": 0.0
  },
  "0001157523-11-002097": {
-  "sgml": null,
+  "sgml": "20110419163840",
   "json_et": "2011-04-19 16:38:40",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0000050863-11-000068": {
-  "sgml": null,
+  "sgml": "20110420094519",
   "json_et": "2011-04-20 09:45:19",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0001193125-11-103732": {
-  "sgml": null,
+  "sgml": "20110420163030",
   "json_et": "2011-04-20 16:30:30",
-  "ticker": "AAPL"
+  "ticker": "AAPL",
+  "delta_hours": 0.0
  },
  "0001193125-11-105247": {
-  "sgml": null,
+  "sgml": "20110421163205",
   "json_et": "2011-04-21 16:32:05",
-  "ticker": "AMD"
+  "ticker": "AMD",
+  "delta_hours": 0.0
  },
  "0001193125-11-107751": {
-  "sgml": null,
+  "sgml": "20110425162821",
   "json_et": "2011-04-25 16:28:21",
-  "ticker": "NFLX"
+  "ticker": "NFLX",
+  "delta_hours": 0.0
  },
  "0001193125-11-109578": {
-  "sgml": null,
+  "sgml": "20110426162039",
   "json_et": "2011-04-26 16:20:39",
-  "ticker": "AMZN"
+  "ticker": "AMZN",
+  "delta_hours": 0.0
  },
  "0001193125-11-115162": {
-  "sgml": null,
+  "sgml": "20110428160646",
   "json_et": "2011-04-28 16:06:46",
-  "ticker": "MSFT"
+  "ticker": "MSFT",
+  "delta_hours": 0.0
  },
  "0001193125-11-126139": {
-  "sgml": null,
+  "sgml": "20110504162801",
   "json_et": "2011-05-04 16:28:01",
-  "ticker": "TSLA"
+  "ticker": "TSLA",
+  "delta_hours": 0.0
  },
  "0001045810-11-000022": {
-  "sgml": null,
+  "sgml": "20110512162537",
   "json_et": "2011-05-12 16:25:37",
-  "ticker": "NVDA"
+  "ticker": "NVDA",
+  "delta_hours": 0.0
  },
  "0000950123-11-053516": {
-  "sgml": null,
+  "sgml": "20110524160938",
   "json_et": "2011-05-24 12:09:38",
-  "ticker": "AVGO"
+  "ticker": "AVGO",
+  "delta_hours": 4.0
  },
  "0000723125-11-000113": {
-  "sgml": null,
+  "sgml": "20110623160109",
   "json_et": "2011-06-23 16:01:09",
-  "ticker": "MU"
+  "ticker": "MU",
+  "delta_hours": 0.0
  },
  "0001193125-11-188398": {
-  "sgml": null,
+  "sgml": "20110714160703",
   "json_et": "2011-07-14 16:07:03",
-  "ticker": "GOOGL"
+  "ticker": "GOOGL",
+  "delta_hours": 0.0
  },
  "0001193125-11-191368": {
-  "sgml": null,
+  "sgml": "20110719162956",
   "json_et": "2011-07-19 16:29:56",
-  "ticker": "AAPL"
+  "ticker": "AAPL",
+  "delta_hours": 0.0
  },
  "0001157523-11-004100": {
-  "sgml": null,
+  "sgml": "20110720163507",
   "json_et": "2011-07-20 16:35:07",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0000050863-11-000110": {
-  "sgml": null,
+  "sgml": "20110721105733",
   "json_et": "2011-07-21 10:57:33",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0001193125-11-193631": {
-  "sgml": null,
+  "sgml": "20110721160657",
   "json_et": "2011-07-21 16:06:57",
-  "ticker": "MSFT"
+  "ticker": "MSFT",
+  "delta_hours": 0.0
  },
  "0001193125-11-193677": {
-  "sgml": null,
+  "sgml": "20110721162601",
   "json_et": "2011-07-21 16:26:01",
-  "ticker": "AMD"
+  "ticker": "AMD",
+  "delta_hours": 0.0
  },
  "0001193125-11-196126": {
-  "sgml": null,
+  "sgml": "20110725164620",
   "json_et": "2011-07-25 16:46:20",
-  "ticker": "NFLX"
+  "ticker": "NFLX",
+  "delta_hours": 0.0
  },
  "0001193125-11-197473": {
-  "sgml": null,
+  "sgml": "20110726161404",
   "json_et": "2011-07-26 16:14:04",
-  "ticker": "AMZN"
+  "ticker": "AMZN",
+  "delta_hours": 0.0
  },
  "0001193125-11-208287": {
-  "sgml": null,
+  "sgml": "20110803164034",
   "json_et": "2011-08-03 16:40:34",
-  "ticker": "TSLA"
+  "ticker": "TSLA",
+  "delta_hours": 0.0
  },
  "0001045810-11-000039": {
-  "sgml": null,
+  "sgml": "20110811162604",
   "json_et": "2011-08-11 16:26:04",
-  "ticker": "NVDA"
+  "ticker": "NVDA",
+  "delta_hours": 0.0
  },
  "0001193125-11-229625": {
-  "sgml": null,
+  "sgml": "20110824061217",
   "json_et": "2011-08-24 02:12:17",
-  "ticker": "AVGO"
+  "ticker": "AVGO",
+  "delta_hours": 4.0
  },
  "0000723125-11-000133": {
-  "sgml": null,
+  "sgml": "20110929160418",
   "json_et": "2011-09-29 16:04:18",
-  "ticker": "MU"
+  "ticker": "MU",
+  "delta_hours": 0.0
  },
  "0001193125-11-270520": {
-  "sgml": null,
+  "sgml": "20111013160437",
   "json_et": "2011-10-13 16:04:37",
-  "ticker": "GOOGL"
+  "ticker": "GOOGL",
+  "delta_hours": 0.0
  },
  "0001157523-11-005759": {
-  "sgml": null,
+  "sgml": "20111018161059",
   "json_et": "2011-10-18 16:10:59",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0001193125-11-273826": {
-  "sgml": null,
+  "sgml": "20111018163102",
   "json_et": "2011-10-18 16:31:02",
-  "ticker": "AAPL"
+  "ticker": "AAPL",
+  "delta_hours": 0.0
  },
  "0000050863-11-000129": {
-  "sgml": null,
+  "sgml": "20111019095353",
   "json_et": "2011-10-19 09:53:53",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0001193125-11-276018": {
-  "sgml": null,
+  "sgml": "20111020160554",
   "json_et": "2011-10-20 16:05:54",
-  "ticker": "MSFT"
+  "ticker": "MSFT",
+  "delta_hours": 0.0
  },
  "0001193125-11-278716": {
-  "sgml": null,
+  "sgml": "20111024165056",
   "json_et": "2011-10-24 16:50:56",
-  "ticker": "NFLX"
+  "ticker": "NFLX",
+  "delta_hours": 0.0
  },
  "0001193125-11-280254": {
-  "sgml": null,
+  "sgml": "20111025161356",
   "json_et": "2011-10-25 16:13:56",
-  "ticker": "AMZN"
+  "ticker": "AMZN",
+  "delta_hours": 0.0
  },
  "0001193125-11-284179": {
-  "sgml": null,
+  "sgml": "20111027162158",
   "json_et": "2011-10-27 16:21:58",
-  "ticker": "AMD"
+  "ticker": "AMD",
+  "delta_hours": 0.0
  },
  "0001045810-11-000052": {
-  "sgml": null,
+  "sgml": "20111110162132",
   "json_et": "2011-11-10 16:21:32",
-  "ticker": "NVDA"
+  "ticker": "NVDA",
+  "delta_hours": 0.0
  },
  "0001193125-11-327488": {
-  "sgml": null,
+  "sgml": "20111201161006",
   "json_et": "2011-12-01 11:10:06",
-  "ticker": "AVGO"
+  "ticker": "AVGO",
+  "delta_hours": 5.0
  },
  "0000723125-11-000197": {
-  "sgml": null,
+  "sgml": "20111221160121",
   "json_et": "2011-12-21 16:01:21",
-  "ticker": "MU"
+  "ticker": "MU",
+  "delta_hours": 0.0
  },
  "0001193125-12-017008": {
-  "sgml": null,
+  "sgml": "20120119160306",
   "json_et": "2012-01-19 16:03:06",
-  "ticker": "GOOGL"
+  "ticker": "GOOGL",
+  "delta_hours": 0.0
  },
  "0001193125-12-017015": {
-  "sgml": null,
+  "sgml": "20120119160503",
   "json_et": "2012-01-19 16:05:03",
-  "ticker": "MSFT"
+  "ticker": "MSFT",
+  "delta_hours": 0.0
  },
  "0001157523-12-000203": {
-  "sgml": null,
+  "sgml": "20120119161216",
   "json_et": "2012-01-19 16:12:16",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0000050863-12-000006": {
-  "sgml": null,
+  "sgml": "20120120093324",
   "json_et": "2012-01-20 09:33:24",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0001193125-12-021833": {
-  "sgml": null,
+  "sgml": "20120124163034",
   "json_et": "2012-01-24 16:30:34",
-  "ticker": "AAPL"
+  "ticker": "AAPL",
+  "delta_hours": 0.0
  },
  "0001193125-12-021861": {
-  "sgml": null,
+  "sgml": "20120124163803",
   "json_et": "2012-01-24 16:38:03",
-  "ticker": "AMD"
+  "ticker": "AMD",
+  "delta_hours": 0.0
  },
  "0001193125-12-023436": {
-  "sgml": null,
+  "sgml": "20120125170159",
   "json_et": "2012-01-25 17:01:59",
-  "ticker": "NFLX"
+  "ticker": "NFLX",
+  "delta_hours": 0.0
  },
  "0001193125-12-032057": {
-  "sgml": null,
+  "sgml": "20120131160859",
   "json_et": "2012-01-31 16:08:59",
-  "ticker": "AMZN"
+  "ticker": "AMZN",
+  "delta_hours": 0.0
  },
  "0001193125-12-063402": {
-  "sgml": null,
+  "sgml": "20120215162058",
   "json_et": "2012-02-15 16:20:58",
-  "ticker": "TSLA"
+  "ticker": "TSLA",
+  "delta_hours": 0.0
  },
  "0001045810-12-000008": {
-  "sgml": null,
+  "sgml": "20120215164020",
   "json_et": "2012-02-15 16:40:20",
-  "ticker": "NVDA"
+  "ticker": "NVDA",
+  "delta_hours": 0.0
  },
  "0001193125-12-072738": {
-  "sgml": null,
+  "sgml": "20120222160902",
   "json_et": "2012-02-22 11:09:02",
-  "ticker": "AVGO"
+  "ticker": "AVGO",
+  "delta_hours": 5.0
  },
  "0000723125-12-000034": {
-  "sgml": null,
+  "sgml": "20120322160112",
   "json_et": "2012-03-22 16:01:12",
-  "ticker": "MU"
+  "ticker": "MU",
+  "delta_hours": 0.0
  },
  "0000723125-12-000046": {
-  "sgml": null,
+  "sgml": "20120329204925",
   "json_et": "2012-03-29 20:49:25",
-  "ticker": "MU"
+  "ticker": "MU",
+  "delta_hours": 0.0
  },
  "0001193125-12-160666": {
-  "sgml": null,
+  "sgml": "20120412160851",
   "json_et": "2012-04-12 16:08:51",
-  "ticker": "GOOGL"
+  "ticker": "GOOGL",
+  "delta_hours": 0.0
  },
  "0001157523-12-001849": {
-  "sgml": null,
+  "sgml": "20120417161417",
   "json_et": "2012-04-17 16:14:17",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0000050863-12-000051": {
-  "sgml": null,
+  "sgml": "20120418100919",
   "json_et": "2012-04-18 10:09:19",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0001193125-12-170657": {
-  "sgml": null,
+  "sgml": "20120419160307",
   "json_et": "2012-04-19 16:03:07",
-  "ticker": "MSFT"
+  "ticker": "MSFT",
+  "delta_hours": 0.0
  },
  "0001193125-12-170747": {
-  "sgml": null,
+  "sgml": "20120419163225",
   "json_et": "2012-04-19 16:32:25",
-  "ticker": "AMD"
+  "ticker": "AMD",
+  "delta_hours": 0.0
  },
  "0001445305-12-001133": {
-  "sgml": null,
+  "sgml": "20120423162932",
   "json_et": "2012-04-23 16:29:32",
-  "ticker": "NFLX"
+  "ticker": "NFLX",
+  "delta_hours": 0.0
  },
  "0001193125-12-178928": {
-  "sgml": null,
+  "sgml": "20120424163055",
   "json_et": "2012-04-24 16:30:55",
-  "ticker": "AAPL"
+  "ticker": "AAPL",
+  "delta_hours": 0.0
  },
  "0001193125-12-186222": {
-  "sgml": null,
+  "sgml": "20120426163959",
   "json_et": "2012-04-26 16:39:59",
-  "ticker": "AMZN"
+  "ticker": "AMZN",
+  "delta_hours": 0.0
  },
  "0001193125-12-221988": {
-  "sgml": null,
+  "sgml": "20120509160541",
   "json_et": "2012-05-09 16:05:41",
-  "ticker": "TSLA"
+  "ticker": "TSLA",
+  "delta_hours": 0.0
  },
  "0001045810-12-000024": {
-  "sgml": null,
+  "sgml": "20120511073227",
   "json_et": "2012-05-11 07:32:27",
-  "ticker": "NVDA"
+  "ticker": "NVDA",
+  "delta_hours": 0.0
  },
  "0001193125-12-243453": {
-  "sgml": null,
+  "sgml": "20120522160957",
   "json_et": "2012-05-22 12:09:57",
-  "ticker": "AVGO"
+  "ticker": "AVGO",
+  "delta_hours": 4.0
  },
  "0000723125-12-000074": {
-  "sgml": null,
+  "sgml": "20120620160105",
   "json_et": "2012-06-20 16:01:05",
-  "ticker": "MU"
+  "ticker": "MU",
+  "delta_hours": 0.0
  },
  "0001157523-12-003647": {
-  "sgml": null,
+  "sgml": "20120717161450",
   "json_et": "2012-07-17 16:14:50",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0000050863-12-000087": {
-  "sgml": null,
+  "sgml": "20120718095021",
   "json_et": "2012-07-18 09:50:21",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0001193125-12-307446": {
-  "sgml": null,
+  "sgml": "20120719160358",
   "json_et": "2012-07-19 16:03:58",
-  "ticker": "GOOGL"
+  "ticker": "GOOGL",
+  "delta_hours": 0.0
  },
  "0001193125-12-307447": {
-  "sgml": null,
+  "sgml": "20120719160601",
   "json_et": "2012-07-19 16:06:01",
-  "ticker": "MSFT"
+  "ticker": "MSFT",
+  "delta_hours": 0.0
  },
  "0001193125-12-307538": {
-  "sgml": null,
+  "sgml": "20120719164100",
   "json_et": "2012-07-19 16:41:00",
-  "ticker": "AMD"
+  "ticker": "AMD",
+  "delta_hours": 0.0
  },
  "0001065280-12-000007": {
-  "sgml": null,
+  "sgml": "20120724161004",
   "json_et": "2012-07-24 16:10:04",
-  "ticker": "NFLX"
+  "ticker": "NFLX",
+  "delta_hours": 0.0
  },
  "0001193125-12-312355": {
-  "sgml": null,
+  "sgml": "20120724163104",
   "json_et": "2012-07-24 16:31:04",
-  "ticker": "AAPL"
+  "ticker": "AAPL",
+  "delta_hours": 0.0
  },
  "0001193125-12-314408": {
-  "sgml": null,
+  "sgml": "20120725160600",
   "json_et": "2012-07-25 16:06:00",
-  "ticker": "TSLA"
+  "ticker": "TSLA",
+  "delta_hours": 0.0
  },
  "0001193125-12-316828": {
-  "sgml": null,
+  "sgml": "20120726160804",
   "json_et": "2012-07-26 16:08:04",
-  "ticker": "AMZN"
+  "ticker": "AMZN",
+  "delta_hours": 0.0
  },
  "0001193125-12-316895": {
-  "sgml": null,
+  "sgml": "20120726162515",
   "json_et": "2012-07-26 16:25:15",
-  "ticker": "META"
+  "ticker": "META",
+  "delta_hours": 0.0
  },
  "0001045810-12-000032": {
-  "sgml": null,
+  "sgml": "20120809162728",
   "json_et": "2012-08-09 16:27:28",
-  "ticker": "NVDA"
+  "ticker": "NVDA",
+  "delta_hours": 0.0
  },
  "0001193125-12-359081": {
-  "sgml": null,
+  "sgml": "20120816161156",
   "json_et": "2012-08-16 12:11:56",
-  "ticker": "AVGO"
+  "ticker": "AVGO",
+  "delta_hours": 4.0
  },
  "0000723125-12-000101": {
-  "sgml": null,
+  "sgml": "20120927160051",
   "json_et": "2012-09-27 16:00:51",
-  "ticker": "MU"
+  "ticker": "MU",
+  "delta_hours": 0.0
  },
  "0001193125-12-421061": {
-  "sgml": null,
+  "sgml": "20121011165058",
   "json_et": "2012-10-11 16:50:58",
-  "ticker": "AMD"
+  "ticker": "AMD",
+  "delta_hours": 0.0
  },
  "0001157523-12-005134": {
-  "sgml": null,
+  "sgml": "20121016161134",
   "json_et": "2012-10-16 16:11:34",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0000050863-12-000113": {
-  "sgml": null,
+  "sgml": "20121017100959",
   "json_et": "2012-10-17 10:09:59",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0001193125-12-426975": {
-  "sgml": null,
+  "sgml": "20121018123000",
   "json_et": "2012-10-18 12:30:00",
-  "ticker": "GOOGL"
+  "ticker": "GOOGL",
+  "delta_hours": 0.0
  },
  "0001193125-12-427207": {
-  "sgml": null,
+  "sgml": "20121018160209",
   "json_et": "2012-10-18 16:02:09",
-  "ticker": "MSFT"
+  "ticker": "MSFT",
+  "delta_hours": 0.0
  },
  "0001193125-12-427251": {
-  "sgml": null,
+  "sgml": "20121018162656",
   "json_et": "2012-10-18 16:26:56",
-  "ticker": "AMD"
+  "ticker": "AMD",
+  "delta_hours": 0.0
  },
  "0001065280-12-000015": {
-  "sgml": null,
+  "sgml": "20121023160946",
   "json_et": "2012-10-23 16:09:46",
-  "ticker": "NFLX"
+  "ticker": "NFLX",
+  "delta_hours": 0.0
  },
  "0001193125-12-431558": {
-  "sgml": null,
+  "sgml": "20121023162958",
   "json_et": "2012-10-23 16:29:58",
-  "ticker": "META"
+  "ticker": "META",
+  "delta_hours": 0.0
  },
  "0001193125-12-435477": {
-  "sgml": null,
+  "sgml": "20121025162505",
   "json_et": "2012-10-25 16:25:05",
-  "ticker": "AMZN"
+  "ticker": "AMZN",
+  "delta_hours": 0.0
  },
  "0001193125-12-435506": {
-  "sgml": null,
+  "sgml": "20121025163116",
   "json_et": "2012-10-25 16:31:16",
-  "ticker": "AAPL"
+  "ticker": "AAPL",
+  "delta_hours": 0.0
  },
  "0001193125-12-450383": {
-  "sgml": null,
+  "sgml": "20121105063357",
   "json_et": "2012-11-05 06:33:57",
-  "ticker": "TSLA"
+  "ticker": "TSLA",
+  "delta_hours": 0.0
  },
  "0001045810-12-000055": {
-  "sgml": null,
+  "sgml": "20121108162434",
   "json_et": "2012-11-08 16:24:34",
-  "ticker": "NVDA"
+  "ticker": "NVDA",
+  "delta_hours": 0.0
  },
  "0001193125-12-485680": {
-  "sgml": null,
+  "sgml": "20121129160705",
   "json_et": "2012-11-29 11:07:05",
-  "ticker": "AVGO"
+  "ticker": "AVGO",
+  "delta_hours": 5.0
  },
  "0000723125-12-000177": {
-  "sgml": null,
+  "sgml": "20121220160107",
   "json_et": "2012-12-20 16:01:07",
-  "ticker": "MU"
+  "ticker": "MU",
+  "delta_hours": 0.0
  },
  "0001157523-13-000168": {
-  "sgml": null,
+  "sgml": "20130117160856",
   "json_et": "2013-01-17 16:08:56",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0000050863-13-000005": {
-  "sgml": null,
+  "sgml": "20130118090749",
   "json_et": "2013-01-18 09:07:49",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0001288776-13-000006": {
-  "sgml": null,
+  "sgml": "20130122160130",
   "json_et": "2013-01-22 16:01:30",
-  "ticker": "GOOGL"
+  "ticker": "GOOGL",
+  "delta_hours": 0.0
  },
  "0001193125-13-019330": {
-  "sgml": null,
+  "sgml": "20130122164605",
   "json_et": "2013-01-22 16:46:05",
-  "ticker": "AMD"
+  "ticker": "AMD",
+  "delta_hours": 0.0
  },
  "0001065280-13-000005": {
-  "sgml": null,
+  "sgml": "20130123160426",
   "json_et": "2013-01-23 16:04:26",
-  "ticker": "NFLX"
+  "ticker": "NFLX",
+  "delta_hours": 0.0
  },
  "0001193125-13-020783": {
-  "sgml": null,
+  "sgml": "20130123163100",
   "json_et": "2013-01-23 16:31:00",
-  "ticker": "AAPL"
+  "ticker": "AAPL",
+  "delta_hours": 0.0
  },
  "0001193125-13-022190": {
-  "sgml": null,
+  "sgml": "20130124160446",
   "json_et": "2013-01-24 16:04:46",
-  "ticker": "MSFT"
+  "ticker": "MSFT",
+  "delta_hours": 0.0
  },
  "0001193125-13-028189": {
-  "sgml": null,
+  "sgml": "20130129163012",
   "json_et": "2013-01-29 16:30:12",
-  "ticker": "AMZN"
+  "ticker": "AMZN",
+  "delta_hours": 0.0
  },
  "0001193125-13-029993": {
-  "sgml": null,
+  "sgml": "20130130161812",
   "json_et": "2013-01-30 16:18:12",
-  "ticker": "META"
+  "ticker": "META",
+  "delta_hours": 0.0
  },
  "0001045810-13-000003": {
-  "sgml": null,
+  "sgml": "20130213162620",
   "json_et": "2013-02-13 16:26:20",
-  "ticker": "NVDA"
+  "ticker": "NVDA",
+  "delta_hours": 0.0
  },
  "0001193125-13-067177": {
-  "sgml": null,
+  "sgml": "20130220160206",
   "json_et": "2013-02-20 16:02:06",
-  "ticker": "TSLA"
+  "ticker": "TSLA",
+  "delta_hours": 0.0
  },
  "0001193125-13-076900": {
-  "sgml": null,
+  "sgml": "20130226161606",
   "json_et": "2013-02-26 11:16:06",
-  "ticker": "AVGO"
+  "ticker": "AVGO",
+  "delta_hours": 5.0
  },
  "0000723125-13-000032": {
-  "sgml": null,
+  "sgml": "20130321160125",
   "json_et": "2013-03-21 16:01:25",
-  "ticker": "MU"
+  "ticker": "MU",
+  "delta_hours": 0.0
  },
  "0001157523-13-001800": {
-  "sgml": null,
+  "sgml": "20130416161237",
   "json_et": "2013-04-16 16:12:37",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0000050863-13-000036": {
-  "sgml": null,
+  "sgml": "20130417093105",
   "json_et": "2013-04-17 09:31:05",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0001193125-13-160734": {
-  "sgml": null,
+  "sgml": "20130418160502",
   "json_et": "2013-04-18 16:05:02",
-  "ticker": "MSFT"
+  "ticker": "MSFT",
+  "delta_hours": 0.0
  },
  "0001288776-13-000023": {
-  "sgml": null,
+  "sgml": "20130418161212",
   "json_et": "2013-04-18 16:12:12",
-  "ticker": "GOOGL"
+  "ticker": "GOOGL",
+  "delta_hours": 0.0
  },
  "0001193125-13-160817": {
-  "sgml": null,
+  "sgml": "20130418162458",
   "json_et": "2013-04-18 16:24:58",
-  "ticker": "AMD"
+  "ticker": "AMD",
+  "delta_hours": 0.0
  },
  "0001065280-13-000011": {
-  "sgml": null,
+  "sgml": "20130422160430",
   "json_et": "2013-04-22 16:04:30",
-  "ticker": "NFLX"
+  "ticker": "NFLX",
+  "delta_hours": 0.0
  },
  "0001193125-13-167458": {
-  "sgml": null,
+  "sgml": "20130423163110",
   "json_et": "2013-04-23 16:31:10",
-  "ticker": "AAPL"
+  "ticker": "AAPL",
+  "delta_hours": 0.0
  },
  "0001193125-13-173923": {
-  "sgml": null,
+  "sgml": "20130425163910",
   "json_et": "2013-04-25 16:39:10",
-  "ticker": "AMZN"
+  "ticker": "AMZN",
+  "delta_hours": 0.0
  },
  "0001193125-13-192397": {
-  "sgml": null,
+  "sgml": "20130501161201",
   "json_et": "2013-05-01 16:12:01",
-  "ticker": "META"
+  "ticker": "META",
+  "delta_hours": 0.0
  },
  "0001193125-13-207910": {
-  "sgml": null,
+  "sgml": "20130508172923",
   "json_et": "2013-05-08 17:29:23",
-  "ticker": "TSLA"
+  "ticker": "TSLA",
+  "delta_hours": 0.0
  },
  "0001045810-13-000029": {
-  "sgml": null,
+  "sgml": "20130509163022",
   "json_et": "2013-05-09 16:30:22",
-  "ticker": "NVDA"
+  "ticker": "NVDA",
+  "delta_hours": 0.0
  },
  "0001193125-13-239469": {
-  "sgml": null,
+  "sgml": "20130529161457",
   "json_et": "2013-05-29 12:14:57",
-  "ticker": "AVGO"
+  "ticker": "AVGO",
+  "delta_hours": 4.0
  },
  "0000723125-13-000087": {
-  "sgml": null,
+  "sgml": "20130619160109",
   "json_et": "2013-06-19 16:01:09",
-  "ticker": "MU"
+  "ticker": "MU",
+  "delta_hours": 0.0
  },
  "0001157523-13-003366": {
-  "sgml": null,
+  "sgml": "20130717161343",
   "json_et": "2013-07-17 16:13:43",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0000050863-13-000081": {
-  "sgml": null,
+  "sgml": "20130718153834",
   "json_et": "2013-07-18 15:38:34",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0001288776-13-000049": {
-  "sgml": null,
+  "sgml": "20130718160100",
   "json_et": "2013-07-18 16:01:00",
-  "ticker": "GOOGL"
+  "ticker": "GOOGL",
+  "delta_hours": 0.0
  },
  "0001193125-13-294305": {
-  "sgml": null,
+  "sgml": "20130718160754",
   "json_et": "2013-07-18 16:07:54",
-  "ticker": "MSFT"
+  "ticker": "MSFT",
+  "delta_hours": 0.0
  },
  "0001193125-13-294361": {
-  "sgml": null,
+  "sgml": "20130718163654",
   "json_et": "2013-07-18 16:36:54",
-  "ticker": "AMD"
+  "ticker": "AMD",
+  "delta_hours": 0.0
  },
  "0001065280-13-000027": {
-  "sgml": null,
+  "sgml": "20130722160324",
   "json_et": "2013-07-22 16:03:24",
-  "ticker": "NFLX"
+  "ticker": "NFLX",
+  "delta_hours": 0.0
  },
  "0001193125-13-298914": {
-  "sgml": null,
+  "sgml": "20130723163058",
   "json_et": "2013-07-23 16:30:58",
-  "ticker": "AAPL"
+  "ticker": "AAPL",
+  "delta_hours": 0.0
  },
  "0001326801-13-000016": {
-  "sgml": null,
+  "sgml": "20130724161230",
   "json_et": "2013-07-24 16:12:30",
-  "ticker": "META"
+  "ticker": "META",
+  "delta_hours": 0.0
  },
  "0001193125-13-302763": {
-  "sgml": null,
+  "sgml": "20130725163026",
   "json_et": "2013-07-25 16:30:26",
-  "ticker": "AMZN"
+  "ticker": "AMZN",
+  "delta_hours": 0.0
  },
  "0001193125-13-324129": {
-  "sgml": null,
+  "sgml": "20130807160459",
   "json_et": "2013-08-07 16:04:59",
-  "ticker": "TSLA"
+  "ticker": "TSLA",
+  "delta_hours": 0.0
  },
  "0001045810-13-000069": {
-  "sgml": null,
+  "sgml": "20130808162918",
   "json_et": "2013-08-08 16:29:18",
-  "ticker": "NVDA"
+  "ticker": "NVDA",
+  "delta_hours": 0.0
  },
  "0001193125-13-348271": {
-  "sgml": null,
+  "sgml": "20130827161220",
   "json_et": "2013-08-27 12:12:20",
-  "ticker": "AVGO"
+  "ticker": "AVGO",
+  "delta_hours": 4.0
  },
  "0000723125-13-000189": {
-  "sgml": null,
+  "sgml": "20131010160043",
   "json_et": "2013-10-10 16:00:43",
-  "ticker": "MU"
+  "ticker": "MU",
+  "delta_hours": 0.0
  },
  "0000050863-13-000093": {
-  "sgml": null,
+  "sgml": "20131015160425",
   "json_et": "2013-10-15 16:04:25",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0000050863-13-000094": {
-  "sgml": null,
+  "sgml": "20131015160532",
   "json_et": "2013-10-15 16:05:32",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0001288776-13-000063": {
-  "sgml": null,
+  "sgml": "20131017161319",
   "json_et": "2013-10-17 16:13:19",
-  "ticker": "GOOGL"
+  "ticker": "GOOGL",
+  "delta_hours": 0.0
  },
  "0001193125-13-402500": {
-  "sgml": null,
+  "sgml": "20131017162754",
   "json_et": "2013-10-17 16:27:54",
-  "ticker": "AMD"
+  "ticker": "AMD",
+  "delta_hours": 0.0
  },
  "0001065280-13-000033": {
-  "sgml": null,
+  "sgml": "20131021160403",
   "json_et": "2013-10-21 16:04:03",
-  "ticker": "NFLX"
+  "ticker": "NFLX",
+  "delta_hours": 0.0
  },
  "0001193125-13-409837": {
-  "sgml": null,
+  "sgml": "20131024160459",
   "json_et": "2013-10-24 16:04:59",
-  "ticker": "MSFT"
+  "ticker": "MSFT",
+  "delta_hours": 0.0
  },
  "0001193125-13-409933": {
-  "sgml": null,
+  "sgml": "20131024163507",
   "json_et": "2013-10-24 16:35:07",
-  "ticker": "AMZN"
+  "ticker": "AMZN",
+  "delta_hours": 0.0
  },
  "0001193125-13-413498": {
-  "sgml": null,
+  "sgml": "20131028163108",
   "json_et": "2013-10-28 16:31:08",
-  "ticker": "AAPL"
+  "ticker": "AAPL",
+  "delta_hours": 0.0
  },
  "0001326801-13-000029": {
-  "sgml": null,
+  "sgml": "20131030161107",
   "json_et": "2013-10-30 16:11:07",
-  "ticker": "META"
+  "ticker": "META",
+  "delta_hours": 0.0
  },
  "0001193125-13-427630": {
-  "sgml": null,
+  "sgml": "20131105160103",
   "json_et": "2013-11-05 16:01:03",
-  "ticker": "TSLA"
+  "ticker": "TSLA",
+  "delta_hours": 0.0
  },
  "0001045810-13-000104": {
-  "sgml": null,
+  "sgml": "20131107162602",
   "json_et": "2013-11-07 16:26:02",
-  "ticker": "NVDA"
+  "ticker": "NVDA",
+  "delta_hours": 0.0
  },
  "0001193125-13-462098": {
-  "sgml": null,
+  "sgml": "20131204160700",
   "json_et": "2013-12-04 11:07:00",
-  "ticker": "AVGO"
+  "ticker": "AVGO",
+  "delta_hours": 5.0
  },
  "0000723125-14-000012": {
-  "sgml": null,
+  "sgml": "20140107160203",
   "json_et": "2014-01-07 16:02:03",
-  "ticker": "MU"
+  "ticker": "MU",
+  "delta_hours": 0.0
  },
  "0000050863-14-000006": {
-  "sgml": null,
+  "sgml": "20140116160418",
   "json_et": "2014-01-16 16:04:18",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0001193125-14-016032": {
-  "sgml": null,
+  "sgml": "20140121164559",
   "json_et": "2014-01-21 16:45:59",
-  "ticker": "AMD"
+  "ticker": "AMD",
+  "delta_hours": 0.0
  },
  "0001065280-14-000003": {
-  "sgml": null,
+  "sgml": "20140122160705",
   "json_et": "2014-01-22 16:07:05",
-  "ticker": "NFLX"
+  "ticker": "NFLX",
+  "delta_hours": 0.0
  },
  "0001193125-14-018629": {
-  "sgml": null,
+  "sgml": "20140123160607",
   "json_et": "2014-01-23 16:06:07",
-  "ticker": "MSFT"
+  "ticker": "MSFT",
+  "delta_hours": 0.0
  },
  "0001193125-14-022238": {
-  "sgml": null,
+  "sgml": "20140127163133",
   "json_et": "2014-01-27 16:31:33",
-  "ticker": "AAPL"
+  "ticker": "AAPL",
+  "delta_hours": 0.0
  },
  "0001326801-14-000003": {
-  "sgml": null,
+  "sgml": "20140129161911",
   "json_et": "2014-01-29 16:19:11",
-  "ticker": "META"
+  "ticker": "META",
+  "delta_hours": 0.0
  },
  "0001288776-14-000013": {
-  "sgml": null,
+  "sgml": "20140130160152",
   "json_et": "2014-01-30 16:01:52",
-  "ticker": "GOOGL"
+  "ticker": "GOOGL",
+  "delta_hours": 0.0
  },
  "0001018724-14-000004": {
-  "sgml": null,
+  "sgml": "20140130162030",
   "json_et": "2014-01-30 16:20:30",
-  "ticker": "AMZN"
+  "ticker": "AMZN",
+  "delta_hours": 0.0
  },
  "0001045810-14-000004": {
-  "sgml": null,
+  "sgml": "20140212162320",
   "json_et": "2014-02-12 16:23:20",
-  "ticker": "NVDA"
+  "ticker": "NVDA",
+  "delta_hours": 0.0
  },
  "0001193125-14-058778": {
-  "sgml": null,
+  "sgml": "20140219160608",
   "json_et": "2014-02-19 16:06:08",
-  "ticker": "TSLA"
+  "ticker": "TSLA",
+  "delta_hours": 0.0
  },
  "0001193125-14-067352": {
-  "sgml": null,
+  "sgml": "20140225163238",
   "json_et": "2014-02-25 11:32:38",
-  "ticker": "AVGO"
+  "ticker": "AVGO",
+  "delta_hours": 5.0
  },
  "0000723125-14-000065": {
-  "sgml": null,
+  "sgml": "20140403160133",
   "json_et": "2014-04-03 16:01:33",
-  "ticker": "MU"
+  "ticker": "MU",
+  "delta_hours": 0.0
  },
  "0000050863-14-000029": {
-  "sgml": null,
+  "sgml": "20140415160511",
   "json_et": "2014-04-15 16:05:11",
-  "ticker": "INTC"
+  "ticker": "INTC",
+  "delta_hours": 0.0
  },
  "0001288776-14-000034": {
-  "sgml": null,
+  "sgml": "20140416160229",
   "json_et": "2014-04-16 16:02:29",
-  "ticker": "GOOGL"
+  "ticker": "GOOGL",
+  "delta_hours": 0.0
  },
  "0001193125-14-147719": {
-  "sgml": null,
+  "sgml": "20140417162510",
   "json_et": "2014-04-17 16:25:10",
-  "ticker": "AMD"
+  "ticker": "AMD",
+  "delta_hours": 0.0
  },
  "0001065280-14-000009": {
-  "sgml": null,
+  "sgml": "20140421160241",
   "json_et": "2014-04-21 16:02:41",
-  "ticker": "NFLX"
+  "ticker": "NFLX",
+  "delta_hours": 0.0
  },
  "0001326801-14-000020": {
-  "sgml": null,
+  "sgml": "20140423160450",
   "json_et": "2014-04-23 16:04:50",
-  "ticker": "META"
+  "ticker": "META",
+  "delta_hours": 0.0
  },
  "0001193125-14-154871": {
-  "sgml": null,
+  "sgml": "20140423163138",
   "json_et": "2014-04-23 16:31:38",
-  "ticker": "AAPL"
+  "ticker": "AAPL",
+  "delta_hours": 0.0
  },
  "0001193125-14-157077": {
-  "sgml": null,
+  "sgml": "20140424160310",
   "json_et": "2014-04-24 16:03:10",
-  "ticker": "MSFT"
+  "ticker": "MSFT",
+  "delta_hours": 0.0
  },
  "0001018724-14-000012": {
-  "sgml": null,
+  "sgml": "20140424162322",
   "json_et": "2014-04-24 16:23:22",
-  "ticker": "AMZN"
+  "ticker": "AMZN",
+  "delta_hours": 0.0
  },
  "0001045810-14-000071": {
-  "sgml": null,
+  "sgml": "20140506092949",
   "json_et": "2014-05-06 09:29:49",
-  "ticker": "NVDA"
+  "ticker": "NVDA",
+  "delta_hours": 0.0
  },
  "0001193125-14-187459": {
-  "sgml": null,
+  "sgml": "20140507161109",
   "json_et": "2014-05-07 16:11:09",
-  "ticker": "TSLA"
+  "ticker": "TSLA",
+  "delta_hours": 0.0
  },
  "0001045810-14-000076": {
-  "sgml": null,
+  "sgml": "20140508162842",
   "json_et": "2014-05-08 16:28:42",
-  "ticker": "NVDA"
+  "ticker": "NVDA",
+  "delta_hours": 0.0
  },
  "0001193125-14-217232": {
-  "sgml": null,
+  "sgml": "20140529161209",
   "json_et": "2014-05-29 12:12:09",
-  "ticker": "AVGO"
+  "ticker": "AVGO",
+  "delta_hours": 4.0
  },
  "0000723125-14-000114": {
   "sgml": "20140623160146",
@@ -1365,14 +1566,16 @@
   "delta_hours": 0.0
  },
  "0001193125-15-303298": {
-  "sgml": null,
+  "sgml": "20150826162036",
   "json_et": "2015-08-26 12:20:36",
-  "ticker": "AVGO"
+  "ticker": "AVGO",
+  "delta_hours": 4.0
  },
  "0000723125-15-000077": {
-  "sgml": null,
+  "sgml": "20151001160116",
   "json_et": "2015-10-01 16:01:16",
-  "ticker": "MU"
+  "ticker": "MU",
+  "delta_hours": 0.0
  },
  "0000050863-15-000066": {
   "sgml": "20151013160439",
@@ -1549,9 +1752,10 @@
   "delta_hours": 0.0
  },
  "0000002488-16-000118": {
-  "sgml": null,
+  "sgml": "20160421161636",
   "json_et": "2016-04-21 16:16:36",
-  "ticker": "AMD"
+  "ticker": "AMD",
+  "delta_hours": 0.0
  },
  "0001193125-16-556520": {
   "sgml": "20160426163109",
@@ -1668,9 +1872,10 @@
   "delta_hours": 0.0
  },
  "0001065280-16-000076": {
-  "sgml": null,
+  "sgml": "20161017161621",
   "json_et": "2016-10-17 16:16:21",
-  "ticker": "NFLX"
+  "ticker": "NFLX",
+  "delta_hours": 0.0
  },
  "0000050863-16-000150": {
   "sgml": "20161018160922",
@@ -1799,9 +2004,10 @@
   "delta_hours": 0.0
  },
  "0001193125-17-065723": {
-  "sgml": null,
+  "sgml": "20170301161156",
   "json_et": "2017-03-01 11:11:56",
-  "ticker": "AVGO"
+  "ticker": "AVGO",
+  "delta_hours": 5.0
  },
  "0000723125-17-000031": {
   "sgml": "20170323160150",
@@ -2842,9 +3048,10 @@
   "delta_hours": 0.0
  },
  "0000723125-20-000079": {
-  "sgml": null,
+  "sgml": "20200929160038",
   "json_et": "2020-09-29 16:00:38",
-  "ticker": "MU"
+  "ticker": "MU",
+  "delta_hours": 0.0
  },
  "0001065280-20-000448": {
   "sgml": "20201020160702",
