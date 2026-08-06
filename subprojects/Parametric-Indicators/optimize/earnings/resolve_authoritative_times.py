@@ -48,18 +48,45 @@ HDR_URL = "https://www.sec.gov/Archives/edgar/data/{cik}/{accn}/{acc}-index-head
 ACCEPT_RE = re.compile(r"ACCEPTANCE-DATETIME&?g?t?;?>?(\d{14})")
 
 
+def _try(url: str, ranged: bool) -> str | None:
+    headers = {"User-Agent": UA}
+    if ranged:
+        # Full submission .txt files can be many MB; we only need the SGML header at the top.
+        headers["Range"] = "bytes=0-4000"
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=60) as r:
+                body = r.read().decode("utf-8", errors="replace")
+            time.sleep(PAUSE)
+            m = ACCEPT_RE.search(body)
+            return m.group(1) if m else None
+        except urllib.error.HTTPError as exc:
+            time.sleep(PAUSE)
+            if exc.code in (403, 404):
+                return None                       # genuinely absent — no point retrying
+        except OSError:                           # TimeoutError / URLError — transient, retry
+            time.sleep(PAUSE + 2.0 * (attempt + 1))
+    return None
+
+
 def fetch_acceptance(cik: int, acc: str) -> str | None:
-    url = HDR_URL.format(cik=cik, accn=acc.replace("-", ""), acc=acc)
-    req = urllib.request.Request(url, headers={"User-Agent": UA})
-    try:
-        with urllib.request.urlopen(req, timeout=60) as r:
-            body = r.read().decode("utf-8", errors="replace")
-    except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, OSError):
-        time.sleep(PAUSE)
-        return None
-    time.sleep(PAUSE)
-    m = ACCEPT_RE.search(body)
-    return m.group(1) if m else None
+    """EDGAR's acceptance time, from whichever of its two carriers exists.
+
+    ⚠️ `-index-headers.html` DOES NOT EXIST FOR OLDER FILINGS — it 404s for anything before roughly
+    2013. Relying on it alone left 207 of 798 events (26%) on the JSON timestamp, i.e. on the very
+    field this module exists to avoid, and it showed up as absurd time-of-day spreads (AAPL went from
+    ±0 min on the 2.4-year set to ±144 min on the 16-year one).
+
+    The raw submission `.txt` carries the same SGML header and IS available for old filings. Verified
+    on both ends of the range, where the two sources agree exactly:
+        AAPL 0001193125-10-161807  headers 404   .txt -> 20100720163328
+        AAPL 0000320193-26-000018  headers 200   .txt -> 20260730163028  (identical)
+    """
+    accn = acc.replace("-", "")
+    got = _try(HDR_URL.format(cik=cik, accn=accn, acc=acc), ranged=False)
+    if got:
+        return got
+    return _try(f"https://www.sec.gov/Archives/edgar/data/{cik}/{accn}/{acc}.txt", ranged=True)
 
 
 def main() -> int:
