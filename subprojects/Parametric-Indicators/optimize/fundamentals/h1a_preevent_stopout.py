@@ -43,11 +43,17 @@ OUT = HERE / "h1a_stopout_results.json"
 
 # Pre-registered grid — this IS the whole search for H1-A (criterion P1-C3 in #115).
 WAITS = [5, 15, 30, 60]          # minutes held BEFORE the release
-STOPS = [10, 20, 40]             # stop distance in index points
-N_CELLS = len(WAITS) * len(STOPS)
+
+# ⚠️ STOPS ARE IN PERCENT OF PRICE, NOT POINTS.
+# The first version used absolute points, which is NOT comparable across instruments and produced a
+# nonsense cross-instrument result: a 40-point stop is 0.13% of NQ at 29,880 but 1.3% of GC at ~3,000
+# — ten times wider. GC therefore showed near-zero stop-outs and looked "calmer", when in truth its
+# stop was effectively enormous. Percent of entry price makes the risk equivalent.
+STOPS_PCT = [0.05, 0.10, 0.20, 0.40]
+N_CELLS = len(WAITS) * len(STOPS_PCT)
 
 
-def measure(df, stamps, waits, stops, label, out):
+def measure(df, stamps, waits, stops_pct, label, out):
     """Fraction of positions stopped out during [T−wait, T) — long side and short side separately."""
     import numpy as np
     import pandas as pd
@@ -64,7 +70,7 @@ def measure(df, stamps, waits, stops, label, out):
         return
 
     print(f"    {'wait':>6} {'stop':>6} {'n':>6} {'LONG stopped':>14} {'SHORT stopped':>15} "
-          f"{'either':>9}")
+          f"{'either':>9}   (stop in points)")
     for w in waits:
         starts = pos - w
         ok = starts >= 0
@@ -75,12 +81,15 @@ def measure(df, stamps, waits, stops, label, out):
                                  for i in range(len(s))])
         adverse_short = np.array([hi[s[i]:e[i]].max() - entry[i] if e[i] > s[i] else 0.0
                                   for i in range(len(s))])
-        for stop in stops:
+        for pct in stops_pct:
+            stop = entry * (pct / 100.0)          # stop distance in POINTS, per-event, from % of price
             L = float((adverse_long >= stop).mean())
             S = float((adverse_short >= stop).mean())
             either = float(((adverse_long >= stop) | (adverse_short >= stop)).mean())
-            print(f"    {w:>5}m {stop:>5}p {len(s):>6} {L:>13.1%} {S:>14.1%} {either:>8.1%}")
-            out.append({"set": label, "wait_min": w, "stop_pts": stop, "n": int(len(s)),
+            print(f"    {w:>5}m {pct:>5.2f}% {len(s):>6} {L:>13.1%} {S:>14.1%} {either:>8.1%}"
+                  f"   (median {float(np.median(stop)):.1f} pts)")
+            out.append({"set": label, "wait_min": w, "stop_pct": pct,
+                        "median_stop_pts": float(np.median(stop)), "n": int(len(s)),
                         "long_stopped": L, "short_stopped": S, "either_stopped": either,
                         "median_adverse_long": float(np.median(adverse_long)),
                         "median_adverse_short": float(np.median(adverse_short))})
@@ -102,11 +111,11 @@ def main() -> int:
     print("=" * 96)
     print(f"  releases        : {len(cal):,}  ({cal.Date.min():%Y-%m-%d} .. {cal.Date.max():%Y-%m-%d})")
     print(f"  price frame     : {df.Date.min()} -> {df.Date.max()}  ({len(df):,} bars)")
-    print(f"  pre-registered  : waits {WAITS} min x stops {STOPS} pts = {N_CELLS} cells (WHOLE SEARCH)")
+    print(f"  pre-registered  : waits {WAITS} min x stops {STOPS_PCT} % = {N_CELLS} cells (WHOLE SEARCH)")
     print(f"  ⚠️ both LONG and SHORT reported — direction is unknown, so neither side is chosen")
 
     out: list[dict] = []
-    measure(df, cal["Date"], WAITS, STOPS, "RELEASES", out)
+    measure(df, cal["Date"], WAITS, STOPS_PCT, "RELEASES", out)
 
     # ---- dumb control: same clock times, days with NO release ----------------------------------
     rng = np.random.default_rng(20260807)
@@ -122,26 +131,26 @@ def main() -> int:
             ctrl.append(c)
             break
     print(f"\n  control timestamps drawn: {len(ctrl)} (same clock minutes, NO release that day)")
-    measure(df, ctrl, WAITS, STOPS, "CONTROL", out)
+    measure(df, ctrl, WAITS, STOPS_PCT, "CONTROL", out)
 
-    OUT.write_text(json.dumps({"instrument": a.instrument, "waits": WAITS, "stops": STOPS,
+    OUT.write_text(json.dumps({"instrument": a.instrument, "waits": WAITS, "stops_pct": STOPS_PCT,
                                "results": out}, indent=1))
     print(f"\nwrote -> {OUT}")
 
     # ---- the verdict, stated against the control, never on its own -----------------------------
-    rel = {(r["wait_min"], r["stop_pts"]): r for r in out if r["set"] == "RELEASES"}
-    ctl = {(r["wait_min"], r["stop_pts"]): r for r in out if r["set"] == "CONTROL"}
+    rel = {(r["wait_min"], r["stop_pct"]): r for r in out if r["set"] == "RELEASES"}
+    ctl = {(r["wait_min"], r["stop_pct"]): r for r in out if r["set"] == "CONTROL"}
     print("\n" + "=" * 96)
     print("VERDICT — release window vs a matched ordinary window")
     print("=" * 96)
     print(f"  {'wait':>6} {'stop':>6} {'release either':>16} {'control either':>16} {'ratio':>8}")
     for w in WAITS:
-        for s in STOPS:
+        for s in STOPS_PCT:
             r, c = rel.get((w, s)), ctl.get((w, s))
             if not r or not c:
                 continue
             ratio = r["either_stopped"] / c["either_stopped"] if c["either_stopped"] else float("nan")
-            print(f"  {w:>5}m {s:>5}p {r['either_stopped']:>15.1%} {c['either_stopped']:>15.1%} "
+            print(f"  {w:>5}m {s:>5.2f}% {r['either_stopped']:>15.1%} {c['either_stopped']:>15.1%} "
                   f"{ratio:>7.2f}x")
     print("\n  ratio < 1  ⇒ the pre-release window is SAFER than an ordinary one (consistent with the")
     print("               measured 0.78x pre-release quiet)")
