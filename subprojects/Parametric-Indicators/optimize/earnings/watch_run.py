@@ -87,6 +87,23 @@ def main() -> int:
     ap.add_argument("--unit", default="items")
     a = ap.parse_args()
 
+    # ⚠️ VALIDATE THE PID BEFORE WATCHING IT. Documenting "take the pid from $!" was not enough — the
+    # same wrapper-vs-interpreter mistake was made twice, each time producing a false DIED for a job
+    # that was running perfectly. A false DIED invites you to kill healthy work, so the tool now
+    # refuses to start on a pid that is not a live interpreter, and prints what it IS watching.
+    try:
+        cmdline = Path(f"/proc/{a.pid}/cmdline").read_bytes().decode(errors="replace").replace("\0", " ").strip()
+    except (FileNotFoundError, ProcessLookupError, PermissionError):
+        print(f"WRONGPID [{a.label}] pid {a.pid} does not exist — nothing to watch. "
+              f"Take the pid from $! at launch, or `pgrep -af <script> | grep python`.", flush=True)
+        return 2
+    if not any(k in cmdline for k in ("python", "node", "java", "ruby", "/bin/")):
+        print(f"WRONGPID [{a.label}] pid {a.pid} is not an interpreter — refusing to watch.\n"
+              f"         cmdline: {cmdline[:180]}\n"
+              f"         This is almost certainly a shell wrapper, not the job.", flush=True)
+        return 2
+    print(f"WATCHING [{a.label}] pid {a.pid}: {cmdline[:150]}", flush=True)
+
     log = Path(a.log)
     last_size, last_change = -1, time.monotonic()
     reported_stall = False
