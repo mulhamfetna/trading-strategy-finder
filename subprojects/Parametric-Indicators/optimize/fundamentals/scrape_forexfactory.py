@@ -1,4 +1,18 @@
-"""WS-NEWS2 (#114) — scrape the ForexFactory economic calendar, 2010 → present.
+"""⛔ SUPERSEDED — kept for the record, not for use. See `collect_nasdaq_calendar.py`.
+
+ForexFactory served 3 requests and then returned **403 to everything, including its homepage and
+including WebFetch**. It is blocked for this environment. The replacement is the Nasdaq
+economic-events API, which is unblocked, has no observed rate limit, and — per its own event
+descriptions linking to investing.com/academy — carries **investing.com's data**, i.e. the source
+originally asked for.
+
+This file remains because the parser was verified correct before access was lost (see
+`SOURCE-EVALUATION-consensus.md`), and because the two silent bugs it exposed are worth keeping on the
+record. Do not run it expecting data.
+
+---
+
+WS-NEWS2 (#114) — scrape the ForexFactory economic calendar, 2010 → present.
 
 WHY THIS SOURCE AND NOT investing.com
 

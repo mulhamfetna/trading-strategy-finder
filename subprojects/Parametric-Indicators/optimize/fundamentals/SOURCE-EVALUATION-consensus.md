@@ -46,7 +46,37 @@ is therefore the owner's preferred source, reached through an endpoint that is n
 Both verified against releases whose date and value are independently known. **Neither is documented by
 the API.**
 
-### 1. The date parameter is OFF BY ONE — request `D` returns the events of `D−1`
+### 1. ⛔ RETRACTED — "the date parameter is off by one" was WRONG
+
+**I claimed this and it is false.** I tested three request dates, got a consistent story, and wrote it
+into this document, the module docstring and issue #114 — **without testing the neighbouring dates.**
+
+When the neighbours were tested, consecutive requests return **byte-identical payloads**:
+
+```
+req Wed 2011-07-06  ->  payload f600b1dd
+req Thu 2011-07-07  ->  payload f600b1dd   <- identical
+req Fri 2011-07-08  ->  payload b6414dc3
+req Sat 2011-07-09  ->  payload b6414dc3   <- identical
+```
+
+Some payloads also mix days: the Wed/Thu payload contains MBA Mortgage Applications (Wednesday) and
+Fed's Balance Sheet (Thursday) together, and omits Initial Jobless Claims (Thursday) entirely.
+
+**And the response carries NO date field.** Keys are `gmt · country · eventName · actual · consensus ·
+previous · description`; the only date is `asOf`, which is always *today*. So an event's date can come
+only from the request parameter — and that mapping is unreliable.
+
+> **Three coincidences looked like a rule.** The lesson is the one this project keeps paying for: a
+> consistent result from an unrepresentative sample is not evidence. Testing the neighbours cost one
+> command and would have caught it immediately.
+
+**Consequence:** the Nasdaq API's *values* are trustworthy (NFP −85K / 103K / 18K / 50K all match
+history) but its *dates* are not. For an event study the timestamp IS the instrument, so this source
+cannot supply dates. It is used for `consensus` only, joined onto authoritative FRED release dates —
+see `join_consensus_to_releases.py`.
+
+### 1b. What was originally written here (retracted, kept for the record)
 
 | requested | returned | independently known |
 |---|---|---|
