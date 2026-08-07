@@ -39,7 +39,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 HERE = Path(__file__).resolve().parent
 CAL = HERE / "us_high_impact.csv"
-OUT = HERE / "h1a_stopout_results.json"
+# ⚠️ Per-instrument filename. A single fixed path meant running NQ then GC SILENTLY OVERWROTE the
+# first result — the kind of loss that leaves no trace and is discovered only when a number looks odd.
+def out_path(instrument: str) -> Path:
+    return HERE / f"h1a_stopout_{instrument}.json"
 
 # Pre-registered grid — this IS the whole search for H1-A (criterion P1-C3 in #115).
 WAITS = [5, 15, 30, 60]          # minutes held BEFORE the release
@@ -133,6 +136,7 @@ def main() -> int:
     print(f"\n  control timestamps drawn: {len(ctrl)} (same clock minutes, NO release that day)")
     measure(df, ctrl, WAITS, STOPS_PCT, "CONTROL", out)
 
+    OUT = out_path(a.instrument)
     OUT.write_text(json.dumps({"instrument": a.instrument, "waits": WAITS, "stops_pct": STOPS_PCT,
                                "results": out}, indent=1))
     print(f"\nwrote -> {OUT}")
