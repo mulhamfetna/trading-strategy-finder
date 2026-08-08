@@ -249,6 +249,27 @@ def run(instrument: str, verbose: bool = True) -> dict:
             cc = corr_pair(az, ctrl[f"r{m}"].to_numpy(dtype=float))
             c["control_spearman_r"] = cc["spearman_r"]
             c["control_spearman_p"] = cc["spearman_p"]
+
+            # ⭐⭐ DIRECTIONAL ACCURACY — the quantity the STRATEGY actually needs, and it is not the
+            # correlation. A rule would trade the SIGN of A_z, so what matters is how often that sign
+            # matches the sign of the move. Reported with a Wilson interval, and compared against the
+            # ~71% that #111 established is required to cover costs.
+            #
+            # ⚠️ Reporting only the correlation would have left the decision-relevant number implicit
+            # and forced a later reader to convert r -> accuracy through a bivariate-normal assumption
+            # that FAT TAILS VIOLATE. This is measured, not converted.
+            mm = np.isfinite(az) & np.isfinite(y) & (az != 0) & (y != 0)
+            if mm.sum() >= 30:
+                hit = float((np.sign(az[mm]) == np.sign(y[mm])).mean())
+                nn = int(mm.sum())
+                z = 1.959963985
+                den = 1 + z * z / nn
+                centre = (hit + z * z / (2 * nn)) / den
+                half = z * np.sqrt(hit * (1 - hit) / nn + z * z / (4 * nn * nn)) / den
+                c["hit_rate"] = hit
+                c["hit_n"] = nn
+                c["hit_ci95"] = [float(centre - half), float(centre + half)]
+                c["hit_beats_break_even"] = bool(centre - half > 0.71)
             cells.append(c)
     out["cells"] = cells
 
@@ -351,12 +372,14 @@ def _report(o: dict) -> None:
     print(f"  ⚠️ pre-registered: {o['n_primary_tests']} tests, Bonferroni alpha = {o['bonferroni_alpha']:.5f}")
     print()
     print(f"  {'hyp':<6}{'off':>5}{'n':>6}{'Pearson r':>11}{'p':>9}{'Spearman r':>12}{'p':>9}"
-          f"{'MDE r':>8}{'ctrl r':>9}{'perm p':>9}  pass")
+          f"{'MDE r':>8}{'ctrl r':>9}{'perm p':>9}{'hit%':>7}{'  95% CI':>16}  pass")
     for c in o["cells"]:
         pp = "-" if c.get("perm_p") is None else f"{c['perm_p']:.3f}"
         print(f"  {c['hypothesis']:<6}{c['offset_min']:>5}{c['n']:>6}{c['pearson_r']:>11.3f}"
               f"{c['pearson_p']:>9.3f}{c['spearman_r']:>12.3f}{c['spearman_p']:>9.3f}"
-              f"{c['mde_r']:>8.3f}{c['control_spearman_r']:>9.3f}{pp:>9}  "
+              f"{c['mde_r']:>8.3f}{c['control_spearman_r']:>9.3f}{pp:>9}"
+              f"{100*c.get('hit_rate', float('nan')):>7.1f}"
+              f"{('[%.3f,%.3f]' % tuple(c['hit_ci95'])) if 'hit_ci95' in c else '':>16}  "
               f"{'YES' if c['passes_bonferroni'] else '.'}")
     print()
     print("  V1 re-derivation (Close vs Open construction; rank-Pearson must EQUAL Spearman):")
@@ -379,6 +402,16 @@ def _report(o: dict) -> None:
     print("      ⚠️ If this is False, a null here means NOTHING — the pipeline could not find an effect")
     print("        that is definitely present, and the result is VOID rather than negative.")
     print()
+    hits = [c for c in o["cells"] if "hit_rate" in c]
+    if hits:
+        best = max(hits, key=lambda c: c["hit_rate"])
+        print(f"  ⭐⭐ DIRECTIONAL ACCURACY — what a rule would actually need (#111: ~71% to cover costs)")
+        print(f"      best cell: {best['hypothesis']} {best['offset_min']}m -> {100*best['hit_rate']:.1f}% "
+              f"(95% CI {100*best['hit_ci95'][0]:.1f}-{100*best['hit_ci95'][1]:.1f}%), n={best['hit_n']}")
+        print(f"      cells whose CI LOWER BOUND clears 71%: "
+              f"{sum(c['hit_beats_break_even'] for c in hits)} of {len(hits)}")
+        print(f"      ⚠️ 50% is a coin flip. An accuracy near 50 with a CI that contains 50 is NOT a")
+        print(f"        weak edge — it is no edge, and it still pays the full round trip.")
     print(f"  VERDICT: {o['verdict']} — {o['reason']}")
     print("=" * 104)
 
