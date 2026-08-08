@@ -65,6 +65,14 @@ htmlcov/
 # "LOCAL is the source of truth" rule inverted.
 !subprojects/Parametric-Indicators/optimize/earnings/data/*.csv
 
+# ...and the TradingView economic calendar (WS-NEWS2, #114). This is the ONLY source found that carries
+# actual + forecast + previous with a CORRECT UTC timestamp, back to 2013 — investing.com, ForexFactory,
+# Trading Economics, FXStreet, Econoday and DailyFX all failed on access or on dates. It is 20 MB, and it
+# is the raw evidence every consensus-based result in this workstream will rest on. Under the blanket
+# *.csv rule it would exist locally and vanish from the repo — the "LOCAL is the source of truth" rule
+# inverted, and the exact trap already documented for the earnings data below.
+!subprojects/Parametric-Indicators/optimize/fundamentals/tradingview/*.csv
+
 # ...but the blanket un-ignore above also re-admitted __pycache__ INSIDE the archive, and the data
 # directory was never ignored at all. Both matter more than they look: they made `git status` on the
 # server permanently non-empty, so the #94 preflight gate would refuse EVERY run as "dirty".
