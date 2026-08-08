@@ -348,12 +348,31 @@ strategy edge on announcement days vs matched high-volatility non-announcement d
 
 # PART 5 — SUGGESTED NEXT STEPS, RANKED
 
-### 1. ⭐ ALFRED revision check — before anything consumes the new data
-If TradingView's `actual` is a **revision** rather than the first print, every consensus result would be
-look-ahead contaminated. Payrolls alone were revised **−801k to −1,032k** in 2025. Cheap, and it gates
-everything.
+### 1. ✅ DONE — ALFRED revision check: `actual` is the FIRST PRINT (#119, closed)
+4 series, 503 releases. On the discriminating subset — releases where the first print and today's value
+differ enough to tell the hypotheses apart — TradingView matches **the first print** and never the
+revision:
 
-### 2. ⭐ H1-B / H1-C — the question Phase 1 now rests on
+| series | n discriminating | median revision | matches first | matches revised | verdict |
+|---|---|---|---|---|---|
+| Non Farm Payrolls | 116 | 66k jobs | **100%** | 0% | FIRST PRINT |
+| Retail Sales MoM | 88 | 0.44pp | **100%** | 0% | FIRST PRINT |
+| Durable Goods Orders MoM | 111 | 0.95pp | **99%** | 0% | FIRST PRINT |
+| Inflation Rate MoM | 4 | 0.22pp | — | — | ⚠️ CANNOT TELL |
+
+March 2020 payrolls were revised from −701k to **−1,398k** — doubled. TradingView carries −701k.
+
+⭐ **CPI's CANNOT TELL is the decision rule working, not a disagreement.** CPI is revised by less than
+the 0.1pp it is reported to, so 121 of 125 releases cannot distinguish the hypotheses at all. That is an
+absence of power — and it is why two further series were run instead of calling V2 done.
+
+⚠️ **Only half the surprise formula is cleared.** `actual` is verified; **`forecast` is not**. A
+back-filled late consensus would contaminate `actual − forecast` just as badly.
+
+### 1b. ⛔ NEW — clear `forecast` the way `actual` was cleared
+Untested, and it is the other input to every Phase 2 feature.
+
+### 2. ⭐ H1-B / H1-C — the question Phase 1 now rests on  ← **NEXT**
 Does `forecast − previous` predict direction? This is the first thing the new data makes possible, and
 it is the only route by which pre-positioning is not a coin flip.
 
