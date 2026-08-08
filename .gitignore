@@ -156,3 +156,11 @@ vpn_kill.sh
 # Root-level data downloads / dumps (transient — never commit)
 /*.zip
 /data/
+
+# ALFRED point-in-time cache (#119). NOT committed: each vintage file carries the series' ENTIRE
+# history (PAYEMS back to 1939), so a few hundred releases is ~12 MB of near-duplicate JSON. ALFRED
+# vintages are immutable, so this buys speed, not integrity. The EVIDENCE is committed instead, as
+# alfred_revision_<series>.csv — one row per release with the TradingView value, the first print, the
+# current value and the shifted-month control, which is what anyone would actually want to check.
+subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
+!subprojects/Parametric-Indicators/optimize/fundamentals/alfred_revision_*.csv

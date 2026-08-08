@@ -491,3 +491,96 @@ register(Claim(
             Check("V2", "1.31 exists in no cell of the result files", _ret_v2),
             Check("V3", "scanner catches a planted unmarked reuse", _ret_v3)],
 ))
+
+
+# ---------------------------------------------------------------------------------------------
+# CLAIM 7 — TradingView's `actual` is the FIRST PRINT, not a revision (#119; gates Phase 2)
+# ---------------------------------------------------------------------------------------------
+# ⚠️ Evidence: optimize/fundamentals/alfred_revision_<series>.csv — one row per release carrying the
+# TradingView value, the ALFRED first print, today's FRED value and the shifted-month control.
+REV_TOL = {"nfp": 0.5, "cpi": 0.05, "durables": 0.05, "retail": 0.05}
+REV_DISC = {"nfp": 10.0, "cpi": 0.15, "durables": 0.15, "retail": 0.15}
+
+
+@lru_cache(maxsize=None)
+def revision_evidence(series: str):
+    import pandas as pd
+    return pd.read_csv(FUND / f"alfred_revision_{series}.csv", parse_dates=["ref_month", "release"])
+
+
+def revision_rates(series: str) -> dict:
+    d = revision_evidence(series)
+    tol, disc_thr = REV_TOL[series], REV_DISC[series]
+    disc = d[(d["first"] - d["current"]).abs() >= disc_thr]
+    r = lambda col: float(((disc.tv - disc[col]).abs() <= tol).mean()) if len(disc) else float("nan")
+    return {"n": len(d), "n_disc": len(disc), "first": r("first"), "current": r("current"),
+            "shifted": r("shifted")}
+
+
+def _rev_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION with a different comparison: ROUND both to the reporting granularity and
+    require EXACT equality, instead of comparing within a tolerance.
+
+    A tolerance-based match can be widened until anything passes; exact equality after rounding cannot.
+    """
+    out = {}
+    for s in ("nfp", "durables", "retail"):
+        d = revision_evidence(s)
+        step = REV_TOL[s] * 2                       # the published granularity (1k jobs, 0.1pp)
+        disc = d[(d["first"] - d["current"]).abs() >= REV_DISC[s]]
+        eq = ((disc.tv / step).round() == (disc["first"] / step).round()).mean()
+        out[s] = round(float(eq), 3)
+    ok = all(v >= 0.98 for v in out.values())
+    return ok, f"exact match after rounding to the published granularity: {out}"
+
+
+def _rev_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT SOURCE: two further statistics, different publishers, different code path.
+
+    NFP is a LEVEL DIFFERENCE (thousands of jobs); retail sales and durable goods are PERCENT CHANGES
+    computed from an index. A conclusion that held only for payrolls would be an artefact of that
+    differencing.
+    """
+    rs = {s: revision_rates(s) for s in ("retail", "durables")}
+    ok = all(v["first"] >= 0.98 and v["current"] <= 0.02 and v["n_disc"] >= 20 for v in rs.values())
+    return ok, "; ".join(f"{k}: {v['n_disc']} disc, first {v['first']:.0%}, revised {v['current']:.0%}"
+                         for k, v in rs.items())
+
+
+def _rev_v3() -> tuple[bool, str]:
+    """V3 — TWO falsifiers, because this claim gates a whole phase.
+
+    (a) ⚠️⚠️ SHIFTED-MONTH CONTROL — "the matcher also matches the WRONG month" must be FALSE. Without
+        this, a 100% match rate is compatible with a matcher that matches anything, which is exactly the
+        retracted Nasdaq "off by one, verified 3x" defect.
+    (b) ⭐ "the decision rule always returns a verdict" must be FALSE. CPI has only 4 discriminating
+        releases and MUST come back CANNOT TELL. A rule that never withholds judgement is not a rule.
+    """
+    shifted = {s: round(revision_rates(s)["shifted"], 3) for s in ("nfp", "durables", "retail")}
+    a = all(v <= 0.20 for v in shifted.values())
+    cpi = revision_rates("cpi")
+    b = cpi["n_disc"] < 20
+    return (a and b), (f"(a) shifted-month control {shifted} — collapsed from ~100%; "
+                       f"(b) CPI has {cpi['n_disc']} discriminating releases (<20) so the rule "
+                       f"withholds a verdict — it is capable of saying CANNOT TELL")
+
+
+register(Claim(
+    id="TV-ACTUAL-IS-FIRST-PRINT",
+    issue="#119",
+    statement="TradingView's `actual` is the FIRST PRINT, not a later revision: on the 116 NFP releases "
+              "where the first print and today's value differ by >=10k jobs, it matches the first print "
+              "100% of the time and the revised value 0%.",
+    source="optimize/fundamentals/alfred_revision_nfp.csv",
+    value_fn=lambda: round(revision_rates("nfp")["first"], 3),
+    expect=1.0, tol=0.001,
+    blind_spot="Covers 4 series of 649 (NFP, CPI, retail sales, durable goods). TradingView may "
+               "back-fill different series from different vendors or eras, and this cannot see that — "
+               "the licence is for the series TESTED. It says nothing about `forecast` (a back-filled "
+               "late consensus would be a separate contamination), nothing about the timestamp (that "
+               "is the #114 DST audit), and by construction it cannot detect a revision smaller than "
+               "the discriminating threshold.",
+    checks=[Check("V1", "exact match after rounding, not a tolerance", _rev_v1),
+            Check("V2", "retail sales + durable goods (percent-change series)", _rev_v2),
+            Check("V3", "shifted-month control collapses AND the rule can say CANNOT TELL", _rev_v3)],
+))
