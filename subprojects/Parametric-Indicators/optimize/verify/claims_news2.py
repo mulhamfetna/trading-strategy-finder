@@ -584,3 +584,129 @@ register(Claim(
             Check("V2", "retail sales + durable goods (percent-change series)", _rev_v2),
             Check("V3", "shifted-month control collapses AND the rule can say CANNOT TELL", _rev_v3)],
 ))
+
+
+# ---------------------------------------------------------------------------------------------
+# CLAIM 8/9 — `previous` is point-in-time; `forecast` is not a copy of `actual` (#120)
+# ---------------------------------------------------------------------------------------------
+@lru_cache(maxsize=None)
+def fp_evidence(series: str):
+    import pandas as pd
+    return pd.read_csv(FUND / f"forecast_previous_{series}.csv", parse_dates=["ref_month", "release"])
+
+
+def fp_rates(series: str) -> dict:
+    d = fp_evidence(series)
+    tol, thr = REV_TOL[series], REV_DISC[series]
+    h = d.dropna(subset=["tv_previous", "prev_pit", "prev_today"])
+    disc = h[(h.prev_pit - h.prev_today).abs() >= thr].copy()
+    disc["pit_shift"] = disc.prev_pit.shift(1)
+    r = lambda col: (float(((disc.tv_previous - disc[col]).abs() <= tol).mean())
+                     if len(disc.dropna(subset=[col])) else float("nan"))
+    f = d.dropna(subset=["tv_forecast", "tv_actual"])
+    return {"n_disc": len(disc), "pit": r("prev_pit"), "today": r("prev_today"),
+            "shifted": r("pit_shift"),
+            "b1": float(((f.tv_actual - f.tv_forecast).abs() <= tol).mean()) if len(f) else float("nan")}
+
+
+def _pit_v1() -> tuple[bool, str]:
+    """V1 — exact equality after rounding to the published granularity, not a tolerance."""
+    out = {}
+    for s in ("nfp", "durables", "retail"):
+        d = fp_evidence(s)
+        tol, thr, step = REV_TOL[s], REV_DISC[s], REV_TOL[s] * 2
+        h = d.dropna(subset=["tv_previous", "prev_pit", "prev_today"])
+        disc = h[(h.prev_pit - h.prev_today).abs() >= thr]
+        out[s] = round(float(((disc.tv_previous / step).round() == (disc.prev_pit / step).round()).mean()), 3)
+    return all(v >= 0.95 for v in out.values()), f"exact match after rounding: {out}"
+
+
+def _pit_v2() -> tuple[bool, str]:
+    """V2 — two further series, percent-change rather than level-difference."""
+    rs = {s: fp_rates(s) for s in ("durables", "retail")}
+    ok = all(v["pit"] >= 0.95 and v["today"] <= 0.05 and v["n_disc"] >= 20 for v in rs.values())
+    return ok, "; ".join(f"{k}: {v['n_disc']} disc, point-in-time {v['pit']:.0%}, today {v['today']:.0%}"
+                         for k, v in rs.items())
+
+
+def _pit_v3() -> tuple[bool, str]:
+    """V3 — the shifted-RELEASE control must collapse, and the rule must be able to withhold a verdict.
+
+    ⭐ CPI has only 4 discriminating releases and returns CANNOT TELL. Same absence of power as in #119,
+    and the same reason: CPI is barely revised, so the three candidate values for `previous` are the
+    same number and nothing can be told apart.
+    """
+    sh = {s: round(fp_rates(s)["shifted"], 3) for s in ("nfp", "durables", "retail")}
+    return (all(v <= 0.30 for v in sh.values()) and fp_rates("cpi")["n_disc"] < 20), \
+           (f"shifted-release control {sh} — collapsed from ~99%; CPI has "
+            f"{fp_rates('cpi')['n_disc']} discriminating releases so the rule says CANNOT TELL")
+
+
+register(Claim(
+    id="TV-PREVIOUS-IS-POINT-IN-TIME",
+    issue="#120",
+    statement="TradingView's `previous` is the value that stood on the MORNING OF THE RELEASE, not "
+              "today's revised value: on the 119 NFP releases where those differ by >=10k jobs it "
+              "matches the point-in-time value 99% and today's value 0%.",
+    source="optimize/fundamentals/forecast_previous_nfp.csv",
+    value_fn=lambda: round(fp_rates("nfp")["pit"], 3),
+    expect=0.992, tol=0.002,
+    blind_spot="Covers 4 series of 649, and CPI among them has no discriminating power at all. It "
+               "shows the ROW was captured live; it does NOT directly verify `forecast`, for which no "
+               "archive exists. It cannot see an error smaller than the discriminating threshold, and "
+               "it says nothing about series whose statistic is never revised.",
+    checks=[Check("V1", "exact match after rounding, not a tolerance", _pit_v1),
+            Check("V2", "durables + retail (percent-change series)", _pit_v2),
+            Check("V3", "shifted-release control collapses; rule can say CANNOT TELL", _pit_v3)],
+))
+
+
+def _fc_v1() -> tuple[bool, str]:
+    """V1 — the exact-zero-surprise rate, recomputed from the evidence CSVs on every series."""
+    b1 = {s: round(fp_rates(s)["b1"], 3) for s in ("nfp", "cpi", "durables", "retail")}
+    return all(v < 0.50 for v in b1.values()), f"exact-zero surprise rate per series: {b1}"
+
+
+def _fc_v2() -> tuple[bool, str]:
+    """V2 — the surprise must have real dispersion. A copied forecast has none."""
+    out = {}
+    for s in ("nfp", "cpi", "durables", "retail"):
+        d = fp_evidence(s).dropna(subset=["tv_forecast", "tv_actual"])
+        out[s] = round(float((d.tv_actual - d.tv_forecast).std()), 3)
+    return all(v > 0 for v in out.values()), f"sd(actual - forecast) per series: {out}"
+
+
+def _fc_v3() -> tuple[bool, str]:
+    """V3 — PLANTED-CONTAMINATION PROBE. B1 reporting a low rate is worthless if it could not report a
+    high one, so copy `actual` into `forecast` and require B1 to catch it at ~100%.
+    """
+    d = fp_evidence("nfp").dropna(subset=["tv_actual"])
+    tol = REV_TOL["nfp"]
+    planted = float(((d.tv_actual - d.tv_actual).abs() <= tol).mean())
+    real = fp_rates("nfp")["b1"]
+    return (planted > 0.95 and real < 0.05), \
+           (f"planted copy detected at {planted:.0%}; the real data sits at {real:.1%} — the detector "
+            f"can fire and does not")
+
+
+register(Claim(
+    id="TV-FORECAST-NOT-COPIED-FROM-ACTUAL",
+    issue="#120",
+    statement="TradingView's `forecast` is not a copy of `actual`: the exact-zero-surprise rate is "
+              "0.8% on NFP (and under 50% on every series tested), while a planted copy is detected "
+              "at 100%.",
+    source="optimize/fundamentals/forecast_previous_nfp.csv",
+    value_fn=lambda: round(fp_rates("nfp")["b1"], 4),
+    expect=0.0079, tol=0.0005,
+    blind_spot="⚠️⚠️ THIS IS FALSIFICATION THAT FAILED TO FALSIFY — IT IS NOT VERIFICATION. There is NO "
+               "archive of pre-release consensus to check `forecast` against (round 1's Nasdaq join is "
+               "2010-only and TradingView starts 2013, so they do not overlap), so this workstream "
+               "CANNOT verify `forecast`. It rules out the crudest contamination (forecast copied from "
+               "the outcome) and nothing more. The revision-correlation tests B2/B2b/B2c are reported "
+               "but CANNOT decide the question: an informed consensus and a contaminated one predict "
+               "the same sign at every horizon. The strongest evidence remains INDIRECT — "
+               "[[TV-PREVIOUS-IS-POINT-IN-TIME]] shows the row was captured live.",
+    checks=[Check("V1", "exact-zero surprise rate on all 4 series", _fc_v1),
+            Check("V2", "surprise has real dispersion", _fc_v2),
+            Check("V3", "planted copy is detected at 100%", _fc_v3)],
+))
