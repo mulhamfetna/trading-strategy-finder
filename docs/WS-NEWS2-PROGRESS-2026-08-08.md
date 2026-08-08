@@ -394,11 +394,35 @@ and contaminated hypotheses give the **same sign**. Splitting by horizon and con
 did not rescue it. **Lesson: design the falsifier so the innocent and claimed explanations predict
 DIFFERENT signs**, or the test cannot decide anything however cleanly it runs.
 
-### 2. ⭐ H1-B / H1-C — the question Phase 1 now rests on  ← **NEXT**
+### 2. ✅ DONE — H1-B / H1-C are NEGATIVE (#115)
+
+**411 events, 2016–2026, 4 verified series, NQ and GC. 0 of 7 pre-registered cells clear Bonferroni
+α = 0.00179 on either instrument.**
+
+⭐⭐⭐ **The null is worth something only because of the planted-effect probe.** A null from a broken
+pipeline is indistinguishable from a null from an absent edge — and this workstream produced a
+*manufactured* null the same week (the DST defect). A synthetic feature equal to the outcome plus noise
+was planted across r ∈ {0.05 … 0.40}: **study MDE r ≈ 0.195; smallest detected NQ r=0.15, GC r=0.20.**
+The pipeline finds effects at and below its own resolution.
+
+⭐ **GC H1-B 15m is a textbook case for P1-C2 in the OPPOSITE direction from round 1**: Pearson +0.154
+(p=0.002) with Spearman +0.051 (p=0.31) and permutation p=0.308 — a fat-tail artefact Pearson alone
+would have published. Round 1's gold result was the mirror image. Requiring both catches it either way.
+
+⚠️⚠️ **This is "no effect of THIS SIZE", not "no effect".** A real anticipation edge below r≈0.195 is
+plausible and invisible here. But #111 put the accuracy needed to pay costs at ~71%, well above what
+r=0.195 implies — so an effect *large enough to trade* is absent, while a small one cannot be ruled out.
+
+⭐ **P1-C5 GO/NO-GO resolves: survival is fine, direction is absent.** A pre-positioned trade is a coin
+flip paying a full round trip (~$9.50) plus an elevated tail risk during the wait — negative expectancy
+by construction. **Phase 1 produces no tradeable entry**, and sharpens Phase 2's question to whether the
+*surprise* does better than the *anticipated change*.
+
+### 3. ⭐ Amend #116 before Phase 2 runs  ← **NEXT**
 Does `forecast − previous` predict direction? This is the first thing the new data makes possible, and
 it is the only route by which pre-positioning is not a coin flip.
 
-### 3. Your C4 check on the earnings worksheet
+### 4. Your C4 check on the earnings worksheet
 36 rows. Still the only fully independent test of those timestamps.
 
 ### 4. Fix the pre-registration in #116 before Phase 2 runs
