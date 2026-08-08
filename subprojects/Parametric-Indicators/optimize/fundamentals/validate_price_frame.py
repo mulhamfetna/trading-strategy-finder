@@ -67,11 +67,24 @@ class Check:
         return self
 
 
+# ⚠️ TWO COLUMN CONVENTIONS EXIST IN THIS REPO, and the gate must validate the frame AS THE LOADER
+# SEES IT, not as it sits on disk:
+#     engine frames        Date, Open, High, Low, Close, Volume
+#     16-year frames       datetime, open, high, low, close, volume
+# `extended_data._read` already renames the second into the first. A gate that only accepted one of
+# them would reject a perfectly good file — and worse, would tempt someone to "fix" the FILE to satisfy
+# the GATE, silently diverging it from what the loader expects.
+_ALIASES = {"datetime": "Date", "open": "Open", "high": "High",
+            "low": "Low", "close": "Close", "volume": "Volume"}
+
+
 def _load(path: Path) -> pd.DataFrame:
     df = pd.read_csv(path)
+    df = df.rename(columns={k: v for k, v in _ALIASES.items() if k in df.columns})
     missing = [c for c in REQUIRED_COLS if c not in df.columns]
     if missing:
-        raise ValueError(f"missing required columns {missing}; found {list(df.columns)}")
+        raise ValueError(f"missing required columns {missing}; found {list(df.columns)}. "
+                         f"Accepted conventions: {REQUIRED_COLS} or {list(_ALIASES)}")
     df["Date"] = pd.to_datetime(df["Date"])
     if getattr(df["Date"].dt, "tz", None) is not None:
         # ⚠️ A tz-AWARE column is not a convenience, it is a different convention. Every other frame
@@ -178,6 +191,7 @@ def find_existing(instrument: str) -> pd.DataFrame | None:
         if p.exists():
             try:
                 d = pd.read_csv(p)
+                d = d.rename(columns={k: v for k, v in _ALIASES.items() if k in d.columns})
                 d["Date"] = pd.to_datetime(d["Date"])
                 return d[["Date", "Close"]]
             except Exception:                                   # noqa: BLE001
