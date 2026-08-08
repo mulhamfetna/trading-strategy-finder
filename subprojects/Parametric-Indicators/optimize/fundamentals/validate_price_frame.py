@@ -114,17 +114,41 @@ def run_checks(df: pd.DataFrame, instrument: str, existing: pd.DataFrame | None)
     c.set(bad == 0, f"{bad} bars violate Low <= min(O,C) <= max(O,C) <= High")
     checks.append(c)
 
-    # ---- 3. ⭐ TIMEZONE, from the volume signature — no external data needed ----------------------
-    c = Check("timezone (RTH volume signature)",
-              "Pins the frame to Eastern wall-clock to the MINUTE via the 09:30 open. It CANNOT see a "
-              "whole-day shift, and for an instrument whose volume peaks elsewhere (energy at the EIA "
-              "release, metals in London hours) the signature is weaker — check the reported top-3.")
-    vol_by_min = df.groupby(df.Date.dt.strftime("%H:%M")).Volume.sum().sort_values(ascending=False)
-    top = list(vol_by_min.head(3).index)
-    rank = top.index(RTH_OPEN) + 1 if RTH_OPEN in top else None
-    c.set(rank is not None,
-          f"busiest minutes by volume: {top}; {RTH_OPEN} ET rank={rank or '>3'}  "
-          f"(a frame stored on UTC would peak at 14:30)")
+    # ---- 3. ⭐ TIMEZONE, from the INTRADAY VOLUME PROFILE -----------------------------------------
+    # ⚠️⚠️ THE FIRST VERSION OF THIS CHECK WAS WRONG AND I CAUGHT IT ON KNOWN-GOOD DATA. It required the
+    # busiest minute of the day to be the 09:30 equity open. NQ passes. GOLD FAILS: GC's volume peaks at
+    # 13:29 (the COMEX floor close) and 08:30 (the macro release slot). The GC 16-year frame is provably
+    # correct — it matches the engine's own frame on 530,917 overlapping bars at 100.0000% — so this was
+    # a FALSE POSITIVE on good data, and a gate that cries wolf is one everyone learns to skip.
+    #
+    # ⭐ The fix generalises instead of hardcoding session knowledge per instrument: compare the new
+    # frame's MINUTE-OF-DAY VOLUME PROFILE against the EXISTING frame's. The existing 18-month file is
+    # known-good and on the right convention, so it is the answer key for the CLOCK as well as for the
+    # prices. A one-hour shift rotates the profile and destroys the correlation, whatever the instrument.
+    c = Check("timezone (intraday volume profile vs the existing frame)",
+              "Pins the CLOCK using the existing frame as the answer key, so it works for any "
+              "instrument. It CANNOT see an error that is IDENTICAL in both files, nor a whole-DAY "
+              "shift (the profile is invariant to that). Falls back to a session-anchor heuristic when "
+              "no existing frame is available, and that fallback is materially weaker.")
+    prof_new = df.groupby(df.Date.dt.hour * 60 + df.Date.dt.minute).Volume.sum()
+    if existing is not None and "Volume" in existing.columns:
+        e = existing.dropna(subset=["Volume"])
+        prof_old = e.groupby(e.Date.dt.hour * 60 + e.Date.dt.minute).Volume.sum()
+        idx = prof_new.index.union(prof_old.index)
+        a_ = prof_new.reindex(idx).fillna(0.0).to_numpy(dtype=float)
+        b_ = prof_old.reindex(idx).fillna(0.0).to_numpy(dtype=float)
+        from scipy import stats as _st
+        rho = float(_st.spearmanr(a_, b_).statistic)
+        peak_new = int(prof_new.idxmax()); peak_old = int(prof_old.idxmax())
+        c.set(rho > 0.80 and peak_new == peak_old,
+              f"profile agreement rho={rho:.3f}; busiest minute new={peak_new//60:02d}:{peak_new%60:02d} "
+              f"old={peak_old//60:02d}:{peak_old%60:02d}")
+    else:
+        top = [f"{m//60:02d}:{m%60:02d}" for m in prof_new.sort_values(ascending=False).head(3).index]
+        anchors = {RTH_OPEN, "15:59", "16:00", "08:30", "13:29", "13:30", "09:31"}
+        c.set(bool(set(top) & anchors),
+              f"NO existing frame — weak fallback. busiest minutes {top}; "
+              f"recognised US-session anchors {sorted(anchors)}")
     checks.append(c)
 
     # ---- 4. ⭐⭐ OVERLAP AGREEMENT with the frame the engine already trades -----------------------
@@ -193,7 +217,10 @@ def find_existing(instrument: str) -> pd.DataFrame | None:
                 d = pd.read_csv(p)
                 d = d.rename(columns={k: v for k, v in _ALIASES.items() if k in d.columns})
                 d["Date"] = pd.to_datetime(d["Date"])
-                return d[["Date", "Close"]]
+                # Volume is carried too: the existing frame is the answer key for the CLOCK as well
+                # as for the prices (check 3).
+                keep = ["Date", "Close"] + (["Volume"] if "Volume" in d.columns else [])
+                return d[keep]
             except Exception:                                   # noqa: BLE001
                 continue
     return None
