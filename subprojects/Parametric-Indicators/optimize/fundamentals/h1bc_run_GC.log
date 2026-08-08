@@ -7,14 +7,14 @@ H1-B / H1-C — does `forecast - previous` carry DIRECTION?   GC   #115
   matched non-event controls: 358
   ⚠️ pre-registered: 28 tests, Bonferroni alpha = 0.00179
 
-  hyp     off     n  Pearson r        p  Spearman r        p   MDE r   ctrl r   perm p  pass
-  H1-B      5   403      0.063    0.210       0.063    0.209   0.196   -0.031        -  .
-  H1-B     15   403      0.154    0.002       0.051    0.312   0.196   -0.017    0.308  .
-  H1-B     30   403      0.043    0.386      -0.004    0.940   0.196   -0.074        -  .
-  H1-B     60   403      0.048    0.333      -0.020    0.688   0.196   -0.090        -  .
-  H1-C      5   403     -0.015    0.770       0.036    0.467   0.196    0.003        -  .
-  H1-C     15   403      0.030    0.546       0.084    0.090   0.196   -0.080        -  .
-  H1-C     60   403      0.020    0.696      -0.013    0.798   0.196   -0.086        -  .
+  hyp     off     n  Pearson r        p  Spearman r        p   MDE r   ctrl r   perm p   hit%          95% CI  pass
+  H1-B      5   403      0.063    0.210       0.063    0.209   0.196   -0.031        -   49.3   [0.444,0.543]  .
+  H1-B     15   403      0.154    0.002       0.051    0.312   0.196   -0.017    0.308   51.8   [0.469,0.566]  .
+  H1-B     30   403      0.043    0.386      -0.004    0.940   0.196   -0.074        -   48.5   [0.436,0.534]  .
+  H1-B     60   403      0.048    0.333      -0.020    0.688   0.196   -0.090        -   47.6   [0.427,0.525]  .
+  H1-C      5   403     -0.015    0.770       0.036    0.467   0.196    0.003        -   50.6   [0.457,0.555]  .
+  H1-C     15   403      0.030    0.546       0.084    0.090   0.196   -0.080        -   52.3   [0.474,0.571]  .
+  H1-C     60   403      0.020    0.696      -0.013    0.798   0.196   -0.086        -   47.8   [0.429,0.526]  .
 
   V1 re-derivation (Close vs Open construction; rank-Pearson must EQUAL Spearman):
       5m  close +0.063   open +0.027   rank-Pearson == Spearman: True
@@ -41,6 +41,11 @@ H1-B / H1-C — does `forecast - previous` carry DIRECTION?   GC   #115
       ⚠️ If this is False, a null here means NOTHING — the pipeline could not find an effect
         that is definitely present, and the result is VOID rather than negative.
 
+  ⭐⭐ DIRECTIONAL ACCURACY — what a rule would actually need (#111: ~71% to cover costs)
+      best cell: H1-C 15m -> 52.3% (95% CI 47.4-57.1%), n=396
+      cells whose CI LOWER BOUND clears 71%: 0 of 7
+      ⚠️ 50% is a coin flip. An accuracy near 50 with a CI that contains 50 is NOT a
+        weak edge — it is no edge, and it still pays the full round trip.
   VERDICT: NEGATIVE — 0 of 7 cells clear Bonferroni alpha=0.00179, and the planted probe WAS detected — so the pipeline can find an effect and there is none of this size to find
 ========================================================================================================
 wrote /tmp/h1bc_GC.json

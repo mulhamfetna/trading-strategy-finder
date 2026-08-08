@@ -30,7 +30,14 @@
    "passes_bonferroni": false,
    "perm_p": null,
    "control_spearman_r": 0.043153271351882995,
-   "control_spearman_p": 0.42026137362213745
+   "control_spearman_p": 0.42026137362213745,
+   "hit_rate": 0.5012594458438288,
+   "hit_n": 397,
+   "hit_ci95": [
+    0.45229988736437216,
+    0.5501948645580901
+   ],
+   "hit_beats_break_even": false
   },
   {
    "n": 404,
@@ -44,7 +51,14 @@
    "passes_bonferroni": false,
    "perm_p": null,
    "control_spearman_r": -0.01563839383550167,
-   "control_spearman_p": 0.7699987444627987
+   "control_spearman_p": 0.7699987444627987,
+   "hit_rate": 0.5037593984962406,
+   "hit_n": 399,
+   "hit_ci95": [
+    0.4548989309680772,
+    0.5525481674730043
+   ],
+   "hit_beats_break_even": false
   },
   {
    "n": 404,
@@ -58,7 +72,14 @@
    "passes_bonferroni": false,
    "perm_p": null,
    "control_spearman_r": 0.021566598413093864,
-   "control_spearman_p": 0.6867768810824042
+   "control_spearman_p": 0.6867768810824042,
+   "hit_rate": 0.5175,
+   "hit_n": 400,
+   "hit_ci95": [
+    0.46859763273179467,
+    0.5660694369663501
+   ],
+   "hit_beats_break_even": false
   },
   {
    "n": 404,
@@ -72,7 +93,14 @@
    "passes_bonferroni": false,
    "perm_p": 0.016983016983016984,
    "control_spearman_r": -0.019533018002266252,
-   "control_spearman_p": 0.7149597110579538
+   "control_spearman_p": 0.7149597110579538,
+   "hit_rate": 0.5348258706467661,
+   "hit_n": 402,
+   "hit_ci95": [
+    0.4859680624249569,
+    0.5830243960617606
+   ],
+   "hit_beats_break_even": false
   },
   {
    "n": 404,
@@ -86,7 +114,14 @@
    "passes_bonferroni": false,
    "perm_p": null,
    "control_spearman_r": -0.009811441284116618,
-   "control_spearman_p": 0.8546677653790515
+   "control_spearman_p": 0.8546677653790515,
+   "hit_rate": 0.5124378109452736,
+   "hit_n": 402,
+   "hit_ci95": [
+    0.46368980397540754,
+    0.5609503597698487
+   ],
+   "hit_beats_break_even": false
   },
   {
    "n": 404,
@@ -100,7 +135,14 @@
    "passes_bonferroni": false,
    "perm_p": null,
    "control_spearman_r": 0.006059660033047417,
-   "control_spearman_p": 0.9099324319000996
+   "control_spearman_p": 0.9099324319000996,
+   "hit_rate": 0.5149253731343284,
+   "hit_n": 402,
+   "hit_ci95": [
+    0.46616038244547076,
+    0.5634078140488368
+   ],
+   "hit_beats_break_even": false
   },
   {
    "n": 404,
@@ -114,7 +156,14 @@
    "passes_bonferroni": false,
    "perm_p": null,
    "control_spearman_r": -0.03132409273469128,
-   "control_spearman_p": 0.5580465948023062
+   "control_spearman_p": 0.5580465948023062,
+   "hit_rate": 0.49502487562189057,
+   "hit_n": 402,
+   "hit_ci95": [
+    0.44642916417501083,
+    0.5437147703268868
+   ],
+   "hit_beats_break_even": false
   }
  ],
  "v1": [

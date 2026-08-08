@@ -760,6 +760,23 @@ def _h1bc_v3() -> tuple[bool, str]:
     return ok, "; ".join(f"{k}: {v}" for k, v in out.items())
 
 
+def _h1bc_v4() -> tuple[bool, str]:
+    """⭐⭐ The DECISION-relevant check: is a TRADEABLE edge excluded, not merely undetected?
+
+    #111 established a rule needs ~71% directional accuracy to cover costs. If the 95% upper bound on
+    the hit rate sits BELOW 71% in every cell, a tradeable edge is ruled out — which is a far stronger
+    statement than "we did not find one", and it is the statement the owner actually needs.
+    """
+    out = {}
+    for inst in ("NQ", "GC"):
+        cells = [c for c in h1bc(inst)["cells"] if "hit_ci95" in c]
+        hi = max(c["hit_ci95"][1] for c in cells)
+        out[inst] = round(100 * hi, 1)
+    ok = all(v < 71.0 for v in out.values())
+    return ok, (f"highest 95% upper bound on directional accuracy, any cell: {out}% — all below the "
+                f"71% break-even, so a TRADEABLE edge is EXCLUDED, not merely undetected")
+
+
 register(Claim(
     id="H1BC-ANTICIPATED-CHANGE-NEGATIVE",
     issue="#115",
@@ -768,14 +785,17 @@ register(Claim(
     source="optimize/fundamentals/h1bc_result_NQ.json",
     value_fn=lambda: sum(c["passes_bonferroni"] for c in h1bc("NQ")["cells"]),
     expect=0, tol=0,
-    blind_spot="⚠️ THE STUDY'S RESOLUTION IS r ~ 0.195. An anticipation effect SMALLER than that is "
-               "invisible here, and a small real edge is entirely plausible — this is 'no effect of "
-               "this size', not 'no effect'. Covers 4 series of 103 and 2 instruments of 9: a drift "
+    blind_spot="⚠️ The study's correlation resolution is r ~ 0.195, so a smaller statistical "
+               "association is invisible. BUT the decision-relevant bound is tighter: the 95% upper "
+               "confidence limit on directional accuracy is 58.3% (NQ) / 57.1% (GC) against a 71% "
+               "break-even, so a TRADEABLE edge is excluded rather than merely undetected. Covers 4 series of 103 and 2 instruments of 9: a drift "
                "that exists only in oil around EIA inventories is untested. `forecast` itself is "
                "unverified (#120) — no consensus archive exists. Correlation is linear/monotone only, "
                "so a threshold effect ('only huge anticipated changes matter') would be missed. The "
                "expanding-window normalisation discards the first 24 events per series (96 of 507).",
     checks=[Check("V1", "rank-Pearson == Spearman; Open-based construction agrees", _h1bc_v1),
             Check("V2", "GC reproduces NQ's verdict on a different price file", _h1bc_v2),
-            Check("V3", "planted-effect probe detects everything at/above the MDE", _h1bc_v3)],
+            Check("V3", "planted-effect probe detects everything at/above the MDE", _h1bc_v3),
+            Check("V2", "tradeable edge EXCLUDED — 95% CI upper bound below the 71% break-even",
+                  _h1bc_v4)],
 ))
