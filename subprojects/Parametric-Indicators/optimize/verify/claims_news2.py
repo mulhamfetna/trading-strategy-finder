@@ -799,3 +799,82 @@ register(Claim(
             Check("V2", "tradeable edge EXCLUDED — 95% CI upper bound below the 71% break-even",
                   _h1bc_v4)],
 ))
+
+
+# ---------------------------------------------------------------------------------------------
+# CLAIM 11 — the Phase 2 matrix is 221 DECIDABLE pairs, not 927 (#116)
+# ---------------------------------------------------------------------------------------------
+@lru_cache(maxsize=1)
+def phase2_pairs():
+    import pandas as pd
+    return pd.read_csv(FUND / "phase2_pairs.csv")
+
+
+def _p2_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION: recompute the matrix from the raw calendar, not from the written CSV."""
+    import sys as _s
+    _s.path.insert(0, str(FUND))
+    from phase2_matrix import solve                                        # noqa: E402
+    q, excl, alpha, n_cand = solve()
+    d = phase2_pairs()
+    return (len(q) == len(d) and abs(alpha - float(d.bonferroni_alpha.iloc[0])) < 1e-12), \
+           (f"recomputed from tv_us_calendar_raw.csv: {len(q)} decidable of {n_cand} candidates, "
+            f"alpha={alpha:.6f}; CSV holds {len(d)}")
+
+
+def _p2_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT SOURCE: the PRICE side, which is what the old 927 figure never checked.
+
+    The seven short-history instruments must carry ONLY weekly releases; a monthly release cannot
+    reach the qualifying sample size in eighteen months. If a monthly series shows up on ES or CL, the
+    span constants are wrong.
+    """
+    d = phase2_pairs()
+    short = d[~d.instrument.isin(["NQ", "GC"])]
+    n_per = short.groupby("instrument").size().to_dict()
+    releases = sorted(set(short.release))
+    weekly_only = all(("EIA" in r) or ("API" in r) or ("Jobless" in r) for r in releases)
+    return (weekly_only and set(n_per.values()) == {7}), \
+           (f"short-history instruments carry {n_per}; releases {releases} — all weekly: {weekly_only}")
+
+
+def _p2_v3() -> tuple[bool, str]:
+    """V3 — FALSIFICATION: "the decidability filter is a no-op" must be FALSE.
+
+    ⭐ If the rule excluded nothing, it would be decoration and the matrix would still contain pairs
+    that cannot answer the question. It must throw away the great majority — and it must specifically
+    throw away MONTHLY releases on the 18-month instruments, which are the clearest impossible case.
+    """
+    import sys as _s
+    _s.path.insert(0, str(FUND))
+    from phase2_matrix import solve                                        # noqa: E402
+    q, excl, alpha, n_cand = solve()
+    d = phase2_pairs()
+    monthly_short = [c for c in excl if c[1] not in ("NQ", "GC") and c[2] < 30]
+    return (len(excl) > len(q) and len(monthly_short) > 100), \
+           (f"filter removes {len(excl)} of {n_cand} candidates ({100*len(excl)/n_cand:.0f}%), "
+            f"including {len(monthly_short)} monthly-release pairs on 18-month instruments — "
+            f"it is not a no-op")
+
+
+register(Claim(
+    id="PHASE2-MATRIX-221-DECIDABLE",
+    issue="#116",
+    statement="The Phase 2 matrix is 221 DECIDABLE pairs — not the 927 I published, and not the ~270 "
+              "#116 assumes. Only NQ and GC have 2016+ price history; the other seven instruments "
+              "have 18 months, so only weekly releases reach a usable sample there.",
+    source="optimize/fundamentals/phase2_pairs.csv",
+    value_fn=lambda: int(len(phase2_pairs())),
+    expect=221, tol=0,
+    blind_spot="⚠️ The decidability rule uses a bivariate-normal orthant approximation "
+               "(accuracy = 1/2 + arcsin(r)/pi) to convert the 71% break-even into r=0.613, and FAT "
+               "TAILS VIOLATE NORMALITY — so the threshold is approximate. It is used to SET a "
+               "threshold, never to report a result. The rule also assumes the correlation is the "
+               "statistic of interest: a THRESHOLD effect (only huge surprises matter) would be "
+               "excluded from a pair that could in fact decide it. Price spans were read off the "
+               "server on 2026-08-08 and will change if longer history is acquired — the whole matrix "
+               "must then be recomputed, not patched.",
+    checks=[Check("V1", "recomputed from the raw calendar, not the written CSV", _p2_v1),
+            Check("V2", "the PRICE side — short-history instruments carry only weekly releases", _p2_v2),
+            Check("V3", "the decidability filter is not a no-op", _p2_v3)],
+))
