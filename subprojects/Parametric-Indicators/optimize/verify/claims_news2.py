@@ -710,3 +710,72 @@ register(Claim(
             Check("V2", "surprise has real dispersion", _fc_v2),
             Check("V3", "planted copy is detected at 100%", _fc_v3)],
 ))
+
+
+# ---------------------------------------------------------------------------------------------
+# CLAIM 10 — H1-B / H1-C are NEGATIVE, and the pipeline is proven able to find an effect (#115)
+# ---------------------------------------------------------------------------------------------
+@lru_cache(maxsize=None)
+def h1bc(instrument: str) -> dict:
+    return json.loads((FUND / f"h1bc_result_{instrument}.json").read_text())
+
+
+def _h1bc_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION: two independent implementation checks recorded inside the run.
+
+    (a) rank-transform then Pearson MUST equal Spearman exactly — a second code path to the same
+        statistic; (b) the same correlations recomputed on an Open-based return construction, which
+        must not flip the conclusion.
+    """
+    ok, detail = True, []
+    for inst in ("NQ", "GC"):
+        v1 = h1bc(inst)["v1"]
+        identical = all(r["identical"] for r in v1)
+        big = max(abs(r["open_spearman"]) for r in v1)
+        ok = ok and identical and big < 0.196          # still below the study's own MDE
+        detail.append(f"{inst}: rank-Pearson==Spearman {identical}, max |Open-construction rho| {big:.3f}")
+    return ok, "; ".join(detail)
+
+
+def _h1bc_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT SOURCE: a different instrument, a different price file, the same verdict."""
+    v = {i: h1bc(i)["verdict"] for i in ("NQ", "GC")}
+    hits = {i: sum(c["passes_bonferroni"] for c in h1bc(i)["cells"]) for i in ("NQ", "GC")}
+    return (set(v.values()) == {"NEGATIVE"}), f"verdicts {v}; cells clearing Bonferroni {hits}"
+
+
+def _h1bc_v3() -> tuple[bool, str]:
+    """V3 — ⭐⭐⭐ THE PLANTED-EFFECT PROBE. The falsifier that matters for a NEGATIVE result.
+
+    A null from a broken pipeline is indistinguishable from a null from an absent edge — and this
+    workstream produced a manufactured null the same week (the pre-2016 DST defect). So a synthetic
+    feature that IS the outcome plus noise is planted at a range of effect sizes, and every planted
+    effect at or above the study's own MDE must be FOUND.
+    """
+    out, ok = {}, True
+    for inst in ("NQ", "GC"):
+        p = h1bc(inst)["v3_planted_probe"]
+        ok = ok and bool(p["detected"])
+        out[inst] = f"MDE {p['mde_r']:.3f}, smallest detected r={p['smallest_detected']}"
+    return ok, "; ".join(f"{k}: {v}" for k, v in out.items())
+
+
+register(Claim(
+    id="H1BC-ANTICIPATED-CHANGE-NEGATIVE",
+    issue="#115",
+    statement="`forecast - previous` carries NO usable direction on NQ or GC: 0 of 7 pre-registered "
+              "cells per instrument clear Bonferroni alpha=0.00179, on 411 events over 2016-2026.",
+    source="optimize/fundamentals/h1bc_result_NQ.json",
+    value_fn=lambda: sum(c["passes_bonferroni"] for c in h1bc("NQ")["cells"]),
+    expect=0, tol=0,
+    blind_spot="⚠️ THE STUDY'S RESOLUTION IS r ~ 0.195. An anticipation effect SMALLER than that is "
+               "invisible here, and a small real edge is entirely plausible — this is 'no effect of "
+               "this size', not 'no effect'. Covers 4 series of 103 and 2 instruments of 9: a drift "
+               "that exists only in oil around EIA inventories is untested. `forecast` itself is "
+               "unverified (#120) — no consensus archive exists. Correlation is linear/monotone only, "
+               "so a threshold effect ('only huge anticipated changes matter') would be missed. The "
+               "expanding-window normalisation discards the first 24 events per series (96 of 507).",
+    checks=[Check("V1", "rank-Pearson == Spearman; Open-based construction agrees", _h1bc_v1),
+            Check("V2", "GC reproduces NQ's verdict on a different price file", _h1bc_v2),
+            Check("V3", "planted-effect probe detects everything at/above the MDE", _h1bc_v3)],
+))

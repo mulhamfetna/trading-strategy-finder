@@ -1,0 +1,46 @@
+========================================================================================================
+H1-B / H1-C — does `forecast - previous` carry DIRECTION?   GC   #115
+========================================================================================================
+  series (VERIFIED only): cpi, durables, nfp, retail     era 2016+
+  price frame: 2010-06-06 18:00:00 -> 2026-07-17 16:59:00
+  events: 507 raw, 96 dropped by the expanding-window warm-up, 411 used
+  matched non-event controls: 358
+  ⚠️ pre-registered: 28 tests, Bonferroni alpha = 0.00179
+
+  hyp     off     n  Pearson r        p  Spearman r        p   MDE r   ctrl r   perm p  pass
+  H1-B      5   403      0.063    0.210       0.063    0.209   0.196   -0.031        -  .
+  H1-B     15   403      0.154    0.002       0.051    0.312   0.196   -0.017    0.308  .
+  H1-B     30   403      0.043    0.386      -0.004    0.940   0.196   -0.074        -  .
+  H1-B     60   403      0.048    0.333      -0.020    0.688   0.196   -0.090        -  .
+  H1-C      5   403     -0.015    0.770       0.036    0.467   0.196    0.003        -  .
+  H1-C     15   403      0.030    0.546       0.084    0.090   0.196   -0.080        -  .
+  H1-C     60   403      0.020    0.696      -0.013    0.798   0.196   -0.086        -  .
+
+  V1 re-derivation (Close vs Open construction; rank-Pearson must EQUAL Spearman):
+      5m  close +0.063   open +0.027   rank-Pearson == Spearman: True
+     15m  close +0.051   open +0.024   rank-Pearson == Spearman: True
+     30m  close -0.004   open -0.040   rank-Pearson == Spearman: True
+     60m  close -0.020   open -0.047   rank-Pearson == Spearman: True
+  V2 split-half by era (2016-2020 vs 2021-2026):
+    H1-B    5m  early +0.051 (n=143)   late +0.067 (n=260)   same sign: True
+    H1-B   15m  early +0.159 (n=143)   late +0.010 (n=260)   same sign: True
+    H1-B   30m  early +0.114 (n=143)   late -0.057 (n=260)   same sign: False
+    H1-B   60m  early +0.154 (n=143)   late -0.108 (n=260)   same sign: False
+    H1-C    5m  early -0.072 (n=143)   late +0.113 (n=260)   same sign: False
+    H1-C   15m  early +0.008 (n=143)   late +0.126 (n=260)   same sign: True
+    H1-C   60m  early -0.077 (n=143)   late +0.040 (n=260)   same sign: False
+  V3 ⭐⭐⭐ PLANTED-EFFECT PROBE — can this pipeline find an effect that IS there?
+      n=403   study MDE r=0.196 at alpha=0.00179
+        planted r=0.05 -> measured +0.026 p=0.596990  missed   (below MDE — expected to be missed)
+        planted r=0.10 -> measured +0.082 p=0.098547  missed   (below MDE — expected to be missed)
+        planted r=0.15 -> measured +0.091 p=0.067472  missed   (below MDE — expected to be missed)
+        planted r=0.20 -> measured +0.230 p=0.000003  detected
+        planted r=0.30 -> measured +0.195 p=0.000084  detected
+        planted r=0.40 -> measured +0.300 p=0.000000  detected
+      smallest detected: r=0.2   PASS=True
+      ⚠️ If this is False, a null here means NOTHING — the pipeline could not find an effect
+        that is definitely present, and the result is VOID rather than negative.
+
+  VERDICT: NEGATIVE — 0 of 7 cells clear Bonferroni alpha=0.00179, and the planted probe WAS detected — so the pipeline can find an effect and there is none of this size to find
+========================================================================================================
+wrote /tmp/h1bc_GC.json

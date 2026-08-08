@@ -164,3 +164,8 @@ vpn_kill.sh
 # current value and the shifted-month control, which is what anyone would actually want to check.
 subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !subprojects/Parametric-Indicators/optimize/fundamentals/alfred_revision_*.csv
+
+# H1-B/H1-C server run logs (#115). Committed as EVIDENCE, like the perf logs: these are the raw
+# console output of the two server runs whose every number is cited in the report, and the "LOCAL is
+# the source of truth" rule means a server-only artefact does not count as recorded.
+!subprojects/Parametric-Indicators/optimize/fundamentals/h1bc_run_*.log
