@@ -369,8 +369,30 @@ absence of power — and it is why two further series were run instead of callin
 ⚠️ **Only half the surprise formula is cleared.** `actual` is verified; **`forecast` is not**. A
 back-filled late consensus would contaminate `actual − forecast` just as badly.
 
-### 1b. ⛔ NEW — clear `forecast` the way `actual` was cleared
-Untested, and it is the other input to every Phase 2 feature.
+### 1b. ✅ DONE — `previous` is POINT-IN-TIME; `forecast` cannot be verified (#120, closed)
+
+| field | status |
+|---|---|
+| `actual` | ✅ **FIRST PRINT** (#119) |
+| `previous` | ✅ **POINT-IN-TIME** — 119/103/92 discriminating releases → **99% / 98% / 99%** match to the value that stood that morning, **0%** to today's |
+| `forecast` | ⚠️ **not verifiable** — no consensus archive exists. No evidence of contamination |
+
+⭐⭐ **A back-fill cannot produce a point-in-time `previous`**: reproducing the prior month's value *as
+of a past morning* needs a per-series vintage archive, which calendar vendors do not keep. **The row was
+captured live** — which is the strongest (indirect) evidence for `forecast` as well.
+
+⭐ **Test C, unexpected:** `previous` equals the prior `actual` only **3%** of the time for NFP but
+**95%** for CPI. So `actual − previous` **means different things across series** — the revised-basis
+change for payrolls, first-print-to-first-print for CPI. #116 defines it as the former for all series;
+that must be fixed before Phase 2 pools them.
+
+⚠️⚠️ **A pre-registered test of mine was confounded and I caught it before publishing.** B2 asked
+whether the consensus error correlates with the later revision, on the logic that a forecast made before
+the release cannot know a revision published months after. It fired (CPI Spearman +0.38, p<0.001) and
+the conclusion would have been **wrong**: an informed consensus predicts revisions too, so the innocent
+and contaminated hypotheses give the **same sign**. Splitting by horizon and controlling for `actual`
+did not rescue it. **Lesson: design the falsifier so the innocent and claimed explanations predict
+DIFFERENT signs**, or the test cannot decide anything however cleanly it runs.
 
 ### 2. ⭐ H1-B / H1-C — the question Phase 1 now rests on  ← **NEXT**
 Does `forecast − previous` predict direction? This is the first thing the new data makes possible, and
