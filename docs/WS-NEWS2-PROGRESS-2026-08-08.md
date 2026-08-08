@@ -147,9 +147,26 @@ huge change from last month" from "missed consensus but the level barely moved".
 **Survival is not the blocker** — short wait + wide stop works.
 
 ⚠️ **My framing was wrong and the control caught it.** I predicted the pre-release window would be
-*safer* (round 1: "the market goes quiet, 0.78×"). It is **1.31–2.92× MORE dangerous** at 5 minutes, on
-**both instruments**. The two facts differ in what they measure — average move size vs worst excursion —
-but the protection I implied does not exist.
+*safer* (round 1: "the market goes quiet, 0.78×"). Measured against the time-of-day-matched control, the
+5-minute pre-release window is **never safer and up to 4.27× more dangerous**, on **both instruments**.
+The two facts differ in what they measure — average move size vs worst excursion — but the protection I
+implied does not exist.
+
+⚠️ **Figure corrected 2026-08-08**: this paragraph previously read "1.31–2.92×". That range appears
+nowhere in `h1a_stopout_{NQ,GC}.json` — neither either-side nor per-side — and was a mis-transcription.
+The measured either-side stop-out ratio at a 5-minute wait, release vs control:
+
+| stop | NQ | GC |
+|---|---|---|
+| 0.05% | 1.18× | 1.01× |
+| 0.10% | 1.47× | 1.10× |
+| 0.20% | **2.92×** | 1.15× |
+| 0.40% | **4.27×** | **2.05×** |
+
+⭐ **The danger rises with the width of the stop.** A tight stop is hit at the pre-release window about
+as often as at any other time; a *wide* stop is hit 3–4× more often. That is the signature of a
+**rare large excursion**, not of generally choppier trading — which is why an average-move statistic
+(round 1's 0.78×) and a worst-excursion statistic point in opposite directions on the same window.
 
 ⚠️ **A units flaw was caught before publication**: the first run used absolute point stops, making a
 40-point stop 0.13% of NQ but 1.3% of GC. That produced a fake "gold is calmer" result. Discarded;
@@ -160,8 +177,10 @@ stops are now percent of price.
 ## Phase 2 (#116) — specified, not started
 
 Surprise → **POWER** and **DIRECTION**, per release × per instrument.
-⚠️ ~30 releases × 9 instruments = **~270 pairs**; the multiple-testing correction must be fixed before
-running. A theory-first shortlist (~20 pairs) is the recommended option.
+⚠️ **CORRECTED with real data: 103 release series (2016+, ≥40 releases) × 9 instruments = 927 pairs**,
+not the ~270 the issue assumes. Bonferroni over 927 ⇒ |t| > 4.05, against a measured ceiling of 2.20 —
+the full matrix is futile, so a theory-first shortlist is now the only decidable option, not merely the
+recommended one. The correction must be fixed in writing before running.
 
 ## Phase 3 (#117) — specified, not started
 
@@ -196,22 +215,53 @@ proposed multi-contract straddle.
 | rows with actual + forecast + previous | **16,011 (40.8%)** — plus 16,000 with parsed numeric triples |
 | importance | high 2,118 · medium 16,474 · low 20,629 |
 
-⭐ **The decisive property: a real UTC timestamp with DST correctly encoded.** NFP is `13:30Z` in winter
-and `12:30Z` in summer — both **08:30 ET**. **164 of 164 rows exactly 08:30.** That is precisely what
+⭐ **The decisive property: a real UTC timestamp with DST correctly encoded** — *from 2016 onward*. NFP is
+`13:30Z` in winter and `12:30Z` in summer, both **08:30 ET**, **164 of 164 rows**. That is precisely what
 the Nasdaq API lacked and what cost 22 events in #110.
+
+## ⚠️⚠️ CORRECTION (same day, commit `35b66e7`): the pre-2016 rows are DST-BROKEN
+
+I verified the timestamps **on NFP alone**, declared DST correct, and wired the file in on that basis.
+True of NFP; **false of most of the file before 2016.**
+
+A release sits at the same US-Eastern wall-clock time in January and July, so a series whose winter modal
+ET time disagrees with its summer modal time was stored with a fixed offset. Audited per year over every
+series:
+
+| year | series inconsistent | | year | series inconsistent |
+|---|---|---|---|---|
+| **2013** | **6/8 — 75%** | | 2016 | 7/105 — 7% |
+| **2014** | **65/72 — 90%** | | 2017 | 2/103 — 2% |
+| **2015** | **79/87 — 91%** | | 2018–2025 | 0–3% |
+
+**87 pre-2016 series are one hour late in summer**, including `Initial Jobless Claims` (08:30→09:30),
+`EIA Crude Oil Stocks Change` (10:30→11:30), `Retail Sales MoM`, `PPI MoM`, `ISM Manufacturing PMI` and
+`Fed Interest Rate Decision`. An event window built on them is centred an hour from the release and
+returns a **manufactured null** — indistinguishable from a real one.
+
+**NFP is clean pre-2016 (36/36).** I picked the one series that happens to be right and generalised.
+Same defect class as #110's EDGAR `Z`-on-Eastern trap, caught there by a stability check and missed here
+by inspection. `tv_calendar.py` now sets `MIN_YEAR = 2016` and `--verify` **fails** if any year ≥
+`MIN_YEAR` breaks the audit — it can no longer pass on a single-series look.
 
 ## Cross-validated against our authoritative FRED dates
 
-| event | exact-ET match | | era | match |
-|---|---|---|---|---|
-| NFP | **98%** | | 2013 | 18–44% |
-| FOMC | **95%** | | 2014–2019 | 73–100% |
-| PPI | 84% | | **2020–2026** | **92–97%** |
-| CPI / retail | 81% | | | |
-| PCE | 79% | | | |
-| GDP | 77% | | | |
+Re-scored on the usable era. Most of what I had written up as "coverage by era" was this defect:
 
-**The residual gap is coverage by era, not misalignment.** ⇒ **use 2014+**.
+| event | as first reported (2013+) | **actual (2016+)** |
+|---|---|---|
+| NFP | 98% | **98%** |
+| FOMC | 95% | **95%** |
+| retail sales | 81% | **95%** |
+| CPI | 81% | **94%** |
+| PPI | 84% | **94%** |
+| PCE | 79% | **93%** |
+| GDP | 77% | **90%** |
+
+**The source is better than I first said — on the era where it is usable at all.** ⇒ **use 2016+.**
+
+Cost of the constraint: 15,273 → **13,291** triple-value rows (−13%); 106 → **103** testable series; the
+10 high-impact series are all retained. Cheap, and not optional.
 
 ## ⭐⭐ It closes the documented ISM gap
 
@@ -220,15 +270,49 @@ deliberately rejected). TradingView carries **ISM Manufacturing PMI, JOLTs, Mich
 Permits, Durable Goods** and the separate **Fed Press Conference** — the entire 10:00 ET slot our study
 had zero coverage of, plus the mis-timed press-conference event flagged in the release-universe review.
 
-## Four data-structure traps found today
+## Data-structure traps found today
 
 1. **The file is named 2010 but starts 2013-01-04** — TradingView returns `no_data` before 2013.
-2. **`indicator` is a category; `title` is the event.** "Interest Rate" holds 3,653 rows including Fed
-   speeches. Joining on `indicator` mixes speeches into rate decisions.
-3. **TradingView has a casing inconsistency in its own data**: `Inflation Rate MoM` (1) vs
-   `Inflation Rate Mom` (157).
-4. **GDP publishes three times per quarter** (Advance / 2nd / Final). Mapping one matched 27% and looked
+2. ⚠️⚠️ **Pre-2016 summer rows are one hour late** (above). `MIN_YEAR = 2016`.
+3. **`indicator` is a category; `title` is the event.** "Interest Rate" holds 3,653 rows including
+   `Fed Williams Speech` (295) and `Fed Bostic Speech` (256) alongside `Fed Interest Rate Decision`
+   (109). Joining on `indicator` mixes speeches into rate decisions.
+4. **Titles fragment**: `Fed Press Conference` (68) / `Fed Monetary Policy Statement and press
+   conference` (5) / `Fed press conference` (1). Read title maps off the value counts, never from the
+   obvious spelling.
+   ⚠️ **RETRACTED**: I first published this trap as *"`Inflation Rate MoM` (1) vs `Inflation Rate Mom`
+   (157)"*. **There is no lower-case variant.** `Inflation Rate MoM` has 161 rows; the 1-row neighbour
+   is `Inflation Rate MoM Final`, a different release. The rule is right; my example was invented rather
+   than measured, and the phantom title has been removed from `FRED_TO_TV`.
+5. **GDP publishes three times per quarter** (Advance / 2nd / Final). Mapping one matched 27% and looked
    like a source failure; it was my misunderstanding.
+6. **⚠️ Timestamps are the SCHEDULED MINUTE, not the observed instant** — 0 of 39,221 rows carry a
+   non-zero seconds field. Fine for Phases 1–2; **not** what Phase 3 needs. See #117.
+
+## ⚠️ The study universe is 3.5× bigger than #116 assumed
+
+#116 was written before we had a calendar and states *"~30 releases × 9 instruments = ~270 pairs"*.
+Measured, on 2016+ with ≥40 releases: **103 series ⇒ 927 pairs.** Bonferroni over 927 ⇒ **|t| > 4.05**,
+against a measured ceiling of |t_gross| = 2.20 anywhere in WS-EARN. The full matrix is not merely
+strict — it is already known to be futile. **A theory-first shortlist is now the only decidable option.**
+
+⚠️ TradingView's HIGH bucket is narrow: only **10** series are high-impact with ≥40 releases. **CPI MoM,
+PPI MoM, ISM Manufacturing PMI and the Unemployment Rate are all filed MEDIUM.** A "3★ only" filter drops
+them. The impact flag is a vendor opinion, not a fact about the tape.
+
+## ⭐ The highest-n pair available, and it is the owner's own premise
+
+| title | releases 2016+ | impact |
+|---|---|---|
+| **`EIA Crude Oil Stocks Change`** | **~510** | medium |
+| `Initial Jobless Claims` | ~545 | medium |
+| `EIA Gasoline Stocks Change` | ~490 | medium |
+| `API Crude Oil Stock Change` | ~288 | medium |
+
+*"A release may move oil a lot but not Nasdaq — so we trade oil"* — that release exists, it is weekly,
+CL is already onboarded, and it has **never** been in our study set (round 1: 7 events, none energy).
+⚠️ Weekly n is ~4× any monthly series, so an EIA/CL pair has materially more power than NFP/NQ; when
+results are compared the n difference must be stated, or a power difference reads as an edge difference.
 
 ## Why I missed TradingView
 
@@ -249,8 +333,9 @@ about the input.
 | 3 | **ALFRED revision check** — is TradingView's `actual` a first print or a revision? | WS-NEWS2 #114 | nothing |
 | 4 | H1-B / H1-C — does `forecast − previous` carry direction? | WS-NEWS2 #115 | **now unblocked** |
 | 5 | H1-A on the other 7 instruments | WS-NEWS2 #115 | shorter price history |
-| 6 | Phase 2 design — the ~270-pair multiple-testing correction | WS-NEWS2 #116 | decision |
+| 6 | Phase 2 design — the **927**-pair correction (P2-C3 is wrong as written) | WS-NEWS2 #116 | decision |
 | 7 | Phase 3 — latency test | WS-NEWS2 #117 | Phases 1–2 |
+| 7b | **Phase 3 step 0 — derive the release SECOND from the tape** (the calendar gives only the scheduled minute) | WS-NEWS2 #117 | nothing |
 | 8 | Sizing layer — the one positive result in the whole programme cannot be expressed | cross-cutting | **owner's call** |
 
 ## Also carried forward from the meta-study
