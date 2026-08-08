@@ -86,7 +86,10 @@ IMPORTANCE = {1: "high", 0: "medium", -1: "low"}
 MIN_YEAR = 2016
 
 # Our FRED slug -> the TradingView TITLE (not indicator) that is the same print.
-# ⚠️ Verified against the data, not guessed. `Inflation Rate Mom` is TradingView's own casing.
+# ⚠️ Read off the value counts, not guessed. (This comment previously cited `Inflation Rate Mom` as
+# "TradingView's own casing, verified against the data" — that was RETRACTED: no such title exists.
+# I corrected the dict below and left the comment asserting it, which is how a fixed file keeps
+# publishing a wrong claim. Caught by the #118 retraction scanner on its first run.)
 FRED_TO_TV: dict[str, list[str]] = {
     "nonfarm_payrolls": ["Non Farm Payrolls"],
     "cpi":              ["Inflation Rate MoM", "Core Inflation Rate MoM"],
