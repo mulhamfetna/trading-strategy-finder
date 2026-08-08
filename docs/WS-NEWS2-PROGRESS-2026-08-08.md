@@ -418,7 +418,36 @@ flip paying a full round trip (~$9.50) plus an elevated tail risk during the wai
 by construction. **Phase 1 produces no tradeable entry**, and sharpens Phase 2's question to whether the
 *surprise* does better than the *anticipated change*.
 
-### 3. ⭐ Amend #116 before Phase 2 runs  ← **NEXT**
+### 3. ✅ DONE — #116 amended, and my own 927-pair figure was WRONG (#116, #121)
+
+⚠️⚠️ **I published 927 pairs this morning. It is wrong.** "103 series × 9 instruments" silently assumed
+all nine instruments had the 2016+ era. Verified exhaustively on the server:
+
+| instruments | span |
+|---|---|
+| **NQ, GC** | 2010-06-06 → 2026-07 |
+| **ES, CL, NG, HG, SI, RTY, YM** | **2025-01-01 → 2026-07 — EIGHTEEN MONTHS** |
+
+**I counted the event side and never checked the price side.** Same comment, same error: I headlined
+`EIA Crude Oil Stocks Change → CL` at "~510 releases". The calendar has ~510; the **CL price frame
+reaches 79**. Wrong by ~6×. ⭐ And `EIA → NQ` reaches **545** — the oil release is best tested on the
+*index*, the opposite of what I recommended.
+
+⭐⭐ **The amended rule is not "big enough sample" but "can this pair DECIDE the question?"** #111 puts
+break-even at ~71% accuracy ⇒ r = 0.613. A pair qualifies iff its MDE at the Bonferroni α is below that.
+A pair whose MDE exceeds the tradeable threshold can only return a null that is **uninformative by
+construction**, while consuming correction budget and weakening the pairs that could decide something.
+
+| candidates | **decidable** | excluded |
+|---|---|---|
+| 1,327 | **221** (α = 0.000226) | 1,106 (83%), incl. 896 monthly-release pairs on 18-month instruments |
+
+Committed as `phase2_pairs.csv` and ledger-checked, so the pre-registration is machine-verifiable.
+
+⚠️ **The cross-instrument premise of this round is currently untestable for every monthly release** —
+opened as **#121**, an owner decision (acquire history, or run the 221 and say what it cannot answer).
+
+### 4. Phase 2 itself  ← **NEXT**
 Does `forecast − previous` predict direction? This is the first thing the new data makes possible, and
 it is the only route by which pre-positioning is not a coin flip.
 
