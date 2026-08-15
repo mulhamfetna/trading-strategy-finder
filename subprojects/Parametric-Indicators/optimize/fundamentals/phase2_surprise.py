@@ -70,7 +70,7 @@ def load_calendar(titles: list[str], floor: int) -> pd.DataFrame:
     d = d.sort_values("et").drop_duplicates(["title", "et"]).reset_index(drop=True)
 
     out = []
-    for t, g in d.groupby("title"):
+    for _title, g in d.groupby("title"):
         g = g.sort_values("et").copy()
         g["surprise_real"] = g.actual.astype(float) - g.forecast.astype(float)
         # ⚠️ ROUND 1'S PROXY, reconstructed exactly: the expectation is the mean of the previous
@@ -92,8 +92,30 @@ def load_calendar(titles: list[str], floor: int) -> pd.DataFrame:
 
 
 def post_returns(px: pd.DataFrame, stamps: pd.Series, horizons: list[int]) -> pd.DataFrame:
+    """Post-release returns, anchored BOTH ways — because the anchor decides the answer.
+
+    ⚠️⚠️ THE ANCHOR IS NOT A DETAIL. S0 FAILED ON ITS FIRST RUN BECAUSE OF IT, and the failure looked
+    exactly like "the pipeline is broken".
+
+        anchor = the release bar's CLOSE  ->  measures the POST-JUMP RESIDUE
+        anchor = the release bar's OPEN   ->  includes the RELEASE-MINUTE JUMP
+
+    Round 1 established that for gold, **$132 of a $137 reaction happens INSIDE the release minute**
+    (jump t = +7.13; post-print residue +$5.37, t = 0.52 — i.e. noise). So anchoring on the close
+    throws away 96% of the effect and measures the noise. Measured here on the same data:
+
+        GC, proxy surprise:   jump Spearman -0.273 (p<0.0001)   |   close-anchored +0.016 (p=0.76)
+        GC, real surprise:    jump Spearman -0.415 (p<0.0001)   |   close-anchored +0.014 (p=0.78)
+
+    ⭐ WHICH ONE IS RIGHT DEPENDS ON THE TRADE, and that is why both are returned:
+        · PRE-POSITIONED (in before the print, as H1-C's question assumes): you hold through the jump,
+          so the OPEN anchor is correct.
+        · REACTIVE (enter after seeing the number): you can only get the close, so the CLOSE anchor is
+          correct — and it is also the honest measure of what is left to capture after latency.
+    """
     idx = pd.DatetimeIndex(px["Date"])
     close = px["Close"].to_numpy(dtype=float)
+    open_ = px["Open"].to_numpy(dtype=float)
 
     def at(ts):
         i = idx.searchsorted(ts, side="right") - 1
@@ -101,15 +123,18 @@ def post_returns(px: pd.DataFrame, stamps: pd.Series, horizons: list[int]) -> pd
 
     rows = []
     for ts in stamps:
-        r = {}
+        r: dict = {}
         a = at(ts)
+        ok_anchor = a is not None and abs((idx[a] - ts).total_seconds()) <= 300 and open_[a] > 0
+        r["jump"] = (close[a] / open_[a] - 1.0) * 100.0 if ok_anchor else np.nan
         for h in horizons:
-            b = at(ts + pd.Timedelta(minutes=h))
-            if a is None or b is None or b <= a or close[a] <= 0 or \
-                    abs((idx[a] - ts).total_seconds()) > 300:
-                r[f"r{h}"] = np.nan
+            b = at(ts + pd.Timedelta(minutes=h)) if a is not None else None
+            if not ok_anchor or b is None or b <= a:
+                r[f"open_r{h}"] = np.nan
+                r[f"close_r{h}"] = np.nan
             else:
-                r[f"r{h}"] = (close[b] / close[a] - 1.0) * 100.0
+                r[f"open_r{h}"] = (close[b] / open_[a] - 1.0) * 100.0
+                r[f"close_r{h}"] = (close[b] / close[a] - 1.0) * 100.0
         rows.append(r)
     return pd.DataFrame(rows, index=stamps.index)
 
@@ -166,10 +191,11 @@ def stage_s0(verbose: bool = True) -> dict:
     for arm, col in (("proxy", "surprise_proxy_z"), ("real", "surprise_real_z")):
         x = cal[col].to_numpy(dtype=float)
         cells = []
-        for h in POST_HORIZONS:
-            y = rets[f"r{h}"].to_numpy(dtype=float)
+        for measure in ["jump"] + [f"{anc}_r{h}" for anc in ("open", "close") for h in POST_HORIZONS]:
+            y = rets[measure].to_numpy(dtype=float)
             c = corr(x, y)
-            c["horizon_min"] = h
+            c["measure"] = measure
+            c["includes_jump"] = measure == "jump" or measure.startswith("open_")
             c.update({("hit_" + k): v for k, v in sign_hit(x, y).items()})
             cells.append(c)
         out["arms"][arm] = cells
@@ -178,7 +204,11 @@ def stage_s0(verbose: bool = True) -> dict:
     # ⚠️ SIGN AND SIGNIFICANCE ONLY. Round 1's -0.193 was measured on a different sample with a
     # different feature; asserting a magnitude match would be pinning a number to data that did not
     # produce it. What must reproduce is the DIRECTION of gold's response and that it is detectable.
-    proxy = out["arms"]["proxy"]
+    # ⚠️ The gate is judged on the JUMP-INCLUSIVE measures only. Round 1's -0.193 was a statement
+    # about the release reaction, and the close-anchored residue is the part round 1 itself reported
+    # as noise (t = 0.52). Judging the gate on the residue would be requiring the pipeline to
+    # reproduce an effect in the one place the reference says it does not exist.
+    proxy = [c for c in out["arms"]["proxy"] if c["includes_jump"]]
     neg = [c for c in proxy if np.isfinite(c["spearman_r"]) and c["spearman_r"] < 0]
     sig = [c for c in neg if c["spearman_p"] < 0.05]
     out["s0_pass"] = bool(len(neg) >= 2 and len(sig) >= 1)
@@ -199,14 +229,14 @@ def stage_s0(verbose: bool = True) -> dict:
         print(f"        sample, so S0 asserts SIGN and SIGNIFICANCE, never a magnitude match.")
         for arm in ("proxy", "real"):
             print(f"\n  ARM '{arm}'{'  (round 1 definition — the reproduction target)' if arm == 'proxy' else '  (published consensus — NEW)'}")
-            print(f"    {'h':>4}{'n':>6}{'Pearson':>10}{'p':>9}{'Spearman':>10}{'p':>9}"
-                  f"{'same-sign':>11}{'inverse rule':>14}")
+            print(f"    {'measure':>10}{'jump?':>7}{'n':>6}{'Pearson':>10}{'p':>9}{'Spearman':>10}{'p':>9}"
+                  f"{'inverse rule':>14}")
             for c in out["arms"][arm]:
-                ss = c.get("hit_same_sign")
                 inv = c.get("hit_inverse_rule_accuracy")
-                print(f"    {c['horizon_min']:>4}{c['n']:>6}{c['pearson_r']:>10.3f}{c['pearson_p']:>9.4f}"
+                print(f"    {c['measure']:>10}{('YES' if c['includes_jump'] else '.'):>7}{c['n']:>6}"
+                      f"{c['pearson_r']:>10.3f}{c['pearson_p']:>9.4f}"
                       f"{c['spearman_r']:>10.3f}{c['spearman_p']:>9.4f}"
-                      f"{(100*ss if ss else float('nan')):>10.1f}%{(100*inv if inv else float('nan')):>13.1f}%")
+                      f"{(100*inv if inv else float('nan')):>13.1f}%")
         print(f"\n  S0 GATE: {'PASS' if out['s0_pass'] else 'FAIL'} — {out['s0_reason']}")
         if not out["s0_pass"]:
             print("  ⛔ STOP. Nothing downstream of a pipeline that cannot see a known effect means")
