@@ -108,6 +108,17 @@ def main() -> int:
     from optimize.fundamentals.extended_data import load_1m_extended
 
     cal = pd.read_csv(CAL, parse_dates=["Date"])
+    # ⚠️ PER-INSTRUMENT STUDY FLOOR (#121, #122). Pre-2016 the price source is sparse and the sparsity
+    # differs by instrument: whole trading days are missing, so an event on a missing day is DROPPED
+    # rather than mismeasured — but the drops are concentrated in the early years and would make the
+    # sample silently era-skewed. Applying the floor makes the sample an explicit choice.
+    FLOOR = {"NQ": 2016, "GC": 2016, "ES": 2016, "CL": 2016, "HG": 2016, "SI": 2016,
+             "NG": 2017, "RTY": 2019}
+    floor = FLOOR.get(a.instrument, 2016)
+    n_before = len(cal)
+    cal = cal[cal.Date.dt.year >= floor]
+    print(f"  study floor for {a.instrument}: {floor}+  ({n_before} releases -> {len(cal)}; "
+          f"{n_before - len(cal)} dropped by the floor)")
     df = load_1m_extended(a.instrument)
     print("=" * 96)
     print(f"WS-NEWS2 Phase 1 H1-A (#115) — pre-release stop-out risk, {a.instrument}")

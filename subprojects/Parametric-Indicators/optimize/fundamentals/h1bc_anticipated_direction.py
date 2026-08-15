@@ -52,7 +52,18 @@ sys.path.insert(0, str(HERE))
 TV_RAW = HERE / "tradingview" / "tv_us_calendar_raw.csv"
 
 # ---- pre-registered constants (#115). Changing any of these invalidates the pre-registration. ------
-MIN_YEAR = 2016                      # the DST constraint (#114)
+# ⚠️ The floor is PER INSTRUMENT, not global (#121). The calendar floor is 2016 everywhere (the
+# TradingView DST defect, #114), but the PRICE frames become fully covered at different years — the
+# pre-2016 source is sparse and the sparsity differs by instrument. One global cut would either discard
+# good years or admit thin ones, and a thin year does not announce itself in the output.
+MIN_YEAR = 2016
+INSTRUMENT_FLOOR = {
+    "NQ": 2016, "GC": 2016, "ES": 2016, "CL": 2016, "HG": 2016, "SI": 2016,
+    "NG": 2017,     # full bar coverage only from 2017
+    "RTY": 2019,    # contract lists from 2017-07; full coverage from 2019
+}
+# ⛔ YM has NO 1-minute frame — every aggregated file is 0 bytes (#121). Excluded, not silently missing.
+EXCLUDED = {"YM": "1-minute frame is empty (#121)"}
 SERIES = {                           # the VERIFIED four (#119, #120)
     "nfp":      "Non Farm Payrolls",
     "cpi":      "Inflation Rate MoM",
@@ -62,7 +73,11 @@ SERIES = {                           # the VERIFIED four (#119, #120)
 PRE_WINDOWS = [5, 15, 30, 60]        # H1-B, minutes before the print
 POST_HORIZONS = [5, 15, 60]          # H1-C, minutes after the print
 MIN_HISTORY = 24                     # expanding-window normalisation warm-up
-N_PRIMARY_TESTS = 2 * (len(PRE_WINDOWS) + len(POST_HORIZONS)) * 2   # instruments x cells x 2 corrs
+# ⚠️⚠️ THE CORRECTION CHANGED WITH THE INSTRUMENT COUNT. #115 corrected over 28 tests (2 instruments).
+# Eight instruments makes it 112. This RAISES the bar — more coverage demands larger effects — and a
+# cell that was borderline at two instruments will not survive at eight. Fixed before running (#122).
+N_INSTRUMENTS = 8
+N_PRIMARY_TESTS = N_INSTRUMENTS * (len(PRE_WINDOWS) + len(POST_HORIZONS)) * 2
 BONFERRONI = 0.05 / N_PRIMARY_TESTS
 N_PERM = 1000                        # C1 permutation draws
 # ⚠️ V3 probe effect sizes. The FIRST version planted a single r=0.15 — BELOW the minimum detectable
@@ -77,12 +92,12 @@ SEED = 20260808                      # fixed: a reproducible "random" control, n
 # ------------------------------------------------------------------------------------------------
 # events
 # ------------------------------------------------------------------------------------------------
-def load_events() -> pd.DataFrame:
+def load_events(floor: int = MIN_YEAR) -> pd.DataFrame:
     d = pd.read_csv(TV_RAW, low_memory=False)
     d["utc"] = pd.to_datetime(d["date"], format="mixed", utc=True)
     d["et"] = d["utc"].dt.tz_convert("America/New_York").dt.tz_localize(None)
     d = d[d.title.isin(SERIES.values()) & d.forecast.notna() & d.previous.notna()]
-    d = d[d.et.dt.year >= MIN_YEAR].copy()
+    d = d[d.et.dt.year >= floor].copy()
     d["series"] = d.title.map({v: k for k, v in SERIES.items()})
     d["A"] = d.forecast.astype(float) - d.previous.astype(float)
     d = d.sort_values("et").drop_duplicates(["series", "et"]).reset_index(drop=True)
@@ -202,12 +217,13 @@ def permutation_p(x: np.ndarray, y: np.ndarray, groups: np.ndarray, rng) -> floa
 def run(instrument: str, verbose: bool = True) -> dict:
     from optimize.fundamentals.extended_data import load_1m_extended
 
-    ev = load_events()
+    floor = INSTRUMENT_FLOOR.get(instrument, MIN_YEAR)
+    ev = load_events(floor)
     px = load_1m_extended(instrument)
     px = px.sort_values("Date").reset_index(drop=True)
     rng = np.random.default_rng(SEED)
 
-    out: dict = {"instrument": instrument, "min_year": MIN_YEAR,
+    out: dict = {"instrument": instrument, "min_year": floor,
                  "series": sorted(SERIES), "n_events_raw": int(len(ev)),
                  "n_dropped_warmup": int(ev.A_z.isna().sum()),
                  "bonferroni_alpha": BONFERRONI, "n_primary_tests": N_PRIMARY_TESTS,
