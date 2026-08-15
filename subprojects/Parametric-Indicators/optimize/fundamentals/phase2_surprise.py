@@ -484,6 +484,7 @@ def probe_pair(y: np.ndarray, alpha: float, rng) -> dict:
         return out
     ys = (y - y.mean()) / y.std()
     y_rank = stats.rankdata(y)
+
     # ⚠️⚠️ THE GRID MUST REACH THE PAIR'S OWN MDE. The first version used a FIXED grid topping out at
     # 0.40, while the median pair here has an MDE of 0.412 — so for 587 of 643 pairs there was nothing
     # at or above the MDE to test, `above` was empty, and the pair auto-failed. Result: 41/643 "pass",
@@ -511,15 +512,35 @@ def probe_pair(y: np.ndarray, alpha: float, rng) -> dict:
     # actually asks is: "can this pipeline RELIABLY find an effect 25% larger than its nominal
     # resolution?" — which is answerable rather than borderline. The at-MDE result is kept as
     # information, not as the verdict.
-    judge_at = 1.25 * out["mde_r"]
-    above = [c for c in curve if c["target_r"] >= judge_at - 1e-9]
-    out["judge_at_r"] = judge_at
-    out["at_mde_rate"] = next((c["rate"] for c in curve
-                               if abs(c["target_r"] - round(out["mde_r"], 3)) < 1e-9), None)
-    out["pass_"] = bool(above) and all(c["detected"] for c in above)
+    out["curve"] = curve
+    # ⚠️⚠️⚠️ THE THIRD AND FINAL CALIBRATION FIX, and it is the one that was conceptually wrong.
+    #
+    # I was asking "is the detection rate AT LEAST 80%?" — but 80% IS THE DEFINITION OF THE MDE. A
+    # correctly-powered pair sits exactly ON that line, so a >= test is a coin flip (P = 0.617 with 25
+    # draws) and a 1.25x-MDE test just moves the goalposts to an arbitrary place.
+    #
+    # ⭐ The question the probe should ask is NOT "is this pipeline better than its nominal power?" but
+    # "is it SIGNIFICANTLY WORSE than its nominal power?" — i.e. is the measured detection rate
+    # incompatible with 80%? That is a one-sided binomial test, and it fails only when something is
+    # actually wrong rather than when the coin lands badly.
+    #
+    #     P(X <= 16 | n=25, p=0.80) = 0.047   -> fail at <= 16 of 25
+    #     P(X <= 17 | n=25, p=0.80) = 0.109   -> 17 is consistent with 80% power
+    from scipy import stats as _st
+    thresh = max(k for k in range(PROBE_DRAWS + 1)
+                 if _st.binom.cdf(k, PROBE_DRAWS, PROBE_PASS_RATE) < 0.05) + 1
+    at_mde = min((c for c in curve if c["target_r"] >= out["mde_r"] - 1e-9),
+                 key=lambda c: c["target_r"], default=None)
+    out["judge_at_r"] = at_mde["target_r"] if at_mde else None
+    out["at_mde_rate"] = at_mde["rate"] if at_mde else None
+    out["min_hits_required"] = thresh
+    out["pass_"] = bool(at_mde) and at_mde["rate"] * PROBE_DRAWS >= thresh
     out["smallest_detected"] = next((c["target_r"] for c in curve if c["detected"]), None)
-    out["reason"] = (f"reliably detects at 1.25x its MDE ({judge_at:.3f})" if out["pass_"] else
-                     f"cannot reliably detect even at 1.25x its MDE ({judge_at:.3f})")
+    out["reason"] = (f"detection at its MDE ({out['mde_r']:.3f}) is "
+                     f"{at_mde['rate']:.0%} — consistent with the nominal 80% power"
+                     if out["pass_"] else
+                     f"detection at its MDE is only {at_mde['rate']:.0%} "
+                     f"(<{thresh}/{PROBE_DRAWS}) — significantly BELOW nominal power")
     return out
 
 
