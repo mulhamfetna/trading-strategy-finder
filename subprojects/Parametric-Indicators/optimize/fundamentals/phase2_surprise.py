@@ -428,12 +428,139 @@ def stage_s1(verbose: bool = True) -> dict:
     return out
 
 
+# ------------------------------------------------------------------------------------------------
+# S2 — the planted-effect probe, PER PAIR
+# ------------------------------------------------------------------------------------------------
+# ⭐⭐⭐ WHY THIS RUNS BEFORE S3 AND NOT AFTER. With 643 pairs, most results will be nulls. A null from
+# a pipeline that could not have detected an effect is NOT a negative result — it is an absence of
+# measurement, and it is indistinguishable from the real thing in every summary table.
+#
+# Phase 1 already produced one: RTY/verified came back "NEGATIVE" until the probe showed the pipeline
+# could only detect r >= 0.4 there, at which point the honest verdict became VOID.
+#
+# So every pair is probed FIRST, and a pair whose probe fails is excluded from inference and reported
+# as UNANSWERED. Doing this after S3 would mean publishing a table of nulls and then retracting some.
+PROBE_GRID = [0.05, 0.10, 0.15, 0.20, 0.30, 0.40]
+PROBE_DRAWS = 25
+PROBE_PASS_RATE = 0.80          # matches the 80% power the MDE is itself defined at
+S2_PRIMARY_OUTCOME = "open_r15"  # jump-inclusive: S0 showed the effect lives in the release minute
+
+
+def mde_corr(n: int, alpha: float, power: float = 0.80) -> float:
+    from scipy import stats
+    if n < 10:
+        return float("inf")
+    z = (stats.norm.ppf(1 - alpha / 2) + stats.norm.ppf(power)) / np.sqrt(n - 3)
+    return float(np.tanh(z))
+
+
+def _spearman_p(x: np.ndarray, y_rank: np.ndarray) -> float:
+    """Spearman p-value with the outcome ranked ONCE by the caller.
+
+    ⚠️ 643 pairs x 6 effect sizes x 25 draws is ~96,000 correlations. Ranking the outcome once per
+    pair instead of once per draw is what makes the stage finish; it changes no value.
+    """
+    from scipy import stats
+    n = len(x)
+    if n < 10:
+        return 1.0
+    xr = stats.rankdata(x)
+    r = np.corrcoef(xr, y_rank)[0, 1]
+    if not np.isfinite(r) or abs(r) >= 1:
+        return 0.0
+    t = r * np.sqrt((n - 2) / (1 - r * r))
+    return float(2 * stats.t.sf(abs(t), n - 2))
+
+
+def probe_pair(y: np.ndarray, alpha: float, rng) -> dict:
+    from scipy import stats
+    m = np.isfinite(y)
+    y = y[m]
+    n = len(y)
+    out = {"n": n, "mde_r": mde_corr(n, alpha)}
+    if n < 30 or np.std(y) == 0:
+        out.update(pass_=False, smallest_detected=None,
+                   reason=f"n={n} — too few usable observations to probe")
+        return out
+    ys = (y - y.mean()) / y.std()
+    y_rank = stats.rankdata(y)
+    curve = []
+    for target in PROBE_GRID:
+        k = target / np.sqrt(max(1e-9, 1 - target ** 2))
+        hits = sum(_spearman_p(k * ys + rng.standard_normal(n), y_rank) < alpha
+                   for _ in range(PROBE_DRAWS))
+        curve.append({"target_r": target, "rate": hits / PROBE_DRAWS,
+                      "detected": hits / PROBE_DRAWS >= PROBE_PASS_RATE})
+    out["curve"] = curve
+    above = [c for c in curve if c["target_r"] >= out["mde_r"]]
+    out["pass_"] = bool(above) and all(c["detected"] for c in above)
+    out["smallest_detected"] = next((c["target_r"] for c in curve if c["detected"]), None)
+    out["reason"] = ("detects every planted effect at or above its own MDE" if out["pass_"] else
+                     f"misses a planted effect at or above its MDE ({out['mde_r']:.3f})")
+    return out
+
+
+def stage_s2(verbose: bool = True) -> dict:
+    from optimize.fundamentals.extended_data import load_1m_extended
+
+    pairs = pd.read_csv(PAIRS)
+    alpha = float(pairs.bonferroni_alpha.iloc[0])
+    rng = np.random.default_rng(SEED)
+    results = []
+
+    for inst, grp in pairs.groupby("instrument"):
+        floor = INSTRUMENT_FLOOR[inst]
+        titles = sorted(set(grp.release))
+        cal = load_calendar(titles, floor)
+        px = load_1m_extended(inst).sort_values("Date").reset_index(drop=True)
+        rets = post_returns(px, cal.et, POST_HORIZONS)
+        y_all = rets[S2_PRIMARY_OUTCOME].to_numpy(dtype=float)
+        for title in titles:
+            sel = (cal.title == title).to_numpy()
+            r = probe_pair(y_all[sel], alpha, rng)
+            r.update(instrument=inst, release=title,
+                     n_matrix=int(grp[grp.release == title].n.iloc[0]))
+            results.append(r)
+        if verbose:
+            ok = sum(x["pass_"] for x in results if x["instrument"] == inst)
+            print(f"  {inst}: {ok}/{len(titles)} pairs probe-PASS", flush=True)
+
+    df = pd.DataFrame([{k: v for k, v in r.items() if k != "curve"} for r in results])
+    out = {"stage": "S2", "alpha": alpha, "primary_outcome": S2_PRIMARY_OUTCOME,
+           "n_pairs": int(len(df)), "n_pass": int(df.pass_.sum()),
+           "n_void": int((~df.pass_).sum()),
+           "by_instrument": {k: {"pass": int(v.pass_.sum()), "void": int((~v.pass_).sum())}
+                             for k, v in df.groupby("instrument")},
+           "median_n": float(df.n.median()), "median_mde": float(df.mde_r.median())}
+    df.to_csv(HERE / "phase2_s2_probe.csv", index=False)
+    out["s2_pass"] = bool(out["n_pass"] > 0)
+
+    if verbose:
+        print("=" * 100)
+        print("PHASE 2 · S2 — PLANTED-EFFECT PROBE, PER PAIR   #116")
+        print("=" * 100)
+        print(f"  {out['n_pairs']} pairs · alpha = {alpha:.6f} · outcome '{S2_PRIMARY_OUTCOME}' "
+              f"(jump-inclusive)")
+        print(f"  median usable n = {out['median_n']:.0f} · median MDE r = {out['median_mde']:.3f}")
+        print(f"\n  ⭐ probe PASS : {out['n_pass']}   ⛔ VOID (unanswerable): {out['n_void']}")
+        print(f"  by instrument: {out['by_instrument']}")
+        voids = df[~df.pass_].sort_values("n")
+        if len(voids):
+            print(f"\n  the {min(10, len(voids))} smallest VOID pairs — these must be reported as")
+            print(f"  UNANSWERED, never pooled into a null:")
+            for _, r in voids.head(10).iterrows():
+                print(f"    {r.instrument:>4}  {r.release:<38} n={int(r.n):>4}  MDE={r.mde_r:.3f}")
+        print("\n  wrote phase2_s2_probe.csv")
+        print("=" * 100)
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", choices=["s0", "s1"], default="s0")
+    ap.add_argument("--stage", choices=["s0", "s1", "s2"], default="s0")
     ap.add_argument("--out", default="")
     a = ap.parse_args()
-    res = stage_s0() if a.stage == "s0" else stage_s1()
+    res = {"s0": stage_s0, "s1": stage_s1, "s2": stage_s2}[a.stage]()
     if a.out:
         Path(a.out).write_text(json.dumps(res, indent=1, default=str))
         print(f"wrote {a.out}")
