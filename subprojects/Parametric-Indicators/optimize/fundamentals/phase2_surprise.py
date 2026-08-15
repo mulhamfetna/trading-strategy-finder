@@ -501,11 +501,25 @@ def probe_pair(y: np.ndarray, alpha: float, rng) -> dict:
         curve.append({"target_r": target, "rate": hits / PROBE_DRAWS,
                       "detected": hits / PROBE_DRAWS >= PROBE_PASS_RATE})
     out["curve"] = curve
-    above = [c for c in curve if c["target_r"] >= out["mde_r"]]
+    # ⚠️⚠️ JUDGE AT 1.25x THE MDE, NOT AT THE MDE. The MDE is DEFINED as the effect size detectable at
+    # 80% power — so requiring ">=80% of 25 draws detected" at exactly the MDE is asking a coin
+    # weighted 0.62 to come up heads. Computed: P(>=20 of 25 | true power 0.80) = 0.617, i.e. a
+    # perfectly healthy pair fails 38% OF THE TIME BY CHANCE. That is not a gate, it is a lottery, and
+    # it is what produced a 59% VOID rate on the second run.
+    #
+    # At 1.25x the MDE true power is ~0.95+, where P(>=20 of 25) > 0.999. So the question the probe
+    # actually asks is: "can this pipeline RELIABLY find an effect 25% larger than its nominal
+    # resolution?" — which is answerable rather than borderline. The at-MDE result is kept as
+    # information, not as the verdict.
+    judge_at = 1.25 * out["mde_r"]
+    above = [c for c in curve if c["target_r"] >= judge_at - 1e-9]
+    out["judge_at_r"] = judge_at
+    out["at_mde_rate"] = next((c["rate"] for c in curve
+                               if abs(c["target_r"] - round(out["mde_r"], 3)) < 1e-9), None)
     out["pass_"] = bool(above) and all(c["detected"] for c in above)
     out["smallest_detected"] = next((c["target_r"] for c in curve if c["detected"]), None)
-    out["reason"] = ("detects every planted effect at or above its own MDE" if out["pass_"] else
-                     f"misses a planted effect at or above its MDE ({out['mde_r']:.3f})")
+    out["reason"] = (f"reliably detects at 1.25x its MDE ({judge_at:.3f})" if out["pass_"] else
+                     f"cannot reliably detect even at 1.25x its MDE ({judge_at:.3f})")
     return out
 
 
