@@ -478,14 +478,23 @@ def probe_pair(y: np.ndarray, alpha: float, rng) -> dict:
     y = y[m]
     n = len(y)
     out = {"n": n, "mde_r": mde_corr(n, alpha)}
-    if n < 30 or np.std(y) == 0:
+    if n < 30 or np.std(y) == 0 or not np.isfinite(out["mde_r"]):
         out.update(pass_=False, smallest_detected=None,
                    reason=f"n={n} — too few usable observations to probe")
         return out
     ys = (y - y.mean()) / y.std()
     y_rank = stats.rankdata(y)
+    # ⚠️⚠️ THE GRID MUST REACH THE PAIR'S OWN MDE. The first version used a FIXED grid topping out at
+    # 0.40, while the median pair here has an MDE of 0.412 — so for 587 of 643 pairs there was nothing
+    # at or above the MDE to test, `above` was empty, and the pair auto-failed. Result: 41/643 "pass",
+    # which reads as "the data is hopeless" and is entirely an artefact of the ceiling.
+    #
+    # Measured: 0 of 587 pairs with MDE > 0.40 passed; 41 of 56 with MDE <= 0.40 did. The dividing line
+    # was exactly the top of my grid. Fifth cry-wolf failure in this project.
+    grid = sorted(set(PROBE_GRID + [round(out["mde_r"], 3), round(1.25 * out["mde_r"], 3)]))
+    out["grid"] = grid
     curve = []
-    for target in PROBE_GRID:
+    for target in grid:
         k = target / np.sqrt(max(1e-9, 1 - target ** 2))
         hits = sum(_spearman_p(k * ys + rng.standard_normal(n), y_rank) < alpha
                    for _ in range(PROBE_DRAWS))
