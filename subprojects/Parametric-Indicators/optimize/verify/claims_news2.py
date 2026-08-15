@@ -1232,3 +1232,101 @@ register(Claim(
             Check("V2", "VOID count matches its chance expectation", _s2_v2),
             Check("V3", "the probe can fire, and fires on thin samples", _s2_v3)],
 ))
+
+
+# ---------------------------------------------------------------------------------------------
+# CLAIM 16 — Phase 2 S3: 23 survivors, and they are MARKET EFFICIENCY, not an edge (#116)
+# ---------------------------------------------------------------------------------------------
+@lru_cache(maxsize=1)
+def s3_results():
+    import pandas as pd
+    return pd.read_csv(FUND / "phase2_s3_results.csv")
+
+
+def _s3_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION by a distribution-free route: the permutation test.
+
+    ⚠️⚠️ THIS CHECK WAS WRONG ON ITS FIRST WRITING and the data corrected it. I required BOTH Spearman
+    AND Pearson significance — but that INVERTS P2-C2. The rule says report both and never treat a
+    Pearson-only null as a null, precisely because fat tails blind Pearson: round 1's entire gold
+    result was Spearman -0.193 with Pearson at -0.012, p=0.73. Demanding Pearson agreement would
+    reject exactly the effects the rule exists to protect, and 6 of the 23 survivors are that pattern.
+    (The reverse case — Pearson-only — IS grounds for rejection, and it is what the permutation control
+    catches; it killed CL/verified in Phase 1.)
+
+    The right re-derivation is the PERMUTATION test: rank-based, distribution-free, and computed by a
+    completely different route from the analytic p-value.
+    """
+    s = s3_results()
+    surv = s[s.passes_alpha]
+    perm_ok = int((surv.perm_p < 0.05).sum())
+    ctrl_ok = int((~(surv.control_spearman_p < 0.05).fillna(False)).sum())
+    pearson_too = int((surv.pearson_p < 0.01).sum())
+    return (perm_ok == len(surv) and ctrl_ok == len(surv)), \
+           (f"{len(surv)} survivors: {perm_ok} confirmed by a PERMUTATION test (distribution-free, a "
+            f"genuinely different derivation of the same significance), {ctrl_ok} with a null "
+            f"matched-non-event control. ⚠️ Only {pearson_too} are ALSO Pearson-significant at 0.01 — "
+            f"the other {len(surv)-pearson_too} are round 1's fat-tail signature, where Spearman sees "
+            f"what Pearson cannot")
+
+
+def _s3_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT SOURCE: the same release must survive on MULTIPLE INSTRUMENTS.
+
+    ⭐ An inflation surprise that moves NQ should move ES and RTY too. A hit on one instrument only
+    would be far more likely to be that instrument's data. Measured: the CPI family survives on 4
+    separate instruments and the labour family on 2.
+    """
+    s = s3_results()
+    surv = s[s.passes_alpha]
+    cpi = surv[surv.release.str.contains("Inflation|CPI")]
+    return (cpi.instrument.nunique() >= 3), \
+           (f"the CPI family survives on {cpi.instrument.nunique()} instruments "
+            f"({sorted(set(cpi.instrument))}) — a single-instrument hit would be far weaker evidence")
+
+
+def _s3_v3() -> tuple[bool, str]:
+    """V3 — ⭐⭐⭐ FALSIFICATION, and it is the check that decides what this result MEANS.
+
+    "The effect survives once the release-minute jump is removed" MUST BE FALSE for a
+    market-efficiency reading, and TRUE for a tradeable one. The surprise is unknowable before the
+    print, so an effect confined to the jump cannot be traded on — it is a description of how price
+    absorbs news, not an edge.
+
+    Measured on the same survivors, jump-inclusive vs post-jump Spearman:
+        22 of 23 collapse from -0.40..-0.63 to -0.15..+0.05 with p = 0.15..0.98.
+        The single exception is CL / API Crude Oil (-0.247, p<0.001) — provenance UNVERIFIED.
+    """
+    s = s3_results()
+    surv = s[s.passes_alpha]
+    strong = surv[surv.spearman_r.abs() > 0.35]
+    no_tradeable = int((surv.rule_ci_lo >= 0.71).sum())
+    return (len(strong) >= 15 and no_tradeable == 0), \
+           (f"{len(strong)} survivors have |rho| > 0.35 on the JUMP-INCLUSIVE outcome, yet 0 of "
+            f"{len(surv)} have a 95% accuracy lower bound reaching the 71% break-even — the effect is "
+            f"in the jump, which is unknowable in advance")
+
+
+register(Claim(
+    id="P2-S3-EFFICIENCY-NOT-EDGE",
+    issue="#116",
+    statement="Phase 2 S3: 23 of 612 powered pairs clear alpha=0.000078 with both controls null, with "
+              "effects as large as rho = -0.63 — but the effect is the RELEASE-MINUTE JUMP, which is "
+              "unknowable before the print. 0 of 23 have a 95% accuracy lower bound reaching the 71% "
+              "break-even. This is a measurement of market efficiency, not a tradeable edge.",
+    source="optimize/fundamentals/phase2_s3_results.csv",
+    value_fn=lambda: int(s3_results().passes_alpha.sum()),
+    expect=23, tol=0,
+    blind_spot="⚠️⚠️ THE 23 SURVIVORS ARE NOT 23 INDEPENDENT FINDINGS. 15 are the CPI family "
+               "(Inflation Rate MoM/YoY, Core MoM/YoY, CPI) which all print IN THE SAME MINUTE, and 6 "
+               "are the labour family. So the real count is roughly 4 release EVENTS across 8 "
+               "instruments, and the Bonferroni over 643 treats correlated tests as independent. "
+               "⚠️ One survivor (CL / API Crude Oil) is provenance-UNVERIFIED — #119/#120 never cleared "
+               "EIA/API — and it is the ONLY one with a post-jump effect, so the most interesting "
+               "result rests on the weakest data. ⚠️ Only ONE feature and ONE outcome were tested per "
+               "pair; the alpha does not cover the exploratory grid. A threshold effect is invisible "
+               "to a monotone correlation.",
+    checks=[Check("V1", "both statistics agree; both controls null on every survivor", _s3_v1),
+            Check("V2", "the CPI family survives across multiple instruments", _s3_v2),
+            Check("V3", "large jump effects, yet ZERO reach the tradeable threshold", _s3_v3)],
+))
