@@ -271,38 +271,44 @@
   "curve": [
    {
     "target_r": 0.05,
-    "measured_spearman": 0.02874045841583493,
-    "p": 0.21438487859204666,
+    "measured_spearman": 0.041280960511338845,
+    "detection_rate": 0.0,
+    "draws": 25,
     "detected": false
    },
    {
     "target_r": 0.1,
-    "measured_spearman": 0.07838480756125256,
-    "p": 0.0006969648832430346,
+    "measured_spearman": 0.07972137079500048,
+    "detection_rate": 0.44,
+    "draws": 25,
     "detected": false
    },
    {
     "target_r": 0.15,
-    "measured_spearman": 0.10651192471141703,
-    "p": 3.958834316794005e-06,
+    "measured_spearman": 0.12690503232043474,
+    "detection_rate": 1.0,
+    "draws": 25,
     "detected": true
    },
    {
     "target_r": 0.2,
-    "measured_spearman": 0.20208407676340676,
-    "p": 1.1502944029193259e-18,
+    "measured_spearman": 0.1758292744611826,
+    "detection_rate": 1.0,
+    "draws": 25,
     "detected": true
    },
    {
     "target_r": 0.3,
-    "measured_spearman": 0.23920127470849356,
-    "p": 1.0232019709718722e-25,
+    "measured_spearman": 0.25412447619710227,
+    "detection_rate": 1.0,
+    "draws": 25,
     "detected": true
    },
    {
     "target_r": 0.4,
-    "measured_spearman": 0.35687341373177556,
-    "p": 3.2518553186745227e-57,
+    "measured_spearman": 0.3414376718929491,
+    "detection_rate": 1.0,
+    "draws": 25,
     "detected": true
    }
   ],

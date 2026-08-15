@@ -271,45 +271,51 @@
   "curve": [
    {
     "target_r": 0.05,
-    "measured_spearman": 0.028437339460971885,
-    "p": 0.2380843588161956,
+    "measured_spearman": 0.04296938308759343,
+    "detection_rate": 0.0,
+    "draws": 25,
     "detected": false
    },
    {
     "target_r": 0.1,
-    "measured_spearman": 0.10427609207162856,
-    "p": 1.4438363299987502e-05,
-    "detected": true
+    "measured_spearman": 0.09349006982102065,
+    "detection_rate": 0.56,
+    "draws": 25,
+    "detected": false
    },
    {
     "target_r": 0.15,
-    "measured_spearman": 0.1405548696923705,
-    "p": 4.6518389704184795e-09,
+    "measured_spearman": 0.14326004427653186,
+    "detection_rate": 0.96,
+    "draws": 25,
     "detected": true
    },
    {
     "target_r": 0.2,
-    "measured_spearman": 0.1963199138611094,
-    "p": 1.9800495814898626e-16,
+    "measured_spearman": 0.18689717837889608,
+    "detection_rate": 1.0,
+    "draws": 25,
     "detected": true
    },
    {
     "target_r": 0.3,
-    "measured_spearman": 0.2887235566402524,
-    "p": 1.960290115716009e-34,
+    "measured_spearman": 0.27812269403828854,
+    "detection_rate": 1.0,
+    "draws": 25,
     "detected": true
    },
    {
     "target_r": 0.4,
-    "measured_spearman": 0.34513381858471254,
-    "p": 2.2189154373137743e-49,
+    "measured_spearman": 0.3787031777244226,
+    "detection_rate": 1.0,
+    "draws": 25,
     "detected": true
    }
   ],
   "detected": true,
   "n": 1723,
   "mde_r": 0.10456731310403385,
-  "smallest_detected": 0.1
+  "smallest_detected": 0.15
  },
  "verdict": "POSITIVE",
  "reason": "3 cell(s) clear Bonferroni AND both controls"

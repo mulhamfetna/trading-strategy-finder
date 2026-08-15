@@ -271,45 +271,51 @@
   "curve": [
    {
     "target_r": 0.05,
-    "measured_spearman": 0.06264907898068849,
-    "p": 0.006757497302819042,
+    "measured_spearman": 0.043148369201426666,
+    "detection_rate": 0.08,
+    "draws": 25,
     "detected": false
    },
    {
     "target_r": 0.1,
-    "measured_spearman": 0.13823565584481853,
-    "p": 1.9802366077322907e-09,
-    "detected": true
+    "measured_spearman": 0.08804973673085888,
+    "detection_rate": 0.6,
+    "draws": 25,
+    "detected": false
    },
    {
     "target_r": 0.15,
-    "measured_spearman": 0.08337826096687598,
-    "p": 0.0003091501247423864,
+    "measured_spearman": 0.1323769745486506,
+    "detection_rate": 1.0,
+    "draws": 25,
     "detected": true
    },
    {
     "target_r": 0.2,
-    "measured_spearman": 0.16955179214376156,
-    "p": 1.6231615642788888e-13,
+    "measured_spearman": 0.17611605800542193,
+    "detection_rate": 1.0,
+    "draws": 25,
     "detected": true
    },
    {
     "target_r": 0.3,
-    "measured_spearman": 0.25119235155497344,
-    "p": 2.843573590348708e-28,
+    "measured_spearman": 0.2646329271245251,
+    "detection_rate": 1.0,
+    "draws": 25,
     "detected": true
    },
    {
     "target_r": 0.4,
-    "measured_spearman": 0.33844249641086127,
-    "p": 2.768655376468317e-51,
+    "measured_spearman": 0.3426172744339199,
+    "detection_rate": 1.0,
+    "draws": 25,
     "detected": true
    }
   ],
   "detected": true,
   "n": 1868,
   "mde_r": 0.1004486528938792,
-  "smallest_detected": 0.1
+  "smallest_detected": 0.15
  },
  "verdict": "NEGATIVE",
  "reason": "0 of 7 cells clear Bonferroni alpha=0.00045, and the planted probe WAS detected \u2014 so the pipeline can find an effect and there is none of this size to find"

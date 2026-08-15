@@ -271,46 +271,52 @@
   "curve": [
    {
     "target_r": 0.05,
-    "measured_spearman": 0.08140616962441304,
-    "p": 0.00042847261645697704,
-    "detected": true
-   },
-   {
-    "target_r": 0.1,
-    "measured_spearman": 0.11387200078723496,
-    "p": 8.041709036772453e-07,
-    "detected": true
-   },
-   {
-    "target_r": 0.15,
-    "measured_spearman": 0.07135259953060587,
-    "p": 0.0020303622082116046,
+    "measured_spearman": 0.049613946522499175,
+    "detection_rate": 0.04,
+    "draws": 25,
     "detected": false
    },
    {
+    "target_r": 0.1,
+    "measured_spearman": 0.08522361212040536,
+    "detection_rate": 0.52,
+    "draws": 25,
+    "detected": false
+   },
+   {
+    "target_r": 0.15,
+    "measured_spearman": 0.12193603892330428,
+    "detection_rate": 0.96,
+    "draws": 25,
+    "detected": true
+   },
+   {
     "target_r": 0.2,
-    "measured_spearman": 0.17840278941388998,
-    "p": 7.981874333669643e-15,
+    "measured_spearman": 0.17026126217401705,
+    "detection_rate": 1.0,
+    "draws": 25,
     "detected": true
    },
    {
     "target_r": 0.3,
-    "measured_spearman": 0.23668278143560018,
-    "p": 3.382621205899501e-25,
+    "measured_spearman": 0.25229496908832566,
+    "detection_rate": 1.0,
+    "draws": 25,
     "detected": true
    },
    {
     "target_r": 0.4,
-    "measured_spearman": 0.31475322472982636,
-    "p": 3.113855339954222e-44,
+    "measured_spearman": 0.32913169696700784,
+    "detection_rate": 1.0,
+    "draws": 25,
     "detected": true
    }
   ],
-  "detected": false,
+  "detected": true,
   "n": 1868,
   "mde_r": 0.1004486528938792,
-  "smallest_detected": 0.05
+  "smallest_detected": 0.15
  },
- "verdict": "VOID",
- "reason": "HB-C2 FAILED: the pipeline missed a planted effect AT OR ABOVE its own MDE, so it cannot find an effect that is present. No negative result may be reported \u2014 a null here would be indistinguishable from a broken measurement."
+ "verdict": "NEGATIVE",
+ "reason": "0 of 7 cells clear Bonferroni alpha=0.00045, and the planted probe WAS detected \u2014 so the pipeline can find an effect and there is none of this size to find"
 }

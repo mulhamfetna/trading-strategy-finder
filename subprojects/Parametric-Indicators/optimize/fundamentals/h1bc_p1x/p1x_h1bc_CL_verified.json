@@ -271,45 +271,51 @@
   "curve": [
    {
     "target_r": 0.05,
-    "measured_spearman": 0.08400438508846056,
-    "p": 0.09135063931263551,
+    "measured_spearman": 0.05133028273886306,
+    "detection_rate": 0.0,
+    "draws": 25,
     "detected": false
    },
    {
     "target_r": 0.1,
-    "measured_spearman": 0.08232314850255185,
-    "p": 0.09804424463210698,
+    "measured_spearman": 0.06538225574641147,
+    "detection_rate": 0.0,
+    "draws": 25,
     "detected": false
    },
    {
     "target_r": 0.15,
-    "measured_spearman": 0.11515413856836956,
-    "p": 0.020450108400224556,
+    "measured_spearman": 0.1367031225126735,
+    "detection_rate": 0.28,
+    "draws": 25,
     "detected": false
    },
    {
     "target_r": 0.2,
-    "measured_spearman": 0.18329308400203365,
-    "p": 0.0002082695599691547,
-    "detected": true
+    "measured_spearman": 0.17117967233774078,
+    "detection_rate": 0.48,
+    "draws": 25,
+    "detected": false
    },
    {
     "target_r": 0.3,
-    "measured_spearman": 0.29079693676063345,
-    "p": 2.469757085154546e-09,
+    "measured_spearman": 0.2776278523115495,
+    "detection_rate": 1.0,
+    "draws": 25,
     "detected": true
    },
    {
     "target_r": 0.4,
-    "measured_spearman": 0.3816435049547633,
-    "p": 1.7207581879328412e-15,
+    "measured_spearman": 0.37078447245159113,
+    "detection_rate": 1.0,
+    "draws": 25,
     "detected": true
    }
   ],
   "detected": true,
   "n": 405,
   "mde_r": 0.21374168423402037,
-  "smallest_detected": 0.2
+  "smallest_detected": 0.3
  },
  "verdict": "POSITIVE BUT CONTROLS FAIL",
  "reason": "3 cell(s) clear Bonferroni but fail C1/C2 \u2014 HB-C3 voids them"

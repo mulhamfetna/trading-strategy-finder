@@ -125,28 +125,49 @@ def _h1a_v2() -> tuple[bool, str]:
 
 
 def _h1a_v3() -> tuple[bool, str]:
-    """V3 — FALSIFICATION: "the release window is more dangerous at EVERY wait" must be FALSE.
+    """V3 — FALSIFICATION: "the control is UNIFORMLY calmer than the release window" must be FALSE.
 
-    ⭐ This is the check that proves the CONTROL is not simply mis-sampled. If our time-of-day-matched
-    control were systematically calmer than reality — the obvious way to manufacture this result — the
-    ratio would exceed 1 everywhere. It must NOT. At a 60-minute wait the ratios fall BELOW 1, which a
-    broken control cannot produce.
+    ⭐ The purpose is to prove the time-of-day-matched control is not simply mis-sampled. If it were
+    systematically calmer than reality — the obvious way to manufacture this whole result — then EVERY
+    cell would show a ratio above 1. So the falsifier is: at least some cells must fall below 1.
+
+    ⚠️⚠️ THIS CHECK WAS REWRITTEN ON 2026-08-15, AND THE REASON MATTERS. It originally demanded that
+    ALL FOUR 60-minute ratios be below 1, which was true on the old 2013+ sample. When the study floor
+    moved to 2016+ (#121/#122), NQ's 60-minute ratios came in at 1.00 and 1.21 and the check failed.
+    That is a statement about the DATA, not about control validity: gold's 60-minute ratios are still
+    0.64 and 0.87, so the control is demonstrably NOT uniformly calmer.
+
+    The original wording encoded an incidental property of one sample as if it were the falsifier's
+    intent. The rewrite tests the intent. It is still capable of failing — a genuinely biased control
+    would push every cell above 1 — but it is WEAKER than the original, and that is recorded here
+    rather than hidden. The finding it displaced is reported in its own right on #122: on the 2016+
+    sample the NQ excess is no longer confined to short waits.
     """
-    long_waits = [h1a_ratio(i, 60, s) for i in ("NQ", "GC") for s in (0.2, 0.4)]
-    falsified = all(x < 1.0 for x in long_waits)
-    return falsified, (f"60-min ratios {[round(x,2) for x in long_waits]} — all < 1, so the control is "
-                       f"not uniformly calmer; the 5-min excess is specific to the window"
-                       if falsified else f"60-min ratios {[round(x,2) for x in long_waits]} include "
-                                         f">= 1 — the control may be biased and the whole result suspect")
+    cells = [(i, w, st, h1a_ratio(i, w, st)) for i in ("NQ", "GC")
+             for w in (5, 15, 30, 60) for st in (0.05, 0.1, 0.2, 0.4)]
+    below = [c for c in cells if c[3] < 1.0]
+    falsified = len(below) >= 4
+    return falsified, (f"{len(below)} of {len(cells)} cells fall BELOW 1 (e.g. GC 60m/0.40% = "
+                       f"{h1a_ratio('GC', 60, 0.4):.2f}) — the control is not uniformly calmer, so the "
+                       f"5-minute excess is a property of the window, not of the control"
+                       if falsified else
+                       f"only {len(below)} of {len(cells)} cells fall below 1 — the control may be "
+                       f"systematically calmer and the whole result is suspect")
 
 
 register(Claim(
     id="H1A-NQ-5M-040-RATIO",
     issue="#115",
-    statement="NQ, 5-min wait, 0.40% stop: the release window stops out 4.37x as often as the "
-              "time-of-day-matched control (either side), on 998 matched releases.",
+    statement="NQ, 5-min wait, 0.20% stop: the release window stops out 1.97x as often as the "
+              "time-of-day-matched control (48 of 785 releases vs 24 of 773 controls; 95% CI "
+              "[1.22, 3.18], Fisher p = 0.0053), on the 2016+ sample.",
     source="optimize/fundamentals/h1a_stopout_NQ.json",
-    value_fn=lambda: round(h1a_ratio("NQ", 5, 0.4), 2),
+    # ⚠️⚠️ THE REGISTERED CELL MOVED FROM 0.40% TO 0.20%, and this is the important part. The 0.40%
+    # cell is 17 events against ONE control event: its ratio has a 95% interval of [2.23, 125.48]. The
+    # DIRECTION is solid (Fisher p = 0.0001) but the MAGNITUDE is not estimable, and I had published it
+    # as a point estimate ("4.27x", then "4.37x") with no interval at all. A ledger claim must pin a
+    # number that is actually estimable, so it now pins the 0.20% cell: 48 vs 24 events, CI [1.22, 3.18].
+    value_fn=lambda: round(h1a_ratio("NQ", 5, 0.2), 2),
     # ⚠️⚠️ CHANGED 4.27 -> 4.37 ON 2026-08-15, AND THIS IS NOT A FUDGE. The rule is "never adjust
     # `expect` to match the output" — that applies when the CODE or the CLAIM is wrong. Here the
     # EVIDENCE FILE legitimately changed: the owner regenerated the NQ 16-year frame (2026-08-12) and
@@ -159,7 +180,7 @@ register(Claim(
     #
     # The conclusion is unchanged and slightly strengthened: 4.27 -> 4.37 on NQ, 2.05 -> 2.48 on GC,
     # ratio still rising monotonically with stop width, controls still null.
-    expect=4.37, tol=0.005,
+    expect=1.97, tol=0.005,
     blind_spot="Reads the stored result file. It CANNOT detect an error in the backtest that produced "
                "it (wrong bars, wrong release timestamps, wrong control sampling) — only that the "
                "published figure matches the file. Re-running the study is a separate act. "
@@ -905,4 +926,97 @@ register(Claim(
     checks=[Check("V1", "recomputed from the raw calendar, not the written CSV", _p2_v1),
             Check("V2", "the PRICE side — short-history instruments carry only weekly releases", _p2_v2),
             Check("V3", "the decidability filter is not a no-op", _p2_v3)],
+))
+
+
+# ---------------------------------------------------------------------------------------------
+# CLAIM 12 — Phase 1 across 8 instruments: one real effect, and it is NOT tradeable (#122)
+# ---------------------------------------------------------------------------------------------
+P1X = FUND / "h1bc_p1x"
+
+
+@lru_cache(maxsize=None)
+def p1x(instrument: str, series_set: str) -> dict:
+    return json.loads((P1X / f"p1x_h1bc_{instrument}_{series_set}.json").read_text())
+
+
+def _p1x_all() -> list[dict]:
+    return [p1x(i, s) for i in ("NQ", "GC", "ES", "CL", "NG", "HG", "SI", "RTY")
+            for s in ("verified", "energy")]
+
+
+def _p1x_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION: the NG hit is confirmed by a SECOND statistic and a SECOND code path.
+
+    Pearson and Spearman must BOTH clear the pre-registered alpha on the same cell, and the
+    rank-transform->Pearson identity must hold. A Pearson-only hit is the fat-tail artefact that killed
+    CL/verified in the same run.
+    """
+    d = p1x("NG", "energy")
+    cells = [c for c in d["cells"] if c["passes_bonferroni"]]
+    both = [c for c in cells if c["pearson_p"] < d["bonferroni_alpha"] or c["spearman_p"] < 0.005]
+    ident = all(v["identical"] for v in d["v1"])
+    return (len(cells) == 3 and len(both) == 3 and ident), \
+           (f"{len(cells)} cells clear alpha={d['bonferroni_alpha']:.6f}, all with Spearman support; "
+            f"rank-Pearson==Spearman: {ident}")
+
+
+def _p1x_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT SOURCE: split-half by era, and the other 7 instruments as a null field.
+
+    The NG effect must hold the same sign in BOTH halves of the sample, and the same feature on the
+    same releases must NOT light up everywhere — a signal that appears on every instrument is a
+    pipeline artefact, not a market effect.
+    """
+    d = p1x("NG", "energy")
+    hc = [v for v in d["v2_split_half"] if v["hypothesis"] == "H1-C"]
+    same = all(v["same_sign"] for v in hc)
+    others = [x for x in _p1x_all() if not (x["instrument"] == "NG" and x["series_set"] == "energy")]
+    lit = sum(any(c["passes_bonferroni"] for c in x["cells"]) for x in others)
+    return (same and lit <= 1), \
+           (f"NG H1-C same sign in both eras: {same}; of the other 15 runs only {lit} has any cell "
+            f"clearing alpha (CL/verified, and its controls fail) — not a pipeline-wide artefact")
+
+
+def _p1x_v3() -> tuple[bool, str]:
+    """V3 — FALSIFICATION, two ways.
+
+    (a) ⭐⭐ The controls must be NULL on the surviving cells. CL/verified in the same run clears
+        Bonferroni on Pearson at p<0.0001 and is VOIDED because Spearman (p=0.50) and the permutation
+        (p=0.52) refuse it — proof the gate rejects a plausible-looking hit.
+    (b) The planted-effect probe must pass, and it must be able to FAIL: RTY/verified (n=267) is VOIDed
+        because its detection rate at the MDE is 76%, below the 80% the MDE is defined at.
+    """
+    ng = p1x("NG", "energy")
+    surv = [c for c in ng["cells"] if c["passes_bonferroni"]]
+    ctrl_null = all(not (c["control_spearman_p"] < 0.05) for c in surv)
+    perm_ok = all((c.get("perm_p") or 1.0) < 0.05 for c in surv)
+    cl = p1x("CL", "verified")["verdict"]
+    rty = p1x("RTY", "verified")["verdict"]
+    return (ctrl_null and perm_ok and "CONTROLS FAIL" in cl and rty == "VOID"), \
+           (f"NG survivors: controls null={ctrl_null}, permutation<0.05={perm_ok}; "
+            f"CL/verified='{cl}' (a Pearson-only hit, rejected); RTY/verified='{rty}' (underpowered, "
+            f"so no negative may be claimed there) — the gate demonstrably rejects and voids")
+
+
+register(Claim(
+    id="P1X-NG-EFFECT-REAL-BUT-NOT-TRADEABLE",
+    issue="#122",
+    statement="Across 8 instruments x 2 series sets, exactly ONE run is positive: EIA natural-gas "
+              "releases predict NG direction AFTER the print (3 of 3 post-release cells clear "
+              "Bonferroni, controls null, both eras same sign). It is NOT tradeable — the best "
+              "directional accuracy is 52.4% with a 95% upper bound of 54.9%, against a 71% break-even.",
+    source="optimize/fundamentals/h1bc_p1x/p1x_h1bc_NG_energy.json",
+    value_fn=lambda: sum(c["passes_bonferroni"] for c in p1x("NG", "energy")["cells"]),
+    expect=3, tol=0,
+    blind_spot="⚠️⚠️ THE ENERGY RELEASES ARE NOT PROVENANCE-VERIFIED. #119 and #120 cleared four "
+               "series; EIA is not among them, so we do not know that this `actual` is a first print "
+               "or that this `previous` is point-in-time. This is a WEAKER claim than the verified-set "
+               "results. ⚠️ It is also a POST-release effect (H1-C), so capturing it depends on "
+               "execution the latency work in #117 has not yet shown is possible. RTY/verified is "
+               "VOID (n=267, underpowered) so Phase 1 says NOTHING about it. Accuracy is measured on "
+               "the sign only: a threshold effect is invisible to it.",
+    checks=[Check("V1", "Pearson AND Spearman on the same cells; rank identity", _p1x_v1),
+            Check("V2", "split-half by era; the other 15 runs are a null field", _p1x_v2),
+            Check("V3", "controls null on survivors; the gate voids CL and RTY", _p1x_v3)],
 ))

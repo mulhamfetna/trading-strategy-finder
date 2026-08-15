@@ -272,37 +272,43 @@
    {
     "target_r": 0.05,
     "measured_spearman": 0.04137385367933092,
-    "p": 0.4063042677991907,
+    "detection_rate": 0.04,
+    "draws": 25,
     "detected": false
    },
    {
     "target_r": 0.1,
-    "measured_spearman": 0.06521503410983545,
-    "p": 0.19027520938639117,
+    "measured_spearman": 0.09205570219151547,
+    "detection_rate": 0.0,
+    "draws": 25,
     "detected": false
    },
    {
     "target_r": 0.15,
-    "measured_spearman": 0.1078476989365792,
-    "p": 0.0300055139586671,
+    "measured_spearman": 0.1333675049805348,
+    "detection_rate": 0.28,
+    "draws": 25,
     "detected": false
    },
    {
     "target_r": 0.2,
-    "measured_spearman": 0.11907331014818878,
-    "p": 0.016510410772300584,
+    "measured_spearman": 0.20234587591092723,
+    "detection_rate": 0.72,
+    "draws": 25,
     "detected": false
    },
    {
     "target_r": 0.3,
-    "measured_spearman": 0.3786874610972128,
-    "p": 2.9437710013420673e-15,
+    "measured_spearman": 0.25403110628697123,
+    "detection_rate": 0.92,
+    "draws": 25,
     "detected": true
    },
    {
     "target_r": 0.4,
-    "measured_spearman": 0.32231056922721657,
-    "p": 3.043135687743881e-11,
+    "measured_spearman": 0.3397328695678031,
+    "detection_rate": 1.0,
+    "draws": 25,
     "detected": true
    }
   ],
