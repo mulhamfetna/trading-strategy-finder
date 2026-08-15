@@ -1330,3 +1330,75 @@ register(Claim(
             Check("V2", "the CPI family survives across multiple instruments", _s3_v2),
             Check("V3", "large jump effects, yet ZERO reach the tradeable threshold", _s3_v3)],
 ))
+
+
+# ---------------------------------------------------------------------------------------------
+# CLAIM 17 — Phase 2 S4: the capturable window holds exactly ONE effect, and it does not pay (#116)
+# ---------------------------------------------------------------------------------------------
+@lru_cache(maxsize=1)
+def s4_results():
+    import pandas as pd
+    return pd.read_csv(FUND / "phase2_s4_results.csv")
+
+
+def _s4_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION: the single survivor must be the SAME pair S3 found by follow-up.
+
+    ⭐ S3 spotted CL/API by re-measuring 23 pairs after the fact. S4 searched all 612 with its own
+    correction. If the two disagreed, one of them was fishing.
+    """
+    s = s4_results()
+    surv = s[s.passes_alpha]
+    return (len(surv) == 1 and "API Crude Oil" in surv.iloc[0].release
+            and surv.iloc[0].instrument == "CL"), \
+           (f"{len(surv)} survivor: {surv.iloc[0].instrument}/{surv.iloc[0].release} "
+            f"rho={surv.iloc[0].spearman_r:+.3f} — the same pair S3's follow-up identified, now "
+            f"surviving a SYSTEMATIC search at its own alpha")
+
+
+def _s4_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT SOURCE: round 1 and S0 both say this window is noise, and 611 of 612 agree."""
+    s = s4_results()
+    return (int(s.passes_alpha.sum()) <= 2), \
+           (f"{611 - int(s.passes_alpha.sum()) + 1} of {len(s)} pairs are null in the post-jump window "
+            f"— matching round 1's measured post-print residue (t=0.52) and S0's close-anchored "
+            f"measures (all p >= 0.46)")
+
+
+def _s4_v3() -> tuple[bool, str]:
+    """V3 — FALSIFICATION: "a tradeable edge exists somewhere" must be FALSE.
+
+    ⭐⭐ The decision number is the 95% LOWER bound on directional accuracy against the 71% break-even
+    (#111). A point estimate above 71% is not enough — S3 had seven of those and none survived the
+    interval.
+    """
+    s = s4_results()
+    n_trade = int(s.tradeable.sum())
+    best = s.rule_ci_lo.max()
+    return (n_trade == 0), \
+           (f"0 of {len(s)} pairs have a 95% accuracy LOWER bound reaching 71%; the highest anywhere is "
+            f"{100*best:.1f}% — a tradeable edge is EXCLUDED at 95% across the whole matrix")
+
+
+register(Claim(
+    id="P2-S4-CAPTURABLE-WINDOW-EMPTY",
+    issue="#116",
+    statement="Searching the CAPTURABLE window (release-bar close -> +15 min) across all 612 powered "
+              "pairs at its own alpha=0.0000817 returns exactly ONE survivor: CL / API Crude Oil "
+              "Stock Change, rho=-0.247, p=5.2e-05, controls null. Its accuracy is 57.4% "
+              "[51.2, 63.4] against a 71% break-even, and 0 of 612 pairs have a 95% lower bound "
+              "reaching 71%.",
+    source="optimize/fundamentals/phase2_s4_results.csv",
+    value_fn=lambda: int(s4_results().passes_alpha.sum()),
+    expect=1, tol=0,
+    blind_spot="⚠️⚠️ The single survivor is the LEAST provenance-verified series in the study — #119 "
+               "and #120 cleared four series and API is not among them, so we do not know its `actual` "
+               "is a first print or its `previous` point-in-time. The programme's only capturable "
+               "finding rests on its weakest data. ⚠️ One outcome (15 minutes) and one feature were "
+               "tested; a drift at another horizon is untested and would need its own correction. "
+               "Monotone-only, so a threshold effect is invisible. And surviving here says nothing "
+               "about whether the drift can be REACHED after latency — that is #117.",
+    checks=[Check("V1", "same pair S3 found by follow-up, now via systematic search", _s4_v1),
+            Check("V2", "611 of 612 null, matching round 1 and S0", _s4_v2),
+            Check("V3", "a tradeable edge is EXCLUDED at 95% everywhere", _s4_v3)],
+))
