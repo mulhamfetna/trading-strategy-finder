@@ -962,7 +962,13 @@ def _p1x_v1() -> tuple[bool, str]:
 
 
 def _p1x_v2() -> tuple[bool, str]:
-    """V2 — INDEPENDENT SOURCE: split-half by era, and the other 7 instruments as a null field.
+    """V2 — INDEPENDENT SOURCE: split-half by era, the other instruments as a null field, AND the
+    second anchor.
+
+    ⭐⭐ The ANCHOR is now part of V2, because it is the check that decided what this result means. The
+    same events and the same feature, measured from the release bar's OPEN instead of its CLOSE, give
+    0 cells and Spearman +0.008 to +0.015. A finding that exists under one anchor and not the other is
+    not wrong — it is NARROWER than it first appeared, and the narrowing must be verifiable.
 
     The NG effect must hold the same sign in BOTH halves of the sample, and the same feature on the
     same releases must NOT light up everywhere — a signal that appears on every instrument is a
@@ -973,9 +979,14 @@ def _p1x_v2() -> tuple[bool, str]:
     same = all(v["same_sign"] for v in hc)
     others = [x for x in _p1x_all() if not (x["instrument"] == "NG" and x["series_set"] == "energy")]
     lit = sum(any(c["passes_bonferroni"] for c in x["cells"]) for x in others)
-    return (same and lit <= 1), \
+    import json as _j
+    alt = _j.loads((FUND / "h1bc_p1x2" / "p1x2_h1bc_NG_energy.json").read_text())
+    alt_cells = sum(c["passes_bonferroni"] for c in alt["cells"])
+    return (same and lit <= 1 and alt_cells == 0), \
            (f"NG H1-C same sign in both eras: {same}; of the other 15 runs only {lit} has any cell "
-            f"clearing alpha (CL/verified, and its controls fail) — not a pipeline-wide artefact")
+            f"clearing alpha (CL/verified, whose controls fail) — not a pipeline-wide artefact; "
+            f"⚠️ and under the OPEN anchor the same run gives {alt_cells} cells, confirming this is a "
+            f"post-jump-residue effect and NOT a pre-positioning edge")
 
 
 def _p1x_v3() -> tuple[bool, str]:
@@ -1002,20 +1013,25 @@ def _p1x_v3() -> tuple[bool, str]:
 register(Claim(
     id="P1X-NG-EFFECT-REAL-BUT-NOT-TRADEABLE",
     issue="#122",
-    statement="Across 8 instruments x 2 series sets, exactly ONE run is positive: EIA natural-gas "
-              "releases predict NG direction AFTER the print (3 of 3 post-release cells clear "
-              "Bonferroni, controls null, both eras same sign). It is NOT tradeable — the best "
-              "directional accuracy is 52.4% with a 95% upper bound of 54.9%, against a 71% break-even.",
+    statement="EIA natural-gas releases predict NG's POST-JUMP RESIDUE — the drift measured from the "
+              "CLOSE of the release minute onward. 3 of 3 cells clear Bonferroni, controls null, both "
+              "eras same sign. ⚠️ It is NOT tradeable (52.4%, 95% upper bound 54.9%, vs a 71% "
+              "break-even) AND it does NOT survive being measured from the release bar's OPEN: a "
+              "PRE-POSITIONED trade, which must hold through the jump, sees Spearman +0.014 (p=0.56).",
     source="optimize/fundamentals/h1bc_p1x/p1x_h1bc_NG_energy.json",
     value_fn=lambda: sum(c["passes_bonferroni"] for c in p1x("NG", "energy")["cells"]),
     expect=3, tol=0,
-    blind_spot="⚠️⚠️ THE ENERGY RELEASES ARE NOT PROVENANCE-VERIFIED. #119 and #120 cleared four "
-               "series; EIA is not among them, so we do not know that this `actual` is a first print "
-               "or that this `previous` is point-in-time. This is a WEAKER claim than the verified-set "
-               "results. ⚠️ It is also a POST-release effect (H1-C), so capturing it depends on "
-               "execution the latency work in #117 has not yet shown is possible. RTY/verified is "
-               "VOID (n=267, underpowered) so Phase 1 says NOTHING about it. Accuracy is measured on "
-               "the sign only: a threshold effect is invisible to it.",
+    blind_spot="⚠️⚠️ THIS IS A STATEMENT ABOUT THE POST-JUMP RESIDUE ONLY, and it was originally "
+               "published without that qualifier. Measured from the release bar's OPEN — the anchor "
+               "a PRE-POSITIONED trade actually experiences — the effect VANISHES (Spearman +0.008 to "
+               "+0.015, p=0.54-0.75, 0 cells). The jump is driven by the SURPRISE, which is unknowable "
+               "in advance, and it swamps the drift. So this cannot support a pre-positioning strategy; "
+               "it is a REACTIVE observation and belongs to #117's latency question. "
+               "⚠️⚠️ THE ENERGY RELEASES ARE ALSO NOT PROVENANCE-VERIFIED: #119 and #120 cleared four "
+               "series and EIA is not among them, so we do not know this `actual` is a first print or "
+               "this `previous` point-in-time — a weaker claim than any verified-set result. "
+               "RTY/verified is VOID (n=267, underpowered) so Phase 1 says NOTHING about it. Accuracy "
+               "is measured on the sign only, so a threshold effect is invisible.",
     checks=[Check("V1", "Pearson AND Spearman on the same cells; rank identity", _p1x_v1),
             Check("V2", "split-half by era; the other 15 runs are a null field", _p1x_v2),
             Check("V3", "controls null on survivors; the gate voids CL and RTY", _p1x_v3)],
