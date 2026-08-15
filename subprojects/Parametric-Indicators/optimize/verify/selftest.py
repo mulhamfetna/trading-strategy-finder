@@ -64,7 +64,11 @@ def replay_fabricated_number() -> bool:
     return _expect_rejected(
         "defect #2 — number present in no file", c,
         because="a figure checked against my notes instead of against the JSON that produced it",
-        reason=r"LEDGER  FAIL  re-derived 4\.27, published 1\.31")
+        # ⚠️ Pinned loosely on purpose: the REAL value moved 4.27 -> 4.37 when the owner regenerated
+        # the price frame, and hard-coding it made this self-test fail for a reason that had nothing to
+        # do with the defect being replayed. What must be asserted is that the ledger rejects the
+        # FABRICATED 1.31 — not what the true value happens to be this month.
+        reason=r"LEDGER  FAIL  re-derived [0-9.]+, published 1\.31")
 
 
 # ------------------------------------------------------------------------------------------------

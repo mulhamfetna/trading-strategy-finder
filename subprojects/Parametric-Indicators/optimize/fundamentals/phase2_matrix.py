@@ -4,19 +4,19 @@ WHY THIS EXISTS. #116 was written before we had a calendar and states "~30 relea
 ~270 pairs". I then "corrected" that to 927 (103 series x 9 instruments) — and that was ALSO WRONG, in
 a way that only checking the PRICE side exposes:
 
-⚠️⚠️ ONLY NQ AND GC HAVE LONG HISTORY. Verified on the server, exhaustively (every *_1m.csv under
-   ~/Mulham, any depth):
+⚠️⚠️ HISTORY OF THIS NUMBER, because it has been wrong twice and both errors are instructive:
 
-       NQ, GC                              2010-06-06 -> 2026-07     (~5.5M bars each)
-       ES, CL, NG, HG, SI, RTY, YM         2025-01-01 -> 2026-07     (~18 MONTHS)
+   270   the issue's original guess, made before we had a calendar
+   927   my "correction" — 103 series x 9 instruments. ALSO WRONG: it assumed all nine instruments had
+         the 2016+ era, when seven of them held only eighteen months. I counted the EVENT side and
+         never checked the PRICE side. It also made me headline "EIA Crude Oil -> CL, ~510 releases"
+         when the CL frame reached 79 of them — wrong by ~6x.
+   221   the decidable matrix under the 18-month constraint
+   643   ⭐ CURRENT. The owner supplied long history on 2026-08-12 and every frame passed the #121
+         acceptance gate (volume-profile rho=1.000 and 100.0000% identical Close on the overlap).
 
-   So "103 series x 9 instruments" silently assumed all nine instruments had the 2016+ era. Seven of
-   them have eighteen months. A monthly release gives 18 observations there — not a weak test, an
-   IMPOSSIBLE one.
-
-⚠️ This also corrects a headline claim I published on #116: "EIA Crude Oil Stocks Change -> CL, ~510
-   releases". The CALENDAR has ~510; the CL PRICE FRAME reaches 79 of them. Wrong by ~6x, and it was
-   wrong because I counted the event side and never checked the price side.
+   The lesson that survives all of it: A JOIN HAS TWO SIDES, AND AN `n` QUOTED FROM ONE OF THEM IS NOT
+   AN `n`.
 
 ⭐⭐ THE SELECTION RULE, and it is not "big enough sample". A pair belongs in the matrix ONLY IF IT CAN
    DECIDE THE QUESTION:
@@ -32,7 +32,7 @@ a way that only checking the PRICE side exposes:
    ⚠️ The rule is self-referential — alpha depends on how many pairs qualify, which depends on alpha —
    so it is solved by iteration to a fixed point (converges in 3 rounds).
 
-RESULT: 221 decidable pairs, not 927 and not 270.
+RESULT: 643 decidable pairs across 8 instruments (YM excluded — its 1-minute frame is empty).
 
     python3 optimize/fundamentals/phase2_matrix.py --write
 """
@@ -50,11 +50,32 @@ HERE = Path(__file__).resolve().parent
 TV_RAW = HERE / "tradingview" / "tv_us_calendar_raw.csv"
 OUT = HERE / "phase2_pairs.csv"
 
-# ---- verified on the server, not assumed. See the docstring. --------------------------------------
-LONG_INSTRUMENTS = ("NQ", "GC")
-SHORT_INSTRUMENTS = ("ES", "CL", "NG", "HG", "SI", "RTY", "YM")
-LONG_SPAN = ("2016-01-01", "2026-07-12")     # 2016 floor is the DST constraint (#114)
-SHORT_SPAN = ("2025-01-01", "2026-07-05")
+# ---- ⭐ UPDATED 2026-08-15: the owner supplied long history for the missing instruments, and every
+# frame passed the #121 acceptance gate (volume-profile agreement rho=1.000 and 100.0000% identical
+# Close on the overlap, for all eight). The 18-month constraint is GONE.
+#
+# ⚠️ But the floor is now PER INSTRUMENT, not global. The gate reported, for each frame, the first year
+# with full bar coverage — pre-2016 the source is sparse and the sparsity differs by instrument. Using
+# one global floor would either throw away good years (HG/SI/GC are complete from 2011) or admit thin
+# ones (RTY only from 2019, NG from 2017).
+#
+#   instrument   full coverage from   note
+#   NQ, ES, CL   2016                 sparse 2010-2012, tapering
+#   NG           2017
+#   GC, HG, SI   2011
+#   RTY          2019                 the contract itself only lists from 2017-07
+#   YM           n/a                  ⛔ EVERY aggregated frame is 0 bytes; only YM_1s.csv has data
+#
+# ⚠️ The CALENDAR floor is 2016 regardless (the TradingView DST defect, #114), so the effective floor
+# is max(2016, instrument floor). HG/SI/GC gain nothing from their earlier data for THIS study.
+INSTRUMENT_FLOOR = {
+    "NQ": 2016, "GC": 2016, "ES": 2016, "CL": 2016, "HG": 2016, "SI": 2016,
+    "NG": 2017, "RTY": 2019,
+}
+# ⛔ YM is EXCLUDED: its 1-minute frame is empty. See #121.
+EXCLUDED_INSTRUMENTS = {"YM": "every aggregated frame is 0 bytes; the 1s source exists but the "
+                              "resample produced nothing and raised no error"}
+SPAN_END = "2026-08-07"
 
 BREAK_EVEN_ACCURACY = 0.71                   # #111
 POWER = 0.80
@@ -77,10 +98,11 @@ def candidates() -> list[tuple[str, str, int]]:
     d["utc"] = pd.to_datetime(d["date"], format="mixed", utc=True)
     d["et"] = d["utc"].dt.tz_convert("America/New_York").dt.tz_localize(None)
     t = d.dropna(subset=["actual", "forecast", "previous"])
-    lo = t[(t.et >= LONG_SPAN[0]) & (t.et <= LONG_SPAN[1])].groupby("title").size()
-    sh = t[(t.et >= SHORT_SPAN[0]) & (t.et <= SHORT_SPAN[1])].groupby("title").size()
-    out = [(str(k), i, int(v)) for k, v in lo.items() for i in LONG_INSTRUMENTS]
-    out += [(str(k), i, int(v)) for k, v in sh.items() for i in SHORT_INSTRUMENTS]
+    out: list[tuple[str, str, int]] = []
+    for inst, floor in INSTRUMENT_FLOOR.items():
+        sub = t[(t.et >= f"{floor}-01-01") & (t.et <= SPAN_END)]
+        for k, v in sub.groupby("title").size().items():
+            out.append((str(k), inst, int(v)))
     return out
 
 
@@ -118,8 +140,10 @@ def main() -> int:
     print(f"  distinct releases         : {len({c[0] for c in q})}")
     print(f"  smallest qualifying n     : {min(c[2] for c in q)}")
     print()
-    print(f"  ⚠️ previously published on #116: 927 pairs (103 series x 9 instruments) — that assumed")
-    print(f"     ALL NINE instruments had the 2016+ era. Seven of them have EIGHTEEN MONTHS.")
+    print(f"  history of this number: 270 (guess) -> 927 (wrong: assumed all 9 instruments had the")
+    print(f"     2016+ era) -> 221 (18-month constraint) -> {len(q)} (long history supplied, #121)")
+    print(f"  ⛔ excluded instruments: {EXCLUDED_INSTRUMENTS}")
+    print(f"  per-instrument study floor: {INSTRUMENT_FLOOR}")
     print()
     print(f"    {'release':<40}{'inst':>5}{'n':>6}{'MDE r':>8}")
     for c in q[:14]:

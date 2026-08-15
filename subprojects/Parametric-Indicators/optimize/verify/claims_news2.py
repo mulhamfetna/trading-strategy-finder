@@ -143,14 +143,31 @@ def _h1a_v3() -> tuple[bool, str]:
 register(Claim(
     id="H1A-NQ-5M-040-RATIO",
     issue="#115",
-    statement="NQ, 5-min wait, 0.40% stop: the release window stops out 4.27x as often as the "
-              "time-of-day-matched control (either side).",
+    statement="NQ, 5-min wait, 0.40% stop: the release window stops out 4.37x as often as the "
+              "time-of-day-matched control (either side), on 998 matched releases.",
     source="optimize/fundamentals/h1a_stopout_NQ.json",
     value_fn=lambda: round(h1a_ratio("NQ", 5, 0.4), 2),
-    expect=4.27, tol=0.005,
+    # ⚠️⚠️ CHANGED 4.27 -> 4.37 ON 2026-08-15, AND THIS IS NOT A FUDGE. The rule is "never adjust
+    # `expect` to match the output" — that applies when the CODE or the CLAIM is wrong. Here the
+    # EVIDENCE FILE legitimately changed: the owner regenerated the NQ 16-year frame (2026-08-12) and
+    # H1-A was re-run on it. Releases matching a bar went 1,165 -> 998 (the regenerated frame has
+    # thinner pre-2016 coverage), so the sample is different and so is the number.
+    #
+    # ⭐ THE LEDGER CAUGHT THIS. Without it, a published figure would have quietly stopped matching the
+    # file it came from and nobody would have known until someone re-ran the study by accident. That is
+    # exactly the loop #118 exists to break.
+    #
+    # The conclusion is unchanged and slightly strengthened: 4.27 -> 4.37 on NQ, 2.05 -> 2.48 on GC,
+    # ratio still rising monotonically with stop width, controls still null.
+    expect=4.37, tol=0.005,
     blind_spot="Reads the stored result file. It CANNOT detect an error in the backtest that produced "
                "it (wrong bars, wrong release timestamps, wrong control sampling) — only that the "
-               "published figure matches the file. Re-running the study is a separate act.",
+               "published figure matches the file. Re-running the study is a separate act. "
+               "⚠️ 210 of 1,208 calendar releases have NO bar in the frame and are silently DROPPED, "
+               "almost all pre-2013 (66 in 2010, 57 in 2011, 47 in 2012) — so this is effectively a "
+               "2013+ result, not a 16-year one. The matched events DO have complete windows: the "
+               "realised span of a nominal 5/60-minute wait is 5/60 minutes at the median and never "
+               "exceeds 7/70.",
     checks=[Check("V1", "either/long/short set algebra", _h1a_v1),
             Check("V2", "reproduces on GC (different instrument)", _h1a_v2),
             Check("V3", "NOT dangerous at every wait — control is not uniformly calm", _h1a_v3)],
@@ -833,9 +850,16 @@ def _p2_v2() -> tuple[bool, str]:
     short = d[~d.instrument.isin(["NQ", "GC"])]
     n_per = short.groupby("instrument").size().to_dict()
     releases = sorted(set(short.release))
-    weekly_only = all(("EIA" in r) or ("API" in r) or ("Jobless" in r) for r in releases)
-    return (weekly_only and set(n_per.values()) == {7}), \
-           (f"short-history instruments carry {n_per}; releases {releases} — all weekly: {weekly_only}")
+    # ⭐ REWRITTEN after the long history arrived. The old assertion — that the short-history
+    # instruments could carry ONLY weekly releases — was correct for 18 months of data and is now
+    # FALSE, which is the right outcome. What must hold instead: every instrument now carries a
+    # comparable release count, and the per-instrument floors explain the two that do not.
+    counts = d.groupby("instrument").size().to_dict()
+    monthly = [r for r in set(short.release) if not any(k in r for k in ("EIA", "API", "Jobless"))]
+    ok = (len(counts) == 8 and "YM" not in counts and min(counts.values()) >= 70
+          and len(monthly) > 20)
+    return ok, (f"pairs per instrument {counts}; {len(monthly)} MONTHLY releases now testable on the "
+                f"formerly-18-month instruments (was 0); YM correctly absent")
 
 
 def _p2_v3() -> tuple[bool, str]:
@@ -860,12 +884,16 @@ def _p2_v3() -> tuple[bool, str]:
 register(Claim(
     id="PHASE2-MATRIX-221-DECIDABLE",
     issue="#116",
-    statement="The Phase 2 matrix is 221 DECIDABLE pairs — not the 927 I published, and not the ~270 "
-              "#116 assumes. Only NQ and GC have 2016+ price history; the other seven instruments "
-              "have 18 months, so only weekly releases reach a usable sample there.",
+    statement="The Phase 2 matrix is 643 DECIDABLE pairs across 8 instruments (82 releases x NQ, GC, "
+              "ES, CL, HG, SI; 81 x NG; 70 x RTY), at Bonferroni alpha 0.000078. YM is excluded — its "
+              "1-minute frame is empty. History: 270 guessed, 927 wrong, 221 under the old 18-month "
+              "constraint, 643 now.",
     source="optimize/fundamentals/phase2_pairs.csv",
     value_fn=lambda: int(len(phase2_pairs())),
-    expect=221, tol=0,
+    # ⚠️ 221 -> 643 on 2026-08-15: the owner supplied long history for the seven missing instruments
+    # and every frame passed the #121 gate. An EVIDENCE change, not a fudge — the old figure was
+    # correct for the data that existed when it was written.
+    expect=643, tol=0,
     blind_spot="⚠️ The decidability rule uses a bivariate-normal orthant approximation "
                "(accuracy = 1/2 + arcsin(r)/pi) to convert the 71% break-even into r=0.613, and FAT "
                "TAILS VIOLATE NORMALITY — so the threshold is approximate. It is used to SET a "
