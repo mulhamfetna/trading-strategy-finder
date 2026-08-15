@@ -1036,3 +1036,118 @@ register(Claim(
             Check("V2", "split-half by era; the other 15 runs are a null field", _p1x_v2),
             Check("V3", "controls null on survivors; the gate voids CL and RTY", _p1x_v3)],
 ))
+
+
+# ---------------------------------------------------------------------------------------------
+# CLAIM 13/14 — Phase 2 S0 (pipeline validity) and S1 (feature construction) (#116)
+# ---------------------------------------------------------------------------------------------
+@lru_cache(maxsize=None)
+def p2(stage: str) -> dict:
+    return json.loads((FUND / f"phase2_{stage}_result.json").read_text())
+
+
+def _s0_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION: the known effect must appear on EVERY jump-inclusive measure, not one."""
+    cells = [c for c in p2("s0")["arms"]["proxy"] if c["includes_jump"]]
+    neg = [c for c in cells if c["spearman_r"] < 0 and c["spearman_p"] < 0.05]
+    return (len(neg) == len(cells) and len(cells) >= 4), \
+           (f"{len(neg)}/{len(cells)} jump-inclusive measures negative and significant; "
+            f"jump rho={cells[0]['spearman_r']:.3f}")
+
+
+def _s0_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT SOURCE: round 1's QUALITATIVE signature, not just its number.
+
+    ⭐ Round 1's headline oddity was that PEARSON IS BLIND to this effect (-0.012, p=0.73) while
+    Spearman sees it. A matching correlation could be coincidence; a matching PATHOLOGY is much harder
+    to fake, so the reproduction is judged on both.
+    """
+    jump = [c for c in p2("s0")["arms"]["proxy"] if c["measure"] == "jump"][0]
+    blind = jump["pearson_p"] > 0.10 and jump["spearman_p"] < 0.001
+    return blind, (f"proxy arm reproduces round 1's signature: Pearson {jump['pearson_r']:+.3f} "
+                   f"(p={jump['pearson_p']:.2f}, BLIND) vs Spearman {jump['spearman_r']:+.3f} "
+                   f"(p<0.001) — round 1 had -0.012 (p=0.73) vs -0.193")
+
+
+def _s0_v3() -> tuple[bool, str]:
+    """V3 — FALSIFICATION: "the effect is present however you measure it" must be FALSE.
+
+    ⭐⭐ The CLOSE-anchored measures must show NOTHING. If they also showed the effect, the anchor would
+    not be what separates signal from noise — and the diagnosis of the original S0 failure would be
+    wrong. This is the check that makes the anchor explanation testable rather than a story.
+    """
+    close = [c for c in p2("s0")["arms"]["proxy"] if not c["includes_jump"]]
+    quiet = all(c["spearman_p"] > 0.20 for c in close)
+    return quiet, (f"all {len(close)} close-anchored measures are null (min p="
+                   f"{min(c['spearman_p'] for c in close):.2f}) — so the anchor, not the sample, is "
+                   f"what separates the 5.5-sigma effect from noise")
+
+
+register(Claim(
+    id="P2-S0-PIPELINE-VALIDITY",
+    issue="#116",
+    statement="Phase 2's pipeline reproduces gold's KNOWN inverse response to macro surprises once the "
+              "return is anchored on the release bar's OPEN: proxy-arm Spearman -0.273 on the jump "
+              "(round 1: -0.193), inverse-rule accuracy 62.3% (round 1: 60.5%), and Pearson blind in "
+              "both. Close-anchored, the same data shows +0.016 (p=0.76).",
+    source="optimize/fundamentals/phase2_s0_result.json",
+    value_fn=lambda: round([c for c in p2("s0")["arms"]["proxy"]
+                            if c["measure"] == "jump"][0]["spearman_r"], 3),
+    expect=-0.273, tol=0.001,
+    blind_spot="Reproduces SIGN and SIGNIFICANCE, never magnitude — round 1 ran 1,208 releases over "
+               "2010-2026 with a proxy surprise; this is 405 events on 2016+. A magnitude match would "
+               "be pinning a number to a sample that did not produce it. It validates the pipeline on "
+               "ONE instrument (GC) and ONE effect; a defect specific to another instrument or to the "
+               "surprise features themselves would pass this gate untouched. It also says nothing "
+               "about whether the effect is tradeable — at 62-63% accuracy against a 71% break-even, "
+               "it is not.",
+    checks=[Check("V1", "every jump-inclusive measure, not one", _s0_v1),
+            Check("V2", "round 1's Pearson-blind signature reproduces", _s0_v2),
+            Check("V3", "close-anchored measures are NULL — the anchor is the discriminator", _s0_v3)],
+))
+
+
+def _s1_v1() -> tuple[bool, str]:
+    d = p2("s1")
+    return bool(d["v1_surprise_identical"]), \
+           f"`surprise` recomputed from the raw columns on {d['v1_n']} rows: identical"
+
+
+def _s1_v2() -> tuple[bool, str]:
+    """V2 — the two level-change variants must diverge PER SERIES, replicating #120 Test C."""
+    a = p2("s1")["v2_variants_agree_by_series"]
+    cpi = a.get("Inflation Rate MoM", 0)
+    nfp = a.get("Non Farm Payrolls", 1)
+    return (cpi > 0.9 and nfp < 0.1), \
+           (f"identical-share per series {a} — CPI {100*cpi:.0f}% vs payrolls {100*nfp:.0f}%, "
+            f"independently replicating #120 Test C (95% vs 3%) on a different code path")
+
+
+def _s1_v3() -> tuple[bool, str]:
+    """V3 — ⭐⭐⭐ the look-ahead falsifier AND the proof it can fail."""
+    d = p2("s1")
+    pi, pl = d["prefix_invariance"], d["v3_planted_leak"]
+    return bool(pi["pass"] and pl["pass"]), \
+           (f"prefix invariance: 0 mismatches on {pi['n_compared']} rows; and a PLANTED full-sample "
+            f"z-score is caught on {pl['caught']}/{pl['rows']} rows — the check has a demonstrated "
+            f"true positive and true negative on the defect it exists for")
+
+
+register(Claim(
+    id="P2-S1-FEATURES-NO-LOOKAHEAD",
+    issue="#116",
+    statement="Phase 2's features are strictly past-only: recomputing them on the first 60% of events "
+              "reproduces the overlapping rows bit-identically (0 mismatches on 303 rows), while a "
+              "planted full-sample z-score is caught on 207 of 207.",
+    source="optimize/fundamentals/phase2_s1_result.json",
+    value_fn=lambda: sum(p2("s1")["prefix_invariance"]["mismatches"].values()),
+    expect=0, tol=0,
+    blind_spot="Prefix invariance detects leakage through the NORMALISATION, which is where it hides "
+               "silently. It CANNOT detect leakage that is present identically in every prefix — for "
+               "example a feature built from a revised value rather than a first print (that is #119's "
+               "job) or an outcome window that starts before the event. It covers the four verified "
+               "series only; the energy series are not provenance-cleared at all.",
+    checks=[Check("V1", "surprise recomputed from raw columns", _s1_v1),
+            Check("V2", "level-change variants diverge per series (#120 Test C)", _s1_v2),
+            Check("V3", "prefix invariance, and proof it catches a planted leak", _s1_v3)],
+))
