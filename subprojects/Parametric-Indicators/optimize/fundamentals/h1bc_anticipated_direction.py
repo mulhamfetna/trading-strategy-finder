@@ -101,6 +101,8 @@ N_PERM = 1000                        # C1 permutation draws
 # A probe calibrated below the study's own resolution tests nothing. Now it is a CURVE, and the pass
 # criterion is "detects at or above the MDE" — i.e. the pipeline achieves the power it claims.
 PLANTED_R_GRID = [0.05, 0.10, 0.15, 0.20, 0.30, 0.40]
+N_PROBE_DRAWS = 25          # a detection RATE, not a single coin flip — see the probe block below
+PROBE_PASS_RATE = 0.80      # matches the 80% power the MDE itself is defined at
 SEED = 20260808                      # fixed: a reproducible "random" control, not Math.random noise
 
 
@@ -353,13 +355,27 @@ def run(instrument: str, verbose: bool = True, series_set: str = "verified") -> 
         mde = mde_correlation(int(mm.sum()))
         probe["n"] = int(mm.sum())
         probe["mde_r"] = mde
+        # ⚠️⚠️ MULTIPLE DRAWS PER EFFECT SIZE. The first version planted ONE synthetic effect per size,
+        # which is a single Bernoulli sample of a power curve — and it VOIDED an entire instrument
+        # (ES/energy) because one draw at r=0.15 happened to land at 0.071. That is probe noise, not a
+        # blind pipeline: r=0.05, 0.10, 0.20, 0.30 and 0.40 were all detected in the same run.
+        #
+        # ⭐ "Can the pipeline find an effect of size r" is a question about a DETECTION RATE, which is
+        # exactly what statistical power means. One draw cannot answer it, and a gate that voids good
+        # work on a coin flip is the cry-wolf failure again.
         for target in PLANTED_R_GRID:
             k = target / np.sqrt(max(1e-9, 1 - target ** 2))
-            planted = k * ys + rng.standard_normal(mm.sum())
-            c = corr_pair(planted, y60[mm])
+            hits, meas = 0, []
+            for _ in range(N_PROBE_DRAWS):
+                planted = k * ys + rng.standard_normal(mm.sum())
+                c = corr_pair(planted, y60[mm])
+                meas.append(c["spearman_r"])
+                hits += bool(np.isfinite(c["spearman_p"]) and c["spearman_p"] < BONFERRONI)
+            rate = hits / N_PROBE_DRAWS
             probe["curve"].append({
-                "target_r": target, "measured_spearman": c["spearman_r"], "p": c["spearman_p"],
-                "detected": bool(np.isfinite(c["spearman_p"]) and c["spearman_p"] < BONFERRONI)})
+                "target_r": target, "measured_spearman": float(np.median(meas)),
+                "detection_rate": rate, "draws": N_PROBE_DRAWS,
+                "detected": bool(rate >= PROBE_PASS_RATE)})
         # ⭐ PASS = every planted effect AT OR ABOVE the study's own MDE is found. Anything below the
         # MDE is expected to be missed; missing it is the study's resolution, not a pipeline fault.
         above = [c for c in probe["curve"] if c["target_r"] >= mde]
@@ -432,8 +448,8 @@ def _report(o: dict) -> None:
     for c in p.get("curve", []):
         mark = "detected" if c["detected"] else "missed"
         note = "" if c["target_r"] >= p.get("mde_r", 9) else "   (below MDE — expected to be missed)"
-        print(f"        planted r={c['target_r']:.2f} -> measured {c['measured_spearman']:+.3f} "
-              f"p={c['p']:.6f}  {mark}{note}")
+        print(f"        planted r={c['target_r']:.2f} -> median rho {c['measured_spearman']:+.3f}  "
+              f"detection rate {c['detection_rate']:.0%} of {c['draws']} draws  {mark}{note}")
     print(f"      smallest detected: r={p.get('smallest_detected')}   PASS={p.get('detected')}")
     print("      ⚠️ If this is False, a null here means NOTHING — the pipeline could not find an effect")
     print("        that is definitely present, and the result is VOID rather than negative.")

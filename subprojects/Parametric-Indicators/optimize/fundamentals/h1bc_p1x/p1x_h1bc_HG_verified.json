@@ -1,0 +1,316 @@
+{
+ "instrument": "HG",
+ "min_year": 2016,
+ "series_set": "verified",
+ "provenance_verified": true,
+ "series": [
+  "cpi",
+  "durables",
+  "nfp",
+  "retail"
+ ],
+ "n_events_raw": 507,
+ "n_dropped_warmup": 96,
+ "bonferroni_alpha": 0.00044642857142857147,
+ "n_primary_tests": 112,
+ "price_span": [
+  "2010-06-06 18:00:00",
+  "2026-08-07 16:59:00"
+ ],
+ "n_events_used": 411,
+ "n_control": 358,
+ "cells": [
+  {
+   "n": 405,
+   "pearson_r": -0.11001133564062701,
+   "pearson_p": 0.026841444078551477,
+   "spearman_r": -0.007452204759673448,
+   "spearman_p": 0.8811502199583466,
+   "hypothesis": "H1-B",
+   "offset_min": 5,
+   "mde_r": 0.21374168423402037,
+   "passes_bonferroni": false,
+   "perm_p": 0.8621378621378621,
+   "control_spearman_r": -0.05494642477659202,
+   "control_spearman_p": 0.30188531867292956,
+   "hit_rate": 0.5067750677506775,
+   "hit_n": 369,
+   "hit_ci95": [
+    0.4559575430353983,
+    0.5574529827569611
+   ],
+   "hit_beats_break_even": false
+  },
+  {
+   "n": 405,
+   "pearson_r": 0.04144666661746649,
+   "pearson_p": 0.4054780687278288,
+   "spearman_r": 0.0024785757572358684,
+   "spearman_p": 0.960340513626313,
+   "hypothesis": "H1-B",
+   "offset_min": 15,
+   "mde_r": 0.21374168423402037,
+   "passes_bonferroni": false,
+   "perm_p": null,
+   "control_spearman_r": -0.042164754555773565,
+   "control_spearman_p": 0.428363449045642,
+   "hit_rate": 0.480719794344473,
+   "hit_n": 389,
+   "hit_ci95": [
+    0.43150121518308204,
+    0.530315442241618
+   ],
+   "hit_beats_break_even": false
+  },
+  {
+   "n": 405,
+   "pearson_r": 0.04410498751141608,
+   "pearson_p": 0.37600389913984983,
+   "spearman_r": -0.033614989285043306,
+   "spearman_p": 0.49993731871199815,
+   "hypothesis": "H1-B",
+   "offset_min": 30,
+   "mde_r": 0.21374168423402037,
+   "passes_bonferroni": false,
+   "perm_p": null,
+   "control_spearman_r": -0.021715440252219984,
+   "control_spearman_p": 0.6834533170736438,
+   "hit_rate": 0.4883720930232558,
+   "hit_n": 387,
+   "hit_ci95": [
+    0.43892978432326485,
+    0.5380429758667247
+   ],
+   "hit_beats_break_even": false
+  },
+  {
+   "n": 405,
+   "pearson_r": 0.019242196110850197,
+   "pearson_p": 0.6994369888007727,
+   "spearman_r": 0.006967100305899496,
+   "spearman_p": 0.8888349835180329,
+   "hypothesis": "H1-B",
+   "offset_min": 60,
+   "mde_r": 0.21374168423402037,
+   "passes_bonferroni": false,
+   "perm_p": null,
+   "control_spearman_r": -0.06600034426821398,
+   "control_spearman_p": 0.2147872033635648,
+   "hit_rate": 0.5025,
+   "hit_n": 400,
+   "hit_ci95": [
+    0.4537113271965661,
+    0.5512411113317403
+   ],
+   "hit_beats_break_even": false
+  },
+  {
+   "n": 405,
+   "pearson_r": 0.015086081538649026,
+   "pearson_p": 0.7621334471861718,
+   "spearman_r": 0.07773122843427982,
+   "spearman_p": 0.11832576142074093,
+   "hypothesis": "H1-C",
+   "offset_min": 5,
+   "mde_r": 0.21374168423402037,
+   "passes_bonferroni": false,
+   "perm_p": null,
+   "control_spearman_r": -0.027180485622240874,
+   "control_spearman_p": 0.6097658396486109,
+   "hit_rate": 0.5347043701799485,
+   "hit_n": 389,
+   "hit_ci95": [
+    0.4850395571768487,
+    0.5836904594586911
+   ],
+   "hit_beats_break_even": false
+  },
+  {
+   "n": 405,
+   "pearson_r": -0.0036477470031684696,
+   "pearson_p": 0.9416606207782203,
+   "spearman_r": 0.06530484246279641,
+   "spearman_p": 0.18966426262327976,
+   "hypothesis": "H1-C",
+   "offset_min": 15,
+   "mde_r": 0.21374168423402037,
+   "passes_bonferroni": false,
+   "perm_p": null,
+   "control_spearman_r": 0.009606054533158688,
+   "control_spearman_p": 0.8568717080414844,
+   "hit_rate": 0.5218508997429306,
+   "hit_n": 389,
+   "hit_ci95": [
+    0.4722404762739599,
+    0.5710339786447136
+   ],
+   "hit_beats_break_even": false
+  },
+  {
+   "n": 405,
+   "pearson_r": 0.03274974878015945,
+   "pearson_p": 0.5110425436288133,
+   "spearman_r": 0.0228004082517804,
+   "spearman_p": 0.6473184382919026,
+   "hypothesis": "H1-C",
+   "offset_min": 60,
+   "mde_r": 0.21374168423402037,
+   "passes_bonferroni": false,
+   "perm_p": null,
+   "control_spearman_r": -0.08994030306133671,
+   "control_spearman_p": 0.09063466040483409,
+   "hit_rate": 0.49624060150375937,
+   "hit_n": 399,
+   "hit_ci95": [
+    0.4474518325269957,
+    0.5451010690319228
+   ],
+   "hit_beats_break_even": false
+  }
+ ],
+ "v1": [
+  {
+   "offset_min": 5,
+   "close_spearman": -0.007452204759673448,
+   "open_spearman": 0.05395144735493118,
+   "rank_pearson": -0.007452204759673441,
+   "spearman": -0.007452204759673448,
+   "identical": true
+  },
+  {
+   "offset_min": 15,
+   "close_spearman": 0.0024785757572358684,
+   "open_spearman": 0.008670366083751638,
+   "rank_pearson": 0.002478575757235866,
+   "spearman": 0.0024785757572358684,
+   "identical": true
+  },
+  {
+   "offset_min": 30,
+   "close_spearman": -0.033614989285043306,
+   "open_spearman": -0.03770625441473656,
+   "rank_pearson": -0.0336149892850433,
+   "spearman": -0.033614989285043306,
+   "identical": true
+  },
+  {
+   "offset_min": 60,
+   "close_spearman": 0.006967100305899496,
+   "open_spearman": -0.005097738799726912,
+   "rank_pearson": 0.0069671003058995136,
+   "spearman": 0.006967100305899496,
+   "identical": true
+  }
+ ],
+ "v2_split_half": [
+  {
+   "hypothesis": "H1-B",
+   "offset_min": 5,
+   "early_spearman": 0.0203854559384798,
+   "late_spearman": -0.03565912594121868,
+   "early_n": 143,
+   "late_n": 262,
+   "same_sign": false
+  },
+  {
+   "hypothesis": "H1-B",
+   "offset_min": 15,
+   "early_spearman": 0.08639629338726931,
+   "late_spearman": -0.050603738118857024,
+   "early_n": 143,
+   "late_n": 262,
+   "same_sign": false
+  },
+  {
+   "hypothesis": "H1-B",
+   "offset_min": 30,
+   "early_spearman": -0.00011492295121887783,
+   "late_spearman": -0.033385168033955234,
+   "early_n": 143,
+   "late_n": 262,
+   "same_sign": true
+  },
+  {
+   "hypothesis": "H1-B",
+   "offset_min": 60,
+   "early_spearman": 0.05804970236556337,
+   "late_spearman": -0.01689826113153436,
+   "early_n": 143,
+   "late_n": 262,
+   "same_sign": false
+  },
+  {
+   "hypothesis": "H1-C",
+   "offset_min": 5,
+   "early_spearman": 0.15482173724740322,
+   "late_spearman": 0.05044136023636714,
+   "early_n": 143,
+   "late_n": 262,
+   "same_sign": true
+  },
+  {
+   "hypothesis": "H1-C",
+   "offset_min": 15,
+   "early_spearman": 0.13195214250174006,
+   "late_spearman": 0.041662885602720266,
+   "early_n": 143,
+   "late_n": 262,
+   "same_sign": true
+  },
+  {
+   "hypothesis": "H1-C",
+   "offset_min": 60,
+   "early_spearman": 0.09305188769436436,
+   "late_spearman": -0.013174051242624475,
+   "early_n": 143,
+   "late_n": 262,
+   "same_sign": false
+  }
+ ],
+ "v3_planted_probe": {
+  "curve": [
+   {
+    "target_r": 0.05,
+    "measured_spearman": 0.028307019762320838,
+    "p": 0.5700207870251096,
+    "detected": false
+   },
+   {
+    "target_r": 0.1,
+    "measured_spearman": 0.17804734636395975,
+    "p": 0.00031715291681242927,
+    "detected": true
+   },
+   {
+    "target_r": 0.15,
+    "measured_spearman": 0.12812159037558388,
+    "p": 0.009849362001883834,
+    "detected": false
+   },
+   {
+    "target_r": 0.2,
+    "measured_spearman": 0.17170119946557877,
+    "p": 0.0005193978501887415,
+    "detected": false
+   },
+   {
+    "target_r": 0.3,
+    "measured_spearman": 0.2854430253987822,
+    "p": 4.951355270127059e-09,
+    "detected": true
+   },
+   {
+    "target_r": 0.4,
+    "measured_spearman": 0.3787625998055243,
+    "p": 2.9040633511375436e-15,
+    "detected": true
+   }
+  ],
+  "detected": true,
+  "n": 405,
+  "mde_r": 0.21374168423402037,
+  "smallest_detected": 0.1
+ },
+ "verdict": "NEGATIVE",
+ "reason": "0 of 7 cells clear Bonferroni alpha=0.00045, and the planted probe WAS detected \u2014 so the pipeline can find an effect and there is none of this size to find"
+}
