@@ -264,6 +264,33 @@ and the EIA's own archive, and it gates everything downstream.
 all**, in which case the check needs a different reference and the honest outcome may be *"cannot
 verify"* rather than pass or fail.
 
+## ⛔ UPDATE — the check was run, and the outcome is exactly that (#123)
+
+**The provenance of this series cannot be verified at all**, and the reason is sharper than expected:
+
+1. ⭐ **The survivor is the *private* report, not the government one.** The data's own `source` field
+   reads **"American Petroleum Institute (API)"** — a trade association distributing to subscribers —
+   released **Tuesday 16:30 ET**. The EIA series is a separate release, **Wednesday 10:30 ET**, from
+   the U.S. Energy Information Administration.
+2. **FRED carries no EIA/API inventory series at all.** Searching (rather than guessing identifiers)
+   returned **0 hits** for "crude oil stocks ending" and "weekly natural gas storage". Five plausible
+   IDs all return HTTP 400.
+3. **So the method that cleared `actual` (#119) and `previous` (#120) — comparison against ALFRED's
+   point-in-time archive — has no reference series and cannot be run.**
+
+> ⚠️⚠️ **This is stronger than "unverified".** For the four cleared series the check was possible and
+> passed. Here it is **not possible with any source available to us**, so a whole class of
+> contamination is **unfalsifiable** for this series.
+
+⚠️ It changes no decision — the effect was never tradeable (57.4% vs 71%) — but it means the result
+must not be carried into #117 as though it stood on the same footing as the verified four.
+
+⭐ **And it suggests the better experiment.** The API figure is widely treated as a *preview* of the next
+morning's EIA number, so a post-release drift may simply be the market repricing toward the EIA figure
+it now expects — no inefficiency required. That predicts something testable: **the drift should track
+how well API forecasts EIA, and should vanish when the two diverge.** That experiment is cheap, uses
+only verified price data, and should come before any latency work.
+
 ## Then #117 — with a concrete target for the first time
 
 Phase 3's latency question now has **a measured target instead of a speculative one**:
