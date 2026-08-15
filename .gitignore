@@ -169,3 +169,13 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 # console output of the two server runs whose every number is cited in the report, and the "LOCAL is
 # the source of truth" rule means a server-only artefact does not count as recorded.
 !subprojects/Parametric-Indicators/optimize/fundamentals/h1bc_run_*.log
+
+# ...and the Phase 2 pre-registration artefacts (#116). phase2_pairs.csv IS the pre-registration: it
+# fixes which 643 pairs Phase 2 is allowed to test and at what alpha. It was caught by the blanket
+# *.csv rule and existed on ONE MACHINE ONLY, while I had already described it as "committed" and
+# "machine-checkable" — the exact #94 inversion where a deliverable lives locally and vanishes from the
+# repo. Worse than the earnings case, because a pre-registration that can be silently regenerated
+# differently is not a pre-registration at all. The S2 probe verdicts are here for the same reason:
+# which pairs are UNANSWERABLE is part of the record, not a working note.
+!subprojects/Parametric-Indicators/optimize/fundamentals/phase2_pairs.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/phase2_s2_probe.csv
