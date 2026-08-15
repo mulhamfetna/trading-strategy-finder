@@ -179,3 +179,4 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 # which pairs are UNANSWERABLE is part of the record, not a working note.
 !subprojects/Parametric-Indicators/optimize/fundamentals/phase2_pairs.csv
 !subprojects/Parametric-Indicators/optimize/fundamentals/phase2_s2_probe.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/phase2_s3_results.csv

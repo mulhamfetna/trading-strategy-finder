@@ -610,12 +610,152 @@ def stage_s2(verbose: bool = True) -> dict:
     return out
 
 
+# ------------------------------------------------------------------------------------------------
+# S3 — the run
+# ------------------------------------------------------------------------------------------------
+# ⚠️⚠️ ONE PRIMARY TEST PER PAIR. phase2_pairs.csv fixes alpha = 0.05/643, and that figure came from a
+# decidability rule that computed each pair's MDE ASSUMING A SINGLE TEST PER PAIR. There are 4 features
+# x 7 outcomes available; testing all of them would be 18,004 tests and would inflate the false-positive
+# budget 28-fold while still quoting the same alpha.
+#
+# PRIMARY: `surprise` vs the OPEN-anchored 15-minute return, Spearman.
+#   · that outcome because S0 showed the reaction lives INSIDE the release minute;
+#   · and because it is EXACTLY what S2 probed — the power statement and the inference statement have
+#     to be about the same measurement, or the probe licenses a test it never examined.
+# Everything else is computed, reported, and EXCLUDED from inference.
+S3_PRIMARY_FEATURE = "surprise_z"
+S3_PRIMARY_OUTCOME = "open_r15"
+S3_EXPLORATORY_OUTCOMES = ["jump", "open_r5", "open_r60", "close_r5", "close_r15", "close_r60"]
+UNVERIFIED_MARKERS = ("EIA", "API")     # provenance NOT cleared by #119/#120
+
+
+def wilson(hits: int, n: int) -> tuple[float, float, float]:
+    if n < 30:
+        return (float("nan"),) * 3
+    p = hits / n
+    z = 1.959963985
+    den = 1 + z * z / n
+    c = (p + z * z / (2 * n)) / den
+    h = z * np.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / den
+    return p, float(c - h), float(c + h)
+
+
+def _permutation_p(x, y, n_perm, rng) -> float:
+    from scipy import stats
+    m = np.isfinite(x) & np.isfinite(y)
+    x, y = x[m], y[m]
+    if len(x) < 30:
+        return float("nan")
+    obs = abs(stats.spearmanr(x, y).statistic)
+    hits = sum(abs(stats.spearmanr(rng.permutation(x), y).statistic) >= obs for _ in range(n_perm))
+    return (hits + 1) / (n_perm + 1)
+
+
+def stage_s3(verbose: bool = True) -> dict:
+    from optimize.fundamentals.extended_data import load_1m_extended
+
+    probe = pd.read_csv(HERE / "phase2_s2_probe.csv")
+    pairs = pd.read_csv(PAIRS)
+    alpha = float(pairs.bonferroni_alpha.iloc[0])
+    powered = probe[probe.pass_]
+    rng = np.random.default_rng(SEED)
+    rows = []
+
+    for inst, grp in powered.groupby("instrument"):
+        floor = INSTRUMENT_FLOOR[inst]
+        titles = sorted(set(grp.release))
+        feat = build_features(titles, floor)
+        px = load_1m_extended(inst).sort_values("Date").reset_index(drop=True)
+        rets = post_returns(px, feat.et, POST_HORIZONS)
+        ctrl_stamps = feat.et - pd.Timedelta(days=7)
+        keep = ~ctrl_stamps.dt.normalize().isin(set(feat.et.dt.normalize()))
+        crets = post_returns(px, ctrl_stamps.where(keep), POST_HORIZONS)
+
+        for title in titles:
+            sel = (feat.title == title).to_numpy()
+            x = feat.loc[sel, S3_PRIMARY_FEATURE].to_numpy(dtype=float)
+            y = rets.loc[sel, S3_PRIMARY_OUTCOME].to_numpy(dtype=float)
+            c = corr(x, y)
+            hits_mask = np.isfinite(x) & np.isfinite(y) & (x != 0) & (y != 0)
+            same = int((np.sign(x[hits_mask]) == np.sign(y[hits_mask])).sum())
+            acc, lo, hi = wilson(same, int(hits_mask.sum()))
+            # ⭐ the rule would trade whichever SIDE is better, so the decision number is the accuracy
+            # of the better-signed rule — reported as such rather than silently taking the max.
+            acc_rule = max(acc, 1 - acc) if np.isfinite(acc) else float("nan")
+            lo_rule, hi_rule = (lo, hi) if acc >= 0.5 else (1 - hi, 1 - lo)
+            passes = bool(np.isfinite(c["spearman_p"]) and c["spearman_p"] < alpha)
+            r = dict(instrument=inst, release=title, n=c["n"],
+                     pearson_r=c["pearson_r"], pearson_p=c["pearson_p"],
+                     spearman_r=c["spearman_r"], spearman_p=c["spearman_p"],
+                     passes_alpha=passes, hit_rate=acc, rule_accuracy=acc_rule,
+                     rule_ci_lo=lo_rule, rule_ci_hi=hi_rule,
+                     tradeable_possible=bool(np.isfinite(hi_rule) and hi_rule >= 0.71),
+                     provenance_verified=not any(k in title for k in UNVERIFIED_MARKERS))
+            if passes:
+                r["perm_p"] = _permutation_p(x, y, N_PERM, rng)
+                cy = crets.loc[sel, S3_PRIMARY_OUTCOME].to_numpy(dtype=float)
+                cc = corr(x, cy)
+                r["control_spearman_r"] = cc["spearman_r"]
+                r["control_spearman_p"] = cc["spearman_p"]
+            rows.append(r)
+        if verbose:
+            k = sum(1 for r in rows if r["instrument"] == inst and r["passes_alpha"])
+            print(f"  {inst}: {k}/{len(titles)} pairs clear alpha", flush=True)
+
+    df = pd.DataFrame(rows)
+    df.to_csv(HERE / "phase2_s3_results.csv", index=False)
+
+    surv = df[df.passes_alpha].copy()
+    if len(surv):
+        surv["controls_ok"] = ((surv.perm_p < 0.05)
+                               & ~((surv.control_spearman_p < 0.05).fillna(False)))
+    confirmed = surv[surv.controls_ok] if len(surv) else surv
+    out = {"stage": "S3", "alpha": alpha, "n_pairs_tested": int(len(df)),
+           "n_void_excluded": int((~probe.pass_).sum()),
+           "primary_feature": S3_PRIMARY_FEATURE, "primary_outcome": S3_PRIMARY_OUTCOME,
+           "n_clear_alpha": int(len(surv)), "n_confirmed": int(len(confirmed)),
+           "n_rejected_by_controls": int(len(surv) - len(confirmed)),
+           "n_tradeable_possible": int(df.tradeable_possible.sum()),
+           "median_accuracy": float(df.rule_accuracy.median()),
+           "max_ci_hi": float(df.rule_ci_hi.max()),
+           "confirmed": confirmed.to_dict("records") if len(confirmed) else []}
+    out["s3_pass"] = True
+
+    if verbose:
+        print("=" * 104)
+        print("PHASE 2 · S3 — THE RUN   #116")
+        print("=" * 104)
+        print(f"  {out['n_pairs_tested']} powered pairs tested · {out['n_void_excluded']} VOID excluded")
+        print(f"  PRIMARY: {S3_PRIMARY_FEATURE} vs {S3_PRIMARY_OUTCOME} (jump-inclusive), Spearman, "
+              f"alpha={alpha:.6f}")
+        print(f"\n  clear alpha              : {out['n_clear_alpha']}")
+        print(f"  ⭐ CONFIRMED (+ controls) : {out['n_confirmed']}")
+        print(f"  ⚠️ rejected by controls   : {out['n_rejected_by_controls']}")
+        print(f"\n  ⭐⭐ THE DECISION NUMBER — directional accuracy vs the 71% break-even (#111)")
+        print(f"     median rule accuracy across all {out['n_pairs_tested']} pairs: "
+              f"{100*out['median_accuracy']:.1f}%")
+        print(f"     highest 95% upper bound ANY pair: {100*out['max_ci_hi']:.1f}%")
+        print(f"     pairs whose CI upper bound reaches 71%: {out['n_tradeable_possible']}")
+        if out["n_tradeable_possible"] == 0:
+            print(f"     ⇒ A TRADEABLE EDGE IS EXCLUDED AT 95% ON EVERY ONE OF THE "
+                  f"{out['n_pairs_tested']} PAIRS")
+        for r in out["confirmed"][:15]:
+            tag = "" if r["provenance_verified"] else "  ⚠️ UNVERIFIED provenance"
+            print(f"    {r['instrument']:>4}  {r['release']:<34} n={r['n']:>4} "
+                  f"S={r['spearman_r']:+.3f} p={r['spearman_p']:.2e} perm={r['perm_p']:.3f} "
+                  f"acc={100*r['rule_accuracy']:.1f}% [{100*r['rule_ci_lo']:.1f},"
+                  f"{100*r['rule_ci_hi']:.1f}]{tag}")
+        print("\n  wrote phase2_s3_results.csv")
+        print("=" * 104)
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", choices=["s0", "s1", "s2"], default="s0")
+    ap.add_argument("--stage", choices=["s0", "s1", "s2", "s3"], default="s0")
     ap.add_argument("--out", default="")
     a = ap.parse_args()
-    res = {"s0": stage_s0, "s1": stage_s1, "s2": stage_s2}[a.stage]()
+    res = {"s0": stage_s0, "s1": stage_s1, "s2": stage_s2, "s3": stage_s3}[a.stage]()
     if a.out:
         Path(a.out).write_text(json.dumps(res, indent=1, default=str))
         print(f"wrote {a.out}")
