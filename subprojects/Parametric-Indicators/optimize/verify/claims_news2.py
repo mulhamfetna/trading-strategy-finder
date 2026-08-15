@@ -1402,3 +1402,77 @@ register(Claim(
             Check("V2", "611 of 612 null, matching round 1 and S0", _s4_v2),
             Check("V3", "a tradeable edge is EXCLUDED at 95% everywhere", _s4_v3)],
 ))
+
+
+# ---------------------------------------------------------------------------------------------
+# CLAIM 18 — #123: the API number DOES forecast EIA, but the discriminating test is underpowered
+# ---------------------------------------------------------------------------------------------
+@lru_cache(maxsize=1)
+def api_eia() -> dict:
+    return json.loads((FUND / "api_eia_mechanism_result.json").read_text())
+
+
+def _ae_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION: both statistics must agree that API forecasts EIA."""
+    a = api_eia()["A"]
+    return (a["pearson_p"] < 1e-20 and a["spearman_p"] < 1e-20
+            and abs(a["pearson_r"] - a["spearman_r"]) < 0.10), \
+           (f"Pearson {a['pearson_r']:+.3f} and Spearman {a['spearman_r']:+.3f} agree closely on "
+            f"n={a['n']} — the private preview is a genuinely strong predictor of the official number")
+
+
+def _ae_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT SOURCE: the effect being explained must still be there.
+
+    The agreement-week arm re-measures S4's finding on a SUBSET, through a different script and a
+    different join, so it should reproduce S4's sign and rough magnitude.
+    """
+    lo = api_eia()["C_agreement"]
+    return (lo["spearman_r"] < -0.15 and lo["spearman_p"] < 0.05), \
+           (f"agreement-week arm reproduces the S4 drift: Spearman {lo['spearman_r']:+.3f} "
+            f"(p={lo['spearman_p']:.3f}) on n={lo['n']}, against S4's -0.247 on the full sample")
+
+
+def _ae_v3() -> tuple[bool, str]:
+    """V3 — ⭐⭐ FALSIFICATION: "test C decided the question" must be FALSE.
+
+    The two arms differ by 0.135 in the direction H1 predicts, which is easy to over-read. A Fisher z
+    test on two independent correlations gives p = 0.237, and this design could only have resolved a
+    gap reaching rho = +0.044. So C is UNDERPOWERED, not answered — and reporting the point estimates
+    without that would present an underpowered null as evidence.
+    """
+    import numpy as np
+    from scipy import stats
+    lo, hi = api_eia()["C_agreement"], api_eia()["C_divergence"]
+    z1, z2 = np.arctanh(lo["spearman_r"]), np.arctanh(hi["spearman_r"])
+    se = np.sqrt(1 / (lo["n"] - 3) + 1 / (hi["n"] - 3))
+    p = float(2 * stats.norm.sf(abs((z2 - z1) / se)))
+    detectable = float(np.tanh(np.arctanh(lo["spearman_r"])
+                               + (stats.norm.ppf(0.975) + stats.norm.ppf(0.80)) * se))
+    return (p > 0.05), (f"the arms differ by {hi['spearman_r'] - lo['spearman_r']:+.3f} in the "
+                        f"PREDICTED direction, but Fisher z gives p={p:.3f}; at 80% power this design "
+                        f"could only have resolved a gap reaching rho={detectable:+.3f}. C is "
+                        f"UNDERPOWERED — it did not decide the question either way")
+
+
+register(Claim(
+    id="API-EIA-PREVIEW-MECHANISM",
+    issue="#123",
+    statement="The API crude number strongly predicts the EIA number released the next morning "
+              "(Spearman +0.742, p=3.7e-51, n=286), so the 'market reprices toward the expected "
+              "official figure' mechanism is POSSIBLE. But the discriminating test — does the drift "
+              "weaken when the preview misleads — is underpowered: -0.284 vs -0.149, Fisher z p=0.237.",
+    source="optimize/fundamentals/api_eia_mechanism_result.json",
+    value_fn=lambda: round(api_eia()["A"]["spearman_r"], 3),
+    expect=0.742, tol=0.001,
+    blind_spot="⚠️⚠️ A STRONG PREMISE IS NOT EVIDENCE FOR THE MECHANISM. Test A only shows the "
+               "repricing story is POSSIBLE; the test that would distinguish it from an artefact "
+               "(test C) could not resolve a realistic difference at this sample size. So the drift "
+               "remains BOTH unverifiable in provenance AND unexplained in mechanism. "
+               "⚠️ Test B's sign is POSITIVE (+0.115, p=0.053) — continuation, not the pre-pricing H1 "
+               "predicts — but it is equally underpowered (MDE 0.166) and should not be read either "
+               "way. None of this touches tradeability: 57.4% against a 71% break-even.",
+    checks=[Check("V1", "Pearson and Spearman agree that API forecasts EIA", _ae_v1),
+            Check("V2", "the agreement-week arm reproduces S4's drift", _ae_v2),
+            Check("V3", "test C is UNDERPOWERED — it decided nothing", _ae_v3)],
+))
