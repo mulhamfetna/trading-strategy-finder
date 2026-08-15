@@ -482,8 +482,19 @@ def probe_pair(y: np.ndarray, alpha: float, rng) -> dict:
         out.update(pass_=False, smallest_detected=None,
                    reason=f"n={n} — too few usable observations to probe")
         return out
-    ys = (y - y.mean()) / y.std()
+    # ⚠️⚠️⚠️ PLANT ON THE RANKS OF y, NOT ON ITS VALUES. Spearman is a RANK statistic, so an effect
+    # calibrated in Pearson terms on the raw values does not arrive as the same number: measured
+    # recovery was 0.76-0.95x of the planted target, i.e. the probe was quietly testing a SMALLER
+    # effect than it claimed and reporting the shortfall as the pipeline being underpowered.
+    #
+    # The tell was that the pattern ran BACKWARDS — the highest-n, lowest-MDE pairs failed MOST, when
+    # power at the MDE is 80% by definition at every n and the pass rate should be flat. A gate whose
+    # failures are inversely related to power is not measuring power.
+    #
+    # Planting on standardised ranks recovers 0.98-1.09x of the target across both a low-kurtosis and
+    # a high-kurtosis outcome, at every effect size tested.
     y_rank = stats.rankdata(y)
+    ys = (y_rank - y_rank.mean()) / y_rank.std()
 
     # ⚠️⚠️ THE GRID MUST REACH THE PAIR'S OWN MDE. The first version used a FIXED grid topping out at
     # 0.40, while the median pair here has an MDE of 0.412 — so for 587 of 643 pairs there was nothing

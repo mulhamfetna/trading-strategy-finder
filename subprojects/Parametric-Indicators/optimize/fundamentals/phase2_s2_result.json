@@ -1,0 +1,45 @@
+{
+ "stage": "S2",
+ "alpha": 7.776049766718508e-05,
+ "primary_outcome": "open_r15",
+ "n_pairs": 643,
+ "n_pass": 349,
+ "n_void": 294,
+ "by_instrument": {
+  "CL": {
+   "pass": 48,
+   "void": 34
+  },
+  "ES": {
+   "pass": 34,
+   "void": 48
+  },
+  "GC": {
+   "pass": 46,
+   "void": 36
+  },
+  "HG": {
+   "pass": 47,
+   "void": 35
+  },
+  "NG": {
+   "pass": 55,
+   "void": 26
+  },
+  "NQ": {
+   "pass": 43,
+   "void": 39
+  },
+  "RTY": {
+   "pass": 30,
+   "void": 40
+  },
+  "SI": {
+   "pass": 46,
+   "void": 36
+  }
+ },
+ "median_n": 123.0,
+ "median_mde": 0.4115888797617477,
+ "s2_pass": true
+}
