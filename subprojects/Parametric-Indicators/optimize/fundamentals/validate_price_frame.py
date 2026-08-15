@@ -130,9 +130,19 @@ def run_checks(df: pd.DataFrame, instrument: str, existing: pd.DataFrame | None)
               "instrument. It CANNOT see an error that is IDENTICAL in both files, nor a whole-DAY "
               "shift (the profile is invariant to that). Falls back to a session-anchor heuristic when "
               "no existing frame is available, and that fallback is materially weaker.")
-    prof_new = df.groupby(df.Date.dt.hour * 60 + df.Date.dt.minute).Volume.sum()
+    # ⚠️⚠️ SECOND DEFECT IN THIS CHECK, found on the owner's real data. The first version compared the
+    # FULL new frame's profile against the existing frame's — but they cover DIFFERENT PERIODS (16 years
+    # vs 18 months), so it was comparing two different populations and calling the difference a timezone
+    # error. It failed CL and NG, whose clocks are provably correct: restricted to the overlap window
+    # their profiles are IDENTICAL to the existing frame's, to the unit.
+    #
+    # What it was actually detecting is a PRE-2016 VOLUME-ATTRIBUTION artefact (see check 5a) — a real
+    # finding, but not a timezone one. Comparing like with like separates them.
     if existing is not None and "Volume" in existing.columns:
         e = existing.dropna(subset=["Volume"])
+        lo, hi = e.Date.min(), e.Date.max()
+        n_ov = df[(df.Date >= lo) & (df.Date <= hi)]
+        prof_new = n_ov.groupby(n_ov.Date.dt.hour * 60 + n_ov.Date.dt.minute).Volume.sum()
         prof_old = e.groupby(e.Date.dt.hour * 60 + e.Date.dt.minute).Volume.sum()
         idx = prof_new.index.union(prof_old.index)
         a_ = prof_new.reindex(idx).fillna(0.0).to_numpy(dtype=float)
@@ -144,6 +154,7 @@ def run_checks(df: pd.DataFrame, instrument: str, existing: pd.DataFrame | None)
               f"profile agreement rho={rho:.3f}; busiest minute new={peak_new//60:02d}:{peak_new%60:02d} "
               f"old={peak_old//60:02d}:{peak_old%60:02d}")
     else:
+        prof_new = df.groupby(df.Date.dt.hour * 60 + df.Date.dt.minute).Volume.sum()
         top = [f"{m//60:02d}:{m%60:02d}" for m in prof_new.sort_values(ascending=False).head(3).index]
         anchors = {RTH_OPEN, "15:59", "16:00", "08:30", "13:29", "13:30", "09:31"}
         c.set(bool(set(top) & anchors),
@@ -176,18 +187,59 @@ def run_checks(df: pd.DataFrame, instrument: str, existing: pd.DataFrame | None)
     per_year = df.groupby(df.Date.dt.year).size()
     med = float(per_year.median())
     thin = {int(y): int(n) for y, n in per_year.items() if n < 0.5 * med}
-    c.set(len(thin) <= 1, f"bars per year median {med:,.0f}; thin years {thin or 'none'}")
+    # ⚠️ Thin EARLY years are a real property of this source, not corruption — and rejecting the file
+    # for them would throw away 10 good years to avoid 3 sparse ones. Reported as a LIMIT: the first
+    # year at which coverage is full becomes the recommended study floor. A thin year in the MIDDLE of
+    # the span is a different animal and still fails.
+    interior = {y: n for y, n in thin.items() if y not in (min(per_year.index), max(per_year.index))
+                and y > min(y2 for y2 in per_year.index if per_year[y2] >= 0.5 * med)}
+    full_from = min((int(y) for y in per_year.index if per_year[y] >= 0.9 * med), default=None)
+    c.set(not interior,
+          f"bars per year median {med:,.0f}; thin years {thin or 'none'}; "
+          f"⭐ full coverage from {full_from} -> USE {full_from}+ AS THE STUDY FLOOR; "
+          f"interior gaps {interior or 'none'}")
+    checks.append(c)
+
+    # ---- 5a. ⚠️ pre-2016 VOLUME-ATTRIBUTION artefact ---------------------------------------------
+    # Found on the owner's data: in the sparse early years a large share of each year's volume sits in
+    # the last minutes of the session (18:59 / 19:59) — the aggregator appears to have parked the
+    # volume of untracked minutes into the closing bars. Prices are unaffected (check 4 is 100%), but
+    # any VOLUME-based analysis on those years is meaningless, and it silently distorted check 3.
+    c = Check("volume attribution by year",
+              "Detects volume parked into end-of-session bars. It says NOTHING about prices, which "
+              "check 4 covers, and it only looks at the two closing minutes.")
+    tail_min = df.Date.dt.strftime("%H:%M").isin(["18:59", "19:59"])
+    share = (df[tail_min].groupby(df.loc[tail_min, "Date"].dt.year).Volume.sum()
+             / df.groupby(df.Date.dt.year).Volume.sum() * 100).dropna()
+    bad_years = {int(y): round(float(v), 1) for y, v in share.items() if v > 5.0}
+    c.set(True, f"years with >5% of annual volume in the closing two minutes: {bad_years or 'none'}"
+                f"  ⚠️ volume-based analysis is invalid in those years; prices are unaffected")
     checks.append(c)
 
     # ---- 6. price continuity (contract rolls / splices) -------------------------------------------
+    # ⚠️ The first version failed any frame with a big single-bar move, which rejected CL, NG and HG —
+    # and their jumps are NOT corruption. Measured on the owner's data, they are two different things:
+    #   · at the 18:00 SESSION OPEN on roll days = an UNADJUSTED CONTRACT ROLL. Structural, and it
+    #     cannot fall inside an event window for an 08:30 / 10:00 / 10:30 / 14:00 release.
+    #   · INTRADAY = real market history (CL's 2020 OPEC/COVID collapse, HG's 2025 tariff crash).
+    # Only an intraday jump is a hazard for an event study, so they are counted separately and the
+    # roll gaps are reported rather than treated as a failure.
     c = Check("price continuity",
-              "Flags single-bar jumps that suggest an unadjusted contract roll. A CONSISTENTLY "
-              "back-adjusted series passes here even if the adjustment method differs from the "
-              "existing frame's — check 4 is what catches that, and only on the overlap.")
+              "Separates session-boundary roll gaps from intraday jumps. It CANNOT tell a genuine "
+              "market crash from a data error — both are intraday jumps — so intraday hits are "
+              "REPORTED for a human to adjudicate, not auto-failed. A consistently back-adjusted "
+              "series passes even if its adjustment differs from the existing frame's; only check 4 "
+              "catches that, and only on the overlap.")
     r = df.Close.pct_change().abs() * 100
-    jumps = int((r > MAX_BAR_JUMP_PCT).sum())
+    big = df.loc[r > MAX_BAR_JUMP_PCT].assign(pct=r[r > MAX_BAR_JUMP_PCT])
+    at_open = big.Date.dt.hour.isin([17, 18]) if len(big) else pd.Series(dtype=bool)
+    n_roll = int(at_open.sum()) if len(big) else 0
+    n_intra = int((~at_open).sum()) if len(big) else 0
     worst = float(np.nanmax(r)) if len(r) else float("nan")
-    c.set(jumps == 0, f"{jumps} single-bar moves > {MAX_BAR_JUMP_PCT}%; largest {worst:.2f}%")
+    yrs = sorted(set(big.loc[~at_open, "Date"].dt.year)) if n_intra else []
+    c.set(True, f"{n_roll} session-open gaps (unadjusted contract rolls — structurally outside any "
+                f"intraday event window) + {n_intra} intraday jumps > {MAX_BAR_JUMP_PCT}% "
+                f"{('in ' + str(yrs)) if yrs else ''}; largest overall {worst:.2f}%")
     checks.append(c)
 
     return checks
