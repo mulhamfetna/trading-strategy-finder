@@ -70,6 +70,21 @@ SERIES = {                           # the VERIFIED four (#119, #120)
     "retail":   "Retail Sales MoM",
     "durables": "Durable Goods Orders MoM",
 }
+# ⚠️⚠️ P1X-C6: THE ENERGY RELEASES ARE NOT PROVENANCE-VERIFIED. #119 and #120 cleared four series;
+# EIA and API are not among them, so we do NOT know that their `actual` is a first print or that their
+# `previous` is point-in-time. A result on these is a WEAKER CLAIM and every report must say so.
+#
+# They are included anyway because they are the ONLY way to test the owner's actual premise — "a
+# release may move oil a lot but not Nasdaq" — and because they are weekly, so they carry ~4x the
+# sample of any monthly series. The honest handling is to run them, label them in the OUTPUT ITSELF,
+# and never pool them with the verified four.
+ENERGY_SERIES = {
+    "eia_crude":    "EIA Crude Oil Stocks Change",
+    "eia_gasoline": "EIA Gasoline Stocks Change",
+    "eia_natgas":   "EIA Natural Gas Stocks Change",
+    "eia_distill":  "EIA Distillate Stocks Change",
+}
+SERIES_SETS = {"verified": SERIES, "energy": ENERGY_SERIES}
 PRE_WINDOWS = [5, 15, 30, 60]        # H1-B, minutes before the print
 POST_HORIZONS = [5, 15, 60]          # H1-C, minutes after the print
 MIN_HISTORY = 24                     # expanding-window normalisation warm-up
@@ -92,13 +107,14 @@ SEED = 20260808                      # fixed: a reproducible "random" control, n
 # ------------------------------------------------------------------------------------------------
 # events
 # ------------------------------------------------------------------------------------------------
-def load_events(floor: int = MIN_YEAR) -> pd.DataFrame:
+def load_events(floor: int = MIN_YEAR, series: dict | None = None) -> pd.DataFrame:
     d = pd.read_csv(TV_RAW, low_memory=False)
     d["utc"] = pd.to_datetime(d["date"], format="mixed", utc=True)
     d["et"] = d["utc"].dt.tz_convert("America/New_York").dt.tz_localize(None)
-    d = d[d.title.isin(SERIES.values()) & d.forecast.notna() & d.previous.notna()]
+    series = SERIES if series is None else series
+    d = d[d.title.isin(series.values()) & d.forecast.notna() & d.previous.notna()]
     d = d[d.et.dt.year >= floor].copy()
-    d["series"] = d.title.map({v: k for k, v in SERIES.items()})
+    d["series"] = d.title.map({v: k for k, v in series.items()})
     d["A"] = d.forecast.astype(float) - d.previous.astype(float)
     d = d.sort_values("et").drop_duplicates(["series", "et"]).reset_index(drop=True)
 
@@ -214,17 +230,19 @@ def permutation_p(x: np.ndarray, y: np.ndarray, groups: np.ndarray, rng) -> floa
 
 
 # ------------------------------------------------------------------------------------------------
-def run(instrument: str, verbose: bool = True) -> dict:
+def run(instrument: str, verbose: bool = True, series_set: str = "verified") -> dict:
     from optimize.fundamentals.extended_data import load_1m_extended
 
     floor = INSTRUMENT_FLOOR.get(instrument, MIN_YEAR)
-    ev = load_events(floor)
+    ev = load_events(floor, SERIES_SETS[series_set])
     px = load_1m_extended(instrument)
     px = px.sort_values("Date").reset_index(drop=True)
     rng = np.random.default_rng(SEED)
 
     out: dict = {"instrument": instrument, "min_year": floor,
-                 "series": sorted(SERIES), "n_events_raw": int(len(ev)),
+                 "series_set": series_set,
+                 "provenance_verified": series_set == "verified",
+                 "series": sorted(SERIES_SETS[series_set]), "n_events_raw": int(len(ev)),
                  "n_dropped_warmup": int(ev.A_z.isna().sum()),
                  "bonferroni_alpha": BONFERRONI, "n_primary_tests": N_PRIMARY_TESTS,
                  "price_span": [str(px.Date.min()), str(px.Date.max())]}
@@ -380,7 +398,9 @@ def _report(o: dict) -> None:
     print("=" * 104)
     print(f"H1-B / H1-C — does `forecast - previous` carry DIRECTION?   {o['instrument']}   #115")
     print("=" * 104)
-    print(f"  series (VERIFIED only): {', '.join(o['series'])}     era {o['min_year']}+")
+    tag = ("VERIFIED provenance" if o.get("provenance_verified") else
+           "UNVERIFIED provenance — #119/#120 did NOT clear these; a WEAKER claim")
+    print(f"  series set '{o.get('series_set')}' [{tag}]: {', '.join(o['series'])}   era {o['min_year']}+")
     print(f"  price frame: {o['price_span'][0]} -> {o['price_span'][1]}")
     print(f"  events: {o['n_events_raw']} raw, {o['n_dropped_warmup']} dropped by the expanding-window "
           f"warm-up, {o['n_events_used']} used")
@@ -435,9 +455,10 @@ def _report(o: dict) -> None:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--instrument", default="NQ")
+    ap.add_argument("--series-set", choices=sorted(SERIES_SETS), default="verified")
     ap.add_argument("--out", default="")
     a = ap.parse_args()
-    res = run(a.instrument)
+    res = run(a.instrument, series_set=a.series_set)
     if a.out:
         Path(a.out).write_text(json.dumps(res, indent=1, default=str))
         print(f"wrote {a.out}")
