@@ -1151,3 +1151,84 @@ register(Claim(
             Check("V2", "level-change variants diverge per series (#120 Test C)", _s1_v2),
             Check("V3", "prefix invariance, and proof it catches a planted leak", _s1_v3)],
 ))
+
+
+# ---------------------------------------------------------------------------------------------
+# CLAIM 15 — Phase 2 S2: every pair probed for power BEFORE it is run (#116)
+# ---------------------------------------------------------------------------------------------
+@lru_cache(maxsize=1)
+def s2_probe():
+    import pandas as pd
+    return pd.read_csv(FUND / "phase2_s2_probe.csv")
+
+
+def _s2_v1() -> tuple[bool, str]:
+    """V1 — ⭐ THE DIAGNOSTIC THAT CAUGHT THE BUG: the pass rate must be FLAT across sample size.
+
+    Power at the MDE is 80% BY DEFINITION at every n, so a probe that measures power correctly must
+    pass roughly the same fraction of pairs whatever their sample size. The broken version was
+    INVERTED — the best-powered pairs (n 200-600, MDE 0.206) failed most, at 17/56, while the
+    worst-powered passed at 23/47. A gate whose failures run opposite to power is not measuring power.
+    """
+    import pandas as pd
+    d = s2_probe()
+    band = pd.cut(d.n, [0, 60, 80, 120, 200, 600])
+    rates = d.groupby(band, observed=True).pass_.mean()
+    spread = float(rates.max() - rates.min())
+    return spread < 0.10, (f"pass rate by n-band {dict(rates.round(3))} — spread {spread:.3f}; "
+                           f"flat is required because power at the MDE is 80% at every n")
+
+
+def _s2_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT SOURCE: the VOID count against its own chance expectation.
+
+    ⭐ The probe fails a pair when its detection rate is significantly below 80% on a one-sided
+    binomial test at 0.05. So with 643 pairs, ~30 false VOIDs are EXPECTED even if every pair is
+    perfectly healthy. Observed 31. That is not "31 broken pairs" — it is a test firing at its
+    designed rate, and the honest reading is that NO pair is demonstrably underpowered.
+    """
+    from scipy import stats
+    d = s2_probe()
+    n, v = len(d), int((~d.pass_).sum())
+    exp = float(stats.binom.cdf(16, 25, 0.80) * n)
+    return (v <= exp * 1.5), (f"{v} VOID of {n}; expected by chance alone at this test level {exp:.0f} "
+                              f"— the VOIDs are consistent with the nominal false-positive rate, so "
+                              f"there is NO evidence any pair is genuinely underpowered")
+
+
+def _s2_v3() -> tuple[bool, str]:
+    """V3 — FALSIFICATION: "the probe passes everything regardless" must be FALSE.
+
+    A gate that never fires is indistinguishable from no gate. It must VOID something, and the pairs
+    it voids must be the small-n ones rather than an arbitrary scatter.
+    """
+    d = s2_probe()
+    v = d[~d.pass_]
+    fires = len(v) > 0
+    smaller = bool(v.n.median() < d.n.median()) if fires else False
+    return (fires and smaller), \
+           (f"the probe fires on {len(v)} pairs (median n={v.n.median():.0f}) against an overall "
+            f"median n={d.n.median():.0f} — it can fail, and it fails on the thinner samples")
+
+
+register(Claim(
+    id="P2-S2-EVERY-PAIR-PROBED",
+    issue="#116",
+    statement="All 643 Phase 2 pairs were probed for power BEFORE being run: 612 detect a planted "
+              "effect at their own MDE at a rate consistent with the nominal 80%, and 31 are marked "
+              "VOID — which matches the ~30 expected by chance at this test level.",
+    source="optimize/fundamentals/phase2_s2_probe.csv",
+    value_fn=lambda: int((~s2_probe().pass_).sum()),
+    expect=31, tol=0,
+    blind_spot="⚠️ The probe tests POWER, not CORRECTNESS. A pipeline that reliably detects a planted "
+               "effect can still be measuring the wrong thing — that is what S0 (outcome anchor) and "
+               "S1 (feature leakage) are for, and a defect in either is invisible here. It is run on "
+               "ONE outcome (open-anchored 15 minutes); a pair could be well powered there and thin "
+               "at another horizon. The planted effect is MONOTONE, so it says nothing about power "
+               "against a threshold effect. And 31 VOIDs at a 5% test over 643 pairs cannot be "
+               "distinguished from chance, so the VOID list should be read as 'not established', "
+               "never as 'these 31 are broken'.",
+    checks=[Check("V1", "pass rate flat across sample size", _s2_v1),
+            Check("V2", "VOID count matches its chance expectation", _s2_v2),
+            Check("V3", "the probe can fire, and fires on thin samples", _s2_v3)],
+))
