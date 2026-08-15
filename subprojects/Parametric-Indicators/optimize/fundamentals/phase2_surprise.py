@@ -627,6 +627,7 @@ S3_PRIMARY_FEATURE = "surprise_z"
 S3_PRIMARY_OUTCOME = "open_r15"
 S3_EXPLORATORY_OUTCOMES = ["jump", "open_r5", "open_r60", "close_r5", "close_r15", "close_r60"]
 UNVERIFIED_MARKERS = ("EIA", "API")     # provenance NOT cleared by #119/#120
+N_PERM = 1000                           # permutation draws for the C1 control on survivors
 
 
 def wilson(hits: int, n: int) -> tuple[float, float, float]:
