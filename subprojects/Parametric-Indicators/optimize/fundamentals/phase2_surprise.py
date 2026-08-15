@@ -245,16 +245,165 @@ def stage_s0(verbose: bool = True) -> dict:
     return out
 
 
+# ------------------------------------------------------------------------------------------------
+# S1 — feature construction
+# ------------------------------------------------------------------------------------------------
+def build_features(titles: list[str], floor: int) -> pd.DataFrame:
+    """The Phase 2 feature set.
+
+    ⚠️⚠️ TWO `level change` VARIANTS ARE MANDATORY (#120 Test C). TradingView's `previous` equals the
+    PRIOR RELEASE'S `actual` only 3% of the time for payrolls but 95% of the time for CPI, because the
+    BLS revises payrolls with every release and barely revises CPI. So `actual - previous` is the
+    REVISED-BASIS change for one series and FIRST-PRINT-TO-FIRST-PRINT for another.
+
+    Pooling them without distinction puts two different quantities in one column, in a way correlated
+    with WHICH SERIES it is — systematic, not noise. Both are computed; the as-published one is primary
+    because it is the number a trader actually saw.
+    """
+    d = load_calendar(titles, floor)
+    a_ = d.actual.astype(float)
+    f_ = d.forecast.astype(float)
+    p_ = d.previous.astype(float)
+
+    d["surprise"] = a_ - f_                                   # what the market did NOT price
+    d["level_change_published"] = a_ - p_                     # PRIMARY: as the calendar showed it
+    d["level_change_firstprint"] = a_ - d.groupby("title").actual.shift(1).astype(float)
+    d["anticipated_change"] = f_ - p_                         # answered NEGATIVE in Phase 1 (#122)
+    # ⭐ Did the surprise REINFORCE the expected direction, or reverse it? Sign-only, so it is immune
+    # to the unit differences that force normalisation everywhere else.
+    d["confirmation"] = (np.sign(d.surprise) == np.sign(d.anticipated_change)).astype(float)
+    d.loc[(d.surprise == 0) | (d.anticipated_change == 0), "confirmation"] = np.nan
+
+    # ⚠️ EXPANDING normalisation with shift(1), per series. A full-sample z-score uses the mean and
+    # spread of events that had not happened yet — look-ahead that produces no error and no warning.
+    out = []
+    for _t, g in d.groupby("title"):
+        g = g.sort_values("et").copy()
+        for col in ("surprise", "level_change_published", "level_change_firstprint",
+                    "anticipated_change"):
+            mu = g[col].expanding().mean().shift(1)
+            sd = g[col].expanding().std().shift(1)
+            g[col + "_z"] = (g[col] - mu) / sd
+            g.loc[np.arange(len(g)) < MIN_HISTORY, col + "_z"] = np.nan
+        out.append(g)
+    return pd.concat(out).sort_values("et").reset_index(drop=True)
+
+
+FEATURES = ["surprise_z", "level_change_published_z", "level_change_firstprint_z",
+            "anticipated_change_z", "confirmation"]
+
+
+def stage_s1(verbose: bool = True) -> dict:
+    d = build_features(VERIFIED, 2016)
+    out: dict = {"stage": "S1", "n_events": int(len(d)), "series": VERIFIED, "features": FEATURES,
+                 "coverage": {c: int(d[c].notna().sum()) for c in FEATURES}}
+
+    # ---- ⭐⭐⭐ V3 — THE LOOK-AHEAD FALSIFIER: PREFIX INVARIANCE -----------------------------------
+    # A strictly past-only feature CANNOT change when later events are appended. So recompute the
+    # features on a TRUNCATED calendar (the first 60% of events) and require the overlapping rows to be
+    # BIT-IDENTICAL to the full run.
+    #
+    # ⚠️ This is the check that a full-sample z-score fails and nothing else would catch: the values
+    # would still look sane, the correlations would still compute, and the leak would be invisible.
+    cut = d.et.quantile(0.60)
+    trunc_titles = VERIFIED
+    d_trunc_src = load_calendar(trunc_titles, 2016)
+    d_trunc_src = d_trunc_src[d_trunc_src.et <= cut]
+    # rebuild features from the truncated source using the same code path
+    a_, f_, p_ = (d_trunc_src.actual.astype(float), d_trunc_src.forecast.astype(float),
+                  d_trunc_src.previous.astype(float))
+    d_trunc_src["surprise"] = a_ - f_
+    d_trunc_src["level_change_published"] = a_ - p_
+    d_trunc_src["level_change_firstprint"] = a_ - d_trunc_src.groupby("title").actual.shift(1).astype(float)
+    d_trunc_src["anticipated_change"] = f_ - p_
+    parts = []
+    for _t, g in d_trunc_src.groupby("title"):
+        g = g.sort_values("et").copy()
+        for col in ("surprise", "level_change_published", "level_change_firstprint",
+                    "anticipated_change"):
+            mu = g[col].expanding().mean().shift(1)
+            sd = g[col].expanding().std().shift(1)
+            g[col + "_z"] = (g[col] - mu) / sd
+            g.loc[np.arange(len(g)) < MIN_HISTORY, col + "_z"] = np.nan
+        parts.append(g)
+    dt = pd.concat(parts).sort_values("et").reset_index(drop=True)
+
+    key = ["title", "et"]
+    j = d[key + [c for c in FEATURES if c.endswith("_z")]].merge(
+        dt[key + [c for c in FEATURES if c.endswith("_z")]], on=key, suffixes=("_full", "_trunc"))
+    mism = {}
+    for c in [c for c in FEATURES if c.endswith("_z")]:
+        x, y = j[c + "_full"], j[c + "_trunc"]
+        both = x.notna() & y.notna()
+        mism[c] = int((np.abs(x[both] - y[both]) > 1e-12).sum())
+    out["prefix_invariance"] = {"n_compared": int(len(j)), "mismatches": mism,
+                                "pass": all(v == 0 for v in mism.values())}
+
+    # ---- V1 — the same feature by a different code path -------------------------------------------
+    # `surprise` recomputed straight from the raw columns, bypassing build_features entirely.
+    raw = pd.read_csv(TV_RAW, low_memory=False)
+    raw["utc"] = pd.to_datetime(raw["date"], format="mixed", utc=True)
+    raw["et"] = raw["utc"].dt.tz_convert("America/New_York").dt.tz_localize(None)
+    raw = raw[raw.title.isin(VERIFIED) & raw.actual.notna() & raw.forecast.notna()
+              & raw.previous.notna()]
+    raw = raw[raw.et.dt.year >= 2016]
+    raw["surprise_alt"] = raw.actual.astype(float) - raw.forecast.astype(float)
+    j2 = d[["title", "et", "surprise"]].merge(raw[["title", "et", "surprise_alt"]], on=["title", "et"])
+    out["v1_surprise_identical"] = int((np.abs(j2.surprise - j2.surprise_alt) > 1e-12).sum()) == 0
+    out["v1_n"] = int(len(j2))
+
+    # ---- V2 — the two level-change variants must DIFFER, and differ per series --------------------
+    # ⭐ If they were identical everywhere, #120's Test C finding would be wrong and one variant would
+    # be redundant. If they differed everywhere, `previous` would never be the prior print. The
+    # PER-SERIES SPLIT is the substance.
+    agree = {}
+    for t, g in d.groupby("title"):
+        m = g.level_change_published.notna() & g.level_change_firstprint.notna()
+        agree[t] = round(float((np.abs(g.level_change_published[m]
+                                       - g.level_change_firstprint[m]) < 1e-9).mean()), 3)
+    out["v2_variants_agree_by_series"] = agree
+    out["v2_pass"] = bool(max(agree.values()) - min(agree.values()) > 0.5)
+
+    out["s1_pass"] = bool(out["prefix_invariance"]["pass"] and out["v1_surprise_identical"]
+                          and out["v2_pass"])
+
+    if verbose:
+        print("=" * 100)
+        print("PHASE 2 · S1 — FEATURE CONSTRUCTION   #116")
+        print("=" * 100)
+        print(f"  {out['n_events']} events · {len(VERIFIED)} verified series · 2016+")
+        print(f"  feature coverage (non-null): {out['coverage']}")
+        print()
+        print("  ⭐⭐⭐ V3 LOOK-AHEAD FALSIFIER — PREFIX INVARIANCE")
+        print("     A strictly past-only feature CANNOT change when later events are appended.")
+        print(f"     Recomputed on the first 60% of events; {out['prefix_invariance']['n_compared']} "
+              f"overlapping rows compared.")
+        print(f"     mismatches: {out['prefix_invariance']['mismatches']}")
+        print(f"     -> {'PASS — no leakage' if out['prefix_invariance']['pass'] else 'FAIL — THE FEATURES SEE THE FUTURE'}")
+        print()
+        print(f"  V1 `surprise` recomputed from raw columns, {out['v1_n']} rows: "
+              f"{'identical' if out['v1_surprise_identical'] else 'MISMATCH'}")
+        print(f"  V2 the two level-change variants, share IDENTICAL per series:")
+        for t, v in out["v2_variants_agree_by_series"].items():
+            print(f"       {t:<28}{100*v:>6.1f}%")
+        print(f"     -> {'PASS' if out['v2_pass'] else 'FAIL'} — they must diverge per series, or "
+              f"#120 Test C is wrong and one variant is redundant")
+        print()
+        print(f"  S1: {'PASS' if out['s1_pass'] else 'FAIL'}")
+        print("=" * 100)
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", choices=["s0"], default="s0")
+    ap.add_argument("--stage", choices=["s0", "s1"], default="s0")
     ap.add_argument("--out", default="")
     a = ap.parse_args()
-    res = stage_s0()
+    res = stage_s0() if a.stage == "s0" else stage_s1()
     if a.out:
         Path(a.out).write_text(json.dumps(res, indent=1, default=str))
         print(f"wrote {a.out}")
-    return 0 if res.get("s0_pass") else 1
+    return 0 if res.get(f"{a.stage}_pass") else 1
 
 
 if __name__ == "__main__":
