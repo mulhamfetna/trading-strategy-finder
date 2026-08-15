@@ -305,9 +305,9 @@ def stage_s1(verbose: bool = True) -> dict:
     #
     # ⚠️ This is the check that a full-sample z-score fails and nothing else would catch: the values
     # would still look sane, the correlations would still compute, and the leak would be invisible.
+    floor = 2016
     cut = d.et.quantile(0.60)
-    trunc_titles = VERIFIED
-    d_trunc_src = load_calendar(trunc_titles, 2016)
+    d_trunc_src = load_calendar(VERIFIED, floor)
     d_trunc_src = d_trunc_src[d_trunc_src.et <= cut]
     # rebuild features from the truncated source using the same code path
     a_, f_, p_ = (d_trunc_src.actual.astype(float), d_trunc_src.forecast.astype(float),
@@ -364,8 +364,39 @@ def stage_s1(verbose: bool = True) -> dict:
     out["v2_variants_agree_by_series"] = agree
     out["v2_pass"] = bool(max(agree.values()) - min(agree.values()) > 0.5)
 
+    # ---- ⭐⭐ PROVE THE FALSIFIER CAN FAIL -------------------------------------------------------
+    # "Prefix invariance holds" is worthless if the check could not detect a violation. Plant the exact
+    # defect it exists for — a FULL-SAMPLE z-score, which uses events that had not happened yet — and
+    # require the check to catch it. A gate that has never failed is untested.
+    def _z(g, leak):
+        if leak:
+            return (g.surprise - g.surprise.mean()) / g.surprise.std()
+        mu = g.surprise.expanding().mean().shift(1)
+        sd = g.surprise.expanding().std().shift(1)
+        return (g.surprise - mu) / sd
+
+    def _leak_feats(src):
+        src = src.copy()
+        src["surprise"] = src.actual.astype(float) - src.forecast.astype(float)
+        parts = []
+        for _t, g in src.groupby("title"):
+            g = g.sort_values("et").copy()
+            g["surprise_z"] = _z(g, True)
+            g.loc[np.arange(len(g)) < MIN_HISTORY, "surprise_z"] = np.nan
+            parts.append(g)
+        return pd.concat(parts).sort_values("et").reset_index(drop=True)
+
+    src_full = load_calendar(VERIFIED, floor)
+    A, B = _leak_feats(src_full), _leak_feats(src_full[src_full.et <= cut])
+    jj = A[["title", "et", "surprise_z"]].merge(B[["title", "et", "surprise_z"]],
+                                                on=["title", "et"], suffixes=("_f", "_t"))
+    both = jj.surprise_z_f.notna() & jj.surprise_z_t.notna()
+    caught = int((np.abs(jj.surprise_z_f[both] - jj.surprise_z_t[both]) > 1e-12).sum())
+    out["v3_planted_leak"] = {"rows": int(both.sum()), "caught": caught,
+                              "pass": bool(both.sum() > 0 and caught == int(both.sum()))}
+
     out["s1_pass"] = bool(out["prefix_invariance"]["pass"] and out["v1_surprise_identical"]
-                          and out["v2_pass"])
+                          and out["v2_pass"] and out["v3_planted_leak"]["pass"])
 
     if verbose:
         print("=" * 100)
@@ -380,6 +411,9 @@ def stage_s1(verbose: bool = True) -> dict:
               f"overlapping rows compared.")
         print(f"     mismatches: {out['prefix_invariance']['mismatches']}")
         print(f"     -> {'PASS — no leakage' if out['prefix_invariance']['pass'] else 'FAIL — THE FEATURES SEE THE FUTURE'}")
+        pl = out["v3_planted_leak"]
+        print(f"     ⭐⭐ and the check CAN fail: a planted full-sample z-score is caught on "
+              f"{pl['caught']}/{pl['rows']} rows -> {'PASS' if pl['pass'] else 'FAIL — THE GATE IS BLIND'}")
         print()
         print(f"  V1 `surprise` recomputed from raw columns, {out['v1_n']} rows: "
               f"{'identical' if out['v1_surprise_identical'] else 'MISMATCH'}")
