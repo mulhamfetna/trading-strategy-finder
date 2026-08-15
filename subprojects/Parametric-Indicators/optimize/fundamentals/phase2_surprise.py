@@ -751,12 +751,113 @@ def stage_s3(verbose: bool = True) -> dict:
     return out
 
 
+# ------------------------------------------------------------------------------------------------
+# S4 — the CAPTURABLE window
+# ------------------------------------------------------------------------------------------------
+# ⭐⭐ S3 showed the surprise explains the release-minute JUMP (rho to -0.63) and that this is NOT
+# tradeable: the surprise is unknowable until the jump has happened. So the question that actually
+# decides whether Phase 2 produces anything is whether ANY effect survives INTO the window a reactive
+# trader can reach.
+#
+# S3 found exactly one (CL / API Crude Oil) as an unplanned follow-up on 23 pairs. That is not a
+# systematic search, and the programme's only capturable candidate should not rest on one.
+#
+# ⚠️ SEPARATE ALPHA. These are 612 NEW tests on a DIFFERENT outcome, so they are a separate family and
+# get their own correction: 0.05/612. Reusing S3's alpha would spend the same budget twice.
+S4_OUTCOME = "close_r15"          # release-bar CLOSE -> +15 min: the earliest reachable price
+
+
+def stage_s4(verbose: bool = True) -> dict:
+    from optimize.fundamentals.extended_data import load_1m_extended
+
+    probe = pd.read_csv(HERE / "phase2_s2_probe.csv")
+    powered = probe[probe.pass_]
+    alpha = 0.05 / len(powered)
+    rng = np.random.default_rng(SEED + 1)
+    rows = []
+
+    for inst, grp in powered.groupby("instrument"):
+        floor = INSTRUMENT_FLOOR[inst]
+        titles = sorted(set(grp.release))
+        feat = build_features(titles, floor)
+        px = load_1m_extended(inst).sort_values("Date").reset_index(drop=True)
+        rets = post_returns(px, feat.et, POST_HORIZONS)
+        ctrl_stamps = feat.et - pd.Timedelta(days=7)
+        keep = ~ctrl_stamps.dt.normalize().isin(set(feat.et.dt.normalize()))
+        crets = post_returns(px, ctrl_stamps.where(keep), POST_HORIZONS)
+
+        for title in titles:
+            sel = (feat.title == title).to_numpy()
+            x = feat.loc[sel, S3_PRIMARY_FEATURE].to_numpy(dtype=float)
+            y = rets.loc[sel, S4_OUTCOME].to_numpy(dtype=float)
+            c = corr(x, y)
+            m = np.isfinite(x) & np.isfinite(y) & (x != 0) & (y != 0)
+            same = int((np.sign(x[m]) == np.sign(y[m])).sum())
+            acc, lo, hi = wilson(same, int(m.sum()))
+            acc_rule = max(acc, 1 - acc) if np.isfinite(acc) else float("nan")
+            lo_rule, hi_rule = (lo, hi) if acc >= 0.5 else (1 - hi, 1 - lo)
+            passes = bool(np.isfinite(c["spearman_p"]) and c["spearman_p"] < alpha)
+            r = dict(instrument=inst, release=title, n=c["n"],
+                     pearson_r=c["pearson_r"], pearson_p=c["pearson_p"],
+                     spearman_r=c["spearman_r"], spearman_p=c["spearman_p"],
+                     passes_alpha=passes, rule_accuracy=acc_rule,
+                     rule_ci_lo=lo_rule, rule_ci_hi=hi_rule,
+                     tradeable=bool(np.isfinite(lo_rule) and lo_rule >= 0.71),
+                     provenance_verified=not any(k in title for k in UNVERIFIED_MARKERS))
+            if passes:
+                r["perm_p"] = _permutation_p(x, y, N_PERM, rng)
+                cc = corr(x, crets.loc[sel, S4_OUTCOME].to_numpy(dtype=float))
+                r["control_spearman_p"] = cc["spearman_p"]
+            rows.append(r)
+        if verbose:
+            k = sum(1 for r in rows if r["instrument"] == inst and r["passes_alpha"])
+            print(f"  {inst}: {k}/{len(titles)} clear alpha", flush=True)
+
+    df = pd.DataFrame(rows)
+    df.to_csv(HERE / "phase2_s4_results.csv", index=False)
+    surv = df[df.passes_alpha].copy()
+    if len(surv):
+        surv["controls_ok"] = ((surv.perm_p < 0.05)
+                               & ~((surv.control_spearman_p < 0.05).fillna(False)))
+    conf = surv[surv.controls_ok] if len(surv) else surv
+    out = {"stage": "S4", "alpha": alpha, "outcome": S4_OUTCOME, "n_tested": int(len(df)),
+           "n_clear_alpha": int(len(surv)), "n_confirmed": int(len(conf)),
+           "n_tradeable": int(df.tradeable.sum()),
+           "max_ci_hi": float(df.rule_ci_hi.max()),
+           "median_accuracy": float(df.rule_accuracy.median()),
+           "confirmed": conf.to_dict("records") if len(conf) else []}
+    out["s4_pass"] = True
+
+    if verbose:
+        print("=" * 104)
+        print("PHASE 2 · S4 — THE CAPTURABLE WINDOW (post-jump)   #116")
+        print("=" * 104)
+        print(f"  {out['n_tested']} powered pairs · outcome '{S4_OUTCOME}' (release-bar CLOSE -> +15m)")
+        print(f"  alpha = {alpha:.7f} (0.05/{len(powered)}) — its OWN family, not S3's budget")
+        print(f"\n  clear alpha              : {out['n_clear_alpha']}")
+        print(f"  ⭐ CONFIRMED (+ controls) : {out['n_confirmed']}")
+        print(f"\n  median rule accuracy: {100*out['median_accuracy']:.1f}%   "
+              f"highest 95% upper bound anywhere: {100*out['max_ci_hi']:.1f}%")
+        print(f"  pairs whose 95% LOWER bound reaches the 71% break-even: {out['n_tradeable']}")
+        for r in out["confirmed"]:
+            tag = "" if r["provenance_verified"] else "  ⚠️ UNVERIFIED provenance"
+            print(f"    {r['instrument']:>4}  {r['release']:<34} n={r['n']:>4} "
+                  f"S={r['spearman_r']:+.3f} p={r['spearman_p']:.2e} perm={r['perm_p']:.3f} "
+                  f"acc={100*r['rule_accuracy']:.1f}% [{100*r['rule_ci_lo']:.1f},"
+                  f"{100*r['rule_ci_hi']:.1f}]{tag}")
+        if out["n_tradeable"] == 0:
+            print(f"\n  ⇒ A TRADEABLE EDGE IS EXCLUDED AT 95% ON ALL {out['n_tested']} PAIRS")
+        print("\n  wrote phase2_s4_results.csv")
+        print("=" * 104)
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", choices=["s0", "s1", "s2", "s3"], default="s0")
+    ap.add_argument("--stage", choices=["s0", "s1", "s2", "s3", "s4"], default="s0")
     ap.add_argument("--out", default="")
     a = ap.parse_args()
-    res = {"s0": stage_s0, "s1": stage_s1, "s2": stage_s2, "s3": stage_s3}[a.stage]()
+    res = {"s0": stage_s0, "s1": stage_s1, "s2": stage_s2, "s3": stage_s3, "s4": stage_s4}[a.stage]()
     if a.out:
         Path(a.out).write_text(json.dumps(res, indent=1, default=str))
         print(f"wrote {a.out}")
