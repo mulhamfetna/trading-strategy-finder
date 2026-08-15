@@ -155,6 +155,9 @@ def returns_for(px: pd.DataFrame, stamps: pd.Series, offsets_min: list[int], *, 
     """
     idx = pd.DatetimeIndex(px["Date"])
     vals = px[price_col].to_numpy(dtype=float)
+    # For POST windows the anchor price comes from the OPEN of the release bar (see the note below);
+    # the END price is always the close of the T+h bar.
+    anchor_vals = px["Open"].to_numpy(dtype=float) if post else vals
     rows = []
     for ts in stamps:
         r: dict = {}
@@ -164,16 +167,27 @@ def returns_for(px: pd.DataFrame, stamps: pd.Series, offsets_min: list[int], *, 
                 r[f"r{m}"] = np.nan
                 continue
             if post:
+                # ⚠️⚠️ ANCHOR ON THE RELEASE BAR'S OPEN, NOT ITS CLOSE. The first version used the
+                # CLOSE, which EXCLUDES the release-minute jump — and round 1 established that for gold
+                # $132 of a $137 reaction happens inside that minute. Phase 2's S0 gate FAILED on
+                # exactly this and looked like a broken pipeline until the anchor was checked.
+                #
+                # H1-C asks whether a PRE-POSITIONED trade profits from the anticipated change. A
+                # pre-positioned trade is already in before the print and therefore HOLDS THROUGH THE
+                # JUMP, so the open is the correct anchor. The close-anchored variant measures the
+                # post-jump residue — a different, also-interesting question (what survives latency) —
+                # and is reported alongside rather than instead.
                 a, b = _at(idx, ts), _at(idx, ts + pd.Timedelta(minutes=m))
             else:
                 a, b = _at(idx, ts - pd.Timedelta(minutes=m)), _at(idx, ts - pd.Timedelta(minutes=1))
-            if a is None or b is None or b <= a or vals[a] <= 0:
+            base = anchor_vals[a] if (a is not None and post) else (vals[a] if a is not None else 0.0)
+            if a is None or b is None or b <= a or base <= 0:
                 r[f"r{m}"] = np.nan
             else:
                 # ⚠️ Guard against a stale-bar join: if the anchor bar is far from the requested time
                 # the frame has a hole there and the "return" would span a gap of unknown length.
                 gap_ok = abs((idx[a] - (ts if post else ts - pd.Timedelta(minutes=m))).total_seconds()) <= 300
-                r[f"r{m}"] = (vals[b] / vals[a] - 1.0) * 100.0 if gap_ok else np.nan
+                r[f"r{m}"] = (vals[b] / base - 1.0) * 100.0 if gap_ok else np.nan
         rows.append(r)
     return pd.DataFrame(rows, index=stamps.index)
 
