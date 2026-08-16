@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>برنامج أبحاث الأخبار — التقرير البصري الكامل</title>
+<style>
+  :root{
+    --l0:#0b1e3d; --l0b:#12305f;
+    --l1:#1d3a6e; --l1b:#27508f;
+    --l2:#0e5e56; --l2b:#15806f;
+    --l3:#5b5f6b; --l3b:#7a7f8c;
+    --gold:#d4a017; --green:#1d9e57; --red:#c0392b; --amber:#e67e22;
+    --bg:#f4f6fa; --card:#ffffff; --ink:#1c2333; --mut:#5f6775; --line:#dfe4ee;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font-family:"Segoe UI","Tahoma","Noto Naskh Arabic","Noto Sans Arabic",Arial,sans-serif;
+       line-height:1.75;font-size:16px}
+  .ltr{direction:ltr;unicode-bidi:embed;font-family:Consolas,Menlo,monospace}
+  .num{direction:ltr;unicode-bidi:embed;font-family:Consolas,Menlo,monospace;white-space:nowrap}
+  header{background:linear-gradient(135deg,var(--l0) 0%,var(--l1) 55%,var(--l2) 100%);color:#fff;padding:38px 26px 30px}
+  header h1{margin:0 0 6px;font-size:30px}
+  header .sub{opacity:.9;font-size:15px;max-width:1000px}
+  .wrap{max-width:1180px;margin:0 auto;padding:22px 18px 80px}
+  .legend{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 6px}
+  .legend span{padding:5px 14px;border-radius:20px;color:#fff;font-size:13px;font-weight:600}
+  .lv0{background:var(--l0)} .lv1{background:var(--l1)} .lv2{background:var(--l2)} .lv3{background:var(--l3)}
+  details{background:var(--card);border:1px solid var(--line);border-radius:12px;margin:14px 0;overflow:hidden;
+          box-shadow:0 1px 3px rgba(10,20,50,.06)}
+  summary{cursor:pointer;padding:14px 18px;font-weight:700;font-size:17px;color:#fff;list-style:none;
+          display:flex;align-items:center;gap:12px}
+  summary::-webkit-details-marker{display:none}
+  summary .tag{font-size:11.5px;background:rgba(255,255,255,.22);padding:2px 10px;border-radius:12px;font-weight:600}
+  summary .arrow{margin-inline-start:auto;transition:transform .2s}
+  details[open]>summary .arrow{transform:rotate(90deg)}
+  details.L0>summary{background:linear-gradient(90deg,var(--l0),var(--l0b))}
+  details.L1>summary{background:linear-gradient(90deg,var(--l1),var(--l1b))}
+  details.L2>summary{background:linear-gradient(90deg,var(--l2),var(--l2b))}
+  details.L3>summary{background:linear-gradient(90deg,var(--l3),var(--l3b));font-size:15.5px}
+  .body{padding:16px 20px 20px}
+  h3{margin:20px 0 8px;font-size:17px} h4{margin:16px 0 6px;font-size:15.5px}
+  p{margin:8px 0}
+  .hero{background:linear-gradient(135deg,#fff8e6,#fdf3d3);border:2px solid var(--gold);border-radius:14px;
+        padding:18px 20px;margin:16px 0}
+  .hero h2{margin:0 0 8px;font-size:20px;color:#7a5a00}
+  .kpis{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:150px;flex:1}
+  .kpi .v{font-size:20px;font-weight:800;direction:ltr;font-family:Consolas,monospace}
+  .kpi .k{font-size:12.5px;color:var(--mut)}
+  .g .v{color:var(--green)} .r .v{color:var(--red)} .a .v{color:var(--amber)} .b .v{color:var(--l1)}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:14px;background:#fff}
+  th{background:#eef2f9;padding:8px 10px;border:1px solid var(--line);font-size:13px}
+  td{padding:7px 10px;border:1px solid var(--line);vertical-align:top}
+  .tblwrap{overflow-x:auto}
+  .ok{color:var(--green);font-weight:700} .no{color:var(--red);font-weight:700} .wr{color:var(--amber);font-weight:700}
+  .bar{display:flex;align-items:center;gap:10px;margin:5px 0}
+  .bar .lbl{width:210px;font-size:13.5px;flex-shrink:0}
+  .bar .trk{flex:1;background:#e9edf5;border-radius:6px;height:22px;position:relative;direction:ltr}
+  .bar .fill{height:100%;border-radius:6px;display:flex;align-items:center;justify-content:flex-end;
+             color:#fff;font-size:11.5px;font-family:Consolas,monospace;padding:0 8px;min-width:34px}
+  .fg{background:linear-gradient(90deg,#27ae60,#1d9e57)} .fr{background:linear-gradient(90deg,#e74c3c,#c0392b)}
+  .fb{background:linear-gradient(90deg,#3f6ad8,#27508f)} .fa{background:linear-gradient(90deg,#f39c12,#e67e22)}
+  .fgold{background:linear-gradient(90deg,#e0b52e,#c39312)}
+  .timeline{border-inline-start:4px solid var(--l1);margin:14px 8px;padding-inline-start:18px}
+  .tstep{margin:0 0 16px;position:relative}
+  .tstep::before{content:"";width:14px;height:14px;border-radius:50%;background:var(--l1);
+                 position:absolute;inset-inline-start:-27px;top:5px;border:3px solid #fff;box-shadow:0 0 0 2px var(--l1)}
+  .tstep.win::before{background:var(--gold);box-shadow:0 0 0 2px var(--gold)}
+  .tstep b{font-size:15.5px}
+  .note{background:#fdf6ec;border-inline-start:4px solid var(--amber);padding:10px 14px;border-radius:8px;margin:10px 0;font-size:14.5px}
+  .good{background:#eef9f1;border-inline-start:4px solid var(--green)}
+  .bad{background:#fdeeec;border-inline-start:4px solid var(--red)}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin:12px 0}
+  .mini{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fff}
+  .mini h4{margin:0 0 6px}
+  .lvchip{display:inline-block;color:#fff;border-radius:10px;padding:1px 10px;font-size:11.5px;font-weight:700;margin-inline-end:6px}
+  .decision{border:2px solid var(--l1);border-radius:14px;margin:16px 0;overflow:hidden}
+  .decision>.dh{background:linear-gradient(90deg,var(--l1),var(--l2));color:#fff;padding:12px 18px;font-weight:800;font-size:17px}
+  .decision .body{padding:14px 18px}
+  .stair{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+  .stair .step{border-radius:10px;padding:10px 14px;color:#fff}
+  .stair .s0{background:var(--l0);margin-inline-end:0}
+  .stair .s1{background:var(--l1);margin-inline-end:24px}
+  .stair .s2{background:var(--l2);margin-inline-end:48px}
+  .stair .s3{background:var(--l3);margin-inline-end:72px}
+  .stair b{display:block;margin-bottom:2px}
+  code{background:#eef2f9;border-radius:5px;padding:1px 6px;font-size:13px;direction:ltr;unicode-bidi:embed}
+  footer{color:var(--mut);font-size:13px;margin-top:34px;border-top:1px solid var(--line);padding-top:14px}
+  .small{font-size:13px;color:var(--mut)}
+</style>
+</head>
+<body>
+<header>
+  <h1>📊 برنامج أبحاث الأخبار — التقرير البصري الكامل</h1>
+  <div class="sub">
+    أربعة مسارات عمل (<span class="ltr">WS-EARN → Round 1 → WS-NEWS2 → WS-NEWS3</span>) · سؤال واحد · <b>صفقة واحدة مؤكَّدة</b><br>
+    التاريخ: <span class="num">2026-08-16</span> · حالة التحقق عند الإغلاق: <span class="num">27/27</span> مطالبة في سجل الادعاءات + اختبار ذاتي <span class="num">5/5</span> · كل رقم في هذا التقرير قابل لإعادة الاشتقاق من ملف أدلة مودَع في المستودع
+  </div>
+</header>
+<div class="wrap">
+
+<div class="legend">
+  <b style="align-self:center">تدرُّج المستويات:</b>
+  <span class="lv0">L0 — الخلاصة العليا</span>
+  <span class="lv1">L1 — مسارات العمل</span>
+  <span class="lv2">L2 — التجارب مرحلةً مرحلة</span>
+  <span class="lv3">L3 — أدقّ التفاصيل والسجلّ الكامل</span>
+</div>
+<p class="small">اضغط على أي شريط لفتحه أو طيّه. المستويات مرتّبة من الأعلى (قرار وخلاصة) إلى الأسفل (سجل تجارب مسهب بأدق التفاصيل).</p>
+
+<!-- ==================== L0 ==================== -->
+<details class="L0" open>
+<summary><span class="tag">L0</span> الخلاصة التنفيذية — السؤال، والجواب، والصفقة المؤكَّدة <span class="arrow">◀</span></summary>
+<div class="body">
+
+<p><b>السؤال الذي ثبت عبر أربعة مسارات عمل:</b> الخبر الاقتصادي المجدوَل يعطينا ثلاثة أرقام — <b>السابق</b> (previous)، <b>المتوقَّع</b> (forecast) قبل الصدور، و<b>الفعلي</b> (actual) لحظة الصدور. هل نستطيع استخراج <b>قوّة الخبر</b> (كم سيتحرك السعر) و<b>اتجاه الركوب</b>، وتحويلهما إلى ربح — قبل الصدور، أو في ثانية الصدور، أو بعده؟</p>
+
+<div class="kpis">
+  <div class="kpi r"><div class="v">مستحيل</div><div class="k">الاتجاه: لا يُتنبَّأ به بأي مدخل وأي أفق — نتيجة سلبية <b>مدعومة بتحليل قوة إحصائية</b> وليست افتراضًا</div></div>
+  <div class="kpi g"><div class="v">ممكن</div><div class="k">القوة: يمكن التنبؤ بها <b>من الليلة السابقة</b> (ارتباط خارج العيّنة ρ ≈ 0.5 على 5 أدوات)</div></div>
+  <div class="kpi b"><div class="v">5–15×</div><div class="k">تضخُّم التقلب في ثانية الصدور مقابل الدقائق العادية</div></div>
+  <div class="kpi g"><div class="v">27/27</div><div class="k">كل الأرقام المنشورة مثبَّتة في سجل ادعاءات يعيد اشتقاقها آليًا من ملفات مودَعة</div></div>
+</div>
+
+<div class="hero">
+  <h2>⭐ النتيجة الكبرى: أول صفقة أخبار مؤكَّدة، صافية التكاليف، في تاريخ المشروع كله</h2>
+  <p><b>شراء (Long) عقد <span class="ltr">NQ</span> أو <span class="ltr">RTY</span> قبل صدور {التضخم CPI، الوظائف NFP، الفائدة FOMC} بـ <span class="num">300</span> ثانية · وقف خسارة <span class="num">0.10%</span> · هدف ربح <span class="num">0.40%</span> · خروج زمني بعد <span class="num">+900</span> ثانية.</b></p>
+  <div class="kpis">
+    <div class="kpi g"><div class="v">+$155.56</div><div class="k">متوسط الربح الإجمالي للحدث الواحد على NQ (فاصل ثقة <span class="num">[+81.83, +229.30]</span>)</div></div>
+    <div class="kpi g"><div class="v">t = 4.13</div><div class="k">يجتاز أقسى عتبة في البرنامج: تصحيح Bonferroni على 54 خلية + ثبات الإشارة على نصفَي الفترة الزمنية</div></div>
+    <div class="kpi g"><div class="v">+$133</div><div class="k">صافي الحدث الواحد بعد أقسى سيناريو تكاليف (stressed) ≈ <span class="num">+$6,900</span>/سنة/عقد</div></div>
+    <div class="kpi b"><div class="v">t = 3.79</div><div class="k">التكرار المستقل على RTY — نفس الخلية، ملف أسعار مختلف</div></div>
+  </div>
+  <p>⚠️ <b>ما هي حقًا:</b> ليست «تنبّؤًا» بل حصاد <b>علاوة الإعلان</b> (Announcement Premium): السوق يدفع لمن يحمل مخاطرة الأسهم أثناء انكشاف الغموض الاقتصادي. نسبة الربح <span class="num">36.4%</span> فقط والوسيط خاسر — <b>ذيل الربح +4R هو من يدفع كل شيء</b>. القرار يقع خلال ثوانٍ من الصدور (وسيط بلوغ الهدف: <span class="num">+15s</span> على NQ و<span class="num">+3s</span> على RTY).</p>
+  <p>⛔ <b>النشر الفعلي معلَّق على قرارَين للمالك</b> — مفصَّلان في قسم القرارات أدناه.</p>
+</div>
+
+<h3>جدول النتائج الأعلى: كل أثر حقيقي وجده البرنامج ومصيره</h3>
+<div class="tblwrap"><table>
+<tr><th>الأثر المكتشَف</th><th>حجمه</th><th>قابل للتداول؟</th><th>السبب</th></tr>
+<tr><td>تقلّب إعلانات الأرباح (ثانية الإعلان)</td><td class="num">4.98×</td><td class="no">لا</td><td>قوة بلا اتجاه، ولا يوجد حدّ كمية في المحرك</td></tr>
+<tr><td>ردّة فعل الذهب على الأخبار</td><td class="num">5.5σ — $132 من $137 داخل الدقيقة</td><td class="no">لا</td><td>كل الحركة داخل الدقيقة؛ الدخول التفاعلي متأخر دائمًا</td></tr>
+<tr><td>المفاجأة ⇐ قفزة دقيقة الصدور</td><td class="num">ρ إلى −0.63 (23 زوجًا)</td><td class="no">لا</td><td>المُدخل (الفعلي−المتوقع) يصل <b>مع</b> الحركة نفسها</td></tr>
+<tr><td>انجراف ما بعد الصدور (CL/API)</td><td class="num">ρ −0.247 · دقة 57.4%</td><td class="no">لا</td><td>دون عتبة التعادل 71%؛ ومصدره خاص غير قابل للتحقق</td></tr>
+<tr><td>الذهب عكس المفاجآت</td><td class="num">Spearman −0.193</td><td class="no">لا</td><td>غير مجدٍ اقتصاديًا بعد التكاليف</td></tr>
+<tr><td><b>قوة الخبر متنبَّأ بها من الليلة السابقة</b></td><td class="num">ρ خارج العيّنة 0.47–0.58</td><td class="wr">مُدخل</td><td>هي مرشِّح الاختيار للصفقة المؤكدة (أي إصدارات تستحق)</td></tr>
+<tr><td><b>علاوة الإعلان (شراء فقط)</b></td><td class="num">RTY holdout p=0.0007 · CPI +$424/حدث</td><td class="ok">نعم (معلَّق)</td><td>متوسط غير مشروط — لا يحتاج تنبّؤًا بالاتجاه</td></tr>
+<tr><td><b>القوس المحدَّب فوق العلاوة (الصفقة المؤكدة)</b></td><td class="num">+$155.56/حدث · t=4.13 · صافي +$133</td><td class="ok">نعم (معلَّق)</td><td>المواصفات في الأعلى؛ معلَّقة على قراري المالك</td></tr>
+</table></div>
+
+<h3>الخط الزمني للبرنامج</h3>
+<div class="timeline">
+  <div class="tstep"><b><span class="ltr">WS-EARN</span> — إعلانات أرباح الشركات ⇐ ناسداك</b><br>783 حدثًا، 16 سنة، شموع ثانية واحدة. النتيجة: تقلّب <span class="num">4.98×</span> لكن <b>صفر اتجاه</b> (0/8 خلايا في كل الأذرع).</div>
+  <div class="tstep"><b>الجولة الأولى + الذهب</b><br>اكتشاف أن <span class="num">$132</span> من <span class="num">$137</span> من ردة الفعل تقع <b>داخل دقيقة الصدور</b> — القاعدة التي شكّلت كل ما بعدها.</div>
+  <div class="tstep"><b><span class="ltr">WS-NEWS2</span> — بيانات الإجماع الحقيقية</b><br>إثبات نزاهة البيانات (الطبعة الأولى/القيم اللحظية)، ثم <span class="num">612</span> زوجًا مدعومًا: المفاجأة تفسّر القفزة، <b>والاتجاه بعد الصدور مستبعَد عند 95%</b>.</div>
+  <div class="tstep win"><b><span class="ltr">WS-NEWS3</span> — التدقيق ثم الإكمال</b><br>التدقيق كشف أن فئتين من استراتيجيات الهدف <b>لم تُختبرا قط</b> ⇐ M1 العلاوة ⇐ M2 نموذج القوة ⇐ M3 القوس المحدّب ⇐ <b>الصفقة المؤكدة</b>.</div>
+</div>
+</div>
+</details>
+
+<!-- ==================== L1 ==================== -->
+<details class="L1">
+<summary><span class="tag">L1</span> مسارات العمل الأربعة — بطاقة لكل مسار بأهم أرقامه <span class="arrow">◀</span></summary>
+<div class="body">
+<div class="grid2">
+  <div class="mini">
+    <h4>1) <span class="ltr">WS-EARN</span> — أرباح الشركات (#109–113)</h4>
+    <p><b>التصميم:</b> 783 إعلان أرباح موقَّتًا <b>إلى الثانية</b> من أرشيف EDGAR، على شموع ثانية واحدة، والفرضية مسجَّلة قبل لمس البيانات.</p>
+    <div class="bar"><div class="lbl">تقلب ثانية الإعلان</div><div class="trk"><div class="fill fb" style="width:100%">4.98×</div></div></div>
+    <div class="bar"><div class="lbl">خلايا اتجاه معنوية</div><div class="trk"><div class="fill fr" style="width:8%">0/8</div></div></div>
+    <p class="small">درس دائم: «t سلبية معنوية في الصافي هي <b>سحب التكاليف</b> لا انعكاسًا» (الضابط: إجمالي t=−0.58 لكن صافي t=−3.68).</p>
+  </div>
+  <div class="mini">
+    <h4>2) الجولة الأولى + الذهب + بطارية الأساسيات</h4>
+    <div class="bar"><div class="lbl">ردة فعل الذهب</div><div class="trk"><div class="fill fb" style="width:90%">5.5σ</div></div></div>
+    <div class="bar"><div class="lbl">حصة دقيقة الصدور من الحركة</div><div class="trk"><div class="fill fa" style="width:96%">$132/$137</div></div></div>
+    <div class="bar"><div class="lbl">وقفات الخسارة الناتجة عن مسح ثانية واحدة</div><div class="trk"><div class="fill fr" style="width:94%">94%</div></div></div>
+    <p class="small">قاعدتان دائمتان: «صرّح بمرساة الشمعة <b>وجهتها</b>»، و«شغّل ارتباط الرتب بجانب Pearson على الذيول السمينة» (الذهب: Spearman −0.193 حيث Pearson أعمى عند −0.012).</p>
+  </div>
+  <div class="mini">
+    <h4>3) <span class="ltr">WS-NEWS2</span> — الإجماع الحقيقي (#114–123)</h4>
+    <p><b>البيانات:</b> تقويم TradingView (المصدر الثامن؛ فشل سبعة قبله) — <span class="num">39,221</span> حدثًا أمريكيًا. أُثبت أن «الفعلي» طبعة أولى وأن «السابق» قيمة لحظية (لا يمكن لأي back-fill أن يطابق 0% من قيم اليوم).</p>
+    <div class="bar"><div class="lbl">أزواج مدعومة إحصائيًا</div><div class="trk"><div class="fill fb" style="width:100%">612</div></div></div>
+    <div class="bar"><div class="lbl">ناجون في نافذة ما بعد الصدور</div><div class="trk"><div class="fill fr" style="width:4%">1/612</div></div></div>
+    <p class="small"><b>الحكم:</b> المفاجأة تفسّر <b>القفزة</b> (ρ إلى −0.63) ولا تفسّر شيئًا بعدها؛ الحافة الاتجاهية مستبعَدة عند 95% على كل الأزواج وكلتا النافذتين.</p>
+  </div>
+  <div class="mini">
+    <h4>4) <span class="ltr">WS-NEWS3</span> — إكمال الهدف (#124–126، #117)</h4>
+    <p><b>M0 التدقيق:</b> «يُغلَق مسار العمل مقابل <b>نصّ هدفه</b> لا مقابل أقوى حكم أنتجه» — فئتان من الهدف لم تُختبرا.</p>
+    <div class="bar"><div class="lbl">M1 علاوة RTY (اختبار مسجَّل مسبقًا)</div><div class="trk"><div class="fill fg" style="width:70%">+$69.5 · p=0.0007</div></div></div>
+    <div class="bar"><div class="lbl">M2 نموذج القوة (خارج العيّنة)</div><div class="trk"><div class="fill fb" style="width:58%">ρ ≈ 0.5</div></div></div>
+    <div class="bar"><div class="lbl">M3 الصفقة المؤكدة (إجمالي/حدث)</div><div class="trk"><div class="fill fgold" style="width:100%">+$155.56</div></div></div>
+    <p class="small">كل المعالم أُنجزت قبل مواعيدها، وكل رقم دخل السجل قبل النشر.</p>
+  </div>
+</div>
+</div>
+</details>
+
+<!-- ==================== L2 ==================== -->
+<details class="L2">
+<summary><span class="tag">L2</span> التجارب مرحلةً مرحلة — التصميم والنتيجة والدليل البصري <span class="arrow">◀</span></summary>
+<div class="body">
+
+<h3>🧪 WS-NEWS2: بطارية إثبات نزاهة البيانات (قبل أي استنتاج)</h3>
+<div class="tblwrap"><table>
+<tr><th>الفحص</th><th>الطريقة</th><th>النتيجة</th></tr>
+<tr><td>هل «الفعلي» طبعة أولى أم قيمة معدَّلة لاحقًا؟</td><td>مقارنة 503 إصدارات بأرشيف ALFRED التاريخي</td><td class="ok">طبعة أولى: تطابق 100/100/99% مع الطبعة الأولى و<b>0%</b> مع التعديل (وظائف آذار 2020: TV يحمل −701k لا −1,398k المعدّلة)</td></tr>
+<tr><td>هل «السابق» قيمة لحظية أم مملوءة رجعيًا؟</td><td>نفس الأرشيف، لكل سلسلة</td><td class="ok">لحظية: 99/98/99% مقابل <b>0%</b> تطابق مع قيم اليوم — السطر التُقط لحظة البث</td></tr>
+<tr><td>هل «المتوقَّع» نظيف؟</td><td>لا يوجد أي أرشيف إجماع في العالم</td><td class="wr">غير قابل للتحقق <b>نهائيًا</b> — تحفُّظ دائم مرفق بكل نتيجة</td></tr>
+<tr><td>التوقيت الصيفي قبل 2016</td><td>فحص التوقيتات سلسلةً سلسلة</td><td class="no">معطوب: 87 سلسلة متأخرة ساعة صيفًا ⇐ أرضية البيانات 2016</td></tr>
+</table></div>
+
+<h3>🧪 WS-NEWS2 المرحلة 2 (S0–S4): تشريح المفاجأة</h3>
+<div class="grid2">
+  <div class="mini"><h4>S0 — بوابة الصلاحية</h4><p>فشلت أول مرة لأن مرساة العائد كانت على <b>إغلاق</b> شمعة الصدور (تستثني القفزة!). الإصلاح كشف أن خطأ المرساة نفسه كان قد أسقط الإيجابية الوحيدة في المرحلة 1 — فأُعيدت 16 عملية تشغيل كاملة.</p></div>
+  <div class="mini"><h4>S2 — مِسبار الأثر المزروع</h4><p>كل زوج من الـ643 حمل مسبارًا مُعايَرًا (25 سحبة، اختبار ذي الحدين). احتاج المسبار نفسه <b>أربعة إصلاحات</b>؛ الدليل الذي كشف الجذر كان <b>شكلًا</b> لا رقمًا: معدل النجاح منعكس مع حجم العيّنة ⇐ يجب الزرع على <b>الرتب</b> عند قياس Spearman.</p></div>
+  <div class="mini"><h4>S3 — دقيقة الصدور</h4><p><b>23 ناجيًا</b>: المفاجأة تفسّر القفزة حتى <span class="num">ρ = −0.63</span> (p حتى <span class="num">1.9e-10</span>)، والضوابط الغبية صفر، ومثبَّتة باختبار تبديل عشوائي.</p></div>
+  <div class="mini"><h4>S4 — النافذة القابلة للالتقاط</h4><p><b>ناجٍ واحد من 612</b> (انجراف CL/API): دقته <span class="num">57.4%</span> مقابل عتبة تعادل <span class="num">71%</span> — ودون مصدر يمكن التحقق منه (#123).</p></div>
+</div>
+
+<h3>🧪 WS-NEWS3 · M1 — تسعير «الركوب» واكتشاف العلاوة</h3>
+<p><b>التجربة:</b> ادخل قبل الصدور بـ T دقيقة، أبقِ الوقف فعّالًا، اعبر لحظة الصدور، واخرج بعد 15 دقيقة — بالاتجاهين دائمًا، وبملء فجوات واقعي (GAP-01)، وعلى ضوابط نظيفة.</p>
+<h4>العلاوة حسب الإصدار (خلية M1 الأساسية على NQ — إجمالي $/حدث للشراء)</h4>
+<div class="bar"><div class="lbl">التضخم CPI</div><div class="trk"><div class="fill fg" style="width:100%">+$424</div></div></div>
+<div class="bar"><div class="lbl">الوظائف NFP</div><div class="trk"><div class="fill fg" style="width:27%">+$113</div></div></div>
+<div class="bar"><div class="lbl">السلع المعمّرة</div><div class="trk"><div class="fill fb" style="width:4%">+$12</div></div></div>
+<div class="bar"><div class="lbl">مبيعات التجزئة (نفس الدقيقة 8:30!)</div><div class="trk"><div class="fill fr" style="width:19%">−$79</div></div></div>
+<div class="bar"><div class="lbl">الفائدة FOMC</div><div class="trk"><div class="fill fr" style="width:20%">−$85</div></div></div>
+<div class="note good">⭐ <b>الاختبار التأكيدي المسجَّل مسبقًا:</b> قبل أن يُحمَّل ملف RTY لأول مرة في هذا المسار، سُجّل اختبار واحد ثابت على GitHub. النتيجة: <span class="num">+$69.54</span>/حدث، <span class="num">t=3.22</span>، <span class="num">p=0.0007</span> — <b>تكرار خارج العائلة على بيانات لم تُلمس</b>. وكل خلايا الشراء التسع موجبة وكل الضوابط ≈ صفر.</div>
+<div class="note">⚠️ <b>تركُّز حقبي:</b> العلاوة ≈ صفر في 2016–2019 وأقوى ما تكون في 2025–2026 (CPI على NQ: <span class="num">+$1,279</span>/حدث في 2025 و<span class="num">+$1,796</span> في 2026). لا يمكن للعيّنة أن تفصل بين «علاوة دائمة تتضخم مع الغموض» و«نظام حقبة تضخم سينتهي».</div>
+
+<h3>🧪 WS-NEWS3 · M2 — نموذج القوة: أي إصدار سيتحرك؟ (من الليلة السابقة)</h3>
+<p><b>النموذج عمدًا أغبى نموذج يمكن الدفاع عنه:</b> وسيط حركة السلسلة نفسها في إصداراتها السابقة، مُزاح إصدارًا واحدًا (لا يرى الحدث الذي يتنبأ به أبدًا).</p>
+<div class="bar"><div class="lbl">NQ</div><div class="trk"><div class="fill fb" style="width:76%">ρ = +0.530</div></div></div>
+<div class="bar"><div class="lbl">ES</div><div class="trk"><div class="fill fb" style="width:74%">ρ = +0.515</div></div></div>
+<div class="bar"><div class="lbl">GC</div><div class="trk"><div class="fill fb" style="width:68%">ρ = +0.472</div></div></div>
+<div class="bar"><div class="lbl">CL</div><div class="trk"><div class="fill fb" style="width:78%">ρ = +0.546</div></div></div>
+<div class="bar"><div class="lbl">RTY</div><div class="trk"><div class="fill fb" style="width:84%">ρ = +0.582</div></div></div>
+<div class="bar"><div class="lbl">🔻 المزيِّف: خلط أسماء السلاسل (يجب أن ينهار)</div><div class="trk"><div class="fill fr" style="width:15%">ρ ≈ 0.1</div></div></div>
+<div class="note good">✅ <b>إغلاق نهائي لأرقام الإجماع:</b> |المتوقَّع − السابق| لا يضيف <b>شيئًا</b> للتنبؤ بالحجم (أقصى |ρ| عبر 5 أدوات = 0.084 وهو سالب) — ومع نتائج الاتجاه السابقة: أرقام الإجماع ميتة تمامًا كمدخلات قبل الصدور.</div>
+<div class="note bad">⭐⭐ <b>بوابتان مسجَّلتان فشلتا وبقيتا فاشلتين في السجل — وكل فشل صار مبدأ:</b><br>
+(1) <b>القوة ≠ العلاوة</b>: NFP وFOMC أكبر المحركات لكن بلا علاوة؛ CPI ثالث محرك لكنه صاحب العلاوة الوحيدة — مرساة تحققي سمّت الكمية الخطأ.<br>
+(2) <b>الوسيط الموسَّع يتأخر عن تحولات النظام</b>: CPI متنبَّأ له 0.045% وواقعه 0.19% (النافذة تتذكر 2016–2020 حين كان CPI لا يحرّك شيئًا؛ NFP المستقر: 1.33× بلا تأخر). العلاج: متغير نافذة متحركة-24 <b>مُعلَن</b> بنفس البوابات — وبقيمه الحالية CPI هو الإصدار الأقوى #1 على NQ وRTY معًا.</div>
+
+<h3>🧪 WS-NEWS3 · M3 — السترادل على شموع الثانية الواحدة (تجربة اقتراح المالك نصًّا)</h3>
+<p><b>الذراعان:</b> سترادل (شراء + بيع معًا، لكل رِجل وقف S وهدف P) مقابل شراء-فقط. قواعد تنفيذ متشائمة: شمعة ثانية تخترق الوقف والهدف معًا ⇐ تُحسب <b>وقفًا</b>؛ ملء الوقف بالأسوأ من (الخط/الافتتاح)؛ التكاليف لكل رِجل والسترادل يدفع رِجلين.</p>
+<div class="grid2">
+<div class="mini">
+<h4>الاختبار الأساسي المسجَّل (السترادل)</h4>
+<p>صافي stressed: <span class="num">+$50.33</span>/حدث، <span class="num">t=1.35</span>، <span class="num">p=0.0897</span> ⇐ <b class="no">غير مؤكَّد</b> — و<b>غير مستبعَد</b> أيضًا (أصغر أثر قابل للكشف ≈ $104). لكن الحاسم:</p>
+<div class="bar"><div class="lbl">خلايا يتفوق فيها السترادل على رِجله الطويلة</div><div class="trk"><div class="fill fr" style="width:6%">0/18</div></div></div>
+<p class="small">الرِجل القصيرة <b>تدفع</b> العلاوة وتضاعف التكاليف — كما تنبأت M1 تمامًا.</p>
+</div>
+<div class="mini">
+<h4>مقياس «المسح المزدوج» (Whipsaw) — أخيرًا</h4>
+<div class="bar"><div class="lbl">وقف 0.05%: كلا الرِجلين توقفان</div><div class="trk"><div class="fill fr" style="width:88%">65–73%</div></div></div>
+<div class="bar"><div class="lbl">وقف 0.10%</div><div class="trk"><div class="fill fa" style="width:62%">46–56%</div></div></div>
+<div class="bar"><div class="lbl">وقف 0.20%</div><div class="trk"><div class="fill fb" style="width:32%">21–32%</div></div></div>
+<p class="small">«الوقف الصغير» الذي اقترحه الهدف هو <b>جلّاد السترادل نفسه</b> — لكن الرِجل الطويلة المنفردة تنجو منه وتربح.</p>
+</div>
+</div>
+<div class="note good">⭐ <b>حدس المالك (وقف صغير + هدف كبير) صحيح — من جهة واحدة فقط:</b> في الخلية الفائزة على NQ: <span class="num">22.9%</span> من الأحداث تصيب هدف <b>+4R</b> وتدفع عن الجميع؛ الحكم يقع في ثوانٍ (<span class="num">+15s</span> وسيطًا بعد الصدور). أما أداة CL (بلا علاوة) فحُكمها <b>لاغٍ (VOID)</b> بمزيِّفها: القوس «يربح» عندها حتى في دقائق لا خبر فيها — فلا شيء يُنسب للخبر.</div>
+</div>
+</details>
+
+<!-- ==================== L3 ==================== -->
+<details class="L3">
+<summary><span class="tag">L3</span> السجلّ الأعمق — آلية التنفيذ، الجداول الكاملة، الاصطيادات العشرون، جرد المطالبات <span class="arrow">◀</span></summary>
+<div class="body">
+
+<h3>⚙️ آلية التنفيذ الدقيقة للصفقة المؤكدة (كما بُرمِجت حرفيًا)</h3>
+<div class="tblwrap"><table>
+<tr><th>العنصر</th><th>التعريف الدقيق</th></tr>
+<tr><td>الدخول</td><td>سعر إغلاق شمعة الثانية الواحدة عند (وقت الصدور − <span class="num">300s</span>)؛ يُرفض الحدث إن بعُدت الشمعة أكثر من 60 ثانية</td></tr>
+<tr><td>وقف الخسارة</td><td>ملء عند <b>الأسوأ</b> من (خط الوقف، افتتاح الشمعة الخارقة) — قاعدة GAP-01</td></tr>
+<tr><td>هدف الربح</td><td>أمر معلَّق (limit): ملء عند <b>الأفضل</b> من (الخط، الافتتاح)</td></tr>
+<tr><td>قاعدة التعادل</td><td>شمعة ثانية تخترق الوقف والهدف معًا ⇐ تُحسب <b>وقفًا</b> (تشاؤمي، مسجَّل مسبقًا)</td></tr>
+<tr><td>الخروج الزمني</td><td>أي رِجل حية عند (الصدور + <span class="num">900s</span>) تُغلق على إغلاق تلك الشمعة</td></tr>
+<tr><td>التكاليف/الرِجل</td><td><span class="num">$2.50</span> + {1، 2، 4} تكّة ⇐ NQ: <span class="num">7.50/12.50/22.50</span> — سيناريو stressed يتصدر كل التقارير</td></tr>
+</table></div>
+
+<h3>📋 الجدول الكامل: خلايا M3 التسع على NQ مُفكَّكة رِجلًا رِجلًا (متوسط $/حدث، 329 حدثًا)</h3>
+<div class="tblwrap"><table>
+<tr><th>وقف S%</th><th>هدف P%</th><th>شراء</th><th>بيع</th><th>سترادل</th><th>كلا الرِجلين توقّفا</th></tr>
+<tr><td class="num">0.05</td><td>بلا</td><td class="num ok">+142.66</td><td class="num no">−18.54</td><td class="num">+124.12</td><td class="num">65.4%</td></tr>
+<tr><td class="num">0.05</td><td class="num">0.20</td><td class="num ok">+81.19</td><td class="num no">−31.09</td><td class="num">+50.10</td><td class="num">48.6%</td></tr>
+<tr><td class="num">0.05</td><td class="num">0.40</td><td class="num ok">+118.55</td><td class="num no">−25.11</td><td class="num">+93.44</td><td class="num">60.6%</td></tr>
+<tr><td class="num">0.10</td><td>بلا</td><td class="num ok">+184.28</td><td class="num no">−45.71</td><td class="num">+138.56</td><td class="num">46.2%</td></tr>
+<tr><td class="num">0.10</td><td class="num">0.20</td><td class="num ok">+102.26</td><td class="num no">−59.03</td><td class="num">+43.22</td><td class="num">24.2%</td></tr>
+<tr style="background:#fff8e6"><td class="num"><b>0.10</b></td><td class="num"><b>0.40</b></td><td class="num ok"><b>+155.56</b></td><td class="num no">−60.23</td><td class="num">+95.33</td><td class="num">39.4%</td></tr>
+<tr><td class="num">0.20</td><td>بلا</td><td class="num ok">+171.55</td><td class="num no">−40.10</td><td class="num">+131.45</td><td class="num">20.5%</td></tr>
+<tr><td class="num">0.20</td><td class="num">0.20</td><td class="num ok">+102.18</td><td class="num no">−115.24</td><td class="num no">−13.06</td><td class="num">0.9%</td></tr>
+<tr><td class="num">0.20</td><td class="num">0.40</td><td class="num ok">+163.08</td><td class="num no">−101.94</td><td class="num">+61.14</td><td class="num">12.8%</td></tr>
+</table></div>
+<p class="small">⭐ ثلاث حقائق بنيوية: (1) الشراء موجب في <b>18/18</b> خلية (مع RTY) والبيع سالب في 18/18؛ (2) خسارة الرِجل القصيرة <b>تكبر مع اتساع الوقف</b> (−$19 عند 0.05% ⇐ −$102 عند 0.20%: البيع الواسع ينجو من المسح ثم يركب العلاوة ضد نفسه ربع ساعة)؛ (3) القوس المتناظر 1R:1R هو السترادل الوحيد السالب إجماليًا — متبرّع خالص بالتكاليف.</p>
+
+<h3>📉 تشريح توزيع الخلية الفائزة (NQ)</h3>
+<div class="kpis">
+  <div class="kpi a"><div class="v">36.4%</div><div class="k">نسبة الأحداث الرابحة — <b>الوسيط خاسر −$136</b></div></div>
+  <div class="kpi g"><div class="v">22.9%</div><div class="k">تصيب هدف +4R وتدفع عن كل البقية</div></div>
+  <div class="kpi g"><div class="v">+$2,900</div><div class="k">أفضل حدث منفرد (CPI بتاريخ <span class="num">2026-07-14</span>)</div></div>
+  <div class="kpi r"><div class="v">−$995</div><div class="k">أسوأ حدث = <b>2.1× الوقف الاسمي</b> — انزلاق فجوة عبر الوقف، <b>مقيس</b> لا مفترَض</div></div>
+</div>
+<p class="small">مزيج المخارج: 48.6% وقف بعد الصدور · 22.9% هدف · 15.6% خروج زمني · 12.8% وقف قبل الصدور. توقيت الحسم: الهدف يمتلئ وسيطيًا بعد <span class="num">+15s</span> من الطبعة (الربع الأدنى: <b>ثانية واحدة</b>)، والوقفات بعد <span class="num">+3s</span>.</p>
+
+<h3>🕳️ ثلاث قصص من العمق (لولاها لنُشرت أخطاء)</h3>
+<div class="grid2">
+  <div class="mini"><h4>تلوّث الضوابط — على مستوى البرنامج كله</h4><p>مزيِّف V3 فشل 4/4: ضوابط «يوم بلا خبر» أظهرت قفزة شبح <span class="num">2.3–2.5×</span>. السبب: «بلا خبر» كانت تعني «بلا خبر <b>من قائمتنا</b>» — والساعة 8:30 تحمل طلبات الإعانة وPPI وGDP في الأيام «الهادئة». الإصلاح: تنظيف الضوابط مقابل <b>كامل</b> تقويم الـ39 ألف حدث، ثم مزيِّف دقائق-الظهيرة (<span class="num">0.89–0.94×</span> = خط الأنابيب لا يصنع شيئًا).</p></div>
+  <div class="mini"><h4>كذبة الوحدات في ملفات الثانية الواحدة</h4><p>ظهر «وسيط بلوغ الهدف 239 ثانية» — قبل الصدور نفسه! كانت 239 <b>شمعة</b>: ملفات الثانية تحمل شموعًا للثواني <b>المتداولة فقط</b> (NQ: 203 من 300 ثانية قبل الصدور؛ RTY: 116 فقط). اصطيدت قبل أي نشر؛ القاعدة: إزاحة الشموع ليست مدةً زمنية أبدًا.</p></div>
+  <div class="mini"><h4>انقلاب CL — المزيِّف يعمل</h4><p>على النفط: ضابط اللاخبر <b>يتفوق</b> على الصدور نفسه (+$29 مقابل −$2 للشراء) — فمصدر ربح القوس هناك موجود في كل مكان، إذًا لا شيء يُنسب للخبر ⇐ حُكم CL <b>لاغٍ</b> حسب التسجيل المسبق، لا «سلبي».</p></div>
+  <div class="mini"><h4>جسر الإطارين (V1)</h4><p>خط أنابيب الثانية الواحدة يعيد إنتاج خلية M1 المحسوبة على شموع الدقيقة: <span class="num">+$80.80</span> مقابل <span class="num">+$84.24</span> على نفس 574 حدثًا بالضبط — إطاران، قاعدتا كود، صفقة واحدة.</p></div>
+</div>
+
+<h3>🛡️ الاصطيادات العشرون (صفر منها بلغ استنتاجًا منشورًا)</h3>
+<div class="tblwrap"><table>
+<tr><th>#</th><th>WS-NEWS2 (12)</th><th>#</th><th>WS-NEWS3 (8)</th></tr>
+<tr><td class="num">1</td><td>خطأ مرساة S0 (إغلاق/افتتاح شمعة الصدور) — قلب إيجابية المرحلة 1 وأعاد 16 تشغيلًا</td><td class="num">13</td><td>ادعاء التدقيق نفسه الخاطئ («النجاة لم تُختبر» — وكانت H1-A اختبرتها)</td></tr>
+<tr><td class="num">2–5</td><td>أربعة عيوب في المسبار المزروع (سقف الشبكة؛ عتبة قطعة النقود؛ نقل الأهداف؛ الزرع على القيم بدل الرتب — والدليل شكل منعكس مع n)</td><td class="num">14</td><td>تلوث الضوابط على مستوى البرنامج (V3 فشل 4/4)</td></tr>
+<tr><td class="num">6</td><td>ملف التسجيل المسبق ذاته غير مودَع (قاعدة *.csv الشاملة)</td><td class="num">15</td><td>أرضية موسمية 8:30 فُصلت عن الأثر بمزيِّف دقائق الظهيرة بدل تليين العتبة</td></tr>
+<tr><td class="num">7</td><td><code>N_PERM</code> غير معرَّف على المسار الوحيد المهم</td><td class="num">16</td><td>مرساة V2 في M2 سمّت الكمية الخطأ (قوة/علاوة) — بقيت فاشلة وصارت مبدأً</td></tr>
+<tr><td class="num">8</td><td>فحص V1 مقلوب كاد يرفض ناجي الذيول السمينة الذين تحميهم القاعدة P2-C2</td><td class="num">17</td><td>تأخر النظام خلف فشل V1 في M2 (الوسيط الموسَّع) — عولج بمتغير معلَن بنفس البوابات</td></tr>
+<tr><td class="num">9</td><td>إيداع ادّعى تغييرًا لم يحتوه (سلسلة && انكسرت) — اصطيد بـ grep وصُحّح علنًا</td><td class="num">18</td><td>فحص سجلّ بُني على بديل (عدّ صفوف) بدل إحصائيته — أُعيد بناؤه دون مسّ أي expect</td></tr>
+<tr><td class="num">10</td><td>بوابة القبول رفضت 5 من 7 ملفات سليمة (ثلاثة عيوب في البوابة نفسها)</td><td class="num">19</td><td>كذبة الوحدات (شموع كثوانٍ) في ملفات الثانية الواحدة</td></tr>
+<tr><td class="num">11</td><td>تقدير نقطي نُشر على خلية غير قابلة للتقدير (17 مقابل 1) — أُعيد تثبيته بفاصل ثقة</td><td class="num">20</td><td>«ربح» قوس CL في دقائق اللاخبر ⇐ إلغاء الأداة بمزيِّفها</td></tr>
+<tr><td class="num">12</td><td>عتبة قطع اعتباطية فوق الفجوة الملاحظة مباشرة (حسمها اختبار Fisher z) + «n» من جهة واحدة من ربط ليست n</td><td></td><td></td></tr>
+</table></div>
+
+<h3>🧾 جرد المطالبات (27/27 عند الإغلاق — أرقام تبقى قابلة لإعادة الاشتقاق للأبد)</h3>
+<p class="small"><b>WS-NEWS2 (18):</b> <span class="ltr">H1A-NQ-5M-040-RATIO · TV-DST-CLEAN-FROM-2016 · TV-NFP-CLEAN-PRE-2016 · TV-TIMESTAMPS-MINUTE-ONLY · NEWS2-USABLE-UNIVERSE · NEWS2-RETRACTIONS-NOT-REUSED · TV-ACTUAL-IS-FIRST-PRINT · TV-PREVIOUS-IS-POINT-IN-TIME · TV-FORECAST-NOT-COPIED-FROM-ACTUAL · H1BC-ANTICIPATED-CHANGE-NEGATIVE · PHASE2-MATRIX-221-DECIDABLE · P1X-NG-EFFECT-REAL-BUT-NOT-TRADEABLE · P2-S0-PIPELINE-VALIDITY · P2-S1-FEATURES-NO-LOOKAHEAD · P2-S2-EVERY-PAIR-PROBED · P2-S3-EFFICIENCY-NOT-EDGE · P2-S4-CAPTURABLE-WINDOW-EMPTY · API-EIA-PREVIEW-MECHANISM</span></p>
+<p class="small"><b>WS-NEWS3 (9):</b> <span class="ltr">P1-RIDE-PREMIUM-RTY-CONFIRMED (+69.54) · P1-DRIFT-DEAD (0) · P1-CPI-ENGINE (+424.22) · P2-POWER-MODEL-CONFIRMED (+0.530) · P2-FP-ADDS-NOTHING (0) · P2-REGIME-LAG (4.155) · P3-STRADDLE-NOT-CONFIRMED (+50.33) · P3-LONG-RELEASE-TRADE-CONFIRMED (+155.56) · P3-WHIPSAW-MEASURED (0.654)</span></p>
+<p class="small">كل مطالبة تحمل ثلاث تحقُّقات V1/V2/V3 تفشل لأسباب <b>مختلفة</b> + «بقعة عمياء» معلَنة؛ ولم يُعدَّل أي <code>expect</code> ليطابق ناتجًا، قط. قاعدة التقادم: شغِّل <code>python3 optimize/verify/run.py</code> قبل اقتباس أي رقم — إن لم تكن 27/27 فالسجل هو المُحقّ وهذا التقرير هو المتقادم.</p>
+</div>
+</details>
+
+<!-- ==================== القرارات ==================== -->
+<details class="L0" open>
+<summary><span class="tag">قرارات المالك</span> القراران المعلَّق عليهما النشر — مشروحان بمستويات <span class="arrow">◀</span></summary>
+<div class="body">
+
+<p>البحث أنهى عمله؛ ما بقي ليس تجربة بل <b>قراران لا يملكهما إلا المالك</b>. كل قرار مشروح هنا بأربع درجات من العمق — من الجملة الواحدة إلى أدق الأرقام.</p>
+
+<div class="decision">
+  <div class="dh">القرار الأول — محرّك التنفيذ: طبقة الحجم/تعدد الأرجل + مُنفِّذ إصدارات مجدوَل</div>
+  <div class="body">
+    <div class="stair">
+      <div class="step s0"><span class="lvchip lv0">L0</span><b>الجملة الواحدة</b> بدون هذا القرار تبقى نتيجة البرنامج <b>معرفةً لا أرباحًا</b>: لا يستطيع النظام الحالي فتح الصفقة المؤكدة أصلًا.</div>
+      <div class="step s1"><span class="lvchip lv1">L1</span><b>لماذا؟ عائقان بنيويان</b> (1) معادلة الربح في المحرك <code>pnl = pnl_points × pv</code> <b>لا تحتوي حدَّ كمية</b> — عقد واحد دائمًا، لا يمكن التعبير عن أي حجم أو عن رِجلين. (2) المحرك <b>قائم على الشموع والمؤشرات</b>، بينما الصفقة المؤكدة تعيش على دقة الثانية الواحدة بقوسٍ (دخول بتوقيت، وقف، هدف، خروج زمني) ولا تحتاج أي مؤشر.</div>
+      <div class="step s2"><span class="lvchip lv2">L2</span><b>المطلوب بالضبط</b> (أ) طبقة حجم/تعدد أرجل في محاسبة الربح والخسارة. (ب) <b>مُنفِّذ إصدارات صغير مستقل</b>: مواعيد CPI وNFP وFOMC معلومة سلفًا (≈<span class="num">52</span> توقيتًا/سنة) — منفّذ يستيقظ قبل كلٍّ منها بخمس دقائق، يضع القوس، وينام. لا يحتاج محرك الاستراتيجيات إطلاقًا، فالتغيير <b>أصغر بكثير</b> من إعادة هيكلة المحرك.</div>
+      <div class="step s3"><span class="lvchip lv3">L3</span><b>ماذا يفتح هذا القرار أيضًا؟ + أرقام الجدوى</b> نفس التغيير يفكّ قفل <b>كل اكتشافات «الحجم بلا اتجاه»</b> رجوعًا إلى WS-EARN (تقلب 4.98× في ثانية إعلان الأرباح) التي بقيت غير قابلة للاستعمال لنفس السبب. الجدوى عند عقد واحد: NQ ≈ <span class="num">+$6,900</span>/سنة صافي stressed + RTY ≈ <span class="num">+$1,800</span> — متواضعة بذاتها، لكنها <b>خطّية في الكمية</b>: القرار هو ما يحوّلها من رقم بحثي إلى ذراع قابلة للتوسيع. وميزانية المخاطرة يجب أن تحسب الرِجل الخاسرة على أنها قد تبلغ <b>2R لا 1R</b> (أسوأ خسارة مقيسة: −$995 على وقف اسمي ≈ $476 — انزلاق فجوة عبر الوقف في ثانية المسح).</div>
+    </div>
+  </div>
+</div>
+
+<div class="decision">
+  <div class="dh">القرار الثاني — مراقب النظام (Regime Monitor): شرط التشغيل قبل أي نشر حي</div>
+  <div class="body">
+    <div class="stair">
+      <div class="step s0"><span class="lvchip lv0">L0</span><b>الجملة الواحدة</b> العلاوة التي تدفع هذه الصفقة <b>ابنة حقبتها</b> — فلا نشر بلا جهاز إنذار يوقفها آليًا إذا ماتت الحقبة.</div>
+      <div class="step s1"><span class="lvchip lv1">L1</span><b>لماذا؟ الدليل الحقبي</b> ربح الخلية الفائزة لكل حدث على NQ: <span class="num">2016–19: +$59</span> · <span class="num">2020–21: +$24</span> · <span class="num">2022+: +$292</span>. الإشارة موجبة في الحقب الثلاث (وهذا ما اجتازه شرط النصفين)، لكن <b>الحجم يسكن حقبة التضخم الحالية</b> — والعيّنة لا تستطيع الفصل بين «علاوة دائمة تتضخم مع الغموض الكلي» و«نظام مؤقت سينطفئ». الأمانة تفرض بناء الإنذار قبل التشغيل لا بعده.</div>
+      <div class="step s2"><span class="lvchip lv2">L2</span><b>القاعدة التشغيلية المقترحة (تُثبَّت قبل الإطلاق)</b> (أ) <b>متوسط متحرك لآخر 24 حدث CPI</b> من أرباح الصفقة: إذا هبط دون الصفر ⇐ <b>إيقاف فوري</b> (24 حدثًا = سنتان من CPI — نفس أفق نافذة نموذج القوة). (ب) <b>إعادة تشغيل سجل الادعاءات سنويًا</b> (<code>optimize/verify/run.py</code>): أي انحراف بين الأرقام المنشورة وملفاتها يضيء تلقائيًا. (ج) مراجعة القاعدة نفسها عند أول إنذار — الإيقاف قرار، وإعادة التشغيل قرار آخر.</div>
+      <div class="step s3"><span class="lvchip lv3">L3</span><b>أرقام الخطر التي يُتَّخذ القرار مقابلها</b> (1) <b>n = 116</b> حدث CPI فقط يحمل اقتصاد الصفقة — تغيّر نظام CPI لعامين يقلبها. (2) نافذة المراقب المتحركة نفسها <b>تتأخر حتى سنتين</b> خلف نظامٍ سريع الانطفاء (نفس درس M2). (3) ملء الأوامر داخل ثانية الصدور مفترضٌ عند الخط-أو-الافتتاح على شموع الثانية؛ سيناريو stressed يحمل 4 تكّات، وأسوأ انزلاق <b>مقيس</b> هو 2.1× الوقف — وما بعده يحتاج بيانات tick حية لا نملكها (بقعة عمياء معلَنة في المطالبات). (4) طبيعة التوزيع: <b>أغلب الأسابيع خاسرة صغيرًا وثلاث-أربع ثوانِي CPI تصنع السنة</b> — من غير هذا الفهم سيبدو الأداء الحي «خيانة» للاختبار وهو يطابقه تمامًا.</div>
+    </div>
+  </div>
+</div>
+
+<h3>البنود المفتوحة عند إغلاق البرنامج</h3>
+<div class="tblwrap"><table>
+<tr><th>البند</th><th>التصنيف</th></tr>
+<tr><td>القراران أعلاه</td><td class="wr">قرارا مالك — يُعلِّقان النشر</td></tr>
+<tr><td>فحص C4 اليدوي لإعلانات الأرباح (#110) + 15/19 إزاحة توقيت غير مقيسة</td><td>بانتظار المالك / خامل</td></tr>
+<tr><td>إطارات YM المجمَّعة حجمها صفر بايت (الملف المصدر سليم)</td><td>إصلاح هندسة بيانات — قائمة الأعمال</td></tr>
+<tr><td>سترادل الـ+$50 غير المستبعَد (يحتاج 4× الأحداث) · انزلاق ثانية-المسح خلف الشموع (يحتاج بيانات tick)</td><td>اختياري — غير مطلوب للهدف</td></tr>
+<tr><td>أرشيف إجماع «المتوقَّع» · مصدر API/EIA</td><td class="no">مستحيل نهائيًا — تحفُّظ دائم</td></tr>
+</table></div>
+
+<footer>
+  المصدر الكامل: <span class="ltr">docs/NEWS-PROGRAMME-FULL-RECORD.md</span> والتقارير المرحلية التسعة عشر · الأدلة: ملفات <span class="ltr">p1_/p2_/p3_/phase2_*</span> المودَعة · التحقق: <span class="ltr">optimize/verify/run.py</span> (القاعدة: إن لم تكن <span class="num">27/27</span> فالسجل هو المُحقّ وهذا التقرير متقادم) · أُعدّ محليًا بتاريخ <span class="num">2026-08-16</span> — ملف ذاتي الاكتفاء يعمل دون إنترنت.
+</footer>
+</div>
+</details>
+
+</div>
+</body>
+</html>

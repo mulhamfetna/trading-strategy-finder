@@ -192,3 +192,6 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !subprojects/Parametric-Indicators/optimize/fundamentals/p2_power_rank_*.csv
 !subprojects/Parametric-Indicators/optimize/fundamentals/p2_power_events_*.csv
 !subprojects/Parametric-Indicators/optimize/fundamentals/p3_events_*.csv
+# The Arabic visual report of the news programme is a DELIVERABLE, not a build artefact —
+# under the blanket html rule it would exist on one machine only while being cited as committed.
+!docs/NEWS-PROGRAMME-VISUAL-REPORT-AR.html
