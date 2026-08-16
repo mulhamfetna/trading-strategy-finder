@@ -60,7 +60,7 @@ import numpy as np
 import pandas as pd
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parents[2]))
+sys.path.insert(0, str(HERE.parents[1]))   # .../Parametric-Indicators, so `optimize.*` imports resolve
 
 TV_RAW = HERE / "tradingview" / "tv_us_calendar_raw.csv"
 H1A_CAL = HERE / "us_high_impact.csv"
