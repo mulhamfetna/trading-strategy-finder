@@ -207,3 +207,170 @@ register(Claim(
     checks=[Check("V1", "significant at 20-way Bonferroni by t-test", _cpi_v1),
             Check("V2", "replicates on RTY and on GC (non-equity)", _cpi_v2),
             Check("V3", "Retail Sales at the same clock minute shows NO premium", _cpi_v3)]))
+
+
+# ---------------------------------------------------------------------------------------------
+# M2 (#126) — the power model
+# ---------------------------------------------------------------------------------------------
+def _p2_json(inst: str, sfx: str = ""):
+    import json as _json
+    return _json.loads((FUND / f"p2_power_result_{inst}{sfx}.json").read_text())
+
+
+def _p2_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION from the raw per-event file (the JSON is the run's own summary; this
+    recomputes the statistic from p2_power_events_NQ.csv by an independent read)."""
+    from scipy import stats
+    d = pd.read_csv(FUND / "p2_power_events_NQ.csv").dropna(subset=["pred", "jump_pct"])
+    r, _ = stats.spearmanr(d.pred, d.jump_pct)
+    j = _p2_json("NQ")["primary"]["spearman"]
+    return abs(r - j) < 1e-9, f"events-file {r:+.4f} vs result-json {j:+.4f} (n={len(d)})"
+
+
+def _p2_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT instruments/files: RTY and CL (different price frames, different event
+    mixes) must also pass their pre-registered primary (CI-lo > 0)."""
+    outs = {i: _p2_json(i)["primary"] for i in ("RTY", "CL")}
+    ok = all(v["ci"][0] > 0 for v in outs.values())
+    return ok, ", ".join(f"{k} {v['spearman']:+.3f} [{v['ci'][0]:+.3f},{v['ci'][1]:+.3f}]"
+                         for k, v in outs.items())
+
+
+def _p2_v3() -> tuple[bool, str]:
+    """V3 — FALSIFICATION: 'the model is vol clustering, not series knowledge' must be FALSE —
+    on every instrument the observed Spearman must beat the 95th pct of 200 series-label shuffles,
+    AND the same predictions must lose most of their power on no-news control minutes."""
+    bad = []
+    for i in ("NQ", "ES", "GC", "CL", "RTY"):
+        d = _p2_json(i)
+        if not d["v3_shuffle"]["pass"] or not d["control"]["pass"]:
+            bad.append(i)
+    return not bad, (f"failed on {bad}" if bad else
+                     "all 5: observed >> shuffle p95, control ρ ≤ +0.145")
+
+
+register(Claim(
+    id="P2-POWER-MODEL-CONFIRMED",
+    issue="#126",
+    statement="Release POWER is predictable the night before from series identity + its own history: "
+              "pooled OOS Spearman(P_hist, release-bar |move|%) = +0.530 [+0.466, +0.589] on NQ "
+              "(p=4.9e-40, n=534), +0.515 ES, +0.472 GC, +0.546 CL, +0.582 RTY — every "
+              "pre-registered CI lower bound > 0; series-label shuffles collapse to ρ≈0.1.",
+    source="optimize/fundamentals/p2_power_result_NQ.json",
+    value_fn=lambda: round(float(_p2_json("NQ")["primary"]["spearman"]), 3),
+    expect=0.530, tol=0.0005,
+    blind_spot="All five instruments share one calendar and one prediction implementation; a "
+               "defect there is invisible. Also blind to WITHIN-series timing — it ranks releases, "
+               "it does not say which CPI day will be big (the expanding form provably lags "
+               "regime shifts: see P2-REGIME-LAG).",
+    checks=[Check("V1", "statistic re-derived from the per-event file", _p2_v1),
+            Check("V2", "RTY and CL pass the same primary independently", _p2_v2),
+            Check("V3", "shuffle + control falsifiers pass on all five", _p2_v3)]))
+
+
+def _fp_count() -> int:
+    return sum(1 for i in ("NQ", "ES", "GC", "CL", "RTY")
+               if (lambda s: s["spearman"] > 0 and s["p"] < 0.05)(_p2_json(i)["secondary_fp"]))
+
+
+def _fp_v1() -> tuple[bool, str]:
+    """V1 — re-derive NQ's secondary STATISTIC from the raw events file (full fp_z reconstruction).
+
+    ⚠️ First version of this check compared raw row counts (rows having abs_fp: 533) to the JSON's
+    n (493 = rows that ALSO have a valid expanding z-score) — two different filters, so it failed
+    for a reason that was a defect in the CHECK, not the claim. Rebuilt to replicate the fp_z
+    construction and compare the statistic itself. The claim's `expect` was never touched.
+    """
+    from scipy import stats
+    d = pd.read_csv(FUND / "p2_power_events_NQ.csv").dropna(subset=["pred", "jump_pct", "abs_fp"])
+    d = d.sort_values("et")
+    d["fp_z"] = np.nan
+    for _t, g in d.groupby("title"):
+        mu = g.abs_fp.expanding(8).mean().shift(1)
+        sd = g.abs_fp.expanding(8).std().shift(1)
+        d.loc[g.index, "fp_z"] = (g.abs_fp - mu) / sd
+    d = d.dropna(subset=["fp_z"])
+    resid = d.jump_pct.rank() - d.pred.rank()
+    r, _ = stats.spearmanr(d.fp_z, resid)
+    j = _p2_json("NQ")["secondary_fp"]
+    return (abs(r - j["spearman"]) < 1e-6 and len(d) == j["n"]), \
+        f"re-derived ρ={r:+.4f} (n={len(d)}) vs json ρ={j['spearman']:+.4f} (n={j['n']})"
+
+
+def _fp_v2() -> tuple[bool, str]:
+    """V2 — consistency across five independent price files: max |ρ| must be small everywhere."""
+    vals = {i: _p2_json(i)["secondary_fp"]["spearman"] for i in ("NQ", "ES", "GC", "CL", "RTY")}
+    return max(abs(v) for v in vals.values()) < 0.10, str({k: round(v, 3) for k, v in vals.items()})
+
+
+def _fp_v3() -> tuple[bool, str]:
+    """V3 — FALSIFICATION: 'the test had no power to find an add-on' must be FALSE — every
+    instrument's n gives 80% power for ρ ≥ 0.16 (n ≥ 329 ⇒ MDE ≤ 0.155)."""
+    ns = {i: _p2_json(i)["secondary_fp"]["n"] for i in ("NQ", "ES", "GC", "CL", "RTY")}
+    return min(ns.values()) >= 300, f"n per instrument {ns} (MDE at n=300 is r≈0.16)"
+
+
+register(Claim(
+    id="P2-FP-ADDS-NOTHING",
+    issue="#126",
+    statement="|forecast − previous| adds NO predictive power for release magnitude beyond series "
+              "history: residual Spearman −0.003 (NQ, p=0.95), max |ρ| across five instruments "
+              "0.084 (CL, negative). The last pre-release consensus-derived input is dead by "
+              "measurement, consistent with H1-B/C.",
+    source="optimize/fundamentals/p2_power_result_NQ.json (+ES,GC,CL,RTY)",
+    value_fn=_fp_count,
+    expect=0, tol=0,
+    blind_spot="Only the |f−p| z-score form on the rank residual was tested; an interaction or "
+               "nonlinear form is invisible here.",
+    checks=[Check("V1", "NQ secondary re-derived from events file", _fp_v1),
+            Check("V2", "small everywhere across five instruments", _fp_v2),
+            Check("V3", "the null is powered (MDE ρ≈0.16)", _fp_v3)]))
+
+
+def _lag_ratio(inst: str, sfx: str, title: str) -> float:
+    t = pd.read_csv(FUND / f"p2_power_rank_{inst}{sfx}.csv")
+    r = t[t.title == title].iloc[0]
+    return float(r.realized_med / r.pred_med)
+
+
+def _lag_v1() -> tuple[bool, str]:
+    """V1 — the ratio re-derived from per-event medians, bypassing the rank table."""
+    d = pd.read_csv(FUND / "p2_power_events_NQ.csv")
+    d = d[(d.title == "Inflation Rate MoM")].dropna(subset=["pred", "jump_pct"])
+    r = float(d.jump_pct.median() / d.pred.median())
+    return abs(r - _lag_ratio("NQ", "", "Inflation Rate MoM")) < 0.02, f"per-event {r:.3f}"
+
+
+def _lag_v2() -> tuple[bool, str]:
+    """V2 — the diagnosis implies the CURE: trailing-24 must shrink the lag on NQ and nearly
+    close it on RTY (whose history carries less stale pre-2021 weight)."""
+    nq_t = _lag_ratio("NQ", "_t24", "Inflation Rate MoM")
+    rty_t = _lag_ratio("RTY", "_t24", "Inflation Rate MoM")
+    ok = nq_t < 4.155 - 1.0 and rty_t < 1.5
+    return ok, f"trailing-24 ratios NQ {nq_t:.3f} (from 4.155), RTY {rty_t:.3f}"
+
+
+def _lag_v3() -> tuple[bool, str]:
+    """V3 — FALSIFICATION: 'every series is under-predicted' must be FALSE — NFP (a stable-power
+    series) must show ratio < 2 under the SAME expanding model. The lag is regime, not bias."""
+    r = _lag_ratio("NQ", "", "Non Farm Payrolls")
+    return r < 2.0, f"NQ NFP expanding ratio {r:.3f}"
+
+
+register(Claim(
+    id="P2-REGIME-LAG",
+    issue="#126",
+    statement="The expanding-median power model lags regime shifts: NQ CPI realized median |move| "
+              "is 4.16× its prediction (0.1875% vs 0.0451%) because the window still remembers "
+              "2016–2020 when CPI moved nothing, while NFP (stable power) sits at 1.33×. "
+              "Trailing-24 shrinks the CPI lag to 2.73× (NQ) and 1.04× (RTY) and makes NQ's "
+              "quintiles perfectly monotone.",
+    source="optimize/fundamentals/p2_power_rank_NQ.csv",
+    value_fn=lambda: round(_lag_ratio("NQ", "", "Inflation Rate MoM"), 3),
+    expect=4.155, tol=0.005,
+    blind_spot="Median-based; a series whose regime shifted in its TAIL but not its median would "
+               "not show up. Trailing-24 on a monthly series is a 2-year window — it lags fast "
+               "regimes by up to that much.",
+    checks=[Check("V1", "ratio re-derived from per-event medians", _lag_v1),
+            Check("V2", "trailing-24 shrinks the lag (NQ) and closes it (RTY)", _lag_v2),
+            Check("V3", "NFP shows NO lag under the same model — regime, not bias", _lag_v3)]))

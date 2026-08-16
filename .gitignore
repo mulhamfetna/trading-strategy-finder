@@ -189,3 +189,5 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !subprojects/Parametric-Indicators/optimize/fundamentals/p1_events_*.csv
 !subprojects/Parametric-Indicators/optimize/fundamentals/p1_ride_*.csv
 !subprojects/Parametric-Indicators/optimize/fundamentals/p1_drift_*.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/p2_power_rank_*.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/p2_power_events_*.csv
