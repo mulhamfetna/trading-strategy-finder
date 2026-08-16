@@ -69,13 +69,15 @@ VERIFIED = ["Non Farm Payrolls", "Inflation Rate MoM", "Retail Sales MoM",
             "Durable Goods Orders MoM"]
 ENERGY = ["EIA Crude Oil Stocks Change", "API Crude Oil Stock Change"]   # ⚠️ UNVERIFIED provenance
 FOMC = "Fed Interest Rate Decision"                                       # drift test, separately
-FLOOR = {"NQ": 2016, "GC": 2016, "ES": 2016, "CL": 2016}
+# ⚠️ RTY (floor 2019) is the pre-registered CONFIRMATORY HOLDOUT for the announcement-premium
+# finding (#125): an equity index NEVER loaded by this study before the test was registered.
+FLOOR = {"NQ": 2016, "GC": 2016, "ES": 2016, "CL": 2016, "RTY": 2019}
 
 LEADS_MIN = [5, 15, 30]
 STOPS_PCT = [0.10, 0.20, 0.40]        # H1-A's units — its survival grid composes with these cells
 EXIT_MIN = 15                          # exit at close(release + 15m) if never stopped
-PV = {"NQ": 20.0, "ES": 50.0, "GC": 100.0, "CL": 1000.0}
-TICK_USD = {"NQ": 5.0, "ES": 12.50, "GC": 10.0, "CL": 10.0}
+PV = {"NQ": 20.0, "ES": 50.0, "GC": 100.0, "CL": 1000.0, "RTY": 50.0}
+TICK_USD = {"NQ": 5.0, "ES": 12.50, "GC": 10.0, "CL": 10.0, "RTY": 5.0}
 COST_SCEN = {"optimistic": 1, "realistic": 2, "stressed": 4}              # spread in ticks
 COMMISSION = 2.50
 
@@ -154,10 +156,16 @@ def wilson(k: int, n: int) -> tuple[float, float]:
 
 
 def ride_cells(df: pd.DataFrame, stamps: pd.DatetimeIndex, titles, label: str,
-               inst: str) -> list[dict]:
-    """Every (lead, stop, direction) cell: gross/net $ expectancy of holding THROUGH the release."""
+               inst: str, events_out: list | None = None) -> list[dict]:
+    """Every (lead, stop, direction) cell: gross/net $ expectancy of holding THROUGH the release.
+
+    events_out, if given, collects PER-EVENT rows (timestamp, series, pnl, and the signed
+    pre-print / post-print components) so era, series, and decomposition splits can be done
+    downstream without re-running the price scan.
+    """
     idx = pd.Index(df["Date"])
     op, hi, lo, cl = (df[c].to_numpy(float) for c in ("Open", "High", "Low", "Close"))
+    dates = df["Date"].to_numpy()
     pos = idx.get_indexer(pd.DatetimeIndex(stamps).floor("min"))
     keep = pos >= 0
     pos, titles = pos[keep], np.asarray(titles)[keep]
@@ -189,6 +197,16 @@ def ride_cells(df: pd.DataFrame, stamps: pd.DatetimeIndex, titles, label: str,
                     if not stopped_any[i]:
                         out_p = cl[e[i]]
                     pnl_pts[i] = (out_p - entry[i]) if direction == "long" else (entry[i] - out_p)
+                    if events_out is not None:
+                        # signed LONG components, stop-free: entry→last pre-print close, and
+                        # last pre-print close→exit close (the print + 15m resolution)
+                        events_out.append({
+                            "set": label, "instrument": inst, "lead_min": T, "stop_pct": S,
+                            "direction": direction, "et": str(pd.Timestamp(dates[r[i]])),
+                            "title": str(tt[i]), "pnl_usd": float(pnl_pts[i] * PV[inst]),
+                            "stopped_pre_release": bool(stopped_pre[i]),
+                            "pre_usd": float((cl[r[i] - 1] - entry[i]) * PV[inst]) if r[i] > 0 else np.nan,
+                            "resolution_usd": float((cl[e[i]] - cl[r[i] - 1]) * PV[inst]) if r[i] > 0 else np.nan})
                 gross = pnl_pts * PV[inst]
                 m, sd, n = float(np.mean(gross)), float(np.std(gross, ddof=1)), len(gross)
                 se = sd / np.sqrt(n)
@@ -324,8 +342,10 @@ def main() -> int:
     quiet = draw_controls(pd.DatetimeIndex(quiet_base), df.Date.min(), df.Date.max(), seed=20260818)
     print(f"  control timestamps: {len(ctrl)} same-minute · {len(quiet)} quiet-minute")
 
-    rows = ride_cells(df, pd.DatetimeIndex(ev.et), ev.title.tolist(), "RELEASES", inst)
-    rows += ride_cells(df, pd.DatetimeIndex(ctrl), ["CTRL"] * len(ctrl), "CONTROL", inst)
+    ev_rows: list = []
+    rows = ride_cells(df, pd.DatetimeIndex(ev.et), ev.title.tolist(), "RELEASES", inst, ev_rows)
+    rows += ride_cells(df, pd.DatetimeIndex(ctrl), ["CTRL"] * len(ctrl), "CONTROL", inst, ev_rows)
+    pd.DataFrame(ev_rows).to_csv(HERE / f"p1_events_{inst}.csv", index=False)
     drows = drift_test(df, pd.DatetimeIndex(ev.et), ev.title.tolist(), "RELEASES", inst)
     drows += drift_test(df, pd.DatetimeIndex(ctrl), ["CTRL"] * len(ctrl), "CONTROL", inst)
 
