@@ -195,3 +195,4 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 # The Arabic visual report of the news programme is a DELIVERABLE, not a build artefact —
 # under the blanket html rule it would exist on one machine only while being cited as committed.
 !docs/NEWS-PROGRAMME-VISUAL-REPORT-AR.html
+!docs/NEWS-PROGRAMME-VISUAL-REPORT-EN.html
