@@ -182,3 +182,10 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !subprojects/Parametric-Indicators/optimize/fundamentals/phase2_s3_results.csv
 !subprojects/Parametric-Indicators/optimize/fundamentals/phase2_s4_results.csv
 !subprojects/Parametric-Indicators/optimize/fundamentals/api_eia_mechanism.csv
+
+# WS-NEWS3 P1 (#125) evidence — the ledger (claims_news3.py) re-derives published numbers from these
+# files; under the blanket *.csv rule they would exist on one machine only while being cited as
+# committed evidence (the exact phase2_pairs.csv failure, #116).
+!subprojects/Parametric-Indicators/optimize/fundamentals/p1_events_*.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/p1_ride_*.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/p1_drift_*.csv
