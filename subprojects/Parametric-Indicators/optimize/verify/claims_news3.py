@@ -374,3 +374,166 @@ register(Claim(
     checks=[Check("V1", "ratio re-derived from per-event medians", _lag_v1),
             Check("V2", "trailing-24 shrinks the lag (NQ) and closes it (RTY)", _lag_v2),
             Check("V3", "NFP shows NO lag under the same model — regime, not bias", _lag_v3)]))
+
+
+# ---------------------------------------------------------------------------------------------
+# M3 (#117) — the release-second straddle
+# ---------------------------------------------------------------------------------------------
+P3CELL = dict(stop=0.10, tp=0.40)
+
+
+def _p3_events(inst: str, subset: str = "RELEASES") -> pd.DataFrame:
+    d = pd.read_csv(FUND / f"p3_events_{inst}.csv")
+    return d[(d["set"] == subset) & (d.stop == P3CELL["stop"]) & (d.tp == P3CELL["tp"])]
+
+
+def _p3_json(inst: str):
+    import json as _json
+    return _json.loads((FUND / f"p3_result_{inst}.json").read_text())
+
+
+def _str_v1() -> tuple[bool, str]:
+    """V1 — the primary re-derived from the per-event file (json is the run's own summary)."""
+    x = _p3_events("NQ").straddle_usd.to_numpy() - 2 * 22.50
+    j = _p3_json("NQ")["primary"]["net_stressed_mean"]
+    return abs(float(x.mean()) - j) < 0.01, f"events {x.mean():+.2f} vs json {j:+.2f} (n={len(x)})"
+
+
+def _str_v2() -> tuple[bool, str]:
+    """V2 — the domination fact by an independent aggregation: the straddle must beat its own long
+    leg in ZERO of the 18 (instrument x stop x tp) cells."""
+    dom = 0
+    for inst in ("NQ", "RTY"):
+        d = pd.read_csv(FUND / f"p3_events_{inst}.csv")
+        r = d[d["set"] == "RELEASES"]
+        for _k, g in r.groupby(["stop", "tp"]):
+            if g.straddle_usd.mean() > g.long_usd.mean():
+                dom += 1
+    return dom == 0, f"straddle beats long in {dom}/18 cells"
+
+
+def _str_v3() -> tuple[bool, str]:
+    """V3 — FALSIFICATION: 'the pipeline was too blunt to confirm anything' must be FALSE — the
+    SAME machinery confirms the long cell at Bonferroni-54 (t > 3.28). The straddle's failure is
+    the structure's, not the instrument's."""
+    from scipy import stats
+    x = _p3_events("NQ").long_usd
+    t = stats.ttest_1samp(x, 0.0)
+    return bool(t.statistic > 3.28), f"long-cell t={t.statistic:+.2f} on the identical events/machinery"
+
+
+register(Claim(
+    id="P3-STRADDLE-NOT-CONFIRMED",
+    issue="#117",
+    statement="The owner's straddle, tested as registered (S=0.10%, TP=0.40%, NQ CPI+NFP+FOMC, "
+              "stressed 2-leg costs): net +$50.33/event, t=+1.35, one-sided p=0.0897 — NOT "
+              "confirmed, and NOT an exclusion (MDE ≈ $104; CI [−23, +124]). Decisive instead: "
+              "the straddle is beaten by its own long leg in 18 of 18 cells — the short leg pays "
+              "the premium and doubles costs. CL's arm is VOID (V3: its control straddle pays "
+              "+$19 gross at no-news minutes, p=0.002 — nothing there is attributable to the release).",
+    source="optimize/fundamentals/p3_result_NQ.json",
+    value_fn=lambda: round(float(_p3_json("NQ")["primary"]["net_stressed_mean"]), 2),
+    expect=50.33, tol=0.01,
+    blind_spot="Fills inside the release second assume the stop/TP orders execute at line-or-open "
+               "on 1-second bars; real sweep-second slippage beyond 4 ticks is invisible here. "
+               "Also blind to structures not in the grid (e.g. stop-and-reverse).",
+    checks=[Check("V1", "primary re-derived from per-event file", _str_v1),
+            Check("V2", "long dominates in 18/18 cells (independent aggregation)", _str_v2),
+            Check("V3", "the machinery CAN confirm (long cell t>3.28 on same events)", _str_v3)]))
+
+
+def _long_v1() -> tuple[bool, str]:
+    """V1 — significance re-derived from raw events; must clear the pre-registered Bonferroni
+    alpha=0.05/54 AND the chronological half-split sign rule."""
+    from scipy import stats
+    d = _p3_events("NQ")
+    x = d.long_usd
+    t = stats.ttest_1samp(x, 0.0)
+    half = sorted(d.et)[len(d) // 2]
+    h1 = d[d.et < half].long_usd.mean()
+    h2 = d[d.et >= half].long_usd.mean()
+    ok = bool(t.statistic > 0 and t.pvalue < 0.05 / 54 and h1 > 0 and h2 > 0)
+    return ok, f"t={t.statistic:+.2f} p={t.pvalue:.2e} (α/54={0.05/54:.1e}); halves {h1:+.0f}/{h2:+.0f}"
+
+
+def _long_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT instrument: RTY's same cell must clear the same bar on its own price file."""
+    from scipy import stats
+    d = _p3_events("RTY")
+    t = stats.ttest_1samp(d.long_usd, 0.0)
+    return bool(t.statistic > 0 and t.pvalue < 0.05 / 54), f"RTY t={t.statistic:+.2f} p={t.pvalue:.2e}"
+
+
+def _long_v3() -> tuple[bool, str]:
+    """V3 — FALSIFICATION: 'any window traded this way pays' must be FALSE — the identical cell on
+    matched no-news CONTROL windows must NOT be positive, and the FOMC subset (a release with no
+    premium, M1) must NOT show the effect."""
+    ctl = _p3_events("NQ", "CONTROL").long_usd.mean()
+    d = pd.read_csv(FUND / "p3_events_NQ.csv")
+    fomc = d[(d["set"] == "RELEASES") & (d.stop == 0.10) & (d.tp == 0.40)
+             & (d.title == "Fed Interest Rate Decision")].long_usd.mean()
+    return bool(ctl < 0 and fomc < 50), f"control {ctl:+.2f}, FOMC subset {fomc:+.2f}"
+
+
+register(Claim(
+    id="P3-LONG-RELEASE-TRADE-CONFIRMED",
+    issue="#117",
+    statement="The long release trade IS confirmed under the strict pre-registered secondary bar "
+              "(Bonferroni α=0.05/54 + sign-consistent chronological halves): NQ long, enter "
+              "release−300s, stop 0.10%, TP 0.40%, on {CPI, NFP, FOMC}: +$155.56/event gross "
+              "[+81.83, +229.30], t=4.13, net +$133.06 at stressed costs; RTY same cell +$57.98, "
+              "t=3.79. CPI is again the engine (+$331/event NQ); the trade decides AT the release "
+              "(median TP fill 15s after the print on NQ, 3s on RTY; post-release stops 2–3s).",
+    source="optimize/fundamentals/p3_events_NQ.csv",
+    value_fn=lambda: round(float(_p3_events("NQ").long_usd.mean()), 2),
+    expect=155.56, tol=0.01,
+    blind_spot="Era-concentrated like everything in this programme (halves +51/+259) — the sign "
+               "rule passed but the magnitude lives in the recent regime. Sweep-second fill "
+               "slippage beyond the stressed 4 ticks is invisible. n=116 CPI events.",
+    checks=[Check("V1", "clears α/54 + half-split sign from raw events", _long_v1),
+            Check("V2", "RTY clears the same bar independently", _long_v2),
+            Check("V3", "controls negative AND FOMC (no-premium release) shows nothing", _long_v3)]))
+
+
+def _whip_v1() -> tuple[bool, str]:
+    """V1 — re-derived from raw events at the pinned cell (json aggregates bypassed)."""
+    d = pd.read_csv(FUND / "p3_events_NQ.csv")
+    r = d[(d["set"] == "RELEASES") & (d.tp == 0.0)]
+    got = {s: float(g.both_stopped.mean()) for s, g in r.groupby("stop")}
+    return abs(got[0.05] - 0.654) < 0.005, str({k: round(v, 3) for k, v in got.items()})
+
+
+def _whip_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT instrument: RTY must show the same order of magnitude at 0.05%."""
+    d = pd.read_csv(FUND / "p3_events_RTY.csv")
+    r = d[(d["set"] == "RELEASES") & (d.tp == 0.0) & (d.stop == 0.05)]
+    v = float(r.both_stopped.mean())
+    return 0.5 < v < 0.95, f"RTY both-stopped at 0.05% = {v:.1%}"
+
+
+def _whip_v3() -> tuple[bool, str]:
+    """V3 — FALSIFICATION: 'the rate is an artefact independent of the stop' must be FALSE — it
+    must fall monotonically as the stop widens (0.05 > 0.10 > 0.20)."""
+    d = pd.read_csv(FUND / "p3_events_NQ.csv")
+    r = d[(d["set"] == "RELEASES") & (d.tp == 0.0)]
+    g = {s: float(x.both_stopped.mean()) for s, x in r.groupby("stop")}
+    ok = g[0.05] > g[0.10] > g[0.20]
+    return ok, str({k: round(v, 3) for k, v in g.items()})
+
+
+register(Claim(
+    id="P3-WHIPSAW-MEASURED",
+    issue="#117",
+    statement="The 1-second-sweep threat to release straddles, measured at last: with a 0.05% stop, "
+              "65.4% of NQ straddles lose BOTH legs (72.7% RTY); 46.2% at 0.10%; 20.5% at 0.20%. "
+              "The owner's 'small stop' is the straddle's own executioner — survivable for a single "
+              "long leg, fatal for the two-legged structure's economics.",
+    source="optimize/fundamentals/p3_events_NQ.csv",
+    value_fn=lambda: round(float(pd.read_csv(FUND / "p3_events_NQ.csv").query(
+        "set=='RELEASES' and tp==0.0 and stop==0.05").both_stopped.mean()), 3),
+    expect=0.654, tol=0.001,
+    blind_spot="Both-legs-stopped is per-event over the whole window; it does not time the two "
+               "stop-outs (a 1-second double-sweep and a slow chop both count once).",
+    checks=[Check("V1", "rates re-derived from raw events", _whip_v1),
+            Check("V2", "RTY shows the same magnitude independently", _whip_v2),
+            Check("V3", "monotone in stop width — the rate tracks the stop, not the pipeline", _whip_v3)]))
