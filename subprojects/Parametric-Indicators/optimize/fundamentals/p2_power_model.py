@@ -67,11 +67,22 @@ def realized_moves(df: pd.DataFrame, stamps: pd.DatetimeIndex) -> pd.DataFrame:
     return pd.DataFrame({"jump_pct": jump, "res_pct": res})
 
 
-def build_predictions(ev: pd.DataFrame, titles: pd.Series) -> pd.Series:
-    """Expanding shifted median of jump_pct within each series — the whole model."""
+def build_predictions(ev: pd.DataFrame, titles: pd.Series, trailing: int = 0) -> pd.Series:
+    """Shifted median of jump_pct within each series — the whole model.
+
+    trailing=0 (the PRE-REGISTERED primary): expanding median over the full prior history.
+    trailing=N (declared POST-HOC variant, #126): median of the last N prior releases only.
+    ⚠️ Why the variant exists: the first run showed the expanding median lags REGIME SHIFTS in a
+    series' power — NQ CPI predicted 0.045% vs realized 0.42% mean (the window still remembers
+    2016-2020, when CPI moved nothing). The variant is reported beside the primary, never instead
+    of it, and passes through the identical V1/V3/control gates.
+    """
     out = pd.Series(np.nan, index=ev.index)
-    for t, g in ev.groupby(titles):
-        med = g.jump_pct.expanding(MIN_PRIOR).median().shift(1)
+    for _t, g in ev.groupby(titles):
+        if trailing:
+            med = g.jump_pct.rolling(trailing, min_periods=MIN_PRIOR).median().shift(1)
+        else:
+            med = g.jump_pct.expanding(MIN_PRIOR).median().shift(1)
         out.loc[g.index] = med
     return out
 
@@ -109,6 +120,8 @@ def draw_paired_controls(events: pd.DatetimeIndex, lo_d, hi_d, seed: int) -> lis
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--instrument", default="NQ", choices=list(FLOOR))
+    ap.add_argument("--trailing", type=int, default=0,
+                    help="0 = pre-registered expanding median; N = declared trailing-N variant")
     a = ap.parse_args()
     inst = a.instrument
 
@@ -129,12 +142,13 @@ def main() -> int:
                     realized_moves(df, pd.DatetimeIndex(raw.et))], axis=1)
     ev = ev.dropna(subset=["jump_pct"]).sort_values("et").reset_index(drop=True)
 
-    ev["pred"] = build_predictions(ev, ev.title)
+    ev["pred"] = build_predictions(ev, ev.title, a.trailing)
     scored = ev.dropna(subset=["pred"]).copy()
     n_excl = len(ev) - len(scored)
 
     print("=" * 100)
-    print(f"WS-NEWS3 M2 (#126) — the power model, {inst}")
+    mode = f"trailing-{a.trailing} VARIANT (post-hoc, declared)" if a.trailing else "expanding (PRE-REGISTERED primary)"
+    print(f"WS-NEWS3 M2 (#126) — the power model, {inst} — {mode}")
     print("=" * 100)
     print(f"  events {len(ev)} · scored {len(scored)} (excluded {n_excl} with <{MIN_PRIOR} priors) · "
           f"series {sorted(ev.title.unique())}")
@@ -173,7 +187,7 @@ def main() -> int:
     labels = ev.title.to_numpy().copy()
     for _ in range(N_SHUFFLE):
         rng.shuffle(labels)
-        pred_s = build_predictions(ev, pd.Series(labels, index=ev.index))
+        pred_s = build_predictions(ev, pd.Series(labels, index=ev.index), a.trailing)
         m = pred_s.notna() & ev.jump_pct.notna()
         rs, _ = stats.spearmanr(pred_s[m], ev.jump_pct[m])
         shuffled.append(rs)
@@ -212,9 +226,10 @@ def main() -> int:
            .sort_values("pred_med", ascending=False).reset_index())
     tab["instrument"] = inst
     tab["unverified"] = tab.title.map(dict(zip(scored.title, scored.unverified)))
-    tab.to_csv(HERE / f"p2_power_rank_{inst}.csv", index=False)
+    sfx = f"_t{a.trailing}" if a.trailing else ""
+    tab.to_csv(HERE / f"p2_power_rank_{inst}{sfx}.csv", index=False)
     scored[["title", "et", "unverified", "jump_pct", "res_pct", "pred", "abs_fp"]].to_csv(
-        HERE / f"p2_power_events_{inst}.csv", index=False)
+        HERE / f"p2_power_events_{inst}{sfx}.csv", index=False)
 
     out = {"instrument": inst, "n_events": int(len(ev)), "n_scored": int(len(scored)),
            "n_excluded_lt_min_prior": int(n_excl), "min_prior": MIN_PRIOR,
@@ -226,8 +241,8 @@ def main() -> int:
            "v3_shuffle": {"median": float(np.nanmedian(shuffled)), "p95": p95, "pass": v3_pass},
            "control": {"spearman": float(rc) if np.isfinite(rc) else None, "pass": ctl_pass},
            "secondary_fp": {"spearman": float(rf), "p": float(pf), "n": int(len(s2))}}
-    (HERE / f"p2_power_result_{inst}.json").write_text(json.dumps(out, indent=1, default=str))
-    print(f"\nwrote p2_power_rank_{inst}.csv, p2_power_events_{inst}.csv, p2_power_result_{inst}.json")
+    (HERE / f"p2_power_result_{inst}{sfx}.json").write_text(json.dumps(out, indent=1, default=str))
+    print(f"\nwrote p2_power_rank_{inst}{sfx}.csv (+events, +result json)")
     return 0
 
 
