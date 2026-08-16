@@ -130,7 +130,8 @@ This is the table the whole report exists for.
 | 2 | Phase 2: relation → **DIRECTION** (after release, capturable) | ✅ S4: yes, 612 pairs | **EXCLUDED at 95%** | Yes — final |
 | 3 | Phase 1: direction from `forecast − previous` (enter early, ride) | ✅ H1-B/C, both anchors | **NEGATIVE** | Yes — final |
 | 4 | Phase 1: *"the general pattern of the price"* as a direction input | ⛔ **NEVER TESTED** | unknown | **No — open** |
-| 5 | Phase 1: *"study that we don't hit the stops before the news"* — survival | ⛔ **NEVER TESTED** (0 mentions of stops in the Phase-1 code) | unknown | **No — open** |
+| 5 | Phase 1: *"study that we don't hit the stops before the news"* — survival | ✅ **TESTED — H1-A** (`h1a_preevent_stopout.py`, 8 instruments × 16 cells, dumb control) — **see CORRECTION below** | at cheap stops most entries die pre-release (NQ 57%, CL 94% at 0.05%/5 min); at wide stops NQ/ES pre-release is 2–17× MORE dangerous than control, CL/GC is not | Yes — final |
+| 5b | Phase 1: hold-through-the-release **P&L** (the actual "ride" with a stop active) | ⛔ **NEVER TESTED** — H1-A stops measuring at the release second | unknown | **No — open** |
 | 6 | Phase 3: straddle — long AND short, small SL, big TP, monetize POWER without direction | ⛔ **NEVER TESTED** — recommendation issued without an experiment | unknown | **No — open** |
 | 7 | Phase 3: smart entries fusing live state + pre-known info | ⛔ **NEVER TESTED** | unknown | **No — open** |
 
@@ -145,13 +146,39 @@ This is the table the whole report exists for.
    defects in WS-NEWS2 alone).
 3. **POWER was positively confirmed, four independent ways.** This is an asset, not a null.
 
+### ⚠️ CORRECTION (2026-08-16, same day, before any new run) — this audit's first version was wrong on row 5
+
+The first committed version of this report claimed the survival study was *"NEVER TESTED (0 mentions
+of stops in the Phase-1 code)"*. **That claim was false.** The grep covered only
+`h1bc_anticipated_direction.py`; Phase 1's H1-A lives in a separate file,
+`h1a_preevent_stopout.py`, quotes the owner's survival question verbatim in its docstring, and
+measured exactly it — 8 instruments × (4 waits × 4 stops) with the matched-clock-time dumb control,
+long and short sides separately. The audit that accused the closeout of incomplete coverage was
+itself incompletely covered, caught within the hour by the verify-don't-assume rule. The table above
+is corrected; row 5's verdict is FINAL and its numbers feed the stop rule and Phase 3's entry-lead
+constraint directly:
+
+| survival fact (H1-A) | number |
+|---|---|
+| NQ, 5-min wait, 0.05% stop — stopped before the release fires | **57.1%** (control 49.3%) |
+| CL, 5-min wait, 0.05% stop | **93.9%** (control 94.2%) |
+| NQ, 5-min wait, 0.40% stop — survives, but vs control | 2.2% vs 0.1% — **ratio ≈ 16.7** (thin cell) |
+| ES, 5-min wait, 0.20% stop | 3.9% vs 1.9% — **ratio 2.04** |
+| CL/GC across the grid | ratios ≈ 0.6–1.2 — pre-release is **not** unusually dangerous there |
+
+⇒ *"small stop placed early"* is already excluded by measurement: cheap stops don't reach the
+release alive. A pre-positioned entry needs a wide stop (≥0.2–0.4%), which sets the loss floor any
+Phase-3 straddle leg must carry, and the entry lead should be minutes, not an hour.
+
 ### 3.2 Where the previous work FELL SHORT of the goal — the three specific failures
 
-**Failure 1 — the survival study (row 5) was silently dropped.** The owner's Phase 1 explicitly
-asked two questions: *can we pick the direction early?* (answered: no) and *if we enter early, do we
-survive to the release without being stopped out?* Only the first was ever coded. The second is not
-a direction question at all — it is a risk-mechanics question, it feeds Phase 3 directly (how early
-can a straddle be placed?), and it was never run.
+**Failure 1 — the ride itself (row 5b) was never priced.** H1-A measured whether a position
+*survives to* the release, then stopped. Nobody ever measured what the position *earns through* the
+release: enter at release−T with a stop, hold through the print to release+15m, both directions,
+gap-aware fills, net of costs. That is the owner's Phase-1 trade, end to end, and it has no measured
+expectancy. (Given the direction nulls the honest expectation is ≈ coin-flip gross minus costs — but
+a CI is a measurement and an expectation is not, and the same run prices the straddle's surviving
+leg for Phase 3.)
 
 **Failure 2 — the #117 recommendation over-reached.** The comment recommending "do not proceed"
 argued: *"Improving execution cannot add 14 points of directional accuracy."* That argument is
@@ -208,7 +235,7 @@ plus the engine changes it requires, or (b) an exclusion backed by power analysi
 | ID | Goal | Measurable success criterion | Target date |
 |---|---|---|---|
 | **M0** | Re-evaluation + plan + issues on the board | this report committed; umbrella + per-phase issues open with plans | **2026-08-16** (today) |
-| **M1** | **P1 survival study** (rows 4–5) | survival curves P(stop hit before release \| lead time T, stop size S) with Wilson CIs, ≥4 instruments × the phase-2 series sets, n stated per cell; hold-through expectancy both directions with CI + MDE; pre-release-drift direction test (incl. the FOMC prior); dumb control on matched no-news windows; ledger claim passing | 2026-08-18 |
+| **M1** | **P1 ride-through study** (rows 4, 5b; survival itself is DONE — H1-A, imported) | hold-through expectancy: enter release−T, stop active, exit release+15m, both directions, gap-aware fills, net under 3 cost scenarios, CI + MDE per cell, ≥4 instruments; pre-release-drift direction test (incl. the FOMC prior); dumb control on matched no-news windows; ledger claim passing | 2026-08-18 |
 | **M2** | **P2 power model** (make the confirmed POWER usable pre-release) | a pre-release-knowable predictor of release \|move\| (series identity, historical multiplier, \|forecast−previous\|): cross-validated rank correlation with CI, evidence CSV committed; this is Phase 3's release-selection filter | 2026-08-19 |
 | **M3** | **P3 straddle test** (rows 6–7) | pre-registered grid (entry lead, SL, TP, exit horizon) on 1-second bars; per-config net expectancy CI under all 3 cost scenarios; both-legs-swept rate measured; train/OOS split that is OOS for both sides (#87 rule); dumb control (same straddle on matched no-news seconds) + noise check; explicit multiple-testing budget | 2026-08-22 |
 | **M4** | Closeout | either the deployable spec + required engine changes (sizing/multi-leg), or per-class exclusions with power analysis; final report; memory updated | 2026-08-23 |
@@ -225,21 +252,23 @@ narrows to the reactive-side smart entries only.
 
 ## Part 5 — The action plan, phase by phase
 
-### P1 — pre-release survival + ride-through (new issue)
+### P1 — ride-through + drift (new issue; survival itself imported from H1-A, not re-run)
 
 For each instrument (NQ, ES, GC, CL; floors per instrument) × the phase-2 series sets (4 verified +
-EIA/API for CL, unverified-marked) × lead time T ∈ {5, 15, 30, 60} min × stop S ∈ {0.5, 1, 2, 4} ×
-ATR(20, 1m):
-- enter at the close of the bar at release−T; measure P(High/Low crosses entry±S before the release
-  bar) — up-cross, down-cross, either — with Wilson CIs;
-- hold-through P&L to release+15m for BOTH directions with SL active (gap-aware fills per GAP-01),
-  net under the 3 cost scenarios, with per-cell MDE;
+EIA/API for CL, unverified-marked) × lead T ∈ {5, 15, 30} min × stop S ∈ {0.10, 0.20, 0.40}% of
+price (H1-A's units, so its survival grid composes directly):
+- **hold-through P&L**: enter at close(release−T), stop active from entry, hold THROUGH the print,
+  exit at close(release+15m) or at the stop — gap-aware fills per GAP-01 (breach fills at the worse
+  of stop line / bar open); BOTH directions; gross and net under the 3 cost scenarios; CI + MDE per
+  cell;
 - pre-release drift test (row 4): sign of the (release−60m → release−1m) move vs sign of the release
-  move, Wilson accuracy vs the 71% directional break-even; FOMC-family tested separately (prior art);
-- dumb control: identical measurement on matched same-time-of-day windows ≥2h from any release;
-- V1: crossing detection re-derived via a vectorized cummax/cummin path vs the event loop;
-  V2: the H1-A volatility ratio must reproduce from this independent pipeline;
-  V3: on control windows the pre-release vol ramp must be ABSENT (a "ramp" found there = artefact).
+  move, Wilson accuracy vs the 71% directional break-even; FOMC family ("Fed Interest Rate
+  Decision", 105 events) separately — the Lucca–Moench pre-FOMC drift prior;
+- dumb control: identical measurement on matched same-clock-time windows on days with no release;
+- V1: stop-hit fractions re-derived from this pipeline must agree with H1-A's committed grid on the
+  shared cells (different code path, same quantity); V2: the release-bar |move| distribution must
+  reproduce H1-A/H1-B's known release-minute behaviour; V3: on control windows the "release jump"
+  must be ABSENT (a jump found where no release exists = pipeline artefact).
 
 ### P2 — the power model (new issue)
 
