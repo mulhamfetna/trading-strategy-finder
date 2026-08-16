@@ -54,7 +54,12 @@ PRIMARY = dict(arm="straddle", stop=0.10, tp=0.40, instrument="NQ")
 
 
 def leg_pnl(op, hi, lo, cl, i0, i_rel, i1, entry, direction, stop_lvl, tp_lvl):
-    """One leg walked bar by bar. Returns (pnl_points, outcome, exit_offset_s_from_entry_bar)."""
+    """One leg walked bar by bar. Returns (pnl_points, outcome, exit_bar_index).
+
+    ⚠️ The exit's TIME must be read from the bar's TIMESTAMP by the caller — 1-second files carry
+    bars only for seconds WITH TRADES, so a bar OFFSET is not seconds (the first run printed a
+    'median time-to-TP 239s' that was really 239 bars — a units lie caught before publication).
+    """
     for b in range(i0, i1 + 1):
         if direction == "long":
             hit_sl = lo[b] <= stop_lvl
@@ -65,13 +70,13 @@ def leg_pnl(op, hi, lo, cl, i0, i_rel, i1, entry, direction, stop_lvl, tp_lvl):
         if hit_sl:                                    # ⚠️ both-in-one-bar -> STOP (pessimistic)
             fill = (min(op[b], stop_lvl) if direction == "long" else max(op[b], stop_lvl))
             pnl = (fill - entry) if direction == "long" else (entry - fill)
-            return pnl, ("stopped_pre" if b < i_rel else "stopped_post"), b - i0
+            return pnl, ("stopped_pre" if b < i_rel else "stopped_post"), b
         if hit_tp:
             fill = (max(op[b], tp_lvl) if direction == "long" else min(op[b], tp_lvl))
             pnl = (fill - entry) if direction == "long" else (entry - fill)
-            return pnl, "tp", b - i0
+            return pnl, "tp", b
     pnl = (cl[i1] - entry) if direction == "long" else (entry - cl[i1])
-    return pnl, "timed", i1 - i0
+    return pnl, "timed", i1
 
 
 def simulate(bars: pd.DataFrame, events: pd.DataFrame, inst: str, label: str) -> pd.DataFrame:
@@ -101,10 +106,14 @@ def simulate(bars: pd.DataFrame, events: pd.DataFrame, inst: str, label: str) ->
                             entry - dS, entry + dP if np.isfinite(dP) else np.inf)
                 Sh = leg_pnl(op, hi, lo, cl, i_ent + 1, i_rel, i_end, entry, "short",
                              entry + dS, entry - dP if np.isfinite(dP) else -np.inf)
+                # exit timing in REAL seconds relative to the release (negative = before it)
+                l_s = float((idx[L[2]] - t_rel) / np.timedelta64(1, "s"))
+                s_s = float((idx[Sh[2]] - t_rel) / np.timedelta64(1, "s"))
                 rows.append({"set": label, "instrument": inst, "et": str(e.et), "title": e.title,
                              "stop": S, "tp": (P if np.isfinite(P) else 0.0),
-                             "long_usd": L[0] * PV[inst], "long_outcome": L[1], "long_t": L[2],
-                             "short_usd": Sh[0] * PV[inst], "short_outcome": Sh[1], "short_t": Sh[2],
+                             "bars_pre_release": int(i_rel - i_ent),
+                             "long_usd": L[0] * PV[inst], "long_outcome": L[1], "long_exit_s": l_s,
+                             "short_usd": Sh[0] * PV[inst], "short_outcome": Sh[1], "short_exit_s": s_s,
                              "straddle_usd": (L[0] + Sh[0]) * PV[inst],
                              "both_stopped": L[1].startswith("stopped") and Sh[1].startswith("stopped")})
     return pd.DataFrame(rows)
