@@ -38,6 +38,10 @@
   .ar b{color:var(--l2)}
   .en b{color:var(--l1)}
   .num{font-family:Consolas,monospace;white-space:nowrap;direction:ltr;unicode-bidi:embed}
+  .frm{direction:ltr;unicode-bidi:embed;font-family:"Cambria Math",Georgia,serif;font-size:14px;
+       background:#f7f9fd;border:1px solid #e3e9f5;border-radius:8px;padding:6px 10px;display:inline-block;
+       line-height:1.9;white-space:normal}
+  .frm i{font-style:italic} .frm sub,.frm sup{font-size:11px}
   .cat{display:inline-block;background:#eef2f9;color:var(--mut);border-radius:9px;padding:0 8px;font-size:11px;margin-left:6px}
   footer{color:var(--mut);font-size:13px;margin-top:26px;border-top:1px solid var(--line);padding-top:12px}
 </style>
@@ -96,23 +100,92 @@
 <section>
 <h2 class="h-sym">2 · List of Symbols &amp; Statistical Notation · قائمة الرموز والترميز الإحصائي</h2>
 <table id="t2">
-<tr><th style="width:110px">Symbol</th><th>English</th><th class="ar">العربية</th></tr>
-<tr><td class="sym">ρ</td><td class="en"><b>Spearman rank correlation</b> — robust on fat tails; always reported beside Pearson</td><td class="ar"><b>ارتباط سبيرمان الرتبي</b> — متين على الذيول السمينة؛ يُذكر دائمًا بجانب بيرسون</td></tr>
-<tr><td class="sym">r</td><td class="en"><b>Pearson correlation</b> — linear; can be blind on fat tails (gold: r=−0.012 vs ρ=−0.193)</td><td class="ar"><b>ارتباط بيرسون</b> الخطي — قد يَعمى على الذيول (الذهب: −0.012 مقابل −0.193 رتبيًا)</td></tr>
-<tr><td class="sym">t</td><td class="en"><b>t-statistic</b> — mean ÷ its standard error; the confirmed trade's t = 4.13</td><td class="ar"><b>إحصائية t</b> — المتوسط على خطئه المعياري؛ للصفقة المؤكدة t = 4.13</td></tr>
-<tr><td class="sym">p</td><td class="en"><b>p-value</b> — probability of a result at least this extreme under the null; "one-sided" tests one direction only</td><td class="ar"><b>القيمة الاحتمالية</b> تحت فرض العدم؛ «أحادية الجانب» تختبر اتجاهًا واحدًا فقط</td></tr>
-<tr><td class="sym">n</td><td class="en"><b>Sample size</b> — number of events/rows behind a number</td><td class="ar"><b>حجم العيّنة</b> — عدد الأحداث خلف الرقم</td></tr>
-<tr><td class="sym">α</td><td class="en"><b>Significance level</b> (0.05); Bonferroni divides it by the number of looks (α/54 in M3)</td><td class="ar"><b>مستوى المعنوية</b> (0.05)؛ تصحيح Bonferroni يقسمه على عدد المحاولات (α/54 في M3)</td></tr>
-<tr><td class="sym">σ</td><td class="en"><b>Standard deviation</b> / "5.5σ" = an effect 5.5 standard deviations from its baseline</td><td class="ar"><b>الانحراف المعياري</b> / «5.5σ» = أثر يبعد 5.5 انحرافًا عن خط الأساس</td></tr>
-<tr><td class="sym">z</td><td class="en"><b>Fisher z</b> — the transform used to build CIs for correlations and to compare two correlations</td><td class="ar"><b>تحويل فيشر z</b> — لبناء فواصل ثقة الارتباطات ومقارنة ارتباطين</td></tr>
-<tr><td class="sym">S · P · T</td><td class="en">The trade grid parameters: <b>S</b>top %, take-<b>P</b>rofit %, lead <b>T</b>ime before the release</td><td class="ar">معاملات شبكة الصفقة: نسبة الوقف <b>S</b>، نسبة الهدف <b>P</b>، زمن السبق <b>T</b> قبل الصدور</td></tr>
-<tr><td class="sym">R</td><td class="en"><b>Risk unit</b> — the stop distance; "+4R take-profit" = target 4× the stop. ⚠️ distinct from R:R (design ratio)</td><td class="ar"><b>وحدة المخاطرة</b> — مسافة الوقف؛ «هدف +4R» = أربعة أضعاف الوقف. ⚠️ تختلف عن نسبة العائد/المخاطرة التصميمية</td></tr>
-<tr><td class="sym">×</td><td class="en"><b>Multiple</b> vs a baseline (4.98× volatility; 2.1× stop slippage)</td><td class="ar"><b>مضاعف</b> نسبةً لخط أساس (تقلب 4.98×؛ انزلاق 2.1× الوقف)</td></tr>
-<tr><td class="sym">$/event</td><td class="en">Mean dollars per release event, 1 contract; <b>gross</b> = before costs, <b>net</b> = after a named cost scenario</td><td class="ar">متوسط الدولارات لكل حدث صدور بعقد واحد؛ <b>إجمالي</b> قبل التكاليف و<b>صافي</b> بعد سيناريو مسمّى</td></tr>
-<tr><td class="sym">[a, b]</td><td class="en">The 95% confidence interval's lower and upper bounds</td><td class="ar">حدّا فاصل الثقة 95% الأدنى والأعلى</td></tr>
-<tr><td class="sym">jump_pct</td><td class="en">Release-bar |open→close| as % of price — the "power" target variable in M2</td><td class="ar">|افتتاح←إغلاق| شمعة الصدور كنسبة من السعر — متغير «القوة» المستهدف في M2</td></tr>
-<tr><td class="sym">P_hist</td><td class="en">M2's predictor: the shifted median of the same series' prior release moves (expanding, or trailing-24)</td><td class="ar">متنبئ M2: وسيط حركات السلسلة نفسها السابقة، مُزاحًا (نافذة موسّعة أو متحركة-24)</td></tr>
-<tr><td class="sym">+900s / −300s</td><td class="en">Times relative to the release second (negative = before it)</td><td class="ar">أزمنة منسوبة إلى ثانية الصدور (السالب = قبلها)</td></tr>
+<tr><th style="width:90px">Symbol</th><th style="width:34%">Formula · الصيغة الرياضية</th><th>English</th><th class="ar">العربية</th></tr>
+
+<tr><td class="sym">ρ</td>
+<td><span class="frm">ρ = 1 − 6 Σ<i>d</i><sub>i</sub>² / [<i>n</i>(<i>n</i>²−1)]<br><i>d</i><sub>i</sub> = rank(<i>x</i><sub>i</sub>) − rank(<i>y</i><sub>i</sub>)</span></td>
+<td class="en"><b>Spearman rank correlation</b> — Pearson applied to ranks; robust on fat tails, always reported beside Pearson</td>
+<td class="ar"><b>ارتباط سبيرمان الرتبي</b> — بيرسون مطبَّقًا على الرتب؛ متين على الذيول السمينة</td></tr>
+
+<tr><td class="sym">r</td>
+<td><span class="frm">r = Σ(<i>x</i><sub>i</sub>−x̄)(<i>y</i><sub>i</sub>−ȳ) ⁄ √[Σ(<i>x</i><sub>i</sub>−x̄)² · Σ(<i>y</i><sub>i</sub>−ȳ)²]</span></td>
+<td class="en"><b>Pearson correlation</b> — linear; can be blind on fat tails (gold: r=−0.012 vs ρ=−0.193)</td>
+<td class="ar"><b>ارتباط بيرسون</b> الخطي — قد يَعمى على الذيول (الذهب: −0.012 مقابل −0.193 رتبيًا)</td></tr>
+
+<tr><td class="sym">t</td>
+<td><span class="frm">t = x̄ ⁄ se , se = s ⁄ √<i>n</i><br>(one-sample vs 0; s with ddof=1)</span></td>
+<td class="en"><b>t-statistic</b> — the mean divided by its standard error; the confirmed trade's t = 4.13</td>
+<td class="ar"><b>إحصائية t</b> — المتوسط مقسومًا على خطئه المعياري؛ للصفقة المؤكدة t = 4.13</td></tr>
+
+<tr><td class="sym">p</td>
+<td><span class="frm">two-sided: p = P(|T| ≥ |t<sub>obs</sub>| &nbsp;|&nbsp; H₀)<br>one-sided: p = P(T ≥ t<sub>obs</sub> | H₀)</span></td>
+<td class="en"><b>p-value</b> — probability of a result at least this extreme if the null were true; "one-sided" tests one direction only</td>
+<td class="ar"><b>القيمة الاحتمالية</b> لنتيجة بهذا التطرف على الأقل لو صحّ فرض العدم؛ «أحادية الجانب» لاتجاه واحد</td></tr>
+
+<tr><td class="sym">n</td>
+<td><span class="frm">n = |{events}| ; se ∝ 1⁄√n<br>CI half-width shrinks like 1⁄√n</span></td>
+<td class="en"><b>Sample size</b> — the count behind a number; precision grows only as its square root</td>
+<td class="ar"><b>حجم العيّنة</b> — العدد خلف الرقم؛ الدقة تنمو بجذره التربيعي فقط</td></tr>
+
+<tr><td class="sym">α</td>
+<td><span class="frm">reject H₀ iff p &lt; α ; α = 0.05<br>Bonferroni: α<sub>adj</sub> = α ⁄ m &nbsp;(M3: m = 54 ⇒ 9.26×10⁻⁴)</span></td>
+<td class="en"><b>Significance level</b>; Bonferroni divides it by the number of cells examined so scanning cannot manufacture significance</td>
+<td class="ar"><b>مستوى المعنوية</b>؛ بونفيروني يقسمه على عدد الخلايا المفحوصة حتى لا يصنع المسحُ معنويةً زائفة</td></tr>
+
+<tr><td class="sym">σ</td>
+<td><span class="frm">σ = √[ Σ(<i>x</i><sub>i</sub>−x̄)² ⁄ (<i>n</i>−1) ]<br>effect in σ units: (x − μ₀) ⁄ σ</span></td>
+<td class="en"><b>Standard deviation</b>; "5.5σ" = an effect 5.5 standard deviations from its baseline</td>
+<td class="ar"><b>الانحراف المعياري</b>؛ «5.5σ» = أثر يبعد 5.5 انحرافًا عن خط أساسه</td></tr>
+
+<tr><td class="sym">z</td>
+<td><span class="frm">z = arctanh(r) = ½ ln[(1+r)⁄(1−r)] , SE = 1⁄√(n−3)<br>CI(r) = tanh( z ± 1.96⁄√(n−3) )<br>compare two: Z = (z₁−z₂) ⁄ √[1⁄(n₁−3)+1⁄(n₂−3)]</span></td>
+<td class="en"><b>Fisher z</b> — builds confidence intervals for correlations and compares two correlations (how #123's test C was decided)</td>
+<td class="ar"><b>تحويل فيشر z</b> — لبناء فواصل ثقة الارتباطات ومقارنة ارتباطين (به حُسم اختبار C في #123)</td></tr>
+
+<tr><td class="sym">S · P · T</td>
+<td><span class="frm">entry = Close(t<sub>rel</sub> − T)<br>stop<sub>long</sub> = entry·(1 − S⁄100) , TP<sub>long</sub> = entry·(1 + P⁄100)<br>(short: mirrored)</span></td>
+<td class="en">The trade-grid parameters: <b>S</b>top %, take-<b>P</b>rofit %, lead <b>T</b>ime; the confirmed cell: S=0.10, P=0.40, T=300s</td>
+<td class="ar">معاملات شبكة الصفقة: نسبة الوقف، نسبة الهدف، زمن السبق؛ الخلية المؤكدة: 0.10 و0.40 و300 ثانية</td></tr>
+
+<tr><td class="sym">R</td>
+<td><span class="frm">R = |entry − stop| = entry·S⁄100<br>profit in R-units = pnl ⁄ R ; here P⁄S = 0.40⁄0.10 = <b>+4R</b></span></td>
+<td class="en"><b>Risk unit</b> — the stop distance; "+4R take-profit" = target 4× the stop. ⚠️ distinct from R:R (design ratio)</td>
+<td class="ar"><b>وحدة المخاطرة</b> — مسافة الوقف؛ «هدف +4R» = أربعة أضعافها. ⚠️ تختلف عن نسبة العائد/المخاطرة التصميمية</td></tr>
+
+<tr><td class="sym">×</td>
+<td><span class="frm">multiple = value ⁄ baseline<br>e.g. V2: mean<sub>events</sub>[ |ΔC<sub>rel</sub>| ⁄ mean(|ΔC|<sub>prior hour</sub>) ]</span></td>
+<td class="en"><b>Multiple</b> vs a baseline (4.98× volatility; 2.1× stop slippage; 8.0× the seasonality floor)</td>
+<td class="ar"><b>مضاعف</b> نسبةً لخط أساس (تقلب 4.98×؛ انزلاق 2.1×؛ 8.0× فوق الأرضية الموسمية)</td></tr>
+
+<tr><td class="sym">$/event</td>
+<td><span class="frm">pnl<sub>$</sub> = pnl<sub>pts</sub> × pv<br>gross = (1⁄n) Σ pnl<sub>$,i</sub> ; net = gross − cost<sub>scenario</sub> × legs</span></td>
+<td class="en">Mean dollars per release event at 1 contract; <b>gross</b> before costs, <b>net</b> after a named scenario (a straddle pays 2 legs)</td>
+<td class="ar">متوسط الدولارات لكل حدث بعقد واحد؛ <b>إجمالي</b> قبل التكاليف و<b>صافي</b> بعد سيناريو مسمّى (السترادل يدفع رِجلين)</td></tr>
+
+<tr><td class="sym">[a, b]</td>
+<td><span class="frm">mean: x̄ ± 1.96·se<br>proportion (Wilson): [ p̂ + z²⁄2n ± z·√( p̂(1−p̂)⁄n + z²⁄4n² ) ] ⁄ (1 + z²⁄n) , z=1.96</span></td>
+<td class="en">The 95% confidence interval; means use the normal approximation, accuracies/hit-rates always use Wilson</td>
+<td class="ar">فاصل الثقة 95%؛ للمتوسطات بالتقريب الطبيعي، وللدقات والنسب دائمًا بصيغة ويلسون</td></tr>
+
+<tr><td class="sym">MDE</td>
+<td><span class="frm">mean: MDE = (z<sub>1−α/2</sub> + z<sub>power</sub>)·se ≈ 2.80·se&nbsp; (80% power, α=.05)<br>correlation: r<sub>MDE</sub> = tanh[ (z<sub>1−α/2</sub> + z<sub>0.8</sub>) ⁄ √(n−3) ]</span></td>
+<td class="en"><b>Minimum Detectable Effect</b> — the smallest true effect the test finds at 80% power; every null in the programme reports it</td>
+<td class="ar"><b>أصغر أثر قابل للكشف</b> عند قوة 80% — كل نتيجة سلبية في البرنامج ترفقه</td></tr>
+
+<tr><td class="sym">jump_pct</td>
+<td><span class="frm">jump_pct = |C<sub>rel</sub> − O<sub>rel</sub>| ⁄ O<sub>rel</sub> × 100<br>(resolution window: |C<sub>rel+15m</sub> − C<sub>rel−1m</sub>| ⁄ C<sub>rel−1m</sub> × 100)</span></td>
+<td class="en">Release-bar |open→close| as % of price — the "power" target variable in M2 (scale-free across a decade of price levels)</td>
+<td class="ar">|افتتاح←إغلاق| شمعة الصدور كنسبة من السعر — متغير «القوة» في M2 (خالٍ من أثر مستوى السعر عبر العقد)</td></tr>
+
+<tr><td class="sym">P_hist</td>
+<td><span class="frm">expanding: P<sub>hist</sub>(e) = median{ jump_pct of prior releases of the same series }, shifted 1, ≥8 priors<br>trailing-24: median of the LAST 24 priors only</span></td>
+<td class="en">M2's predictor — the same series' own history and nothing else; the trailing variant adapts to regime shifts</td>
+<td class="ar">متنبئ M2 — تاريخ السلسلة نفسها لا غير؛ والمتغير المتحرك يتكيّف مع تحولات النظام</td></tr>
+
+<tr><td class="sym">+900s / −300s</td>
+<td><span class="frm">t = t<sub>rel</sub> + Δ , Δ in seconds (Δ &lt; 0 ⇒ before the release)<br>entry at Δ=−300 ; timed exit at Δ=+900</span></td>
+<td class="en">Times relative to the release second (negative = before it)</td>
+<td class="ar">أزمنة منسوبة إلى ثانية الصدور (السالب = قبلها)</td></tr>
 </table>
 </section>
 
