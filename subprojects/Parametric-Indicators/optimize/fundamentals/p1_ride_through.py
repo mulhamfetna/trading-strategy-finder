@@ -312,22 +312,36 @@ def main() -> int:
         print(f"  ⚠️ EIA/API included for CL — UNVERIFIED provenance (#123), marked in output")
 
     ctrl = draw_controls(pd.DatetimeIndex(ev.et), df.Date.min(), df.Date.max(), seed=20260816)
-    print(f"  control timestamps: {len(ctrl)}")
+    # ⚠️ Second control set at QUIET clock minutes (11:00–13:59 ET), same cleaning. Why: even
+    # full-calendar-cleaned same-minute controls showed 1.38–1.64x — 8:30 ET carries deterministic
+    # time-of-day vol and non-US releases (the TV calendar is US-only; ECB lands 8:15/8:45 ET).
+    # The quiet set discriminates "the pipeline manufactures jumps" (would show >1 here too) from
+    # "the 8:30 minute is genuinely special" (quiet minutes ≈ 1). Same-minute controls stay as the
+    # seasonality FLOOR for the ride/drift comparisons.
+    rng_q = np.random.default_rng(20260817)
+    quiet_base = [pd.Timestamp(t).normalize() + pd.Timedelta(minutes=int(rng_q.integers(11 * 60, 14 * 60)))
+                  for t in ctrl]
+    quiet = draw_controls(pd.DatetimeIndex(quiet_base), df.Date.min(), df.Date.max(), seed=20260818)
+    print(f"  control timestamps: {len(ctrl)} same-minute · {len(quiet)} quiet-minute")
 
     rows = ride_cells(df, pd.DatetimeIndex(ev.et), ev.title.tolist(), "RELEASES", inst)
     rows += ride_cells(df, pd.DatetimeIndex(ctrl), ["CTRL"] * len(ctrl), "CONTROL", inst)
     drows = drift_test(df, pd.DatetimeIndex(ev.et), ev.title.tolist(), "RELEASES", inst)
     drows += drift_test(df, pd.DatetimeIndex(ctrl), ["CTRL"] * len(ctrl), "CONTROL", inst)
 
-    # ---- V2 / V3 — the known jump must be there on events, and NOT there on controls -------------
+    # ---- V2 / V3 — the known jump must be there on events, and NOT at quiet minutes ---------------
     v2 = jump_ratio(df, pd.DatetimeIndex(ev.et))
-    v3 = jump_ratio(df, pd.DatetimeIndex(ctrl))
+    v3b = jump_ratio(df, pd.DatetimeIndex(ctrl))      # same-minute seasonality floor (reported)
+    v3 = jump_ratio(df, pd.DatetimeIndex(quiet))      # quiet minutes — the actual falsifier
     v2_pass = v2["ci_lo"] > 1.2
     v3_pass = v3["ratio"] < 1.2
+    net_x = v2["ratio"] / v3b["ratio"] if v3b["ratio"] else float("nan")
     print(f"\n  V2 release-bar jump vs its own prior hour : {v2['ratio']:.2f}x "
           f"[{v2['ci_lo']:.2f},{v2['ci_hi']:.2f}] n={v2['n']}  -> {'PASS' if v2_pass else 'FAIL'}")
-    print(f"  V3 same statistic on CONTROL timestamps   : {v3['ratio']:.2f}x "
+    print(f"  V3 same statistic at QUIET minutes        : {v3['ratio']:.2f}x "
           f"[{v3['ci_lo']:.2f},{v3['ci_hi']:.2f}] n={v3['n']}  -> {'PASS (no phantom jump)' if v3_pass else 'FAIL — pipeline artefact'}")
+    print(f"  seasonality floor (same-minute controls)  : {v3b['ratio']:.2f}x "
+          f"[{v3b['ci_lo']:.2f},{v3b['ci_hi']:.2f}] n={v3b['n']}  ⇒ events are {net_x:.1f}x their floor")
 
     R = pd.DataFrame(rows)
     D = pd.DataFrame(drows)
@@ -348,10 +362,12 @@ def main() -> int:
               f"[{r.ci_lo:.3f},{r.ci_hi:.3f}]  >0.5: {r.beats_half}  >=0.71: {r.beats_break_even}")
 
     out = {"instrument": inst, "n_events": int(len(ev)), "n_controls": int(len(ctrl)),
+           "n_quiet_controls": int(len(quiet)),
            "grid": {"leads_min": LEADS_MIN, "stops_pct": STOPS_PCT, "exit_min": EXIT_MIN},
            "costs_usd": costs_usd(inst), "pv": PV[inst],
            "v2_jump_on_events": {**v2, "pass": bool(v2_pass)},
-           "v3_no_jump_on_controls": {**v3, "pass": bool(v3_pass)},
+           "v3_no_jump_at_quiet_minutes": {**v3, "pass": bool(v3_pass)},
+           "same_minute_seasonality_floor": v3b, "events_over_floor": float(net_x),
            "ride": rows, "drift": drows}
     dest = Path(a.out) if a.out else HERE / f"p1_result_{inst}.json"
     dest.write_text(json.dumps(out, indent=1, default=str))
