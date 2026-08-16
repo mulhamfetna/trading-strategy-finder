@@ -37,7 +37,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parents[1]))
 sys.path.insert(0, str(HERE))
 
-from p1_ride_through import (FLOOR, PV, all_calendar_minutes, load_tv_events)  # noqa: E402
+from p1_ride_through import (FLOOR, all_calendar_minutes, load_tv_events)  # noqa: E402
 
 MIN_PRIOR = 8          # events with fewer prior same-series releases are excluded from scoring
 N_SHUFFLE = 200        # V3 permutations
@@ -196,7 +196,7 @@ def main() -> int:
     # ---- secondary — does |forecast-previous| add anything? -------------------------------------
     s2 = scored.dropna(subset=["abs_fp"]).copy()
     s2["fp_z"] = np.nan
-    for t, g in s2.groupby("title"):
+    for _t, g in s2.groupby("title"):
         mu = g.abs_fp.expanding(MIN_PRIOR).mean().shift(1)
         sd = g.abs_fp.expanding(MIN_PRIOR).std().shift(1)
         s2.loc[g.index, "fp_z"] = (g.abs_fp - mu) / sd
