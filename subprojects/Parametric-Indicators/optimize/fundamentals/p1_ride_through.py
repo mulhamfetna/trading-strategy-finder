@@ -100,16 +100,45 @@ def load_tv_events(instrument: str) -> pd.DataFrame:
     return d[["title", "et", "unverified"]]
 
 
+def all_calendar_minutes() -> pd.DatetimeIndex:
+    """EVERY scheduled US event minute in the full TradingView calendar (39k rows, all titles).
+
+    ⚠️ Why this exists: the first run's V3 gate FAILED on all four instruments — controls drawn with
+    H1-A's rule ("no *tracked* release that day") showed a 2.3–2.5x 'phantom jump'. The gate was
+    right and the controls were wrong: 8:30 ET on an ordinary Thursday carries Initial Jobless
+    Claims, PPI, GDP … — releases outside the tracked set. The fix is on the INPUT (controls must be
+    clean of ALL calendar events), never on the gate's threshold.
+    """
+    d = pd.read_csv(TV_RAW, low_memory=False)
+    utc = pd.to_datetime(d["date"], format="mixed", utc=True)
+    return pd.DatetimeIndex(utc.dt.tz_convert("America/New_York").dt.tz_localize(None)).floor("min")
+
+
 def draw_controls(events: pd.DatetimeIndex, lo_d, hi_d, seed: int) -> list[pd.Timestamp]:
-    """H1-A's control draw: same clock minute, a weekday 3–500 days away with NO tracked release."""
+    """Same clock minute, a weekday 3–500 days away, ≥60 min from ANY scheduled US calendar event."""
     rng = np.random.default_rng(seed)
-    real_days = set(events.normalize())
+    cal = all_calendar_minutes()
+    by_day: dict = {}
+    for ts in cal:
+        by_day.setdefault(ts.normalize(), []).append(ts)
+    by_day = {k: pd.DatetimeIndex(sorted(v)) for k, v in by_day.items()}
+
+    def clean(c: pd.Timestamp) -> bool:
+        near = by_day.get(c.normalize())
+        if near is None:
+            return True
+        i = near.searchsorted(c)
+        for j in (i - 1, i):
+            if 0 <= j < len(near) and abs((near[j] - c).total_seconds()) < 3600:
+                return False
+        return True
+
     out = []
     for t in events:
-        for _ in range(40):
+        for _ in range(60):
             shift = int(rng.integers(3, 500)) * (1 if rng.random() < 0.5 else -1)
             c = pd.Timestamp(t) - pd.Timedelta(days=shift)
-            if c.normalize() in real_days or c < lo_d or c > hi_d or c.weekday() >= 5:
+            if c < lo_d or c > hi_d or c.weekday() >= 5 or not clean(c):
                 continue
             out.append(c)
             break
