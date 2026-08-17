@@ -147,3 +147,7 @@ vpn_kill.sh
 /data
 /ALL_STOCKS
 /Full_Canldes_Data
+
+# WS-DEPLOY (#128): the release schedule IS the executor's input contract — under the blanket
+# *.csv rule it would exist on one machine only (the phase2_pairs.csv lesson, again).
+!src/deploy/data/release_schedule.csv
