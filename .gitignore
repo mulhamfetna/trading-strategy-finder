@@ -159,3 +159,5 @@ vpn_kill.sh
 !deploy_out_d3/*.json
 !deploy_out_d4/*.csv
 !deploy_out_d4/*.json
+!playbooks/news-release-long/evidence/*
+!playbooks/news-release-long-bundle-v1.1.0.zip

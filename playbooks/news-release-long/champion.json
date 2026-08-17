@@ -2,7 +2,7 @@
   "meta": {
     "name": "news-release-long",
     "title": "The Announcement-Premium Bracket (LONG through scheduled macro releases)",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "created": "2026-08-17",
     "branch": "feat/ws-deploy-news-executor",
     "status": "PAPER ONLY \u2014 merge/deploy gated on explicit owner instruction (#127)",
@@ -27,7 +27,18 @@
         "docs/WS-NEWS3-FINAL-REPORT.md",
         "docs/NEWS-PROGRAMME-FULL-RECORD.md"
       ]
-    }
+    },
+    "bundle_contents": [
+      "EXECUTIVE-SUMMARY.md",
+      "PLAYBOOK.md",
+      "STAGE-STATUS-REPORT.md",
+      "SCALING-FINDINGS.md",
+      "champion.json",
+      "portable_backtester.py",
+      "schedule_2024plus.csv",
+      "evidence/ (D3+D4 per-event CSVs + result JSONs + dashboard report screenshots)",
+      "reports/ (bilingual scale-context + stressed-costs HTML)"
+    ]
   },
   "spec": {
     "direction": "LONG only (the short side PAYS the premium: negative in 18/18 tested cells)",
@@ -180,5 +191,44 @@
       "sizing/multi-leg + release executor live path",
       "regime monitor GO"
     ]
+  },
+  "scaling_2024_2026": {
+    "source": "D3 (#131) + D4 (#132); net = stressed; totals over 2024->2026",
+    "discovery": "the constraint is the quiet ENTRY second (NQ median 7 contracts, RTY 5), not the exits (deep at every size); the 300s pre-release window carries median 1,531 (NQ) / 802 (RTY) contracts",
+    "worked_entry_model": "entry = VWAP[release-300s, release-5s); bracket active from release-5s; validated in D4 (V1 dual-path + byte-identical bridge; V3 shifted-window falsifier flips NQ +429 -> -534)",
+    "per_qty": {
+      "1": {
+        "status": "ready at merge (single-second entry as verified; worked better on RTY)",
+        "NQ_net_total": 34387,
+        "RTY_net_total_worked": 10003,
+        "combined_yearly_pace": "~17k"
+      },
+      "5": {
+        "status": "feasible now via worked entry (entry-second 71% median participation is marginal)",
+        "NQ_net_total_worked": 164769,
+        "RTY_net_total_worked": 50016,
+        "combined_yearly_pace": "~83k"
+      },
+      "10": {
+        "status": "worked entry ONLY (single second physically impossible at 143-200% participation); model-validated",
+        "NQ_net_total_worked": 329538,
+        "RTY_net_total_worked": 100033,
+        "combined_yearly_pace": "~165k"
+      },
+      "20": {
+        "status": "validated CEILING of the study; window participation 1.31%/2.49% median; margin owner-side",
+        "NQ_net_total_worked": 659075,
+        "RTY_net_total_worked": 200066,
+        "combined_yearly_pace": "~330k",
+        "worst_event_NQ": -20350,
+        "minus_2R_budget_NQ": -17178
+      }
+    },
+    "cost_of_working_the_entry": {
+      "NQ_per_event": 17.69,
+      "NQ_pct_of_edge": 4.0,
+      "RTY_per_event": -28.3,
+      "RTY_note": "IMPROVES +24% (16 pre-release whipsaws avoided)"
+    }
   }
 }

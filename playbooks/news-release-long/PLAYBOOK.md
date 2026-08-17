@@ -102,3 +102,11 @@ Confirmed in WS-NEWS3 M3 (#117) at **Bonferroni α/54 + chronological half-split
 reproduces the committed evidence **exactly** (NQ 327/327; 2024+ subset 81/81, $36,209.52 to the
 cent) → this bundle's portable code re-verifies against `champion.json` (`--verify` = PASS, both
 instruments) → claims ledger IDs in `champion.json` re-derive every headline from committed files.
+
+## 7 · Scaling (v1.1.0 addendum — D3 + D4)
+
+The scaling studies live in **`SCALING-FINDINGS.md`** (per-scale summaries for qty 1/5/10/20),
+with the raw evidence in `evidence/`. The one-line map: **qty 1–2 as verified · qty 5 work the
+entry · qty 10–20 worked entry only (validated; NQ keeps 96% of the edge, RTY improves +24%) ·
+combined qty=20 pace ≈ $330k/yr at 1.3–2.5% window participation.** Full stage picture:
+`STAGE-STATUS-REPORT.md`; one page: `EXECUTIVE-SUMMARY.md`.
