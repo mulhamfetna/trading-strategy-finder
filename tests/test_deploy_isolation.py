@@ -176,3 +176,30 @@ def test_monitor_prefers_net_stressed_over_gross():
                        "net_stressed_usd": [-12.5] * WINDOW})   # net: negative
     walk = rolling_state(df)
     assert walk.state.iloc[-1] == "STAND_DOWN"
+
+
+def test_bracket_generalization_collapses_to_original():
+    """D4 (#132) bridge: passing the OLD definition explicitly (entry = the entry bar's close,
+    walk from the next bar) must reproduce the default path byte-identically."""
+    p = 20000.0
+    spec = flat_prefix(p) + [(s, p + 4, p + 5, p + 3, p + 4) for s in range(1, EXIT_S + 1)]
+    b = bars(spec)
+    base = run_bracket(*b, REL, Leg("long", 1), 20.0, "CPI")
+    idx = b[0]
+    import numpy as np
+    i_ent = int(np.searchsorted(idx, np.datetime64(REL - pd.Timedelta(seconds=LEAD_S)), "right")) - 1
+    again = run_bracket(*b, REL, Leg("long", 1), 20.0, "CPI",
+                        entry_price=float(b[4][i_ent]), walk_from=i_ent + 1)
+    assert again.pnl_usd == base.pnl_usd and again.outcome == base.outcome
+
+
+def test_bracket_worked_entry_changes_levels():
+    """A different entry price must move the bracket levels: with a worked entry set ABOVE the
+    single entry, the same path can stop where the original TPed."""
+    p = 20000.0
+    tp_single = p * (1 + TP_PCT / 100)
+    spec = flat_prefix(p) + [(1, p + 5, tp_single + 3, p + 4, tp_single + 1)]
+    b = bars(spec)
+    hi_entry = p * 1.003                       # worked entry 0.3% above -> TP now out of reach
+    f = run_bracket(*b, REL, Leg("long", 1), 20.0, "CPI", entry_price=hi_entry)
+    assert f.outcome != "tp"

@@ -149,9 +149,19 @@ def load_1s_windows(path: Path, windows, chunksize: int = 4_000_000,
 
 # ---- the bracket, exactly as M3 coded it --------------------------------------------------------
 def run_bracket(idx, op, hi, lo, cl, t_rel: pd.Timestamp, leg: Leg, pv: float,
-                title: str) -> Fill | None:
+                title: str, entry_price: float | None = None,
+                walk_from: int | None = None) -> Fill | None:
     """One leg through one release. Semantics IDENTICAL to p3_straddle.leg_pnl — that identity is
-    the V1 parity claim, enforced by replay against the committed evidence, not assumed."""
+    the V1 parity claim, enforced by replay against the committed evidence, not assumed.
+
+    D4 (#132) generalization, both kwargs default to the ORIGINAL behavior so every existing call
+    is byte-identical (the bridge test enforces this):
+      entry_price  override the fill price (e.g. the worked-entry VWAP); default = close of the
+                   bar at release−LEAD_S.
+      walk_from    first bar index the bracket is ACTIVE from; default = the bar after the entry
+                   bar. The worked entry activates at release−5s (unprotected while building —
+                   an explicit model property, reported, never netted away).
+    """
     t0 = np.datetime64(t_rel)
     i_ent = int(np.searchsorted(idx, t0 - np.timedelta64(LEAD_S, "s"), side="right")) - 1
     i_rel = int(np.searchsorted(idx, t0, side="left"))
@@ -161,7 +171,7 @@ def run_bracket(idx, op, hi, lo, cl, t_rel: pd.Timestamp, leg: Leg, pv: float,
     if abs((pd.Timestamp(idx[i_ent]) - (t_rel - pd.Timedelta(seconds=LEAD_S)))
            .total_seconds()) > ENTRY_TOL_S:
         return None
-    entry = float(cl[i_ent])
+    entry = float(cl[i_ent]) if entry_price is None else float(entry_price)
     if not np.isfinite(entry) or entry <= 0:
         return None
     d_stop = entry * STOP_PCT / 100.0
@@ -171,7 +181,8 @@ def run_bracket(idx, op, hi, lo, cl, t_rel: pd.Timestamp, leg: Leg, pv: float,
     tp_lvl = entry + d_tp if long_ else entry - d_tp
 
     out_p, outcome, b_exit = None, "timed", i_end
-    for b in range(i_ent + 1, i_end + 1):
+    b_start = (i_ent + 1) if walk_from is None else max(int(walk_from), i_ent + 1)
+    for b in range(b_start, i_end + 1):
         hit_sl = lo[b] <= stop_lvl if long_ else hi[b] >= stop_lvl
         hit_tp = hi[b] >= tp_lvl if long_ else lo[b] <= tp_lvl
         if hit_sl:                                     # tie (both in one bar) ⇒ STOP, pessimistic
