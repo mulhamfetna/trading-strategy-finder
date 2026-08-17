@@ -151,3 +151,5 @@ vpn_kill.sh
 # WS-DEPLOY (#128): the release schedule IS the executor's input contract — under the blanket
 # *.csv rule it would exist on one machine only (the phase2_pairs.csv lesson, again).
 !src/deploy/data/release_schedule.csv
+# The bundle's schedule is part of the SHAREABLE playbook — the phase2_pairs.csv lesson again.
+!playbooks/news-release-long/schedule_2024plus.csv
