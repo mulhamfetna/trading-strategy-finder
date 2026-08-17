@@ -107,7 +107,8 @@ def _seek_to(path: Path, target: str) -> int:
         return f.tell()
 
 
-def load_1s_windows(path: Path, windows, chunksize: int = 4_000_000) -> pd.DataFrame:
+def load_1s_windows(path: Path, windows, chunksize: int = 4_000_000,
+                    keep_volume: bool = False) -> pd.DataFrame:
     w = sorted((pd.Timestamp(s), pd.Timestamp(e)) for s, e in windows)
     if not w:
         return pd.DataFrame(columns=["Date", "Open", "High", "Low", "Close"])
@@ -136,13 +137,14 @@ def load_1s_windows(path: Path, windows, chunksize: int = 4_000_000) -> pd.DataF
         if mask.any():
             keep.append(ch[mask])
     fh.close()
+    cols = ["Date", "Open", "High", "Low", "Close"] + (["Volume"] if keep_volume else [])
     if not keep:
-        return pd.DataFrame(columns=["Date", "Open", "High", "Low", "Close"])
+        return pd.DataFrame(columns=cols)
     d = pd.concat(keep, ignore_index=True)
     d["Date"] = pd.to_datetime(d["datetime"])
-    d = d.rename(columns={"open": "Open", "high": "High", "low": "Low", "close": "Close"})
-    return (d[["Date", "Open", "High", "Low", "Close"]]
-            .drop_duplicates(subset=["Date"]).sort_values("Date").reset_index(drop=True))
+    d = d.rename(columns={"open": "Open", "high": "High", "low": "Low", "close": "Close",
+                          "volume": "Volume"})
+    return d[cols].drop_duplicates(subset=["Date"]).sort_values("Date").reset_index(drop=True)
 
 
 # ---- the bracket, exactly as M3 coded it --------------------------------------------------------
@@ -214,6 +216,7 @@ def replay(instrument: str, bars_1s: Path, schedule_path: Path, qty: int,
         if f is not None:
             fills.append(f)
     d = pd.DataFrame([f.__dict__ for f in fills]).drop(columns=["meta"])
+    d["net_stressed_usd"] = d.pnl_usd - COST_PER_LEG[instrument]["stressed"] * qty
     out_dir.mkdir(parents=True, exist_ok=True)
     dest = out_dir / f"replay_{instrument}_q{qty}.csv"
     d.to_csv(dest, index=False)

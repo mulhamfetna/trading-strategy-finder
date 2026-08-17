@@ -165,3 +165,14 @@ def test_monitor_stand_down_is_sticky_until_owner_clears(tmp_path):
     assert current_state(recovered, sf)["state"] == "STAND_DOWN"     # …but the halt STAYS
     sf.write_text(json.dumps({"halted": False, "halted_at": None}))  # the owner's clear
     assert current_state(recovered, sf)["state"] == "GO"
+
+
+def test_monitor_prefers_net_stressed_over_gross():
+    """D3 (#131): with both columns present the monitor must use NET-STRESSED — a gross-positive
+    but net-negative regime must STAND-DOWN."""
+    ets = pd.date_range("2024-01-15", periods=WINDOW, freq="30D")
+    df = pd.DataFrame({"et": ets.astype(str), "title": CPI_TITLE,
+                       "pnl_usd": [10.0] * WINDOW,              # gross: slightly positive
+                       "net_stressed_usd": [-12.5] * WINDOW})   # net: negative
+    walk = rolling_state(df)
+    assert walk.state.iloc[-1] == "STAND_DOWN"

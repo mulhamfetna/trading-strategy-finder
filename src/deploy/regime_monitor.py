@@ -13,7 +13,9 @@ THE RULE (pinned in the owner decision packet):
     the research branch): if it is not green, published numbers have drifted from their files.
 
 Input: a per-event P&L file (the executor's replay output or its live causal log) with columns
-    et, title, pnl_usd  — only rows with title == "Inflation Rate MoM" enter the window.
+    et, title, and net_stressed_usd (preferred) or pnl_usd — only CPI rows enter the window.
+⚠️ D3 (#127, owner-approved): the monitor consumes NET-STRESSED P&L, not gross — the alarm must
+    fire on the number the trade actually keeps. Falls back to gross ONLY with a loud warning.
 
     python3 -m src.deploy.regime_monitor --events deploy_out/replay_NQ_q1.csv
     python3 -m src.deploy.regime_monitor --events ... --history      # full historical state walk
@@ -39,11 +41,19 @@ def rolling_state(events: pd.DataFrame) -> pd.DataFrame:
            .sort_values("et").reset_index(drop=True))
     if len(cpi) == 0:
         raise ValueError("no CPI events in the input — the monitor has nothing to watch")
-    cpi["roll24"] = cpi.pnl_usd.rolling(WINDOW, min_periods=WINDOW).mean()
+    if "net_stressed_usd" in cpi.columns:
+        pnl = cpi.net_stressed_usd
+    else:
+        import sys
+        print("WARNING: net_stressed_usd column absent — monitor falling back to GROSS pnl_usd "
+              "(less conservative than the deployed stressed-cost policy)", file=sys.stderr)
+        pnl = cpi.pnl_usd
+    cpi["pnl_used"] = pnl
+    cpi["roll24"] = pnl.rolling(WINDOW, min_periods=WINDOW).mean()
     cpi["state"] = "WARMUP"
     cpi.loc[cpi.roll24.notna() & (cpi.roll24 >= 0), "state"] = "GO"
     cpi.loc[cpi.roll24.notna() & (cpi.roll24 < 0), "state"] = "STAND_DOWN"
-    return cpi[["et", "pnl_usd", "roll24", "state"]]
+    return cpi[["et", "pnl_used", "roll24", "state"]]
 
 
 def current_state(events: pd.DataFrame, state_file: Path) -> dict:
