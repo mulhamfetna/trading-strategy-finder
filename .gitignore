@@ -153,3 +153,5 @@ vpn_kill.sh
 !src/deploy/data/release_schedule.csv
 # The bundle's schedule is part of the SHAREABLE playbook — the phase2_pairs.csv lesson again.
 !playbooks/news-release-long/schedule_2024plus.csv
+!docs/SCALE-CONTEXT-REPORT-BILINGUAL.html
+!docs/STRESSED-COSTS-REPORT-BILINGUAL.html

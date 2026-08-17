@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stressed Costs, Explained · التكاليف القصوى مشروحة</title>
+<style>
+  :root{--l0:#0b1e3d;--l1:#1d3a6e;--l2:#0e5e56;--gold:#d4a017;--green:#1d9e57;--red:#c0392b;--amber:#e67e22;
+        --bg:#f4f6fa;--card:#fff;--ink:#1c2333;--mut:#5f6775;--line:#dfe4ee}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Tahoma,"Noto Naskh Arabic",Arial,sans-serif;line-height:1.7;font-size:15.5px}
+  header{background:linear-gradient(135deg,var(--l0),var(--l1) 55%,var(--l2));color:#fff;padding:30px 26px}
+  header h1{margin:0 0 4px;font-size:24px} header .sub{opacity:.9;font-size:14px}
+  .wrap{max-width:1100px;margin:0 auto;padding:20px 16px 70px}
+  section{background:var(--card);border:1px solid var(--line);border-radius:12px;margin:16px 0;padding:16px 20px;box-shadow:0 1px 3px rgba(10,20,50,.06)}
+  h2{margin:0 0 10px;font-size:18px;color:var(--l1);border-bottom:2px solid var(--line);padding-bottom:6px}
+  h3{margin:12px 0 4px;font-size:15.5px}
+  .ar{direction:rtl;text-align:right;unicode-bidi:embed;background:#f8fafd;border-inline-start:4px solid var(--l2);
+      border-radius:8px;padding:10px 14px;margin:10px 0}
+  .num{font-family:Consolas,monospace;white-space:nowrap;direction:ltr;unicode-bidi:embed}
+  .bar{display:flex;align-items:center;gap:10px;margin:6px 0}
+  .bar .lbl{width:290px;font-size:13.5px;flex-shrink:0}
+  .bar .trk{flex:1;background:#e9edf5;border-radius:6px;height:24px;direction:ltr}
+  .bar .fill{height:100%;border-radius:6px;display:flex;align-items:center;justify-content:flex-end;color:#fff;
+             font-size:12px;font-family:Consolas,monospace;padding:0 8px;min-width:36px}
+  .fg{background:linear-gradient(90deg,#27ae60,#1d9e57)} .fb{background:linear-gradient(90deg,#3f6ad8,#27508f)}
+  .fa{background:linear-gradient(90deg,#f39c12,#e67e22)} .fr{background:linear-gradient(90deg,#e74c3c,#c0392b)}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:14px}
+  th{background:#eef2f9;padding:7px 10px;border:1px solid var(--line)} td{padding:7px 10px;border:1px solid var(--line)}
+  .note{background:#fdf6ec;border-inline-start:4px solid var(--amber);padding:10px 14px;border-radius:8px;margin:10px 0;font-size:14px}
+  .good{background:#eef9f1;border-inline-start:4px solid var(--green)}
+  .bad{background:#fdeeec;border-inline-start:4px solid var(--red)}
+  footer{color:var(--mut);font-size:12.5px;margin-top:24px;border-top:1px solid var(--line);padding-top:10px}
+</style>
+</head>
+<body>
+<header>
+  <h1>💸 Stressed Costs, Explained — what the ladder models, and what it cannot</h1>
+  <div class="sub">التكاليف القصوى مشروحة — ماذا يُمثِّل سُلَّم التكاليف وماذا لا يستطيع تمثيله · <span class="num">2026-08-17</span> · WS-DEPLOY #127</div>
+</header>
+<div class="wrap">
+
+<section>
+<h2>1 · The ladder: three scenarios, one honest default · السُّلَّم: ثلاثة سيناريوهات وافتراض واحد صادق</h2>
+<p>Every trade cost = <b>commission ($2.50 round-trip) + the spread you cross</b>, priced in ticks
+(NQ/RTY tick = <span class="num">$5</span>). The three scenarios model three market states:</p>
+<div class="bar"><div class="lbl">OPTIMISTIC — calm market, 1-tick spread</div><div class="trk"><div class="fill fg" style="width:33%">$7.50 / event</div></div></div>
+<div class="bar"><div class="lbl">REALISTIC — normal conditions, 2 ticks</div><div class="trk"><div class="fill fa" style="width:56%">$12.50 / event</div></div></div>
+<div class="bar"><div class="lbl">STRESSED — release-second blowout, 4 ticks</div><div class="trk"><div class="fill fr" style="width:100%">$22.50 / event</div></div></div>
+<p><b>Why STRESSED leads every report for THIS trade:</b> it transacts at the wildest second on the
+calendar — the moment spreads physically widen. Quoting the optimistic number for a release-second
+strategy would be dressing the trade in another market's clothes.</p>
+<div class="ar">كل صفقة تكلفتها = <b>عمولة (<span class="num">$2.50</span> ذهابًا وإيابًا) + فارق السعر الذي
+تعبره</b> مقاسًا بالتِكّات (تكّة NQ/RTY = <span class="num">$5</span>). السيناريوهات الثلاثة تمثل ثلاث حالات
+سوق: <b>متفائل</b> (سوق هادئ، تكّة واحدة = <span class="num">$7.50</span>)، <b>واقعي</b> (تكّتان =
+<span class="num">$12.50</span>)، <b>أقصى</b> (انفجار الفارق في ثانية الصدور، 4 تكّات =
+<span class="num">$22.50</span>). <b>ولماذا يتصدر «الأقصى» كل تقارير هذه الصفقة؟</b> لأنها تتداول في أعنف
+ثانية في التقويم — حيث يتسع الفارق فعليًا؛ وتسعيرها بالسيناريو المتفائل إلباسٌ للصفقة ثيابَ سوقٍ آخر.</div>
+<div class="note">Historical lesson that built this rule · الدرس الذي أسّس القاعدة: in WS-EARN the control's
+gross t was −0.58 — harmless noise — but NET of costs it became t = −3.68. ⭐ <b>"A significant negative
+net-t is COST DRAG, not a signal."</b> Costs can manufacture false conclusions in both directions.
+<span class="ar" style="display:block;background:none;border:none;padding:4px 0 0">في دراسة الأرباح كانت t الإجمالية للضابط −0.58 (ضجيج بريء) فصارت بعد التكاليف −3.68:
+<b>«السالب المعنوي في الصافي هو سحبُ تكاليف لا إشارة»</b> — التكاليف تصنع استنتاجات زائفة في الاتجاهين.</span></div>
+</section>
+
+<section>
+<h2>2 · The waterfall: what the ladder does to THIS trade's edge · الشلال: أثر السُّلَّم على حافة هذه الصفقة</h2>
+<h3>NQ (2024→2026, per event) — costs are 5% of the edge · التكاليف 5% من الحافة</h3>
+<div class="bar"><div class="lbl">Gross mean · الإجمالي</div><div class="trk"><div class="fill fb" style="width:100%">+$447.03</div></div></div>
+<div class="bar"><div class="lbl">Net optimistic</div><div class="trk"><div class="fill fg" style="width:98.3%">+$439.53</div></div></div>
+<div class="bar"><div class="lbl">Net realistic</div><div class="trk"><div class="fill fg" style="width:97.2%">+$434.53</div></div></div>
+<div class="bar"><div class="lbl">Net STRESSED · الصافي الأقصى</div><div class="trk"><div class="fill fg" style="width:94.9%">+$424.53</div></div></div>
+<h3>RTY (same window) — costs are 19% of the edge · التكاليف 19% من الحافة</h3>
+<div class="bar"><div class="lbl">Gross mean · الإجمالي</div><div class="trk"><div class="fill fb" style="width:100%">+$117.69</div></div></div>
+<div class="bar"><div class="lbl">Net STRESSED · الصافي الأقصى</div><div class="trk"><div class="fill fg" style="width:80.9%">+$95.19</div></div></div>
+<p><b>The asymmetry is the lesson:</b> the same $22.50 is a rounding error on NQ's edge and a fifth of
+RTY's. Cost scenarios matter exactly where the edge is thin — and they are why the straddle died
+economically: <b>a two-leg structure pays the ladder twice</b> ($45/event stressed) while its short
+leg earns negative.</p>
+<div class="ar"><b>عدم التناظر هو الدرس:</b> الـ<span class="num">$22.50</span> نفسها خطأُ تقريبٍ على حافة NQ
+(5%) وخُمسُ حافة RTY (19%). سيناريوهات التكاليف تحسم حيث تكون الحافة رقيقة — وهي سبب موت السترادل
+اقتصاديًا: <b>البنية ذات الرِجلين تدفع السُّلَّم مرتين</b> (<span class="num">$45</span> للحدث بالسيناريو
+الأقصى) بينما رِجلها القصيرة تكسب سالبًا.</div>
+</section>
+
+<section>
+<h2>3 · What the ladder does NOT cover: slippage — and it is measured separately · ما لا يغطيه السُّلَّم: الانزلاق</h2>
+<p>The ladder prices <b>commission + spread</b>. A different animal entirely is <b>slippage through
+the stop</b>: in a sweep second, price can jump PAST the stop line between fills. This is <b>not</b>
+in the cost ladder — it is already inside the GROSS numbers, because fills are modeled at the
+<b>worse of (stop line, breaching bar's open)</b> [GAP-01]. And it is measured:</p>
+<div class="bar"><div class="lbl">Nominal stop (0.10% ≈ NQ 2026)</div><div class="trk"><div class="fill fa" style="width:48%">−$476</div></div></div>
+<div class="bar"><div class="lbl">Worst measured fill (NFP 2026-03-06)</div><div class="trk"><div class="fill fr" style="width:100%">−$995 = 2.1× the stop</div></div></div>
+<p><b>Risk-budgeting rule this creates:</b> count the losing leg as potentially <b>−2R, not −1R</b>.</p>
+<div class="ar">السُّلَّم يسعّر <b>العمولة + الفارق</b>. أما <b>الانزلاق عبر الوقف</b> فحيوان مختلف تمامًا:
+في ثانية المسح قد يقفز السعر <b>متجاوزًا</b> خط الوقف بين تنفيذين. هذا ليس في سُلَّم التكاليف — بل داخل
+الأرقام الإجمالية أصلًا، لأن الملء يُحتسب عند <b>الأسوأ من (خط الوقف، افتتاح الشمعة الخارقة)</b>. وهو
+<b>مقيس</b>: أسوأ ملء مسجَّل = <span class="num">−$995</span> على وقفٍ اسمي ≈ <span class="num">−$476</span>،
+أي <b>2.1× الوقف</b>. القاعدة الناتجة لميزانية المخاطرة: احسب الرِجل الخاسرة على أنها قد تبلغ <b>−2R لا −1R</b>.</div>
+</section>
+
+<section>
+<h2>4 · The declared blind spot — and the three built-in pessimisms that offset it · البقعة العمياء والتشاؤمات الثلاثة المدمجة</h2>
+<div class="note bad"><b>What bar data cannot see · ما لا تراه بيانات الشموع:</b> inside one 1-second bar the
+fill order is unknowable; slippage beyond the stressed 4 ticks in the exact release second cannot be
+measured from bars. Only live/tick data can close this — it is a declared blind spot in the claims
+ledger, not a footnote. <span class="ar" style="display:block;background:none;border:none;padding:4px 0 0">
+داخل شمعة الثانية الواحدة لا يمكن معرفة ترتيب التنفيذ؛ والانزلاق فوق 4 تكّات في ثانية الصدور بالضبط لا
+يُقاس من الشموع — وحدها بيانات التِك/التداول الحي تغلق هذا. وهي «بقعة عمياء» معلنة في سجل الادعاءات لا هامش.</span></div>
+<div class="note good"><b>Why the reported net is conservative BY CONSTRUCTION, three separate ways ·
+لماذا الصافي المعلَن متحفِّظ بنيويًا من ثلاث جهات:</b><br>
+1) costs at the <b>stressed</b> rung lead every headline · التكاليف بأقسى درجة تتصدر كل رقم؛<br>
+2) stop fills at the <b>worse</b> of line/open (GAP-01), take-profits as honest resting limits ·
+ملء الوقف بالأسوأ والهدف كأمر معلَّق صادق؛<br>
+3) a bar breaching stop AND target in the same second counts as a <b>STOP</b> · الشمعة التي تخترق
+الوقف والهدف معًا تُحسب وقفًا.<br>
+Each choice biases the published expectancy DOWN — so live reality has three cushions before it can
+disappoint the backtest. · كل خيارٍ يدفع التوقع المنشور نزولًا — فلواقع التداول ثلاث وسائد قبل أن يخيّب الاختبار.</div>
+</section>
+
+<footer>Numbers: <span class="num">champion.json</span> (playbooks/news-release-long/) · claims:
+P3-LONG-RELEASE-TRADE-CONFIRMED, P3-WHIPSAW-MEASURED · companion: <b>SCALE-CONTEXT-REPORT-BILINGUAL.html</b> ·
+self-contained, works offline · ملف محلي ذاتي الاكتفاء يعمل دون إنترنت.</footer>
+</div>
+</body>
+</html>
