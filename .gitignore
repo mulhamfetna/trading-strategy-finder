@@ -155,3 +155,5 @@ vpn_kill.sh
 !playbooks/news-release-long/schedule_2024plus.csv
 !docs/SCALE-CONTEXT-REPORT-BILINGUAL.html
 !docs/STRESSED-COSTS-REPORT-BILINGUAL.html
+!deploy_out_d3/*.csv
+!deploy_out_d3/*.json
