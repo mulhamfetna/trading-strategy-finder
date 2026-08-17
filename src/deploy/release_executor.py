@@ -192,9 +192,12 @@ def run_bracket(idx, op, hi, lo, cl, t_rel: pd.Timestamp, leg: Leg, pv: float,
 
 # ---- replay -------------------------------------------------------------------------------------
 def replay(instrument: str, bars_1s: Path, schedule_path: Path, qty: int,
-           out_dir: Path) -> pd.DataFrame:
+           out_dir: Path, floor_year: int = 2016) -> pd.DataFrame:
     sched = load_schedule(schedule_path)
-    ev = sched[sched.status == "confirmed"].reset_index(drop=True)
+    # per-instrument study floor (#121/#122): RTY's price history starts 2019 — its M3 evidence
+    # was produced with floor 2019, so parity requires the same cut.
+    ev = sched[(sched.status == "confirmed")
+               & (sched.et.dt.year >= floor_year)].reset_index(drop=True)
     print(f"replay {instrument}: {len(ev)} confirmed releases "
           f"({ev.et.min()} .. {ev.et.max()}), qty={qty}, spec: lead {LEAD_S}s, "
           f"S {STOP_PCT}%, TP {TP_PCT}%, exit +{EXIT_S}s")
@@ -277,6 +280,7 @@ def main() -> int:
     rp.add_argument("--bars-1s", required=True)
     rp.add_argument("--schedule", default=str(DEFAULT_SCHEDULE))
     rp.add_argument("--qty", type=int, default=1)
+    rp.add_argument("--floor-year", type=int, default=2016)
     rp.add_argument("--parity-ref", default="")
     rp.add_argument("--out-dir", default="deploy_out")
     pp = sub.add_parser("paper")
@@ -288,7 +292,8 @@ def main() -> int:
     a = ap.parse_args()
 
     if a.mode == "replay":
-        d = replay(a.instrument, Path(a.bars_1s), Path(a.schedule), a.qty, Path(a.out_dir))
+        d = replay(a.instrument, Path(a.bars_1s), Path(a.schedule), a.qty, Path(a.out_dir),
+                   a.floor_year)
         if a.parity_ref:
             return 0 if parity_check(d, Path(a.parity_ref)) else 1
         return 0
