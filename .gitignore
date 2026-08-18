@@ -237,3 +237,6 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !subprojects/Parametric-Indicators/optimize/fundamentals/news4_n3_result_*.json
 !subprojects/Parametric-Indicators/optimize/fundamentals/news4_n3_*.log
 !docs/NEWS4-DROPPED-SERIES-REPORT-BILINGUAL.html
+# WS-ESCPI (#139): study evidence + the two-implementation replay files the ledger reads
+!subprojects/Parametric-Indicators/optimize/fundamentals/wsescpi_*.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/wsescpi_*.json
