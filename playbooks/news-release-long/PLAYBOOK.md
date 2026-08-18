@@ -110,3 +110,29 @@ with the raw evidence in `evidence/`. The one-line map: **qty 1–2 as verified 
 entry · qty 10–20 worked entry only (validated; NQ keeps 96% of the edge, RTY improves +24%) ·
 combined qty=20 pace ≈ $330k/yr at 1.3–2.5% window participation.** Full stage picture:
 `STAGE-STATUS-REPORT.md`; one page: `EXECUTIVE-SUMMARY.md`.
+
+## 8 · ES CPI — DEPLOYED (owner ship instruction on #139, 2026-08-18)
+
+The same frozen ride, on ES, riding **CPI only** (the premium is CPI-concentrated everywhere):
+net **+$151.37/event** full-era at $52.50 stressed costs (p=0.0027, jump 20.5×); the 2024→2026
+window nets **+$529.44/event** (n=29, +$15,353.82/contract) — reproduced to the cent by the
+executor (`--instrument ES --series "Inflation Rate MoM"`). Integration adds **+36.5%** to the
+layer at qty=1 — but it **scales the CPI bet rather than diversifying it** (ES↔NQ same-event
+correlation 0.78; 24% of CPI events lose on all three legs; worst joint CPI event −$1,023).
+
+Independence caveat, verbatim from the pre-registration: ES's own history generated the
+hypothesis; the true holdout (never-touched YM data) returned **VOID-DATA** — YM's premarket
+tape is thinner than the registered quality line (median 101 traded pre-release seconds), while
+its descriptive numbers (net +$107.64, t=3.15) *agree* with ES. **The owner explicitly accepted descriptive-grade evidence and ordered the ship on #139 (2026-08-18)** — the pre-registered rule is satisfied by that word; the YM VOID caveat stays on the record. Full case: `docs/WS-ESCPI-REPORT-BILINGUAL.html`, issue #139, ledger 36/36.
+
+Usage (v1.2.0): `python3 portable_backtester.py --bars-1s <ES_1s.csv> --instrument ES --verify`
+(the bundle filters the schedule to CPI via `spec.instruments.ES.series`). Executor:
+`python3 -m src.deploy.release_executor replay|paper --instrument ES --series "Inflation Rate MoM"`.
+Regime monitor guards ES like the rest (CPI net-stressed feed).
+
+## 9 · YM CPI — verified candidate (NOT deployed)
+
+The full-grid sweep's only positive (+$107.64 net/event, p=0.0016, jump 9.8×, n=116) — walked
+through the same core + dashboard verification as ES (#139/#147). Held back from deployment by
+its thin premarket tape (median 101 traded pre-release seconds ⇒ execution study RQ-7 required)
+and by the owner's word. Evidence grade: grid-exploratory, same consumed-history caveat as ES.

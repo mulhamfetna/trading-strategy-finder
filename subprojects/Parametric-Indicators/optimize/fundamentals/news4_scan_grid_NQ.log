@@ -1,0 +1,12 @@
+scan NQ: bars end 2026-08-07 16:59:59; spec lead 300s S0.10% TP0.40% exit +900s; stressed cost $22.5/event; pre-reg a988f17
+blocks: 0 T1 + 2 T2; moments total 1,005
+control clocks: {'10:30': 400, '16:30': 400}
+1s bars loaded: 1,406,266
+  control 10:30: rides 377 · jump n 377
+  control 16:30: rides 161 · jump n 377
+  [2] GRID API Crude Oil Stock Change        n= 266 net $   -9.37 p=0.568 jump 1.20 -> VOID-TIMESTAMP
+  [2] GRID EIA Crude Oil Stocks Change       n= 551 net $  -20.06 p=0.291 jump 1.32 -> POWERED-NULL
+{
+  "VOID-TIMESTAMP": 1,
+  "POWERED-NULL": 1
+}

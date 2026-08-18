@@ -1,0 +1,27 @@
+{
+  "instrument": "NQ",
+  "prereg_commit": "a988f17",
+  "seed": 117,
+  "spec": {
+    "lead_s": 300,
+    "exit_s": 900,
+    "stop_pct": 0.1,
+    "tp_pct": 0.4,
+    "cost_stressed": 22.5
+  },
+  "n_blocks": 88,
+  "verdicts": {
+    "VOID-TIMESTAMP": 33,
+    "POWERED-NULL": 29,
+    "UNDERPOWERED": 16,
+    "VOID-TIMESTAMP (fuzz flip)": 3,
+    "SIGNIFICANT-NEGATIVE (p=0.0016)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.0036)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.02)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.049)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.0056)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.024)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.0047)": 1
+  },
+  "data_end": "2026-08-07 16:59:59"
+}

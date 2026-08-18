@@ -1,0 +1,36 @@
+{
+  "instrument": "GC",
+  "prereg_commit": "b629543",
+  "seed": 117,
+  "spec": {
+    "lead_s": 300,
+    "exit_s": 900,
+    "stop_pct": 0.1,
+    "tp_pct": 0.4,
+    "cost_stressed": 42.5
+  },
+  "n_blocks": 93,
+  "verdicts": {
+    "VOID-TIMESTAMP": 42,
+    "POWERED-NULL": 28,
+    "UNDERPOWERED": 4,
+    "SIGNIFICANT-NEGATIVE (p=0.019)": 2,
+    "SIGNIFICANT-NEGATIVE (p=0.02)": 2,
+    "SIGNIFICANT-NEGATIVE (p=0.024)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.0041)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.0024)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.00018)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.023)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.0002)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.033)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.00011)": 1,
+    "SIGNIFICANT-NEGATIVE (p=3.8e-07)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.026)": 1,
+    "SIGNIFICANT-NEGATIVE (p=4.1e-05)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.034)": 1,
+    "VOID-TIMESTAMP (fuzz flip)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.017)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.00017)": 1
+  },
+  "data_end": "2026-08-07 16:59:55"
+}

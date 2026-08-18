@@ -2,10 +2,10 @@
   "meta": {
     "name": "news-release-long",
     "title": "The Announcement-Premium Bracket (LONG through scheduled macro releases)",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "created": "2026-08-17",
     "branch": "feat/ws-deploy-news-executor",
-    "status": "PAPER ONLY \u2014 merge/deploy gated on explicit owner instruction (#127)",
+    "status": "DEPLOYED (v5.3.0 NQ/RTY; ES CPI-only added by explicit owner ship instruction on #139, 2026-08-18 \u2014 descriptive-grade acceptance per the pre-registered rule). Paper-only until a live gateway; regime monitor GO required.",
     "study_window_note": "Operative window 2024->2026 per owner instruction; 2010+/2016+ history retained for study reference only.",
     "provenance": {
       "confirmed_in": "WS-NEWS3 M3 (#117) at Bonferroni alpha/54 + chronological half-split",
@@ -68,20 +68,30 @@
       "RTY": {
         "point_value": 50.0,
         "tick_usd": 5.0
+      },
+      "ES": {
+        "point_value": 50.0,
+        "series": [
+          "Inflation Rate MoM"
+        ],
+        "note": "ES rides CPI ONLY \u2014 the premium is CPI-concentrated; NFP/FOMC are nulls on ES (#137/#139)"
       }
     },
     "costs_per_leg_usd": {
       "optimistic": {
         "NQ": 7.5,
-        "RTY": 7.5
+        "RTY": 7.5,
+        "ES": 15.0
       },
       "realistic": {
         "NQ": 12.5,
-        "RTY": 12.5
+        "RTY": 12.5,
+        "ES": 27.5
       },
       "stressed": {
         "NQ": 22.5,
-        "RTY": 22.5
+        "RTY": 22.5,
+        "ES": 52.5
       }
     },
     "cost_policy": "STRESSED leads all reporting; gross always shown beside net"
@@ -133,6 +143,20 @@
         "2026": 351.4
       },
       "note": "computed ON THE BUNDLE SCHEDULE, which includes the 2026-03-06 NFP+Retail shared minute (pnl -128.22) that the study's RTY selection tie-broke out (#128 diagnosis); study-selection numbers: n=80, gross_mean 120.77"
+    },
+    "ES": {
+      "n_events": 29,
+      "gross_mean_per_event": 581.94,
+      "net_stressed_per_event": 529.44,
+      "total_gross": 16876.32,
+      "win_rate": 0.621,
+      "median_event": 775.0,
+      "outcome_mix": {
+        "tp": 0.483,
+        "stopped_post": 0.379,
+        "timed": 0.138
+      },
+      "note": "CPI-only; full-era (2016+) net +$151.37/event n=116; era-concentrated like NQ/RTY"
     }
   },
   "with_vs_without_comparison": {
@@ -229,6 +253,73 @@
       "NQ_pct_of_edge": 4.0,
       "RTY_per_event": -28.3,
       "RTY_note": "IMPROVES +24% (16 pre-release whipsaws avoided)"
+    }
+  },
+  "escpi_candidate": {
+    "status": "SHIPPED \u2014 owner instruction on #139 (2026-08-18); see spec.instruments.ES and performance_2024_2026.ES",
+    "instrument": "ES",
+    "series": [
+      "Inflation Rate MoM"
+    ],
+    "spec": "identical frozen ride; point_value 50, tick_usd 12.5, cost_stressed_per_event 52.50",
+    "evidence": {
+      "full_era": {
+        "n": 116,
+        "gross_mean_per_event": 203.87,
+        "net_stressed_per_event": 151.37,
+        "p_two_sided": 0.0027,
+        "alpha_preregistered": 0.01,
+        "jump_ratio_vs_quiet": 20.5
+      },
+      "window_2024_2026": {
+        "n": 29,
+        "gross_mean_per_event": 581.94,
+        "net_stressed_per_event": 529.44,
+        "total_net_stressed": 15353.82
+      },
+      "ym_holdout": {
+        "verdict": "VOID-DATA (median 101 traded pre-release seconds vs the registered 150 line)",
+        "descriptive_under_void_label": {
+          "n": 116,
+          "net_stressed_per_event": 107.64,
+          "t": 3.15
+        }
+      },
+      "integration_qty1_2024_2026": {
+        "layer_nq_rty_net": 42097.32,
+        "es_added_net": 15353.82,
+        "added_pct": 36.5,
+        "es_nq_same_event_corr": 0.78,
+        "all_three_legs_lose_share": 0.24,
+        "worst_joint_cpi_event": {
+          "et": "2025-09-11 08:30:00",
+          "net": -1023.29
+        }
+      },
+      "ship_gate": {
+        "research_ledger": "36/36",
+        "engine": "golden 6/6 MATCH; isolation 18/18; NQ/RTY byte-identical",
+        "dashboard": "branch :8250 == production :8200 on the verified 1h book (+$78,823 / 129 entries), screenshots in evidence/escpi/"
+      }
+    },
+    "executor_usage": "python3 -m src.deploy.release_executor replay --instrument ES --series 'Inflation Rate MoM' --bars-1s <ES_1s.csv>",
+    "risk_notes": "SCALES the CPI bet, does not diversify it; regime monitor must guard ES like the rest; margin at 3 simultaneous legs owner-side"
+  },
+  "ym_cpi_candidate": {
+    "status": "VERIFIED CANDIDATE \u2014 walked through core+dashboard verification (#147/#139); NOT deployed pending the owner word",
+    "instrument": "YM",
+    "series": [
+      "Inflation Rate MoM"
+    ],
+    "evidence": {
+      "full_era": {
+        "n": 116,
+        "gross_mean_per_event": 130.14,
+        "net_stressed_per_event": 107.64,
+        "p_two_sided": 0.0016,
+        "jump_ratio_vs_quiet": 9.83
+      },
+      "caveats": "thin premarket tape (median 101 traded pre-release seconds); grid-exploratory grade; execution study RQ-7 (#147)"
     }
   }
 }

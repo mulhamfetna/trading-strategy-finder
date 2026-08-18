@@ -1,0 +1,9 @@
+N3 ES: bars end 2026-08-07 16:59:59; pv 50.0 stressed $52.5/event; alpha 0.00625; pre-reg 70f29fc
+  block DEPLOYED-SET: 329 moments
+  block Inflation Rate MoM: 0 moments (descriptive)
+1s bars loaded: 573,494
+  DEPLOYED-SET                           n= 327 gross $ +107.54 net $  +55.04 p=0.0339 jump 20.00 -> POWERED-NULL
+{
+  "DEPLOYED-SET": "POWERED-NULL",
+  "Inflation Rate MoM": "NO-DATA"
+}

@@ -1,0 +1,13 @@
+{
+  "instrument": "RTY",
+  "prereg_commit": "70f29fc",
+  "seed": 117,
+  "pv": 50.0,
+  "cost_stressed": 22.5,
+  "alpha": 0.00625,
+  "data_end": "2026-08-07 16:59:55",
+  "verdicts": {
+    "Retail Sales MoM": "CONFIRMED-NEGATIVE",
+    "Durable Goods Orders MoM": "POWERED-NULL"
+  }
+}
