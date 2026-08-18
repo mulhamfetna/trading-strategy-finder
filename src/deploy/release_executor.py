@@ -47,8 +47,8 @@ EXIT_S = 900
 STOP_PCT = 0.10
 TP_PCT = 0.40
 ENTRY_TOL_S = 60                 # the entry bar must sit within 60 s of (release − LEAD_S)
-PV = {"NQ": 20.0, "RTY": 50.0}
-TICK_USD = {"NQ": 5.0, "RTY": 5.0}
+PV = {"NQ": 20.0, "RTY": 50.0, "ES": 50.0}
+TICK_USD = {"NQ": 5.0, "RTY": 5.0, "ES": 12.5}   # ES added by WS-ESCPI (#139); same cost formula
 COST_PER_LEG = {k: {"optimistic": 2.50 + 1 * t, "realistic": 2.50 + 2 * t,
                     "stressed": 2.50 + 4 * t} for k, t in TICK_USD.items()}
 
@@ -205,12 +205,18 @@ def run_bracket(idx, op, hi, lo, cl, t_rel: pd.Timestamp, leg: Leg, pv: float,
 
 # ---- replay -------------------------------------------------------------------------------------
 def replay(instrument: str, bars_1s: Path, schedule_path: Path, qty: int,
-           out_dir: Path, floor_year: int = 2016) -> pd.DataFrame:
+           out_dir: Path, floor_year: int = 2016,
+           series: list[str] | None = None) -> pd.DataFrame:
     sched = load_schedule(schedule_path)
     # per-instrument study floor (#121/#122): RTY's price history starts 2019 — its M3 evidence
     # was produced with floor 2019, so parity requires the same cut.
     ev = sched[(sched.status == "confirmed")
                & (sched.et.dt.year >= floor_year)].reset_index(drop=True)
+    # WS-ESCPI (#139): an instrument may ride a SUBSET of the schedule (ES rides CPI only —
+    # the premium is CPI-concentrated and only the CPI slice passed its battery there).
+    # Default None = the full schedule, so NQ/RTY behaviour is byte-identical.
+    if series is not None:
+        ev = ev[ev.title.isin(series)].reset_index(drop=True)
     print(f"replay {instrument}: {len(ev)} confirmed releases "
           f"({ev.et.min()} .. {ev.et.max()}), qty={qty}, spec: lead {LEAD_S}s, "
           f"S {STOP_PCT}%, TP {TP_PCT}%, exit +{EXIT_S}s")
@@ -311,6 +317,9 @@ def main() -> int:
     rp.add_argument("--schedule", default=str(DEFAULT_SCHEDULE))
     rp.add_argument("--qty", type=int, default=1)
     rp.add_argument("--floor-year", type=int, default=2016)
+    rp.add_argument("--series", default="",
+                    help="comma-separated schedule titles this instrument rides "
+                         "(empty = all; ES deploys with 'Inflation Rate MoM' only, #139)")
     rp.add_argument("--parity-ref", default="")
     rp.add_argument("--out-dir", default="deploy_out")
     pp = sub.add_parser("paper")
@@ -323,7 +332,8 @@ def main() -> int:
 
     if a.mode == "replay":
         d = replay(a.instrument, Path(a.bars_1s), Path(a.schedule), a.qty, Path(a.out_dir),
-                   a.floor_year)
+                   a.floor_year,
+                   series=[s.strip() for s in a.series.split(",") if s.strip()] or None)
         if a.parity_ref:
             return 0 if parity_check(d, Path(a.parity_ref)) else 1
         return 0
