@@ -248,6 +248,10 @@ def main() -> int:
     ap.add_argument("--instrument", required=True, choices=list(PV))
     ap.add_argument("--bars-1s", required=True)
     ap.add_argument("--tier", default="all", choices=["1", "2", "all"])
+    ap.add_argument("--positive-control", action="store_true",
+                    help="V1 of the SCAN itself: run the deployed {CPI,NFP,FOMC} minutes "
+                         "(schedule selection, no exclusions) through the identical pipeline; "
+                         "the pooled block must reproduce M3's mean to the cent")
     ap.add_argument("--out-dir", default=str(HERE))
     a = ap.parse_args()
     inst, bars_path = a.instrument, Path(a.bars_1s)
@@ -261,7 +265,23 @@ def main() -> int:
           f"stressed cost ${cost}/event; pre-reg a988f17")
 
     cal = tv_calendar.load()
-    blocks = build_blocks(cal, data_end)
+    if a.positive_control:
+        sched = pd.read_csv(REPO / "src" / "deploy" / "data" / "release_schedule.csv")
+        sched = sched[sched.status == "confirmed"]
+        sched["et"] = pd.to_datetime(sched.et)
+        sched = sched[(sched.et.dt.year >= MIN_YEAR) & (sched.et <= data_end)]
+        blocks = [{"anchor": f"POSCTRL {t}", "tier": 1, "is_speech": False,
+                   "moments": sorted(g.et)} for t, g in sched.groupby("title")]
+        blocks.append({"anchor": "POSCTRL DEPLOYED-SET", "tier": 1, "is_speech": False,
+                       "moments": sorted(sched.et)})
+        for b in blocks:
+            clocks_ = pd.Series([m.strftime("%H:%M") for m in b["moments"]])
+            b["clock"] = clocks_.value_counts().idxmax() if len(clocks_) else ""
+            b["n_raw"] = len(b["moments"])
+        inst_suffix = f"{inst}_posctrl"
+    else:
+        blocks = build_blocks(cal, data_end)
+        inst_suffix = inst
     if a.tier != "all":
         blocks = [b for b in blocks if b["tier"] == int(a.tier)]
     print(f"blocks: {sum(1 for b in blocks if b['tier']==1)} T1 + "
@@ -378,8 +398,8 @@ def main() -> int:
         bl["t2_fdr_pass"] = bl.anchor.isin(passed.anchor)
 
     out = Path(a.out_dir)
-    bl.to_csv(out / f"news4_scan_blocks_{inst}.csv", index=False)
-    pd.concat(event_frames).to_csv(out / f"news4_scan_events_{inst}.csv", index=False)
+    bl.to_csv(out / f"news4_scan_blocks_{inst_suffix}.csv", index=False)
+    pd.concat(event_frames).to_csv(out / f"news4_scan_events_{inst_suffix}.csv", index=False)
     manifest = {
         "instrument": inst, "prereg_commit": "a988f17", "seed": SEED,
         "spec": {"lead_s": LEAD_S, "exit_s": EXIT_S, "stop_pct": 0.10, "tp_pct": 0.40,
@@ -387,7 +407,7 @@ def main() -> int:
         "n_blocks": len(bl), "verdicts": bl.verdict.value_counts().to_dict(),
         "data_end": str(data_end),
     }
-    (out / f"news4_scan_result_{inst}.json").write_text(json.dumps(manifest, indent=2))
+    (out / f"news4_scan_result_{inst_suffix}.json").write_text(json.dumps(manifest, indent=2))
     print(json.dumps(manifest["verdicts"], indent=2))
     return 0
 
