@@ -1,0 +1,13 @@
+{
+  "instrument": "ES",
+  "prereg_commit": "70f29fc",
+  "seed": 117,
+  "pv": 50.0,
+  "cost_stressed": 52.5,
+  "alpha": 0.00625,
+  "data_end": "2026-08-07 16:59:59",
+  "verdicts": {
+    "DEPLOYED-SET": "POWERED-NULL",
+    "Inflation Rate MoM": "NO-DATA"
+  }
+}

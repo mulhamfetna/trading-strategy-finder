@@ -1,0 +1,10 @@
+N3 CL: bars end 2026-08-07 16:59:59; pv 1000.0 stressed $42.5/event; alpha 0.00625; pre-reg 70f29fc
+  block EIA Crude Oil Stocks Change: 551 moments
+  block API Crude Oil Stock Change: 454 moments
+1s bars loaded: 1,168,902
+  EIA Crude Oil Stocks Change            n= 551 gross $   -1.41 net $  -43.91 p=4.25e-15 jump 5.33 -> COST-DRAG-NEGATIVE (p=4.2e-15)
+  API Crude Oil Stock Change             n= 433 gross $   +5.27 net $  -37.23 p=2.6e-10 jump 8.00 -> COST-DRAG-NEGATIVE (p=2.6e-10)
+{
+  "EIA Crude Oil Stocks Change": "COST-DRAG-NEGATIVE (p=4.2e-15)",
+  "API Crude Oil Stock Change": "COST-DRAG-NEGATIVE (p=2.6e-10)"
+}

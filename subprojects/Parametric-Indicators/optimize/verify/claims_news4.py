@@ -210,3 +210,184 @@ register(Claim(
     checks=[Check("V1", "Tier-1 MDEs re-derive from per-event fills", _pow_v1),
             Check("V2", "RTY's smaller MDEs exclude the RTY-CPI-sized premium on 9/10", _pow_v2),
             Check("V3", "the nulls are not dead-timestamp artefacts (jump gate all-pass)", _pow_v3)]))
+
+
+# =============================================================================================
+# N3 deep-dives (#137) — pre-registration docs/NEWS4-N3-PREREGISTRATION.md (70f29fc)
+# =============================================================================================
+def _n3_blocks(inst: str) -> pd.DataFrame:
+    return pd.read_csv(FUND / f"news4_n3_blocks_{inst}.csv")
+
+
+def _n3_events(inst: str, block: str) -> pd.DataFrame:
+    d = pd.read_csv(FUND / f"news4_n3_events_{inst}.csv", parse_dates=["et"])
+    return d[d.block == block]
+
+
+N3_COST = {"NQ": 22.50, "RTY": 22.50, "ES": 52.50, "GC": 42.50, "CL": 42.50}
+
+
+# ---------------------------------------------------------------------------------------------
+# CLAIM — Retail Sales carries a REAL negative announcement effect (CONFIRMED-NEGATIVE, both)
+# ---------------------------------------------------------------------------------------------
+def _ret_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION: NQ Retail gross mean and p recomputed from per-event fills must match
+    the blocks file (gross −$86.10, p=7.2e-04 < α=0.00625) with both halves negative."""
+    e = _n3_events("NQ", "Retail Sales MoM")
+    g = e.pnl_usd.to_numpy()
+    net = g - N3_COST["NQ"]
+    t = net.mean() / (net.std(ddof=1) / np.sqrt(len(net)))
+    import math
+    p = math.erfc(abs(t) / math.sqrt(2))
+    half = len(g) // 2
+    ok = abs(g.mean() + 86.10) < 0.01 and p < 0.05 / 8 and g[:half].mean() < 0 \
+        and g[half:].mean() < 0
+    return ok, f"gross ${g.mean():+.2f} p={p:.2g} halves {g[:half].mean():+.1f}/{g[half:].mean():+.1f}"
+
+
+def _ret_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT SOURCE: the RTY price file (different exchange feed, different variance)
+    must carry the same CONFIRMED-NEGATIVE verdict."""
+    b = _n3_blocks("RTY").set_index("anchor")
+    r = b.loc["Retail Sales MoM"]
+    ok = r.verdict == "CONFIRMED-NEGATIVE" and r.gross_mean < 0
+    return ok, f"RTY: {r.verdict}, gross ${r.gross_mean:+.2f}, p={r.p:.2g}"
+
+
+def _ret_v3() -> tuple[bool, str]:
+    """V3 — FALSIFIER: 'everything at 08:30 rides negative (a clock-time artefact)' would also
+    make CPI/NFP negative and Durables negative. FALSE: same clock, same pipeline — the deployed
+    set is CONFIRMED positive (+$133.06) and Durables is a POWERED-NULL (+$9.47 gross). The
+    negative is SERIES-SPECIFIC."""
+    pc = _blocks("NQ", posctrl=True).set_index("anchor")
+    b = _n3_blocks("NQ").set_index("anchor")
+    ok = pc.loc["POSCTRL DEPLOYED-SET", "verdict"] == "CONFIRMED" \
+        and b.loc["Durable Goods Orders MoM", "verdict"] == "POWERED-NULL" \
+        and b.loc["Durable Goods Orders MoM", "gross_mean"] > 0
+    return ok, (f"deployed set {pc.loc['POSCTRL DEPLOYED-SET', 'verdict']}; Durables "
+                f"{b.loc['Durable Goods Orders MoM', 'verdict']} "
+                f"(gross ${b.loc['Durable Goods Orders MoM', 'gross_mean']:+.2f})")
+
+
+register(Claim(
+    id="N4-RETAIL-ANTI-PREMIUM-CONFIRMED",
+    issue="#137",
+    statement="Retail Sales MoM carries a REAL negative announcement effect at the deployed spec: "
+              "NQ gross −$86.10/event (p=7.2e-04, n=113, both halves negative), RTY gross "
+              "−$32.41 (p=1.7e-05, n=101). The only US macro series with a confirmed NEGATIVE "
+              "ride at our costs — a documented do-not-ride series. (Whether its SHORT side is "
+              "tradeable is a separate, un-pre-registered question.)",
+    source="optimize/fundamentals/news4_n3_blocks_NQ.csv",
+    value_fn=lambda: round(float(_n3_blocks("NQ").set_index("anchor")
+                                 .loc["Retail Sales MoM", "gross_mean"]), 2),
+    expect=-86.10, tol=0.01,
+    blind_spot="Retail minutes that co-fire with CPI/NFP are excluded by the overlap rule, so "
+               "this measures Retail-ALONE minutes; a Retail effect that only exists when "
+               "co-released is invisible here (it belongs to the deployed set's evidence).",
+    checks=[Check("V1", "gross/p/halves re-derive from per-event fills", _ret_v1),
+            Check("V2", "independent RTY price file: same CONFIRMED-NEGATIVE", _ret_v2),
+            Check("V3", "not a clock-time artefact: CPI/NFP positive, Durables null at 08:30", _ret_v3)]))
+
+
+# ---------------------------------------------------------------------------------------------
+# CLAIM — EIA/API on CL: the ride is excluded at cost with heavy power (the M1 VOID resolved)
+# ---------------------------------------------------------------------------------------------
+def _eia_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION: EIA gross ≈ 0 (−$1.41) and MDE $20.01 recomputed from fills."""
+    from math import sqrt
+    e = _n3_events("CL", "EIA Crude Oil Stocks Change")
+    g = e.pnl_usd.to_numpy()
+    mde = (2.7344 + 0.8416) * (g - N3_COST["CL"]).std(ddof=1) / sqrt(len(g))  # α=0.00625
+    ok = abs(g.mean() + 1.41) < 0.01 and abs(mde - 20.01) < 0.5
+    return ok, f"gross ${g.mean():+.2f} MDE ${mde:.2f} n={len(g)}"
+
+
+def _eia_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT DRAW: API (different reporting body, different day-time, 433 separate
+    events) shows the same shape: gross ≈ 0, net ≈ −cost."""
+    b = _n3_blocks("CL").set_index("anchor")
+    r = b.loc["API Crude Oil Stock Change"]
+    ok = abs(r.gross_mean) < 15 and r.net_stressed_mean < -25
+    return ok, f"API gross ${r.gross_mean:+.2f} net ${r.net_stressed_mean:+.2f} n={int(r.n_filled)}"
+
+
+def _eia_v3() -> tuple[bool, str]:
+    """V3 — FALSIFIER: 'the null is dead timestamps' — FALSE: EIA jump 5.33x, API 8.00x the quiet
+    baseline; these are among the most violent minutes in the CL tape and still pay nothing."""
+    b = _n3_blocks("CL").set_index("anchor")
+    ok = b.loc["EIA Crude Oil Stocks Change", "jump_ratio"] > 4 \
+        and b.loc["API Crude Oil Stock Change", "jump_ratio"] > 4
+    return ok, (f"jump EIA {b.loc['EIA Crude Oil Stocks Change', 'jump_ratio']:.2f}x, "
+                f"API {b.loc['API Crude Oil Stock Change', 'jump_ratio']:.2f}x")
+
+
+register(Claim(
+    id="N4-EIA-API-POWERED-NO",
+    issue="#137",
+    statement="The energy-inventory ride on CL is a powered NO at the deployed spec: EIA gross "
+              "−$1.41/event (n=551, MDE $20), API gross +$5.27 (n=433, MDE $21) — gross ≈ zero, "
+              "net ≈ −cost, while the release minutes jump 5.3-8.0x quiet baseline. M1's VOID "
+              "(provenance-restricted) upgrades to a definitive exclusion.",
+    source="optimize/fundamentals/news4_n3_blocks_CL.csv",
+    value_fn=lambda: round(float(_n3_blocks("CL").set_index("anchor")
+                                 .loc["EIA Crude Oil Stocks Change", "gross_mean"]), 2),
+    expect=-1.41, tol=0.01,
+    blind_spot="CL costs use the deployed formula ($42.50 stressed) — actual CL spread behaviour "
+               "at 10:30 was never measured the way NQ's 2.1x stop-gap was; a kinder real cost "
+               "would not rescue a $0 gross anyway.",
+    checks=[Check("V1", "EIA gross/MDE re-derive from fills", _eia_v1),
+            Check("V2", "API: independent body, same zero-gross shape", _eia_v2),
+            Check("V3", "the null is not dead timestamps (5.3x/8.0x jumps)", _eia_v3)]))
+
+
+# ---------------------------------------------------------------------------------------------
+# CLAIM — the deployed-set premium does NOT extend confirmably to ES/GC (no new surface)
+# ---------------------------------------------------------------------------------------------
+def _esgc_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION: ES pooled net (+$55.04) from fills; p=0.034 ≥ α=0.00625; MDE $92.79."""
+    e = _n3_events("ES", "DEPLOYED-SET")
+    net = e.pnl_usd.to_numpy() - N3_COST["ES"]
+    ok = abs(net.mean() - 55.04) < 0.01 and len(net) == 327
+    return ok, f"ES pooled net ${net.mean():+.2f} n={len(net)}"
+
+
+def _esgc_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT SOURCE: GC (a different asset class entirely) also POWERED-NULL
+    (+$8.48 net, MDE $89.40)."""
+    b = _n3_blocks("GC").set_index("anchor")
+    r = b.loc["DEPLOYED-SET"]
+    return r.verdict == "POWERED-NULL", f"GC pooled: {r.verdict}, net ${r.net_stressed_mean:+.2f}"
+
+
+def _esgc_v3() -> tuple[bool, str]:
+    """V3 — FALSIFIER: 'the ES/GC nulls are instrument-blindness (the pipeline cannot see
+    structure on those files)'. FALSE: the descriptive CPI-alone slice inside the SAME ES events
+    shows net +$151 (t≈3.0) — the pipeline resolves structure on ES; the pooled verdict is about
+    NFP/FOMC dilution, not blindness."""
+    sched = pd.read_csv(Path(__file__).resolve().parents[4] / "src" / "deploy" / "data"
+                        / "release_schedule.csv", parse_dates=["et"])
+    e = _n3_events("ES", "DEPLOYED-SET").merge(sched[["et", "title"]], on="et")
+    cpi = e[e.title == "Inflation Rate MoM"].pnl_usd - N3_COST["ES"]
+    t = cpi.mean() / (cpi.std(ddof=1) / np.sqrt(len(cpi)))
+    return bool(t > 2.5 and cpi.mean() > 100), f"ES CPI-alone net ${cpi.mean():+.2f} t={t:+.2f}"
+
+
+register(Claim(
+    id="N4-ES-GC-NO-NEW-SURFACE",
+    issue="#137",
+    statement="The deployed-set ride does NOT confirm on ES or GC at the deployed spec and costs: "
+              "ES pooled net +$55.04 (p=0.034 ≥ α=0.00625, MDE $93 → POWERED-NULL), GC +$8.48 "
+              "(MDE $89 → POWERED-NULL). No new deployable surface. NOTED for the record: the "
+              "descriptive ES CPI-alone slice is net +$151 (t≈3.0) — a promotion candidate that "
+              "would need its own pre-registered confirmation on unconsumed data (its history is "
+              "spent; forward confirmation only).",
+    source="optimize/fundamentals/news4_n3_blocks_ES.csv",
+    value_fn=lambda: round(float(_n3_blocks("ES").set_index("anchor")
+                                 .loc["DEPLOYED-SET", "net_stressed_mean"]), 2),
+    expect=55.04, tol=0.01,
+    blind_spot="ES/GC reuse the same event minutes as NQ's evidence — independent PRICE files, "
+               "not independent EVENTS; and the ES/GC cost lines are formula-derived, not "
+               "measured (declared in the pre-registration).",
+    checks=[Check("V1", "ES pooled net re-derives from fills", _esgc_v1),
+            Check("V2", "GC (different asset class) also POWERED-NULL", _esgc_v2),
+            Check("V3", "not instrument-blindness: ES CPI-alone slice resolves at t≈3.0", _esgc_v3)]))
