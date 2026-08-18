@@ -85,6 +85,28 @@ T1_ANCHORS = [
     "ADP Employment Change", "FOMC Minutes",
 ]
 
+# ---- WS-GRID (#140) — the literal full-grid closure (pre-reg docs/WS-GRID-PREREGISTRATION.md)
+# Point values from the registry (optimize/instruments.py POINT_VALUE); tick $ declared in the
+# pre-registration (the repo's canonical tick table is still open, #93). cost = 2.50 + 4*tick.
+GRID_PV = {"NQ": 20.0, "ES": 50.0, "GC": 100.0, "SI": 5000.0, "HG": 25000.0,
+           "CL": 1000.0, "NG": 10000.0, "RTY": 50.0, "YM": 5.0}
+GRID_TICK = {"NQ": 5.0, "RTY": 5.0, "YM": 5.0, "ES": 12.5, "HG": 12.5,
+             "GC": 10.0, "CL": 10.0, "NG": 10.0, "SI": 25.0}
+GRID_COST = {k: 2.50 + 4 * t for k, t in GRID_TICK.items()}
+# titles with FROZEN-SPEC evidence on that instrument (M1's no-TP grid does NOT count):
+GRID_TESTED_AT_SPEC = {
+    "NQ": {"Inflation Rate MoM", "Non Farm Payrolls", "Fed Interest Rate Decision",
+           "Retail Sales MoM", "Durable Goods Orders MoM"},
+    "RTY": {"Inflation Rate MoM", "Non Farm Payrolls", "Fed Interest Rate Decision",
+            "Retail Sales MoM", "Durable Goods Orders MoM"},
+    "ES": {"Inflation Rate MoM", "Non Farm Payrolls", "Fed Interest Rate Decision"},
+    "GC": {"Inflation Rate MoM", "Non Farm Payrolls", "Fed Interest Rate Decision"},
+    "CL": {"EIA Crude Oil Stocks Change", "API Crude Oil Stock Change"},
+    "SI": set(), "HG": set(), "NG": set(), "YM": set(),
+}
+# NQ/RTY's generic (non-macro) sweep is N2-complete — grid mode runs only their missing cells.
+GRID_GENERIC_DONE = {"NQ", "RTY"}
+
 WINDOW_S = LEAD_S + EXIT_S            # 1200 s: two ride windows intersect iff |dt| < this
 
 
@@ -193,6 +215,25 @@ def build_blocks(cal: pd.DataFrame, data_end: pd.Timestamp):
     return blocks
 
 
+def title_block_moments(cal: pd.DataFrame, title: str,
+                        data_end: pd.Timestamp) -> list[pd.Timestamp]:
+    """A single-title block for the grid closure: the title's own minutes, window-overlap-
+    excluded vs the deployed titles (contamination hygiene, the N3 rule) but with NO
+    covered-minute exclusion — the point is to measure the title itself."""
+    c = cal[(cal.event_et.dt.year >= MIN_YEAR) & (cal.event_et <= data_end)].copy()
+    c["minute"] = c.event_et.dt.floor("min")
+    deployed_ts = np.sort(c[c.title.isin(DEPLOYED_TITLES)]["minute"].unique())
+    out = []
+    for m in sorted(set(c[c.title == title]["minute"])):
+        i = np.searchsorted(deployed_ts, np.datetime64(m))
+        near = ([deployed_ts[i - 1]] if i > 0 else []) + \
+               ([deployed_ts[i]] if i < len(deployed_ts) else [])
+        if any(abs((np.datetime64(m) - t) / np.timedelta64(1, "s")) < WINDOW_S for t in near):
+            continue
+        out.append(pd.Timestamp(m))
+    return out
+
+
 def control_days(cal: pd.DataFrame, clock: str, data_end: pd.Timestamp) -> list[pd.Timestamp]:
     """Quiet control moments for one ET clock time: business days with NO calendar event
     within +/-CTRL_QUIET_MIN minutes of that time, sampled deterministically."""
@@ -245,7 +286,10 @@ def minute_jump(idx, op, cl, moments) -> np.ndarray:
 # ---- main ---------------------------------------------------------------------------------------
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--instrument", required=True, choices=list(PV))
+    ap.add_argument("--instrument", required=True, choices=list(GRID_PV))
+    ap.add_argument("--grid", action="store_true",
+                    help="WS-GRID (#140): run this instrument's REMAINING untested cells "
+                         "(exploratory closure sweep, pre-reg b629543)")
     ap.add_argument("--bars-1s", required=True)
     ap.add_argument("--tier", default="all", choices=["1", "2", "all"])
     ap.add_argument("--positive-control", action="store_true",
@@ -255,7 +299,10 @@ def main() -> int:
     ap.add_argument("--out-dir", default=str(HERE))
     a = ap.parse_args()
     inst, bars_path = a.instrument, Path(a.bars_1s)
-    pv, cost = PV[inst], COST_PER_LEG[inst]["stressed"]
+    if a.grid:
+        pv, cost = GRID_PV[inst], GRID_COST[inst]
+    else:
+        pv, cost = PV[inst], COST_PER_LEG[inst]["stressed"]
 
     # data end = last bar timestamp (cheap: read the file tail)
     with bars_path.open("rb") as f:
@@ -279,6 +326,25 @@ def main() -> int:
             b["clock"] = clocks_.value_counts().idxmax() if len(clocks_) else ""
             b["n_raw"] = len(b["moments"])
         inst_suffix = f"{inst}_posctrl"
+    elif a.grid:
+        sched = pd.read_csv(REPO / "src" / "deploy" / "data" / "release_schedule.csv")
+        sched = sched[sched.status == "confirmed"]
+        sched["et"] = pd.to_datetime(sched.et)
+        sched = sched[(sched.et.dt.year >= MIN_YEAR) & (sched.et <= data_end)]
+        blocks = []
+        for t in sorted(TESTED_TITLES - GRID_TESTED_AT_SPEC[inst]):
+            mom = sorted(sched[sched.title == t].et) if t in DEPLOYED_TITLES \
+                else title_block_moments(cal, t, data_end)
+            blocks.append({"anchor": f"GRID {t}", "tier": 2, "is_speech": False,
+                           "moments": mom})
+        if inst not in GRID_GENERIC_DONE:
+            blocks += build_blocks(cal, data_end)
+        for b in blocks:
+            if "clock" not in b:
+                clocks_ = pd.Series([m.strftime("%H:%M") for m in b["moments"]])
+                b["clock"] = clocks_.value_counts().idxmax() if len(clocks_) else ""
+                b["n_raw"] = len(b["moments"])
+        inst_suffix = f"{inst}_grid"
     else:
         blocks = build_blocks(cal, data_end)
         inst_suffix = inst
@@ -317,7 +383,7 @@ def main() -> int:
     rng = np.random.default_rng(SEED)
     block_rows, event_frames = [], []
     for b in blocks:
-        alpha = ALPHA_T1 if b["tier"] == 1 else 0.05
+        alpha = ALPHA_T1 if (b["tier"] == 1 and not a.grid) else 0.05
         ev = ride_all(idx, op, hi, lo, cl, b["moments"], pv, b["anchor"])
         if len(ev) == 0:
             block_rows.append({"anchor": b["anchor"], "tier": b["tier"], "clock": b["clock"],
@@ -373,7 +439,7 @@ def main() -> int:
         elif b["is_speech"] and fuzz_flip:
             verdict = "VOID-TIMESTAMP (fuzz flip)"
         elif p < alpha and net.mean() > 0 and h1 > 0 and h2 > 0 and floor_ok and noise_ok:
-            verdict = "CONFIRMED" if b["tier"] == 1 else "EXPLORATORY-POSITIVE"
+            verdict = "CONFIRMED" if (b["tier"] == 1 and not a.grid) else "EXPLORATORY-POSITIVE"
         elif p >= alpha and mde <= MDE_LINE_USD:
             verdict = "POWERED-NULL"
         elif p >= alpha:
@@ -407,7 +473,7 @@ def main() -> int:
     bl.to_csv(out / f"news4_scan_blocks_{inst_suffix}.csv", index=False)
     pd.concat(event_frames).to_csv(out / f"news4_scan_events_{inst_suffix}.csv", index=False)
     manifest = {
-        "instrument": inst, "prereg_commit": "a988f17", "seed": SEED,
+        "instrument": inst, "prereg_commit": "b629543" if a.grid else "a988f17", "seed": SEED,
         "spec": {"lead_s": LEAD_S, "exit_s": EXIT_S, "stop_pct": 0.10, "tp_pct": 0.40,
                  "cost_stressed": cost},
         "n_blocks": len(bl), "verdicts": bl.verdict.value_counts().to_dict(),
