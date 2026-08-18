@@ -1,0 +1,32 @@
+{
+ "stage": "S4",
+ "alpha": 8.169934640522877e-05,
+ "outcome": "close_r15",
+ "n_tested": 612,
+ "n_clear_alpha": 1,
+ "n_confirmed": 1,
+ "n_tradeable": 0,
+ "max_ci_hi": 0.8203370955564198,
+ "median_accuracy": 0.5392156862745098,
+ "confirmed": [
+  {
+   "instrument": "CL",
+   "release": "API Crude Oil Stock Change",
+   "n": 262,
+   "pearson_r": -0.27962836466467356,
+   "pearson_p": 4.295206570448815e-06,
+   "spearman_r": -0.24734746706600844,
+   "spearman_p": 5.174627915356746e-05,
+   "passes_alpha": true,
+   "rule_accuracy": 0.5742971887550201,
+   "rule_ci_lo": 0.5122118792349866,
+   "rule_ci_hi": 0.6341248812484876,
+   "tradeable": false,
+   "provenance_verified": false,
+   "perm_p": 0.000999000999000999,
+   "control_spearman_p": NaN,
+   "controls_ok": true
+  }
+ ],
+ "s4_pass": true
+}

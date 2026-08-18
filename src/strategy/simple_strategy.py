@@ -92,6 +92,10 @@ class SimpleStrategyParams:
     box_data_path:  str
     direction_scope:       DirectionScope = 'both'
     flip_entry_direction:  bool = False
+    # WS-DEPLOY D1 (#128): position size in contracts. Default 1 keeps every existing caller
+    # byte-identical (pnl * pv * 1 is exact in IEEE754). The value is stamped on every trade dict
+    # so no result log can carry a silent size.
+    qty: int = 1
 
 
 def _stage1_candle_signal(
@@ -280,7 +284,8 @@ class SimpleStrategy:
                                 exit_reason, fill = 'TAKE_PROFIT_SOFT', m_close
 
                 if exit_reason is not None and fill is not None:
-                    _finalise(open_trade, sub_ts, fill, exit_reason, ep, d, pv)
+                    _finalise(open_trade, sub_ts, fill, exit_reason, ep, d, pv,
+                              self.params.qty)
                     trades.append(open_trade)
                     blocked_until = sub_ts
                     open_trade = None
@@ -388,8 +393,16 @@ def _finalise(
     entry_price: float,
     direction: Signal,
     point_value: float,
+    qty: int = 1,
 ) -> None:
-    """Stamp the exit fields on a trade dict in place."""
+    """Stamp the exit fields on a trade dict in place.
+
+    WS-DEPLOY D1 (#128): `qty` multiplies the DOLLAR result only; pnl_points stays per-contract
+    so point-based analytics are size-invariant. qty=1 is numerically identical to the pre-change
+    engine (x * pv * 1 == x * pv exactly).
+    """
+    if not isinstance(qty, int) or qty < 1:
+        raise ValueError(f"qty must be an int >= 1, got {qty!r}")
     trade['exit_time']   = exit_ts
     trade['exit_price']  = fill
     trade['exit_reason'] = reason
@@ -398,4 +411,5 @@ def _finalise(
     else:
         pnl = entry_price - fill
     trade['pnl_points']  = pnl
-    trade['pnl_dollars'] = pnl * point_value
+    trade['qty']         = qty
+    trade['pnl_dollars'] = pnl * point_value * qty

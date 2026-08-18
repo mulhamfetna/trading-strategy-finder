@@ -1,0 +1,250 @@
+"""WS-EARN Stage 1, step 3 (#110) — harvest the DOCUMENT LIST of every 8-K / 6-K in span.
+
+WHY THIS EXISTS — a metadata field lied to us.
+
+Stage 2 filtered on EDGAR's `items` field == "2.02". Applied Materials' Q2-FY2024 earnings release
+(2024-05-16 16:03:55 ET, exactly in AMAT's 16:03-16:05 quarterly slot) is tagged **Item 2.01**, not
+2.02. The filing plainly contains `exhibit991q22024earningsre.htm` — "Q2 2024 earnings release", 478 KB.
+The item code is simply wrong, and item-code filtering silently DROPPED a whole quarter without a
+warning. That is the exact failure mode this project keeps getting bitten by: a filter that is quiet
+when it is wrong.
+
+Foreign private issuers make it worse: ASML and ARM file Form 6-K, which carries NO item codes at all,
+so there is nothing to filter on in the first place.
+
+THE FIX — stop trusting metadata, read the documents.
+
+Every 8-K and 6-K in span is harvested here with its full document list, regardless of item code. The
+filenames are the evidence: `pressreleasequarterlyresul.htm`, `exhibit991q22024earningsre.htm`. The
+classifier that consumes this cache records WHICH filename justified each decision, so every row is
+auditable rather than trusted.
+
+The result is cached to JSON so classification rules can be iterated without re-hitting SEC. SEC's
+fair-access policy is respected: <10 req/s with an identifying User-Agent.
+
+    python3 optimize/earnings/harvest_filing_documents.py [--top 20] [--start 2024-01-01]
+"""
+from __future__ import annotations
+
+import argparse
+import csv
+import json
+import time
+import urllib.error
+import urllib.request
+from datetime import datetime, timezone
+from pathlib import Path
+from zoneinfo import ZoneInfo
+
+HERE = Path(__file__).resolve().parent
+DATA = HERE / "data"
+CACHE = DATA / "filing_documents.json"
+
+UA = "MulhamFetna-Research contact@mulhamfetna.com"
+SEC_PAUSE = 0.15
+ET = ZoneInfo("America/New_York")
+
+SUBMISSIONS_URL = "https://data.sec.gov/submissions/CIK{cik:010d}.json"
+ARCHIVE_URL = "https://data.sec.gov/submissions/{name}"
+INDEX_URL = "https://www.sec.gov/Archives/edgar/data/{cik}/{acc}/index.json"
+TICKER_MAP_URL = "https://www.sec.gov/files/company_tickers.json"
+
+# ⚠️ CORPORATE REORGANISATIONS CHANGE THE CIK, AND EDGAR'S TICKER MAP ONLY KNOWS THE CURRENT ENTITY.
+#
+# A CIK-keyed collection therefore begins silently at the last reorganisation and loses everything
+# before it. Found on the 16-year run: GOOGL appeared to start in 2015-10 and AVGO in 2018-06, both
+# looking like perfectly ordinary short histories. They are not — they are the dates new CIKs were
+# created. ~52 events were missing, all of them in the early era.
+#
+# Verified against EDGAR directly (8-K date ranges from each entity's own submissions feed):
+#   1288776  GOOGLE INC.            -> Alphabet Inc.      (1652044)
+#   1441634  Avago Technologies LTD -> Broadcom Pte. Ltd. (1649338) -> Broadcom Inc. (1730168)
+#
+# Predecessor filings are harvested under the SUCCESSOR's ticker, because for a price study the
+# question is "what did this business announce", not "which legal shell filed it".
+PREDECESSOR_CIKS: dict[int, list[int]] = {
+    1652044: [1288776],                  # Alphabet <- Google Inc.
+    1730168: [1649338, 1441634],         # Broadcom Inc. <- Broadcom Pte/Ltd <- Avago
+}
+
+
+def _get(url: str, attempts: int = 4) -> bytes:
+    """Fetch with retries.
+
+    ⚠️ A SINGLE TRANSIENT SOCKET TIMEOUT USED TO KILL THE WHOLE RUN. `TimeoutError` from an SSL read is
+    not a `urllib.error.*`, so it escaped the handlers and took down a multi-hour harvest at ~90%.
+    Anything touching the network over hours WILL hit a flaky socket eventually; the question is only
+    whether it costs a retry or the entire job. Catch OSError (covers TimeoutError, URLError and
+    HTTPError) and back off.
+    """
+    last: Exception | None = None
+    for i in range(attempts):
+        try:
+            req = urllib.request.Request(
+                url, headers={"User-Agent": UA, "Accept-Encoding": "gzip, deflate"})
+            with urllib.request.urlopen(req, timeout=60) as r:
+                raw = r.read()
+                if r.headers.get("Content-Encoding") == "gzip":
+                    import gzip
+                    raw = gzip.decompress(raw)
+            time.sleep(SEC_PAUSE)
+            return raw
+        except OSError as exc:                       # TimeoutError, URLError, HTTPError all subclass it
+            last = exc
+            time.sleep(SEC_PAUSE + 2.0 * (i + 1))    # linear backoff, still well inside SEC's limit
+    raise last if last else RuntimeError("unreachable")
+
+
+def _get_json(url: str) -> dict:
+    return json.loads(_get(url))
+
+
+def load_universe(top_n: int, only_tickers: set[str] | None = None) -> list[dict]:
+    """Same universe construction as the collector: merge share classes by CIK, rank by combined weight."""
+    snaps = sorted(DATA.glob("ndx_weights_*.csv"))
+    if not snaps:
+        raise SystemExit("run fetch_ndx_weights.py first")
+    with snaps[-1].open() as fh:
+        rows = [{**r, "rank": int(r["rank"]), "weight_pct": float(r["weight_pct"])}
+                for r in csv.DictReader(fh)]
+
+    tmap = {v["ticker"].upper(): int(v["cik_str"]) for v in _get_json(TICKER_MAP_URL).values()}
+    by_cik: dict[int, dict] = {}
+    for r in rows:
+        cik = tmap.get(r["ticker"].upper())
+        if cik is None:
+            continue
+        e = by_cik.setdefault(cik, {"cik": cik, "company": r["company"], "tickers": [],
+                                    "combined_weight": 0.0})
+        e["tickers"].append(r["ticker"])
+        e["combined_weight"] += r["weight_pct"]
+    merged = sorted(by_cik.values(), key=lambda e: -e["combined_weight"])
+    for i, e in enumerate(merged, 1):
+        e["company_rank"] = i
+    if only_tickers:
+        # Explicit study universe (optimize/earnings/data/study_universe.json) rather than a top-N cut.
+        sel = [e for e in merged if only_tickers & set(e["tickers"])]
+        missing = only_tickers - {t for e in sel for t in e["tickers"]}
+        if missing:
+            raise SystemExit(f"tickers not found in the weight snapshot: {sorted(missing)}")
+        return sel
+    return merged[:top_n]
+
+
+def filings_in_span(cik: int, start: str, end: str) -> list[dict]:
+    """EVERY 8-K and 6-K in span — no item-code filter. That filter is what lost AMAT's quarter."""
+    sub = _get_json(SUBMISSIONS_URL.format(cik=cik))
+    blocks = [sub["filings"]["recent"]]
+    for f in sub["filings"].get("files", []):
+        if f.get("filingTo", "") >= start:
+            blocks.append(_get_json(ARCHIVE_URL.format(name=f["name"])))
+
+    out = []
+    for b in blocks:
+        n = len(b.get("form", []))
+        for i in range(n):
+            if b["form"][i] not in ("8-K", "6-K"):
+                continue
+            acc_utc = datetime.fromisoformat(b["acceptanceDateTime"][i].replace("Z", "+00:00"))
+            if acc_utc.tzinfo is None:
+                acc_utc = acc_utc.replace(tzinfo=timezone.utc)
+            dt_et = acc_utc.astimezone(ET)
+            if not (start <= dt_et.strftime("%Y-%m-%d") <= end):
+                continue
+            out.append({
+                # The CIK that actually FILED this. Predecessor filings live under the predecessor's
+                # archive path, so fetching their documents with the successor's CIK 404s.
+                "source_cik": cik,
+                "form": b["form"][i],
+                "items": (b.get("items") or [""] * n)[i] or "",
+                "accession": b["accessionNumber"][i],
+                "filing_date": b["filingDate"][i],
+                "report_date": (b.get("reportDate") or [""] * n)[i] or "",
+                "event_et": dt_et.replace(tzinfo=None).isoformat(sep=" "),
+                "event_utc": acc_utc.replace(tzinfo=None).isoformat(sep=" ") + "Z",
+                "primary_doc": (b.get("primaryDocument") or [""] * n)[i] or "",
+                "doc_description": (b.get("primaryDocDescription") or [""] * n)[i] or "",
+            })
+    out.sort(key=lambda r: r["event_et"])
+    return out
+
+
+def document_names(cik: int, accession: str) -> list[str]:
+    url = INDEX_URL.format(cik=cik, acc=accession.replace("-", ""))
+    try:
+        d = _get_json(url)
+    except (OSError, json.JSONDecodeError) as exc:   # OSError covers TimeoutError/URLError/HTTPError
+        return [f"__FETCH_FAILED__:{type(exc).__name__}"]
+    return [it["name"] for it in d.get("directory", {}).get("item", [])]
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--top", type=int, default=20)
+    ap.add_argument("--start", default="2024-01-01")
+    ap.add_argument("--end", default=datetime.now(ET).strftime("%Y-%m-%d"))
+    ap.add_argument("--study-universe", action="store_true",
+                    help="use the 12 companies recorded in data/study_universe.json instead of --top")
+    ap.add_argument("--cache", default=None, help="override the cache path (keeps runs separate)")
+    a = ap.parse_args()
+
+    global CACHE
+    if a.cache:
+        CACHE = Path(a.cache)
+    only = None
+    if a.study_universe:
+        only = set(json.loads((DATA / "study_universe.json").read_text())["kept_tickers"])
+        print(f"universe : study set of {len(only)} — {', '.join(sorted(only))}")
+
+    print(f"span   : {a.start} .. {a.end}")
+    print(f"forms  : 8-K and 6-K — ALL of them, NO item-code filter")
+    print(f"cache  : {CACHE}\n")
+
+    universe = load_universe(a.top, only)
+    cache: dict = {}
+    if CACHE.exists():
+        cache = json.loads(CACHE.read_text())
+    n_new = 0
+
+    for e in universe:
+        tick = "+".join(e["tickers"])
+        ciks = [e["cik"]] + PREDECESSOR_CIKS.get(e["cik"], [])
+        fl = []
+        try:
+            for c in ciks:
+                got = filings_in_span(c, a.start, a.end)
+                if c != e["cik"]:
+                    print(f"  {tick:<12} + {len(got):>3} from predecessor CIK {c}")
+                fl.extend(got)
+        except Exception as exc:
+            print(f"  {tick:<12} SUBMISSIONS FAILED: {type(exc).__name__}: {exc}")
+            continue
+        fl.sort(key=lambda r: r["event_et"])
+
+        for f in fl:
+            key = f["accession"]
+            if key in cache and not cache[key].get("documents", [""])[0].startswith("__FETCH_FAILED__"):
+                continue
+            f["documents"] = document_names(f.get("source_cik", e["cik"]), key)
+            f["cik"] = f.get("source_cik", e["cik"])
+            f["ticker"] = e["tickers"][0]
+            f["all_tickers"] = "|".join(e["tickers"])
+            f["company"] = e["company"]
+            f["company_rank"] = e["company_rank"]
+            f["combined_weight_pct"] = round(e["combined_weight"], 4)
+            cache[key] = f
+            n_new += 1
+
+        print(f"  {tick:<12} {len(fl):>3} 8-K/6-K in span")
+        CACHE.write_text(json.dumps(cache, indent=1))       # checkpoint: a crash never loses the work
+
+    print(f"\ncached {len(cache)} filings total ({n_new} newly fetched) -> {CACHE}")
+    failed = [k for k, v in cache.items()
+              if v.get("documents") and str(v["documents"][0]).startswith("__FETCH_FAILED__")]
+    if failed:
+        print(f"⚠️  {len(failed)} document fetches FAILED — re-run to retry: {failed[:5]}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

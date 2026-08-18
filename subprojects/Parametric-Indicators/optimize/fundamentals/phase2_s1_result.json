@@ -1,0 +1,49 @@
+{
+ "stage": "S1",
+ "n_events": 505,
+ "series": [
+  "Non Farm Payrolls",
+  "Inflation Rate MoM",
+  "Retail Sales MoM",
+  "Durable Goods Orders MoM"
+ ],
+ "features": [
+  "surprise_z",
+  "level_change_published_z",
+  "level_change_firstprint_z",
+  "anticipated_change_z",
+  "confirmation"
+ ],
+ "coverage": {
+  "surprise_z": 409,
+  "level_change_published_z": 409,
+  "level_change_firstprint_z": 409,
+  "anticipated_change_z": 409,
+  "confirmation": 420
+ },
+ "prefix_invariance": {
+  "n_compared": 303,
+  "mismatches": {
+   "surprise_z": 0,
+   "level_change_published_z": 0,
+   "level_change_firstprint_z": 0,
+   "anticipated_change_z": 0
+  },
+  "pass": true
+ },
+ "v1_surprise_identical": true,
+ "v1_n": 505,
+ "v2_variants_agree_by_series": {
+  "Durable Goods Orders MoM": 0.079,
+  "Inflation Rate MoM": 0.951,
+  "Non Farm Payrolls": 0.024,
+  "Retail Sales MoM": 0.151
+ },
+ "v2_pass": true,
+ "v3_planted_leak": {
+  "rows": 207,
+  "caught": 207,
+  "pass": true
+ },
+ "s1_pass": true
+}

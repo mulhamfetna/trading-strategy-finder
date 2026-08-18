@@ -1,0 +1,104 @@
+rank,ticker,company,weight_pct,source_url,retrieved_utc
+1,NVDA,Nvidia Corp,12.29,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+2,AAPL,Apple Inc.,10.83,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+3,MSFT,Microsoft Corp,8.82,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+4,AMZN,Amazon.Com Inc,7.22,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+5,GOOGL,Alphabet Inc. Class A Common Stock,5.72,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+6,GOOG,Alphabet Inc. Class C Capital Stock,5.36,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+7,AVGO,Broadcom Inc. Common Stock,4.72,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+8,SPCX,Space Exploration Technologies Corp. Class A Common Stock,3.73,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+9,META,"Meta Platforms, Inc. Class A Common Stock",3.6,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+10,TSLA,"Tesla, Inc. Common Stock",3.07,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+11,MU,"Micron Technology, Inc.",2.39,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+12,WMT,Walmart Inc. Common Stock,2.11,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+13,AMD,Advanced Micro Devices,2.02,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+14,ASML,ASML Holding NV,1.58,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+15,INTC,Intel Corp,1.19,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+16,CSCO,"Cisco Systems, Inc. Common Stock (DE)",1.15,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+17,AMAT,Applied Materials Inc,1.04,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+18,COST,Costco Wholesale Corp,1.01,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+19,LRCX,Lam Research Corp,0.94,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+20,PLTR,Palantir Technologies Inc. Class A Common Stock,0.89,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+21,NFLX,NetFlix Inc,0.74,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+22,PANW,"Palo Alto Networks, Inc. Common Stock",0.72,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+23,ARM,Arm Holdings plc American Depositary Shares,0.68,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+24,TXN,Texas Instruments Incorporated,0.61,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+25,KLAC,KLA Corporation Common Stock,0.61,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+26,LIN,Linde plc Ordinary Share,0.54,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+27,CRWD,"CrowdStrike Holdings, Inc. Class A Common Stock",0.52,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+28,AMGN,Amgen Inc,0.5,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+29,SNDK,Sandisk Corporation Common Stock,0.5,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+30,STX,Seagate Technology Holdings PLC Ordinary Shares (Ireland),0.47,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+31,MRVL,"Marvell Technology, Inc. Common Stock",0.47,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+32,PEP,"PepsiCo, Inc.",0.46,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+33,TMUS,"T-Mobile US, Inc.",0.45,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+34,WDC,Western Digital Corp.,0.45,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+35,ADI,"Analog Devices, Inc.",0.44,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+36,QCOM,Qualcomm Inc,0.4,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+37,GILD,Gilead Sciences Inc,0.39,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+38,SHOP,Shopify Inc. Class A subordinate voting shares,0.37,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+39,BKNG,Booking Holdings Inc. Common Stock,0.36,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+40,APP,Applovin Corporation Class A Common Stock,0.34,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+41,ISRG,Intuitive Surgical Inc.,0.32,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+42,PDD,PDD Holdings Inc. American Depositary Shares,0.31,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+43,VRTX,Vertex Pharmaceuticals Inc,0.3,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+44,FTNT,"Fortinet, Inc.",0.3,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+45,SBUX,Starbucks Corp,0.28,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+46,ADP,Automatic Data Processing,0.26,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+47,DDOG,"Datadog, Inc. Class A Common Stock",0.24,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+48,ADBE,Adobe Inc.,0.24,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+49,CEG,Constellation Energy Corporation Common Stock,0.23,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+50,MELI,"Mercado Libre, Inc",0.23,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+51,CDNS,Cadence Design Systems,0.23,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+52,CSX,CSX Corporation,0.22,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+53,MNST,Monster Beverage Corporation,0.22,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+54,MAR,Marriott International Class A Common Stock,0.22,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+55,DASH,"DoorDash, Inc. Class A Common Stock",0.21,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+56,ABNB,"Airbnb, Inc. Class A Common Stock",0.21,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+57,CMCSA,Comcast Corp,0.21,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+58,INTU,Intuit Inc,0.21,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+59,ROST,Ross Stores Inc,0.2,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+60,CTAS,Cintas Corp,0.2,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+61,HON,"Honeywell International, Inc.",0.19,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+62,MDLZ,"Mondelez International, Inc. Class A",0.19,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+63,REGN,Regeneron Pharmaceuticals Inc,0.19,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+64,SNPS,Synopsys Inc,0.19,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+65,ORLY,"O'Reilly Automotive, Inc.",0.18,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+66,PCAR,Paccar Inc,0.17,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+67,AEP,"American Electric Power Company, Inc.",0.17,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+68,MPWR,"Monolithic Power Systems, Inc.",0.16,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+69,HONA,Honeywell Aerospace Inc. Common Stock,0.16,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+70,WBD,"Warner Bros. Discovery, Inc. Series A Common Stock",0.16,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+71,LITE,Lumentum Holdings Inc. Common Stock,0.16,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+72,TER,"Teradyne, Inc. Common Stock",0.15,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+73,BKR,Baker Hughes Company,0.15,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+74,ALAB,"Astera Labs, Inc. Common Stock",0.14,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+75,NXPI,NXP Semiconductors N.V.,0.14,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+76,NBIS,Nebius Group N.V. Class A Ordinary Shares,0.13,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+77,FAST,Fastenal Co,0.13,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+78,FANG,"Diamondback Energy, Inc.",0.13,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+79,EA,Electronic Arts Inc,0.13,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+80,ADSK,Autodesk Inc,0.12,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+81,PYPL,"PayPal Holdings, Inc. Common Stock",0.12,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+82,CRWV,"CoreWeave, Inc. Class A Common Stock",0.12,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+83,IDXX,Idexx Laboratories Inc,0.12,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+84,XEL,"Xcel Energy, Inc.",0.12,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+85,FER,Ferrovial N.V. Ordinary Shares,0.12,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+86,AXON,"Axon Enterprise, Inc. Common Stock",0.12,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+87,EXC,Exelon Corporation,0.11,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+88,RKLB,Rocket Lab Corporation Common Stock,0.11,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+89,CCEP,Coca-Cola Europacific Partners plc Ordinary Shares,0.11,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+90,TTWO,Take-Two Interactive Software Inc,0.11,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+91,TRI,Thomson Reuters Corporation Common Shares,0.11,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+92,ODFL,Old Dominion Freight Line,0.11,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+93,MCHP,Microchip Technology Inc,0.1,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+94,KDP,Keurig Dr Pepper Inc.,0.1,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+95,PAYX,Paychex Inc,0.1,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+96,WDAY,"Workday, Inc. Class A Common Stock",0.1,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+97,ROP,"Roper Technologies, Inc. Common Stock",0.09,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+98,MSTR,Strategy Inc Common Stock Class A,0.08,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+99,DXCM,"DexCom, Inc.",0.08,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+100,GEHC,GE HealthCare Technologies Inc. Common Stock,0.08,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+101,KHC,The Kraft Heinz Company Common Stock,0.08,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+102,ALNY,"Alnylam Pharmaceuticals, Inc.",0.07,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00
+103,CPRT,Copart Inc,0.06,https://www.slickcharts.com/nasdaq100,2026-08-04T14:02:53.452373+00:00

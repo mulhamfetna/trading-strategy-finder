@@ -1,0 +1,47 @@
+{
+ "instrument": "RTY",
+ "n_events": 418,
+ "n_scored": 378,
+ "n_excluded_lt_min_prior": 40,
+ "min_prior": 8,
+ "primary": {
+  "spearman": 0.6183955443303947,
+  "ci": [
+   0.5519553322667426,
+   0.6770336926540433
+  ],
+  "p": 2.966195086746997e-41,
+  "pass": true,
+  "resolution_variant": 0.42571838268017864
+ },
+ "v1_quintiles": {
+  "bucket_means": [
+   0.08759373424988791,
+   0.08156903569129839,
+   0.2041763608345092,
+   0.487851303719859,
+   0.6569031852209263
+  ],
+  "spearman": 0.8999999999999998,
+  "pass": true
+ },
+ "v2_rank_top2": [
+  "Inflation Rate MoM",
+  "Non Farm Payrolls"
+ ],
+ "v2_pass": true,
+ "v3_shuffle": {
+  "median": 0.23852231415068398,
+  "p95": 0.2775521464339009,
+  "pass": true
+ },
+ "control": {
+  "spearman": 0.09987589466947973,
+  "pass": true
+ },
+ "secondary_fp": {
+  "spearman": 0.023363010129506503,
+  "p": 0.6728707349465072,
+  "n": 329
+ }
+}

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The News Programme — Full Visual Report</title>
+<style>
+  :root{
+    --l0:#0b1e3d; --l0b:#12305f;
+    --l1:#1d3a6e; --l1b:#27508f;
+    --l2:#0e5e56; --l2b:#15806f;
+    --l3:#5b5f6b; --l3b:#7a7f8c;
+    --gold:#d4a017; --green:#1d9e57; --red:#c0392b; --amber:#e67e22;
+    --bg:#f4f6fa; --card:#ffffff; --ink:#1c2333; --mut:#5f6775; --line:#dfe4ee;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font-family:"Segoe UI",Tahoma,Arial,sans-serif;
+       line-height:1.7;font-size:16px}
+  .num{font-family:Consolas,Menlo,monospace;white-space:nowrap}
+  header{background:linear-gradient(135deg,var(--l0) 0%,var(--l1) 55%,var(--l2) 100%);color:#fff;padding:38px 26px 30px}
+  header h1{margin:0 0 6px;font-size:30px}
+  header .sub{opacity:.9;font-size:15px;max-width:1000px}
+  .wrap{max-width:1180px;margin:0 auto;padding:22px 18px 80px}
+  .legend{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 6px}
+  .legend span{padding:5px 14px;border-radius:20px;color:#fff;font-size:13px;font-weight:600}
+  .lv0{background:var(--l0)} .lv1{background:var(--l1)} .lv2{background:var(--l2)} .lv3{background:var(--l3)}
+  details{background:var(--card);border:1px solid var(--line);border-radius:12px;margin:14px 0;overflow:hidden;
+          box-shadow:0 1px 3px rgba(10,20,50,.06)}
+  summary{cursor:pointer;padding:14px 18px;font-weight:700;font-size:17px;color:#fff;list-style:none;
+          display:flex;align-items:center;gap:12px}
+  summary::-webkit-details-marker{display:none}
+  summary .tag{font-size:11.5px;background:rgba(255,255,255,.22);padding:2px 10px;border-radius:12px;font-weight:600}
+  summary .arrow{margin-inline-start:auto;transition:transform .2s}
+  details[open]>summary .arrow{transform:rotate(90deg)}
+  details.L0>summary{background:linear-gradient(90deg,var(--l0),var(--l0b))}
+  details.L1>summary{background:linear-gradient(90deg,var(--l1),var(--l1b))}
+  details.L2>summary{background:linear-gradient(90deg,var(--l2),var(--l2b))}
+  details.L3>summary{background:linear-gradient(90deg,var(--l3),var(--l3b));font-size:15.5px}
+  .body{padding:16px 20px 20px}
+  h3{margin:20px 0 8px;font-size:17px} h4{margin:16px 0 6px;font-size:15.5px}
+  p{margin:8px 0}
+  .hero{background:linear-gradient(135deg,#fff8e6,#fdf3d3);border:2px solid var(--gold);border-radius:14px;
+        padding:18px 20px;margin:16px 0}
+  .hero h2{margin:0 0 8px;font-size:20px;color:#7a5a00}
+  .kpis{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:150px;flex:1}
+  .kpi .v{font-size:20px;font-weight:800;font-family:Consolas,monospace}
+  .kpi .k{font-size:12.5px;color:var(--mut)}
+  .g .v{color:var(--green)} .r .v{color:var(--red)} .a .v{color:var(--amber)} .b .v{color:var(--l1)}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:14px;background:#fff}
+  th{background:#eef2f9;padding:8px 10px;border:1px solid var(--line);font-size:13px}
+  td{padding:7px 10px;border:1px solid var(--line);vertical-align:top}
+  .tblwrap{overflow-x:auto}
+  .ok{color:var(--green);font-weight:700} .no{color:var(--red);font-weight:700} .wr{color:var(--amber);font-weight:700}
+  .bar{display:flex;align-items:center;gap:10px;margin:5px 0}
+  .bar .lbl{width:250px;font-size:13.5px;flex-shrink:0}
+  .bar .trk{flex:1;background:#e9edf5;border-radius:6px;height:22px;position:relative}
+  .bar .fill{height:100%;border-radius:6px;display:flex;align-items:center;justify-content:flex-end;
+             color:#fff;font-size:11.5px;font-family:Consolas,monospace;padding:0 8px;min-width:34px}
+  .fg{background:linear-gradient(90deg,#27ae60,#1d9e57)} .fr{background:linear-gradient(90deg,#e74c3c,#c0392b)}
+  .fb{background:linear-gradient(90deg,#3f6ad8,#27508f)} .fa{background:linear-gradient(90deg,#f39c12,#e67e22)}
+  .fgold{background:linear-gradient(90deg,#e0b52e,#c39312)}
+  .timeline{border-inline-start:4px solid var(--l1);margin:14px 8px;padding-inline-start:18px}
+  .tstep{margin:0 0 16px;position:relative}
+  .tstep::before{content:"";width:14px;height:14px;border-radius:50%;background:var(--l1);
+                 position:absolute;inset-inline-start:-27px;top:5px;border:3px solid #fff;box-shadow:0 0 0 2px var(--l1)}
+  .tstep.win::before{background:var(--gold);box-shadow:0 0 0 2px var(--gold)}
+  .tstep b{font-size:15.5px}
+  .note{background:#fdf6ec;border-inline-start:4px solid var(--amber);padding:10px 14px;border-radius:8px;margin:10px 0;font-size:14.5px}
+  .good{background:#eef9f1;border-inline-start:4px solid var(--green)}
+  .bad{background:#fdeeec;border-inline-start:4px solid var(--red)}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin:12px 0}
+  .mini{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fff}
+  .mini h4{margin:0 0 6px}
+  .lvchip{display:inline-block;color:#fff;border-radius:10px;padding:1px 10px;font-size:11.5px;font-weight:700;margin-inline-end:6px}
+  .decision{border:2px solid var(--l1);border-radius:14px;margin:16px 0;overflow:hidden}
+  .decision>.dh{background:linear-gradient(90deg,var(--l1),var(--l2));color:#fff;padding:12px 18px;font-weight:800;font-size:17px}
+  .decision .body{padding:14px 18px}
+  .stair{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+  .stair .step{border-radius:10px;padding:10px 14px;color:#fff}
+  .stair .s0{background:var(--l0);margin-inline-end:0}
+  .stair .s1{background:var(--l1);margin-inline-end:24px}
+  .stair .s2{background:var(--l2);margin-inline-end:48px}
+  .stair .s3{background:var(--l3);margin-inline-end:72px}
+  .stair b{display:block;margin-bottom:2px}
+  code{background:#eef2f9;border-radius:5px;padding:1px 6px;font-size:13px}
+  footer{color:var(--mut);font-size:13px;margin-top:34px;border-top:1px solid var(--line);padding-top:14px}
+  .small{font-size:13px;color:var(--mut)}
+</style>
+</head>
+<body>
+<header>
+  <h1>📊 The News Programme — Full Visual Report</h1>
+  <div class="sub">
+    Four workstreams (<b>WS-EARN → Round 1 → WS-NEWS2 → WS-NEWS3</b>) · one question · <b>one CONFIRMED trade</b><br>
+    Date: <span class="num">2026-08-16</span> · Verification at close: <span class="num">27/27</span> claims in the ledger + selftest <span class="num">5/5</span> · every number in this report re-derives from a committed evidence file
+  </div>
+</header>
+<div class="wrap">
+
+<div class="legend">
+  <b style="align-self:center">Level gradient:</b>
+  <span class="lv0">L0 — Executive summary</span>
+  <span class="lv1">L1 — The workstreams</span>
+  <span class="lv2">L2 — Experiments stage by stage</span>
+  <span class="lv3">L3 — Deepest detail & the full log</span>
+</div>
+<p class="small">Click any bar to expand or collapse it. Levels run from the top (decision &amp; summary) down to the bottom (the verbose experiment log at finest detail).</p>
+
+<!-- ==================== L0 ==================== -->
+<details class="L0" open>
+<summary><span class="tag">L0</span> Executive summary — the question, the answer, and the confirmed trade <span class="arrow">▶</span></summary>
+<div class="body">
+
+<p><b>The question, held constant across four workstreams:</b> a scheduled economic release gives three numbers — <b>previous</b>, <b>forecast</b> (before the release) and <b>actual</b> (at the release second). Can we extract the <b>POWER</b> of the news (how hard price will move) and the <b>DIRECTION</b> to ride, and turn them into profit — before the release, at the release second, or after it?</p>
+
+<div class="kpis">
+  <div class="kpi r"><div class="v">Impossible</div><div class="k">DIRECTION: not predictable by any input at any horizon — a negative <b>backed by power analysis</b>, not an assumption</div></div>
+  <div class="kpi g"><div class="v">Possible</div><div class="k">POWER: predictable <b>the night before</b> (out-of-sample ρ ≈ 0.5 on 5 instruments)</div></div>
+  <div class="kpi b"><div class="v">5–15×</div><div class="k">volatility multiple at the release second vs ordinary minutes</div></div>
+  <div class="kpi g"><div class="v">27/27</div><div class="k">every published number pinned in a claims ledger that re-derives it from committed files</div></div>
+</div>
+
+<div class="hero">
+  <h2>⭐ The headline result: the first confirmed, net-of-costs news trade in the project's history</h2>
+  <p><b>Go LONG one <span class="num">NQ</span> or <span class="num">RTY</span> contract <span class="num">300</span> seconds before a {CPI, NFP, FOMC} release · stop-loss <span class="num">0.10%</span> · take-profit <span class="num">0.40%</span> · timed exit at <span class="num">+900</span> seconds.</b></p>
+  <div class="kpis">
+    <div class="kpi g"><div class="v">+$155.56</div><div class="k">mean gross per event on NQ (95% CI <span class="num">[+81.83, +229.30]</span>)</div></div>
+    <div class="kpi g"><div class="v">t = 4.13</div><div class="k">clears the programme's strictest bar: Bonferroni over 54 cells + sign-consistent chronological halves</div></div>
+    <div class="kpi g"><div class="v">+$133</div><div class="k">net per event under the harshest (stressed) cost scenario ≈ <span class="num">+$6,900</span>/yr/contract</div></div>
+    <div class="kpi b"><div class="v">t = 3.79</div><div class="k">independent replication on RTY — same cell, different price file</div></div>
+  </div>
+  <p>⚠️ <b>What it really is:</b> not a prediction but the harvest of the <b>Announcement Premium</b> — the market pays whoever holds equity risk while macro uncertainty resolves. The win rate is only <span class="num">36.4%</span> and the median event loses — <b>the +4R right tail pays for everything</b>. The trade decides within seconds of the print (median time-to-TP: <span class="num">+15s</span> on NQ, <span class="num">+3s</span> on RTY).</p>
+  <p>⛔ <b>Deployment is gated on two OWNER decisions</b> — detailed in the decisions section below.</p>
+</div>
+
+<h3>Top-level results table: every real effect the programme found, and its fate</h3>
+<div class="tblwrap"><table>
+<tr><th>Effect found</th><th>Size</th><th>Tradeable?</th><th>Why / why not</th></tr>
+<tr><td>Earnings-announcement volatility (the announcement second)</td><td class="num">4.98×</td><td class="no">No</td><td>magnitude without direction, and no quantity term in the engine</td></tr>
+<tr><td>Gold's reaction to macro releases</td><td class="num">5.5σ — $132 of $137 inside the minute</td><td class="no">No</td><td>the whole move is inside the minute; a reactive entry is always late</td></tr>
+<tr><td>Surprise → release-minute jump</td><td class="num">ρ to −0.63 (23 pairs)</td><td class="no">No</td><td>the input (actual − forecast) arrives <b>with</b> the move itself</td></tr>
+<tr><td>Post-release drift (CL/API)</td><td class="num">ρ −0.247 · 57.4% accuracy</td><td class="no">No</td><td>below the 71% break-even; and the source is a private, unverifiable report</td></tr>
+<tr><td>Gold inverse to surprises</td><td class="num">Spearman −0.193</td><td class="no">No</td><td>uneconomic after costs</td></tr>
+<tr><td><b>Release power, predicted the night before</b></td><td class="num">OOS ρ 0.47–0.58</td><td class="wr">An input</td><td>the selection filter for the confirmed trade (which releases are worth it)</td></tr>
+<tr><td><b>The announcement premium (long only)</b></td><td class="num">RTY holdout p=0.0007 · CPI +$424/event</td><td class="ok">Yes (gated)</td><td>an unconditional mean — needs no directional prediction</td></tr>
+<tr><td><b>The convex bracket on the premium (the confirmed trade)</b></td><td class="num">+$155.56/event · t=4.13 · net +$133</td><td class="ok">Yes (gated)</td><td>the spec above; gated on the two owner decisions</td></tr>
+</table></div>
+
+<h3>Programme timeline</h3>
+<div class="timeline">
+  <div class="tstep"><b>WS-EARN — corporate earnings ⇐ Nasdaq</b><br>783 events, 16 years, 1-second bars. Result: <span class="num">4.98×</span> volatility but <b>zero direction</b> (0/8 cells in all arms).</div>
+  <div class="tstep"><b>Round 1 + gold</b><br>The discovery that <span class="num">$132</span> of <span class="num">$137</span> of the reaction sits <b>inside the release minute</b> — the rule that shaped everything after it.</div>
+  <div class="tstep"><b>WS-NEWS2 — real consensus data</b><br>Data provenance proven (first print / point-in-time), then <span class="num">612</span> powered pairs: the surprise explains the jump, <b>and direction after the release is excluded at 95%</b>.</div>
+  <div class="tstep win"><b>WS-NEWS3 — the audit, then the finish</b><br>The audit found two goal strategy classes <b>never simulated</b> ⇐ M1 the premium ⇐ M2 the power model ⇐ M3 the convex bracket ⇐ <b>the confirmed trade</b>.</div>
+</div>
+</div>
+</details>
+
+<!-- ==================== L1 ==================== -->
+<details class="L1">
+<summary><span class="tag">L1</span> The four workstreams — one card per workstream with its key numbers <span class="arrow">▶</span></summary>
+<div class="body">
+<div class="grid2">
+  <div class="mini">
+    <h4>1) WS-EARN — corporate earnings (#109–113)</h4>
+    <p><b>Design:</b> 783 earnings announcements timestamped <b>to the second</b> from EDGAR, on 1-second bars, hypothesis filed before touching the data.</p>
+    <div class="bar"><div class="lbl">Announcement-second volatility</div><div class="trk"><div class="fill fb" style="width:100%">4.98×</div></div></div>
+    <div class="bar"><div class="lbl">Significant direction cells</div><div class="trk"><div class="fill fr" style="width:8%">0/8</div></div></div>
+    <p class="small">Permanent lesson: "a significant negative net-t is <b>COST DRAG</b>, not a reversal" (control: gross t=−0.58 but net t=−3.68).</p>
+  </div>
+  <div class="mini">
+    <h4>2) Round 1 + gold + the fundamentals battery</h4>
+    <div class="bar"><div class="lbl">Gold's release reaction</div><div class="trk"><div class="fill fb" style="width:90%">5.5σ</div></div></div>
+    <div class="bar"><div class="lbl">Release-minute share of the move</div><div class="trk"><div class="fill fa" style="width:96%">$132/$137</div></div></div>
+    <div class="bar"><div class="lbl">Stop-outs caused by 1-second sweeps</div><div class="trk"><div class="fill fr" style="width:94%">94%</div></div></div>
+    <p class="small">Two permanent rules: "state the anchor to the bar <b>and its side</b>", and "run rank correlation beside Pearson on fat tails" (gold: Spearman −0.193 where Pearson was blind at −0.012).</p>
+  </div>
+  <div class="mini">
+    <h4>3) WS-NEWS2 — real consensus (#114–123)</h4>
+    <p><b>The data:</b> TradingView's calendar (the 8th source tried; seven failed) — <span class="num">39,221</span> US events. Proven: `actual` is a first print and `previous` is point-in-time (no back-fill can match 0% of today's values).</p>
+    <div class="bar"><div class="lbl">Statistically powered pairs</div><div class="trk"><div class="fill fb" style="width:100%">612</div></div></div>
+    <div class="bar"><div class="lbl">Survivors in the post-release window</div><div class="trk"><div class="fill fr" style="width:4%">1/612</div></div></div>
+    <p class="small"><b>Verdict:</b> the surprise explains the <b>jump</b> (ρ to −0.63) and nothing after it; the directional edge is excluded at 95% on all pairs, both windows.</p>
+  </div>
+  <div class="mini">
+    <h4>4) WS-NEWS3 — finishing the goal (#124–126, #117)</h4>
+    <p><b>M0 the audit:</b> "a workstream is closed against its <b>goal statement</b>, not its strongest verdict" — two goal strategy classes had never been tested.</p>
+    <div class="bar"><div class="lbl">M1 RTY premium (pre-registered test)</div><div class="trk"><div class="fill fg" style="width:70%">+$69.5 · p=0.0007</div></div></div>
+    <div class="bar"><div class="lbl">M2 power model (out of sample)</div><div class="trk"><div class="fill fb" style="width:58%">ρ ≈ 0.5</div></div></div>
+    <div class="bar"><div class="lbl">M3 the confirmed trade (gross/event)</div><div class="trk"><div class="fill fgold" style="width:100%">+$155.56</div></div></div>
+    <p class="small">Every milestone landed ahead of schedule, and every number entered the ledger before publication.</p>
+  </div>
+</div>
+</div>
+</details>
+
+<!-- ==================== L2 ==================== -->
+<details class="L2">
+<summary><span class="tag">L2</span> Experiments stage by stage — design, result, and the visual evidence <span class="arrow">▶</span></summary>
+<div class="body">
+
+<h3>🧪 WS-NEWS2: the data-integrity battery (before any conclusion was allowed)</h3>
+<div class="tblwrap"><table>
+<tr><th>Check</th><th>Method</th><th>Result</th></tr>
+<tr><td>Is `actual` a first print or a later revision?</td><td>503 releases compared against the ALFRED vintage archive</td><td class="ok">First print: 100/100/99% match the first print, <b>0%</b> the revision (March 2020 payrolls: TV carries −701k, not the revised −1,398k)</td></tr>
+<tr><td>Is `previous` point-in-time or back-filled?</td><td>same archive, per series</td><td class="ok">Point-in-time: 99/98/99% vs <b>0%</b> match with today's values — the row was captured live</td></tr>
+<tr><td>Is `forecast` clean?</td><td>no consensus archive exists anywhere</td><td class="wr"><b>Permanently</b> unverifiable — a standing caveat attached to every result</td></tr>
+<tr><td>Daylight-saving before 2016</td><td>timestamps checked series by series</td><td class="no">Broken: 87 series an hour late in summer ⇐ data floor 2016</td></tr>
+</table></div>
+
+<h3>🧪 WS-NEWS2 Phase 2 (S0–S4): dissecting the surprise</h3>
+<div class="grid2">
+  <div class="mini"><h4>S0 — the validity gate</h4><p>Failed on the first run because the return anchor sat on the release bar's <b>close</b> (excluding the jump!). The fix revealed the same anchor error had already killed Phase 1's only positive — so all 16 runs were redone.</p></div>
+  <div class="mini"><h4>S2 — the planted-effect probe</h4><p>Each of the 643 pairs carried a calibrated probe (25 draws, binomial test). The probe itself needed <b>four fixes</b>; the clue that found the root cause was a <b>shape</b>, not a number: the pass rate was inverted vs sample size ⇐ plant on <b>ranks</b> when measuring Spearman.</p></div>
+  <div class="mini"><h4>S3 — the release minute</h4><p><b>23 survivors</b>: the surprise explains the jump up to <span class="num">ρ = −0.63</span> (p to <span class="num">1.9e-10</span>), dumb controls null, permutation-verified.</p></div>
+  <div class="mini"><h4>S4 — the capturable window</h4><p><b>One survivor in 612</b> (the CL/API drift): accuracy <span class="num">57.4%</span> vs the <span class="num">71%</span> break-even — and with no verifiable source (#123).</p></div>
+</div>
+
+<h3>🧪 WS-NEWS3 · M1 — pricing the "ride" and discovering the premium</h3>
+<p><b>The experiment:</b> enter T minutes before the release, keep the stop active, hold through the print, exit 15 minutes after — always in both directions, with realistic gap fills (GAP-01), against clean controls.</p>
+<h4>The premium by release (M1's primary cell on NQ — gross $/event, long)</h4>
+<div class="bar"><div class="lbl">CPI (Inflation Rate MoM)</div><div class="trk"><div class="fill fg" style="width:100%">+$424</div></div></div>
+<div class="bar"><div class="lbl">NFP (Non Farm Payrolls)</div><div class="trk"><div class="fill fg" style="width:27%">+$113</div></div></div>
+<div class="bar"><div class="lbl">Durable Goods</div><div class="trk"><div class="fill fb" style="width:4%">+$12</div></div></div>
+<div class="bar"><div class="lbl">Retail Sales (the SAME 8:30 minute!)</div><div class="trk"><div class="fill fr" style="width:19%">−$79</div></div></div>
+<div class="bar"><div class="lbl">FOMC</div><div class="trk"><div class="fill fr" style="width:20%">−$85</div></div></div>
+<div class="note good">⭐ <b>The pre-registered confirmatory test:</b> before RTY's price file was loaded for the first time in this workstream, one fixed test was filed on GitHub. Result: <span class="num">+$69.54</span>/event, <span class="num">t=3.22</span>, <span class="num">p=0.0007</span> — <b>out-of-family replication on untouched data</b>. All nine long cells positive, every control ≈ zero.</div>
+<div class="note">⚠️ <b>Era concentration:</b> the premium is ≈ zero in 2016–2019 and strongest in 2025–2026 (NQ CPI: <span class="num">+$1,279</span>/event in 2025, <span class="num">+$1,796</span> in 2026). The sample cannot distinguish "a permanent premium that swells with uncertainty" from "an inflation-era regime that will end".</div>
+
+<h3>🧪 WS-NEWS3 · M2 — the power model: which release will move? (known the night before)</h3>
+<p><b>The model is deliberately the dumbest defensible one:</b> the median of the same series' own prior release moves, shifted one release (it never sees the event it predicts).</p>
+<div class="bar"><div class="lbl">NQ</div><div class="trk"><div class="fill fb" style="width:76%">ρ = +0.530</div></div></div>
+<div class="bar"><div class="lbl">ES</div><div class="trk"><div class="fill fb" style="width:74%">ρ = +0.515</div></div></div>
+<div class="bar"><div class="lbl">GC</div><div class="trk"><div class="fill fb" style="width:68%">ρ = +0.472</div></div></div>
+<div class="bar"><div class="lbl">CL</div><div class="trk"><div class="fill fb" style="width:78%">ρ = +0.546</div></div></div>
+<div class="bar"><div class="lbl">RTY</div><div class="trk"><div class="fill fb" style="width:84%">ρ = +0.582</div></div></div>
+<div class="bar"><div class="lbl">🔻 The falsifier: shuffled series labels (must collapse)</div><div class="trk"><div class="fill fr" style="width:15%">ρ ≈ 0.1</div></div></div>
+<div class="note good">✅ <b>Final closure for the consensus numbers:</b> |forecast − previous| adds <b>nothing</b> to magnitude prediction (max |ρ| across 5 instruments = 0.084, and negative) — combined with the direction results, the consensus numbers are completely dead as pre-release inputs.</div>
+<div class="note bad">⭐⭐ <b>Two registered gates failed, stayed failed in the record — and each became a principle:</b><br>
+(1) <b>POWER ≠ PREMIUM</b>: NFP and FOMC are the biggest movers with no premium; CPI is the 3rd mover with the only premium — my verification anchor had named the wrong quantity.<br>
+(2) <b>Expanding medians lag regime shifts</b>: CPI predicted 0.045% vs realized 0.19% (the window still remembers 2016–2020, when CPI moved nothing; stable-power NFP: 1.33×, no lag). Cure: a <b>declared</b> trailing-24 variant under identical gates — by its current values CPI is the #1 power release on both NQ and RTY.</div>
+
+<h3>🧪 WS-NEWS3 · M3 — the straddle on 1-second bars (the owner's proposal, tested verbatim)</h3>
+<p><b>The arms:</b> straddle (long + short simultaneously, each leg with stop S and take-profit P) vs long-only. Pessimistic execution: a 1-second bar breaching both stop and TP counts as a <b>stop</b>; stop fills at the worse of (line/open); costs per leg, and the straddle pays two legs.</p>
+<div class="grid2">
+<div class="mini">
+<h4>The registered primary (the straddle)</h4>
+<p>Net stressed: <span class="num">+$50.33</span>/event, <span class="num">t=1.35</span>, <span class="num">p=0.0897</span> ⇐ <b class="no">NOT confirmed</b> — and <b>not excluded</b> either (minimum detectable effect ≈ $104). The decisive fact instead:</p>
+<div class="bar"><div class="lbl">Cells where the straddle beats its own long leg</div><div class="trk"><div class="fill fr" style="width:6%">0/18</div></div></div>
+<p class="small">The short leg <b>pays</b> the premium and doubles the costs — exactly as M1 predicted.</p>
+</div>
+<div class="mini">
+<h4>The whipsaw, measured at last</h4>
+<div class="bar"><div class="lbl">0.05% stop: BOTH legs stopped</div><div class="trk"><div class="fill fr" style="width:88%">65–73%</div></div></div>
+<div class="bar"><div class="lbl">0.10% stop</div><div class="trk"><div class="fill fa" style="width:62%">46–56%</div></div></div>
+<div class="bar"><div class="lbl">0.20% stop</div><div class="trk"><div class="fill fb" style="width:32%">21–32%</div></div></div>
+<p class="small">The goal's "small stop" is the straddle's <b>own executioner</b> — but a single long leg survives it and gets paid.</p>
+</div>
+</div>
+<div class="note good">⭐ <b>The owner's intuition (small stop + big take-profit) is right — on one side only:</b> in the winning NQ cell, <span class="num">22.9%</span> of events hit the <b>+4R</b> target and pay for everyone; the verdict lands within seconds (median <span class="num">+15s</span> after the print). CL (no premium) was ruled <b>VOID</b> by its own falsifier: the bracket "pays" there even at no-news minutes — so nothing is attributable to the news.</div>
+</div>
+</details>
+
+<!-- ==================== L3 ==================== -->
+<details class="L3">
+<summary><span class="tag">L3</span> The deepest log — exact mechanics, full tables, the 20 catches, the claims inventory <span class="arrow">▶</span></summary>
+<div class="body">
+
+<h3>⚙️ The confirmed trade's exact execution mechanics (as literally coded)</h3>
+<div class="tblwrap"><table>
+<tr><th>Element</th><th>Exact definition</th></tr>
+<tr><td>Entry</td><td>close of the 1-second bar at (release − <span class="num">300s</span>); the event is rejected if that bar is more than 60s away</td></tr>
+<tr><td>Stop-loss</td><td>fills at the <b>worse</b> of (stop line, breaching bar's open) — the GAP-01 rule</td></tr>
+<tr><td>Take-profit</td><td>a resting limit order: fills at the <b>better</b> of (line, open)</td></tr>
+<tr><td>Tie rule</td><td>one 1-second bar breaching both stop and TP ⇐ counted as a <b>stop</b> (pessimistic, pre-registered)</td></tr>
+<tr><td>Timed exit</td><td>any leg alive at (release + <span class="num">900s</span>) closes on that bar's close</td></tr>
+<tr><td>Costs/leg</td><td><span class="num">$2.50</span> + {1, 2, 4} ticks ⇐ NQ: <span class="num">7.50/12.50/22.50</span> — the stressed scenario leads all reporting</td></tr>
+</table></div>
+
+<h3>📋 The full table: M3's nine NQ cells decomposed leg by leg (mean $/event, 329 events)</h3>
+<div class="tblwrap"><table>
+<tr><th>Stop S%</th><th>TP P%</th><th>LONG</th><th>SHORT</th><th>Straddle</th><th>Both legs stopped</th></tr>
+<tr><td class="num">0.05</td><td>none</td><td class="num ok">+142.66</td><td class="num no">−18.54</td><td class="num">+124.12</td><td class="num">65.4%</td></tr>
+<tr><td class="num">0.05</td><td class="num">0.20</td><td class="num ok">+81.19</td><td class="num no">−31.09</td><td class="num">+50.10</td><td class="num">48.6%</td></tr>
+<tr><td class="num">0.05</td><td class="num">0.40</td><td class="num ok">+118.55</td><td class="num no">−25.11</td><td class="num">+93.44</td><td class="num">60.6%</td></tr>
+<tr><td class="num">0.10</td><td>none</td><td class="num ok">+184.28</td><td class="num no">−45.71</td><td class="num">+138.56</td><td class="num">46.2%</td></tr>
+<tr><td class="num">0.10</td><td class="num">0.20</td><td class="num ok">+102.26</td><td class="num no">−59.03</td><td class="num">+43.22</td><td class="num">24.2%</td></tr>
+<tr style="background:#fff8e6"><td class="num"><b>0.10</b></td><td class="num"><b>0.40</b></td><td class="num ok"><b>+155.56</b></td><td class="num no">−60.23</td><td class="num">+95.33</td><td class="num">39.4%</td></tr>
+<tr><td class="num">0.20</td><td>none</td><td class="num ok">+171.55</td><td class="num no">−40.10</td><td class="num">+131.45</td><td class="num">20.5%</td></tr>
+<tr><td class="num">0.20</td><td class="num">0.20</td><td class="num ok">+102.18</td><td class="num no">−115.24</td><td class="num no">−13.06</td><td class="num">0.9%</td></tr>
+<tr><td class="num">0.20</td><td class="num">0.40</td><td class="num ok">+163.08</td><td class="num no">−101.94</td><td class="num">+61.14</td><td class="num">12.8%</td></tr>
+</table></div>
+<p class="small">⭐ Three structural facts: (1) the LONG leg is positive in <b>18/18</b> cells (with RTY) and the SHORT negative in 18/18; (2) the short leg's loss <b>grows with stop width</b> (−$19 at 0.05% ⇐ −$102 at 0.20%: a wide-stopped short survives the sweep and then rides the premium against itself for 15 minutes); (3) the symmetric 1R:1R bracket is the only straddle with negative gross — a pure cost-and-chop donor.</p>
+
+<h3>📉 Distribution anatomy of the winning cell (NQ)</h3>
+<div class="kpis">
+  <div class="kpi a"><div class="v">36.4%</div><div class="k">event win rate — <b>the median event loses −$136</b></div></div>
+  <div class="kpi g"><div class="v">22.9%</div><div class="k">hit the +4R take-profit and pay for all the rest</div></div>
+  <div class="kpi g"><div class="v">+$2,900</div><div class="k">best single event (CPI on <span class="num">2026-07-14</span>)</div></div>
+  <div class="kpi r"><div class="v">−$995</div><div class="k">worst event = <b>2.1× the nominal stop</b> — gap-through-stop slippage, <b>measured</b>, not assumed</div></div>
+</div>
+<p class="small">Exit mix: 48.6% stopped after the release · 22.9% take-profit · 15.6% timed exit · 12.8% stopped before the release. Timing: the TP fills at a median of <span class="num">+15s</span> after the print (lower quartile: <b>one second</b>), post-release stops at <span class="num">+3s</span>.</p>
+
+<h3>🕳️ Three stories from the deep (without which errors would have been published)</h3>
+<div class="grid2">
+  <div class="mini"><h4>Control contamination — programme-wide</h4><p>The V3 falsifier failed 4/4: "no-release-day" controls showed a phantom jump of <span class="num">2.3–2.5×</span>. Cause: "no release" meant "no release <b>from our list</b>" — and 8:30 ET carries Jobless Claims, PPI, GDP on "quiet" days. Fix: controls cleaned against the <b>full</b> 39k-event calendar, then a quiet-noon falsifier (<span class="num">0.89–0.94×</span> = the pipeline manufactures nothing).</p></div>
+  <div class="mini"><h4>The units lie in 1-second files</h4><p>"Median time-to-TP 239 seconds" appeared — before the release itself! It was 239 <b>bars</b>: 1-second files carry bars only for <b>traded</b> seconds (NQ: 203 of 300 pre-release seconds; RTY: only 116). Caught before any publication; the rule: a bar offset is never a duration.</p></div>
+  <div class="mini"><h4>The CL inversion — the falsifier at work</h4><p>On crude oil: the no-news control <b>beats</b> the release itself (+$29 vs −$2 for the long) — the bracket's profit source there exists everywhere, so nothing is attributable to news ⇐ CL's verdict is <b>VOID</b> per the pre-registration, not "negative".</p></div>
+  <div class="mini"><h4>The frame bridge (V1)</h4><p>The 1-second pipeline reproduces M1's cell computed on 1-minute bars: <span class="num">+$80.80</span> vs <span class="num">+$84.24</span> on exactly the same 574 events — two frames, two codebases, one trade.</p></div>
+</div>
+
+<h3>🛡️ The twenty catches (zero of which reached a published conclusion)</h3>
+<div class="tblwrap"><table>
+<tr><th>#</th><th>WS-NEWS2 (12)</th><th>#</th><th>WS-NEWS3 (8)</th></tr>
+<tr><td class="num">1</td><td>The S0 anchor bug (close vs open of the release bar) — overturned Phase 1's positive and forced 16 reruns</td><td class="num">13</td><td>The audit's own false claim ("survival never tested" — H1-A had tested it)</td></tr>
+<tr><td class="num">2–5</td><td>Four planted-probe defects (grid ceiling; coin-flip threshold; moved goalposts; planting on values instead of ranks — found because the pass rate was inverted vs n)</td><td class="num">14</td><td>Programme-wide control contamination (V3 failed 4/4)</td></tr>
+<tr><td class="num">6</td><td>The pre-registration file itself untracked (blanket *.csv rule)</td><td class="num">15</td><td>The 8:30 seasonality floor split from artefact by quiet-minute controls instead of loosening the threshold</td></tr>
+<tr><td class="num">7</td><td><code>N_PERM</code> undefined on the only code path that mattered</td><td class="num">16</td><td>M2's V2 anchor named the wrong quantity (power vs premium) — stayed failed, became a principle</td></tr>
+<tr><td class="num">8</td><td>An inverted V1 check that would have rejected the fat-tail survivors rule P2-C2 protects</td><td class="num">17</td><td>The regime lag behind M2's V1 failure — cured by a declared variant under identical gates</td></tr>
+<tr><td class="num">9</td><td>A commit that claimed a change it did not contain (a broken && chain) — caught by grep, self-corrected publicly</td><td class="num">18</td><td>A ledger check built on a proxy (row counts) instead of its statistic — rebuilt, no expect touched</td></tr>
+<tr><td class="num">10</td><td>The acceptance gate rejecting 5 of 7 good files (three defects in the gate itself)</td><td class="num">19</td><td>The units lie (bars as seconds) in trade-sparse 1-second files</td></tr>
+<tr><td class="num">11</td><td>A point estimate published on an unestimable cell (17 vs 1) — repinned with a confidence interval</td><td class="num">20</td><td>CL's bracket "profiting" at no-news minutes ⇐ instrument VOIDed by its falsifier</td></tr>
+<tr><td class="num">12</td><td>An arbitrary split threshold sitting just above the observed gap (decided by Fisher z instead) + a one-sided-join "n" that was not an n</td><td></td><td></td></tr>
+</table></div>
+
+<h3>🧾 The claims inventory (27/27 at close — numbers that stay re-derivable forever)</h3>
+<p class="small"><b>WS-NEWS2 (18):</b> H1A-NQ-5M-040-RATIO · TV-DST-CLEAN-FROM-2016 · TV-NFP-CLEAN-PRE-2016 · TV-TIMESTAMPS-MINUTE-ONLY · NEWS2-USABLE-UNIVERSE · NEWS2-RETRACTIONS-NOT-REUSED · TV-ACTUAL-IS-FIRST-PRINT · TV-PREVIOUS-IS-POINT-IN-TIME · TV-FORECAST-NOT-COPIED-FROM-ACTUAL · H1BC-ANTICIPATED-CHANGE-NEGATIVE · PHASE2-MATRIX-221-DECIDABLE · P1X-NG-EFFECT-REAL-BUT-NOT-TRADEABLE · P2-S0-PIPELINE-VALIDITY · P2-S1-FEATURES-NO-LOOKAHEAD · P2-S2-EVERY-PAIR-PROBED · P2-S3-EFFICIENCY-NOT-EDGE · P2-S4-CAPTURABLE-WINDOW-EMPTY · API-EIA-PREVIEW-MECHANISM</p>
+<p class="small"><b>WS-NEWS3 (9):</b> P1-RIDE-PREMIUM-RTY-CONFIRMED (+69.54) · P1-DRIFT-DEAD (0) · P1-CPI-ENGINE (+424.22) · P2-POWER-MODEL-CONFIRMED (+0.530) · P2-FP-ADDS-NOTHING (0) · P2-REGIME-LAG (4.155) · P3-STRADDLE-NOT-CONFIRMED (+50.33) · P3-LONG-RELEASE-TRADE-CONFIRMED (+155.56) · P3-WHIPSAW-MEASURED (0.654)</p>
+<p class="small">Every claim carries three verifications V1/V2/V3 that fail for <b>different</b> reasons + a declared blind spot; no <code>expect</code> was ever adjusted to match an output. Staleness rule: run <code>python3 optimize/verify/run.py</code> before citing any number — if it is not 27/27, the ledger is right and this report is stale.</p>
+</div>
+</details>
+
+<!-- ==================== DECISIONS ==================== -->
+<details class="L0" open>
+<summary><span class="tag">OWNER DECISIONS</span> The two decisions that gate deployment — explained in levels <span class="arrow">▶</span></summary>
+<div class="body">
+
+<p>The research is finished; what remains is not an experiment but <b>two decisions only the owner can make</b>. Each is explained here at four depths — from a single sentence down to the finest risk numbers.</p>
+
+<div class="decision">
+  <div class="dh">Decision 1 — the execution engine: a sizing/multi-leg layer + a schedule-driven release executor</div>
+  <div class="body">
+    <div class="stair">
+      <div class="step s0"><span class="lvchip lv0">L0</span><b>The one sentence</b> Without this decision the programme's result stays <b>knowledge, not P&amp;L</b>: the current system cannot even open the confirmed trade.</div>
+      <div class="step s1"><span class="lvchip lv1">L1</span><b>Why? Two structural blockers</b> (1) The engine's profit equation <code>pnl = pnl_points × pv</code> <b>has no quantity term</b> — always one contract, no way to express size or two legs. (2) The engine is <b>candle-and-indicator based</b>, while the confirmed trade lives at 1-second resolution as a bracket (timed entry, stop, take-profit, timed exit) and needs no indicator at all.</div>
+      <div class="step s2"><span class="lvchip lv2">L2</span><b>Exactly what is needed</b> (a) A sizing/multi-leg layer in the P&amp;L accounting. (b) A <b>small standalone release executor</b>: CPI/NFP/FOMC timestamps are known in advance (≈<span class="num">52</span> per year) — an executor that wakes five minutes before each, places the bracket, and sleeps. It does not need the strategy engine at all, so the change is <b>far smaller</b> than an engine refactor.</div>
+      <div class="step s3"><span class="lvchip lv3">L3</span><b>What else this decision unlocks + the economics</b> The same change unlocks <b>every "magnitude without direction" finding</b> back to WS-EARN (the 4.98× earnings-second volatility) that stayed unusable for the same reason. At one contract: NQ ≈ <span class="num">+$6,900</span>/yr net stressed + RTY ≈ <span class="num">+$1,800</span> — modest on its own, but <b>linear in quantity</b>: this decision is what turns it from a research number into a scalable sleeve. Risk budgeting must count the losing leg as potentially <b>2R, not 1R</b> (worst measured loss: −$995 on a nominal ≈$476 stop — gap-through-stop slippage in the sweep second).</div>
+    </div>
+  </div>
+</div>
+
+<div class="decision">
+  <div class="dh">Decision 2 — the regime monitor: the operating condition before any live deployment</div>
+  <div class="body">
+    <div class="stair">
+      <div class="step s0"><span class="lvchip lv0">L0</span><b>The one sentence</b> The premium funding this trade is <b>a child of its era</b> — no deployment without an alarm that halts it automatically if the era dies.</div>
+      <div class="step s1"><span class="lvchip lv1">L1</span><b>Why? The era evidence</b> The winning cell's per-event profit on NQ: <span class="num">2016–19: +$59</span> · <span class="num">2020–21: +$24</span> · <span class="num">2022+: +$292</span>. The sign is positive in all three eras (which is what the halves rule certified), but <b>the magnitude lives in the current inflation era</b> — and the sample cannot separate "a permanent premium amplified by macro uncertainty" from "a temporary regime that will fade". Honesty demands the alarm be built before going live, not after.</div>
+      <div class="step s2"><span class="lvchip lv2">L2</span><b>The proposed operating rule (to be pinned before launch)</b> (a) A <b>rolling mean over the last 24 CPI events</b> of the trade's P&amp;L: if it drops below zero ⇐ <b>immediate stand-down</b> (24 events = two years of CPI — the same horizon as the power model's window). (b) <b>Re-run the claims ledger annually</b> (<code>optimize/verify/run.py</code>): any drift between published numbers and their files lights up automatically. (c) Review the rule itself at the first alarm — halting is one decision, restarting is another.</div>
+      <div class="step s3"><span class="lvchip lv3">L3</span><b>The risk numbers to decide against</b> (1) <b>n = 116</b> CPI events carry the trade's economics — a two-year CPI regime change flips it. (2) The monitor's own rolling window <b>lags up to two years</b> behind a fast-dying regime (the same lesson M2 taught). (3) Fills inside the release second are assumed at line-or-open on 1-second bars; the stressed scenario carries 4 ticks and the worst <b>measured</b> slippage is 2.1× the stop — anything beyond that needs live tick data we do not have (a declared blind spot in the claims). (4) The distribution's nature: <b>most weeks lose small, and three or four CPI seconds make the year</b> — without this understanding, live performance will feel like a betrayal of the backtest while matching it exactly.</div>
+    </div>
+  </div>
+</div>
+
+<h3>Open items at programme close</h3>
+<div class="tblwrap"><table>
+<tr><th>Item</th><th>Class</th></tr>
+<tr><td>The two decisions above</td><td class="wr">Owner decisions — they gate deployment</td></tr>
+<tr><td>The manual C4 earnings check (#110) + 15/19 unmeasured timestamp offsets</td><td>Waiting on the owner / dormant</td></tr>
+<tr><td>YM's aggregated frames are 0 bytes (the source file is fine)</td><td>Data-engineering fix — backlog</td></tr>
+<tr><td>The straddle's not-excluded +$50 (needs 4× the events) · sweep-second slippage beyond bars (needs tick data)</td><td>Optional — not required by the goal</td></tr>
+<tr><td>A `forecast` consensus archive · API/EIA provenance</td><td class="no">Permanently impossible — standing caveats</td></tr>
+</table></div>
+
+<footer>
+  Full source: <b>docs/NEWS-PROGRAMME-FULL-RECORD.md</b> and the nineteen stage reports · Evidence: the committed <b>p1_/p2_/p3_/phase2_*</b> files · Verification: <b>optimize/verify/run.py</b> (the rule: if it is not <span class="num">27/27</span>, the ledger is right and this report is stale) · Produced locally on <span class="num">2026-08-16</span> — a self-contained file that works offline. Arabic original: <b>NEWS-PROGRAMME-VISUAL-REPORT-AR.html</b> · Bilingual glossary: <b>NEWS-PROGRAMME-GLOSSARY-BILINGUAL.html</b>.
+</footer>
+</div>
+</details>
+
+</div>
+</body>
+</html>

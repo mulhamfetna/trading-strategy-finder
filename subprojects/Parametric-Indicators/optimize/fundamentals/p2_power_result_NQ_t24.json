@@ -1,0 +1,47 @@
+{
+ "instrument": "NQ",
+ "n_events": 574,
+ "n_scored": 534,
+ "n_excluded_lt_min_prior": 40,
+ "min_prior": 8,
+ "primary": {
+  "spearman": 0.5906871745332499,
+  "ci": [
+   0.5325257339980564,
+   0.6432966522473549
+  ],
+  "p": 1.5638432349123065e-51,
+  "pass": true,
+  "resolution_variant": 0.4518720442750888
+ },
+ "v1_quintiles": {
+  "bucket_means": [
+   0.041083105182348006,
+   0.10980564471062525,
+   0.1294996007283499,
+   0.24574900991572918,
+   0.4750448446860379
+  ],
+  "spearman": 0.9999999999999999,
+  "pass": true
+ },
+ "v2_rank_top2": [
+  "Non Farm Payrolls",
+  "Fed Interest Rate Decision"
+ ],
+ "v2_pass": false,
+ "v3_shuffle": {
+  "median": 0.20389150518344723,
+  "p95": 0.23489385713519223,
+  "pass": true
+ },
+ "control": {
+  "spearman": 0.10266694221169986,
+  "pass": true
+ },
+ "secondary_fp": {
+  "spearman": 0.007050499192391853,
+  "p": 0.8759139668121757,
+  "n": 493
+ }
+}

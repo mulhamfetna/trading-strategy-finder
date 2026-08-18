@@ -1,0 +1,47 @@
+{
+ "instrument": "CL",
+ "n_events": 1405,
+ "n_scored": 1349,
+ "n_excluded_lt_min_prior": 56,
+ "min_prior": 8,
+ "primary": {
+  "spearman": 0.5460970454892478,
+  "ci": [
+   0.5075166365915218,
+   0.5824921598631259
+  ],
+  "p": 1.0344030599230277e-105,
+  "pass": true,
+  "resolution_variant": 0.38802068764197345
+ },
+ "v1_quintiles": {
+  "bucket_means": [
+   0.06843784449216889,
+   0.1116124979430575,
+   0.19027705888660026,
+   0.2716205504767888,
+   0.4323335465019283
+  ],
+  "spearman": 0.9999999999999999,
+  "pass": true
+ },
+ "v2_rank_top2": [
+  "EIA Crude Oil Stocks Change",
+  "Non Farm Payrolls"
+ ],
+ "v2_pass": false,
+ "v3_shuffle": {
+  "median": 0.10648578702328705,
+  "p95": 0.13069771199898203,
+  "pass": true
+ },
+ "control": {
+  "spearman": 0.1454799301979256,
+  "pass": true
+ },
+ "secondary_fp": {
+  "spearman": -0.026915144171744926,
+  "p": 0.3337003006791426,
+  "n": 1292
+ }
+}
