@@ -197,3 +197,26 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !docs/NEWS-PROGRAMME-VISUAL-REPORT-AR.html
 !docs/NEWS-PROGRAMME-VISUAL-REPORT-EN.html
 !docs/NEWS-PROGRAMME-GLOSSARY-BILINGUAL.html
+# NO TRAILING SLASH — a slashed pattern matches DIRECTORIES ONLY, so it silently fails on the case it
+# most needs to catch: a data root that is a SYMLINK. Exactly the trap already recorded further up
+# this file for subprojects/Parametric-Indicators/data ("on the server this path is a SYMLINK"), and
+# it recurred verbatim when the legacy18 worktree symlinked these three back to the main checkout —
+# `/data/` ignored the real directory in the parent and missed the symlink in the worktree.
+# These are price-data roots. They must never be committed whether they are directories or links.
+/data
+/ALL_STOCKS
+/Full_Canldes_Data
+
+# WS-DEPLOY (#128): the release schedule IS the executor's input contract — under the blanket
+# *.csv rule it would exist on one machine only (the phase2_pairs.csv lesson, again).
+!src/deploy/data/release_schedule.csv
+# The bundle's schedule is part of the SHAREABLE playbook — the phase2_pairs.csv lesson again.
+!playbooks/news-release-long/schedule_2024plus.csv
+!docs/SCALE-CONTEXT-REPORT-BILINGUAL.html
+!docs/STRESSED-COSTS-REPORT-BILINGUAL.html
+!deploy_out_d3/*.csv
+!deploy_out_d3/*.json
+!deploy_out_d4/*.csv
+!deploy_out_d4/*.json
+!playbooks/news-release-long/evidence/*
+!playbooks/news-release-long-bundle-v1.1.0.zip
