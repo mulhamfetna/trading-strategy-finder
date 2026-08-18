@@ -47,8 +47,8 @@ EXIT_S = 900
 STOP_PCT = 0.10
 TP_PCT = 0.40
 ENTRY_TOL_S = 60                 # the entry bar must sit within 60 s of (release − LEAD_S)
-PV = {"NQ": 20.0, "RTY": 50.0, "ES": 50.0}
-TICK_USD = {"NQ": 5.0, "RTY": 5.0, "ES": 12.5}   # ES added by WS-ESCPI (#139); same cost formula
+PV = {"NQ": 20.0, "RTY": 50.0, "ES": 50.0, "YM": 5.0}
+TICK_USD = {"NQ": 5.0, "RTY": 5.0, "ES": 12.5, "YM": 5.0}   # ES #139 · YM #147 (candidate); same cost formula
 COST_PER_LEG = {k: {"optimistic": 2.50 + 1 * t, "realistic": 2.50 + 2 * t,
                     "stressed": 2.50 + 4 * t} for k, t in TICK_USD.items()}
 
