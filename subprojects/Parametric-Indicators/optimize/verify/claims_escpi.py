@@ -263,3 +263,53 @@ register(Claim(
     checks=[Check("V1", "census re-derives: 661 cells, one positive, it is YM CPI", _grid_v1),
             Check("V2", "the known-true Retail anti-premium replicates wherever tape reacts", _grid_v2),
             Check("V3", "the nulls are not thin-tape blindness (YM positive; jump gates pass)", _grid_v3)]))
+
+
+# =============================================================================================
+# YM walk-through (#147, owner-ordered 2026-08-18) — executor parity for the YM CPI candidate
+# =============================================================================================
+def _ymx_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION: the executor replay (--instrument YM --series CPI) reproduces the
+    grid/descriptive numbers exactly: full era n=116 net +$107.64."""
+    r = _ev("wsescpi_replay_YM.csv")
+    ok = len(r) == 116 and abs(r.net_stressed_usd.mean() - 107.64) < 0.01
+    return ok, f"executor n={len(r)} net ${r.net_stressed_usd.mean():+.2f}"
+
+
+def _ymx_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT ARTEFACT: the floor-2024 replay matches the descriptive file's
+    2024→2026 slice (+$355.72/event, n=29) computed by a different code path on a different day."""
+    r = _ev("wsescpi_replay_YM_2024.csv")
+    e = _ev("wsescpi_events_YM_descriptive.csv")
+    w = e[pd.to_datetime(e.et).dt.year >= 2024]
+    ok = len(r) == 29 and abs(r.net_stressed_usd.mean() - (w.pnl_usd - COST_YM).mean()) < 0.01
+    return ok, f"executor 2024+ net ${r.net_stressed_usd.mean():+.2f} vs slice ${(w.pnl_usd-COST_YM).mean():+.2f}"
+
+
+def _ymx_v3() -> tuple[bool, str]:
+    """V3 — FALSIFIER: 'YM blesses everything'. FALSE: in the grid file, YM NFP is a
+    POWERED-NULL (+$45 net, p=0.12) and YM FOMC a POWERED-NULL (−$8) — only CPI is positive."""
+    g = pd.read_csv(FUND / "news4_scan_blocks_YM_grid.csv").set_index("anchor")
+    nfp = g.loc["GRID Non Farm Payrolls"]
+    fomc = g.loc["GRID Fed Interest Rate Decision"]
+    ok = nfp.verdict == "POWERED-NULL" and fomc.verdict == "POWERED-NULL"
+    return ok, f"YM NFP {nfp.verdict} ({nfp.net_stressed_mean:+.2f}); FOMC {fomc.verdict} ({fomc.net_stressed_mean:+.2f})"
+
+
+register(Claim(
+    id="ESCPI-YM-EXECUTOR-PARITY",
+    issue="#147",
+    statement="The YM CPI candidate walked through the core test: the executor "
+              "(--instrument YM --series 'Inflation Rate MoM') reproduces the grid/descriptive "
+              "record exactly — full era n=116 net +$107.64/event, 2024→2026 n=29 net "
+              "+$355.72/event — two implementations, one number. Candidate remains UNDEPLOYED "
+              "(thin-tape execution study RQ-7 + the owner's word).",
+    source="optimize/fundamentals/wsescpi_replay_YM.csv",
+    value_fn=lambda: round(float(_ev("wsescpi_replay_YM.csv").net_stressed_usd.mean()), 2),
+    expect=107.64, tol=0.01,
+    blind_spot="Parity binds implementations to each other, not to executable reality: at a "
+               "median 101 traded pre-release seconds, the close-of-entry-bar fill may be "
+               "stale in ways no replay can see — exactly RQ-7's question.",
+    checks=[Check("V1", "executor full-era reproduces +$107.64 on n=116", _ymx_v1),
+            Check("V2", "floor-2024 replay matches the descriptive slice", _ymx_v2),
+            Check("V3", "YM does not bless everything (NFP/FOMC are nulls)", _ymx_v3)]))

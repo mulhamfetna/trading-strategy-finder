@@ -177,3 +177,42 @@ project); two implementations agree to the cent; all three ship-gate stages clos
 I2 the gate over-application to ES; I4 the wrong dashboard reference; and the registered
 150s/70% line itself — an a-priori calibration that voided a thin-but-real tape, the price of
 which is that YM's agreeing evidence stays descriptive.
+
+---
+
+# ADDENDUM — the ship (owner instruction 2026-08-18) and the YM walk-through
+
+## 16 · The decision
+The owner, verbatim: *"ship es cpi to production via the same previous pipeline 1. extract the
+playbook 2. merge to dev, dev to main, cut a release, then jump back into legacy18"* — the
+explicit descriptive-grade acceptance the pre-registered rule required. Recorded on #139.
+
+## 17 · Experiment E11 — playbook extraction (bundle v1.2.0)
+`champion.json` → v1.2.0: ES added to `spec.instruments` with a `series: ["Inflation Rate
+MoM"]` key (ES rides CPI only), costs (opt/real/stressed $15.00/$27.50/$52.50), and
+`performance_2024_2026.ES` (n=29, gross +$581.94, net +$529.44, **win 62.1%, median +$775** —
+a different shape from NQ's tail-driven 42%/median-loses profile: ES CPI wins most events).
+`portable_backtester.py` filters the schedule by the instrument's series list.
+**`--verify` on ES: PASS to the cent** (n=29 / 581.94 / 16,876.32). PLAYBOOK §8 → DEPLOYED.
+
+## 18 · Experiments E12-E14 — the YM walk-through (owner-ordered, #147)
+- **E12 core test**: executor learns YM (PV $5, tick $5 ⇒ $22.50). Replay `--series CPI`:
+  full era **n=116, net +$107.64** and floor-2024 **n=29, net +$355.72** — both equal the
+  grid/descriptive record to the cent (two implementations, one number). Isolation 18/18.
+  Ledger claim `ESCPI-YM-EXECUTOR-PARITY` (suite **38/38**), with the falsifier that YM does
+  NOT bless everything (its NFP/FOMC blocks are POWERED-NULLs in the grid file).
+- **E13 engine gate**: golden 6/6 ALL MATCH re-run after the YM executor change.
+- **E14 dashboard stage**: :8250 restarted from the final commit; server-side Playwright
+  capture vs production :8200 — **PASS, identical verified 1h book**, screenshots refreshed in
+  `evidence/escpi/`.
+- **YM verdict**: VERIFIED CANDIDATE, **not deployed** — held by the thin-tape execution
+  question (RQ-7: median 101 traded pre-release seconds ⇒ replay fills may be stale in ways no
+  backtest can see) and by the owner's word. `champion.json.ym_cpi_candidate` records it.
+
+## 19 · Is YM CPI "really profitable"? — the plain answer
+Statistically, at one contract, at these replayed fills: **yes** — +$107.64/event net full-era
+(p=0.0016; the only positive of 661 grid cells), +$355.72/event in 2024→2026 (≈ $4.1k/yr
+pace recently, ≈ $1.2k/yr full-era). Three honest qualifiers: (a) small dollars — YM's $5
+point value makes it the smallest of the four index legs; (b) same consumed-history evidence
+grade as ES (the owner's acceptance covers the grade); (c) the thin premarket tape is a real
+execution risk the replay cannot price — RQ-7 must run before deployment.
