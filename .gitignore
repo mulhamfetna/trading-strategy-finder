@@ -240,3 +240,4 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 # WS-ESCPI (#139): study evidence + the two-implementation replay files the ledger reads
 !subprojects/Parametric-Indicators/optimize/fundamentals/wsescpi_*.csv
 !subprojects/Parametric-Indicators/optimize/fundamentals/wsescpi_*.json
+!docs/WS-ESCPI-REPORT-BILINGUAL.html

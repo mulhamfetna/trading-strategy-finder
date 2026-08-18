@@ -230,5 +230,55 @@
       "RTY_per_event": -28.3,
       "RTY_note": "IMPROVES +24% (16 pre-release whipsaws avoided)"
     }
+  },
+  "escpi_candidate": {
+    "status": "CANDIDATE \u2014 NOT DEPLOYED; ship gated on the owner's #139 decision (YM holdout VOID-DATA)",
+    "instrument": "ES",
+    "series": [
+      "Inflation Rate MoM"
+    ],
+    "spec": "identical frozen ride; point_value 50, tick_usd 12.5, cost_stressed_per_event 52.50",
+    "evidence": {
+      "full_era": {
+        "n": 116,
+        "gross_mean_per_event": 203.87,
+        "net_stressed_per_event": 151.37,
+        "p_two_sided": 0.0027,
+        "alpha_preregistered": 0.01,
+        "jump_ratio_vs_quiet": 20.5
+      },
+      "window_2024_2026": {
+        "n": 29,
+        "gross_mean_per_event": 581.94,
+        "net_stressed_per_event": 529.44,
+        "total_net_stressed": 15353.82
+      },
+      "ym_holdout": {
+        "verdict": "VOID-DATA (median 101 traded pre-release seconds vs the registered 150 line)",
+        "descriptive_under_void_label": {
+          "n": 116,
+          "net_stressed_per_event": 107.64,
+          "t": 3.15
+        }
+      },
+      "integration_qty1_2024_2026": {
+        "layer_nq_rty_net": 42097.32,
+        "es_added_net": 15353.82,
+        "added_pct": 36.5,
+        "es_nq_same_event_corr": 0.78,
+        "all_three_legs_lose_share": 0.24,
+        "worst_joint_cpi_event": {
+          "et": "2025-09-11 08:30:00",
+          "net": -1023.29
+        }
+      },
+      "ship_gate": {
+        "research_ledger": "36/36",
+        "engine": "golden 6/6 MATCH; isolation 18/18; NQ/RTY byte-identical",
+        "dashboard": "branch :8250 == production :8200 on the verified 1h book (+$78,823 / 129 entries), screenshots in evidence/escpi/"
+      }
+    },
+    "executor_usage": "python3 -m src.deploy.release_executor replay --instrument ES --series 'Inflation Rate MoM' --bars-1s <ES_1s.csv>",
+    "risk_notes": "SCALES the CPI bet, does not diversify it; regime monitor must guard ES like the rest; margin at 3 simultaneous legs owner-side"
   }
 }
