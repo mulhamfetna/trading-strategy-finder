@@ -1,0 +1,144 @@
+scan RTY: bars end 2026-08-07 16:59:55; spec lead 300s S0.10% TP0.40% exit +900s; stressed cost $22.5/event; pre-reg a988f17
+blocks: 10 T1 + 79 T2; moments total 11,799
+control clocks: {'06:00': 400, '07:00': 400, '07:30': 400, '08:00': 400, '08:15': 400, '08:30': 400, '08:55': 400, '09:00': 400, '09:15': 400, '09:30': 400, '09:45': 400, '10:00': 400, '10:30': 400, '11:00': 400, '11:30': 400, '12:00': 400, '12:45': 400, '13:00': 400, '13:15': 400, '13:30': 400, '14:00': 400, '14:30': 400, '15:00': 400, '16:00': 400, '16:30': 400, '19:00': 400}
+1s bars loaded: 11,916,133
+  control 06:00: rides 318 · jump n 315
+  control 07:00: rides 316 · jump n 327
+  control 07:30: rides 324 · jump n 325
+  control 08:00: rides 317 · jump n 321
+  control 08:15: rides 321 · jump n 326
+  control 08:30: rides 317 · jump n 320
+  control 08:55: rides 319 · jump n 320
+  control 09:00: rides 322 · jump n 322
+  control 09:15: rides 331 · jump n 328
+  control 09:30: rides 334 · jump n 333
+  control 09:45: rides 327 · jump n 326
+  control 10:00: rides 326 · jump n 326
+  control 10:30: rides 306 · jump n 307
+  control 11:00: rides 328 · jump n 328
+  control 11:30: rides 308 · jump n 308
+  control 12:00: rides 306 · jump n 306
+  control 12:45: rides 313 · jump n 316
+  control 13:00: rides 310 · jump n 294
+  control 13:15: rides 292 · jump n 287
+  control 13:30: rides 274 · jump n 276
+  control 14:00: rides 306 · jump n 306
+  control 14:30: rides 318 · jump n 318
+  control 15:00: rides 318 · jump n 317
+  control 16:00: rides 307 · jump n 307
+  control 16:30: rides 161 · jump n 300
+  control 19:00: rides 220 · jump n 228
+  [1] Initial Jobless Claims                 n= 367 net $  -29.11 p=2.1e-05 jump 2.00 -> SIGNIFICANT-NEGATIVE (p=2.1e-05)
+  [1] PPI MoM                                n=  92 net $   +4.28 p=0.83 jump 4.33 -> POWERED-NULL
+  [1] Core PCE Price Index MoM               n=  93 net $   -0.16 p=0.993 jump 2.33 -> POWERED-NULL
+  [1] GDP Growth Rate QoQ Adv                n=  27 net $  -35.53 p=0.254 jump 2.67 -> POWERED-NULL
+  [1] ISM Manufacturing PMI                  n= 109 net $  -20.23 p=0.29 jump 2.44 -> POWERED-NULL
+  [1] ISM Services PMI                       n= 109 net $   -5.71 p=0.763 jump 2.22 -> POWERED-NULL
+  [1] JOLTs Job Openings                     n= 109 net $  -28.70 p=0.0868 jump 1.67 -> POWERED-NULL
+  [1] Michigan Consumer Sentiment Prel       n= 109 net $  -14.82 p=0.412 jump 1.56 -> POWERED-NULL
+  [1] ADP Employment Change                  n= 105 net $  -24.95 p=0.0392 jump 3.75 -> POWERED-NULL
+  [1] FOMC Minutes                           n=  71 net $  -15.44 p=0.396 jump 1.80 -> POWERED-NULL
+  [2] 10-Year Note Auction                   n=  92 net $  -24.14 p=0.0751 jump 1.37 -> POWERED-NULL
+  [2] 10-Year TIPS Auction                   n=  49 net $   +7.12 p=0.763 jump 1.50 -> POWERED-NULL
+  [2] 15-Year Mortgage Rate                  n= 149 net $   -9.57 p=0.452 jump 2.00 -> POWERED-NULL
+  [2] 17-Week Bill Auction                   n= 193 net $  -26.00 p=0.0178 jump 1.60 -> SIGNIFICANT-NEGATIVE (p=0.018)
+  [2] 2-Year Note Auction                    n=  75 net $  -35.58 p=0.00215 jump 1.25 -> SIGNIFICANT-NEGATIVE (p=0.0022)
+  [2] 20-Year Bond Auction                   n=  71 net $  -39.77 p=0.00823 jump 1.50 -> SIGNIFICANT-NEGATIVE (p=0.0082)
+  [2] 3-Month Bill Auction                   n= 232 net $  -28.02 p=0.00256 jump 1.20 -> VOID-TIMESTAMP
+  [2] 3-Year Note Auction                    n=  91 net $  -27.88 p=0.0578 jump 1.25 -> POWERED-NULL
+  [2] 30-Year Bond Auction                   n= 105 net $   -8.07 p=0.594 jump 1.25 -> POWERED-NULL
+  [2] 4-Week Bill Auction                    n= 465 net $  -31.62 p=1.69e-06 jump 1.20 -> SIGNIFICANT-NEGATIVE (p=1.7e-06)
+  [2] 42-Day Bill Auction                    n=  84 net $  -45.05 p=0.00832 jump 1.40 -> SIGNIFICANT-NEGATIVE (p=0.0083)
+  [2] 5-Year Note Auction                    n=  81 net $  -39.51 p=0.00789 jump 1.00 -> VOID-TIMESTAMP
+  [2] 52-Week Bill Auction                   n= 102 net $  -26.46 p=0.0697 jump 1.20 -> POWERED-NULL
+  [2] 6-Month Bill Auction                   n= 278 net $  -40.07 p=1.26e-07 jump 1.40 -> SIGNIFICANT-NEGATIVE (p=1.3e-07)
+  [2] 7-Year Note Auction                    n= 103 net $  -33.31 p=0.00431 jump 1.25 -> SIGNIFICANT-NEGATIVE (p=0.0043)
+  [2] Baker Hughes Oil Rig Count             n= 473 net $  -20.77 p=0.000436 jump 1.50 -> SIGNIFICANT-NEGATIVE (p=0.00044)
+  [2] Building Permits                       n= 106 net $  -33.35 p=0.000426 jump 1.00 -> VOID-TIMESTAMP
+  [2] CB Leading Index MoM                   n=  64 net $   +1.85 p=0.937 jump 1.11 -> VOID-TIMESTAMP
+  [2] Challenger Job Cuts                    n= 105 net $  -10.33 p=0.333 jump 1.50 -> POWERED-NULL
+  [2] Chicago Fed National Activity Index    n=  78 net $  -46.62 p=1.22e-06 jump 1.00 -> VOID-TIMESTAMP
+  [2] Chicago PMI                            n= 109 net $  -38.80 p=0.018 jump 1.44 -> SIGNIFICANT-NEGATIVE (p=0.018)
+  [2] Consumer Credit Change                 n= 107 net $   -1.48 p=0.919 jump 1.17 -> VOID-TIMESTAMP
+  [2] Consumer Inflation Expectations        n= 107 net $  -41.79 p=0.00162 jump 1.00 -> VOID-TIMESTAMP
+  [2] Dallas Fed Manufacturing Index         n= 107 net $  -34.25 p=0.0302 jump 1.14 -> VOID-TIMESTAMP
+  [2] Dallas Fed Services Revenues Index     n=  57 net $  -66.30 p=0.00068 jump 1.71 -> SIGNIFICANT-NEGATIVE (p=0.00068)
+  [2] EIA Natural Gas Stocks Change          n= 473 net $  -12.56 p=0.109 jump 1.29 -> POWERED-NULL
+  [2] Existing Home Sales                    n=  87 net $   +7.52 p=0.702 jump 1.11 -> VOID-TIMESTAMP
+  [2] Factory Orders MoM                     n=  51 net $  -40.36 p=0.0815 jump 1.11 -> VOID-TIMESTAMP
+  [2] Fed Balance Sheet                      n= 107 net $  -27.43 p=0.000695 jump 0.67 -> VOID-TIMESTAMP
+  [2] Fed Barkin Speech                      n=  91 net $  -37.27 p=0.00565 jump 1.67 -> SIGNIFICANT-NEGATIVE (p=0.0056)
+  [2] Fed Barr Speech                        n=  64 net $  -35.87 p=0.0399 jump 1.50 -> SIGNIFICANT-NEGATIVE (p=0.04)
+  [2] Fed Beige Book                         n=  63 net $   +6.69 p=0.718 jump 0.80 -> VOID-TIMESTAMP
+  [2] Fed Bostic Speech                      n= 230 net $  -28.59 p=0.00125 jump 1.50 -> SIGNIFICANT-NEGATIVE (p=0.0012)
+  [2] Fed Bowman Speech                      n=  96 net $  -32.15 p=0.0175 jump 1.00 -> VOID-TIMESTAMP
+  [2] Fed Brainard Speech                    n=  50 net $  -28.74 p=0.18 jump 1.20 -> VOID-TIMESTAMP
+  [2] Fed Bullard Speech                     n=  74 net $   +0.71 p=0.968 jump 0.28 -> VOID-TIMESTAMP
+  [2] Fed Chair Powell Speech                n=  90 net $   -7.08 p=0.67 jump 2.83 -> POWERED-NULL
+  [2] Fed Cook Speech                        n=  40 net $  -19.41 p=0.396 jump 1.50 -> POWERED-NULL
+  [2] Fed Daly Speech                        n=  78 net $   +8.82 p=0.615 jump 0.80 -> VOID-TIMESTAMP
+  [2] Fed Dudley Speech                      n=  18 net $  -47.27 p=0.00101 jump 1.00 -> VOID-TIMESTAMP
+  [2] Fed Evans Speech                       n=  98 net $  -27.42 p=0.0156 jump 1.00 -> VOID-TIMESTAMP
+  [2] Fed Goolsbee Speech                    n=  41 net $  -57.14 p=0.00165 jump 1.25 -> SIGNIFICANT-NEGATIVE (p=0.0016)
+  [2] Fed Harker Speech                      n=  78 net $   -3.82 p=0.795 jump 1.67 -> POWERED-NULL
+  [2] Fed Kaplan Speech                      n=  64 net $  -47.18 p=0.000186 jump 1.25 -> SIGNIFICANT-NEGATIVE (p=0.00019)
+  [2] Fed Kashkari Speech                    n= 105 net $  -23.09 p=0.0567 jump 1.25 -> POWERED-NULL
+  [2] Fed Logan Speech                       n=  43 net $  -22.69 p=0.307 jump 1.37 -> POWERED-NULL
+  [2] Fed Mester Speech                      n=  88 net $  -27.90 p=0.0165 jump 1.25 -> SIGNIFICANT-NEGATIVE (p=0.016)
+  [2] Fed Press Conference                   n=  63 net $  -43.68 p=0.0422 jump 2.00 -> SIGNIFICANT-NEGATIVE (p=0.042)
+  [2] Fed Quarles Speech                     n=  43 net $  -25.19 p=0.141 jump 1.25 -> POWERED-NULL
+  [2] Fed Rosengren Speech                   n=  19 net $  -12.70 p=0.666 jump 0.50 -> VOID-TIMESTAMP
+  [2] Fed Waller Speech                      n=  80 net $   -8.95 p=0.618 jump 1.17 -> VOID-TIMESTAMP
+  [2] Fed Williams Speech                    n= 217 net $  -29.55 p=0.00105 jump 1.67 -> SIGNIFICANT-NEGATIVE (p=0.001)
+  [2] House Price Index MoM                  n=  49 net $   -8.30 p=0.507 jump 1.00 -> VOID-TIMESTAMP
+  [2] IBD/TIPP Economic Optimism             n=  31 net $  -29.99 p=0.343 jump 1.44 -> POWERED-NULL
+  [2] ISM New York Index                     n=  43 net $  -15.91 p=0.456 jump 1.11 -> VOID-TIMESTAMP
+  [2] Imports                                n=  45 net $  -10.26 p=0.534 jump 1.33 -> POWERED-NULL
+  [2] Kansas Fed Manufacturing Index         n=  99 net $  -25.64 p=0.108 jump 1.17 -> VOID-TIMESTAMP
+  [2] LMI Logistics Managers Index           n=  63 net $  -46.59 p=1.12e-06 jump 1.00 -> VOID-TIMESTAMP
+  [2] MBA 30-Year Mortgage Rate              n= 452 net $  -20.97 p=2.08e-06 jump 1.00 -> VOID-TIMESTAMP
+  [2] Manufacturing Production YoY           n=  96 net $  -28.56 p=0.0197 jump 1.00 -> VOID-TIMESTAMP
+  [2] Michigan Consumer Sentiment Final      n=  78 net $  -14.81 p=0.49 jump 1.39 -> POWERED-NULL
+  [2] Monthly Budget Statement               n=  97 net $  -36.98 p=0.00261 jump 1.00 -> VOID-TIMESTAMP
+  [2] NAHB Housing Market Index              n= 107 net $  -20.66 p=0.219 jump 1.22 -> POWERED-NULL
+  [2] NFIB Business Optimism Index           n= 102 net $  -43.82 p=1.59e-08 jump 1.00 -> VOID-TIMESTAMP
+  [2] NY Empire State Manufacturing Index    n=  54 net $  -31.51 p=0.0378 jump 1.67 -> SIGNIFICANT-NEGATIVE (p=0.038)
+  [2] New Home Sales MoM                     n=  76 net $  -32.44 p=0.0987 jump 1.56 -> POWERED-NULL
+  [2] Overall Net Capital Flows              n= 106 net $  -12.07 p=0.293 jump 0.78 -> VOID-TIMESTAMP
+  [2] Pending Home Sales MoM                 n= 100 net $  -34.91 p=0.0361 jump 1.22 -> SIGNIFICANT-NEGATIVE (p=0.036)
+  [2] Redbook YoY                            n= 472 net $  -27.61 p=2.7e-08 jump 1.00 -> VOID-TIMESTAMP
+  [2] Richmond Fed Manufacturing Index       n= 107 net $   -9.90 p=0.581 jump 1.22 -> POWERED-NULL
+  [2] S&P Global Composite PMI Flash         n= 108 net $  -23.23 p=0.202 jump 1.33 -> POWERED-NULL
+  [2] S&P Global Manufacturing PMI Final     n= 109 net $   -8.80 p=0.645 jump 1.44 -> POWERED-NULL
+  [2] S&P Global Services PMI Final          n= 107 net $  -48.63 p=0.0022 jump 1.22 -> SIGNIFICANT-NEGATIVE (p=0.0022)
+  [2] S&P/Case-Shiller Home Price MoM        n=  57 net $  -24.82 p=0.107 jump 1.67 -> POWERED-NULL
+  [2] Total Vehicle Sales                    n=  88 net $  -19.66 p=0.0774 jump 2.50 -> POWERED-NULL
+  [2] Used Car Prices YoY                    n=  41 net $  -42.20 p=0.0363 jump 1.67 -> SIGNIFICANT-NEGATIVE (p=0.036)
+  [2] WASDE Report                           n=  92 net $  -29.65 p=0.0492 jump 1.50 -> SIGNIFICANT-NEGATIVE (p=0.049)
+  [2] Wholesale Inventories MoM              n=  85 net $  +20.85 p=0.337 jump 1.56 -> POWERED-NULL
+  [2] Wholesale Inventories MoM Adv          n=  44 net $  -66.32 p=1.85e-06 jump 1.00 -> VOID-TIMESTAMP
+{
+  "POWERED-NULL": 34,
+  "VOID-TIMESTAMP": 31,
+  "SIGNIFICANT-NEGATIVE (p=0.018)": 2,
+  "SIGNIFICANT-NEGATIVE (p=0.0022)": 2,
+  "SIGNIFICANT-NEGATIVE (p=0.036)": 2,
+  "SIGNIFICANT-NEGATIVE (p=2.1e-05)": 1,
+  "SIGNIFICANT-NEGATIVE (p=0.0082)": 1,
+  "SIGNIFICANT-NEGATIVE (p=1.7e-06)": 1,
+  "SIGNIFICANT-NEGATIVE (p=0.0083)": 1,
+  "SIGNIFICANT-NEGATIVE (p=1.3e-07)": 1,
+  "SIGNIFICANT-NEGATIVE (p=0.0043)": 1,
+  "SIGNIFICANT-NEGATIVE (p=0.00044)": 1,
+  "SIGNIFICANT-NEGATIVE (p=0.00068)": 1,
+  "SIGNIFICANT-NEGATIVE (p=0.0056)": 1,
+  "SIGNIFICANT-NEGATIVE (p=0.04)": 1,
+  "SIGNIFICANT-NEGATIVE (p=0.0012)": 1,
+  "SIGNIFICANT-NEGATIVE (p=0.0016)": 1,
+  "SIGNIFICANT-NEGATIVE (p=0.00019)": 1,
+  "SIGNIFICANT-NEGATIVE (p=0.016)": 1,
+  "SIGNIFICANT-NEGATIVE (p=0.042)": 1,
+  "SIGNIFICANT-NEGATIVE (p=0.001)": 1,
+  "SIGNIFICANT-NEGATIVE (p=0.038)": 1,
+  "SIGNIFICANT-NEGATIVE (p=0.049)": 1
+}

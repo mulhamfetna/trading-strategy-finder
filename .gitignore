@@ -226,3 +226,9 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !subprojects/Parametric-Indicators/optimize/fundamentals/news4_coverage_matrix.csv
 !subprojects/Parametric-Indicators/optimize/fundamentals/news4_n2_candidates.csv
 !subprojects/Parametric-Indicators/optimize/fundamentals/news4_n2_moments.csv
+# WS-NEWS4 N2 (#136): scan evidence — blocks/events/manifests/logs are the committed record the
+# claims ledger reads (claims_news4.py); behind blanket *.csv/*.log they'd exist on one machine only.
+!subprojects/Parametric-Indicators/optimize/fundamentals/news4_scan_blocks_*.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/news4_scan_events_*.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/news4_scan_result_*.json
+!subprojects/Parametric-Indicators/optimize/fundamentals/news4_scan_*.log

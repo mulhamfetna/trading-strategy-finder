@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import claims_news2  # noqa: F401,E402  — importing registers the claims
 import claims_news3  # noqa: F401,E402  — WS-NEWS3 (#124): P1 ride-through claims
+import claims_news4  # noqa: F401,E402  — WS-NEWS4 (#136): wide-series premium scan claims
 from harness import run_all, registry  # noqa: E402
 
 
