@@ -21,7 +21,11 @@ from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
-GOLDEN_1H = {"pl": "110,038", "n": 353}
+# The DASHBOARD's verified 1h NQ book (established in the WS-DEPLOY #130 browser verification:
+# 129 L1 entries, +$78,823). NOT the engine-golden $110,038/n=353 — that is a different
+# measurement (optimizer champion, full window, --ind-1min); the engine side is covered by
+# perf/check_golden.py, which this stage runs alongside, not instead of.
+GOLDEN_1H = {"pl": "78,823", "n": 129}
 
 
 def run_one(pw, base: str, tag: str, out: Path) -> dict:
@@ -73,8 +77,10 @@ def main() -> int:
     print(json.dumps({"branch": rb, "prod": rp}, indent=1))
     ok = True
     for r in (rb, rp):
-        if GOLDEN_1H["pl"] not in r["cards_head"]:
-            print(f"⚠️ {r['tag']}: golden 1h P/L {GOLDEN_1H['pl']} NOT visible in cards")
+        if GOLDEN_1H["pl"] not in r["cards_head"] or f"{GOLDEN_1H['n']} | L1 ENTRIES" \
+                not in r["cards_head"].replace("\n", " | "):
+            print(f"⚠️ {r['tag']}: verified 1h book ({GOLDEN_1H['pl']} / "
+                  f"{GOLDEN_1H['n']} entries) NOT visible in cards")
             ok = False
     if rb["cards_head"] != rp["cards_head"]:
         print("⚠️ branch and production card text DIFFER")
