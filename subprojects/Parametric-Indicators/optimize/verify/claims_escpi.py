@@ -192,3 +192,74 @@ register(Claim(
     checks=[Check("V1", "totals re-derive from the three replay files", _int_v1),
             Check("V2", "NQ/RTY means match the WS-DEPLOY playbook (independent artefact)", _int_v2),
             Check("V3", "'it diversifies' is FALSE — correlation and joint-loss measured", _int_v3)]))
+
+
+# =============================================================================================
+# WS-GRID (#140) — the literal full-grid closure (pre-reg b629543)
+# =============================================================================================
+def _grid_all() -> pd.DataFrame:
+    import glob
+    frames = []
+    for f in sorted(glob.glob(str(FUND / "news4_scan_blocks_*_grid.csv"))):
+        d = pd.read_csv(f)
+        d["inst"] = Path(f).name.split("_")[3]
+        frames.append(d)
+    return pd.concat(frames)
+
+
+def _grid_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION: cell count and verdict census from the committed per-instrument
+    files: 661 cells, exactly one EXPLORATORY-POSITIVE, and it is YM CPI."""
+    g = _grid_all()
+    pos = g[g.verdict == "EXPLORATORY-POSITIVE"]
+    ok = len(g) == 661 and len(pos) == 1 and pos.iloc[0]["inst"] == "YM" \
+        and "Inflation Rate MoM" in pos.iloc[0]["anchor"] \
+        and abs(pos.iloc[0].net_stressed_mean - 107.64) < 0.01
+    return ok, f"{len(g)} cells, positives={len(pos)} ({pos.iloc[0]['anchor'] if len(pos) else '-'})"
+
+
+def _grid_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT KNOWN-TRUE EFFECT: the sweep must reproduce the Retail anti-premium
+    on every instrument whose tape reacts — gross-negative significant on ES/GC/HG/SI/YM
+    (NQ/RTY were N3's; CL/NG legitimately VOID by the jump gate)."""
+    g = _grid_all()
+    r = g[g.anchor.str.contains("Retail Sales MoM")]
+    sig = r[r.verdict.str.startswith("SIGNIFICANT-NEGATIVE")]
+    ok = set(sig.inst) == {"ES", "GC", "HG", "SI", "YM"} and (sig.gross_mean < 0).all() \
+        and set(r[r.verdict == "VOID-TIMESTAMP"].inst) == {"CL", "NG"}
+    return ok, f"Retail gross-negative on {sorted(sig.inst)}; void on {sorted(r[r.verdict=='VOID-TIMESTAMP'].inst)}"
+
+
+def _grid_v3() -> tuple[bool, str]:
+    """V3 — FALSIFIER: 'the sweep voids/nulls everything because thin instruments cannot show
+    a positive'. FALSE twice: the THINNEST tape (YM) is exactly where the positive appears,
+    and the macro blocks' jump gates pass on every instrument that has one (SI CPI 6x,
+    HG CPI 4x, YM CPI 9.8x) — the nulls sit on real, violent minutes."""
+    g = _grid_all()
+    cpi = g[g.anchor.str.contains("Inflation Rate MoM")].set_index("inst")
+    ok = cpi.loc["YM", "verdict"] == "EXPLORATORY-POSITIVE" \
+        and cpi.loc["SI", "jump_ratio"] > 4 and cpi.loc["HG", "jump_ratio"] > 3
+    return ok, (f"YM CPI positive on the thinnest tape; CPI jumps SI {cpi.loc['SI','jump_ratio']:.1f}x "
+                f"HG {cpi.loc['HG','jump_ratio']:.1f}x")
+
+
+register(Claim(
+    id="GRID-CLOSURE-ONE-POSITIVE",
+    issue="#140",
+    statement="The literal full-grid closure (661 remaining cells across all 9 registry "
+              "instruments, pre-registered exploratory sweep) found exactly ONE positive: "
+              "YM CPI (+$107.64 net, p=0.0016, jump 9.8x). Census: 370 VOID-TIMESTAMP, 179 "
+              "significant negatives (41% pure cost drag with gross > −$5; 29% gross-positive), "
+              "106 POWERED-NULL, 5 UNDERPOWERED. The Retail anti-premium replicates gross-"
+              "negative on 7 instruments; the CPI premium is an equity-index phenomenon ordered "
+              "NQ > ES > YM > RTY; NG's own inventory release jumps 8.5x and grosses −$4.89. "
+              "Every series×instrument cell of the premium grid now has a recorded verdict.",
+    source="optimize/fundamentals/news4_scan_blocks_{INST}_grid.csv",
+    value_fn=lambda: int((_grid_all().verdict == "EXPLORATORY-POSITIVE").sum()),
+    expect=1, tol=0,
+    blind_spot="One trade shape; the $150 powered-null line is nominal-dollar (generous in SI "
+               "dollars, tight in NG); exploratory labels only — the YM CPI positive is the "
+               "SAME data as the ESCPI descriptive and confirms nothing beyond it.",
+    checks=[Check("V1", "census re-derives: 661 cells, one positive, it is YM CPI", _grid_v1),
+            Check("V2", "the known-true Retail anti-premium replicates wherever tape reacts", _grid_v2),
+            Check("V3", "the nulls are not thin-tape blindness (YM positive; jump gates pass)", _grid_v3)]))

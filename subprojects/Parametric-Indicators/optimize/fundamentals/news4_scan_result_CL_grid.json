@@ -1,0 +1,43 @@
+{
+  "instrument": "CL",
+  "prereg_commit": "b629543",
+  "seed": 117,
+  "spec": {
+    "lead_s": 300,
+    "exit_s": 900,
+    "stop_pct": 0.1,
+    "tp_pct": 0.4,
+    "cost_stressed": 42.5
+  },
+  "n_blocks": 92,
+  "verdicts": {
+    "VOID-TIMESTAMP": 61,
+    "POWERED-NULL": 6,
+    "SIGNIFICANT-NEGATIVE (p=0.0052)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.00086)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.0068)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.0012)": 1,
+    "SIGNIFICANT-NEGATIVE (p=1.9e-08)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.023)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.0088)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.0082)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.00055)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.00022)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.0038)": 1,
+    "SIGNIFICANT-NEGATIVE (p=5.5e-08)": 1,
+    "SIGNIFICANT-NEGATIVE (p=1.7e-06)": 1,
+    "SIGNIFICANT-NEGATIVE (p=4.3e-08)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.011)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.00026)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.013)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.02)": 1,
+    "SIGNIFICANT-NEGATIVE (p=2.6e-11)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.0022)": 1,
+    "SIGNIFICANT-NEGATIVE (p=1e-14)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.0076)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.00012)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.0019)": 1,
+    "SIGNIFICANT-NEGATIVE (p=3.3e-05)": 1
+  },
+  "data_end": "2026-08-07 16:59:59"
+}
