@@ -143,11 +143,13 @@ def main() -> int:
     idx = bars["Date"].to_numpy()
     op, hi, lo, cl = (bars[c].to_numpy(float) for c in ("Open", "High", "Low", "Close"))
 
-    # data-quality gate (mandatory for YM, reported for ES)
+    # data-quality gate — pre-registered FOR YM specifically (the degenerate-file guard);
+    # for ES it is REPORTED, not gating (the ES arm is a robustness battery on known-good
+    # data: N3 filled 116 events with a 20x jump ratio there).
     cov, n_cov = coverage(idx, cpi)
     print(f"  pre-release coverage: {cov:.1%} of {n_cov} CPI windows have "
           f">={COVERAGE_MIN_SECONDS} traded seconds")
-    if cov < COVERAGE_MIN_FRAC:
+    if inst == "YM" and cov < COVERAGE_MIN_FRAC:
         manifest = {"instrument": inst, "verdict": "VOID-DATA", "coverage": cov,
                     "prereg_commit": "051ff07"}
         (Path(a.out_dir) / f"wsescpi_result_{inst}.json").write_text(json.dumps(manifest, indent=2))
