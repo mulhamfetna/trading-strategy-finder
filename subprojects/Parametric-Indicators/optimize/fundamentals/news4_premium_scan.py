@@ -342,7 +342,13 @@ def main() -> int:
         ctrl_net = (cr.pnl_usd.to_numpy() - cost) if len(cr) else np.array([])
         ctrl_t, ctrl_p = t_test_mean(ctrl_net) if len(ctrl_net) > 2 else (0.0, 1.0)
         ctrl_mean = float(ctrl_net.mean()) if len(ctrl_net) else np.nan
-        floor_ok = bool(len(ctrl_net) and net.mean() > ctrl_mean and ctrl_p >= alpha)
+        # Pre-reg wording: the control must not ITSELF pass the premium test — i.e. must not be
+        # significantly POSITIVE. A significantly NEGATIVE control (cost drag + quiet-morning
+        # drift, e.g. 08:30) is not a premium and must not veto. The first cut of this gate was
+        # two-sided; the POSITIVE CONTROL exposed it (CPI wrongly FAILED-GATES) — fixed to the
+        # registered wording, no thresholds changed.
+        ctrl_is_positive = bool(len(ctrl_net) and ctrl_p < alpha and ctrl_net.mean() > 0)
+        floor_ok = bool(len(ctrl_net) and net.mean() > ctrl_mean and not ctrl_is_positive)
 
         noise_p = np.nan
         if len(ctrl_net) >= 30:
