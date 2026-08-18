@@ -1,0 +1,190 @@
+{
+ "tf": "4h",
+ "prefix": "l2v3",
+ "params": {
+  "sl_soft": 141.5831858031051,
+  "sl_hard": 298.14805905115975,
+  "tp": 200.14451928339756,
+  "gate_pct": 96.3567087188342,
+  "dd_limit": 4907.052328770563,
+  "cooldown": 2,
+  "flip": true,
+  "window": "full",
+  "indicators": [
+   {
+    "key": "ema_trend",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 61,
+     "slow": 137
+    }
+   },
+   {
+    "key": "sma_trend",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {
+     "fast": 95,
+     "slow": 334
+    }
+   },
+   {
+    "key": "macd",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 35,
+     "slow": 141,
+     "signal": 71
+    }
+   },
+   {
+    "key": "vwap",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "keltner",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "n": 44,
+     "m": 4.0
+    }
+   },
+   {
+    "key": "obv",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {
+     "slope": 177
+    }
+   },
+   {
+    "key": "cci",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "n": 128,
+     "threshold": 65
+    }
+   },
+   {
+    "key": "rsi",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 35,
+     "lower": 9,
+     "upper": 59
+    }
+   },
+   {
+    "key": "stochastic",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "n": 66,
+     "d": 34,
+     "lower": 42,
+     "upper": 64
+    }
+   },
+   {
+    "key": "mfi",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 36,
+     "lower": 42,
+     "upper": 60
+    }
+   },
+   {
+    "key": "bollinger",
+    "enabled": false,
+    "mode": "veto",
+    "params": {
+     "n": 33,
+     "k": 1.8
+    }
+   },
+   {
+    "key": "adx",
+    "enabled": false,
+    "mode": "veto",
+    "params": {
+     "n": 23,
+     "threshold": 17
+    }
+   },
+   {
+    "key": "structure_trend",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "swing_l": 13
+    }
+   },
+   {
+    "key": "order_block",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "swing_l": 4
+    }
+   },
+   {
+    "key": "fvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "lookback": 47
+    }
+   },
+   {
+    "key": "ifvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "breaker",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "swing_l": 5
+    }
+   },
+   {
+    "key": "cisd",
+    "enabled": true,
+    "mode": "both",
+    "params": {}
+   }
+  ],
+  "k": 4,
+  "ind_1min": true,
+  "cap_1min": 1239
+ },
+ "in_sample": {
+  "pnl": 78651.24617068679,
+  "max_dd": 5260.0,
+  "n": 33,
+  "win": 75.8,
+  "pf": 5.33,
+  "payoff": 1.71,
+  "n_l1_entry_exits": 13
+ },
+ "oos": {
+  "pnl": -6651.399638351504,
+  "max_dd": 18660.070795355277,
+  "n": 11,
+  "win": 36.4,
+  "pf": 0.71,
+  "payoff": 1.24,
+  "n_l1_entry_exits": 1
+ }
+}

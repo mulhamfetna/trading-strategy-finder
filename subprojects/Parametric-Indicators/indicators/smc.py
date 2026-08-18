@@ -143,12 +143,93 @@ def order_blocks(open_, high, low, close, swing_l: int = 2, signal_at=None):
     n = len(c)
     sh, sl = market_structure(c, swing_l)
     L = int(swing_l)
-    out = np.zeros(n, dtype=np.int8)
     want = None
     if signal_at is not None:
         want = np.zeros(n, dtype=bool)
         idx = np.asarray(signal_at, dtype=np.intp)
         want[idx[(idx >= 0) & (idx < n)]] = True
+    if _HAVE_NUMBA and n:
+        # PERFORMANCE (issue #62): the state machine below is a per-bar Python loop doing numpy work
+        # per bar — 2.77 s over the full 1-minute frame, over the 2 s budget. The kernel is the SAME
+        # machine with the live-zone lists held in pre-sized arrays; every decision is a comparison, so
+        # it is bit-identical. `_order_blocks_py` (and `_reference.order_blocks_ref`) stay as oracles.
+        return _order_blocks_kernel(
+            np.ascontiguousarray(o), np.ascontiguousarray(h), np.ascontiguousarray(l),
+            np.ascontiguousarray(c), np.ascontiguousarray(sh), np.ascontiguousarray(sl), L,
+            want if want is not None else np.zeros(n, dtype=np.bool_), want is not None)
+    return _order_blocks_py(o, h, l, c, sh, sl, L, want)
+
+
+@njit(cache=True, nogil=True)
+def _order_blocks_kernel(o, h, l, c, sh, sl, L, want, use_want):
+    n = c.shape[0]
+    out = np.zeros(n, dtype=np.int8)
+    bull_lo = np.empty(n, dtype=np.float64); bull_hi = np.empty(n, dtype=np.float64)
+    bear_lo = np.empty(n, dtype=np.float64); bear_hi = np.empty(n, dtype=np.float64)
+    n_bull = 0
+    n_bear = 0
+    swh = 0.0; has_swh = False
+    swl = 0.0; has_swl = False
+    last_down = -1
+    last_up = -1
+    prev_above = False
+    prev_below = False
+    for t in range(n):
+        p = t - L
+        if p >= 0:
+            if sh[p]:
+                swh = c[p]; has_swh = True
+            if sl[p]:
+                swl = c[p]; has_swl = True
+        if has_swh:
+            above = c[t] > swh
+            if above and not prev_above and last_down >= 0:
+                a = o[last_down]; b = c[last_down]
+                bull_lo[n_bull] = b if b < a else a
+                bull_hi[n_bull] = b if b > a else a
+                n_bull += 1
+            prev_above = above
+        if has_swl:
+            below = c[t] < swl
+            if below and not prev_below and last_up >= 0:
+                a = o[last_up]; b = c[last_up]
+                bear_lo[n_bear] = b if b < a else a
+                bear_hi[n_bear] = b if b > a else a
+                n_bear += 1
+            prev_below = below
+        if (not use_want) or want[t]:
+            s = 0
+            for k in range(n_bull):
+                if l[t] <= bull_hi[k] and h[t] >= bull_lo[k]:
+                    s = 1
+                    break
+            if s == 0:
+                for k in range(n_bear):
+                    if l[t] <= bear_hi[k] and h[t] >= bear_lo[k]:
+                        s = -1
+                        break
+            out[t] = s
+        w = 0                                   # compact: bull OB dies on a close BELOW it
+        for k in range(n_bull):
+            if bull_lo[k] <= c[t]:
+                bull_lo[w] = bull_lo[k]; bull_hi[w] = bull_hi[k]; w += 1
+        n_bull = w
+        w = 0                                   # bear OB dies on a close ABOVE it
+        for k in range(n_bear):
+            if bear_hi[k] >= c[t]:
+                bear_lo[w] = bear_lo[k]; bear_hi[w] = bear_hi[k]; w += 1
+        n_bear = w
+        if c[t] < o[t]:
+            last_down = t
+        elif c[t] > o[t]:
+            last_up = t
+    return out
+
+
+def _order_blocks_py(o, h, l, c, sh, sl, L, want):
+    """Pure-numpy order-block state machine — the reference path when Numba is absent (issue #62)."""
+    n = len(c)
+    out = np.zeros(n, dtype=np.int8)
     swh = swl = None
     last_down = last_up = None
     # Live zones as numpy arrays (lo, hi) instead of Python lists (task #210, Step C′). Appends (on
@@ -248,11 +329,65 @@ def ifvg(high: np.ndarray, low: np.ndarray, close: np.ndarray, signal_at=None) -
     bear IFVG: close > zhi). Trigger = a CLOSE (locked decision A4). signal_at as in `order_blocks`."""
     h = np.asarray(high, float); l = np.asarray(low, float); c = np.asarray(close, float)
     n = len(c)
-    out = np.zeros(n, np.int8)
     want = None
     if signal_at is not None:
         want = np.zeros(n, bool); idx = np.asarray(signal_at, dtype=np.intp)
         want[idx[(idx >= 0) & (idx < n)]] = True
+    if _HAVE_NUMBA and n:
+        # PERFORMANCE (issue #62): the WORST full-frame indicator after `sinewave` — 5.29 s, from a
+        # per-bar Python loop over two growing lists of zones. The kernel is the SAME state machine with
+        # the lists held in pre-sized arrays and compacted in place; every decision is a comparison, so
+        # it is bit-identical. `_ifvg_py` remains the reference and runs when Numba is absent.
+        return _ifvg_kernel(np.ascontiguousarray(h), np.ascontiguousarray(l), np.ascontiguousarray(c),
+                            want if want is not None else np.zeros(n, dtype=np.bool_), want is not None)
+    return _ifvg_py(h, l, c, want)
+
+
+@njit(cache=True, nogil=True)
+def _ifvg_kernel(h, l, c, want, use_want):
+    n = c.shape[0]
+    out = np.zeros(n, dtype=np.int8)
+    f_lo = np.empty(n, dtype=np.float64); f_hi = np.empty(n, dtype=np.float64)
+    f_d = np.empty(n, dtype=np.int8)
+    i_lo = np.empty(n, dtype=np.float64); i_hi = np.empty(n, dtype=np.float64)
+    i_d = np.empty(n, dtype=np.int8)
+    nf = 0
+    ni = 0
+    for t in range(n):
+        if t >= 2:                                       # 1) form a new FVG at the 3rd candle
+            if l[t] > h[t - 2]:
+                f_lo[nf] = h[t - 2]; f_hi[nf] = l[t]; f_d[nf] = 1; nf += 1
+            elif h[t] < l[t - 2]:
+                f_lo[nf] = h[t]; f_hi[nf] = l[t - 2]; f_d[nf] = -1; nf += 1
+        w = 0                                            # 2) invert the FVGs this close burned through
+        for k in range(nf):
+            if f_d[k] == 1 and c[t] < f_lo[k]:
+                i_lo[ni] = f_lo[k]; i_hi[ni] = f_hi[k]; i_d[ni] = -1; ni += 1
+            elif f_d[k] == -1 and c[t] > f_hi[k]:
+                i_lo[ni] = f_lo[k]; i_hi[ni] = f_hi[k]; i_d[ni] = 1; ni += 1
+            else:
+                f_lo[w] = f_lo[k]; f_hi[w] = f_hi[k]; f_d[w] = f_d[k]; w += 1
+        nf = w
+        if (not use_want) or want[t]:                    # 3) per-bar signal (bull preferred, else LAST)
+            s = 0
+            for k in range(ni):
+                if l[t] <= i_hi[k] and h[t] >= i_lo[k]:
+                    s = i_d[k]
+                    if s == 1:
+                        break
+            out[t] = s
+        w = 0                                            # 4) IFVG death: price closes back through it
+        for k in range(ni):
+            if not ((i_d[k] == 1 and c[t] < i_lo[k]) or (i_d[k] == -1 and c[t] > i_hi[k])):
+                i_lo[w] = i_lo[k]; i_hi[w] = i_hi[k]; i_d[w] = i_d[k]; w += 1
+        ni = w
+    return out
+
+
+def _ifvg_py(h, l, c, want):
+    """Pure-Python IFVG state machine — the reference path when Numba is absent (issue #62)."""
+    n = len(c)
+    out = np.zeros(n, np.int8)
     fvgs = []                                            # live, un-inverted FVGs: [zlo, zhi, dir]
     ifvgs = []                                           # live inverse zones: [zlo, zhi, dir(flipped)]
     for t in range(n):

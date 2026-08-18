@@ -1,0 +1,681 @@
+[
+ {
+  "inst": "GC",
+  "tf": "4h",
+  "ind_1min": false,
+  "full": {
+   "boxes": {
+    "pnl": 44969.99999999698,
+    "max_dd": 9950.000000000182,
+    "win": 66.2,
+    "pf": 1.38,
+    "payoff": 0.7,
+    "n_taken": 231,
+    "noentry_streak_n": 93,
+    "noentry_streak_days": 34.8,
+    "noentry_streak_start": "2026-03-18",
+    "box_silence": {
+     "bars": 26,
+     "seconds": 374400,
+     "hours": 104,
+     "days": 4.33
+    },
+    "gate_noentry": {
+     "bars": 19,
+     "seconds": 273600,
+     "hours": 76,
+     "days": 3.17
+    },
+    "indicator_noentry": {
+     "bars": 6,
+     "seconds": 86400,
+     "hours": 24,
+     "days": 1
+    },
+    "position_hold": {
+     "bars": 8,
+     "seconds": 115200,
+     "hours": 32,
+     "days": 1.33
+    },
+    "box_silence_total": {
+     "bars": 1183,
+     "seconds": 17035200,
+     "hours": 4732,
+     "days": 197.17
+    },
+    "gate_noentry_total": {
+     "bars": 462,
+     "seconds": 6652800,
+     "hours": 1848,
+     "days": 77
+    },
+    "indicator_noentry_total": {
+     "bars": 423,
+     "seconds": 6091200,
+     "hours": 1692,
+     "days": 70.5
+    },
+    "position_hold_total": {
+     "bars": 360,
+     "seconds": 5184000,
+     "hours": 1440,
+     "days": 60
+    },
+    "noentry_total": {
+     "bars": 2068,
+     "seconds": 29779200,
+     "hours": 8272,
+     "days": 344.67
+    },
+    "n_candidates": 231,
+    "n_locks": 171,
+    "exposure": 100,
+    "warmup": {
+     "bars": 129,
+     "seconds": 1857600,
+     "hours": 516,
+     "days": 21.5
+    },
+    "indicator_req": {
+     "bars": 129,
+     "seconds": 1857600,
+     "hours": 516,
+     "days": 21.5
+    }
+   },
+   "summary": {
+    "pnl": 43740,
+    "pnl_2025": 36850,
+    "pnl_2026": 6890,
+    "n_taken": 231,
+    "n_candidates": 231,
+    "n_skipped_breaker": 0,
+    "exposure": 100,
+    "win": 66.2,
+    "pf": 1.36,
+    "payoff": 0.7,
+    "avg_win": 1070,
+    "avg_loss": -1538,
+    "max_dd": 9950,
+    "n_locks": 172,
+    "noentry_streak_n": 93,
+    "noentry_streak_days": 34.8,
+    "noentry_streak_start": "2026-03-18",
+    "box_silence": {
+     "bars": 27,
+     "seconds": 388800,
+     "hours": 108,
+     "days": 4.5
+    },
+    "position_hold": {
+     "bars": 19,
+     "seconds": 273600,
+     "hours": 76,
+     "days": 3.17
+    },
+    "gate_noentry": {
+     "bars": 19,
+     "seconds": 273600,
+     "hours": 76,
+     "days": 3.17
+    },
+    "indicator_noentry": {
+     "bars": 6,
+     "seconds": 86400,
+     "hours": 24,
+     "days": 1
+    },
+    "noentry_total": {
+     "bars": 2190,
+     "seconds": 31536000,
+     "hours": 8760,
+     "days": 365
+    },
+    "box_silence_total": {
+     "bars": 1184,
+     "seconds": 17049600,
+     "hours": 4736,
+     "days": 197.33
+    },
+    "position_hold_total": {
+     "bars": 440,
+     "seconds": 6336000,
+     "hours": 1760,
+     "days": 73.33
+    },
+    "gate_noentry_total": {
+     "bars": 422,
+     "seconds": 6076800,
+     "hours": 1688,
+     "days": 70.33
+    },
+    "indicator_noentry_total": {
+     "bars": 584,
+     "seconds": 8409600,
+     "hours": 2336,
+     "days": 97.33
+    }
+   },
+   "params": {
+    "sl_soft": 13.2,
+    "sl_hard": 40.8,
+    "tp": 10.7,
+    "gate_pct": 88.9,
+    "gate_thr": 24,
+    "dd_limit": 276,
+    "cooldown": 0,
+    "dd_cap": 5000,
+    "pv": 100,
+    "flip": false,
+    "window": "full",
+    "timeframe": "4h",
+    "indicators": [
+     {
+      "key": "ema_trend",
+      "enabled": false,
+      "mode": "confirm",
+      "params": {
+       "fast": 20,
+       "slow": 50
+      }
+     },
+     {
+      "key": "sma_trend",
+      "enabled": false,
+      "mode": "confirm",
+      "params": {
+       "fast": 50,
+       "slow": 200
+      }
+     },
+     {
+      "key": "macd",
+      "enabled": false,
+      "mode": "confirm",
+      "params": {
+       "fast": 12,
+       "slow": 26,
+       "signal": 9
+      }
+     },
+     {
+      "key": "vwap",
+      "enabled": true,
+      "mode": "confirm",
+      "params": {}
+     },
+     {
+      "key": "keltner",
+      "enabled": true,
+      "mode": "confirm",
+      "params": {
+       "n": 70,
+       "m": 3.8
+      }
+     },
+     {
+      "key": "obv",
+      "enabled": false,
+      "mode": "confirm",
+      "params": {
+       "slope": 20
+      }
+     },
+     {
+      "key": "cci",
+      "enabled": true,
+      "mode": "both",
+      "params": {
+       "n": 129,
+       "threshold": 20
+      }
+     },
+     {
+      "key": "rsi",
+      "enabled": true,
+      "mode": "both",
+      "params": {
+       "n": 40,
+       "lower": 22,
+       "upper": 90
+      }
+     },
+     {
+      "key": "stochastic",
+      "enabled": false,
+      "mode": "both",
+      "params": {
+       "n": 14,
+       "d": 3,
+       "lower": 20,
+       "upper": 80
+      }
+     },
+     {
+      "key": "mfi",
+      "enabled": false,
+      "mode": "both",
+      "params": {
+       "n": 14,
+       "lower": 20,
+       "upper": 80
+      }
+     },
+     {
+      "key": "bollinger",
+      "enabled": true,
+      "mode": "veto",
+      "params": {
+       "n": 114,
+       "k": 2.8
+      }
+     },
+     {
+      "key": "adx",
+      "enabled": false,
+      "mode": "veto",
+      "params": {
+       "n": 14,
+       "threshold": 25
+      }
+     },
+     {
+      "key": "structure_trend",
+      "enabled": false,
+      "mode": "both",
+      "params": {
+       "swing_l": 2
+      }
+     },
+     {
+      "key": "order_block",
+      "enabled": false,
+      "mode": "both",
+      "params": {
+       "swing_l": 2
+      }
+     },
+     {
+      "key": "fvg",
+      "enabled": true,
+      "mode": "both",
+      "params": {
+       "lookback": 3
+      }
+     },
+     {
+      "key": "ifvg",
+      "enabled": false,
+      "mode": "both",
+      "params": {}
+     },
+     {
+      "key": "breaker",
+      "enabled": true,
+      "mode": "both",
+      "params": {
+       "swing_l": 8
+      }
+     },
+     {
+      "key": "cisd",
+      "enabled": false,
+      "mode": "both",
+      "params": {}
+     }
+    ],
+    "k": 2,
+    "gen": {},
+    "veto_as_flip": false,
+    "retrace_amount": 0,
+    "retrace_unit": "atr_mult",
+    "wait_bars": 0,
+    "long_sl_soft": null,
+    "long_sl_hard": null,
+    "long_tp": null,
+    "short_sl_soft": null,
+    "short_sl_hard": null,
+    "short_tp": null
+   },
+   "split_ts": 1767290400
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 44969.99999999698,
+    "max_dd": 9950.000000000182,
+    "win": 66.2,
+    "pf": 1.38,
+    "payoff": 0.7,
+    "n_taken": 231,
+    "noentry_streak_n": 93,
+    "noentry_streak_days": 34.8,
+    "noentry_streak_start": "2026-03-18",
+    "box_silence": {
+     "bars": 26,
+     "seconds": 374400,
+     "hours": 104,
+     "days": 4.33
+    },
+    "gate_noentry": {
+     "bars": 19,
+     "seconds": 273600,
+     "hours": 76,
+     "days": 3.17
+    },
+    "indicator_noentry": {
+     "bars": 6,
+     "seconds": 86400,
+     "hours": 24,
+     "days": 1
+    },
+    "position_hold": {
+     "bars": 8,
+     "seconds": 115200,
+     "hours": 32,
+     "days": 1.33
+    },
+    "box_silence_total": {
+     "bars": 1183,
+     "seconds": 17035200,
+     "hours": 4732,
+     "days": 197.17
+    },
+    "gate_noentry_total": {
+     "bars": 462,
+     "seconds": 6652800,
+     "hours": 1848,
+     "days": 77
+    },
+    "indicator_noentry_total": {
+     "bars": 423,
+     "seconds": 6091200,
+     "hours": 1692,
+     "days": 70.5
+    },
+    "position_hold_total": {
+     "bars": 360,
+     "seconds": 5184000,
+     "hours": 1440,
+     "days": 60
+    },
+    "noentry_total": {
+     "bars": 2068,
+     "seconds": 29779200,
+     "hours": 8272,
+     "days": 344.67
+    },
+    "n_candidates": 231,
+    "n_locks": 171,
+    "exposure": 100,
+    "warmup": {
+     "bars": 129,
+     "seconds": 1857600,
+     "hours": 516,
+     "days": 21.5
+    },
+    "indicator_req": {
+     "bars": 129,
+     "seconds": 1857600,
+     "hours": 516,
+     "days": 21.5
+    }
+   },
+   "summary": {
+    "pnl": 5820,
+    "pnl_2025": 0,
+    "pnl_2026": 5820,
+    "n_taken": 36,
+    "n_candidates": 36,
+    "n_skipped_breaker": 0,
+    "exposure": 100,
+    "win": 66.7,
+    "pf": 1.29,
+    "payoff": 0.65,
+    "avg_win": 1070,
+    "avg_loss": -1655,
+    "max_dd": 5210,
+    "n_locks": 27,
+    "noentry_streak_n": 93,
+    "noentry_streak_days": 34.8,
+    "noentry_streak_start": "2026-03-18",
+    "box_silence": {
+     "bars": 27,
+     "seconds": 388800,
+     "hours": 108,
+     "days": 4.5
+    },
+    "position_hold": {
+     "bars": 2,
+     "seconds": 28800,
+     "hours": 8,
+     "days": 0.33
+    },
+    "gate_noentry": {
+     "bars": 19,
+     "seconds": 273600,
+     "hours": 76,
+     "days": 3.17
+    },
+    "indicator_noentry": {
+     "bars": 3,
+     "seconds": 43200,
+     "hours": 12,
+     "days": 0.5
+    },
+    "noentry_total": {
+     "bars": 750,
+     "seconds": 10800000,
+     "hours": 3000,
+     "days": 125
+    },
+    "box_silence_total": {
+     "bars": 335,
+     "seconds": 4824000,
+     "hours": 1340,
+     "days": 55.83
+    },
+    "position_hold_total": {
+     "bars": 37,
+     "seconds": 532800,
+     "hours": 148,
+     "days": 6.17
+    },
+    "gate_noentry_total": {
+     "bars": 325,
+     "seconds": 4680000,
+     "hours": 1300,
+     "days": 54.17
+    },
+    "indicator_noentry_total": {
+     "bars": 90,
+     "seconds": 1296000,
+     "hours": 360,
+     "days": 15
+    }
+   },
+   "params": {
+    "sl_soft": 13.2,
+    "sl_hard": 40.8,
+    "tp": 10.7,
+    "gate_pct": 88.9,
+    "gate_thr": 24,
+    "dd_limit": 276,
+    "cooldown": 0,
+    "dd_cap": 5000,
+    "pv": 100,
+    "flip": false,
+    "window": "2026",
+    "timeframe": "4h",
+    "indicators": [
+     {
+      "key": "ema_trend",
+      "enabled": false,
+      "mode": "confirm",
+      "params": {
+       "fast": 20,
+       "slow": 50
+      }
+     },
+     {
+      "key": "sma_trend",
+      "enabled": false,
+      "mode": "confirm",
+      "params": {
+       "fast": 50,
+       "slow": 200
+      }
+     },
+     {
+      "key": "macd",
+      "enabled": false,
+      "mode": "confirm",
+      "params": {
+       "fast": 12,
+       "slow": 26,
+       "signal": 9
+      }
+     },
+     {
+      "key": "vwap",
+      "enabled": true,
+      "mode": "confirm",
+      "params": {}
+     },
+     {
+      "key": "keltner",
+      "enabled": true,
+      "mode": "confirm",
+      "params": {
+       "n": 70,
+       "m": 3.8
+      }
+     },
+     {
+      "key": "obv",
+      "enabled": false,
+      "mode": "confirm",
+      "params": {
+       "slope": 20
+      }
+     },
+     {
+      "key": "cci",
+      "enabled": true,
+      "mode": "both",
+      "params": {
+       "n": 129,
+       "threshold": 20
+      }
+     },
+     {
+      "key": "rsi",
+      "enabled": true,
+      "mode": "both",
+      "params": {
+       "n": 40,
+       "lower": 22,
+       "upper": 90
+      }
+     },
+     {
+      "key": "stochastic",
+      "enabled": false,
+      "mode": "both",
+      "params": {
+       "n": 14,
+       "d": 3,
+       "lower": 20,
+       "upper": 80
+      }
+     },
+     {
+      "key": "mfi",
+      "enabled": false,
+      "mode": "both",
+      "params": {
+       "n": 14,
+       "lower": 20,
+       "upper": 80
+      }
+     },
+     {
+      "key": "bollinger",
+      "enabled": true,
+      "mode": "veto",
+      "params": {
+       "n": 114,
+       "k": 2.8
+      }
+     },
+     {
+      "key": "adx",
+      "enabled": false,
+      "mode": "veto",
+      "params": {
+       "n": 14,
+       "threshold": 25
+      }
+     },
+     {
+      "key": "structure_trend",
+      "enabled": false,
+      "mode": "both",
+      "params": {
+       "swing_l": 2
+      }
+     },
+     {
+      "key": "order_block",
+      "enabled": false,
+      "mode": "both",
+      "params": {
+       "swing_l": 2
+      }
+     },
+     {
+      "key": "fvg",
+      "enabled": true,
+      "mode": "both",
+      "params": {
+       "lookback": 3
+      }
+     },
+     {
+      "key": "ifvg",
+      "enabled": false,
+      "mode": "both",
+      "params": {}
+     },
+     {
+      "key": "breaker",
+      "enabled": true,
+      "mode": "both",
+      "params": {
+       "swing_l": 8
+      }
+     },
+     {
+      "key": "cisd",
+      "enabled": false,
+      "mode": "both",
+      "params": {}
+     }
+    ],
+    "k": 2,
+    "gen": {},
+    "veto_as_flip": false,
+    "retrace_amount": 0,
+    "retrace_unit": "atr_mult",
+    "wait_bars": 0,
+    "long_sl_soft": null,
+    "long_sl_hard": null,
+    "long_tp": null,
+    "short_sl_soft": null,
+    "short_sl_hard": null,
+    "short_tp": null
+   },
+   "split_ts": 1767290400
+  }
+ }
+]

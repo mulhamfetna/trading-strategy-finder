@@ -82,11 +82,20 @@ def fast_backtest(d_dates: np.ndarray, d_close: np.ndarray, sig_int: np.ndarray,
         raise ValueError(
             "gap_fills=True requires m_open (the 1-minute Open array). A gapped stop must fill at the "
             "bar's OPEN, not at the stop line — without Open we cannot know where the fill really was. "
-            "Pass m_open=df1['Open'].to_numpy(float), or set gap_fills=False to reproduce the OLD "
-            "(optimistic, fill-at-the-line) numbers. See docs/superpowers/GAP-01-how-the-engine-fills-"
+            "Pass m_open=df1['Open'].to_numpy(float). See docs/superpowers/GAP-01-how-the-engine-fills-"
             "a-gapped-stop.md — silently falling back to the line is exactly the bug class that cost "
             "us two workstreams (BUG-01)."
         )
+    # gap_fills=False is MANDATORY-OFF as a system option since 2026-07-29: it fills at a price that
+    # never traded. It survives here only for the archived GAP-01/02 before/after scripts, which is why
+    # this is a loud warning rather than a silent capability.
+    if not gap_fills:
+        import warnings
+        warnings.warn(
+            "fast_backtest(gap_fills=False) fills hard stops/targets at prices that may never have "
+            "traded. This is NOT a supported system configuration — it exists only to reproduce the "
+            "archived GAP-01/02 before/after measurement. Every live path (backtester, optimizer, both "
+            "dashboards) hardcodes gap-aware fills.", RuntimeWarning, stacklevel=2)
     n = len(d_dates)
     M = len(m_dates)
     trades: list[dict] = []

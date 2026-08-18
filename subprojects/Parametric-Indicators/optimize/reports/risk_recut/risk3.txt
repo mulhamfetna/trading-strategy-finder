@@ -1,0 +1,293 @@
+Building the cap-aware deployed ledger (reusing risk_recut_v2, unchanged) ...
+   NQ  4h | file=best_champions_full.json     sl_hard=  151.4424 cap=bars 451   n=  541 stop-outs=  49 capped= 213 E=+0.0313R
+   NQ  2h | file=best_champions_full.json     sl_hard=  182.2844 cap=both 561   n=  617 stop-outs=   4 capped=  64 E=+0.0079R
+   NQ  1h | file=best_champions_full.json     sl_hard=  109.7378 cap=eod        n=  562 stop-outs=  14 capped=   0 E=+0.0391R
+   NQ 15m | file=best_champions_full.json     sl_hard=   69.7811 cap=eod        n= 2307 stop-outs= 165 capped=   0 E=-0.0008R
+   NQ  5m | file=best_champions_full.json     sl_hard=   26.6434 cap=both 126   n=  271 stop-outs=  64 capped=  51 E=+0.0441R
+   NQ  2m | file=best_champions_full.json     sl_hard=   14.6212 cap=both 859   n= 2317 stop-outs=1253 capped=   0 E=+0.0413R
+   ES  4h | file=best_champions_full_ES.json  sl_hard=   88.4833 cap=bars 825   n=  248 stop-outs=   0 capped= 150 E=+0.0405R
+   ES  2h | file=best_champions_full_ES.json  sl_hard=   21.6437 cap=both 803   n=  444 stop-outs= 145 capped=  54 E=+0.1385R
+   ES  1h | file=best_champions_full_ES.json  sl_hard=   19.6319 cap=eod        n=  455 stop-outs= 222 capped=   0 E=+0.0185R
+   ES 15m | file=best_champions_full_ES.json  sl_hard=   19.0410 cap=both 1416  n=  999 stop-outs=  22 capped=   0 E=-0.0134R
+   ES  5m | file=best_champions_full_ES.json  sl_hard=   12.4219 cap=bars 902   n= 2836 stop-outs=  66 capped=   0 E=-0.0147R
+   ES  2m | file=best_champions_full_ES.json  sl_hard=    4.5826 cap=bars 734   n= 5638 stop-outs=1241 capped=   0 E=+0.0160R
+   GC  4h | file=best_champions_full_GC.json  sl_hard=   34.3953 cap=eod        n=  791 stop-outs=   7 capped=   0 E=+0.0288R
+   GC  2h | file=best_champions_full_GC.json  sl_hard=   13.3135 cap=none       n=  807 stop-outs= 445 capped=   0 E=+0.0405R
+   GC  1h | file=best_champions_full_GC.json  sl_hard=   21.2640 cap=eod        n= 1387 stop-outs=  12 capped=   0 E=+0.0281R
+   GC 15m | file=best_champions_full_GC.json  sl_hard=    8.4364 cap=none       n= 3721 stop-outs= 495 capped=   0 E=+0.0089R
+   GC  5m | file=best_champions_full_GC.json  sl_hard=    5.4793 cap=eod        n= 3584 stop-outs= 123 capped=   0 E=+0.0052R
+   GC  2m | file=best_champions_full_GC.json  sl_hard=    4.1398 cap=both 589   n= 5581 stop-outs=1644 capped=   0 E=-0.0045R
+   SI  4h | file=best_champions_full_SI.json  sl_hard=    0.5576 cap=eod        n=  607 stop-outs=  11 capped=   0 E=+0.0075R
+   SI  2h | file=best_champions_full_SI.json  sl_hard=    0.2014 cap=both 655   n= 1172 stop-outs= 471 capped=   8 E=+0.0102R
+   SI  1h | file=best_champions_full_SI.json  sl_hard=    0.2521 cap=both 59    n= 1451 stop-outs=  40 capped= 386 E=+0.0283R
+   SI 15m | file=best_champions_full_SI.json  sl_hard=    0.1006 cap=bars 702   n= 3169 stop-outs= 984 capped=   0 E=+0.0396R
+   SI  5m | file=best_champions_full_SI.json  sl_hard=    0.0269 cap=eod        n= 5835 stop-outs=3805 capped=   0 E=+0.0763R
+   SI  2m | file=best_champions_full_SI.json  sl_hard=    0.0152 cap=both 77    n= 6033 stop-outs=4092 capped=   1 E=+0.2013R
+   HG  4h | file=best_champions_full_HG.json  sl_hard=    0.0234 cap=none       n=  746 stop-outs= 432 capped=   0 E=+0.0664R
+   HG  2h | file=best_champions_full_HG.json  sl_hard=    0.0081 cap=both 272   n= 1406 stop-outs= 988 capped=  30 E=+0.0790R
+   HG  1h | file=best_champions_full_HG.json  sl_hard=    0.0141 cap=both 1341  n= 2022 stop-outs= 630 capped=   0 E=+0.0242R
+   HG 15m | file=best_champions_full_HG.json  sl_hard=    0.0016 cap=both 110   n= 3210 stop-outs=2659 capped=  11 E=+0.2363R
+   HG  5m | file=best_champions_full_HG.json  sl_hard=    0.0015 cap=none       n= 5198 stop-outs=3611 capped=   0 E=+0.2260R
+   HG  2m | file=best_champions_full_HG.json  sl_hard=    0.0015 cap=both 598   n= 9089 stop-outs=5861 capped=   0 E=+0.2092R
+   CL  4h | file=best_champions_full_CL.json  sl_hard=    0.6424 cap=eod        n=  549 stop-outs=   8 capped=   0 E=+0.0119R
+   CL  2h | file=best_champions_full_CL.json  sl_hard=    0.4858 cap=both 202   n=  924 stop-outs=  16 capped=  67 E=+0.0192R
+   CL  1h | file=best_champions_full_CL.json  sl_hard=    0.2054 cap=both 995   n= 1234 stop-outs=  73 capped=   0 E=+0.0288R
+   CL 15m | file=best_champions_full_CL.json  sl_hard=    0.1107 cap=both 334   n= 1894 stop-outs= 656 capped=   0 E=+0.0638R
+   CL  5m | file=best_champions_full_CL.json  sl_hard=    0.0312 cap=both 591   n= 4302 stop-outs=2891 capped=   0 E=+0.1190R
+   CL  2m | file=best_champions_full_CL.json  sl_hard=    0.0305 cap=both 412   n= 4655 stop-outs=2797 capped=   0 E=+0.1673R
+   NG  4h | file=best_champions_full_NG.json  sl_hard=    0.0220 cap=both 1031  n=  885 stop-outs= 364 capped=   0 E=+0.1400R
+   NG  2h | file=best_champions_full_NG.json  sl_hard=    0.0093 cap=bars 940   n= 1318 stop-outs= 834 capped=   0 E=+0.1115R
+   NG  1h | file=best_champions_full_NG.json  sl_hard=    0.0061 cap=none       n= 1814 stop-outs=1138 capped=   0 E=+0.1203R
+   NG 15m | file=best_champions_full_NG.json  sl_hard=    0.0040 cap=none       n= 3296 stop-outs=1826 capped=   0 E=+0.1518R
+   NG  5m | file=best_champions_full_NG.json  sl_hard=    0.0010 cap=both 1263  n= 6948 stop-outs=4630 capped=   0 E=+0.4122R
+   NG  2m | file=best_champions_full_NG.json  sl_hard=    0.0021 cap=eod        n= 8828 stop-outs=4462 capped=   0 E=+0.1586R
+  RTY  4h | file=best_champions_full_RTY.json sl_hard=   18.7854 cap=both 941   n=  587 stop-outs=   7 capped=  24 E=+0.0702R
+  RTY  2h | file=best_champions_full_RTY.json sl_hard=   12.0972 cap=bars 473   n=  767 stop-outs= 101 capped=  88 E=-0.0031R
+  RTY  1h | file=best_champions_full_RTY.json sl_hard=   11.2052 cap=eod        n= 1455 stop-outs=  76 capped=   0 E=-0.0211R
+  RTY 15m | file=best_champions_full_RTY.json sl_hard=    3.0017 cap=none       n= 1033 stop-outs= 661 capped=   0 E=+0.0744R
+  RTY  5m | file=best_champions_full_RTY.json sl_hard=    3.2170 cap=bars 255   n= 2583 stop-outs= 666 capped=   8 E=+0.0372R
+  RTY  2m | file=best_champions_full_RTY.json sl_hard=    1.3010 cap=both 1398  n= 3433 stop-outs=1545 capped=   0 E=+0.0802R
+   YM  4h | file=best_champions_full_YM.json  sl_hard=  238.6932 cap=both 719   n=  559 stop-outs= 104 capped= 159 E=-0.0019R
+   YM  2h | file=best_champions_full_YM.json  sl_hard=  194.9040 cap=eod        n=  209 stop-outs= 101 capped=   0 E=-0.0854R
+   YM  1h | file=best_champions_full_YM.json  sl_hard=  303.8591 cap=both 689   n= 1064 stop-outs=   8 capped=  69 E=+0.0154R
+   YM 15m | file=best_champions_full_YM.json  sl_hard=   80.2416 cap=eod        n= 2665 stop-outs= 281 capped=   0 E=+0.0241R
+   YM  5m | file=best_champions_full_YM.json  sl_hard=   92.6505 cap=none       n= 1985 stop-outs=  34 capped=   0 E=+0.0210R
+   YM  2m | file=best_champions_full_YM.json  sl_hard=   55.3226 cap=none       n= 2412 stop-outs= 149 capped=   0 E=+0.0426R
+
+========================================================================================================
+WHOLE DEPLOYED BOOK (all 9 markets) — 128,443 trades | expectancy +0.1063R | worst -182.84R
+  f_survive = 1/|worst R| = 0.547%  (above this, the worst trade ALREADY ON RECORD ends the account)
+========================================================================================================
+        f  med growth   med dd   P(ruin)  P(dd>=50%)  P(dd>=90%)  P(lose half)
+  ------------------------------------------------------------------------------------------------
+    0.05%       1.055x     1.3%     0.00%        0.0%        0.0%          0.0%
+    0.10%       1.113x     2.6%     0.00%        0.0%        0.0%          0.0%
+    0.20%       1.235x     5.2%     0.00%        0.0%        0.0%          0.0%
+    0.30%       1.368x     7.8%     0.00%        0.9%        0.0%          0.1%
+    0.40%       1.512x    10.3%     0.00%        1.7%        0.0%          0.8%
+    0.60%       1.835x    15.2%     0.85%        2.7%        0.9%          1.8%  <- worst-on-record wipes you out
+    0.80%       2.207x    19.8%     1.67%        4.2%        1.7%          2.3%  <- worst-on-record wipes you out
+    1.00%       2.632x    24.3%     1.67%        5.6%        2.5%          2.7%  <- worst-on-record wipes you out
+    1.50%       3.936x    34.7%     3.18%       16.2%        3.9%          4.2%  <- worst-on-record wipes you out
+    2.00%       5.592x    44.2%     3.91%       34.4%        4.7%          4.9%  <- worst-on-record wipes you out
+    3.00%       9.465x    60.0%     6.83%       77.6%       10.2%          8.7%  <- worst-on-record wipes you out
+    4.00%      13.148x    72.3%    10.16%       96.5%       16.7%         12.8%  <- worst-on-record wipes you out
+  => largest f with NO ruin and P(dd>=50%)<5%: 0.400%
+
+========================================================================================================
+BOOK EXCLUDING NG — 105,354 trades | expectancy +0.0798R | worst -36.37R
+  f_survive = 1/|worst R| = 2.749%  (above this, the worst trade ALREADY ON RECORD ends the account)
+========================================================================================================
+        f  med growth   med dd   P(ruin)  P(dd>=50%)  P(dd>=90%)  P(lose half)
+  ------------------------------------------------------------------------------------------------
+    0.05%       1.040x     1.4%     0.00%        0.0%        0.0%          0.0%
+    0.10%       1.082x     2.7%     0.00%        0.0%        0.0%          0.0%
+    0.20%       1.168x     5.3%     0.00%        0.0%        0.0%          0.0%
+    0.30%       1.259x     7.9%     0.00%        0.0%        0.0%          0.0%
+    0.40%       1.355x    10.5%     0.00%        0.0%        0.0%          0.0%
+    0.60%       1.560x    15.4%     0.00%        0.0%        0.0%          0.0%
+    0.80%       1.782x    20.1%     0.00%        0.4%        0.0%          0.0%
+    1.00%       2.021x    24.7%     0.00%        1.4%        0.0%          0.1%
+    1.50%       2.683x    35.2%     0.00%       12.4%        0.0%          0.5%
+    2.00%       3.413x    44.5%     0.00%       33.7%        0.2%          1.4%
+    3.00%       4.831x    60.4%     1.82%       79.6%        3.1%          5.2%  <- worst-on-record wipes you out
+    4.00%       5.754x    72.6%     1.82%       97.1%       10.7%          8.9%  <- worst-on-record wipes you out
+  => largest f with NO ruin and P(dd>=50%)<5%: 1.000%
+
+========================================================================================================
+NQ ALONE — 6,615 trades | expectancy +0.0226R | worst -24.14R
+  f_survive = 1/|worst R| = 4.142%  (above this, the worst trade ALREADY ON RECORD ends the account)
+========================================================================================================
+        f  med growth   med dd   P(ruin)  P(dd>=50%)  P(dd>=90%)  P(lose half)
+  ------------------------------------------------------------------------------------------------
+    0.05%       1.012x     1.3%     0.00%        0.0%        0.0%          0.0%
+    0.10%       1.023x     2.6%     0.00%        0.0%        0.0%          0.0%
+    0.20%       1.046x     5.2%     0.00%        0.0%        0.0%          0.0%
+    0.30%       1.069x     7.7%     0.00%        0.0%        0.0%          0.0%
+    0.40%       1.091x    10.2%     0.00%        0.0%        0.0%          0.0%
+    0.60%       1.133x    15.0%     0.00%        0.0%        0.0%          0.0%
+    0.80%       1.172x    19.7%     0.00%        0.4%        0.0%          0.1%
+    1.00%       1.208x    24.2%     0.00%        2.2%        0.0%          0.5%
+    1.50%       1.280x    34.6%     0.00%       16.1%        0.0%          3.0%
+    2.00%       1.323x    44.0%     0.00%       36.8%        0.1%          7.3%
+    3.00%       1.313x    59.7%     0.00%       72.2%        4.3%         17.7%
+    4.00%       1.166x    72.1%     0.00%       92.7%       19.0%         29.7%
+  => largest f with NO ruin and P(dd>=50%)<5%: 1.000%
+
+========================================================================================================
+ES ALONE — 10,620 trades | expectancy +0.0108R | worst -2.93R
+  f_survive = 1/|worst R| = 34.154%  (above this, the worst trade ALREADY ON RECORD ends the account)
+========================================================================================================
+        f  med growth   med dd   P(ruin)  P(dd>=50%)  P(dd>=90%)  P(lose half)
+  ------------------------------------------------------------------------------------------------
+    0.05%       1.005x     0.9%     0.00%        0.0%        0.0%          0.0%
+    0.10%       1.010x     1.8%     0.00%        0.0%        0.0%          0.0%
+    0.20%       1.021x     3.5%     0.00%        0.0%        0.0%          0.0%
+    0.30%       1.031x     5.3%     0.00%        0.0%        0.0%          0.0%
+    0.40%       1.040x     7.0%     0.00%        0.0%        0.0%          0.0%
+    0.60%       1.059x    10.3%     0.00%        0.0%        0.0%          0.0%
+    0.80%       1.076x    13.6%     0.00%        0.0%        0.0%          0.0%
+    1.00%       1.091x    16.8%     0.00%        0.0%        0.0%          0.0%
+    1.50%       1.124x    24.4%     0.00%        1.1%        0.0%          0.3%
+    2.00%       1.148x    31.6%     0.00%        7.5%        0.0%          1.5%
+    3.00%       1.163x    44.4%     0.00%       35.7%        0.0%          7.4%
+    4.00%       1.135x    55.6%     0.00%       64.0%        0.3%         14.5%
+  => largest f with NO ruin and P(dd>=50%)<5%: 1.500%
+
+========================================================================================================
+GC ALONE — 15,871 trades | expectancy +0.0076R | worst -9.08R
+  f_survive = 1/|worst R| = 11.010%  (above this, the worst trade ALREADY ON RECORD ends the account)
+========================================================================================================
+        f  med growth   med dd   P(ruin)  P(dd>=50%)  P(dd>=90%)  P(lose half)
+  ------------------------------------------------------------------------------------------------
+    0.05%       1.004x     1.2%     0.00%        0.0%        0.0%          0.0%
+    0.10%       1.008x     2.4%     0.00%        0.0%        0.0%          0.0%
+    0.20%       1.015x     4.8%     0.00%        0.0%        0.0%          0.0%
+    0.30%       1.022x     7.2%     0.00%        0.0%        0.0%          0.0%
+    0.40%       1.028x     9.5%     0.00%        0.0%        0.0%          0.0%
+    0.60%       1.038x    14.0%     0.00%        0.0%        0.0%          0.0%
+    0.80%       1.046x    18.3%     0.00%        0.0%        0.0%          0.0%
+    1.00%       1.051x    22.5%     0.00%        0.6%        0.0%          0.2%
+    1.50%       1.053x    32.4%     0.00%        9.3%        0.0%          2.3%
+    2.00%       1.040x    41.3%     0.00%       27.8%        0.0%          7.1%
+    3.00%       0.969x    56.6%     0.00%       67.0%        0.4%         18.9%
+    4.00%       0.850x    68.8%     0.00%       89.5%        5.3%         29.9%
+  => largest f with NO ruin and P(dd>=50%)<5%: 1.000%
+
+========================================================================================================
+SI ALONE — 18,267 trades | expectancy +0.1009R | worst -23.06R
+  f_survive = 1/|worst R| = 4.336%  (above this, the worst trade ALREADY ON RECORD ends the account)
+========================================================================================================
+        f  med growth   med dd   P(ruin)  P(dd>=50%)  P(dd>=90%)  P(lose half)
+  ------------------------------------------------------------------------------------------------
+    0.05%       1.051x     1.5%     0.00%        0.0%        0.0%          0.0%
+    0.10%       1.105x     3.0%     0.00%        0.0%        0.0%          0.0%
+    0.20%       1.218x     5.9%     0.00%        0.0%        0.0%          0.0%
+    0.30%       1.339x     8.8%     0.00%        0.0%        0.0%          0.0%
+    0.40%       1.469x    11.6%     0.00%        0.0%        0.0%          0.0%
+    0.60%       1.754x    17.0%     0.00%        0.0%        0.0%          0.0%
+    0.80%       2.074x    22.2%     0.00%        0.4%        0.0%          0.0%
+    1.00%       2.431x    27.1%     0.00%        1.9%        0.0%          0.1%
+    1.50%       3.459x    38.6%     0.00%       17.6%        0.0%          0.5%
+    2.00%       4.644x    48.6%     0.00%       45.5%        0.1%          1.2%
+    3.00%       6.998x    65.0%     0.00%       89.6%        2.8%          3.9%
+    4.00%       8.358x    77.2%     0.00%       99.3%       16.7%          8.2%
+  => largest f with NO ruin and P(dd>=50%)<5%: 1.000%
+
+========================================================================================================
+HG ALONE — 21,671 trades | expectancy +0.1866R | worst -36.37R
+  f_survive = 1/|worst R| = 2.749%  (above this, the worst trade ALREADY ON RECORD ends the account)
+========================================================================================================
+        f  med growth   med dd   P(ruin)  P(dd>=50%)  P(dd>=90%)  P(lose half)
+  ------------------------------------------------------------------------------------------------
+    0.05%       1.097x     1.6%     0.00%        0.0%        0.0%          0.0%
+    0.10%       1.202x     3.2%     0.00%        0.0%        0.0%          0.0%
+    0.20%       1.439x     6.3%     0.00%        0.0%        0.0%          0.0%
+    0.30%       1.716x     9.4%     0.00%        0.0%        0.0%          0.0%
+    0.40%       2.037x    12.4%     0.00%        0.0%        0.0%          0.0%
+    0.60%       2.837x    18.1%     0.00%        0.1%        0.0%          0.0%
+    0.80%       3.885x    23.6%     0.00%        0.7%        0.0%          0.0%
+    1.00%       5.232x    28.8%     0.00%        3.4%        0.0%          0.0%
+    1.50%      10.270x    40.5%     0.00%       23.7%        0.0%          0.1%
+    2.00%      18.228x    50.8%     0.00%       52.5%        0.5%          0.3%
+    3.00%      41.327x    67.2%     8.99%       94.4%       10.4%          9.5%  <- worst-on-record wipes you out
+    4.00%      70.256x    79.1%     8.99%       99.8%       19.7%         10.2%  <- worst-on-record wipes you out
+  => largest f with NO ruin and P(dd>=50%)<5%: 1.000%
+
+========================================================================================================
+CL ALONE — 13,558 trades | expectancy +0.1085R | worst -17.96R
+  f_survive = 1/|worst R| = 5.567%  (above this, the worst trade ALREADY ON RECORD ends the account)
+========================================================================================================
+        f  med growth   med dd   P(ruin)  P(dd>=50%)  P(dd>=90%)  P(lose half)
+  ------------------------------------------------------------------------------------------------
+    0.05%       1.056x     1.3%     0.00%        0.0%        0.0%          0.0%
+    0.10%       1.114x     2.6%     0.00%        0.0%        0.0%          0.0%
+    0.20%       1.238x     5.1%     0.00%        0.0%        0.0%          0.0%
+    0.30%       1.373x     7.6%     0.00%        0.0%        0.0%          0.0%
+    0.40%       1.520x    10.0%     0.00%        0.0%        0.0%          0.0%
+    0.60%       1.850x    14.7%     0.00%        0.0%        0.0%          0.0%
+    0.80%       2.235x    19.3%     0.00%        0.0%        0.0%          0.0%
+    1.00%       2.678x    23.6%     0.00%        0.6%        0.0%          0.0%
+    1.50%       4.065x    33.8%     0.00%        7.8%        0.0%          0.1%
+    2.00%       5.876x    43.1%     0.00%       27.7%        0.0%          0.4%
+    3.00%      10.527x    58.8%     0.00%       76.9%        0.8%          1.3%
+    4.00%      15.534x    71.2%     0.00%       96.8%        6.5%          3.1%
+  => largest f with NO ruin and P(dd>=50%)<5%: 1.000%
+
+========================================================================================================
+NG ALONE — 23,089 trades | expectancy +0.2275R | worst -182.84R
+  f_survive = 1/|worst R| = 0.547%  (above this, the worst trade ALREADY ON RECORD ends the account)
+========================================================================================================
+        f  med growth   med dd   P(ruin)  P(dd>=50%)  P(dd>=90%)  P(lose half)
+  ------------------------------------------------------------------------------------------------
+    0.05%       1.125x     1.5%     0.00%        0.0%        0.0%          0.0%
+    0.10%       1.264x     3.1%     0.00%        0.0%        0.0%          0.0%
+    0.20%       1.589x     6.1%     0.00%        0.2%        0.0%          0.0%
+    0.30%       1.990x     9.0%     0.00%        4.7%        0.0%          0.2%
+    0.40%       2.482x    12.0%     0.00%        8.5%        0.1%          0.8%
+    0.60%       3.813x    17.6%     4.26%       13.1%        4.6%          6.0%  <- worst-on-record wipes you out
+    0.80%       5.750x    23.0%     8.22%       20.1%        8.4%          8.5%  <- worst-on-record wipes you out
+    1.00%       8.501x    28.3%     8.22%       22.9%       12.1%         12.1%  <- worst-on-record wipes you out
+    1.50%      21.113x    40.5%    15.93%       37.4%       19.7%         17.3%  <- worst-on-record wipes you out
+    2.00%      46.801x    51.5%    19.70%       51.9%       23.4%         19.9%  <- worst-on-record wipes you out
+    3.00%     148.264x    70.0%    26.24%       79.9%       37.0%         26.6%  <- worst-on-record wipes you out
+    4.00%     201.592x    84.1%    40.61%       96.0%       45.2%         40.7%  <- worst-on-record wipes you out
+  => largest f with NO ruin and P(dd>=50%)<5%: 0.300%
+
+========================================================================================================
+RTY ALONE — 9,858 trades | expectancy +0.0463R | worst -14.99R
+  f_survive = 1/|worst R| = 6.671%  (above this, the worst trade ALREADY ON RECORD ends the account)
+========================================================================================================
+        f  med growth   med dd   P(ruin)  P(dd>=50%)  P(dd>=90%)  P(lose half)
+  ------------------------------------------------------------------------------------------------
+    0.05%       1.023x     1.1%     0.00%        0.0%        0.0%          0.0%
+    0.10%       1.047x     2.3%     0.00%        0.0%        0.0%          0.0%
+    0.20%       1.096x     4.5%     0.00%        0.0%        0.0%          0.0%
+    0.30%       1.145x     6.7%     0.00%        0.0%        0.0%          0.0%
+    0.40%       1.196x     8.9%     0.00%        0.0%        0.0%          0.0%
+    0.60%       1.300x    13.1%     0.00%        0.0%        0.0%          0.0%
+    0.80%       1.407x    17.2%     0.00%        0.1%        0.0%          0.0%
+    1.00%       1.517x    21.2%     0.00%        0.4%        0.0%          0.1%
+    1.50%       1.799x    30.6%     0.00%        5.9%        0.0%          0.4%
+    2.00%       2.078x    39.3%     0.00%       21.3%        0.0%          1.5%
+    3.00%       2.568x    54.4%     0.00%       62.5%        0.5%          4.9%
+    4.00%       2.849x    66.9%     0.00%       87.9%        4.7%          9.5%
+  => largest f with NO ruin and P(dd>=50%)<5%: 1.000%
+
+========================================================================================================
+YM ALONE — 8,894 trades | expectancy +0.0232R | worst -2.12R
+  f_survive = 1/|worst R| = 47.266%  (above this, the worst trade ALREADY ON RECORD ends the account)
+========================================================================================================
+        f  med growth   med dd   P(ruin)  P(dd>=50%)  P(dd>=90%)  P(lose half)
+  ------------------------------------------------------------------------------------------------
+    0.05%       1.011x     0.8%     0.00%        0.0%        0.0%          0.0%
+    0.10%       1.023x     1.6%     0.00%        0.0%        0.0%          0.0%
+    0.20%       1.046x     3.3%     0.00%        0.0%        0.0%          0.0%
+    0.30%       1.069x     4.9%     0.00%        0.0%        0.0%          0.0%
+    0.40%       1.092x     6.5%     0.00%        0.0%        0.0%          0.0%
+    0.60%       1.138x     9.6%     0.00%        0.0%        0.0%          0.0%
+    0.80%       1.185x    12.7%     0.00%        0.0%        0.0%          0.0%
+    1.00%       1.230x    15.7%     0.00%        0.0%        0.0%          0.0%
+    1.50%       1.343x    22.9%     0.00%        0.6%        0.0%          0.1%
+    2.00%       1.449x    29.6%     0.00%        4.6%        0.0%          0.6%
+    3.00%       1.634x    41.8%     0.00%       27.1%        0.0%          2.9%
+    4.00%       1.762x    52.5%     0.00%       57.5%        0.2%          6.5%
+  => largest f with NO ruin and P(dd>=50%)<5%: 2.000%
+
+========================================================================================================
+PER-MARKET RUIN BOUND — the largest risk fraction each market can carry
+========================================================================================================
+    mkt    trades    worst R   f_survive    safe f   verdict
+  whole_book              -182.84      0.547%    0.400%   OK
+  ex_NG               -36.37      2.749%    1.000%   OK
+     NQ               -24.14      4.142%    1.000%   OK
+     ES                -2.93     34.154%    1.500%   OK
+     GC                -9.08     11.010%    1.000%   OK
+     SI               -23.06      4.336%    1.000%   OK
+     HG               -36.37      2.749%    1.000%   OK
+     CL               -17.96      5.567%    1.000%   OK
+     NG              -182.84      0.547%    0.300%   OK
+    RTY               -14.99      6.671%    1.000%   OK
+     YM                -2.12     47.266%    2.000%   OK
+
+WROTE /home/dev/Mulham/risk2/risk_ruin_v3.json

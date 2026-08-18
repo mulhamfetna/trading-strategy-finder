@@ -1,0 +1,84 @@
+{
+ "instrument": "RTY",
+ "floor_year": 2024,
+ "n_events": 81,
+ "qtys": [
+  1,
+  5,
+  10,
+  20
+ ],
+ "v1_mismatches": 0,
+ "v1_pass": true,
+ "v3_exit_over_entry_volume": 18.6,
+ "v3_pass": true,
+ "participation": [
+  {
+   "qty": 1,
+   "entry_particip_p50": 0.2,
+   "entry_particip_p95": 1.0,
+   "exit_particip_p50": 0.010757663389242337,
+   "exit_particip_p95": 0.07047619047619026,
+   "entry_over25pct_share": 0.43209876543209874,
+   "exit_over25pct_share": 0.016666666666666666
+  },
+  {
+   "qty": 5,
+   "entry_particip_p50": 1.0,
+   "entry_particip_p95": 5.0,
+   "exit_particip_p50": 0.05378831694621168,
+   "exit_particip_p95": 0.3523809523809513,
+   "entry_over25pct_share": 0.9135802469135802,
+   "exit_over25pct_share": 0.06666666666666667
+  },
+  {
+   "qty": 10,
+   "entry_particip_p50": 2.0,
+   "entry_particip_p95": 10.0,
+   "exit_particip_p50": 0.10757663389242336,
+   "exit_particip_p95": 0.7047619047619026,
+   "entry_over25pct_share": 1.0,
+   "exit_over25pct_share": 0.16666666666666666
+  },
+  {
+   "qty": 20,
+   "entry_particip_p50": 4.0,
+   "entry_particip_p95": 20.0,
+   "exit_particip_p50": 0.21515326778484672,
+   "exit_particip_p95": 1.4095238095238052,
+   "entry_over25pct_share": 1.0,
+   "exit_over25pct_share": 0.45
+  }
+ ],
+ "economics": [
+  {
+   "qty": 1,
+   "net_mean": 95.19271604938312,
+   "net_total": 7710.610000000033,
+   "worst_event": -332.50000000001364,
+   "minus_2R_budget": -224.83000000000004
+  },
+  {
+   "qty": 5,
+   "net_mean": 475.96358024691557,
+   "net_total": 38553.05000000016,
+   "worst_event": -1662.5000000000682,
+   "minus_2R_budget": -1124.15
+  },
+  {
+   "qty": 10,
+   "net_mean": 951.9271604938311,
+   "net_total": 77106.10000000033,
+   "worst_event": -3325.0000000001364,
+   "minus_2R_budget": -2248.3
+  },
+  {
+   "qty": 20,
+   "net_mean": 1903.8543209876623,
+   "net_total": 154212.20000000065,
+   "worst_event": -6650.000000000273,
+   "minus_2R_budget": -4496.6
+  }
+ ],
+ "blind_spot": "book depth and queue position are invisible to bar data; participation ratios are the measurable proxy, not a fill guarantee"
+}

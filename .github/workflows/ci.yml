@@ -55,3 +55,42 @@ jobs:
           from indicators import library
           print('core engine imports OK')
           "
+
+  accelerator-parity:
+    name: Accelerator parity (data-free)
+    runs-on: ubuntu-latest
+    # Every fast indicator path must reproduce its frozen `*_reference` oracle. These tests are
+    # SYNTHETIC-DATA ONLY, so unlike the golden gate they can run here (issue #62).
+    #
+    # Two things this job canNOT do, so do not read it as full coverage:
+    #   * the real-frame sweep (486,969 bars, whole parameter grid) needs the price data — server only,
+    #     `optimize/perf/bench_budget.py`;
+    #   * the 2 s worst-case BUDGET scan likewise — `bench_worstcase.py`, an END-of-round checklist step
+    #     in docs/EXPANSION_ROUND_PLAYBOOK.md (it exits non-zero when something is over budget).
+    #
+    # Numba is deliberately NOT installed: the tests force `_HAVE_NUMBA = True` so the kernel bodies run
+    # as plain Python and their LOGIC is still checked. Without that they would compare each reference
+    # to itself and pass while testing nothing (playbook C11).
+    env:
+      WSH_DATA_BASE: ${{ github.workspace }}
+    defaults:
+      run:
+        working-directory: subprojects/Parametric-Indicators
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install core deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy pandas scipy pytest
+      - name: Parity gates
+        run: |
+          python -m pytest -q \
+            optimize/perf/test_budget_accel_parity.py \
+            optimize/perf/test_cold_accel_parity.py \
+            optimize/perf/test_tail_accel_parity.py \
+            optimize/test_xseries_wiring.py \
+            indicators/test_reference_alignment.py \
+            tests/test_speedopt_equiv.py

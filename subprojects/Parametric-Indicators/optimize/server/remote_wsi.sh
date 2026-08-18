@@ -47,6 +47,10 @@ PREFIX="${WSH_PREFIX:-wsh4}"                           # study prefix; override 
 SPLIT_ARG="${WSH_SPLIT:+--split-sltp}"                 # set WSH_SPLIT=1 to search SEPARATE long/short SL/TP (Q3/E2)
 SAMPLER_ARG="${WSH_SAMPLER:+--sampler $WSH_SAMPLER}"   # optimizer brain (P2): nsga3*(default)|nsga2|tpe|motpe|gp; unset ⇒ nsga3 (unchanged)
 OBJ_ARG="${WSH_OBJECTIVE:+--objective $WSH_OBJECTIVE}" # α: winrate*(default)|decision_pause; unset ⇒ winrate (unchanged)
+# Preflight escapes (#94), off by default: a study runs for hours and a stale/dirty checkout makes
+# its result unattributable. Set WSH_ALLOW_DIRTY=1 / WSH_ALLOW_BEHIND=1 deliberately.
+DIRTY_ARG="${WSH_ALLOW_DIRTY:+--allow-dirty}"
+BEHIND_ARG="${WSH_ALLOW_BEHIND:+--allow-behind}"
 EXCL_ARG="${WSH_EXCLUDE:+--exclude-indicators $WSH_EXCLUDE}"  # α: e.g. ifvg,breaker,cisd reverts to wsh4-era 15
 ONLY_ARG="${WSH_ONLY:+--only-indicators $WSH_ONLY}"    # control-center: restrict the search to these indicators
 REF_ARG="${WSH_REFERENCE:+--reference $WSH_REFERENCE}" # control-center: cross-series reference instrument (#17)
@@ -57,7 +61,7 @@ DDCAP_ARG="${WSH_DD_CAP:+--dd-pnl-cap $WSH_DD_CAP}"    # α: relax the DD≤cap�
 INSTRUMENT="${WSH_INSTRUMENT:-NQ}"                     # NQ (default) or ES; non-NQ → suffixed studies/champions
 INST_ARG=""; [ "$INSTRUMENT" != "NQ" ] && INST_ARG="--instrument $INSTRUMENT"
 RSUF=""; [ "$INSTRUMENT" != "NQ" ] && RSUF="_$INSTRUMENT"   # study/db filename suffix mirrored into launch.sh + readers
-IND_ARGS="$IND1MIN_ARG --study-prefix $PREFIX $SPLIT_ARG $SAMPLER_ARG $OBJ_ARG $EXCL_ARG $ONLY_ARG $REF_ARG $MAXEN_ARG $NOWARM_ARG $DDCAP_ARG $INST_ARG"
+IND_ARGS="$IND1MIN_ARG --study-prefix $PREFIX $SPLIT_ARG $SAMPLER_ARG $OBJ_ARG $EXCL_ARG $ONLY_ARG $REF_ARG $MAXEN_ARG $NOWARM_ARG $DDCAP_ARG $INST_ARG $DIRTY_ARG $BEHIND_ARG"
 
 SSH_OPTS=(-p "$SRV_PORT" -i "$SRV_KEY" -o IdentitiesOnly=yes -o BatchMode=yes \
           -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 \
@@ -74,7 +78,10 @@ STORAGE_URL="${WSH_STORAGE_URL:-}"
 # server has a $WSI/pg.env (written by the Postgres provisioning), source it so the secret never leaves the
 # box; otherwise empty ⇒ per-TF sqlite. Used by parity/counts/stats/pull and (mirrored) by launch.sh.
 _PG_FALLBACK="[ -z \"\$WSH_STORAGE_URL\" ] && [ -f '$WSI/pg.env' ] && { set -a; . '$WSI/pg.env'; set +a; }"
-REMOTE_ENV="source $REMOTE_VENV/bin/activate; export WSH_DATA_BASE='$WSI' WSG_DATA_ROOT='$WSI/data' WSH_STORAGE_URL='$STORAGE_URL' WSI_INSTRUMENT='$INSTRUMENT'; $_PG_FALLBACK"
+# WSH_ONLY / WSH_EXCLUDE are exported so the REMOTE side can size the search it is actually running.
+# Without them the budget below was computed over the whole registry while the launch passed
+# --only-indicators, giving a target ~8x the trials the study needs (#89 sweep; same defect as #2).
+REMOTE_ENV="source $REMOTE_VENV/bin/activate; export WSH_DATA_BASE='$WSI' WSG_DATA_ROOT='$WSI/data' WSH_STORAGE_URL='$STORAGE_URL' WSI_INSTRUMENT='$INSTRUMENT' WSH_ONLY='${WSH_ONLY:-}' WSH_EXCLUDE='${WSH_EXCLUDE:-}'; $_PG_FALLBACK"
 
 cmd_push() {
   log "creating scratch + pushing code/data → $WSI"
@@ -135,7 +142,10 @@ cmd_run() {
   # Dimension-proportional budget (anti 'bigger space, fewer samples' trap — see the superset-paradox report):
   # default TARGET = recommended_trials(dims) for the current split mode; pass an explicit number to override.
   local split_py="False"; [ -n "${WSH_SPLIT:-}" ] && split_py="True"
-  local rec; rec=$(srv "$REMOTE_ENV; cd '$CODE' && python3 -c \"from optimize import optimizer as O; print(O.recommended_trials($split_py))\"" 2>/dev/null | tr -dc '0-9')
+  # Budget the search we are ACTUALLY launching: honour --only-indicators / --exclude-indicators, which
+  # this previously ignored (#89 sweep — the fourth site with this defect after --auto-trials, the
+  # control plane's plan(), and the watchdog's target_trials).
+  local rec; rec=$(srv "$REMOTE_ENV; cd '$CODE' && python3 -c \"import os; from optimize import optimizer as O; _o=tuple(x for x in os.environ.get('WSH_ONLY','').split(',') if x); _e=tuple(x for x in os.environ.get('WSH_EXCLUDE','').split(',') if x); print(O.recommended_trials($split_py, only_inds=_o, exclude_inds=_e))\"" 2>/dev/null | tr -dc '0-9')
   local total="${1:-auto}"; { [ "$total" = "auto" ] || [ -z "$total" ]; } && total="${rec:-5000}"
   log "PLAN: prefix=$PREFIX  TFs=[${tfs[*]}]  split=${WSH_SPLIT:+on}${WSH_SPLIT:-off}  warm-start=ON"
   log "      recommended ${rec:-?} trials/TF (∝ dimensions)  →  TARGET ${total} trials/TF"
@@ -172,7 +182,15 @@ while :; do
   done=\$(python3 optimize/trial_count.py \"\$tf\" --prefix ${PREFIX} 2>/dev/null || echo 0)
   if [ \"\${done:-0}\" -ge \"\$TARGET\" ]; then echo \"[watchdog] \$tf reached \$done/\$TARGET — stop\" >> \"\$log\"; break; fi
   echo \"[watchdog] \$tf \$done/\$TARGET → +chunk \$(date +%H:%M:%S)\" >> \"\$log\"
-  python3 -u optimize/optimizer.py \"\$tf\" --trials 300 --folds 5 --min-trades 5 $IND_ARGS >> \"\$log\" 2>&1 || true
+  python3 -u optimize/optimizer.py \"\$tf\" --trials 300 --folds 5 --min-trades 5 $IND_ARGS >> \"\$log\" 2>&1
+  rc=\$?
+  # Exit 3 is the PREFLIGHT refusal (#94). Without this the '|| true' that used to be here would
+  # swallow it and 'while :' would respawn a refusing optimizer forever — a hot loop writing the same
+  # error into the log a thousand times a minute. A refusal is a reason to STOP, not to retry.
+  if [ \"\$rc\" -eq 3 ]; then
+    echo \"[watchdog] \$tf PREFLIGHT REFUSED (exit 3) — stopping. Fix the checkout, or relaunch with WSH_ALLOW_DIRTY=1.\" >> \"\$log\"
+    break
+  fi
 done
 EOS
 chmod +x '$WSI/worker.sh'"

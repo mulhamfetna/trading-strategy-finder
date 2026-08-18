@@ -1,0 +1,434 @@
+[
+ {
+  "slot": "NQ_4h",
+  "bundle": 70496.0,
+  "recorded": 70496.0,
+  "bundle_oos": 19133.0,
+  "recorded_oos": 19133.0,
+  "ok": true
+ },
+ {
+  "slot": "NQ_2h",
+  "bundle": 82752.0,
+  "recorded": 82752.0,
+  "bundle_oos": 40745.0,
+  "recorded_oos": 40745.0,
+  "ok": true
+ },
+ {
+  "slot": "NQ_1h",
+  "bundle": 78823.0,
+  "recorded": 78823.0,
+  "bundle_oos": 27203.0,
+  "recorded_oos": 27203.0,
+  "ok": true
+ },
+ {
+  "slot": "NQ_15m",
+  "bundle": 35176.0,
+  "recorded": 35176.0,
+  "bundle_oos": 21286.0,
+  "recorded_oos": 21286.0,
+  "ok": true
+ },
+ {
+  "slot": "NQ_5m",
+  "bundle": 15216.0,
+  "recorded": 15216.0,
+  "bundle_oos": 2600.0,
+  "recorded_oos": 2600.0,
+  "ok": true
+ },
+ {
+  "slot": "NQ_2m",
+  "bundle": 31740.0,
+  "recorded": 31740.0,
+  "bundle_oos": 4561.0,
+  "recorded_oos": 4561.0,
+  "ok": true
+ },
+ {
+  "slot": "ES_4h",
+  "bundle": 71321.0,
+  "recorded": 71321.0,
+  "bundle_oos": 22953.0,
+  "recorded_oos": 22953.0,
+  "ok": true
+ },
+ {
+  "slot": "ES_2h",
+  "bundle": 68109.0,
+  "recorded": 68109.0,
+  "bundle_oos": 24943.0,
+  "recorded_oos": 24943.0,
+  "ok": true
+ },
+ {
+  "slot": "ES_1h",
+  "bundle": 61507.0,
+  "recorded": 61507.0,
+  "bundle_oos": 24161.0,
+  "recorded_oos": 24161.0,
+  "ok": true
+ },
+ {
+  "slot": "ES_15m",
+  "bundle": 25337.0,
+  "recorded": 25337.0,
+  "bundle_oos": 9836.0,
+  "recorded_oos": 9836.0,
+  "ok": true
+ },
+ {
+  "slot": "ES_5m",
+  "bundle": 9093.0,
+  "recorded": 9093.0,
+  "bundle_oos": 839.0,
+  "recorded_oos": 839.0,
+  "ok": true
+ },
+ {
+  "slot": "ES_2m",
+  "bundle": 5967.0,
+  "recorded": 5967.0,
+  "bundle_oos": 1263.0,
+  "recorded_oos": 1263.0,
+  "ok": true
+ },
+ {
+  "slot": "GC_4h",
+  "bundle": 85823.0,
+  "recorded": 85823.0,
+  "bundle_oos": 31041.0,
+  "recorded_oos": 31041.0,
+  "ok": true
+ },
+ {
+  "slot": "GC_2h",
+  "bundle": 62386.0,
+  "recorded": 62386.0,
+  "bundle_oos": 20597.0,
+  "recorded_oos": 20597.0,
+  "ok": true
+ },
+ {
+  "slot": "GC_1h",
+  "bundle": 68014.0,
+  "recorded": 68014.0,
+  "bundle_oos": 30505.0,
+  "recorded_oos": 30505.0,
+  "ok": true
+ },
+ {
+  "slot": "GC_15m",
+  "bundle": 20081.0,
+  "recorded": 20081.0,
+  "bundle_oos": 3971.0,
+  "recorded_oos": 3971.0,
+  "ok": true
+ },
+ {
+  "slot": "GC_5m",
+  "bundle": 19966.0,
+  "recorded": 19966.0,
+  "bundle_oos": 10346.0,
+  "recorded_oos": 10346.0,
+  "ok": true
+ },
+ {
+  "slot": "GC_2m",
+  "bundle": 14084.0,
+  "recorded": 14084.0,
+  "bundle_oos": 2445.0,
+  "recorded_oos": 2445.0,
+  "ok": true
+ },
+ {
+  "slot": "SI_4h",
+  "bundle": 61516.0,
+  "recorded": 61516.0,
+  "bundle_oos": 13927.0,
+  "recorded_oos": 13927.0,
+  "ok": true
+ },
+ {
+  "slot": "SI_2h",
+  "bundle": 75330.0,
+  "recorded": 75330.0,
+  "bundle_oos": 29840.0,
+  "recorded_oos": 29840.0,
+  "ok": true
+ },
+ {
+  "slot": "SI_1h",
+  "bundle": 33114.0,
+  "recorded": 33114.0,
+  "bundle_oos": 19020.0,
+  "recorded_oos": 19020.0,
+  "ok": true
+ },
+ {
+  "slot": "SI_15m",
+  "bundle": 59789.0,
+  "recorded": 59789.0,
+  "bundle_oos": 18757.0,
+  "recorded_oos": 18757.0,
+  "ok": true
+ },
+ {
+  "slot": "SI_5m",
+  "bundle": 50716.0,
+  "recorded": 50716.0,
+  "bundle_oos": 21806.0,
+  "recorded_oos": 21806.0,
+  "ok": true
+ },
+ {
+  "slot": "SI_2m",
+  "bundle": 71331.0,
+  "recorded": 71331.0,
+  "bundle_oos": 21484.0,
+  "recorded_oos": 21484.0,
+  "ok": true
+ },
+ {
+  "slot": "HG_4h",
+  "bundle": 24215.0,
+  "recorded": 24215.0,
+  "bundle_oos": 4395.0,
+  "recorded_oos": 4395.0,
+  "ok": true
+ },
+ {
+  "slot": "HG_2h",
+  "bundle": 34048.0,
+  "recorded": 34048.0,
+  "bundle_oos": 19745.0,
+  "recorded_oos": 19745.0,
+  "ok": true
+ },
+ {
+  "slot": "HG_1h",
+  "bundle": 28570.0,
+  "recorded": 28570.0,
+  "bundle_oos": 8720.0,
+  "recorded_oos": 8720.0,
+  "ok": true
+ },
+ {
+  "slot": "HG_15m",
+  "bundle": 4980.0,
+  "recorded": 4980.0,
+  "bundle_oos": 552.0,
+  "recorded_oos": 552.0,
+  "ok": true
+ },
+ {
+  "slot": "HG_5m",
+  "bundle": 21948.0,
+  "recorded": 21948.0,
+  "bundle_oos": 3435.0,
+  "recorded_oos": 3435.0,
+  "ok": true
+ },
+ {
+  "slot": "HG_2m",
+  "bundle": 46478.0,
+  "recorded": 46478.0,
+  "bundle_oos": 17890.0,
+  "recorded_oos": 17890.0,
+  "ok": true
+ },
+ {
+  "slot": "CL_4h",
+  "bundle": 19245.0,
+  "recorded": 19245.0,
+  "bundle_oos": 6293.0,
+  "recorded_oos": 6293.0,
+  "ok": true
+ },
+ {
+  "slot": "CL_2h",
+  "bundle": 8095.0,
+  "recorded": 8095.0,
+  "bundle_oos": 1913.0,
+  "recorded_oos": 1913.0,
+  "ok": true
+ },
+ {
+  "slot": "CL_1h",
+  "bundle": 18171.0,
+  "recorded": 18171.0,
+  "bundle_oos": 3785.0,
+  "recorded_oos": 3785.0,
+  "ok": true
+ },
+ {
+  "slot": "CL_15m",
+  "bundle": 6434.0,
+  "recorded": 6434.0,
+  "bundle_oos": 896.0,
+  "recorded_oos": 896.0,
+  "ok": true
+ },
+ {
+  "slot": "CL_5m",
+  "bundle": 15196.0,
+  "recorded": 15196.0,
+  "bundle_oos": 3553.0,
+  "recorded_oos": 3553.0,
+  "ok": true
+ },
+ {
+  "slot": "CL_2m",
+  "bundle": 15048.0,
+  "recorded": 15048.0,
+  "bundle_oos": 3480.0,
+  "recorded_oos": 3480.0,
+  "ok": true
+ },
+ {
+  "slot": "NG_4h",
+  "bundle": 21888.0,
+  "recorded": 21888.0,
+  "bundle_oos": 5650.0,
+  "recorded_oos": 5650.0,
+  "ok": true
+ },
+ {
+  "slot": "NG_2h",
+  "bundle": 21101.0,
+  "recorded": 21101.0,
+  "bundle_oos": 3933.0,
+  "recorded_oos": 3933.0,
+  "ok": true
+ },
+ {
+  "slot": "NG_1h",
+  "bundle": 7450.0,
+  "recorded": 7450.0,
+  "bundle_oos": 1572.0,
+  "recorded_oos": 1572.0,
+  "ok": true
+ },
+ {
+  "slot": "NG_15m",
+  "bundle": 814.0,
+  "recorded": 814.0,
+  "bundle_oos": 282.0,
+  "recorded_oos": 282.0,
+  "ok": true
+ },
+ {
+  "slot": "NG_5m",
+  "bundle": -1714.0,
+  "recorded": -1714.0,
+  "bundle_oos": -1915.0,
+  "recorded_oos": -1915.0,
+  "ok": true
+ },
+ {
+  "slot": "NG_2m",
+  "bundle": 27051.0,
+  "recorded": 27051.0,
+  "bundle_oos": 8410.0,
+  "recorded_oos": 8410.0,
+  "ok": true
+ },
+ {
+  "slot": "RTY_4h",
+  "bundle": 61704.0,
+  "recorded": 61704.0,
+  "bundle_oos": 18831.0,
+  "recorded_oos": 18831.0,
+  "ok": true
+ },
+ {
+  "slot": "RTY_2h",
+  "bundle": 13738.0,
+  "recorded": 13738.0,
+  "bundle_oos": 5282.0,
+  "recorded_oos": 5282.0,
+  "ok": true
+ },
+ {
+  "slot": "RTY_1h",
+  "bundle": 15954.0,
+  "recorded": 15954.0,
+  "bundle_oos": 5444.0,
+  "recorded_oos": 5444.0,
+  "ok": true
+ },
+ {
+  "slot": "RTY_15m",
+  "bundle": 6022.0,
+  "recorded": 6022.0,
+  "bundle_oos": 2080.0,
+  "recorded_oos": 2080.0,
+  "ok": true
+ },
+ {
+  "slot": "RTY_5m",
+  "bundle": 5308.0,
+  "recorded": 5308.0,
+  "bundle_oos": 2635.0,
+  "recorded_oos": 2635.0,
+  "ok": true
+ },
+ {
+  "slot": "RTY_2m",
+  "bundle": 18128.0,
+  "recorded": 18128.0,
+  "bundle_oos": 3668.0,
+  "recorded_oos": 3668.0,
+  "ok": true
+ },
+ {
+  "slot": "YM_4h",
+  "bundle": 35047.0,
+  "recorded": 35047.0,
+  "bundle_oos": 12331.0,
+  "recorded_oos": 12331.0,
+  "ok": true
+ },
+ {
+  "slot": "YM_2h",
+  "bundle": 36801.0,
+  "recorded": 36801.0,
+  "bundle_oos": 7163.0,
+  "recorded_oos": 7163.0,
+  "ok": true
+ },
+ {
+  "slot": "YM_1h",
+  "bundle": 55530.0,
+  "recorded": 55530.0,
+  "bundle_oos": 26368.0,
+  "recorded_oos": 26368.0,
+  "ok": true
+ },
+ {
+  "slot": "YM_15m",
+  "bundle": 26709.0,
+  "recorded": 26709.0,
+  "bundle_oos": 18192.0,
+  "recorded_oos": 18192.0,
+  "ok": true
+ },
+ {
+  "slot": "YM_5m",
+  "bundle": 14900.0,
+  "recorded": 14900.0,
+  "bundle_oos": 2465.0,
+  "recorded_oos": 2465.0,
+  "ok": true
+ },
+ {
+  "slot": "YM_2m",
+  "bundle": 4364.0,
+  "recorded": 4364.0,
+  "bundle_oos": 966.0,
+  "recorded_oos": 966.0,
+  "ok": true
+ }
+]

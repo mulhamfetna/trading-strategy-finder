@@ -1,0 +1,47 @@
+{
+ "instrument": "CL",
+ "n_events": 1405,
+ "n_scored": 1349,
+ "n_excluded_lt_min_prior": 56,
+ "min_prior": 8,
+ "primary": {
+  "spearman": 0.5464635070686107,
+  "ci": [
+   0.5079043324095305,
+   0.5828371658549488
+  ],
+  "p": 7.038423793674192e-106,
+  "pass": true,
+  "resolution_variant": 0.3763410647728788
+ },
+ "v1_quintiles": {
+  "bucket_means": [
+   0.07076061954303994,
+   0.14313527966379724,
+   0.1420191721776553,
+   0.2553060672273426,
+   0.4631866249438768
+  ],
+  "spearman": 0.8999999999999998,
+  "pass": true
+ },
+ "v2_rank_top2": [
+  "EIA Crude Oil Stocks Change",
+  "API Crude Oil Stock Change"
+ ],
+ "v2_pass": true,
+ "v3_shuffle": {
+  "median": 0.09666680889622492,
+  "p95": 0.12718834432639334,
+  "pass": true
+ },
+ "control": {
+  "spearman": 0.10891377140476462,
+  "pass": true
+ },
+ "secondary_fp": {
+  "spearman": -0.08370466176189525,
+  "p": 0.0026031408414537785,
+  "n": 1292
+ }
+}

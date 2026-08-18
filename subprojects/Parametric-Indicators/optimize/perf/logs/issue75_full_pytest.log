@@ -1,0 +1,84 @@
+........................................................................ [  7%]
+........................................................................ [ 14%]
+........................................................................ [ 21%]
+........................................................................ [ 28%]
+........................................................................ [ 35%]
+........................................................................ [ 42%]
+........................................................................ [ 50%]
+........................................................................ [ 57%]
+........................................................................ [ 64%]
+........................................................................ [ 71%]
+........................................................................ [ 78%]
+................s....................................................... [ 85%]
+........................................................................ [ 93%]
+.....................................................................    [100%]
+=============================== warnings summary ===============================
+optimize/l2/test_optimize.py::test_run_small_study_smoke
+optimize/test_sampler_factory.py::test_multi_objective_brains_build
+optimize/test_sampler_factory.py::test_aliases_resolve
+optimize/test_sampler_factory.py::test_default_is_nsga3
+  /home/dev/Mulham/75-xseries-wiring/subprojects/Parametric-Indicators/optimize/optimizer.py:270: ExperimentalWarning: NSGAIIISampler is experimental (supported from v3.2.0). The interface can change in the future.
+    return optuna.samplers.NSGAIIISampler(seed=seed, constraints_func=constraints_func)
+
+optimize/test_sampler_factory.py::test_multi_objective_brains_build
+  /home/dev/Mulham/75-xseries-wiring/subprojects/Parametric-Indicators/optimize/optimizer.py:272: ExperimentalWarning: Argument ``constraints_func`` is an experimental feature. The interface can change in the future.
+    return optuna.samplers.NSGAIISampler(seed=seed, constraints_func=constraints_func)
+
+optimize/test_sampler_factory.py::test_multi_objective_brains_build
+  /home/dev/Mulham/75-xseries-wiring/subprojects/Parametric-Indicators/optimize/optimizer.py:276: ExperimentalWarning: Argument ``multivariate`` is an experimental feature. The interface can change in the future.
+    return optuna.samplers.TPESampler(seed=seed, multivariate=True, group=True,
+
+optimize/test_sampler_factory.py::test_multi_objective_brains_build
+  /home/dev/Mulham/75-xseries-wiring/subprojects/Parametric-Indicators/optimize/optimizer.py:276: ExperimentalWarning: Argument ``group`` is an experimental feature. The interface can change in the future.
+    return optuna.samplers.TPESampler(seed=seed, multivariate=True, group=True,
+
+optimize/test_sampler_factory.py::test_multi_objective_brains_build
+  /home/dev/Mulham/75-xseries-wiring/subprojects/Parametric-Indicators/optimize/optimizer.py:276: ExperimentalWarning: Argument ``constraints_func`` is an experimental feature. The interface can change in the future.
+    return optuna.samplers.TPESampler(seed=seed, multivariate=True, group=True,
+
+optimize/test_sampler_factory.py::test_multi_objective_brains_build
+optimize/test_sampler_factory.py::test_aliases_resolve
+  /home/dev/Mulham/75-xseries-wiring/subprojects/Parametric-Indicators/optimize/optimizer.py:281: ExperimentalWarning: GPSampler is experimental (supported from v3.6.0). The interface can change in the future.
+    return optuna.samplers.GPSampler(seed=seed, constraints_func=constraints_func)
+
+optimize/test_sampler_factory.py::test_multi_objective_brains_build
+optimize/test_sampler_factory.py::test_aliases_resolve
+  /home/dev/Mulham/75-xseries-wiring/subprojects/Parametric-Indicators/optimize/optimizer.py:281: ExperimentalWarning: Argument ``constraints_func`` is an experimental feature. The interface can change in the future.
+    return optuna.samplers.GPSampler(seed=seed, constraints_func=constraints_func)
+
+optimize/test_two_stage.py::test_stage_a_shortlist_forces_champion_slot0
+  /home/dev/Mulham/75-xseries-wiring/subprojects/Parametric-Indicators/optimize/two_stage.py:163: ExperimentalWarning: NSGAIIISampler is experimental (supported from v3.2.0). The interface can change in the future.
+    sampler=optuna.samplers.NSGAIIISampler(seed=seed, constraints_func=cf))
+
+optimize/test_two_stage.py::test_both_engines_run_clean
+  /home/dev/Mulham/75-xseries-wiring/subprojects/Parametric-Indicators/optimize/two_stage.py:235: ExperimentalWarning: GPSampler is experimental (supported from v3.6.0). The interface can change in the future.
+    sampler=optuna.samplers.GPSampler(seed=seed, constraints_func=cf))
+
+optimize/test_two_stage.py::test_both_engines_run_clean
+  /home/dev/Mulham/75-xseries-wiring/subprojects/Parametric-Indicators/optimize/two_stage.py:235: ExperimentalWarning: Argument ``constraints_func`` is an experimental feature. The interface can change in the future.
+    sampler=optuna.samplers.GPSampler(seed=seed, constraints_func=cf))
+
+tests/test_classic.py::test_adx_dm_logic_and_contract
+  /home/dev/Mulham/75-xseries-wiring/subprojects/Parametric-Indicators/tests/test_classic.py:162: RuntimeWarning: invalid value encountered in divide
+    dx = 100.0 * np.abs(exp_pdi - exp_mdi) / (exp_pdi + exp_mdi)
+
+tests/test_engine_split_sltp.py::test_degenerate_split_equals_shared
+  /home/dev/Mulham/.venv/lib/python3.12/site-packages/_pytest/python.py:171: PytestReturnNotNoneWarning: Test functions should return None, but tests/test_engine_split_sltp.py::test_degenerate_split_equals_shared returned <class 'int'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+tests/test_engine_split_sltp.py::test_direction_consistency
+  /home/dev/Mulham/.venv/lib/python3.12/site-packages/_pytest/python.py:171: PytestReturnNotNoneWarning: Test functions should return None, but tests/test_engine_split_sltp.py::test_direction_consistency returned <class 'tuple'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+tests/test_engine_split_sltp.py::test_bad_split_raises
+  /home/dev/Mulham/.venv/lib/python3.12/site-packages/_pytest/python.py:171: PytestReturnNotNoneWarning: Test functions should return None, but tests/test_engine_split_sltp.py::test_bad_split_raises returned <class 'bool'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+1004 passed, 1 skipped, 19 warnings in 218.68s (0:03:38)

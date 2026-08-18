@@ -1,0 +1,256 @@
+{
+ "stage": "S0",
+ "instrument": "GC",
+ "series": [
+  "Non Farm Payrolls",
+  "Inflation Rate MoM",
+  "Retail Sales MoM",
+  "Durable Goods Orders MoM"
+ ],
+ "n_events": 505,
+ "price_span": [
+  "2010-06-06 18:00:00",
+  "2026-08-07 16:59:00"
+ ],
+ "round1_reference": {
+  "spearman": -0.193,
+  "sign_hit": 0.395,
+  "baseline": [
+   0.473,
+   0.507
+  ],
+  "note": "measured on the PROXY surprise over 1,208 releases 2010-2026 \u2014 a different sample"
+ },
+ "arms": {
+  "proxy": [
+   {
+    "n": 405,
+    "pearson_r": -0.03352369247464667,
+    "pearson_p": 0.5011030470727821,
+    "spearman_r": -0.27325363548174264,
+    "spearman_p": 2.285881625378555e-08,
+    "measure": "jump",
+    "includes_jump": true,
+    "hit_n": 400,
+    "hit_same_sign": 0.3775,
+    "hit_inverse_rule_accuracy": 0.6225,
+    "hit_same_sign_ci95": [
+     0.331371624990181,
+     0.42595888712280516
+    ]
+   },
+   {
+    "n": 405,
+    "pearson_r": -0.03319509460334044,
+    "pearson_p": 0.5053106138994258,
+    "spearman_r": -0.22727568528731945,
+    "spearman_p": 3.8318603870856495e-06,
+    "measure": "open_r5",
+    "includes_jump": true,
+    "hit_n": 402,
+    "hit_same_sign": 0.3756218905472637,
+    "hit_inverse_rule_accuracy": 0.6243781094527363,
+    "hit_same_sign_ci95": [
+     0.3296683932599739,
+     0.4239299692874636
+    ]
+   },
+   {
+    "n": 405,
+    "pearson_r": -0.000622735511189008,
+    "pearson_p": 0.9900318274435385,
+    "spearman_r": -0.16354114473337306,
+    "spearman_p": 0.0009555538982080254,
+    "measure": "open_r15",
+    "includes_jump": true,
+    "hit_n": 405,
+    "hit_same_sign": 0.41975308641975306,
+    "hit_inverse_rule_accuracy": 0.5802469135802469,
+    "hit_same_sign_ci95": [
+     0.37266303368984527,
+     0.4683511330553612
+    ]
+   },
+   {
+    "n": 405,
+    "pearson_r": -0.006048016009158652,
+    "pearson_p": 0.9034226185598242,
+    "spearman_r": -0.17404927509463267,
+    "spearman_p": 0.000433599242481149,
+    "measure": "open_r60",
+    "includes_jump": true,
+    "hit_n": 404,
+    "hit_same_sign": 0.41089108910891087,
+    "hit_inverse_rule_accuracy": 0.5891089108910892,
+    "hit_same_sign_ci95": [
+     0.36397410882910847,
+     0.4594867031053245
+    ]
+   },
+   {
+    "n": 405,
+    "pearson_r": -0.009403578014363837,
+    "pearson_p": 0.8503572558527489,
+    "spearman_r": 0.0155536129434687,
+    "spearman_p": 0.7549935234251558,
+    "measure": "close_r5",
+    "includes_jump": false,
+    "hit_n": 397,
+    "hit_same_sign": 0.5037783375314862,
+    "hit_inverse_rule_accuracy": 0.49622166246851385,
+    "hit_same_sign_ci95": [
+     0.45479586965603747,
+     0.5526883861113494
+    ]
+   },
+   {
+    "n": 405,
+    "pearson_r": 0.03587003643204472,
+    "pearson_p": 0.47160437334866173,
+    "spearman_r": 0.03708708505296054,
+    "spearman_p": 0.4566874905438926,
+    "measure": "close_r15",
+    "includes_jump": false,
+    "hit_n": 398,
+    "hit_same_sign": 0.5100502512562815,
+    "hit_inverse_rule_accuracy": 0.48994974874371855,
+    "hit_same_sign_ci95": [
+     0.46107725663349036,
+     0.5588310923542974
+    ]
+   },
+   {
+    "n": 405,
+    "pearson_r": 0.01808584802778945,
+    "pearson_p": 0.7166979727291213,
+    "spearman_r": -0.03504221650731002,
+    "spearman_p": 0.4819016218920696,
+    "measure": "close_r60",
+    "includes_jump": false,
+    "hit_n": 404,
+    "hit_same_sign": 0.4777227722772277,
+    "hit_inverse_rule_accuracy": 0.5222772277227723,
+    "hit_same_sign_ci95": [
+     0.4294545684273938,
+     0.5264106345562144
+    ]
+   }
+  ],
+  "real": [
+   {
+    "n": 405,
+    "pearson_r": -0.22410849306021954,
+    "pearson_p": 5.258207518073723e-06,
+    "spearman_r": -0.4152229926867377,
+    "spearman_p": 2.603085898014085e-18,
+    "measure": "jump",
+    "includes_jump": true,
+    "hit_n": 400,
+    "hit_same_sign": 0.3725,
+    "hit_inverse_rule_accuracy": 0.6275,
+    "hit_same_sign_ci95": [
+     0.326543862947949,
+     0.42088177210842426
+    ]
+   },
+   {
+    "n": 405,
+    "pearson_r": -0.19759755863567716,
+    "pearson_p": 6.232561425968618e-05,
+    "spearman_r": -0.34262461517023535,
+    "spearman_p": 1.3450548653971956e-12,
+    "measure": "open_r5",
+    "includes_jump": true,
+    "hit_n": 402,
+    "hit_same_sign": 0.3681592039800995,
+    "hit_inverse_rule_accuracy": 0.6318407960199005,
+    "hit_same_sign_ci95": [
+     0.32246691653945014,
+     0.4163473477608336
+    ]
+   },
+   {
+    "n": 405,
+    "pearson_r": -0.20949219570478883,
+    "pearson_p": 2.1360707450225624e-05,
+    "spearman_r": -0.290425495642356,
+    "spearman_p": 2.593079692557354e-09,
+    "measure": "open_r15",
+    "includes_jump": true,
+    "hit_n": 405,
+    "hit_same_sign": 0.3728395061728395,
+    "hit_inverse_rule_accuracy": 0.6271604938271604,
+    "hit_same_sign_ci95": [
+     0.3271462719717881,
+     0.42092233071677004
+    ]
+   },
+   {
+    "n": 405,
+    "pearson_r": -0.15725633562924551,
+    "pearson_p": 0.001499831989127687,
+    "spearman_r": -0.2030707798566973,
+    "spearman_p": 3.837280074106113e-05,
+    "measure": "open_r60",
+    "includes_jump": true,
+    "hit_n": 404,
+    "hit_same_sign": 0.4381188118811881,
+    "hit_inverse_rule_accuracy": 0.5618811881188119,
+    "hit_same_sign_ci95": [
+     0.3905454479918419,
+     0.4868578936292922
+    ]
+   },
+   {
+    "n": 405,
+    "pearson_r": -0.01647291771501736,
+    "pearson_p": 0.7410154965652511,
+    "spearman_r": 0.013827210048040278,
+    "spearman_p": 0.7814572991436728,
+    "measure": "close_r5",
+    "includes_jump": false,
+    "hit_n": 397,
+    "hit_same_sign": 0.5088161209068011,
+    "hit_inverse_rule_accuracy": 0.49118387909319894,
+    "hit_same_sign_ci95": [
+     0.45979152581095467,
+     0.5576717376462812
+    ]
+   },
+   {
+    "n": 405,
+    "pearson_r": -0.06911536947512052,
+    "pearson_p": 0.16505134380296163,
+    "spearman_r": -0.004106817539320632,
+    "spearman_p": 0.9343341972718555,
+    "measure": "close_r15",
+    "includes_jump": false,
+    "hit_n": 398,
+    "hit_same_sign": 0.4723618090452261,
+    "hit_inverse_rule_accuracy": 0.5276381909547738,
+    "hit_same_sign_ci95": [
+     0.42381334806624843,
+     0.5214386922173354
+    ]
+   },
+   {
+    "n": 405,
+    "pearson_r": -0.027103713617155887,
+    "pearson_p": 0.5865338592219902,
+    "spearman_r": 0.017368465690242633,
+    "spearman_p": 0.7274800503747395,
+    "measure": "close_r60",
+    "includes_jump": false,
+    "hit_n": 404,
+    "hit_same_sign": 0.5346534653465347,
+    "hit_inverse_rule_accuracy": 0.4653465346534653,
+    "hit_same_sign_ci95": [
+     0.48591688270476213,
+     0.5827372459874027
+    ]
+   }
+  ]
+ },
+ "s0_pass": true,
+ "s0_reason": "4 of 4 horizons negative, 4 significant at 0.05 \u2014 gold's inverse response to macro surprise reproduces in SIGN"
+}

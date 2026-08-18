@@ -1,0 +1,37 @@
+{
+ "n_matched": 286,
+ "floor": 2016,
+ "A": {
+  "n": 286,
+  "pearson_r": 0.7375885664143909,
+  "pearson_p": 2.3650418287129115e-50,
+  "spearman_r": 0.7415689818503602,
+  "spearman_p": 3.715594678475456e-51
+ },
+ "A_pass": true,
+ "B": {
+  "n": 284,
+  "pearson_r": 0.11514648892862389,
+  "pearson_p": 0.05257725189927367,
+  "spearman_r": 0.10742903557995115,
+  "spearman_p": 0.07065686702799061
+ },
+ "C_median_divergence": 2.289,
+ "C_agreement": {
+  "n": 143,
+  "pearson_r": -0.36192269868820665,
+  "pearson_p": 8.933405615960062e-06,
+  "spearman_r": -0.28373370212629606,
+  "spearman_p": 0.0005946665062318781
+ },
+ "C_divergence": {
+  "n": 141,
+  "pearson_r": -0.16337025729899846,
+  "pearson_p": 0.052907963235318635,
+  "spearman_r": -0.14853725314153346,
+  "spearman_p": 0.07877362341604034
+ },
+ "C_reversal": false,
+ "verdict": "INCONCLUSIVE",
+ "reason": "the premise holds but the drift does NOT behave differently when the preview misled \u2014 consistent with H1, but not evidence FOR it"
+}

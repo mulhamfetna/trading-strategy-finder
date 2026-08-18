@@ -1,0 +1,188 @@
+{
+ "id": "CL_4h",
+ "instrument": "CL",
+ "timeframe": "4h",
+ "label": "Crude Oil (CL) 4h \u00b7 box + 6-indicator gate \u00b7 end-of-day exit (never holds overnight) \u00b7 1-minute-frame indicators \u2014 +$19,245 full / $1,916 DD / 53.4% win \u00b7 OOS-2026 +$6,293 \u00b7 cold-start re-optimization with the end-of-day close FORCED",
+ "preset": {
+  "indicators": [
+   {
+    "key": "ema_trend",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {
+     "fast": 20,
+     "slow": 50
+    }
+   },
+   {
+    "key": "sma_trend",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {
+     "fast": 50,
+     "slow": 200
+    }
+   },
+   {
+    "key": "macd",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {
+     "fast": 12,
+     "slow": 26,
+     "signal": 9
+    }
+   },
+   {
+    "key": "vwap",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "keltner",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {
+     "n": 20,
+     "m": 2
+    }
+   },
+   {
+    "key": "obv",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {
+     "slope": 20
+    }
+   },
+   {
+    "key": "cci",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 86,
+     "threshold": 250
+    }
+   },
+   {
+    "key": "rsi",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "n": 14,
+     "lower": 30,
+     "upper": 70
+    }
+   },
+   {
+    "key": "stochastic",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "n": 14,
+     "d": 3,
+     "lower": 20,
+     "upper": 80
+    }
+   },
+   {
+    "key": "mfi",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "n": 14,
+     "lower": 20,
+     "upper": 80
+    }
+   },
+   {
+    "key": "bollinger",
+    "enabled": true,
+    "mode": "veto",
+    "params": {
+     "n": 159,
+     "k": 3.6
+    }
+   },
+   {
+    "key": "adx",
+    "enabled": false,
+    "mode": "veto",
+    "params": {
+     "n": 14,
+     "threshold": 25
+    }
+   },
+   {
+    "key": "structure_trend",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "swing_l": 2
+    }
+   },
+   {
+    "key": "order_block",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "swing_l": 18
+    }
+   },
+   {
+    "key": "fvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "lookback": 3
+    }
+   },
+   {
+    "key": "ifvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "breaker",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "swing_l": 13
+    }
+   },
+   {
+    "key": "cisd",
+    "enabled": true,
+    "mode": "both",
+    "params": {}
+   }
+  ],
+  "k": 1,
+  "gate_pct": 96.03,
+  "sl_soft": 0.2332,
+  "sl_hard": 0.4146,
+  "tp": 0.3743,
+  "dd_limit": 10.2885,
+  "cooldown": 0,
+  "cap_1min": 0,
+  "cap_mode": "eod",
+  "eod_margin_min": 15,
+  "intracandle_veto_entry": false,
+  "intracandle_max_wait": 240,
+  "flip": true,
+  "ind_1min": true,
+  "window": "full",
+  "timeframe": "4h",
+  "pv": 1000.0,
+  "dd_cap": 5000.0,
+  "retrace_amount": 0,
+  "retrace_unit": "atr_mult",
+  "wait_bars": 0,
+  "gen": {
+   "swing_l": 2,
+   "golf_n": 3
+  }
+ }
+}

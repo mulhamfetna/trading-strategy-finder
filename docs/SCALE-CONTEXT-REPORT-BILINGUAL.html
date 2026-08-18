@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scale Context — the News Overlay vs the Book · سياق الحجم: طبقة الأخبار مقابل المحفظة</title>
+<style>
+  :root{--l0:#0b1e3d;--l1:#1d3a6e;--l1b:#27508f;--l2:#0e5e56;--l2b:#15806f;--gold:#d4a017;
+        --green:#1d9e57;--red:#c0392b;--amber:#e67e22;--bg:#f4f6fa;--card:#fff;--ink:#1c2333;--mut:#5f6775;--line:#dfe4ee}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Tahoma,"Noto Naskh Arabic",Arial,sans-serif;line-height:1.7;font-size:15.5px}
+  header{background:linear-gradient(135deg,var(--l0),var(--l1) 55%,var(--l2));color:#fff;padding:30px 26px}
+  header h1{margin:0 0 4px;font-size:24px} header .sub{opacity:.9;font-size:14px}
+  .wrap{max-width:1100px;margin:0 auto;padding:20px 16px 70px}
+  section{background:var(--card);border:1px solid var(--line);border-radius:12px;margin:16px 0;padding:16px 20px;box-shadow:0 1px 3px rgba(10,20,50,.06)}
+  h2{margin:0 0 10px;font-size:18px;color:var(--l1);border-bottom:2px solid var(--line);padding-bottom:6px}
+  .ar{direction:rtl;text-align:right;unicode-bidi:embed;background:#f8fafd;border-inline-start:4px solid var(--l2);
+      border-radius:8px;padding:10px 14px;margin:10px 0}
+  .num{font-family:Consolas,monospace;white-space:nowrap;direction:ltr;unicode-bidi:embed}
+  .bar{display:flex;align-items:center;gap:10px;margin:6px 0}
+  .bar .lbl{width:270px;font-size:13.5px;flex-shrink:0}
+  .bar .trk{flex:1;background:#e9edf5;border-radius:6px;height:24px;direction:ltr}
+  .bar .fill{height:100%;border-radius:6px;display:flex;align-items:center;justify-content:flex-end;color:#fff;
+             font-size:12px;font-family:Consolas,monospace;padding:0 8px;min-width:36px}
+  .fg{background:linear-gradient(90deg,#27ae60,#1d9e57)} .fb{background:linear-gradient(90deg,#3f6ad8,#27508f)}
+  .fgold{background:linear-gradient(90deg,#e0b52e,#c39312)} .fr{background:linear-gradient(90deg,#e74c3c,#c0392b)}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:14px}
+  th{background:#eef2f9;padding:7px 10px;border:1px solid var(--line)} td{padding:7px 10px;border:1px solid var(--line)}
+  .ok{color:var(--green);font-weight:700}
+  .note{background:#fdf6ec;border-inline-start:4px solid var(--amber);padding:10px 14px;border-radius:8px;margin:10px 0;font-size:14px}
+  .kpis{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;flex:1;min-width:150px}
+  .kpi .v{font-size:20px;font-weight:800;font-family:Consolas,monospace} .kpi .k{font-size:12px;color:var(--mut)}
+  .g .v{color:var(--green)} .b .v{color:var(--l1)} .a .v{color:var(--amber)}
+  footer{color:var(--mut);font-size:12.5px;margin-top:24px;border-top:1px solid var(--line);padding-top:10px}
+</style>
+</head>
+<body>
+<header>
+  <h1>📏 Scale Context — what the news overlay is, and is not, at book scale</h1>
+  <div class="sub">سياق الحجم — ما الذي تمثّله طبقة الأخبار وما لا تمثّله على مستوى المحفظة الكاملة · <span class="num">2026-08-17</span> · WS-DEPLOY #127</div>
+</header>
+<div class="wrap">
+
+<section>
+<h2>1 · The honest headline first: in absolute dollars, it is small · بالدولار المطلق هي صغيرة</h2>
+<p>At one contract, the overlay's 2024→2026 pace is ≈ <b class="num">$16,200/yr net stressed</b>
+(NQ ≈ $13.2k + RTY ≈ $3.0k, ~31 events/yr each). The deployed book (55 champions, 9 markets) runs at
+≈ <b class="num">$840,000/yr</b> (2026 OOS). So the overlay ≈ <b>1.9% of book P&amp;L</b>:</p>
+<div class="bar"><div class="lbl">The deployed book (~$840k/yr)</div><div class="trk"><div class="fill fb" style="width:100%">$840k</div></div></div>
+<div class="bar"><div class="lbl">News overlay @ 1 contract (~$16.2k/yr)</div><div class="trk"><div class="fill fgold" style="width:4%">$16k</div></div></div>
+<div class="ar">عند عقد واحد، وتيرة الطبقة الإخبارية في نافذة <span class="num">2026→2024</span> هي نحو
+<b class="num">$16,200/سنة</b> صافيًا بأقسى التكاليف، بينما المحفظة المنشورة كاملة تنتج نحو
+<b class="num">$840,000/سنة</b> — أي أن الطبقة تمثل <b>~1.9% فقط</b> من دولارات المحفظة. هذه هي الحقيقة
+الأولى التي يجب قولها بلا تجميل.</div>
+</section>
+
+<section>
+<h2>2 · Why "small" is the wrong lens: the three qualities dollars don't show · لماذا «صغيرة» عدسة خاطئة</h2>
+
+<h3 style="margin:8px 0 4px">a) It is nearly ORTHOGONAL — it adds profit without adding drawdown · شبه متعامدة</h3>
+<p>Measured on the same system with-vs-without (NQ 1h champion slot, 2025-01→2026-05): daily P&amp;L
+correlation <b class="num">+0.098</b>. That is why <b class="num">+31.1%</b> profit arrived with only
+<b class="num">+6.6%</b> drawdown — the two P&amp;L streams almost never lose together (worst joint day
+just <span class="num">−$2,032</span>; only 6 of 42 releases even overlapped an open book position).</p>
+<div class="kpis">
+  <div class="kpi g"><div class="v">+31.1%</div><div class="k">profit uplift on the slot · زيادة الربح</div></div>
+  <div class="kpi a"><div class="v">+6.6%</div><div class="k">drawdown change · تغيّر التراجع</div></div>
+  <div class="kpi b"><div class="v">+0.098</div><div class="k">daily correlation · الارتباط اليومي</div></div>
+  <div class="kpi g"><div class="v">8.94→10.99</div><div class="k">P&amp;L per $ of drawdown · الربح لكل دولار تراجع</div></div>
+</div>
+<div class="ar">قياسًا على النظام نفسه بوجودها وبدونها: ارتباط الأرباح اليومية <b class="num">+0.098</b> فقط —
+لذلك جاءت زيادة <b class="num">+31.1%</b> من الربح مقابل <b class="num">+6.6%</b> فقط من التراجع الأقصى:
+تياران ربحيان لا يخسران معًا تقريبًا (أسوأ يوم مشترك <span class="num">−$2,032</span>، و6 فقط من 42 إصدارًا
+صادفت مركزًا مفتوحًا للمحفظة). <b>كفاءة المخاطرة قفزت من 8.94 إلى 10.99 دولار ربح لكل دولار تراجع.</b></div>
+
+<h3 style="margin:14px 0 4px">b) It is almost FREE in exposure time · شبه مجانية في زمن التعرض</h3>
+<div class="bar"><div class="lbl">Book slot: hours holding positions</div><div class="trk"><div class="fill fb" style="width:100%">581 h</div></div></div>
+<div class="bar"><div class="lbl">Overlay: hours in the market (same window)</div><div class="trk"><div class="fill fgold" style="width:3.5%">14 h</div></div></div>
+<p>Per hour of market risk, the overlay earned ≈ <b class="num">$1,750/h</b> vs the slot's
+≈ <span class="num">$136/h</span> — <b>~13× the return per unit of exposure time</b>. It spends 99.7%
+of its life flat, waiting for ~31 known timestamps a year.</p>
+<div class="ar">في النافذة نفسها حملت المحفظة مراكز لمدة <span class="num">581</span> ساعة بينما كانت الطبقة
+داخل السوق <b><span class="num">14</span> ساعة فقط</b> — أي نحو <b class="num">$1,750</b> لكل ساعة تعرض مقابل
+<span class="num">$136</span> للمحفظة: <b>~13 ضعفًا من العائد لكل وحدة زمن مخاطرة</b>. الطبقة «نائمة» 99.7%
+من الوقت وتستيقظ لمواعيد معلومة سلفًا.</div>
+
+<h3 style="margin:14px 0 4px">c) It is the only sleeve that SCALES LINEARLY with the new qty layer · الوحيدة القابلة للتحجيم خطيًا</h3>
+<p>The engine's champions are structurally 1-contract; the overlay's dollars were verified to scale
+<b>exactly linearly</b> in qty (327/327 events to the cent at qty=3). The approved sizing layer makes
+this the first sleeve where size is a dial:</p>
+<div class="bar"><div class="lbl">qty=1</div><div class="trk"><div class="fill fg" style="width:20%">$16.2k/yr</div></div></div>
+<div class="bar"><div class="lbl">qty=3</div><div class="trk"><div class="fill fg" style="width:60%">$48.7k/yr</div></div></div>
+<div class="bar"><div class="lbl">qty=5</div><div class="trk"><div class="fill fg" style="width:100%">$81.1k/yr ≈ 9.7% of the book</div></div></div>
+<div class="note">⚠️ The arithmetic is linear; the MARKET may not be: fills beyond bar-level assumptions
+at higher qty in the release second are untested (the standing slippage blind spot). Scaling beyond a
+few contracts needs its own validation — stated here so the dial is used with eyes open.</div>
+<div class="ar">أبطال المحرك مقيدون بعقد واحد بنيويًا، بينما ثبت أن دولارات هذه الطبقة تتضاعف <b>خطيًا
+تمامًا</b> مع عدد العقود (تحقق 327/327 حدثًا حتى السنت عند qty=3). مع طبقة الحجم المعتمدة تصبح هذه
+أول ذراع يُدار حجمها بمقبض: عقد=<span class="num">$16.2k</span>، ثلاثة=<span class="num">$48.7k</span>،
+خمسة=<span class="num">$81.1k</span>/سنة ≈ 9.7% من المحفظة. ⚠️ لكن الحساب خطي والسوقُ قد لا يكون:
+الانزلاق فوق افتراضات الشموع عند أحجام أكبر في ثانية الصدور غير مُختبَر — يُذكر هذا هنا لتُدار العتلة بعيون مفتوحة.</div>
+</section>
+
+<section>
+<h2>3 · Where it sits in the portfolio picture · موقعها في صورة المحفظة</h2>
+<table>
+<tr><th></th><th>The deployed book · المحفظة</th><th>The news overlay · طبقة الأخبار</th></tr>
+<tr><td>What it harvests · ماذا تحصد</td><td>box-structure edges, always-on · حواف الصناديق، دائمة التشغيل</td><td>the announcement premium, ~31 known moments/yr · علاوة الإعلان في لحظات معلومة</td></tr>
+<tr><td>P&amp;L scale · حجم الدولارات</td><td class="num">~$840k/yr</td><td class="num">~$16.2k/yr @ qty=1 (~1.9%)</td></tr>
+<tr><td>Correlation to the book · الارتباط</td><td>—</td><td class="num ok">+0.098</td></tr>
+<tr><td>Time in market · زمن التعرض</td><td>continuous · مستمر</td><td class="num">~0.3%</td></tr>
+<tr><td>Sizeable with qty? · قابلة للتحجيم؟</td><td>no (1-contract slots) · لا</td><td class="ok">yes, linear · نعم خطيًا</td></tr>
+<tr><td>Regime guard · حارس النظام</td><td>circuit-breakers · قواطع</td><td>rolling-24 CPI monitor (sticky) · مراقب لاصق</td></tr>
+</table>
+<p><b>The verdict in one sentence:</b> the overlay is not a second engine — it is a
+<b>high-efficiency, near-zero-cost increment</b> whose real value is diversification per unit of risk
+and a size dial the rest of the book doesn't have; its absolute dollars stay honest-small until the
+owner chooses a qty, and the regime monitor decides when it is allowed to run at all.</p>
+<div class="ar"><b>الحكم في جملة:</b> الطبقة ليست محركًا ثانيًا — إنها <b>إضافة عالية الكفاءة شبه مجانية
+التكلفة</b>: قيمتها الحقيقية هي التنويع لكل وحدة مخاطرة ومقبضُ حجمٍ لا يملكه باقي الكتاب؛ ودولاراتها
+تبقى صغيرة بصدق حتى يختار المالك عدد العقود، ويبقى مراقبُ النظام هو مَن يقرر متى يُسمح لها بالعمل أصلًا.</div>
+</section>
+
+<footer>Sources: with-vs-without measurement (#127, dashboard's own accounting) · <span class="num">champion.json</span> in
+<span class="num">playbooks/news-release-long/</span> · book figure: deployed-set 2026 OOS (~$840k/yr) ·
+companion: <b>STRESSED-COSTS-REPORT-BILINGUAL.html</b> · self-contained, works offline · ملف محلي ذاتي الاكتفاء.</footer>
+</div>
+</body>
+</html>

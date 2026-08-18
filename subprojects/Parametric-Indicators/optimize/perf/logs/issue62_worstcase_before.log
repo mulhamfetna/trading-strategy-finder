@@ -1,0 +1,30 @@
+[worstcase] 165 indicators | stage-1 on 20,000 bars (extrapolation ×24.3 to 486,969) | timeout 20s/config
+[worstcase] scanned 25/165
+[worstcase] scanned 50/165
+[worstcase] scanned 75/165
+[worstcase] scanned 100/165
+[worstcase] scanned 125/165
+[worstcase] scanned 150/165
+
+[worstcase] === 17 indicator(s) OVER the 2.0s full-frame budget ===
+    sinewave                 worst=default  proj_full=    6.53s  <-- OVER BUDGET
+    ifvg                     worst=default  proj_full=    5.29s  <-- OVER BUDGET
+    proj_bands               worst=all_max  proj_full=    4.82s  <-- OVER BUDGET
+    cmo_chande_dmi           worst=all_min  proj_full=    4.42s  <-- OVER BUDGET
+    ou_halflife              worst=all_max  proj_full=    4.17s  <-- OVER BUDGET
+    linreg_channel           worst=all_max  proj_full=    3.69s  <-- OVER BUDGET
+    frama                    worst=default  proj_full=    3.45s  <-- OVER BUDGET
+    ichimoku_cloud           worst=default  proj_full=    3.38s  <-- OVER BUDGET
+    ichimoku_tk_cross        worst=all_max  proj_full=    3.37s  <-- OVER BUDGET
+    schaff_trend_cycle       worst=all_min  proj_full=    3.31s  <-- OVER BUDGET
+    lsma                     worst=all_max  proj_full=    3.08s  <-- OVER BUDGET
+    linreg_r2                worst=all_max  proj_full=    3.01s  <-- OVER BUDGET
+    order_block              worst=all_min  proj_full=    2.77s  <-- OVER BUDGET
+    chande_kroll             worst=all_min  proj_full=    2.50s  <-- OVER BUDGET
+    mama_fama                worst=default  proj_full=    2.31s  <-- OVER BUDGET
+    smi                      worst=all_min  proj_full=    2.14s  <-- OVER BUDGET
+    ulcer                    worst=all_max  proj_full=    2.10s  <-- OVER BUDGET
+    hilbert_cycle            worst=default  proj_full=    1.81s
+    fisher                   worst=all_min  proj_full=    1.71s
+    rsi_connors              worst=default  proj_full=    1.53s
+[worstcase] WROTE optimize/perf/results/worstcase_issue62_before.json

@@ -1,0 +1,18 @@
+  tf OOS trades      OOS P/L  mean/trade   sd/trade  MDE/trade    MDE total  MDE as % of OOS P/L
+  4h         81 $     61,601 $       761 $    2,218 $      690 $     55,920                  91%
+  2h         50 $     40,745 $       815 $    1,624 $      644 $     32,180                  79%
+  1h         38 $     27,203 $       716 $    1,901 $      864 $     32,829                 121%
+ 15m         73 $     21,306 $       292 $      994 $      326 $     23,799                 112%
+  5m         16 $      2,600 $       163 $      438 $      307 $      4,908                 189%
+  2m        149 $      4,545 $        30 $      345 $       79 $     11,791                 259%
+
+slots=33  pooled n=1,571 trades
+  baseline edge      = 0.0904 sd-units per trade
+  MDE (a=.05,pw=.80) = 0.0712 sd-units per trade
+  -> smallest detectable improvement = 79% of the existing edge
+     n=   81 -> MDE   347% of the edge
+     n=  150 -> MDE   255% of the edge
+     n=  400 -> MDE   156% of the edge
+     n=  800 -> MDE   110% of the edge
+     n= 1571 -> MDE    79% of the edge
+     n= 4000 -> MDE    49% of the edge

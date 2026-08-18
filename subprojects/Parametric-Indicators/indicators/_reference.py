@@ -9,6 +9,53 @@ from __future__ import annotations
 import numpy as np
 
 
+def ema_ref(close: np.ndarray, n: int) -> np.ndarray:
+    """Exponential MA — ORIGINAL per-bar Python recurrence, alpha = 2/(n+1), seeded at close[0]."""
+    x = np.asarray(close, dtype=float)
+    out = np.full(len(x), np.nan, dtype=float)
+    if len(x) == 0:
+        return out
+    a = 2.0 / (n + 1.0)
+    out[0] = x[0]
+    for t in range(1, len(x)):
+        out[t] = a * x[t] + (1.0 - a) * out[t - 1]
+    return out
+
+
+def rma_ref(x: np.ndarray, n: int) -> np.ndarray:
+    """Wilder's smoothing — ORIGINAL per-bar Python recurrence (seed at first finite, hold on NaN)."""
+    v = np.asarray(x, dtype=float)
+    out = np.full(len(v), np.nan, dtype=float)
+    finite = np.where(~np.isnan(v))[0]
+    if len(finite) == 0:
+        return out
+    a = 1.0 / n
+    s = int(finite[0])
+    out[s] = v[s]
+    for t in range(s + 1, len(v)):
+        if np.isnan(v[t]):
+            out[t] = out[t - 1]
+        else:
+            out[t] = a * v[t] + (1.0 - a) * out[t - 1]
+    return out
+
+
+def roll_max_ref(x, n):
+    """Rolling window maximum — ORIGINAL per-bar `np.max(slice)` loop (issue #62)."""
+    out = np.full(len(x), np.nan)
+    for t in range(n - 1, len(x)):
+        out[t] = np.max(x[t - n + 1:t + 1])
+    return out
+
+
+def roll_min_ref(x, n):
+    """Rolling window minimum — ORIGINAL per-bar `np.min(slice)` loop (issue #62)."""
+    out = np.full(len(x), np.nan)
+    for t in range(n - 1, len(x)):
+        out[t] = np.min(x[t - n + 1:t + 1])
+    return out
+
+
 def obv_ref(close: np.ndarray, volume: np.ndarray) -> np.ndarray:
     """On-Balance Volume — ORIGINAL per-bar loop. OBV[0]=0; += sign(close[t]-close[t-1]) * volume[t]."""
     c = np.asarray(close, dtype=float)

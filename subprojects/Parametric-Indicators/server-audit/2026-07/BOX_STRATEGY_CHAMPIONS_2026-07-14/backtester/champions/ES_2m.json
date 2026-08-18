@@ -1,0 +1,188 @@
+{
+ "id": "ES_2m",
+ "instrument": "ES",
+ "timeframe": "2m",
+ "label": "S&P 500 (ES) 2m \u00b7 box + 6-indicator gate \u00b7 max-hold 734 bars \u00b7 1-minute-frame indicators \u2014 +$12,632 full / $1,567 DD / 80.4% win \u00b7 OOS-2026 +$6,913 \u00b7 incumbent (held \u2014 no challenger beat it out-of-sample)",
+ "preset": {
+  "indicators": [
+   {
+    "key": "ema_trend",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 43,
+     "slow": 180
+    }
+   },
+   {
+    "key": "sma_trend",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {
+     "fast": 50,
+     "slow": 200
+    }
+   },
+   {
+    "key": "macd",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "fast": 61,
+     "slow": 133,
+     "signal": 41
+    }
+   },
+   {
+    "key": "vwap",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {}
+   },
+   {
+    "key": "keltner",
+    "enabled": false,
+    "mode": "confirm",
+    "params": {
+     "n": 20,
+     "m": 2
+    }
+   },
+   {
+    "key": "obv",
+    "enabled": true,
+    "mode": "confirm",
+    "params": {
+     "slope": 128
+    }
+   },
+   {
+    "key": "cci",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "n": 20,
+     "threshold": 100
+    }
+   },
+   {
+    "key": "rsi",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "n": 14,
+     "lower": 30,
+     "upper": 70
+    }
+   },
+   {
+    "key": "stochastic",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "n": 89,
+     "d": 42,
+     "lower": 39,
+     "upper": 73
+    }
+   },
+   {
+    "key": "mfi",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "n": 14,
+     "lower": 20,
+     "upper": 80
+    }
+   },
+   {
+    "key": "bollinger",
+    "enabled": false,
+    "mode": "veto",
+    "params": {
+     "n": 20,
+     "k": 2
+    }
+   },
+   {
+    "key": "adx",
+    "enabled": false,
+    "mode": "veto",
+    "params": {
+     "n": 14,
+     "threshold": 25
+    }
+   },
+   {
+    "key": "structure_trend",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "swing_l": 2
+    }
+   },
+   {
+    "key": "order_block",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "swing_l": 14
+    }
+   },
+   {
+    "key": "fvg",
+    "enabled": true,
+    "mode": "both",
+    "params": {
+     "lookback": 39
+    }
+   },
+   {
+    "key": "ifvg",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   },
+   {
+    "key": "breaker",
+    "enabled": false,
+    "mode": "both",
+    "params": {
+     "swing_l": 2
+    }
+   },
+   {
+    "key": "cisd",
+    "enabled": false,
+    "mode": "both",
+    "params": {}
+   }
+  ],
+  "k": 2,
+  "gate_pct": 93.0600309825,
+  "sl_soft": 3.7798528037,
+  "sl_hard": 4.58260254282,
+  "tp": 1.47071474331,
+  "dd_limit": 1341.30936851,
+  "cooldown": 7,
+  "cap_1min": 734,
+  "cap_mode": "bars",
+  "eod_margin_min": 15,
+  "intracandle_veto_entry": false,
+  "intracandle_max_wait": 240,
+  "flip": true,
+  "ind_1min": true,
+  "window": "full",
+  "timeframe": "2m",
+  "pv": 50.0,
+  "dd_cap": 5000.0,
+  "retrace_amount": 0,
+  "retrace_unit": "atr_mult",
+  "wait_bars": 0,
+  "gen": {
+   "swing_l": 2,
+   "golf_n": 3
+  }
+ }
+}

@@ -1,0 +1,16 @@
+[gate] NOISE: vote cache isolated at /tmp/adoptgate_noise_votecache_lz31516q
+[gate] winner indicators ['apo', 'pivot_camarilla', 'dfa']: REAL holdout P/L $18,827 (n=157)
+[gate] noise 20/200 … null mean $6,940
+[gate] noise 40/200 … null mean $8,078
+[gate] noise 60/200 … null mean $8,446
+[gate] noise 80/200 … null mean $8,973
+[gate] noise 100/200 … null mean $8,508
+[gate] noise 120/200 … null mean $7,547
+[gate] noise 140/200 … null mean $7,423
+[gate] noise 160/200 … null mean $6,941
+[gate] noise 180/200 … null mean $6,706
+[gate] noise 200/200 … null mean $6,655
+[gate] NULL n=200  mean $6,655  sd $10,449  p95 $23,370  max $30,868
+[gate] p = 0.1244  (24/200 scrambles matched or beat the real result)
+[gate] the edge SURVIVES scrambling ⇒ it does not come from the indicators
+[gate] WROTE optimize/results/adoptgate_noise_4h.json

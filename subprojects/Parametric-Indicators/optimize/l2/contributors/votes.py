@@ -1,6 +1,7 @@
 """Contributor voter channels for L2 (Spec §5) — all aligned to NQ decision bars, oriented to NQ box_dir.
 
-§5b — indicator committee: the FULL 18-indicator registry computed on the CONTRIBUTOR's own bars via the
+§5b — indicator committee: the FULL registry (18 when this was written, 165 today — the count is
+`len(library.REGISTRY)`, never a literal, see #89/S5) computed on the CONTRIBUTOR's own bars via the
 instrument-agnostic MarketContext, sampled at the aligned contributor bar per NQ decision bar, and oriented
 to NQ's box_dir (reusing runner._vote_from_1min verbatim — the ES decision frame plays the source-frame
 role, j_es the sampling index). A +1 always means 'agrees with the NQ entry direction'.

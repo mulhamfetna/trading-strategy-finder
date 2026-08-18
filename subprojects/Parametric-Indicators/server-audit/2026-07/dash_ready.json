@@ -1,0 +1,42 @@
+[
+ {
+  "slot": "GC_15m",
+  "expected": 80909,
+  "got": 80909.40999998542,
+  "cap_expected": "none",
+  "cap_got": "none",
+  "ok": true
+ },
+ {
+  "slot": "YM_4h",
+  "expected": 51917,
+  "got": 51916.73600000013,
+  "cap_expected": "both",
+  "cap_got": "both",
+  "ok": true
+ },
+ {
+  "slot": "SI_1h",
+  "expected": 43984,
+  "got": 43984.00000000419,
+  "cap_expected": "eod",
+  "cap_got": "eod",
+  "ok": true
+ },
+ {
+  "slot": "NQ_4h",
+  "expected": 148670,
+  "got": 148670.27200000026,
+  "cap_expected": "bars",
+  "cap_got": "bars",
+  "ok": true
+ },
+ {
+  "slot": "NG_15m",
+  "expected": -1635,
+  "got": -1634.9999999989736,
+  "cap_expected": "none",
+  "cap_got": "bars",
+  "ok": false
+ }
+]

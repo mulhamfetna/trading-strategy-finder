@@ -1,0 +1,33 @@
+worker-count sweep (candidate-L1 wsh6cold, memoized code):
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2362591 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2362592 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2362593 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2362594 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2362595 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2362596 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2362597 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2362598 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2362599 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2362600 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2362601 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2362602 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+cut: '"': No such file or directory
+  W=12:     24 completed/min  (load was: 8.41 3.29 1.47 1/1686 2370416)
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2370422 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2370423 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2370424 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2370425 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2370426 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2370427 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2370428 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2370429 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2370430 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2370431 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2370432 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2370433 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2370434 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2370435 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2370436 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+/home/dev/Mulham/wsg-i/wsweep.sh: line 13: 2370437 Killed                  python3 -u optimize/l2/optimize.py --tf $TF --prefix $PREFIX --l1-champion "$L1C" --trials 400 --min-trades 1 > /dev/null 2>&1
+cut: '"': No such file or directory
+  W=16:     27 completed/min  (load was: 14.19 6.34 2.70 1/1685 2375677)

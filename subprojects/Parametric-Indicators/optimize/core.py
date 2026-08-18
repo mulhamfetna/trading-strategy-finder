@@ -99,13 +99,30 @@ def _slice_sig(d, d1, bar_duration):
     return (len(dd), de[0], de[1], len(md), me[0], me[1], str(bar_duration))
 
 
-def _cached_source(d, d1, bar_duration):
-    """Memoised runner.indicator_source_1min — built once per distinct slice, reused across trials."""
+def _ref_sig(ref_df1):
+    """Cheap identity for a reference frame. The 1-minute source memo MUST key on this: a src built
+    reference-FREE and one built WITH a reference are different objects that look identical to
+    `_slice_sig`, and serving the wrong one silently un-does (or invents) every cross-series vote."""
+    if ref_df1 is None:
+        return None
+    dt = ref_df1["Date"].to_numpy("datetime64[ns]").view("int64")
+    cl = ref_df1["Close"].to_numpy(float)
+    if not len(dt):
+        return (0,)
+    return (len(dt), int(dt[0]), int(dt[-1]), float(cl[0]), float(cl[-1]))
+
+
+def _cached_source(d, d1, bar_duration, ref_df1=None):
+    """Memoised runner.indicator_source_1min — built once per distinct slice, reused across trials.
+
+    `ref_df1` (#75): the reference instrument's 1-MINUTE frame, so cross-series indicators can actually
+    read it on the production `--ind-1min` path. None ⇒ byte-identical to the previous behaviour.
+    """
     from indicators import runner
-    key = _slice_sig(d, d1, bar_duration)
+    key = (_slice_sig(d, d1, bar_duration), _ref_sig(ref_df1))
     src = _SRC_MEMO.get(key)
     if src is None:
-        src = runner.indicator_source_1min(d, d1, bar_duration)
+        src = runner.indicator_source_1min(d, d1, bar_duration, ref_df1)
         _SRC_MEMO[key] = src
     return src
 
@@ -153,7 +170,7 @@ def _cached_votes(d, d1, box, inds, src, bar_duration, ref_df=None):
 
 
 def _contributor_gate(d, d1, box, vfw, vf, n_split, gate_ref_vf, gate_pct, params,
-                      bar_duration, contrib, lo, hi, ref_df=None):
+                      bar_duration, contrib, lo, hi, ref_df=None, ref_df1=None):
     """Entry gate for the cross-instrument contributor path (L1 opt-in): vol_gate ∧ (NQ veto/confirm
     COMBINED with the precomputed contributor masks by topology). The expensive ES committee is NOT
     recomputed here — it lives in `contrib` (precomputed once per trial over the full frame); only the
@@ -169,7 +186,7 @@ def _contributor_gate(d, d1, box, vfw, vf, n_split, gate_ref_vf, gate_pct, param
     specs = params.get("indicators") or []
     inds = library.from_specs(specs) if specs else []
     if inds and any(i.config.enabled for i in inds):
-        src = _cached_source(d, d1, bar_duration) if params.get("ind_1min") else None
+        src = _cached_source(d, d1, bar_duration, ref_df1) if params.get("ind_1min") else None
         votes = _cached_votes(d, d1, box, inds, src, bar_duration, ref_df)
         nq_veto = runner.veto_mask(d, box, inds, src=src, votes=votes, ref_df=ref_df)
         nq_confirm = runner.confirm_mask(d, box, inds, int(params.get("k", 1)), src=src, votes=votes, ref_df=ref_df)
@@ -238,6 +255,7 @@ def backtest_metrics(
     contrib: dict | None = None,
     pv: float = config.NQ_POINT_VALUE,
     ref_df: pd.DataFrame | None = None,
+    ref_df1: pd.DataFrame | None = None,
 ) -> dict:
     """Run one backtest on an arbitrary decision timeframe; return summary metrics + trades.
 
@@ -290,7 +308,7 @@ def backtest_metrics(
     elif contrib is not None:
         # Cross-instrument contributor path (L1 opt-in). Default (contrib=None) is byte-identical.
         gate = _contributor_gate(d, d1, box, vfw, vf, n_split, gate_ref_vf, gate_pct, params,
-                                 bar_duration, contrib, lo, hi, ref_df)
+                                 bar_duration, contrib, lo, hi, ref_df, ref_df1)
     else:
         # Volatility gate threshold frozen on the reference segment (causal); 0 => no gate.
         gate = None
@@ -312,7 +330,7 @@ def backtest_metrics(
                 # params["ind_1min"]=True ⇒ indicators read the 1-minute frame (sampled at each decision
                 # bar's last-closed minute); else decision-TF (default, unchanged). Votes computed ONCE
                 # and shared by the veto + confirm masks.
-                src = _cached_source(d, d1, bar_duration) if params.get("ind_1min") else None
+                src = _cached_source(d, d1, bar_duration, ref_df1) if params.get("ind_1min") else None
                 votes = _cached_votes(d, d1, box, inds, src, bar_duration, ref_df)
                 vmask = runner.veto_mask(d, box, inds, src=src, votes=votes, ref_df=ref_df)
                 cmask = runner.confirm_mask(d, box, inds, int(params.get("k", 1)), src=src, votes=votes, ref_df=ref_df)
@@ -376,10 +394,10 @@ def backtest_metrics(
         news_profit_exempt_mult=float(params.get("news_profit_exempt_mult", 1.0)),
         # GAP-AWARE FILLS (GAP-01). A hard SL/TP whose bar OPENED beyond the line fills at the OPEN —
         # the line was never available. Symmetric: gaps past the stop cost more, gaps past the
-        # take-profit pay more. `gap_fills` is threaded from params so a caller can reproduce the old
-        # optimistic numbers with gap_fills=False, but the DEFAULT is the honest model.
+        # take-profit pay more. MANDATORY — not threaded from params, so no caller can ask the
+        # optimizer to score a strategy at prices that never traded.
         m_open=d1["Open"].to_numpy(float),
-        gap_fills=bool(params.get("gap_fills", True)),
+        gap_fills=True,
         **_split)
     # fast_backtest returns completed trades already in entry order (no OPEN trades)
 

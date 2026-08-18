@@ -1,0 +1,69 @@
+##### [1/2] GC DIRECTION (cache HIT expected - surprises are instrument-independent) #####
+[EXTENDED] instrument GC  price frame 2010-06-06 18:00:00 -> 2026-07-17 16:59:00 (5,658,123 bars)
+  [calendar] 1208 events  2010-01-08 -> 2026-12-09
+Pulling ALFRED first-print vintages (one per release)...
+
+  [cache] HIT — 882 surprises from surprises_cache.csv (2010-04-14 -> 2026-07-02); skipping ALFRED entirely
+
+882 priced releases with a causal surprise
+
+   h    n |    corr  sign-hit |    shuffled corr |      p
+--------------------------------------------------------------
+   5  866 |  -0.018     39.5% |   0.024 ± 0.026 |  0.432
+  15  866 |  +0.007     43.8% |   0.023 ± 0.025 |  0.750
+  30  866 |  +0.011     44.8% |   0.023 ± 0.024 |  0.635
+  60  866 |  +0.008     47.1% |   0.024 ± 0.025 |  0.729
+
+VERDICT: no link between the surprise and the move. A statistical expectation carries
+         no signal, so the paid consensus would have to carry ALL of it alone.
+         That is a much higher bar — decide deliberately before spending.
+
+##### [2/2] GC PATTERN - magnitude/shape/persistence #####
+
+instrument: GC
+price frame: 2010-06-06 18:00:00 -> 2026-07-17 16:59:00  (5,658,123 bars)   [EXTENDED: 2024 folded in]
+  [calendar] 1208 events  2010-01-08 -> 2026-12-09
+  [cache] HIT — 882 surprises from surprises_cache.csv (2010-04-14 -> 2026-07-02); skipping ALFRED entirely
+866 releases with a causal surprise and a full 30-minute path
+POWER: with n=866 we have 99% chance of detecting an effect of r=0.15 (the pre-declared minimum worth acting on).
+       ⇒ A NULL HERE IS A REAL NEGATIVE. We can see; there is nothing to see.
+
+========================================================================================
+Q1 — MAGNITUDE: does a BIGGER surprise produce a BIGGER move? (no direction needed)
+========================================================================================
+  corr(|surprise|, |move| at +5 min      ) = -0.036   p = 0.110  REAL NEGATIVE (power 99% to see r=0.15)
+  corr(|surprise|, |move| at +30 min     ) = -0.009   p = 0.777  REAL NEGATIVE (power 99% to see r=0.15)
+  corr(|surprise|, path RANGE (max-min)  ) = +0.013   p = 0.649  REAL NEGATIVE (power 99% to see r=0.15)
+  corr(|surprise|, path VOLATILITY (std) ) = +0.017   p = 0.534  REAL NEGATIVE (power 99% to see r=0.15)
+
+  A positive, significant value here would mean: we cannot predict WHICH WAY it moves,
+  but we CAN predict HOW FAR. That is a volatility trade, not a directional one — and the
+  efficient-market argument does not forbid it.
+
+==============================================================================
+Q3 — PERSISTENCE: does the surprise predict whether the initial move HOLDS or REVERSES?
+==============================================================================
+  the +5min move persisted to +30min in 46.9% of releases (406/866)
+  (50% = a coin flip: the initial move tells you nothing about the next 25 minutes)
+  corr(early move, later move) = -0.094   NEITHER — no pattern
+
+==============================================================================
+Q2 — SHAPE: cluster the 30-min paths. Does the surprise predict WHICH shape occurs?
+==============================================================================
+  cluster 0: n=113  mean|surprise|= 0.75  mean surprise=-0.10  |  SUSTAINED TREND (down)
+  cluster 1: n= 92  mean|surprise|= 0.97  mean surprise=+0.14  |  SUSTAINED TREND
+  cluster 2: n=377  mean|surprise|= 0.74  mean surprise=-0.21  |  SUSTAINED TREND
+  cluster 3: n=284  mean|surprise|= 1.29  mean surprise=-0.49  |  SUSTAINED TREND (down)
+
+  does the SURPRISE differ across shape-clusters?  p = 0.866   (no — the surprise does not pick the shape)
+
+==============================================================================
+NOTE ON THE YARDSTICK — the user's other point, and it is fair.
+==============================================================================
+  Our 'expected' is a STATISTICAL forecast (mean of the prior 6 changes), not the MARKET's
+  consensus, which costs money. A noisy yardstick attenuates a real signal toward zero.
+  So a NULL result here is evidence against the idea, but NOT proof: it could also be
+  evidence that our ruler is bad. A POSITIVE result, by contrast, would be conservative —
+  a better ruler could only sharpen it.
+
+##### === GC REPLICATION COMPLETE === #####

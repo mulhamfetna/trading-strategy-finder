@@ -1,0 +1,1065 @@
+<!doctype html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>#88 — the display cabinet with too many shelves</title>
+<!--
+  ISSUE-88-explained-visually.html
+  Self-contained. No external fonts, scripts, styles or images: it opens offline from the file system.
+  Source of record: ISSUE-88-explained-visually.md  +  ISSUE-88-explained-visually.ar.md
+  Both languages live in THIS ONE FILE so the mirror cannot drift.
+-->
+<style>
+:root{
+  --bg:#f7f8fa; --panel:#ffffff; --ink:#1d2430; --muted:#5c6b7f; --line:#dde3ea;
+  --green:#27ae60; --orange:#e67e22; --red:#c0392b; --grey:#95a5a6; --blue:#2c7fb8;
+  --empty:#eef1f5; --emptyline:#dfe4ea;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#12161c; --panel:#1a2029; --ink:#e8edf4; --muted:#9fb0c3; --line:#2b3441;
+    --empty:#232b36; --emptyline:#2b3441;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Noto Naskh Arabic","Segoe UI Historic",sans-serif;
+  line-height:1.65;-webkit-text-size-adjust:100%}
+.wrap{max-width:960px;margin:0 auto;padding:0 20px 90px}
+
+/* ---------- header ---------- */
+header.top{border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0;z-index:50}
+.topin{max-width:960px;margin:0 auto;padding:14px 20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.tag{font:600 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:#fff;background:var(--red);
+  padding:6px 9px;border-radius:5px}
+.toptitle{font-weight:650;font-size:15px}
+.spacer{flex:1}
+.langsw{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.langsw button{font:600 13px/1 inherit;padding:8px 16px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+.langsw button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+
+/* ---------- language visibility ---------- */
+.ar{display:none}
+html[data-lang="ar"] .en{display:none}
+html[data-lang="ar"] .ar{display:block}
+html[data-lang="ar"] .wrap{direction:rtl;text-align:right}
+html[data-lang="ar"] h1,html[data-lang="ar"] h2{letter-spacing:0}
+html[data-lang="ar"] .lead,html[data-lang="ar"] .note,html[data-lang="ar"] figcaption{direction:rtl}
+html[data-lang="ar"] table{direction:rtl}
+
+/* ---------- type ---------- */
+h1{font-size:31px;line-height:1.25;margin:34px 0 6px;letter-spacing:-.015em}
+.lead{color:var(--muted);font-size:15px;margin:0 0 6px}
+h2{font-size:21px;margin:0 0 4px;letter-spacing:-.01em}
+.secno{font:700 12px/1 var(--mono);color:var(--blue);letter-spacing:.14em;margin-bottom:8px}
+p{margin:12px 0}
+b,strong{font-weight:650}
+section{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:24px 26px;margin:20px 0}
+.note{font-size:13.5px;color:var(--muted);border-inline-start:3px solid var(--line);padding-inline-start:12px;margin:14px 0}
+.kicker{font:600 12px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+code{font-family:var(--mono);font-size:.9em;background:var(--empty);padding:1px 5px;border-radius:4px}
+
+/* ---------- flow diagram (CSS-drawn, no ASCII) ---------- */
+.flow{display:flex;flex-direction:column;align-items:center;margin:22px 0 6px}
+.node{border:1.5px solid var(--line);background:var(--panel);border-radius:9px;padding:11px 16px;
+  text-align:center;font-size:14px;max-width:340px}
+.node.q{border-style:dashed;border-color:var(--blue);color:var(--blue);font-weight:600}
+.node.good{background:var(--green);border-color:var(--green);color:#fff}
+.node.warn{background:var(--orange);border-color:var(--orange);color:#fff}
+.node.bad{background:var(--red);border-color:var(--red);color:#fff}
+.node.dim{background:var(--grey);border-color:var(--grey);color:#fff}
+.node .sub{display:block;font-size:12px;opacity:.9;margin-top:3px;font-weight:400}
+.conn{width:2px;height:22px;background:var(--line);position:relative;flex:none}
+.conn::after{content:"";position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);
+  border:5px solid transparent;border-top-color:var(--line)}
+.split{display:flex;gap:26px;align-items:flex-start;justify-content:center;flex-wrap:wrap;width:100%}
+.branch{display:flex;flex-direction:column;align-items:center;flex:1;min-width:250px}
+.blabel{font:700 11px/1 var(--mono);letter-spacing:.1em;color:var(--muted);margin:2px 0 4px}
+
+/* ---------- cabinet grids ---------- */
+.grid{display:grid;gap:1px;margin:6px 0;width:max-content;max-width:100%}
+.cellwrap{overflow-x:auto;padding-bottom:4px}
+.cell{background:var(--empty);border:1px solid var(--emptyline);border-radius:1px}
+.cell.v1{background:var(--orange);border-color:var(--orange)}
+.cell.v2{background:var(--green);border-color:var(--green)}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin:10px 0 0}
+.legend span{display:flex;align-items:center;gap:7px}
+.swatch{width:13px;height:13px;border-radius:2px;border:1px solid var(--emptyline);background:var(--empty);flex:none}
+.swatch.v1{background:var(--orange);border-color:var(--orange)}
+.swatch.v2{background:var(--green);border-color:var(--green)}
+figure{margin:20px 0;padding:0}
+figcaption{font-size:12.5px;color:var(--muted);margin-top:9px}
+.axlabel{font:600 11px/1 var(--mono);color:var(--muted);letter-spacing:.06em;margin:8px 0 2px}
+
+/* ---------- stat strip ---------- */
+.stats{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0}
+.stat{flex:1;min-width:130px;border:1px solid var(--line);border-radius:9px;padding:12px 14px;background:var(--bg)}
+.stat .n{font:700 23px/1.1 var(--mono);letter-spacing:-.02em}
+.stat .l{font-size:12px;color:var(--muted);margin-top:5px}
+.stat.bad .n{color:var(--red)} .stat.good .n{color:var(--green)} .stat.warn .n{color:var(--orange)}
+
+/* ---------- bar chart ---------- */
+.bars{display:flex;align-items:flex-end;gap:26px;height:210px;padding:0 4px;position:relative;
+  border-bottom:2px solid var(--line);margin:18px 0 0}
+.barcol{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
+.bar{width:100%;max-width:110px;border-radius:6px 6px 0 0;position:relative;transition:height .5s ease}
+.bar .val{position:absolute;top:-23px;width:100%;text-align:center;font:700 14px/1 var(--mono)}
+.barlbl{font-size:12.5px;color:var(--muted);margin-top:9px;text-align:center;min-height:34px}
+.thresh{position:absolute;inset:0;pointer-events:none}
+.thresh div{position:absolute;left:0;right:0;border-top:2px dashed var(--red);
+  font:600 11px/1 var(--mono);color:var(--red);padding-top:3px}
+
+/* ---------- tables ---------- */
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:start}
+th{background:var(--bg);font-weight:650;font-size:13px}
+td.num{font-family:var(--mono);text-align:end}
+tr.hi td{background:rgba(39,174,96,.10)}
+tr.lo td{background:rgba(192,57,43,.09)}
+
+/* ---------- bins strip ---------- */
+.bins{display:flex;gap:5px;flex-wrap:wrap;margin:14px 0}
+.bin{flex:1;min-width:66px;border:1.5px solid var(--line);border-radius:8px;padding:9px 6px;text-align:center;background:var(--bg)}
+.bin.zone{border-color:var(--green);background:rgba(39,174,96,.10)}
+.bin .r{font:700 14px/1.2 var(--mono)}
+.bin .w{font-size:11px;color:var(--muted);margin-top:4px}
+.bin.on{outline:3px solid var(--blue);outline-offset:1px}
+
+/* ---------- interactive ---------- */
+.tool{border:1.5px solid var(--blue);border-radius:11px;padding:18px 20px;margin:20px 0;background:var(--bg)}
+.tool h3{margin:0 0 4px;font-size:15px}
+.toolhead{font:600 11px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:8px}
+.ctl{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:14px 0 6px}
+.ctl label{font-size:13px;color:var(--muted);min-width:150px}
+input[type=range]{flex:1;min-width:210px;accent-color:var(--blue)}
+.readout{font:700 15px/1 var(--mono);min-width:70px;text-align:end}
+.verdict{margin-top:12px;padding:11px 14px;border-radius:8px;font-size:14px;font-weight:600}
+.verdict.ok{background:rgba(39,174,96,.14);color:var(--green)}
+.verdict.no{background:rgba(192,57,43,.13);color:var(--red)}
+.cmp{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px}
+.cmp>div{flex:1;min-width:190px;border:1px solid var(--line);border-radius:8px;padding:11px 13px;background:var(--panel)}
+.cmp .t{font:600 11px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.cmp .v{font:700 21px/1.2 var(--mono);margin-top:6px}
+
+/* ---------- pull quote ---------- */
+.pull{border:0;border-inline-start:5px solid var(--red);background:var(--bg);padding:20px 24px;
+  border-radius:0 10px 10px 0;font-size:18px;line-height:1.55;font-weight:600;margin:8px 0}
+html[data-lang="ar"] .pull{border-radius:10px 0 0 10px}
+.pull.green{border-inline-start-color:var(--green)}
+
+/* ---------- claim list ---------- */
+.claims{list-style:none;padding:0;margin:14px 0}
+.claims li{display:flex;gap:11px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.claims li:last-child{border-bottom:0}
+.mark{font:700 13px/1.5 var(--mono);width:22px;flex:none;text-align:center;border-radius:4px;color:#fff}
+.mark.y{background:var(--green)} .mark.n{background:var(--grey)}
+
+footer{color:var(--muted);font-size:12.5px;text-align:center;padding:26px 20px;border-top:1px solid var(--line);margin-top:30px}
+@media print{header.top{position:static} .ar{display:none!important} section{break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="topin">
+    <span class="tag">Issue #88</span>
+    <span class="toptitle en">MAP-Elites archive — the display cabinet</span>
+    <span class="toptitle ar">أرشيف MAP-Elites — خزانة العرض</span>
+    <span class="spacer"></span>
+    <div class="langsw">
+      <button id="btn-en" aria-pressed="true">English</button>
+      <button id="btn-ar" aria-pressed="false">العربية</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ============================== ENGLISH ============================== -->
+<div class="en">
+
+<h1>#88 — the display cabinet with too many shelves</h1>
+<p class="lead">Plain-language, picture-first. Every diagram on this page is drawn from the real numbers in
+<code>optimize/map_elites.py</code>. Switch to العربية with the button above.</p>
+
+<div class="stats">
+  <div class="stat bad"><div class="n">1,494</div><div class="l">shelves in the cabinet today</div></div>
+  <div class="stat"><div class="n">400</div><div class="l">strategies actually tested</div></div>
+  <div class="stat bad"><div class="n">0.27</div><div class="l">visits per shelf</div></div>
+  <div class="stat good"><div class="n">4.9</div><div class="l">visits per shelf after the fix</div></div>
+</div>
+
+<!-- 1 -->
+<section>
+  <div class="secno">SECTION 1</div>
+  <h2>What MAP-Elites is trying to do</h2>
+  <p>Imagine a <b>display cabinet</b>. Every shelf is reserved for one <i>kind</i> of strategy. A shelf is
+  chosen by two things: <b>how risky</b> the strategy is (its worst drawdown), and <b>how many indicators</b>
+  it uses.</p>
+  <p>The rule is simple: <b>each shelf holds the single best strategy of that kind.</b></p>
+
+  <figure>
+    <div class="flow">
+      <div class="node">a new strategy is tested</div>
+      <div class="conn"></div>
+      <div class="node">shelf = (risk level, how many indicators)</div>
+      <div class="conn"></div>
+      <div class="node q">is that shelf empty?</div>
+      <div class="conn"></div>
+      <div class="split">
+        <div class="branch">
+          <div class="blabel">EMPTY</div>
+          <div class="node warn">put it on the shelf
+            <span class="sub">anything is accepted — no choosing happens here</span></div>
+        </div>
+        <div class="branch">
+          <div class="blabel">OCCUPIED</div>
+          <div class="node q">is the newcomer BETTER?</div>
+          <div class="conn"></div>
+          <div class="split">
+            <div class="branch">
+              <div class="blabel">YES</div>
+              <div class="node good">replace the old one
+                <span class="sub">this is the point of the method</span></div>
+            </div>
+            <div class="branch">
+              <div class="blabel">NO</div>
+              <div class="node dim">throw the newcomer away</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <figcaption><b>The green box is the whole idea.</b> It is where “the best” gets chosen. The orange box is
+    just filling an empty space — no choosing happens there.</figcaption>
+  </figure>
+</section>
+
+<!-- 2 -->
+<section>
+  <div class="secno">SECTION 2</div>
+  <h2>The problem, in one picture</h2>
+  <p>The cabinet has <b>9 risk rows</b> (<code>DD_BIN = $2,000</code>, capped at <code>DD_BIN_CAP = 8</code>,
+  so buckets 0…8). The number of <i>columns</i> is the number of indicators a strategy can use.</p>
+
+  <figure>
+    <div class="axlabel">DESIGNED — 18 indicators → 19 columns → 171 shelves, 400 strategies</div>
+    <div class="cellwrap"><div class="grid" id="g-designed"></div></div>
+    <figcaption>Nearly every shelf gets visited two or three times, so “is the newcomer better?” is a
+    question that actually gets asked.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="axlabel">TODAY — 165 indicators → 166 columns → 1,494 shelves, still 400 strategies</div>
+    <div class="cellwrap"><div class="grid" id="g-today"></div></div>
+    <div class="legend">
+      <span><i class="swatch"></i> never visited — shelf stays empty</span>
+      <span><i class="swatch v1"></i> visited once — first arrival kept, nothing compared</span>
+      <span><i class="swatch v2"></i> visited twice or more — a comparison happened</span>
+    </div>
+    <figcaption>Same 400 strategies, spread over nearly nine times as many shelves. Visits are placed evenly
+    here; real placement clusters, which makes the empty fraction <b>worse</b>, not better.</figcaption>
+  </figure>
+
+  <div class="stats" id="g-counts"></div>
+
+  <figure>
+    <div class="bars" id="chart"></div>
+    <figcaption>How many times each shelf gets visited. The dashed line is 1.0 — below it, a shelf is
+    typically filled once and never challenged.</figcaption>
+  </figure>
+</section>
+
+<!-- 3 -->
+<section>
+  <div class="secno">SECTION 3</div>
+  <h2>Why that breaks the method</h2>
+  <p>With <b>less than one visit per shelf</b>, almost every shelf is filled by <b>the first strategy that
+  happens to land on it</b> — and nothing ever comes back to challenge it.</p>
+
+  <figure>
+    <div class="flow">
+      <div class="node">1,494 shelves &nbsp;·&nbsp; 400 strategies</div>
+      <div class="conn"></div>
+      <div class="split">
+        <div class="branch"><div class="node dim">most shelves<span class="sub">never visited at all</span></div></div>
+        <div class="branch"><div class="node warn">nearly all the rest<span class="sub">visited exactly once</span></div></div>
+      </div>
+      <div class="conn"></div>
+      <div class="node">the shelf was empty ⇒ accept whatever arrived</div>
+      <div class="conn"></div>
+      <div class="node bad">“keep the BEST” became “keep the FIRST”</div>
+    </div>
+  </figure>
+
+  <div class="pull">This is the damage: the cabinet still <i>looks</i> full and well-organised. It is still
+  presented as “the best low-risk strategy, the best few-indicator strategy…”. But nothing was ever compared
+  to anything. It became a collection of first arrivals wearing the label of a collection of champions.</div>
+</section>
+
+<!-- 4 -->
+<section>
+  <div class="secno">SECTION 4</div>
+  <h2>Why so many columns are useless anyway</h2>
+  <p>Look at what the columns actually distinguish. <b>The strategies you actually deploy use 3 to 10
+  indicators.</b></p>
+
+  <figure>
+    <div class="split">
+      <div class="branch">
+        <div class="blabel">COLUMNS THAT MATTER</div>
+        <div class="node good">3 · 5 · 7 · 10 indicators
+          <span class="sub">every deployed champion lives in here</span></div>
+      </div>
+      <div class="branch">
+        <div class="blabel">COLUMNS WITH THEIR OWN SHELF FOR NO REASON</div>
+        <div class="node dim">61 · 62 · 63 · 64 …
+          <span class="sub">each steals visits from the ones that matter</span></div>
+      </div>
+    </div>
+    <figcaption><b>Is a 61-indicator strategy a meaningfully different <i>kind</i> of thing from a
+    62-indicator one?</b> No. But the cabinet gives each its own shelf.</figcaption>
+  </figure>
+</section>
+
+<!-- 5 -->
+<section>
+  <div class="secno">SECTION 5</div>
+  <h2>The fix — group the columns</h2>
+  <p>Instead of one column per exact count, use <b>groups</b>: fine where it matters, coarse where it does
+  not. Click a group to see which counts fall into it.</p>
+
+  <div class="bins" id="binstrip"></div>
+
+  <div class="tool">
+    <div class="toolhead">Try it</div>
+    <h3>Which column does a strategy land in?</h3>
+    <div class="ctl">
+      <label for="s-ind">indicators used by the strategy</label>
+      <input type="range" id="s-ind" min="0" max="165" value="7">
+      <div class="readout" id="r-ind">7</div>
+    </div>
+    <div class="cmp">
+      <div><div class="t">old column</div><div class="v" id="r-old">7</div></div>
+      <div><div class="t">new column</div><div class="v" id="r-new">5–7</div></div>
+    </div>
+  </div>
+
+  <figure>
+    <div class="axlabel">AFTER — 9 risk rows × 9 columns → 81 shelves, 400 strategies</div>
+    <div class="cellwrap"><div class="grid" id="g-fixed"></div></div>
+    <div class="legend">
+      <span><i class="swatch"></i> never visited</span>
+      <span><i class="swatch v1"></i> visited once</span>
+      <span><i class="swatch v2"></i> visited twice or more — <b>choosing happens</b></span>
+    </div>
+    <figcaption><b>9 columns instead of 166.</b> With ~5 visits per shelf the “is the newcomer better?”
+    question gets asked again and again — which is the entire reason the method exists.</figcaption>
+  </figure>
+
+  <table>
+    <tr><th></th><th>before</th><th>after</th></tr>
+    <tr><td>risk rows</td><td class="num">9</td><td class="num">9</td></tr>
+    <tr><td>indicator columns</td><td class="num">166</td><td class="num">9</td></tr>
+    <tr class="lo"><td>shelves</td><td class="num">1,494</td><td class="num">81</td></tr>
+    <tr><td>strategies tested</td><td class="num">400</td><td class="num">400</td></tr>
+    <tr class="hi"><td><b>visits per shelf</b></td><td class="num">0.27</td><td class="num">4.9</td></tr>
+  </table>
+</section>
+
+<!-- 6 -->
+<section>
+  <div class="secno">SECTION 6</div>
+  <h2>It must not break again next time the library grows</h2>
+  <p>The library went <b>15 → 18 → 143 → 165</b>. That growth is what broke this in the first place — nothing
+  announced it, because the shelves silently grew along with the library.</p>
+
+  <div class="tool">
+    <div class="toolhead">Try it</div>
+    <h3>Grow the library and watch the shelves</h3>
+    <div class="ctl">
+      <label for="s-lib">indicators in the library</label>
+      <input type="range" id="s-lib" min="10" max="500" value="165">
+      <div class="readout" id="r-lib">165</div>
+    </div>
+    <div class="cmp">
+      <div><div class="t">old design — shelves</div><div class="v" id="r-oshelf">1,494</div></div>
+      <div><div class="t">old design — visits each</div><div class="v" id="r-ovis">0.27</div></div>
+      <div><div class="t">new design — shelves</div><div class="v" id="r-nshelf">81</div></div>
+      <div><div class="t">new design — visits each</div><div class="v" id="r-nvis">4.9</div></div>
+    </div>
+    <div class="verdict no" id="r-verdict"></div>
+  </div>
+
+  <figure>
+    <div class="split">
+      <div class="branch">
+        <div class="node">OLD<span class="sub">columns = number of indicators</span></div>
+        <div class="conn"></div><div class="node">library grows</div><div class="conn"></div>
+        <div class="node bad">shelves grow with it<span class="sub">breaks silently</span></div>
+      </div>
+      <div class="branch">
+        <div class="node">NEW<span class="sub">columns = fixed groups (…, 26–50, 51+)</span></div>
+        <div class="conn"></div><div class="node">library grows</div><div class="conn"></div>
+        <div class="node good">shelves stay at 9<span class="sub">nothing changes</span></div>
+      </div>
+    </div>
+    <figcaption>The last group is <b>“51 or more”</b>, a catch-all. Whether the library holds 165 indicators
+    or 500, the cabinet still has 9 columns.</figcaption>
+  </figure>
+</section>
+
+<!-- 7 -->
+<section>
+  <div class="secno">SECTION 7</div>
+  <h2>How I will prove it worked — not just argue it</h2>
+  <p>Counting shelves is arithmetic. <b>The real test is whether choosing actually happens.</b> So the archive
+  will count two different events, and they are not the same thing at all:</p>
+
+  <figure>
+    <div class="split">
+      <div class="branch">
+        <div class="node warn">first-fill<span class="sub">shelf was empty, anything accepted</span></div>
+        <div class="conn"></div><div class="node dim">no choosing happened</div>
+      </div>
+      <div class="branch">
+        <div class="node good">improvement<span class="sub">shelf was occupied, newcomer was BETTER</span></div>
+        <div class="conn"></div><div class="node">choosing happened</div>
+      </div>
+    </div>
+  </figure>
+
+  <table>
+    <tr><th></th><th>before the fix</th><th>after the fix — the prediction</th></tr>
+    <tr><td>first-fills</td><td>almost everything</td><td>far fewer</td></tr>
+    <tr class="hi"><td><b>improvements</b></td><td><b>almost none</b></td><td><b>a healthy share</b></td></tr>
+  </table>
+
+  <div class="pull green">If the improvement count does not rise, the fix did not work — and I will report
+  that instead of pointing at the shelf arithmetic and declaring victory. This is written down before the
+  run, so it cannot be reinterpreted afterwards.</div>
+</section>
+
+<!-- 8 -->
+<section>
+  <div class="secno">SECTION 8</div>
+  <h2>What this does <i>not</i> claim</h2>
+  <ul class="claims">
+    <li><span class="mark y">✓</span><div>#88 fixes the <b>shape of the archive</b>, so the method can choose again.</div></li>
+    <li><span class="mark n">✕</span><div>It does <b>not</b> make past MAP-Elites results valid — those came from the broken version. That is <b>#90</b>, re-validation.</div></li>
+    <li><span class="mark n">✕</span><div>It does <b>not</b> claim MAP-Elites beats the normal search. Nothing here compares the two.</div></li>
+  </ul>
+  <p>Every MAP-Elites result accepted before this was produced by the version that kept first arrivals. Those
+  results are <b>not wrong — they are unvalidated</b>, which is a different and more awkward status, and it is
+  tracked separately.</p>
+</section>
+
+<!-- 9 -->
+<section>
+  <div class="secno">SECTION 9</div>
+  <h2>The whole thing in one line</h2>
+  <div class="pull">A cabinet with more shelves than items stops being a collection of the best and becomes a
+  collection of the first — while looking exactly the same from the outside.</div>
+</section>
+
+<!-- 10 — measured -->
+<section class="measured">
+  <div class="secno">SECTION 10 · MEASURED 2026-08-03</div>
+  <h2>What happened when it was actually tested</h2>
+  <p><b>The test in section 7 was the wrong test, and it took two failures to see it.</b></p>
+
+  <table>
+    <tr><th>round</th><th>what was counted</th><th>result</th></tr>
+    <tr class="lo"><td>1</td><td>improvements ≥ 2×</td><td><b>failed</b> — 1 of 8 seeds</td></tr>
+    <tr class="lo"><td>2</td><td>improvements ≥ 2×, at 10× the budget</td>
+        <td><b>failed, and inverted</b> — the broken cabinet scored <b>2.5× MORE</b></td></tr>
+    <tr class="hi"><td>3</td><td><b>how good the strategies on the shelves actually are</b></td>
+        <td><b>passed — 8 of 8</b></td></tr>
+  </table>
+
+  <div class="pull">A cabinet of junk is easy to improve on. A cabinet of genuinely good items is hard to
+  improve on.</div>
+
+  <p>So counting improvements <i>rewards</i> the broken cabinet. The counter went up as the thing got
+  worse — not a weak measurement, a <b>wrong</b> one.</p>
+
+  <h3 style="margin:24px 0 4px;font-size:16px">The number that settles it</h3>
+  <p>The run is <i>handed</i> a strategy before it starts — the current champion, worth
+  <b>$23,328</b>.</p>
+
+  <figure>
+    <div class="flow">
+      <div class="node">the run starts holding the champion<span class="sub">$23,328</span></div>
+      <div class="conn"></div>
+      <div class="split">
+        <div class="branch">
+          <div class="blabel">BROKEN CABINET · 4,000 TRIES</div>
+          <div class="node bad">gave back the strategy it started with
+            <span class="sub">in 5 of 8 runs — while filling 260 shelves and logging 299 “improvements”</span></div>
+        </div>
+        <div class="branch">
+          <div class="blabel">FIXED CABINET · 4,000 TRIES</div>
+          <div class="node good">beat it in 8 of 8
+            <span class="sub">median $29,522 — <b>+23%</b></span></div>
+        </div>
+      </div>
+    </div>
+  </figure>
+
+  <div class="stats">
+    <div class="stat good"><div class="n">8/8</div><div class="l">seeds where the fixed cabinet won</div></div>
+    <div class="stat bad"><div class="n">5/8</div><div class="l">runs where the broken one returned its own starting point</div></div>
+    <div class="stat good"><div class="n">+23%</div><div class="l">median uplift where champions are deployed from</div></div>
+  </div>
+
+  <h3 style="margin:24px 0 4px;font-size:16px">Two corrections to this page</h3>
+  <ul class="claims">
+    <li><span class="mark n">!</span><div><b>“4.9 visits per shelf” was optimistic.</b> It assumed every
+      try reaches a shelf. <b>68% never do</b> — they lose money, barely trade, or drop too hard. The real
+      figure is <b>1.46</b>. Still above the 1.0 that matters (the old cabinet achieved <b>0.08</b>), but
+      lower than the number drawn above.</div></li>
+    <li><span class="mark y">✓</span><div><b>Section 7's promise was kept, twice.</b> The criterion failed
+      and was reported as failed both times. The third criterion was written down and committed
+      <i>before</i> its run, so it could not be chosen for passing.</div></li>
+  </ul>
+</section>
+
+</div><!-- /en -->
+
+<!-- ============================== العربية ============================== -->
+<div class="ar">
+
+<h1>‎#88‎ — خزانة العرض ذات الرفوف الكثيرة جدًّا</h1>
+<p class="lead">بلغة مبسّطة، والصورة أولًا. كل رسم في هذه الصفحة مبني على الأرقام الحقيقية في
+<code>optimize/map_elites.py</code>. للتبديل إلى الإنجليزية استعمل الزرّ في الأعلى.</p>
+
+<div class="stats">
+  <div class="stat bad"><div class="n">1,494</div><div class="l">رفًّا في الخزانة اليوم</div></div>
+  <div class="stat"><div class="n">400</div><div class="l">استراتيجية تُختبَر فعلًا</div></div>
+  <div class="stat bad"><div class="n">0.27</div><div class="l">زيارة لكل رفّ</div></div>
+  <div class="stat good"><div class="n">4.9</div><div class="l">زيارة لكل رفّ بعد الإصلاح</div></div>
+</div>
+
+<!-- 1 -->
+<section>
+  <div class="secno">القسم ١</div>
+  <h2>ما الذي تحاول MAP-Elites فعله</h2>
+  <p>تخيّل <b>خزانة عرض</b>. كل رفّ فيها محجوز لـ<b>نوع</b> واحد من الاستراتيجيات. ويُختار الرفّ بأمرين:
+  <b>مقدار المخاطرة</b> في الاستراتيجية (أسوأ هبوط لها)، و<b>عدد المؤشرات</b> التي تستعملها.</p>
+  <p>والقاعدة بسيطة: <b>كل رفّ يحمل أفضل استراتيجية واحدة من نوعه.</b></p>
+
+  <figure>
+    <div class="flow">
+      <div class="node">استراتيجية جديدة تُختبَر</div>
+      <div class="conn"></div>
+      <div class="node">الرفّ = (مستوى المخاطرة، عدد المؤشرات)</div>
+      <div class="conn"></div>
+      <div class="node q">هل ذلك الرفّ فارغ؟</div>
+      <div class="conn"></div>
+      <div class="split">
+        <div class="branch">
+          <div class="blabel">فارغ</div>
+          <div class="node warn">ضعها على الرفّ
+            <span class="sub">أي شيء يُقبل — ولا يحدث هنا أي اختيار</span></div>
+        </div>
+        <div class="branch">
+          <div class="blabel">مشغول</div>
+          <div class="node q">هل القادمة أفضل؟</div>
+          <div class="conn"></div>
+          <div class="split">
+            <div class="branch">
+              <div class="blabel">نعم</div>
+              <div class="node good">استبدل القديمة
+                <span class="sub">هذا هو جوهر الطريقة</span></div>
+            </div>
+            <div class="branch">
+              <div class="blabel">لا</div>
+              <div class="node dim">تخلَّص من القادمة</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <figcaption><b>المربّع الأخضر هو الفكرة كلها.</b> فهو موضع اختيار «الأفضل». أما المربّع البرتقالي فمجرد
+    ملء لفراغ — ولا يحدث فيه أي اختيار.</figcaption>
+  </figure>
+</section>
+
+<!-- 2 -->
+<section>
+  <div class="secno">القسم ٢</div>
+  <h2>المشكلة في صورة واحدة</h2>
+  <p>للخزانة <b>9 صفوف للمخاطرة</b> (<code>DD_BIN = $2,000</code> بسقف <code>DD_BIN_CAP = 8</code>، أي
+  الفئات من 0 إلى 8). وعدد <b>الأعمدة</b> هو عدد المؤشرات التي يمكن أن تستعملها الاستراتيجية.</p>
+
+  <figure>
+    <div class="axlabel">التصميم الأصلي — 18 مؤشرًا ← 19 عمودًا ← 171 رفًّا، و400 استراتيجية</div>
+    <div class="cellwrap"><div class="grid" id="g-designed-ar"></div></div>
+    <figcaption>يُزار كل رفّ تقريبًا مرتين أو ثلاثًا، أي أن سؤال «هل القادمة أفضل؟» يُطرح فعلًا.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="axlabel">اليوم — 165 مؤشرًا ← 166 عمودًا ← 1,494 رفًّا، وما زالت 400 استراتيجية</div>
+    <div class="cellwrap"><div class="grid" id="g-today-ar"></div></div>
+    <div class="legend">
+      <span><i class="swatch"></i> لم يُزَر إطلاقًا — الرفّ يبقى فارغًا</span>
+      <span><i class="swatch v1"></i> زيارة واحدة — يُحتفظ بأول واصل، بلا أي مقارنة</span>
+      <span><i class="swatch v2"></i> زيارتان فأكثر — حدثت مقارنة</span>
+    </div>
+    <figcaption>الاستراتيجيات الـ400 نفسها، موزّعة على رفوف أكثر بتسعة أضعاف تقريبًا. والزيارات هنا موزّعة
+    بالتساوي؛ أما في الواقع فهي تتجمّع، وهذا يجعل نسبة الرفوف الفارغة <b>أسوأ</b> لا أفضل.</figcaption>
+  </figure>
+
+  <div class="stats" id="g-counts-ar"></div>
+
+  <figure>
+    <div class="bars" id="chart-ar"></div>
+    <figcaption>كم مرة يُزار كل رفّ. الخطّ المتقطّع عند 1.0 — وتحته يُملأ الرفّ عادةً مرة واحدة ولا يُنافَس
+    بعدها أبدًا.</figcaption>
+  </figure>
+</section>
+
+<!-- 3 -->
+<section>
+  <div class="secno">القسم ٣</div>
+  <h2>لماذا يكسر هذا الطريقة</h2>
+  <p>مع <b>أقل من زيارة واحدة لكل رفّ</b>، يُملأ كل رفّ تقريبًا بـ<b>أول استراتيجية تصادف أن تصل إليه</b> —
+  ولا يعود أحد ليُنافسها.</p>
+
+  <figure>
+    <div class="flow">
+      <div class="node">1,494 رفًّا &nbsp;·&nbsp; 400 استراتيجية</div>
+      <div class="conn"></div>
+      <div class="split">
+        <div class="branch"><div class="node dim">معظم الرفوف<span class="sub">لا تُزار إطلاقًا</span></div></div>
+        <div class="branch"><div class="node warn">ومعظم الباقي<span class="sub">يُزار مرة واحدة فقط</span></div></div>
+      </div>
+      <div class="conn"></div>
+      <div class="node">كان الرفّ فارغًا ⇐ يُقبل ما وصل أيًّا كان</div>
+      <div class="conn"></div>
+      <div class="node bad">«احتفظ بالأفضل» صارت «احتفظ بالأول»</div>
+    </div>
+  </figure>
+
+  <div class="pull">وهنا الضرر: تظلّ الخزانة <i>تبدو</i> ممتلئة ومنظّمة، وتُقدَّم على أنها «أفضل استراتيجية
+  منخفضة المخاطرة، وأفضل استراتيجية قليلة المؤشرات…». لكن لم تُقارَن أي واحدة بأي أخرى قط. لقد صارت مجموعة
+  من الواصلين أولًا تحمل لافتة مجموعة من الأبطال.</div>
+</section>
+
+<!-- 4 -->
+<section>
+  <div class="secno">القسم ٤</div>
+  <h2>ولماذا معظم تلك الأعمدة عديم الفائدة أصلًا</h2>
+  <p>انظر إلى ما تميّزه الأعمدة فعلًا. <b>الاستراتيجيات التي تنشرها فعليًّا تستعمل من 3 إلى 10 مؤشرات.</b></p>
+
+  <figure>
+    <div class="split">
+      <div class="branch">
+        <div class="blabel">أعمدة لها معنى</div>
+        <div class="node good">3 · 5 · 7 · 10 مؤشرات
+          <span class="sub">كل بطل منشور يعيش هنا</span></div>
+      </div>
+      <div class="branch">
+        <div class="blabel">أعمدة لها رفّ خاص بلا سبب</div>
+        <div class="node dim">61 · 62 · 63 · 64 …
+          <span class="sub">كل واحد منها يسرق زيارات من الرفوف التي تهمّ</span></div>
+      </div>
+    </div>
+    <figcaption><b>هل استراتيجية بـ61 مؤشرًا <i>نوع</i> مختلف حقًّا عن استراتيجية بـ62؟</b> لا. لكن الخزانة
+    تمنح كلًّا منهما رفًّا خاصًّا.</figcaption>
+  </figure>
+</section>
+
+<!-- 5 -->
+<section>
+  <div class="secno">القسم ٥</div>
+  <h2>الإصلاح — اجمع الأعمدة</h2>
+  <p>بدل عمود لكل عدد بالضبط، نستعمل <b>مجموعات</b>: دقيقة حيث يهمّ الأمر، وخشنة حيث لا يهمّ. اضغط أي مجموعة
+  لترى الأعداد التي تقع فيها.</p>
+
+  <div class="bins" id="binstrip-ar"></div>
+
+  <div class="tool">
+    <div class="toolhead">جرّب بنفسك</div>
+    <h3>في أي عمود تقع الاستراتيجية؟</h3>
+    <div class="ctl">
+      <label for="s-ind-ar">عدد المؤشرات التي تستعملها</label>
+      <input type="range" id="s-ind-ar" min="0" max="165" value="7">
+      <div class="readout" id="r-ind-ar">7</div>
+    </div>
+    <div class="cmp">
+      <div><div class="t">العمود القديم</div><div class="v" id="r-old-ar">7</div></div>
+      <div><div class="t">العمود الجديد</div><div class="v" id="r-new-ar">5–7</div></div>
+    </div>
+  </div>
+
+  <figure>
+    <div class="axlabel">بعد الإصلاح — 9 صفوف مخاطرة × 9 أعمدة ← 81 رفًّا، و400 استراتيجية</div>
+    <div class="cellwrap"><div class="grid" id="g-fixed-ar"></div></div>
+    <div class="legend">
+      <span><i class="swatch"></i> لم يُزَر إطلاقًا</span>
+      <span><i class="swatch v1"></i> زيارة واحدة</span>
+      <span><i class="swatch v2"></i> زيارتان فأكثر — <b>يحدث الاختيار</b></span>
+    </div>
+    <figcaption><b>9 أعمدة بدل 166.</b> ومع نحو 5 زيارات لكل رفّ يُطرح سؤال «هل القادمة أفضل؟» مرارًا
+    وتكرارًا — وهو السبب الوحيد لوجود الطريقة أصلًا.</figcaption>
+  </figure>
+
+  <table>
+    <tr><th></th><th>قبل</th><th>بعد</th></tr>
+    <tr><td>صفوف المخاطرة</td><td class="num">9</td><td class="num">9</td></tr>
+    <tr><td>أعمدة المؤشرات</td><td class="num">166</td><td class="num">9</td></tr>
+    <tr class="lo"><td>الرفوف</td><td class="num">1,494</td><td class="num">81</td></tr>
+    <tr><td>الاستراتيجيات المُختبَرة</td><td class="num">400</td><td class="num">400</td></tr>
+    <tr class="hi"><td><b>الزيارات لكل رفّ</b></td><td class="num">0.27</td><td class="num">4.9</td></tr>
+  </table>
+</section>
+
+<!-- 6 -->
+<section>
+  <div class="secno">القسم ٦</div>
+  <h2>ويجب ألّا ينكسر مجددًا حين تكبر المكتبة</h2>
+  <p>المكتبة انتقلت <b>15 ← 18 ← 143 ← 165</b>. وهذا النموّ هو ما كسر الأمر أول مرة — دون أن يُعلن شيء، لأن
+  الرفوف كبرت بصمت مع المكتبة.</p>
+
+  <div class="tool">
+    <div class="toolhead">جرّب بنفسك</div>
+    <h3>كبِّر المكتبة وراقب الرفوف</h3>
+    <div class="ctl">
+      <label for="s-lib-ar">عدد المؤشرات في المكتبة</label>
+      <input type="range" id="s-lib-ar" min="10" max="500" value="165">
+      <div class="readout" id="r-lib-ar">165</div>
+    </div>
+    <div class="cmp">
+      <div><div class="t">التصميم القديم — الرفوف</div><div class="v" id="r-oshelf-ar">1,494</div></div>
+      <div><div class="t">القديم — زيارة لكل رفّ</div><div class="v" id="r-ovis-ar">0.27</div></div>
+      <div><div class="t">التصميم الجديد — الرفوف</div><div class="v" id="r-nshelf-ar">81</div></div>
+      <div><div class="t">الجديد — زيارة لكل رفّ</div><div class="v" id="r-nvis-ar">4.9</div></div>
+    </div>
+    <div class="verdict no" id="r-verdict-ar"></div>
+  </div>
+
+  <figure>
+    <div class="split">
+      <div class="branch">
+        <div class="node">القديم<span class="sub">الأعمدة = عدد المؤشرات</span></div>
+        <div class="conn"></div><div class="node">المكتبة تكبر</div><div class="conn"></div>
+        <div class="node bad">الرفوف تكبر معها<span class="sub">ينكسر بصمت</span></div>
+      </div>
+      <div class="branch">
+        <div class="node">الجديد<span class="sub">الأعمدة = مجموعات ثابتة (…، 26–50، 51+)</span></div>
+        <div class="conn"></div><div class="node">المكتبة تكبر</div><div class="conn"></div>
+        <div class="node good">الرفوف تبقى 9<span class="sub">لا شيء يتغيّر</span></div>
+      </div>
+    </div>
+    <figcaption>فالمجموعة الأخيرة هي <b>«51 فأكثر»</b>، وهي مجموعة جامعة. وسواء حملت المكتبة 165 مؤشرًا أو
+    500، تبقى للخزانة 9 أعمدة.</figcaption>
+  </figure>
+</section>
+
+<!-- 7 -->
+<section>
+  <div class="secno">القسم ٧</div>
+  <h2>كيف سأُثبت أنه نجح — لا أن أكتفي بالحجّة</h2>
+  <p>عدّ الرفوف حساب بسيط. <b>أما الاختبار الحقيقي فهو: هل يحدث الاختيار فعلًا؟</b> لذلك سيَعُدّ الأرشيف
+  حدثين مختلفين، وهما ليسا الشيء نفسه إطلاقًا:</p>
+
+  <figure>
+    <div class="split">
+      <div class="branch">
+        <div class="node warn">ملء أول<span class="sub">كان الرفّ فارغًا، فقُبل أي شيء</span></div>
+        <div class="conn"></div><div class="node dim">لم يحدث أي اختيار</div>
+      </div>
+      <div class="branch">
+        <div class="node good">تحسين<span class="sub">كان الرفّ مشغولًا، والقادمة كانت أفضل</span></div>
+        <div class="conn"></div><div class="node">حدث اختيار</div>
+      </div>
+    </div>
+  </figure>
+
+  <table>
+    <tr><th></th><th>قبل الإصلاح</th><th>بعد الإصلاح — التوقّع</th></tr>
+    <tr><td>الملء الأول</td><td>كل شيء تقريبًا</td><td>أقل بكثير</td></tr>
+    <tr class="hi"><td><b>التحسينات</b></td><td><b>شبه معدومة</b></td><td><b>نصيب معتبر</b></td></tr>
+  </table>
+
+  <div class="pull green">وإن لم يرتفع عدد التحسينات، فالإصلاح لم ينجح — وسأبلغ بذلك بدل الإشارة إلى حساب
+  الرفوف وإعلان النصر. وهذا مكتوب <b>قبل</b> التشغيل، فلا يمكن إعادة تفسيره بعده.</div>
+</section>
+
+<!-- 8 -->
+<section>
+  <div class="secno">القسم ٨</div>
+  <h2>ما الذي <i>لا</i> يدّعيه هذا</h2>
+  <ul class="claims">
+    <li><span class="mark y">✓</span><div>‎#88‎ يُصلح <b>شكل الأرشيف</b>، فتستطيع الطريقة أن تختار من جديد.</div></li>
+    <li><span class="mark n">✕</span><div><b>لا</b> يجعل نتائج MAP-Elites السابقة صالحة — فتلك جاءت من النسخة المكسورة. ذلك هو <b>‎#90‎</b>، إعادة التحقّق.</div></li>
+    <li><span class="mark n">✕</span><div><b>ولا</b> يدّعي أن MAP-Elites تتفوّق على البحث العادي. لا شيء هنا يقارن بينهما.</div></li>
+  </ul>
+  <p>فكل نتيجة من MAP-Elites قُبلت قبل هذا أنتجتها النسخة التي تحتفظ بالواصلين أولًا. وتلك النتائج <b>ليست
+  خاطئة — بل غير مُتحقَّق منها</b>، وهي حالة مختلفة وأكثر إحراجًا، وتُتابَع على حدة.</p>
+</section>
+
+<!-- 9 -->
+<section>
+  <div class="secno">القسم ٩</div>
+  <h2>الأمر كله في سطر واحد</h2>
+  <div class="pull">الخزانة التي رفوفها أكثر من قطعها تكفّ عن أن تكون مجموعةً للأفضل، وتصير مجموعةً للأول —
+  وهي تبدو من الخارج كما هي تمامًا.</div>
+</section>
+
+<!-- 10 — القياس -->
+<section class="measured">
+  <div class="secno">القسم ١٠ · القياس 2026-08-03</div>
+  <h2>ماذا حدث عند الاختبار فعلًا</h2>
+  <p><b>الاختبار في القسم ٧ كان اختبارًا خاطئًا، ولزم فشلان لإدراك ذلك.</b></p>
+
+  <table>
+    <tr><th>الجولة</th><th>ما الذي عُدَّ</th><th>النتيجة</th></tr>
+    <tr class="lo"><td>١</td><td>التحسينات ≥ ضعفين</td><td><b>فشل</b> — بذرة واحدة من 8</td></tr>
+    <tr class="lo"><td>٢</td><td>التحسينات ≥ ضعفين، بميزانية عشرة أضعاف</td>
+        <td><b>فشل وانقلب</b> — الخزانة المكسورة سجّلت <b>2.5 ضعفًا أكثر</b></td></tr>
+    <tr class="hi"><td>٣</td><td><b>جودة الاستراتيجيات الموجودة على الرفوف فعلًا</b></td>
+        <td><b>نجح — 8 من 8</b></td></tr>
+  </table>
+
+  <div class="pull">من السهل تحسين خزانة مليئة بالرديء، ومن الصعب تحسين خزانة مليئة بالجيّد فعلًا.</div>
+
+  <p>فعدّ التحسينات إذن <i>يكافئ</i> الخزانة المكسورة. المؤشّر يرتفع كلما ساء الحال — وهذا ليس قياسًا
+  ضعيفًا، بل قياسًا <b>خاطئًا</b>.</p>
+
+  <h3 style="margin:24px 0 4px;font-size:16px">الرقم الذي يحسم الأمر</h3>
+  <p>تُسلَّم التجربة استراتيجيةً <i>قبل</i> أن تبدأ — البطل الحالي، وقيمته <b>23,328 دولارًا</b>.</p>
+
+  <figure>
+    <div class="flow">
+      <div class="node">التجربة تبدأ وهي تحمل البطل<span class="sub">23,328 دولارًا</span></div>
+      <div class="conn"></div>
+      <div class="split">
+        <div class="branch">
+          <div class="blabel">الخزانة المكسورة · 4,000 محاولة</div>
+          <div class="node bad">أعادت الاستراتيجية التي بدأت بها
+            <span class="sub">في 5 من 8 تجارب — بينما ملأت 260 رفًّا وسجّلت 299 «تحسينًا»</span></div>
+        </div>
+        <div class="branch">
+          <div class="blabel">الخزانة المُصلَحة · 4,000 محاولة</div>
+          <div class="node good">تفوّقت عليه في 8 من 8
+            <span class="sub">الوسيط 29,522 دولارًا — <b>‎+23%‎</b></span></div>
+        </div>
+      </div>
+    </div>
+  </figure>
+
+  <div class="stats">
+    <div class="stat good"><div class="n">8/8</div><div class="l">البذور التي فازت فيها الخزانة المُصلَحة</div></div>
+    <div class="stat bad"><div class="n">5/8</div><div class="l">تجارب أعادت فيها المكسورة نقطة انطلاقها</div></div>
+    <div class="stat good"><div class="n">‎+23%‎</div><div class="l">التحسّن الوسيط حيث يُنشَر الأبطال</div></div>
+  </div>
+
+  <h3 style="margin:24px 0 4px;font-size:16px">تصحيحان لهذه الصفحة</h3>
+  <ul class="claims">
+    <li><span class="mark n">!</span><div><b>«4.9 زيارة لكل رفّ» كان رقمًا متفائلًا.</b> فقد افترض أن كل
+      محاولة تصل إلى رفّ، والحقيقة أن <b>68% منها لا تصل</b> — إما تخسر مالًا، أو تكاد لا تتداول، أو يهبط
+      رأسمالها أكثر من اللازم. والرقم الحقيقي <b>1.46</b>، وهو ما زال فوق الـ1.0 التي تهمّ (القديمة حقّقت
+      <b>0.08</b>) لكنه أقل من الرقم المرسوم أعلاه.</div></li>
+    <li><span class="mark y">✓</span><div><b>الوعد في القسم ٧ نُفِّذ مرّتين.</b> فشل المعيار وأُبلغ عن
+      فشله في المرّتين. أما الثالث فكُتب وسُجّل <i>قبل</i> تشغيله، فلم يكن ممكنًا اختياره لأنه ناجح.</div></li>
+  </ul>
+</section>
+
+</div><!-- /ar -->
+
+<footer>
+  <div class="en">Issue #88 · generated 2026-08-03 · mirrors <code>ISSUE-88-explained-visually.md</code> and
+  <code>.ar.md</code> · self-contained, no network access</div>
+  <div class="ar">القضية ‎#88‎ · أُنشئت 2026-08-03 · تُطابق <code>ISSUE-88-explained-visually.md</code>
+  و<code>.ar.md</code> · مستقلّة بالكامل، بلا أي اتصال بالشبكة</div>
+</footer>
+
+</div><!-- /wrap -->
+
+<script>
+"use strict";
+
+/* ---------- language toggle ---------- */
+const root = document.documentElement;
+function setLang(l){
+  root.dataset.lang = l;
+  root.lang = l;
+  root.dir = (l === "ar") ? "rtl" : "ltr";
+  document.getElementById("btn-en").setAttribute("aria-pressed", String(l === "en"));
+  document.getElementById("btn-ar").setAttribute("aria-pressed", String(l === "ar"));
+}
+document.getElementById("btn-en").onclick = () => setLang("en");
+document.getElementById("btn-ar").onclick = () => setLang("ar");
+
+/* ---------- the real constants ---------- */
+const ROWS = 9;              // DD_BIN_CAP = 8  =>  buckets 0..8
+const EVALS = 400;           // strategies tested per MAP-Elites run
+const BINS = [               // the proposed indicator-count groups
+  {lo:0,   hi:0,   label:"0",     why:{en:"none",         ar:"لا شيء"}},
+  {lo:1,   hi:2,   label:"1–2",   why:{en:"very few",     ar:"قليل جدًّا"}},
+  {lo:3,   hi:4,   label:"3–4",   why:{en:"champion zone",ar:"منطقة الأبطال"}, zone:true},
+  {lo:5,   hi:7,   label:"5–7",   why:{en:"champion zone",ar:"منطقة الأبطال"}, zone:true},
+  {lo:8,   hi:10,  label:"8–10",  why:{en:"champion zone",ar:"منطقة الأبطال"}, zone:true},
+  {lo:11,  hi:15,  label:"11–15", why:{en:"many",         ar:"كثير"}},
+  {lo:16,  hi:25,  label:"16–25", why:{en:"lots",         ar:"أكثر"}},
+  {lo:26,  hi:50,  label:"26–50", why:{en:"very many",    ar:"كثير جدًّا"}},
+  {lo:51,  hi:1e9, label:"51+",   why:{en:"crowd",        ar:"حشد"}}
+];
+const NEWCOLS = BINS.length; // 9 — and it stays 9 however big the library gets
+
+/* ---------- deterministic RNG (no Math.random: the page must render identically every time) ---- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);
+  t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+/**
+ * Spread `visits` strategies evenly at random over rows x cols shelves and render the cabinet.
+ * Uniform placement is the CHARITABLE assumption — real placement clusters around the indicator
+ * counts the sampler favours, which leaves MORE shelves empty, not fewer.
+ */
+function buildGrid(el, cols, cellPx, visits, seed){
+  if(!el) return null;
+  const rnd = mulberry32(seed), n = ROWS * cols, count = new Uint16Array(n);
+  for(let i = 0; i < visits; i++) count[(rnd() * n) | 0]++;
+  el.style.gridTemplateColumns = `repeat(${cols}, ${cellPx}px)`;
+  const frag = document.createDocumentFragment();
+  for(let i = 0; i < n; i++){
+    const d = document.createElement("div");
+    d.className = "cell" + (count[i] >= 2 ? " v2" : count[i] === 1 ? " v1" : "");
+    d.style.height = cellPx + "px";
+    frag.appendChild(d);
+  }
+  el.appendChild(frag);
+  let empty = 0, once = 0, multi = 0;
+  for(let i = 0; i < n; i++){ if(!count[i]) empty++; else if(count[i] === 1) once++; else multi++; }
+  return {n, empty, once, multi};
+}
+
+const fmt = n => n.toLocaleString("en-US");
+
+/* build every cabinet — same seed both languages, so EN and AR show the identical picture */
+buildGrid(document.getElementById("g-designed"),    19,  22, EVALS, 20260803);
+buildGrid(document.getElementById("g-designed-ar"), 19,  22, EVALS, 20260803);
+const today = buildGrid(document.getElementById("g-today"),    166, 4, EVALS, 88088);
+buildGrid(document.getElementById("g-today-ar"), 166, 4, EVALS, 88088);
+const fixed = buildGrid(document.getElementById("g-fixed"),    NEWCOLS, 40, EVALS, 88088);
+buildGrid(document.getElementById("g-fixed-ar"), NEWCOLS, 40, EVALS, 88088);
+
+/* the counts that come straight out of the picture above */
+function counts(el, s, L){
+  if(!el || !s) return;
+  const pc = x => Math.round(100 * x / s.n) + "%";
+  const t = L === "ar"
+    ? [["فارغ تمامًا", pc(s.empty), "bad"], ["زيارة واحدة فقط", pc(s.once), "warn"],
+       ["حدثت فيه مقارنة", pc(s.multi), "good"]]
+    : [["shelves never visited", pc(s.empty), "bad"], ["visited exactly once", pc(s.once), "warn"],
+       ["where a comparison happened", pc(s.multi), "good"]];
+  el.innerHTML = t.map(([l, v, c]) =>
+    `<div class="stat ${c}"><div class="n">${v}</div><div class="l">${l}</div></div>`).join("");
+}
+counts(document.getElementById("g-counts"), today, "en");
+counts(document.getElementById("g-counts-ar"), today, "ar");
+
+/* ---------- visits-per-shelf bar chart ---------- */
+function chart(el, L){
+  if(!el) return;
+  const data = L === "ar"
+    ? [{v:2.3,l:"التصميم<br>(18 مؤشرًا)",c:"var(--green)"},
+       {v:0.27,l:"اليوم<br>(165 مؤشرًا)",c:"var(--red)"},
+       {v:4.9,l:"بعد الإصلاح",c:"var(--green)"}]
+    : [{v:2.3,l:"designed<br>(18 ind)",c:"var(--green)"},
+       {v:0.27,l:"today<br>(165 ind)",c:"var(--red)"},
+       {v:4.9,l:"after the fix",c:"var(--green)"}];
+  const max = 6;
+  el.innerHTML = data.map(d => `
+    <div class="barcol">
+      <div class="bar" style="height:${(d.v / max * 100).toFixed(1)}%;background:${d.c}">
+        <span class="val">${d.v}</span></div>
+      <div class="barlbl">${d.l}</div>
+    </div>`).join("");
+  const line = document.createElement("div");
+  line.className = "thresh";
+  line.innerHTML = `<div style="bottom:${(1 / max * 100).toFixed(1)}%">` +
+    (L === "ar" ? "زيارة واحدة لكل رفّ — الحدّ الأدنى لحدوث أي مقارنة"
+                : "1 visit per shelf — the floor for any comparison to happen") + `</div>`;
+  el.appendChild(line);
+}
+chart(document.getElementById("chart"), "en");
+chart(document.getElementById("chart-ar"), "ar");
+
+/* ---------- bin strip ---------- */
+function binstrip(el, L){
+  if(!el) return;
+  el.innerHTML = BINS.map((b, i) =>
+    `<div class="bin${b.zone ? " zone" : ""}" data-i="${i}">
+       <div class="r">${b.label}</div><div class="w">${b.why[L]}</div></div>`).join("");
+}
+binstrip(document.getElementById("binstrip"), "en");
+binstrip(document.getElementById("binstrip-ar"), "ar");
+
+const binOf = n => BINS.findIndex(b => n >= b.lo && n <= b.hi);
+
+/* ---------- interactive 1: which column does a strategy land in ---------- */
+function wireCol(sfx, L){
+  const s = document.getElementById("s-ind" + sfx);
+  if(!s) return;
+  const rI = document.getElementById("r-ind" + sfx),
+        rO = document.getElementById("r-old" + sfx),
+        rN = document.getElementById("r-new" + sfx),
+        strip = document.getElementById("binstrip" + (sfx || ""));
+  const upd = () => {
+    const n = +s.value, i = binOf(n);
+    rI.textContent = n;
+    rO.textContent = String(n);
+    rN.textContent = BINS[i].label;
+    if(strip) [...strip.children].forEach((c, j) => c.classList.toggle("on", j === i));
+  };
+  s.addEventListener("input", upd);
+  // clicking a group jumps the slider into it
+  if(strip) strip.addEventListener("click", e => {
+    const b = e.target.closest(".bin"); if(!b) return;
+    const bin = BINS[+b.dataset.i];
+    s.value = bin.hi > 1000 ? 60 : bin.lo;
+    upd();
+  });
+  upd();
+}
+wireCol("", "en");
+wireCol("-ar", "ar");
+
+/* ---------- interactive 2: grow the library, watch the shelves ---------- */
+function wireLib(sfx, L){
+  const s = document.getElementById("s-lib" + sfx);
+  if(!s) return;
+  const g = id => document.getElementById(id + sfx);
+  const upd = () => {
+    const lib = +s.value;
+    const oldShelves = ROWS * (lib + 1);        // one column per exact count, 0..lib
+    const newShelves = ROWS * NEWCOLS;          // fixed groups — independent of lib
+    const oldVis = EVALS / oldShelves, newVis = EVALS / newShelves;
+    g("r-lib").textContent = lib;
+    g("r-oshelf").textContent = fmt(oldShelves);
+    g("r-ovis").textContent = oldVis.toFixed(2);
+    g("r-nshelf").textContent = fmt(newShelves);
+    g("r-nvis").textContent = newVis.toFixed(1);
+    const v = g("r-verdict"), broken = oldVis < 1;
+    v.className = "verdict " + (broken ? "no" : "ok");
+    v.textContent = L === "ar"
+      ? (broken
+         ? `التصميم القديم مكسور عند ${lib} مؤشرًا: ${oldVis.toFixed(2)} زيارة لكل رفّ — أقل من واحدة، فيُحتفظ بأول واصل. الجديد ثابت عند ${newVis.toFixed(1)}.`
+         : `التصميم القديم ما زال يعمل عند ${lib} مؤشرًا: ${oldVis.toFixed(2)} زيارة لكل رفّ. الجديد ثابت عند ${newVis.toFixed(1)}.`)
+      : (broken
+         ? `Old design is broken at ${lib} indicators: ${oldVis.toFixed(2)} visits per shelf — below one, so first arrivals are kept. The new design holds at ${newVis.toFixed(1)}.`
+         : `Old design still works at ${lib} indicators: ${oldVis.toFixed(2)} visits per shelf. The new design holds at ${newVis.toFixed(1)}.`);
+  };
+  s.addEventListener("input", upd);
+  upd();
+}
+wireLib("", "en");
+wireLib("-ar", "ar");
+</script>
+</body>
+</html>

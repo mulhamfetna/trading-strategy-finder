@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 
 import config
+import roots                                 # the ONE resolver for repo/data roots (#94)
 from loader import load_data
 from engine import SimpleStrategy, SimpleStrategyParams
 from volatility import vol_forecast, gate_threshold
@@ -83,7 +84,7 @@ def load_inputs_plus20d_tf(tf_name: str):
     all-history files + the combined shared box (build_plus20d_data.py)."""
     import os
     from pathlib import Path
-    base = Path(os.environ.get("WSH_DATA_BASE", "/mnt/data/projects/trading"))
+    base = roots.DATA_ROOT                       # data: machine-specific (#94)
     raw = base / TF.RAW_DIR
     tf = TF.get(tf_name)
     df_dec = load_data(str(raw / f"NQ_{tf.name}_with20d.csv")).sort_values("Date").reset_index(drop=True)
@@ -254,11 +255,11 @@ def validate_params(params, instrument: str = "NQ"):
                 retrace_amount=retrace_amount, retrace_unit=retrace_unit, wait_bars=wait_bars,
                 cap_1min=cap_1min, cap_mode=cap_mode, eod_margin_min=eod_margin_min,
                 veto_as_flip=bool(params.get("veto_as_flip")),
-                # GAP-AWARE FILLS (GAP-01). This dict is an EXPLICIT allow-list — any key not named
-                # here is silently DROPPED, so gap_fills must be carried through here or the flag can
-                # never be turned off from a preset. Default True (the honest model); False reproduces
-                # the pre-2026-07-20 fill-at-the-line numbers and the golden_pre_gapfills baselines.
-                gap_fills=bool(params.get("gap_fills", True)),
+                # GAP-AWARE FILLS (GAP-01) — MANDATORY, not a parameter. A hard SL/TP whose bar OPENED
+                # beyond the line fills at the OPEN, because the line was never available to trade at.
+                # There is deliberately NO way to switch this off from a preset: the alternative is a
+                # backtest that reports fills at prices which never existed. See _reject_gap_fills().
+                gap_fills=True,
                 **split)
 
 
@@ -392,11 +393,8 @@ def build_payload(df4, df1, box, vf, n2025, params=None, instrument: str = "NQ")
                               eod_margin_min=P["eod_margin_min"],
                               intracandle_veto_entry=ic_on, intracandle_max_wait=ic_n,
                               intracandle_force_close=ic_fc,
-                              # GAP-AWARE FILLS (GAP-01): a hard SL/TP whose bar OPENED beyond the line
-                              # fills at the OPEN — the line was never available. Default True (the
-                              # honest model); a preset can set gap_fills=False to reproduce the old
-                              # optimistic numbers and the pre-2026-07-20 golden baselines.
-                              gap_fills=bool(P.get("gap_fills", True)),
+                              # GAP-AWARE FILLS (GAP-01) — MANDATORY. See the note at the other call site.
+                              gap_fills=True,
                               **_sp_split)
     # Step B2 (Axis B): precompute the param-independent Stage-1 signal ONCE (vectorized) and feed it to
     # the engine so it does NOT recompute _stage1_candle_signal + box.loc per decision bar. Byte-identical
@@ -570,6 +568,17 @@ def build_payload(df4, df1, box, vf, n2025, params=None, instrument: str = "NQ")
                    payoff=round(float(wins.mean() / abs(losses.mean())), 2) if len(wins) and len(losses) else None,
                    avg_win=round(float(wins.mean()), 0) if len(wins) else 0, avg_loss=round(float(losses.mean()), 0) if len(losses) else 0,
                    max_dd=round(float(uw.max()), 0) if len(eqc) else 0.0, n_locks=sum(1 for e in events if e["type"] == "LOCK"),
+                   # Notional-account view (config.ACCOUNT_SIZE, default $100k). REPORTING ONLY — the
+                   # engine trades one contract and never reads a balance, so nothing here feeds a
+                   # decision. It turns raw dollars into "what fraction of capital was that?", which is
+                   # the question a human actually asks. worst_trade_pct is the single-trade tail that
+                   # matters in a 1-contract system (the biggest loss any ONE fill can inflict).
+                   account_size=float(config.ACCOUNT_SIZE),
+                   max_dd_pct=round(100 * float(uw.max()) / config.ACCOUNT_SIZE, 2) if len(eqc) else 0.0,
+                   pnl_pct=round(100 * float(pnl.sum()) / config.ACCOUNT_SIZE, 2) if len(pnl) else 0.0,
+                   worst_trade=round(float(pnl.min()), 0) if len(pnl) else 0.0,
+                   worst_trade_pct=round(100 * float(pnl.min()) / config.ACCOUNT_SIZE, 2) if len(pnl) else 0.0,
+                   best_trade=round(float(pnl.max()), 0) if len(pnl) else 0.0,
                    noentry_streak_n=_best_n, noentry_streak_days=noentry_days, noentry_streak_start=noentry_start,
                    box_silence=_pm["box_silence"], position_hold=_pm["position_hold"],
                    gate_noentry=_pm["gate_noentry"], indicator_noentry=_pm["indicator_noentry"],

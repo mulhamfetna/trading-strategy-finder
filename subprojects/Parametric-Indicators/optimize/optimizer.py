@@ -53,7 +53,8 @@ def _suggest_param(trial, name, p):
     return trial.suggest_float(name, lo, hi, step=st)
 
 
-def _suggest_indicators(trial, exclude=(), only=(), prefix="", max_enabled=None):
+def _suggest_indicators(trial, exclude=(), only=(), prefix="", max_enabled=None,
+                        conditional_params=False):
     """WS-I.8 search space: each registered indicator on/off + its params (rectangular — params always
     suggested so NSGA crossover stays well-defined). Mode = the schema default. Keys in `exclude`, or (when
     `only` is non-empty) keys NOT in `only`, are forced OFF with default params and NOT suggested (α: revert
@@ -74,12 +75,69 @@ def _suggest_indicators(trial, exclude=(), only=(), prefix="", max_enabled=None)
             specs.append({"key": key, "enabled": False, "mode": meta["mode"], "params": params, "_searched": False})
             continue
         enabled = trial.suggest_categorical(f"{prefix}en_{key}", [False, True])
-        params = {p["name"]: _suggest_param(trial, f"{prefix}{key}_{p['name']}", p) for p in meta["params"]}
+        # CONDITIONAL PARAMETERS (#97/#99). Rectangular by default — every indicator's parameters are
+        # drawn whether or not it is enabled, so NSGA-III sees a fixed dimension set and crossover
+        # between any two genomes is well defined.
+        #
+        # ⚠️ MEASURED 2026-08-02, AND THE ANSWER IS DO NOT TURN THIS ON. Two matched 46,600-trial NQ 4h
+        # studies (a full 100 trials/dimension), same seed, this flag the only difference:
+        #
+        #                          rectangular      conditional
+        #     completed              28,450            8,487      (61.1% vs 18.2%)
+        #     median fold P/L         8,192           -1,218      <- conditional median LOSES MONEY
+        #     p10                     6,483           -4,650
+        #     p90                    10,189            1,128      <- 9x worse
+        #     feasible Pareto front     756                9
+        #     wall clock             14,146s          10,480s     (conditional 26% faster)
+        #
+        # It is faster and far worse. Every percentile of the score distribution is degraded, not just
+        # the tail, and the median is negative.
+        #
+        # WHY, and it is the reason the rectangular design exists. When an indicator is off here, its
+        # parameters revert to schema defaults. So when crossover or mutation later switches that
+        # indicator ON, it arrives with FACTORY DEFAULTS instead of a value the search had been
+        # carrying. The rectangular space keeps a searched value alive for every indicator even while
+        # it is switched off — latent memory that becomes useful the moment the indicator is enabled.
+        # Conditional drawing throws that away, so the search must rediscover every parameter from
+        # scratch each time a switch flips.
+        #
+        # The ~30% speed-up is real and irrelevant: it buys wall clock by destroying the search.
+        #
+        # THE COST OF THAT, MEASURED: a champion runs ~7 indicators and a mid-search trial ~56, out of
+        # 165. So on a typical trial roughly TWO-THIRDS of the 295 parameter draws are read by nothing.
+        #
+        # With conditional_params=True the parameters are drawn only for enabled indicators. The
+        # nominal dimension count is unchanged; the EFFECTIVE dimensionality of a trial collapses.
+        # Disabled indicators keep their schema defaults, which is exactly what the rectangular path
+        # already passes to the engine for a disabled key — so the STRATEGY is identical either way and
+        # only the sampling changes.
+        if conditional_params and not enabled:
+            params = {p["name"]: p["default"] for p in meta["params"]}
+        else:
+            params = {p["name"]: _suggest_param(trial, f"{prefix}{key}_{p['name']}", p) for p in meta["params"]}
         specs.append({"key": key, "enabled": enabled, "mode": meta["mode"], "params": params, "_searched": True})
     if max_enabled is not None:
         on = [s for s in specs if s["enabled"]]
-        for s in on[int(max_enabled):]:      # deterministic REGISTRY order ⇒ reproducible repair
-            s["enabled"] = False
+        if len(on) > int(max_enabled):
+            # UNBIASED repair (#14). Keeping "the first max_enabled in REGISTRY order" sounds neutral
+            # and is not: the registry lists the ORIGINAL 18 indicators at positions 0-17 and the 147
+            # added by #12 from position 18 onward, so an original ALWAYS wins the tie. With ~50% of
+            # 165 flags enabled per trial, at least 3 originals are on ~99.9% of the time — so the cap
+            # keeps originals essentially always.
+            #
+            # MEASURED on a live 16,000-trial adopt-gate study: **0 of 1,500 sampled trials kept a
+            # single new-library indicator.** The ten most-kept keys were all registry positions 0-13.
+            # A search whose entire purpose was to evaluate the new library was testing only the old
+            # one — and it would have returned a confident, meaningless verdict.
+            #
+            # Seeded by the trial number: reproducible per trial (same trial ⇒ same repair, so resumes
+            # and re-scores are stable) but independent of registry position.
+            import random as _random
+            rnd = _random.Random(getattr(trial, "number", 0))
+            keep = {id(s) for s in rnd.sample(on, int(max_enabled))}
+            for s in on:
+                if id(s) not in keep:
+                    s["enabled"] = False
     return specs
 
 
@@ -100,18 +158,11 @@ _DB = _STUDIES / "wsh.db"          # legacy SHARED store (one file, all timefram
 
 
 def _study_in(db_path: Path, study_name: str) -> bool:
-    """True iff an Optuna study named `study_name` already lives in the SQLite file `db_path`."""
-    if not db_path.exists():
-        return False
-    try:
-        con = sqlite3.connect(db_path)
-        try:
-            rows = con.execute("SELECT study_name FROM studies").fetchall()
-        finally:
-            con.close()
-        return any(r[0] == study_name for r in rows)
-    except Exception:
-        return False
+    """True iff an Optuna study named `study_name` already lives in the SQLite file `db_path`.
+
+    Delegates to storage.study_exists so Optuna's PRIVATE table names live in exactly one module — this
+    was one of six places that open-coded `SELECT ... FROM studies`."""
+    return study_storage.study_exists(db_path, study_name)
 
 
 def _study_suffix(instrument: str) -> str:
@@ -160,6 +211,60 @@ _BOUNDS = _HERE / "sl_tp_bounds.json"
 DD_LIMIT_MAX = 5000.0
 
 # ─────────────────────────────────────────────────────────────────────────────────────────────────
+# INDICATOR FRAME — the 1-minute frame is the default and the only frame you get unless you ask.
+#
+# WHY THIS IS A DEFAULT AND NOT A FLAG. Every champion in the deployed book was tuned with indicators
+# read off the 1-minute frame; the decision-timeframe frame is a research alternative, not production.
+# But the flag was `--ind-1min` / `ind_1min: bool = False` — opt-IN — so the wrong frame was what you
+# got by forgetting, and forgetting is silent: the run completes, the numbers look like numbers.
+#
+# It is not a small difference. Evaluating the DEPLOYED NQ 4h champion in the decision frame scores it
+# INFEASIBLE (full DD $23,579 against the $9,623 the 25% rule allows) where the 1-minute frame scores
+# it $147,191 with $14,043 DD. A MAP-Elites run in the wrong frame therefore returns an EMPTY archive
+# and looks like a broken algorithm rather than a mis-set flag — that is exactly how it presented.
+#
+# So the polarity is inverted: 1-minute is the default everywhere, and the other frame requires saying
+# `--tf-indicators` out loud. `--ind-1min` is still accepted so existing run scripts and playbooks keep
+# working, but it now only re-states the default. Same class as the "no silent defaults" rule: a
+# measurement parameter you can get wrong by omission is a defect, not a convenience.
+# ─────────────────────────────────────────────────────────────────────────────────────────────────
+# WARM START — off by default. Seeding the champion must be asked for (#102, owner decision).
+#
+# WHAT WARM START DOES AND WHY IT WAS ON. It enqueues the deployed champion as a seed trial, so the
+# result is provably ≥ the prior champion. That floor was added after wsh5 returned something worse.
+#
+# WHY THE FLOOR IS NOT FREE. The search then starts inside one basin and evolves outward from it. The
+# population grows on ONE SIDE, and configurations that would have won from a different starting point
+# are eliminated before they are ever explored. A guaranteed floor is bought with an unmeasured ceiling,
+# and the ceiling was never measured — the default simply made every study a refinement of the incumbent.
+#
+# ⚠️ WHAT THIS CHANGE COSTS, STATED PLAINLY: cold start REMOVES the ≥-champion guarantee. A cold run can
+# return something worse than what is deployed and nothing downstream will catch it. Anything promoted
+# out of a cold run must be compared against the deployed set explicitly before adoption.
+def add_warm_start_args(ap) -> None:
+    """Attach the warm-start flags. ONE definition shared by every CLI, so the four cannot drift."""
+    g = ap.add_mutually_exclusive_group()
+    g.add_argument("--warm-start", dest="warm_start", action="store_true", default=False,
+                   help="seed the deployed champion as a starting point. Guarantees the result is ≥ the "
+                        "champion, at the cost of searching only that champion's neighbourhood")
+    g.add_argument("--no-warm-start", dest="warm_start", action="store_false",
+                   help="DEFAULT (kept for compatibility): start cold, from nothing")
+
+
+def add_indicator_frame_args(ap) -> None:
+    """Attach the indicator-frame flags. ONE definition shared by every CLI (optimizer, two_stage,
+    map_elites, benches) so the four cannot drift apart — four copies of a default is four chances for
+    one of them to be the old one."""
+    g = ap.add_mutually_exclusive_group()
+    g.add_argument("--ind-1min", dest="ind_1min", action="store_true", default=True,
+                   help="DEFAULT (kept for compatibility): indicators read the 1-minute frame, sampled "
+                        "at each decision bar's last closed minute")
+    g.add_argument("--tf-indicators", dest="ind_1min", action="store_false",
+                   help="RESEARCH ONLY: read indicators on the decision timeframe instead. The deployed "
+                        "book was NOT tuned this way and champions can score infeasible here")
+
+
+# ─────────────────────────────────────────────────────────────────────────────────────────────────
 # Search-space sizing + dimension-proportional trial budget (anti "bigger space, fewer samples" trap).
 # See study_range_regime/REPORT_optimizer_superset_paradox_and_system_breakdown.md: NSGA-III is a finite
 # stochastic search, so when dimensions grow the trial budget MUST grow with them or sampling thins out
@@ -200,43 +305,98 @@ def _cap_switches(box: dict) -> dict:
     return dict(en_cap_bars=mode in ("bars", "both"), en_cap_eod=mode in ("eod", "both"))
 
 
+def searchable_indicators(only_inds: tuple = (), exclude_inds: tuple = ()) -> list:
+    """The indicator keys this run will ACTUALLY search, after --only-indicators / --exclude-indicators.
+
+    Exists because the trial budget must be computed from the real search space. `--auto-trials` used to
+    size itself from the whole REGISTRY regardless: restricting a run to the original 18 indicators still
+    budgeted 47,100 trials for a 59-dimension space — an 8x over-budget that costs ~20 hours per study
+    instead of ~45 minutes, silently. Nothing failed, it was just enormously wasteful, which is the
+    hardest kind of bug to notice."""
+    keys = list(only_inds) if only_inds else list(library.REGISTRY)
+    keys = [k for k in keys if k in library.REGISTRY and k not in set(exclude_inds)]
+    return keys
+
+
 def search_dims(split_sltp: bool, intracandle: bool = False, freeze_indicators: bool = False,
-                force_eod: bool = False) -> dict:
+                force_eod: bool = True, only_inds: tuple = (), exclude_inds: tuple = (),
+                contrib_tokens: tuple = (), contrib_exclude: tuple = (),
+                search_cap_bars: bool = False, contrib_only: tuple = ()) -> dict:
     """Breakdown of the tunable search dimensions for the current REGISTRY/SCHEMA.
     base continuous (sl_soft, sl_hard_delta, tp, gate_pct, dd_limit)=5;
     categorical (flip, en_cap_bars, en_cap_eod)=3;
-    integer (cooldown, k, cap_1min)=3; one on/off flag per indicator; every indicator param; +6 if split_sltp;
-    +3 if intracandle. --freeze-indicators drops the indicator flags+params and k (indicator layer fixed)."""
-    en_flags = 0 if freeze_indicators else len(library.REGISTRY)
-    ind_params = 0 if freeze_indicators else sum(len(library.SCHEMA[k].get("params", [])) for k in library.REGISTRY)
+    integer (cooldown, k, cap_1min)=3; one on/off flag per SEARCHED indicator; every searched indicator's
+    params; +6 if split_sltp; +3 if intracandle. --freeze-indicators drops the indicator flags+params and k
+    (indicator layer fixed). --only-indicators/--exclude-indicators shrink the indicator dimensions, and
+    therefore the dimension-proportional trial budget, accordingly."""
+    _keys = searchable_indicators(only_inds, exclude_inds)
+    en_flags = 0 if freeze_indicators else len(_keys)
+    ind_params = 0 if freeze_indicators else sum(len(library.SCHEMA[k].get("params", [])) for k in _keys)
     split = 6 if split_sltp else 0
     # base_cat = flip + en_cap_bars + en_cap_eod. --force-eod pins en_cap_eod ON ⇒ it is no longer
     # SEARCHED, so it stops being a dimension (and the trial budget shrinks accordingly).
-    d = dict(base_cont=5, base_cat=(2 if force_eod else 3),
-             base_int=(2 if freeze_indicators else 3),   # k dropped when frozen
-             en_flags=en_flags, ind_params=ind_params, split=split, intracandle=(3 if intracandle else 0))
+    # CROSS-INSTRUMENT CONTRIBUTORS (#95). This term did not exist, so `--contributors ES --plan`
+    # reported the same dimension count with and without the block — while the committee is a SECOND
+    # full-registry search that roughly DOUBLES the space. --auto-trials was therefore sizing every
+    # contributor run for about HALF the space it was actually searching.
+    #
+    # Found while sizing the two arms of the #95 comparison: both printed identical dimensions, which
+    # cannot be true, because the arms differ by exactly eight committee keys. A budget computed from
+    # something other than the search it is sizing is the same defect as #2 and #89, in a fifth place.
+    contrib = 0
+    if contrib_tokens:
+        from optimize import contributor_search as _cs   # local: _cs imports this module
+        contrib = _cs.contributor_dims(contrib_tokens, exclude_committee=contrib_exclude,
+                                       only_committee=contrib_only)
+    # base_cont: sl_soft, sl_hard_delta, tp, gate_pct.  dd_limit RETIRED from the search 2026-08-01.
+    # base_cat : flip (+ en_cap_bars only when --search-cap-bars; en_cap_eod pinned by --force-eod, #79).
+    # base_int : k, cap_1min.  cooldown RETIRED from the search 2026-08-01. cap_1min is only a dimension
+    #            when the bars cap can be on — otherwise it is a knob nothing reads.
+    _cat = 1 + (1 if search_cap_bars else 0) + (0 if force_eod else 1)
+    _int = (0 if freeze_indicators else 1) + (1 if search_cap_bars else 0)   # k (dropped when frozen), cap_1min
+    d = dict(base_cont=4, base_cat=_cat,
+             base_int=_int,
+             en_flags=en_flags, ind_params=ind_params, split=split, intracandle=(3 if intracandle else 0),
+             contributors=contrib)
     d["total"] = sum(d.values())
     return d
 
 
 def recommended_trials(split_sltp: bool, per_dim: int = TRIALS_PER_DIM, intracandle: bool = False,
-                       freeze_indicators: bool = False, force_eod: bool = False) -> int:
+                       freeze_indicators: bool = False, force_eod: bool = True,
+                       only_inds: tuple = (), exclude_inds: tuple = (),
+                       contrib_tokens: tuple = (), contrib_exclude: tuple = (),
+                       search_cap_bars: bool = False, contrib_only: tuple = ()) -> int:
     """Dimension-proportional trial budget: total search dimensions × per_dim."""
-    return search_dims(split_sltp, intracandle, freeze_indicators, force_eod)["total"] * int(per_dim)
+    return search_dims(split_sltp, intracandle, freeze_indicators, force_eod,
+                       only_inds, exclude_inds, contrib_tokens, contrib_exclude,
+                       search_cap_bars, contrib_only)["total"] * int(per_dim)
 
 
 def print_plan(tf_name: str, split_sltp: bool, per_dim: int = TRIALS_PER_DIM, n_trials: int | None = None,
                sampler: str = "nsga3", intracandle: bool = False, freeze_indicators: bool = False,
-               force_eod: bool = False):
+               force_eod: bool = True, only_inds: tuple = (), exclude_inds: tuple = (),
+               contrib_tokens: tuple = (), contrib_exclude: tuple = (),
+               search_cap_bars: bool = False, contrib_only: tuple = ()):
     """Print the search-space size + recommended (dimension-proportional) trial budget. Used by the
     `--plan` dry-run and before every real launch so the budget is reported and can be accepted."""
-    d = search_dims(split_sltp, intracandle, freeze_indicators, force_eod)
-    rec = recommended_trials(split_sltp, per_dim, intracandle, freeze_indicators, force_eod)
+    d = search_dims(split_sltp, intracandle, freeze_indicators, force_eod, only_inds, exclude_inds,
+                    contrib_tokens, contrib_exclude, search_cap_bars, contrib_only)
+    rec = recommended_trials(split_sltp, per_dim, intracandle, freeze_indicators, force_eod,
+                             only_inds, exclude_inds, contrib_tokens, contrib_exclude, search_cap_bars,
+                             contrib_only)
+    if only_inds or exclude_inds:
+        _n = len(searchable_indicators(only_inds, exclude_inds))
+        print(f"   indicator scope: {_n} of {len(library.REGISTRY)} searchable"
+              f"{' (--only-indicators)' if only_inds else ''}"
+              f"{' (--exclude-indicators)' if exclude_inds else ''}", flush=True)
     print(f"── OPTIMIZER PLAN [{tf_name}] {'SPLIT long/short SL/TP' if split_sltp else 'shared SL/TP'} "
           f"· sampler={sampler} ──", flush=True)
     print(f"   dimensions: base {d['base_cont']}c+{d['base_cat']}cat+{d['base_int']}i = "
           f"{d['base_cont']+d['base_cat']+d['base_int']}  |  indicators {d['en_flags']} on/off + "
-          f"{d['ind_params']} params  |  split {d['split']}  →  TOTAL {d['total']} dims", flush=True)
+          f"{d['ind_params']} params  |  split {d['split']}"
+          + (f"  |  contributors {d['contributors']}" if d.get("contributors") else "")
+          + f"  →  TOTAL {d['total']} dims", flush=True)
     print(f"   trials/dim {per_dim}  →  RECOMMENDED {rec:,} trials  (∝ dimensions; grows if you add more)", flush=True)
     if n_trials is not None and n_trials != rec:
         print(f"   (requested --trials {n_trials:,} ⇒ {n_trials/d['total']:.0f}/dim)", flush=True)
@@ -328,26 +488,58 @@ def _native_seed(box: dict, inds: dict, split_sltp: bool, b: dict) -> dict:
     return seed
 
 
+def _deployed_champion_file(instrument: str) -> Path | None:
+    """The champion file for the set that is ACTUALLY DEPLOYED, resolved through the dashboard's own
+    resolver rather than a hardcoded name.
+
+    THE BUG THIS LOCKS OUT (issue #2). This used to read `wsh4_champions_full*.json` outright. The
+    deployed set moved to `best_*` on 2026-07-14 (`DEFAULT_CHAMPION_SET`, commit 4585648) and nothing
+    updated this, so for the next fortnight every warm-started re-optimization seeded from a RETIRED set.
+    Optuna's warm start only guarantees the front is >= its seed, so the guarantee kept holding — against
+    the wrong incumbent. The gap-aware re-optimization (`wshgap`) shipped a champion trio that beat
+    `wsh4` by $94,522 while LOSING $12,832 out-of-sample to the champions we actually run; see
+    optimize/reports/gap_fills/reopt_wshgap/README.md. Following the resolver survives the next set
+    change too."""
+    try:
+        from optimize.l2 import payload as _P
+        return _P._instrument_champions_path(instrument)
+    except Exception:
+        return None
+
+
 def warm_start_seeds(tf_name: str, split_sltp: bool, b: dict, instrument: str = "NQ") -> list[dict]:
     """Known champions to enqueue as the optimizer's FIRST trials so the returned front is provably ≥ their
-    score (defeats the 'larger space sampled worse' trap). Reads the per-TF wsh4 champion + (4h) the wsh5
-    split champion from optimize/results/*.json. Missing files ⇒ fewer/no seeds (safe)."""
+    score (defeats the 'larger space sampled worse' trap). Seeds from the DEPLOYED champion set + (4h) the
+    wsh5 split champion from optimize/results/*.json. Missing files ⇒ fewer/no seeds (safe)."""
     seeds = []
-    # Per-instrument champion file: NQ = wsh4_champions_full.json, others = ..._<INST>.json. This lets a
-    # re-optimization of GC (or any onboarded market) warm-start from ITS OWN champions, so the front is
-    # guaranteed >= the prior champion re-scored under the current engine (e.g. gap-aware fills, GAP-01).
+    # Per-instrument champion file, from the deployed set: NQ is unsuffixed, others are ..._<INST>.json.
+    # This lets a re-optimization of GC (or any onboarded market) warm-start from ITS OWN champions, so the
+    # front is guaranteed >= the champion we actually run, re-scored under the current engine.
     _suffix = "" if instrument == "NQ" else f"_{instrument}"
-    _champ_files = ([f"wsh4_champions_full{_suffix}.json"] if instrument != "NQ"
-                    else ["wsh4_champions_full.json", "wsi_champions_full.json"])
+    _deployed = _deployed_champion_file(instrument)
+    # Legacy names are a FALLBACK ONLY (a checkout that predates the champion-set registry). They are
+    # announced loudly rather than used silently — seeding from a retired set is exactly the failure above.
+    _legacy = ([f"wsh4_champions_full{_suffix}.json"] if instrument != "NQ"
+               else ["wsh4_champions_full.json", "wsi_champions_full.json"])
+    _champ_files = ([_deployed.name] if _deployed is not None else []) + _legacy
     for fn in _champ_files:
         f = _RESULTS_DIR / fn
         if f.exists():
             try:
                 c = json.loads(f.read_text()).get(tf_name)
                 if c:
-                    seeds.append(_native_seed(c["box"], c.get("indicators", {}), split_sltp, b)); break
+                    seeds.append(_native_seed(c["box"], c.get("indicators", {}), split_sltp, b))
+                    _how = "DEPLOYED set" if (_deployed is not None and fn == _deployed.name) else \
+                           "!! LEGACY FALLBACK — deployed set unavailable, front is NOT guaranteed >= the "\
+                           "champion we run !!"
+                    print(f"[warm-start] {instrument} {tf_name}: seeded from {fn} ({_how})", flush=True)
+                    break
             except Exception:
                 pass
+    else:
+        print(f"[warm-start] {instrument} {tf_name}: NO champion seed found "
+              f"(tried {', '.join(_champ_files) or 'nothing'}) — front is NOT floored by any incumbent",
+              flush=True)
     split_f = _RESULTS_DIR / f"wsh5_{tf_name}_split_champion.json"
     if split_sltp and split_f.exists():
         try:
@@ -386,15 +578,20 @@ def _load_json(p: Path) -> dict:
     return json.loads(p.read_text())
 
 
+PROGRESS_CALLBACK = None      # optional per-trial callback, set by a driver (see #14)
+
+
 def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
-        seed: int = 1, ind_1min: bool = False, study_prefix: str = "wsh3",
-        split_sltp: bool = False, warm_start: bool = True, sampler: str = "nsga3",
+        seed: int = 1, ind_1min: bool = True, study_prefix: str = "wsh3",
+        split_sltp: bool = False, warm_start: bool = False, sampler: str = "nsga3",
         objective: str = "winrate", exclude_inds: tuple = (), only_inds: tuple = (),
         dd_pnl_cap: float = DD_PNL_CAP, contrib_tokens: tuple = (),
         contrib_exclude=None, instrument: str = "NQ", intracandle: bool = False,
         freeze_indicators: bool = False, intracandle_always_on: bool = False,
-        force_eod: bool = False, max_enabled: int | None = None,
-        reference: str | None = None) -> dict:
+        force_eod: bool = True, max_enabled: int | None = None,
+        reference: str | None = None, train_window: str = "full",
+        search_cap_bars: bool = False,
+        conditional_params: bool = False, contrib_only=()) -> dict:
     # split_sltp (Q3 / E2): when True the optimizer searches SEPARATE long vs short SL/TP (long_*/short_*),
     # widening the space per the user's point-5 goal. Default False ⇒ shared SL/TP ⇒ identical to prior runs.
     # NOTE FOR THE NEXT FULL RUN (wsh5): launch with split_sltp=True to let longs and shorts get their own
@@ -412,13 +609,18 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
 
     print(f"[{tf_name}] loading inputs ({instrument}, pv={pv:g}) ...", flush=True)
     df_dec, df1, box, vf, n_split = data_mod.load_inputs(tf_name, instrument)
-    sig_int = signals_to_int(sig_mod.decision_signals(df_dec, box))   # precompute once (param-independent)
     # Cross-series reference (#17): loaded ONCE; None ⇒ cross-series indicators stay neutral (parity).
-    ref_df = None
+    ref_df = ref_df1 = None
     if reference and reference != instrument:
         try:
-            ref_df, *_ = data_mod.load_inputs(tf_name, reference)
-            print(f"[{tf_name}] cross-series reference = {reference} ({len(ref_df)} bars, causally aligned)", flush=True)
+            # BOTH frames (#75). `ref_df` (decision) feeds the decision-TF path; `ref_df1` (1-MINUTE)
+            # feeds the `--ind-1min` path, which is the production default. Loading only the decision
+            # frame is exactly how the cross-series indicators ended up inert: `indicator_source_1min`
+            # had nothing to align against, so `ctx.ref_close` was None for every one of them.
+            ref_df, ref_df1, *_ = data_mod.load_inputs(tf_name, reference)
+            print(f"[{tf_name}] cross-series reference = {reference} "
+                  f"({len(ref_df)} decision bars / {len(ref_df1)} 1-minute bars, causally aligned)",
+                  flush=True)
         except Exception as exc:  # noqa: BLE001
             print(f"[{tf_name}] reference {reference} unavailable ({exc}); cross-series indicators inert", flush=True)
     # A cross-series indicator with NO reference can never confirm ⇒ enabling it would gate out every
@@ -427,6 +629,29 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         _xs = tuple(library.lib_xseries.SCHEMA)
         exclude_inds = tuple(dict.fromkeys((*exclude_inds, *_xs)))
         print(f"[{tf_name}] no reference ⇒ cross-series indicators excluded from search: {list(_xs)}", flush=True)
+    # TRAIN WINDOW (#14). By default the walk-forward folds span the WHOLE series, so the second
+    # calendar year is part of training and there is no holdout to validate against. `train_window=
+    # "2025"` truncates every frame to the first year BEFORE anything is computed, so the optimizer
+    # cannot see 2026 at all — which is what makes a later `window="2026"` score genuinely
+    # out-of-sample. Required by the adopt gate; default "full" leaves every existing run unchanged.
+    if train_window and train_window != "full":
+        if train_window != "2025":
+            raise ValueError(f"train_window must be 'full' or '2025', got {train_window!r}")
+        t0 = df_dec["Date"].iloc[0]
+        t_end = df_dec["Date"].iloc[n_split - 1] + tf.bar_td
+        df_dec = df_dec.iloc[:n_split].reset_index(drop=True)
+        df1 = df1[(df1["Date"] >= t0) & (df1["Date"] < t_end)].reset_index(drop=True)
+        vf = vf[:n_split]
+        if ref_df is not None:
+            ref_df = ref_df[ref_df["Date"] < t_end].reset_index(drop=True)
+        if ref_df1 is not None:
+            ref_df1 = ref_df1[ref_df1["Date"] < t_end].reset_index(drop=True)
+        # The volatility gate freezes its threshold on vf[:n_split]; with no second year inside the
+        # training window, that reference is the whole window (still causal w.r.t. the 2026 holdout).
+        n_split = len(df_dec)
+        print(f"[{tf_name}] TRAIN WINDOW = 2025 only: {len(df_dec):,} decision bars / {len(df1):,} "
+              f"1-minute bars. 2026 is HELD OUT and never seen by this search.", flush=True)
+    sig_int = signals_to_int(sig_mod.decision_signals(df_dec, box))   # precompute once (param-independent)
     print(f"[{tf_name}] {len(df_dec)} decision bars; cooldown cap {cap}; "
           f"bounds sl_soft{b['sl_soft']} sl_hard{b['sl_hard']} tp{b['tp']}; "
           f"indicators on {'1-MINUTE frame' if ind_1min else 'decision TF'}", flush=True)
@@ -445,8 +670,17 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         delta = trial.suggest_float("sl_hard_delta", 0.0, float(b["sl_hard"][1]))
         tp = trial.suggest_float("tp", float(b["tp"][0]), float(b["tp"][1]))
         gate_pct = trial.suggest_float("gate_pct", 0.0, 100.0)
-        dd_limit = trial.suggest_float("dd_limit", 0.0, _dd_limit_max)
-        cooldown = trial.suggest_int("cooldown", 0, cap)
+        # RETIRED FROM THE SEARCH (user decision, 2026-08-01). `dd_limit` (the drawdown breaker) and
+        # `cooldown` (bars to wait after an exit) are no longer searched dimensions; every NEW champion
+        # is trained with both OFF.
+        #
+        # ⚠️ THE ENGINE STILL HONOURS THEM when a params dict supplies them, and it must: all 54 deployed
+        # champions carry a non-zero `dd_limit` (54/54) and 40 of them a non-zero `cooldown` (74%).
+        # Ripping the terms out of the engine would change every deployed champion's trade ledger and
+        # break all six golden baselines at once. Training default and engine capability are separate
+        # things — the same split #79 made for the end-of-day close.
+        dd_limit = 0.0
+        cooldown = 0
         flip = trial.suggest_categorical("flip", [False, True])
         if freeze_indicators:
             specs = [dict(s) for s in frozen_specs]     # champion indicator layer, fixed (not searched)
@@ -454,19 +688,23 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         else:
             specs = [{k: v for k, v in s.items() if k != "_searched"}      # strip the test-hook key
                      for s in _suggest_indicators(trial, exclude_inds, only_inds,
-                                                  max_enabled=max_enabled)]   # α: scoped search space + K-cap
+                                                  max_enabled=max_enabled,
+                                                  conditional_params=conditional_params)]
             k_rule = trial.suggest_int("k", 1, 5)       # clamped to #confirmers by confirm_mask
         # Time caps, asked the way the indicators are asked: a yes/no per cap, plus "how much" for the
         # bars cap. Rectangular space (cap_1min always suggested) so NSGA-III sees a fixed dimension set;
         # it is simply ignored when the bars cap is off. cap_1min starts at 1 — a 0-bar cap would be a
         # degenerate re-encoding of "off" and would burn trials on duplicates of en_cap_bars=False.
-        en_cap_bars = trial.suggest_categorical("en_cap_bars", [False, True])
+        # OFF and NOT SEARCHED by default (user decision, 2026-08-01) — same treatment the end-of-day
+        # close got in #79, in the opposite direction: pinned rather than explored, so it stops being a
+        # dimension. `--search-cap-bars` puts it back in the search.
+        en_cap_bars = trial.suggest_categorical("en_cap_bars", [False, True]) if search_cap_bars else False
         # --force-eod: NEVER hold overnight. Pinned ON, not searched — so every champion is TUNED
         # for the bell (its stops/targets/indicator gate adapt to the shorter horizon) rather than
         # having the rule bolted onto a strategy optimized to hold overnight. Measured: bolting it on
         # afterwards costs −$40,429 OOS across the suite; tuning FOR it should recover much of that.
         en_cap_eod = True if force_eod else trial.suggest_categorical("en_cap_eod", [False, True])
-        cap_n = trial.suggest_int("cap_1min", CAP_1MIN_MIN, CAP_1MIN_MAX)
+        cap_n = trial.suggest_int("cap_1min", CAP_1MIN_MIN, CAP_1MIN_MAX) if search_cap_bars else 0
         cap_1min = cap_n if en_cap_bars else 0
         cap_mode = derive_cap_mode(en_cap_bars, en_cap_eod)
         params = dict(sl_soft=sl_soft, sl_hard=sl_soft + delta, tp=tp, gate_pct=gate_pct,
@@ -499,19 +737,25 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
             from optimize import contributor_search as _cs, contributor_masks as _cmask
             params["contributor_topology"] = trial.suggest_categorical(
                 "contributor_topology", ["separate_and", "merged", "or_boost"])
-            exc = contrib_exclude if contrib_exclude is not None else _cs.L1_ES_EXCLUDE
-            params["contributors"] = [_cs.suggest_contributor(trial, tok, exclude_committee=exc)
+            exc = contrib_exclude if contrib_exclude is not None else _cs.DEFAULT_COMMITTEE_EXCLUDE
+            # contrib_only scopes the COMMITTEE, which --only-indicators never did: it scoped the
+            # strategy layer and left the committee searching the whole registry. That asymmetry is why
+            # a contributor run costs ~9 days (#96) — the committee is a second full-registry search.
+            params["contributors"] = [_cs.suggest_contributor(trial, tok, exclude_committee=exc,
+                                                              only_committee=tuple(contrib_only))
                                       for tok in contrib_tokens]
             _contrib = _cmask.precompute_contributor_masks(params, df_dec, df1, box, sig_int, tf.bar_td)
         r = score_walkforward(df_dec, df1, box, vf, params, tf.bar_td, k=folds, ref_df=ref_df,
-                              min_trades=min_trades, sig_int=sig_int, contrib=_contrib, pv=pv)
+                              ref_df1=ref_df1, min_trades=min_trades, sig_int=sig_int,
+                              contrib=_contrib, pv=pv)
         if not r["valid"]:
             raise optuna.TrialPruned()
         worst_dd = r["worst_dd"]; med_win = r["median_win"]; med_entries = r["median_entries"]
         # FULL-PERIOD feasibility (user): full-window max DD ≤ 25% of full-window P/L. One extra
         # backtest over the whole window (gate frozen causally on vf[:n_split]).
         full = backtest_metrics(df_dec, df1, box, vf, n_split, dict(params, window="full"),
-                                tf.bar_td, sig_int=sig_int, contrib=_contrib, pv=pv, ref_df=ref_df)
+                                tf.bar_td, sig_int=sig_int, contrib=_contrib, pv=pv, ref_df=ref_df,
+                                ref_df1=ref_df1)
         full_pnl = float(full["pnl"]); full_dd = float(full["max_dd"])
         dec_pause = float(full.get("max_no_entry_days_decision", full.get("max_no_entry_days", 0.0)))
         # ⚠️ RECORD THE EXIT RULE THIS TRIAL WAS SCORED WITH. Do not make anything downstream re-derive it
@@ -522,6 +766,13 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
         # bell. Recording the resolved values here makes the extractor read the truth instead of guessing.
         trial.set_user_attr("cap_mode", cap_mode)
         trial.set_user_attr("cap_1min", cap_1min)
+        # The ENABLED indicator layer, verbatim (#14). Reconstructing it later from `trial.params` means
+        # replaying `_suggest_indicators` against a FixedTrial and trusting that the replay is faithful —
+        # the same class of "re-derive it downstream" mistake the comment above warns about. Recording it
+        # is exact and, with --max-enabled capped, tiny. Disabled specs are omitted: every consumer
+        # (`_cached_votes`, `veto_mask`, `confirm_mask`) filters on `config.enabled` anyway.
+        trial.set_user_attr("enabled_specs", [s for s in specs if s.get("enabled")])
+        trial.set_user_attr("k_rule", int(k_rule))
         trial.set_user_attr("worst_dd", worst_dd)
         trial.set_user_attr("median_pnl", r["median_pnl"])
         trial.set_user_attr("median_win", med_win)
@@ -554,6 +805,17 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
     # a worker WAIT for the lock instead of erroring out.
     study_name = f"{study_prefix}_{tf_name}{_study_suffix(instrument)}"
     db_path = _db_for(tf_name, study_name, instrument)
+    # WHERE THIS RUN'S TRIALS WILL LIVE — printed unconditionally. Three backends are selectable by two
+    # usually-unset env vars, and the study files are named the same in each. Leaving that implicit is
+    # how a finished 12-study campaign got reported as LOST twice in one session: Postgres was searched,
+    # the studies were in SQLite. `optimize/storage.py: find_study()` searches all three.
+    print(f"[{tf_name}] trial store → {study_storage.describe_backend(db_path)}", flush=True)
+    # The overnight-exposure decision, stated in every run rather than inferred from a flag's absence.
+    print(f"[{tf_name}] end-of-day close: "
+          + ("PINNED ON (standard — never holds overnight, so a weekend gap cannot jump the stop)"
+             if force_eod else
+             "⚠️  SEARCHED (--no-force-eod) — overnight holds allowed; this re-opens the weekend-gap "
+             "exposure documented in #79. RESEARCH ONLY."), flush=True)
     # Tier 1: one source of truth for the store URL. WSH_STORAGE_URL (e.g. postgresql://…) overrides the
     # per-TF sqlite path; unset ⇒ the per-TF sqlite file, byte-identical to before. WAL/busy_timeout file
     # hardening applies only to a sqlite file; a served RDB (Postgres) uses MVCC + a connection pool.
@@ -601,7 +863,9 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
     # A transient store error (e.g. SQLite "database is locked" under many concurrent workers) fails
     # only THIS trial — it must never kill the worker, or the study loses capacity for the rest of the
     # run. See optimize/server/INCIDENT_wsh4_sqlite_contention.md.
-    study.optimize(objective, n_trials=n_trials, show_progress_bar=False,
+    # A caller (the #14 adopt gate) may install a heartbeat so a multi-hour run is observable.
+    _cbs = [PROGRESS_CALLBACK] if PROGRESS_CALLBACK is not None else None
+    study.optimize(objective, n_trials=n_trials, show_progress_bar=False, callbacks=_cbs,
                    catch=(optuna.exceptions.StorageInternalError,))
     dur = time.time() - t0
 
@@ -634,15 +898,30 @@ def main() -> int:
     ap.add_argument("--trials", type=int, default=200)
     ap.add_argument("--folds", type=int, default=5)
     ap.add_argument("--min-trades", type=int, default=5)
-    ap.add_argument("--ind-1min", action="store_true",
-                    help="indicators read the 1-minute frame (sampled at each decision bar's last "
-                         "closed minute) instead of the decision timeframe")
-    ap.add_argument("--force-eod", action="store_true",
-                    help="NEVER hold overnight: pin the end-of-day close ON for every trial "
+    add_indicator_frame_args(ap)
+    # END-OF-DAY CLOSE IS THE STANDARD (user decision, 2026-07-30) — the default for ALL training.
+    #
+    # WHY. Holding overnight is what makes a stop-loss stop working: a stop is an instruction that the
+    # market walks INTO, and it cannot execute while the market is shut. NG's worst trade lost 182.84x
+    # its intended risk to a +5.52% weekend reopen gap (#79) — the stop was 0.03% of price, the gap was
+    # 5.52%. Closing at the bell removes that exposure structurally rather than pricing it.
+    #
+    # MEASURED COST, honestly bracketed. The forced-EOD campaign scored $631,999 on the 2026 OOS year
+    # versus $638,462 for the incumbents — about −1.0%. It is tempting to quote −24.8% against the
+    # deployed "best" set ($840,037), but that set is best-of-three-per-slot CHOSEN ON the 2026 year it
+    # is scored on, so that number carries a selection effect and is not a fair comparison.
+    #
+    # `--no-force-eod` remains for research (e.g. re-validating an algorithm against its old evidence),
+    # and announces itself loudly rather than being a silent option.
+    ap.add_argument("--force-eod", dest="force_eod", action="store_true", default=True,
+                    help="(DEFAULT) NEVER hold overnight: pin the end-of-day close ON for every trial "
                          "(it stops being a searched dimension). Each champion is then TUNED for "
                          "the bell — its stops/targets/indicator gate adapt to the shorter "
                          "horizon — instead of having the rule bolted onto a strategy optimized "
                          "to hold overnight (measured cost of bolting it on: −$40,429 OOS).")
+    ap.add_argument("--no-force-eod", dest="force_eod", action="store_false",
+                    help="RESEARCH ONLY: allow overnight holds by searching the end-of-day close as a "
+                         "dimension again. This re-opens the weekend-gap exposure that #79 documents.")
     ap.add_argument("--study-prefix", default="wsh3",
                     help="study name prefix (use a fresh one, e.g. wsh4, for a new regime so it "
                          "doesn't mix with prior trials)")
@@ -658,9 +937,7 @@ def main() -> int:
     ap.add_argument("--plan", action="store_true",
                     help="DRY RUN: print the search-space size + dimension-proportional trial budget, then "
                          "exit WITHOUT running. Use this to review/accept the budget before launching.")
-    ap.add_argument("--no-warm-start", action="store_true",
-                    help="do NOT enqueue known champions as seed trials (warm-start is ON by default and "
-                         "guarantees the front is ≥ the prior champion's score)")
+    add_warm_start_args(ap)
     ap.add_argument("--sampler", default="nsga3", choices=SAMPLER_CHOICES,
                     help="optimizer 'brain' (default nsga3 = unchanged baseline). nsga2/tpe/motpe/gp are "
                          "drop-in multi-objective alternatives; cmaes is single-objective/continuous-only "
@@ -677,9 +954,29 @@ def main() -> int:
                     help=f"feasibility cap: max full-window DD as a fraction of full-window P/L (default "
                          f"{DD_PNL_CAP}; RELAX e.g. 0.5 to let shorter-pause/higher-DD strategies qualify)")
     ap.add_argument("--contributors", default="",
-                    help="comma-separated cross-instrument contributor tokens to SEARCH on L1 (e.g. 'ES'); "
-                         "ES is SEARCHABLE not forced (es_enabled is a categorical). Empty ⇒ no contributor "
-                         "block (existing L1 space unchanged). ES committee excludes SMC + stochastic + adx.")
+                    help="FUSION STUDY ONLY. Comma-separated cross-instrument contributor tokens to "
+                         "SEARCH on L1 (e.g. 'ES'). NOT a native indicator — it feeds another "
+                         "instrument's bars into this strategy. Requires --enable-fusion-contributors. "
+                         "One token adds ~471 dimensions (the strategy's own search is 470) ⇒ ~9 days at "
+                         "the ∝-dimension budget (#96). Empty (default) ⇒ no contributor block.")
+    ap.add_argument("--contrib-only", default="",
+                    help="restrict the cross-instrument COMMITTEE to these indicators (#96). Empty ⇒ the "
+                         "whole registry, which is a SECOND full-registry search and the reason a "
+                         "contributor run costs ~9 days. --only-indicators does NOT do this: it scopes "
+                         "the strategy layer and leaves the committee unscoped.")
+    ap.add_argument("--conditional-params", action="store_true",
+                    help="draw an indicator's parameters ONLY when it is enabled (#97). The strategy is "
+                         "identical either way — a disabled indicator's parameters are never read — but "
+                         "the EFFECTIVE dimensionality of a trial collapses from ~460 to ~20. Off by "
+                         "default until the crossover behaviour is measured.")
+    ap.add_argument("--search-cap-bars", action="store_true",
+                    help="search the BARS time-cap (en_cap_bars + cap_1min) as dimensions. OFF by "
+                         "default since 2026-08-01: the bars cap is pinned off, which removes two "
+                         "dimensions. The end-of-day close (#79) remains the standard exit.")
+    ap.add_argument("--enable-fusion-contributors", action="store_true",
+                    help="acknowledge the fusion opt-in required by --contributors (#96). Two deliberate "
+                         "acts are needed because one word on a command line would otherwise double the "
+                         "search space invisibly.")
     ap.add_argument("--instrument", default="NQ",
                     help="instrument to optimize (NQ default, or ES). Non-NQ studies/DBs/champions are "
                          "suffixed (_ES) so NQ artifacts are untouched; SL/TP bounds auto-scale by price.")
@@ -695,6 +992,31 @@ def main() -> int:
     ap.add_argument("--max-enabled", type=int, default=None,
                     help="Cap simultaneously-enabled indicators per trial (post-suggestion repair, REGISTRY order). "
                          "Keeps the ~125-key K-of-N search sparse/interpretable. Default: uncapped.")
+    ap.add_argument("--train-window", default="full", choices=["full", "2025"],
+                    help="Restrict the WHOLE search to a training window. 'full' (default) walk-forwards "
+                         "over the entire series, so there is no holdout. '2025' truncates every frame to "
+                         "the first calendar year, leaving 2026 genuinely UNSEEN — required for an "
+                         "out-of-sample adopt gate (#14). Score the winner afterwards with window='2026'.")
+    # PREFLIGHT (#94). A study runs for hours; the failures that make its result untrustworthy are all
+    # silent — a stale checkout, a dirty tree, the wrong data root. Each produces a run that COMPLETES
+    # NORMALLY and looks correct. Today's server was found 9 commits behind only because someone
+    # happened to type `git status`. So the default is to STOP, and both escapes announce themselves
+    # and are recorded in the provenance stamp, so an overridden run is still attributable.
+    # #95: the committee scope is a CHOICE now, not a constant. It used to be a hardcoded exclusion of
+    # the SMC family on a cost that has since fallen 100x; it is removed by default and reimposable here.
+    ap.add_argument("--contrib-exclude", default="",
+                    help="comma-separated indicators to withhold from the cross-instrument committee "
+                         "SEARCH. Empty (default) ⇒ nothing withheld (#95). Pass "
+                         "'structure_trend,order_block,fvg,ifvg,breaker,cisd,stochastic,adx' to "
+                         "reproduce a pre-2026-08-01 run.")
+    ap.add_argument("--allow-dirty", action="store_true",
+                    help="run even though the checkout has uncommitted changes. The result will not be "
+                         "reproducible from any commit; recorded in the run's provenance.")
+    ap.add_argument("--allow-behind", action="store_true",
+                    help="run even though the checkout is behind its upstream. You are probably not "
+                         "running the code you think you are; recorded in the run's provenance.")
+    ap.add_argument("--no-preflight", action="store_true",
+                    help="skip the preflight checks entirely (escape hatch; recorded).")
     ap.add_argument("--reference", default=None,
                     help="Reference instrument for the cross-series indicators (rolling_corr/beta, "
                          "cointegration, pca_factor), e.g. ES. Causally aligned; default: none (they stay inert).")
@@ -703,31 +1025,64 @@ def main() -> int:
     if not _inst.is_valid(a.instrument):
         print(f"unknown instrument {a.instrument!r}; known {list(_inst.TOKENS)}", flush=True); return 2
     contrib_tokens = tuple(t.strip() for t in a.contributors.split(",") if t.strip())
+    from optimize import contributor_search as _cs0
+    try:
+        _cs0.require_fusion_optin(contrib_tokens, a.enable_fusion_contributors)
+    except _cs0.FusionNotEnabled as e:
+        print(f"\n{e}\n", flush=True)
+        return 4
+    # Parsed BEFORE the plan: the budget is dimension-proportional, so it must see the indicator scope.
+    # (These used to be parsed after, which is how --auto-trials came to budget 47,100 trials for a
+    # 59-dimension search — 8x over — whenever --only-indicators was used.)
+    _excl = tuple(x for x in a.exclude_indicators.split(",") if x)
+    _only = tuple(x for x in a.only_indicators.split(",") if x)
+    # Same rule for the contributor scope: parsed BEFORE the plan, because the plan must cost the
+    # search that is actually launched (#2, #89, and now #95's missing contributor term).
+    _cexc = tuple(x for x in a.contrib_exclude.split(",") if x)
+    _conly = tuple(x for x in a.contrib_only.split(",") if x)
     # report the plan (search size + recommended trials) — always, so the budget is visible
     rec = print_plan(a.timeframe, a.split_sltp, a.trials_per_dim,
                      n_trials=(None if a.auto_trials else a.trials), sampler=a.sampler,
                      intracandle=(a.intracandle or a.intracandle_on), freeze_indicators=a.freeze_indicators,
-                     force_eod=a.force_eod)
+                     force_eod=a.force_eod, only_inds=_only, exclude_inds=_excl,
+                     contrib_tokens=contrib_tokens, contrib_exclude=_cexc,
+                     search_cap_bars=a.search_cap_bars, contrib_only=_conly)
     if a.plan:
         print("   [--plan] dry run — not launching. Re-run without --plan (optionally --auto-trials) to start.",
               flush=True)
         return 0
+    # Deliberately AFTER --plan: a dry run costs nothing and must stay usable on a dirty tree.
+    if not a.no_preflight:
+        import provenance
+        try:
+            provenance.preflight(allow_dirty=a.allow_dirty, allow_behind=a.allow_behind)
+        except provenance.PreflightError as e:
+            print(f"\n{e}\n", flush=True)
+            print("   Re-run with --allow-dirty / --allow-behind if that is genuinely what you want, "
+                  "or --no-preflight to skip these checks.", flush=True)
+            return 3
+    else:
+        import provenance
+        print(provenance.one_line() + "   [--no-preflight]", flush=True)
+
     n_trials = rec if a.auto_trials else a.trials
-    _excl = tuple(x for x in a.exclude_indicators.split(",") if x)
-    _only = tuple(x for x in a.only_indicators.split(",") if x)
     if contrib_tokens:
         from optimize import contributor_search as _cs
         print(f"[{a.timeframe}] **searching cross-instrument contributors {list(contrib_tokens)} on L1 "
-              f"(ES SEARCHABLE, not forced; topology + es_committee). Excluded committee keys: "
-              f"{list(_cs.L1_ES_EXCLUDE)} (SMC + stochastic + adx, fold-scored cost).**", flush=True)
+              f"(ES SEARCHABLE, not forced; topology + es_committee). Committee scope: "
+              f"{('ONLY ' + ','.join(_conly) + '; ') if _conly else 'the FULL registry'}"
+              f"{('EXCLUDING ' + ','.join(_cexc)) if _cexc else ('nothing withheld (#95)' if not _conly else '')}.**",
+              flush=True)
     run(a.timeframe, n_trials=n_trials, folds=a.folds, min_trades=a.min_trades,
         ind_1min=a.ind_1min, study_prefix=a.study_prefix, split_sltp=a.split_sltp,
-        warm_start=not a.no_warm_start, sampler=a.sampler,
+        warm_start=a.warm_start, sampler=a.sampler,
         objective=a.objective, exclude_inds=_excl, only_inds=_only, dd_pnl_cap=a.dd_pnl_cap,
-        contrib_tokens=contrib_tokens, instrument=a.instrument,
+        contrib_tokens=contrib_tokens, contrib_exclude=_cexc, instrument=a.instrument,
         intracandle=(a.intracandle or a.intracandle_on),
         freeze_indicators=a.freeze_indicators, intracandle_always_on=a.intracandle_on,
-        force_eod=a.force_eod, max_enabled=a.max_enabled, reference=a.reference)
+        force_eod=a.force_eod, max_enabled=a.max_enabled, reference=a.reference,
+        train_window=a.train_window, search_cap_bars=a.search_cap_bars,
+        conditional_params=a.conditional_params, contrib_only=_conly)
     return 0
 
 

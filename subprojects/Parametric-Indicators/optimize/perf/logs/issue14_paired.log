@@ -1,0 +1,9 @@
+[gate] candidate indicators ['apo', 'pivot_camarilla', 'dfa']
+[gate]   candidate  HOLDOUT P/L $    18,827  n= 157
+[gate]   baseline   HOLDOUT P/L $    61,601  n=  81
+[gate]   same-but-indicators-OFF $    12,271  n= 193
+[gate] A_vs_baseline: 169 paired bars, 0.0% identical  total diff $-42,774  95% CI [-92,499, 6,432]  p=0.0941
+[gate]   SE(total) paired $25,408 vs unpaired $28,650  ⇒ pairing is 1.13× more sensitive (detectable: $71,183 paired vs $80,266)
+[gate] B_ablation_indicators_off: 193 paired bars, 81.3% identical  total diff $6,556  95% CI [-12,807, 27,656]  p=0.5155
+[gate]   SE(total) paired $10,063 vs unpaired $30,779  ⇒ pairing is 3.06× more sensitive (detectable: $28,192 paired vs $86,229)
+[gate] WROTE optimize/results/adoptgate_paired_4h.json

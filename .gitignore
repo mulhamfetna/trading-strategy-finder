@@ -43,6 +43,48 @@ htmlcov/
 # Data
 *.csv
 *.log
+# ...except the performance evidence. Every number in the perf reports is traceable to one of these
+# raw server runs, and `optimize/perf/README.md` cites them by name — so they are ARTIFACTS, not
+# incidental output. (They were being silently dropped: the README listed a logs/ directory that had
+# never actually been committed. Found and fixed in #62.)
+!subprojects/Parametric-Indicators/optimize/perf/logs/*.log
+
+# ...and except the harvested server archive (#94). This is a RECORD of work that existed only on the
+# server: the 2026-07-13 end-of-day cap campaign and the 2026-07-14 precision investigation that built
+# and verified the DEPLOYED champion set. The champions were committed; the code and logs that produced
+# and checked them were not, so the deployed set was running while no longer being reproducible.
+# Explicitly requested by the repo owner, logs and plots included. Nothing under here is live code.
+!subprojects/Parametric-Indicators/server-audit/**
+
+# ...and except the WS-EARN earnings evidence (#110). These are ARTIFACTS, not incidental output: the
+# frozen Nasdaq-100 weight snapshot is what makes the company universe reproducible (index weights move
+# daily, so a live fetch would silently change the universe between runs), and the timestamp table is
+# the instrument every later stage of the earnings study depends on. Both are cited by name in
+# optimize/earnings/SOURCES.md. Under the blanket `*.csv` rule they would have been committed as
+# nothing at all — the deliverable would exist locally and vanish from the repo, which is precisely the
+# "LOCAL is the source of truth" rule inverted.
+!subprojects/Parametric-Indicators/optimize/earnings/data/*.csv
+
+# ...and the TradingView economic calendar (WS-NEWS2, #114). This is the ONLY source found that carries
+# actual + forecast + previous with a CORRECT UTC timestamp, back to 2013 — investing.com, ForexFactory,
+# Trading Economics, FXStreet, Econoday and DailyFX all failed on access or on dates. It is 20 MB, and it
+# is the raw evidence every consensus-based result in this workstream will rest on. Under the blanket
+# *.csv rule it would exist locally and vanish from the repo — the "LOCAL is the source of truth" rule
+# inverted, and the exact trap already documented for the earnings data below.
+!subprojects/Parametric-Indicators/optimize/fundamentals/tradingview/*.csv
+
+# ...but the blanket un-ignore above also re-admitted __pycache__ INSIDE the archive, and the data
+# directory was never ignored at all. Both matter more than they look: they made `git status` on the
+# server permanently non-empty, so the #94 preflight gate would refuse EVERY run as "dirty".
+#
+# A gate that cries wolf is a gate everyone learns to pass --allow-dirty to, which is strictly worse
+# than no gate. Ignoring these is what keeps "dirty" meaning something.
+subprojects/Parametric-Indicators/server-audit/**/__pycache__/
+# NO trailing slash: on the server this path is a SYMLINK into the data tree, and a pattern ending
+# in '/' matches directories only — so the slashed form silently failed to ignore the very case it
+# was written for. Locally it is a real directory and matches either way, which is exactly why
+# this had to be checked on the server rather than locally.
+subprojects/Parametric-Indicators/data
 
 # Output
 *.html
@@ -52,6 +94,11 @@ dashboard_*.html
 !subprojects/Parametric-Indicators/frontend/index.html
 !subprojects/Parametric-Indicators/frontend/l2.html
 !subprojects/Parametric-Indicators/frontend/combined.html
+# Hand-written report pages under docs/reports-*/ are DOCUMENTS, not output — they are the HTML
+# siblings of the .md reports next to them and are authored, reviewed and committed the same way.
+# Without this they were silently untracked: `git status` stayed clean while the file existed only on
+# one machine, which is the exact failure #94 was about.
+!docs/reports-*/*.html
 
 # OS
 .DS_Store
@@ -109,3 +156,67 @@ vpn_kill.sh
 # Root-level data downloads / dumps (transient — never commit)
 /*.zip
 /data/
+
+# ALFRED point-in-time cache (#119). NOT committed: each vintage file carries the series' ENTIRE
+# history (PAYEMS back to 1939), so a few hundred releases is ~12 MB of near-duplicate JSON. ALFRED
+# vintages are immutable, so this buys speed, not integrity. The EVIDENCE is committed instead, as
+# alfred_revision_<series>.csv — one row per release with the TradingView value, the first print, the
+# current value and the shifted-month control, which is what anyone would actually want to check.
+subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
+!subprojects/Parametric-Indicators/optimize/fundamentals/alfred_revision_*.csv
+
+# H1-B/H1-C server run logs (#115). Committed as EVIDENCE, like the perf logs: these are the raw
+# console output of the two server runs whose every number is cited in the report, and the "LOCAL is
+# the source of truth" rule means a server-only artefact does not count as recorded.
+!subprojects/Parametric-Indicators/optimize/fundamentals/h1bc_run_*.log
+
+# ...and the Phase 2 pre-registration artefacts (#116). phase2_pairs.csv IS the pre-registration: it
+# fixes which 643 pairs Phase 2 is allowed to test and at what alpha. It was caught by the blanket
+# *.csv rule and existed on ONE MACHINE ONLY, while I had already described it as "committed" and
+# "machine-checkable" — the exact #94 inversion where a deliverable lives locally and vanishes from the
+# repo. Worse than the earnings case, because a pre-registration that can be silently regenerated
+# differently is not a pre-registration at all. The S2 probe verdicts are here for the same reason:
+# which pairs are UNANSWERABLE is part of the record, not a working note.
+!subprojects/Parametric-Indicators/optimize/fundamentals/phase2_pairs.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/phase2_s2_probe.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/phase2_s3_results.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/phase2_s4_results.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/api_eia_mechanism.csv
+
+# WS-NEWS3 P1 (#125) evidence — the ledger (claims_news3.py) re-derives published numbers from these
+# files; under the blanket *.csv rule they would exist on one machine only while being cited as
+# committed evidence (the exact phase2_pairs.csv failure, #116).
+!subprojects/Parametric-Indicators/optimize/fundamentals/p1_events_*.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/p1_ride_*.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/p1_drift_*.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/p2_power_rank_*.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/p2_power_events_*.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/p3_events_*.csv
+# The Arabic visual report of the news programme is a DELIVERABLE, not a build artefact —
+# under the blanket html rule it would exist on one machine only while being cited as committed.
+!docs/NEWS-PROGRAMME-VISUAL-REPORT-AR.html
+!docs/NEWS-PROGRAMME-VISUAL-REPORT-EN.html
+!docs/NEWS-PROGRAMME-GLOSSARY-BILINGUAL.html
+# NO TRAILING SLASH — a slashed pattern matches DIRECTORIES ONLY, so it silently fails on the case it
+# most needs to catch: a data root that is a SYMLINK. Exactly the trap already recorded further up
+# this file for subprojects/Parametric-Indicators/data ("on the server this path is a SYMLINK"), and
+# it recurred verbatim when the legacy18 worktree symlinked these three back to the main checkout —
+# `/data/` ignored the real directory in the parent and missed the symlink in the worktree.
+# These are price-data roots. They must never be committed whether they are directories or links.
+/data
+/ALL_STOCKS
+/Full_Canldes_Data
+
+# WS-DEPLOY (#128): the release schedule IS the executor's input contract — under the blanket
+# *.csv rule it would exist on one machine only (the phase2_pairs.csv lesson, again).
+!src/deploy/data/release_schedule.csv
+# The bundle's schedule is part of the SHAREABLE playbook — the phase2_pairs.csv lesson again.
+!playbooks/news-release-long/schedule_2024plus.csv
+!docs/SCALE-CONTEXT-REPORT-BILINGUAL.html
+!docs/STRESSED-COSTS-REPORT-BILINGUAL.html
+!deploy_out_d3/*.csv
+!deploy_out_d3/*.json
+!deploy_out_d4/*.csv
+!deploy_out_d4/*.json
+!playbooks/news-release-long/evidence/*
+!playbooks/news-release-long-bundle-v1.1.0.zip

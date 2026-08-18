@@ -21,6 +21,7 @@ if str(_PI) not in sys.path:
 
 from optimize import optimizer as OPT               # SAMPLER_CHOICES, search_dims, recommended_trials, print_plan
 from optimize import instruments as INST            # TOKENS (tradeable instrument list)
+from optimize import run_spec as RS                 # the ONE invocation builder (#91)
 from indicators import library                      # schema()
 
 _REMOTE = _PI / "optimize" / "server" / "remote_wsi.sh"
@@ -56,52 +57,61 @@ def config() -> dict:
             "optuna_port": int(os.environ.get("DASH_OPTUNA_PORT", 8082))}   # live Pareto/graphs (separate tunnel)
 
 
+def _scope(cfg: dict) -> tuple[tuple, tuple]:
+    """(only_inds, exclude_inds) as the UI selected them.
+
+    THE BUG THIS FIXES. `plan()` and `preview_command()` computed the search size from the WHOLE
+    registry while the very same cfg passed `--only-indicators` to the launched command. Selecting the
+    original 18 indicators showed "471 dims / 47,100 trials" and launched `--trials 47100` for a search
+    that could only ever touch **59 dimensions / 5,900 trials** — an 8x over-budget, i.e. ~20 hours per
+    study instead of ~45 minutes.
+
+    This is the same defect fixed in the CLI's --auto-trials path (#2), which I missed here: the fix went
+    in at `main()` and the control plane builds its own budget. The control plane is the path a HUMAN
+    actually uses, so this was the copy that mattered.
+    """
+    return (tuple(cfg.get("only_indicators") or ()), tuple(cfg.get("exclude_indicators") or ()))
+
+
 def plan(cfg: dict) -> dict:
     """Acceptance preview: search dimensions → recommended (∝-dimension) trial budget + the exact
     optimizer command the run will execute (so the UI shows what the launch actually does)."""
     split = bool(cfg.get("split_sltp", False))
     per_dim = int(cfg.get("trials_per_dim", OPT.TRIALS_PER_DIM))
-    dims = OPT.search_dims(split)
+    only, excl = _scope(cfg)
+    # #95: the cross-instrument contributor block was invisible to this plan. It is a SECOND
+    # full-registry search that roughly DOUBLES the space, so a contributor run was previewed — and
+    # launched — at about half the budget its own search space needs.
+    ctoks = tuple(cfg.get("contributors") or ())
+    cexcl = tuple(cfg.get("contrib_exclude") or ())
+    dims = OPT.search_dims(split, only_inds=only, exclude_inds=excl,
+                           contrib_tokens=ctoks, contrib_exclude=cexcl)
+    n_scoped = len(OPT.searchable_indicators(only, excl))
     return {"dims": dims["total"], "breakdown": dims, "trials_per_dim": per_dim,
-            "recommended_trials": OPT.recommended_trials(split, per_dim),
+            "recommended_trials": OPT.recommended_trials(split, per_dim, only_inds=only, exclude_inds=excl,
+                                                         contrib_tokens=ctoks, contrib_exclude=cexcl),
+            # so the UI can SHOW the scope it is charging for, rather than the user inferring it
+            "indicators_searched": n_scoped, "indicators_total": len(library.REGISTRY),
             "command": preview_command(cfg)}
 
 
 def preview_command(cfg: dict) -> str:
-    """Render the optimizer.py invocation equivalent to this cfg — mirrors remote_wsi.sh's IND_ARGS
-    construction exactly (same flags, same order, opt-in flags omitted when unset). Representative of
-    the FIRST selected timeframe; a matrix launches one such command per (instrument, tf)."""
+    """Render the EXACT optimizer.py invocation this cfg will execute.
+
+    Delegates to `run_spec.build_argv` — the same function `runner.build_command` uses (#91), so the
+    displayed command and the executed one are the same call and cannot disagree. This previously
+    hand-built its own string ("mirrors remote_wsi.sh's IND_ARGS construction exactly"), and measured
+    across four configurations it diverged from the runner on all four: it showed `--trials N` while the
+    run used `--auto-trials`, and omitted the `--study-prefix` entirely, so an operator could not tell
+    which study their run would write to.
+
+    Representative of the FIRST selected timeframe; a matrix launches one such command per
+    (instrument, tf).
+    """
+    from optimize.dashboard import runner as _runner          # local: avoids an import cycle
     tfs = cfg.get("timeframes") or ([cfg["timeframe"]] if cfg.get("timeframe") else ["4h"])
-    tf = str(tfs[0])
-    # trials: 'one' ⇒ user count; otherwise the ∝-dim recommended target the watchdog drives toward.
-    if cfg.get("trials_mode") == "one" and cfg.get("trials"):
-        trials = str(int(cfg["trials"]))
-    else:
-        trials = str(OPT.recommended_trials(bool(cfg.get("split_sltp")),
-                                            int(cfg.get("trials_per_dim", OPT.TRIALS_PER_DIM))))
-    parts = ["python3 optimize/optimizer.py", tf, "--trials", trials, "--folds 5", "--min-trades 5"]
-    if cfg.get("ind_1min", True):
-        parts.append("--ind-1min")
-    if cfg.get("split_sltp"):
-        parts.append("--split-sltp")
-    if cfg.get("sampler"):
-        parts.append(f"--sampler {cfg['sampler']}")
-    if cfg.get("exclude_indicators"):
-        parts.append("--exclude-indicators " + ",".join(str(x) for x in cfg["exclude_indicators"]))
-    if cfg.get("only_indicators"):
-        parts.append("--only-indicators " + ",".join(str(x) for x in cfg["only_indicators"]))
-    if cfg.get("reference"):
-        parts.append(f"--reference {cfg['reference']}")
-    if cfg.get("max_enabled"):
-        parts.append(f"--max-enabled {int(cfg['max_enabled'])}")
-    if cfg.get("cold_start"):
-        parts.append("--no-warm-start")
-    if cfg.get("dd_cap") not in (None, ""):
-        parts.append(f"--dd-pnl-cap {cfg['dd_cap']}")
-    inst = str(cfg.get("instrument", "NQ"))
-    if inst != "NQ":
-        parts.append(f"--instrument {inst}")
-    return " ".join(parts)
+    spec = RS.from_cfg(cfg, str(tfs[0]), study_prefix=_runner.study_prefix(cfg))
+    return " ".join(RS.build_argv(spec))
 
 
 # ── lifecycle: start / stop(pause) / resume ──────────────────────────────────────────────────────

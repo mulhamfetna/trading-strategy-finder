@@ -3,9 +3,12 @@
 The superset paradox is caused by optimizing 56–62 MIXED dimensions at once: a finite stochastic search
 thins out and collapses. P3 splits the problem so NO single stage is high-dimensional:
 
-  STAGE A  (discrete, ~19 dims)  — search ONLY the indicator on/off flags + flip, with the continuous
+  STAGE A  (discrete, len(REGISTRY)+1 dims — 166 today, ~19 when this was written)
+                                 — search ONLY the indicator on/off flags + flip, with the continuous
                                    knobs and indicator params FROZEN at the warm-start champion.
                                    → shortlist the top-K indicator subsets by median fold P/L.
+                                   ⚠️ its trial budget must scale with that dimensionality — see
+                                   `stage_a_trials` below (#81).
   STAGE B  (continuous, ~7–13 dims) — for EACH shortlisted subset, freeze the indicators and tune ONLY
                                    the continuous execution knobs (sl_soft, sl_hard_delta, tp, gate_pct,
                                    dd_limit, cooldown, k, +6 split) with a sample-efficient brain:
@@ -21,7 +24,8 @@ as a Stage-B seed ⇒ the result is provably ≥ the prior champion (the wsh5 tr
 The continuous dimensionality that broke wsh5 NEVER appears in a single search.
 
 CLI:  python3 -m optimize.two_stage <tf> [--stage-a-trials N] [--stage-b-trials M] [--top-k K]
-                                        [--stage-b {cmaes|gp}] [--split-sltp] [--ind-1min] [--no-warm-start]
+                                        [--stage-b {cmaes|gp}] [--split-sltp] [--no-warm-start]
+      Indicators read the 1-MINUTE frame by default; pass --tf-indicators for the decision frame.
 """
 from __future__ import annotations
 
@@ -61,8 +65,12 @@ CMAES_PENALTY = 1.0
 # ─────────────────────────────────────────────────────────────────────────────────────────────────
 class _Ctx:
     """Loaded-once per-TF context (data + frozen champion knobs/params) shared by both stages."""
-    def __init__(self, tf_name: str, split_sltp: bool, ind_1min: bool, folds: int, min_trades: int,
-                 warm_start: bool):
+    # Defaults are the PRODUCTION settings, so `_Ctx("4h")` means what the deployed book means. They
+    # were all required-positional, which reads as neutrality but is not: benches and one-off scripts
+    # build _Ctx directly, and each one had to re-state `ind_1min=True` or silently evaluate in the
+    # wrong frame. See optimize/test_indicator_frame_default.py for what that cost.
+    def __init__(self, tf_name: str, split_sltp: bool = False, ind_1min: bool = True, folds: int = 5,
+                 min_trades: int = 5, warm_start: bool = False):
         self.tf_name = tf_name; self.split_sltp = split_sltp; self.ind_1min = ind_1min
         self.folds = folds; self.min_trades = min_trades
         self.tf = TF.get(tf_name)
@@ -274,15 +282,37 @@ def run_stage_b(ctx: _Ctx, en_flip: dict, engine: str, n_trials: int, seed: int 
 # ─────────────────────────────────────────────────────────────────────────────────────────────────
 # Orchestrator.
 # ─────────────────────────────────────────────────────────────────────────────────────────────────
-def run(tf_name: str, stage_a_trials: int = 200, stage_b_trials: int = 100, top_k: int = 3,
+def stage_a_recommended_trials(per_dim: int = OPT.TRIALS_PER_DIM) -> int:
+    """Dimension-proportional budget for Stage A, exactly like the L1 optimizer's --auto-trials.
+
+    Stage A searches one on/off flag per registry entry plus `flip`. That was ~19 dimensions when the
+    default of 200 trials was chosen (≈10.5 trials/dim). The registry is now 165, so Stage A is 166
+    dimensions and 200 trials is **1.2 trials/dim** — close to random sampling, which means the
+    "shortlist the best indicator subsets" step cannot do its job and Stage B then tunes subsets that
+    were barely selected. See #81.
+    """
+    return (len(library.REGISTRY) + 1) * int(per_dim)
+
+
+def run(tf_name: str, stage_a_trials: int | None = None, stage_b_trials: int = 100, top_k: int = 3,
         stage_b_engine: str = "cmaes", folds: int = 5, min_trades: int = 5, seed: int = 1,
-        ind_1min: bool = False, split_sltp: bool = False, warm_start: bool = True) -> dict:
+        ind_1min: bool = True, split_sltp: bool = False, warm_start: bool = False) -> dict:
     if stage_b_engine not in STAGE_B_ENGINES:
         raise ValueError(f"unknown stage-b engine '{stage_b_engine}' (choices: {STAGE_B_ENGINES})")
     t0 = time.time()
+    # None ⇒ derive from dimensionality (#81). An explicit value is still honoured, but a SHORT one is
+    # announced rather than silently accepted — 200 trials over 166 dims is ~random sampling.
+    _a_dims = len(library.REGISTRY) + 1
+    if stage_a_trials is None:
+        stage_a_trials = stage_a_recommended_trials()
+    elif stage_a_trials < _a_dims:
+        print(f"[{tf_name}] ⚠️  stage-A budget {stage_a_trials} is BELOW its {_a_dims} dimensions "
+              f"({stage_a_trials / _a_dims:.2f} trials/dim). The shortlist will be close to random; "
+              f"the dimension-proportional budget is {stage_a_recommended_trials():,}.", flush=True)
     ctx = _Ctx(tf_name, split_sltp, ind_1min, folds, min_trades, warm_start)
-    print(f"[{tf_name}] TWO-STAGE  stage-A={stage_a_trials} trials (discrete: "
-          f"{len(library.REGISTRY)} en+flip)  →  top-{top_k}  →  stage-B={stage_b_trials} trials/subset "
+    print(f"[{tf_name}] TWO-STAGE  stage-A={stage_a_trials} trials over {_a_dims} dims "
+          f"({stage_a_trials / _a_dims:.1f}/dim; {len(library.REGISTRY)} en+flip)  →  top-{top_k}  →  "
+          f"stage-B={stage_b_trials} trials/subset "
           f"({stage_b_engine}; continuous {7 + (6 if split_sltp else 0)} dims)  "
           f"{'[has champion seed]' if ctx.has_champion else '[NO champion seed]'}", flush=True)
 
@@ -315,20 +345,24 @@ def run(tf_name: str, stage_a_trials: int = 200, stage_b_trials: int = 100, top_
 def main() -> int:
     ap = argparse.ArgumentParser(description="P3 two-stage decomposition optimizer")
     ap.add_argument("timeframe")
-    ap.add_argument("--stage-a-trials", type=int, default=200)
+    # default None ⇒ dimension-proportional (len(REGISTRY)+1) * TRIALS_PER_DIM. The old literal 200 was
+    # chosen at ~19 dims and is 1.2 trials/dim at 166 — see stage_a_recommended_trials() and #81.
+    ap.add_argument("--stage-a-trials", type=int, default=None,
+                    help="Stage-A trial budget (default: dimension-proportional, currently %d)"
+                         % stage_a_recommended_trials())
     ap.add_argument("--stage-b-trials", type=int, default=100)
     ap.add_argument("--top-k", type=int, default=3)
     ap.add_argument("--stage-b", default="cmaes", choices=STAGE_B_ENGINES,
                     help="continuous-tuning brain for stage B (cmaes = scalarized ES; gp = multi-objective BO)")
     ap.add_argument("--folds", type=int, default=5)
     ap.add_argument("--min-trades", type=int, default=5)
-    ap.add_argument("--ind-1min", action="store_true")
+    OPT.add_indicator_frame_args(ap)
     ap.add_argument("--split-sltp", action="store_true")
-    ap.add_argument("--no-warm-start", action="store_true")
+    OPT.add_warm_start_args(ap)
     a = ap.parse_args()
     run(a.timeframe, stage_a_trials=a.stage_a_trials, stage_b_trials=a.stage_b_trials, top_k=a.top_k,
         stage_b_engine=a.stage_b, folds=a.folds, min_trades=a.min_trades, ind_1min=a.ind_1min,
-        split_sltp=a.split_sltp, warm_start=not a.no_warm_start)
+        split_sltp=a.split_sltp, warm_start=a.warm_start)
     return 0
 
 

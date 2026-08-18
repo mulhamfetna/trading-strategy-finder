@@ -26,6 +26,8 @@ if str(_PARENT) not in sys.path:
 
 import optuna  # noqa: E402
 from indicators import library  # noqa: E402
+from optimize import optimizer as OPT  # noqa: E402  — searchable_indicators: the ONE scope resolver
+from optimize import storage  # noqa: E402  — the ONE module that knows Optuna's private table names
 
 # Stable, full list of every indicator's internal param column: "<key>_<param>" across all
 # registered indicators (rectangular — present for every row, filled only when that indicator is
@@ -46,18 +48,11 @@ _SUF = "" if _INSTRUMENT == "NQ" else f"_{_INSTRUMENT}"
 
 
 def _study_in(db_path: Path, study_name: str) -> bool:
-    """True iff an Optuna study named `study_name` already lives in the SQLite file `db_path`."""
-    if not db_path.exists():
-        return False
-    try:
-        con = sqlite3.connect(db_path)
-        try:
-            rows = con.execute("SELECT study_name FROM studies").fetchall()
-        finally:
-            con.close()
-        return any(r[0] == study_name for r in rows)
-    except Exception:
-        return False
+    """True iff an Optuna study named `study_name` already lives in the SQLite file `db_path`.
+
+    Delegates to storage.study_exists so Optuna's PRIVATE table names live in exactly one module —
+    this was one of six places that open-coded `SELECT ... FROM studies`."""
+    return storage.study_exists(db_path, study_name)
 
 
 def _db_for(tf: str, study_name: str) -> Path:
@@ -119,22 +114,33 @@ def _cap_mode_of(pr: dict, ua: dict | None = None) -> str:
     return "bars" if int(pr.get("cap_1min", 0) or 0) > 0 else "none"    # (3) legacy
 
 
-def _sig(v, digits: int = 12):
-    """Round to SIGNIFICANT DIGITS — the only scale-free way to persist a searched price parameter.
+def _exact(v):
+    """Persist a searched price parameter EXACTLY. No rounding, at any scale.
 
-    A champion's stop is ~10 points on the Dow ($44,452) and ~0.0008 on natural gas ($3.57). round(x, N)
-    keeps N digits AFTER THE POINT, so it silently discards most of a low-priced market's stop while leaving
-    a high-priced one untouched. round-to-significant-digits keeps the same RELATIVE precision everywhere.
+    History, because this bug got 'fixed' twice and came back both times:
+      * `round(x, 1)` destroyed silver (tp 0.04 -> 0.0, a zero-width target).
+      * So it became `round(x, 4)` — which fixed silver and destroyed natural gas instead
+        (sl 0.00080919 -> 0.0008, a 1.1% shift that flipped NG 5m from +$38,079 to -$1,714).
+      * So it became round-to-12-SIGNIFICANT-digits, which is scale-free and ~10 orders of magnitude
+        safer — but its docstring claimed to "round-trip a float64 losslessly", and that was simply
+        FALSE. Measured: 12 significant digits reproduces the searched float exactly ~0.01% of the
+        time. float64 needs 17 significant digits in the worst case.
 
-    12 digits round-trips a float64 through CSV losslessly (float64 carries ~15-17), so this is exact for
-    every market rather than merely adequate for the ones we happened to test.
+    Each fix repaired the market that had just broken and left a smaller version of the same flaw. The
+    pattern only ends by removing the rounding, not by choosing a better amount of it.
+
+    There is no cost to exactness here. csv.DictWriter formats a float with str(), which in Python 3 is
+    the SHORTEST string that round-trips exactly (repr). So writing the raw float is simultaneously the
+    most precise option and the most compact honest one — measured at 10,000/10,000 exact round-trips
+    across NG-to-YM price scales, versus 1/10,000 for the 12-digit version.
+
+    This function is deliberately near-identity: it exists so the persistence path has ONE named place
+    that documents why nothing is rounded, and so a future 'let's just round it a bit' has somewhere
+    obvious to be rejected.
     """
     if v is None:
         return None
-    v = float(v)
-    if v == 0.0 or not math.isfinite(v):
-        return v
-    return round(v, -int(math.floor(math.log10(abs(v)))) + (digits - 1))
+    return float(v)
 
 
 def _row(t) -> dict:
@@ -154,8 +160,8 @@ def _row(t) -> dict:
         # it moved the champion's P/L by $39,793 and FLIPPED ITS SIGN (+$38,079 measured -> -$1,714 shipped),
         # and we spent a day blaming the optimizer's fast engine for "lying". The engine was right every time.
         # Significant digits are scale-free: 12 of them round-trip float64 losslessly at any price level.
-        sl_soft=_sig(pr["sl_soft"]), sl_hard=_sig(pr["sl_soft"] + pr["sl_hard_delta"]),
-        tp=_sig(pr["tp"]), gate_pct=_sig(pr["gate_pct"]), dd_limit=_sig(pr["dd_limit"]),
+        sl_soft=_exact(pr["sl_soft"]), sl_hard=_exact(pr["sl_soft"] + pr["sl_hard_delta"]),
+        tp=_exact(pr["tp"]), gate_pct=_exact(pr["gate_pct"]), dd_limit=_exact(pr["dd_limit"]),
         cooldown=pr["cooldown"], flip=pr["flip"], k=pr["k"],
         # Time caps. BOTH are searched, so both must round-trip or the rebuilt champion mis-exits.
         # cap_1min is only meaningful when a BAR cap is armed — zero it otherwise so a stale "how many
@@ -261,6 +267,29 @@ def main(argv):
     return 0
 
 
+def _scope_sentence() -> str:
+    """Describe the indicator scope this run ACTUALLY searched, rather than asserting a number.
+
+    The header used to read "all 15 indicators" — a literal from when the registry held 15. It stayed
+    put through 18 and then 165, and it survived onto every generated report including campaigns that
+    deliberately restricted the search: the rescued wshgap4 report claims "all 15" for a run that
+    searched the original 18 under --only-indicators (#89 sweep). A generated report that hardcodes a
+    fact about the search is a report that eventually lies about it.
+    """
+    only = tuple(x for x in os.environ.get("WSH_ONLY", "").split(",") if x)
+    excl = tuple(x for x in os.environ.get("WSH_EXCLUDE", "").split(",") if x)
+    total = len(library.REGISTRY)
+    if not only and not excl:
+        return f"all {total} indicators in the registry"
+    n = len(OPT.searchable_indicators(only, excl))
+    how = []
+    if only:
+        how.append(f"--only-indicators {','.join(only)}")
+    if excl:
+        how.append(f"--exclude-indicators {','.join(excl)}")
+    return f"{n} of {total} indicators (scoped by `{'` `'.join(how)}`)"
+
+
 def _write_md(summ):
     lines = ["---", "name: ws-i-results-report",
              "description: WS-I.10 results — per-TF NSGA-III indicator search (feasible Pareto fronts; "
@@ -268,8 +297,9 @@ def _write_md(summ):
              "type: report", "status: complete", "workstream: WS-I", "---", "",
              "# WS-I.10 — All-timeframe indicator search: results", "",
              "NSGA-III, 3 objectives (median fold P/L ↑, worst-fold maxDD ↓, median win-rate ↑), "
-             "feasibility = full-period maxDD ≤ 25% of full-period P/L. Search = box params + all 15 "
-             "indicators on/off + their params + K. Champion per TF = max median fold P/L among feasible.", "",
+             "feasibility = full-period maxDD ≤ 25% of full-period P/L. Search = box params + "
+             f"{_scope_sentence()} on/off + their params + K. "
+             "Champion per TF = max median fold P/L among feasible.", "",
              "## Per-timeframe champion (feasible)", "",
              "| TF | complete | feasible | front | med P/L | worst DD | win% | full P/L | DD%·P/L | K | #ind | indicators |",
              "|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|---|"]

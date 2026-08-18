@@ -118,10 +118,15 @@ class SimpleStrategyParams:
     # observational — it can never change an entry, an exit, or a P/L. Prerequisite for the dynamic
     # stop-loss, which must know how far a trade went FOR us before it went against us.
     track_excursions: bool = False
-    # GAP-AWARE FILLS (GAP-01, 2026-07-20). ON => a hard SL/TP whose bar OPENED beyond the
-    # line fills at the OPEN, not the line — because no trade ever happened at the line.
-    # Symmetric: gaps past the stop cost more, gaps past the take-profit pay more.
-    # OFF reproduces the old optimistic fill-at-the-line numbers (and the old golden).
+    # GAP-AWARE FILLS (GAP-01, 2026-07-20) — MANDATORY SINCE 2026-07-29. A hard SL/TP whose bar
+    # OPENED beyond the line fills at the OPEN, not the line, because no trade ever happened at the
+    # line. Symmetric on purpose: gaps past the stop cost more, gaps past the take-profit pay more.
+    #
+    # ⚠️ NOT A SYSTEM OPTION. No dashboard, optimizer, preset or profile can set this to False —
+    # `payload._reject_gap_fills()` raises on the attempt. The field survives ONLY so the archived
+    # GAP-01/02 measurement scripts can reproduce the one-time before/after study that justified
+    # making it mandatory. Setting it False anywhere else means backtesting fills at prices that
+    # never traded, which flattered our risk by ~10% overall and 148% on natural gas.
     gap_fills: bool = True
     # Intra-candle entry for vetoed signals (Phase 1). OFF => byte-identical (golden-locked).
     intracandle_veto_entry: bool = False   # arm a vetoed (vol-passed) signal, enter mid-candle when the gate re-opens

@@ -1,0 +1,727 @@
+[
+ {
+  "inst": "GC",
+  "tf": "4h",
+  "ind_1min": false,
+  "champion": {
+   "median_pnl": 22006.8,
+   "full_pnl": 97888.6,
+   "full_dd": 7360.0,
+   "win": 74.0,
+   "box": {
+    "sl_soft": 23.5,
+    "sl_hard": 54.5,
+    "tp": 23.9,
+    "gate_pct": 88.9,
+    "dd_limit": 129.0,
+    "cooldown": 1,
+    "flip": false,
+    "k": 2,
+    "cap_1min": 1324
+   },
+   "indicators": {
+    "bollinger": {
+     "n": 72,
+     "k": 2.8
+    },
+    "fvg": {
+     "lookback": 45
+    },
+    "keltner": {
+     "n": 118,
+     "m": 2.0
+    },
+    "macd": {
+     "fast": 81,
+     "slow": 50,
+     "signal": 53
+    },
+    "order_block": {
+     "swing_l": 13
+    },
+    "rsi": {
+     "n": 30,
+     "lower": 13,
+     "upper": 73
+    },
+    "structure_trend": {
+     "swing_l": 15
+    }
+   }
+  },
+  "full": {
+   "boxes": {
+    "pnl": 97949.99999999942,
+    "max_dd": 7359.9999999999,
+    "win": 72.2,
+    "pf": 2.3,
+    "payoff": 0.89,
+    "n_taken": 108,
+    "noentry_streak_n": 132,
+    "noentry_streak_days": 51.3,
+    "noentry_streak_start": "2026-02-24",
+    "box_silence": {
+     "bars": 26,
+     "seconds": 374400,
+     "hours": 104,
+     "days": 4.33
+    },
+    "gate_noentry": {
+     "bars": 19,
+     "seconds": 273600,
+     "hours": 76,
+     "days": 3.17
+    },
+    "indicator_noentry": {
+     "bars": 9,
+     "seconds": 129600,
+     "hours": 36,
+     "days": 1.5
+    },
+    "position_hold": {
+     "bars": 19,
+     "seconds": 273600,
+     "hours": 76,
+     "days": 3.17
+    },
+    "box_silence_total": {
+     "bars": 1183,
+     "seconds": 17035200,
+     "hours": 4732,
+     "days": 197.17
+    },
+    "gate_noentry_total": {
+     "bars": 462,
+     "seconds": 6652800,
+     "hours": 1848,
+     "days": 77
+    },
+    "indicator_noentry_total": {
+     "bars": 525,
+     "seconds": 7560000,
+     "hours": 2100,
+     "days": 87.5
+    },
+    "position_hold_total": {
+     "bars": 316,
+     "seconds": 4550400,
+     "hours": 1264,
+     "days": 52.67
+    },
+    "noentry_total": {
+     "bars": 2170,
+     "seconds": 31248000,
+     "hours": 8680,
+     "days": 361.67
+    },
+    "n_candidates": 108,
+    "n_locks": 58,
+    "exposure": 100,
+    "warmup": {
+     "bars": 118,
+     "seconds": 1699200,
+     "hours": 472,
+     "days": 19.67
+    },
+    "indicator_req": {
+     "bars": 118,
+     "seconds": 1699200,
+     "hours": 472,
+     "days": 19.67
+    }
+   },
+   "summary": {
+    "pnl": 91120,
+    "pnl_2025": 68810,
+    "pnl_2026": 22310,
+    "n_taken": 102,
+    "n_candidates": 102,
+    "n_skipped_breaker": 0,
+    "exposure": 100,
+    "win": 70.6,
+    "pf": 2.13,
+    "payoff": 0.89,
+    "avg_win": 2390,
+    "avg_loss": -2699,
+    "max_dd": 8280,
+    "n_locks": 58,
+    "noentry_streak_n": 132,
+    "noentry_streak_days": 51.3,
+    "noentry_streak_start": "2026-02-24",
+    "box_silence": {
+     "bars": 27,
+     "seconds": 388800,
+     "hours": 108,
+     "days": 4.5
+    },
+    "position_hold": {
+     "bars": 41,
+     "seconds": 590400,
+     "hours": 164,
+     "days": 6.83
+    },
+    "gate_noentry": {
+     "bars": 19,
+     "seconds": 273600,
+     "hours": 76,
+     "days": 3.17
+    },
+    "indicator_noentry": {
+     "bars": 10,
+     "seconds": 144000,
+     "hours": 40,
+     "days": 1.67
+    },
+    "noentry_total": {
+     "bars": 2243,
+     "seconds": 32299200,
+     "hours": 8972,
+     "days": 373.83
+    },
+    "box_silence_total": {
+     "bars": 1184,
+     "seconds": 17049600,
+     "hours": 4736,
+     "days": 197.33
+    },
+    "position_hold_total": {
+     "bars": 466,
+     "seconds": 6710400,
+     "hours": 1864,
+     "days": 77.67
+    },
+    "gate_noentry_total": {
+     "bars": 422,
+     "seconds": 6076800,
+     "hours": 1688,
+     "days": 70.33
+    },
+    "indicator_noentry_total": {
+     "bars": 637,
+     "seconds": 9172800,
+     "hours": 2548,
+     "days": 106.17
+    }
+   },
+   "params": {
+    "sl_soft": 23.5,
+    "sl_hard": 54.5,
+    "tp": 23.9,
+    "gate_pct": 88.9,
+    "gate_thr": 24,
+    "dd_limit": 129,
+    "cooldown": 1,
+    "dd_cap": 5000,
+    "pv": 100,
+    "flip": false,
+    "window": "full",
+    "timeframe": "4h",
+    "indicators": [
+     {
+      "key": "ema_trend",
+      "enabled": false,
+      "mode": "confirm",
+      "params": {
+       "fast": 20,
+       "slow": 50
+      }
+     },
+     {
+      "key": "sma_trend",
+      "enabled": false,
+      "mode": "confirm",
+      "params": {
+       "fast": 50,
+       "slow": 200
+      }
+     },
+     {
+      "key": "macd",
+      "enabled": true,
+      "mode": "confirm",
+      "params": {
+       "fast": 81,
+       "slow": 50,
+       "signal": 53
+      }
+     },
+     {
+      "key": "vwap",
+      "enabled": false,
+      "mode": "confirm",
+      "params": {}
+     },
+     {
+      "key": "keltner",
+      "enabled": true,
+      "mode": "confirm",
+      "params": {
+       "n": 118,
+       "m": 2
+      }
+     },
+     {
+      "key": "obv",
+      "enabled": false,
+      "mode": "confirm",
+      "params": {
+       "slope": 20
+      }
+     },
+     {
+      "key": "cci",
+      "enabled": false,
+      "mode": "both",
+      "params": {
+       "n": 20,
+       "threshold": 100
+      }
+     },
+     {
+      "key": "rsi",
+      "enabled": true,
+      "mode": "both",
+      "params": {
+       "n": 30,
+       "lower": 13,
+       "upper": 73
+      }
+     },
+     {
+      "key": "stochastic",
+      "enabled": false,
+      "mode": "both",
+      "params": {
+       "n": 14,
+       "d": 3,
+       "lower": 20,
+       "upper": 80
+      }
+     },
+     {
+      "key": "mfi",
+      "enabled": false,
+      "mode": "both",
+      "params": {
+       "n": 14,
+       "lower": 20,
+       "upper": 80
+      }
+     },
+     {
+      "key": "bollinger",
+      "enabled": true,
+      "mode": "veto",
+      "params": {
+       "n": 72,
+       "k": 2.8
+      }
+     },
+     {
+      "key": "adx",
+      "enabled": false,
+      "mode": "veto",
+      "params": {
+       "n": 14,
+       "threshold": 25
+      }
+     },
+     {
+      "key": "structure_trend",
+      "enabled": true,
+      "mode": "both",
+      "params": {
+       "swing_l": 15
+      }
+     },
+     {
+      "key": "order_block",
+      "enabled": true,
+      "mode": "both",
+      "params": {
+       "swing_l": 13
+      }
+     },
+     {
+      "key": "fvg",
+      "enabled": true,
+      "mode": "both",
+      "params": {
+       "lookback": 45
+      }
+     },
+     {
+      "key": "ifvg",
+      "enabled": false,
+      "mode": "both",
+      "params": {}
+     },
+     {
+      "key": "breaker",
+      "enabled": false,
+      "mode": "both",
+      "params": {
+       "swing_l": 2
+      }
+     },
+     {
+      "key": "cisd",
+      "enabled": false,
+      "mode": "both",
+      "params": {}
+     }
+    ],
+    "k": 2,
+    "gen": {},
+    "veto_as_flip": false,
+    "retrace_amount": 0,
+    "retrace_unit": "atr_mult",
+    "wait_bars": 0,
+    "long_sl_soft": null,
+    "long_sl_hard": null,
+    "long_tp": null,
+    "short_sl_soft": null,
+    "short_sl_hard": null,
+    "short_tp": null
+   },
+   "split_ts": 1767290400
+  },
+  "oos2026": {
+   "boxes": {
+    "pnl": 97949.99999999942,
+    "max_dd": 7359.9999999999,
+    "win": 72.2,
+    "pf": 2.3,
+    "payoff": 0.89,
+    "n_taken": 108,
+    "noentry_streak_n": 132,
+    "noentry_streak_days": 51.3,
+    "noentry_streak_start": "2026-02-24",
+    "box_silence": {
+     "bars": 26,
+     "seconds": 374400,
+     "hours": 104,
+     "days": 4.33
+    },
+    "gate_noentry": {
+     "bars": 19,
+     "seconds": 273600,
+     "hours": 76,
+     "days": 3.17
+    },
+    "indicator_noentry": {
+     "bars": 9,
+     "seconds": 129600,
+     "hours": 36,
+     "days": 1.5
+    },
+    "position_hold": {
+     "bars": 19,
+     "seconds": 273600,
+     "hours": 76,
+     "days": 3.17
+    },
+    "box_silence_total": {
+     "bars": 1183,
+     "seconds": 17035200,
+     "hours": 4732,
+     "days": 197.17
+    },
+    "gate_noentry_total": {
+     "bars": 462,
+     "seconds": 6652800,
+     "hours": 1848,
+     "days": 77
+    },
+    "indicator_noentry_total": {
+     "bars": 525,
+     "seconds": 7560000,
+     "hours": 2100,
+     "days": 87.5
+    },
+    "position_hold_total": {
+     "bars": 316,
+     "seconds": 4550400,
+     "hours": 1264,
+     "days": 52.67
+    },
+    "noentry_total": {
+     "bars": 2170,
+     "seconds": 31248000,
+     "hours": 8680,
+     "days": 361.67
+    },
+    "n_candidates": 108,
+    "n_locks": 58,
+    "exposure": 100,
+    "warmup": {
+     "bars": 118,
+     "seconds": 1699200,
+     "hours": 472,
+     "days": 19.67
+    },
+    "indicator_req": {
+     "bars": 118,
+     "seconds": 1699200,
+     "hours": 472,
+     "days": 19.67
+    }
+   },
+   "summary": {
+    "pnl": 15860,
+    "pnl_2025": 0,
+    "pnl_2026": 15860,
+    "n_taken": 14,
+    "n_candidates": 14,
+    "n_skipped_breaker": 0,
+    "exposure": 100,
+    "win": 78.6,
+    "pf": 2.52,
+    "payoff": 0.69,
+    "avg_win": 2390,
+    "avg_loss": -3477,
+    "max_dd": 5230,
+    "n_locks": 6,
+    "noentry_streak_n": 132,
+    "noentry_streak_days": 51.3,
+    "noentry_streak_start": "2026-02-24",
+    "box_silence": {
+     "bars": 27,
+     "seconds": 388800,
+     "hours": 108,
+     "days": 4.5
+    },
+    "position_hold": {
+     "bars": 6,
+     "seconds": 86400,
+     "hours": 24,
+     "days": 1
+    },
+    "gate_noentry": {
+     "bars": 19,
+     "seconds": 273600,
+     "hours": 76,
+     "days": 3.17
+    },
+    "indicator_noentry": {
+     "bars": 4,
+     "seconds": 57600,
+     "hours": 16,
+     "days": 0.67
+    },
+    "noentry_total": {
+     "bars": 765,
+     "seconds": 11016000,
+     "hours": 3060,
+     "days": 127.5
+    },
+    "box_silence_total": {
+     "bars": 335,
+     "seconds": 4824000,
+     "hours": 1340,
+     "days": 55.83
+    },
+    "position_hold_total": {
+     "bars": 27,
+     "seconds": 388800,
+     "hours": 108,
+     "days": 4.5
+    },
+    "gate_noentry_total": {
+     "bars": 325,
+     "seconds": 4680000,
+     "hours": 1300,
+     "days": 54.17
+    },
+    "indicator_noentry_total": {
+     "bars": 105,
+     "seconds": 1512000,
+     "hours": 420,
+     "days": 17.5
+    }
+   },
+   "params": {
+    "sl_soft": 23.5,
+    "sl_hard": 54.5,
+    "tp": 23.9,
+    "gate_pct": 88.9,
+    "gate_thr": 24,
+    "dd_limit": 129,
+    "cooldown": 1,
+    "dd_cap": 5000,
+    "pv": 100,
+    "flip": false,
+    "window": "2026",
+    "timeframe": "4h",
+    "indicators": [
+     {
+      "key": "ema_trend",
+      "enabled": false,
+      "mode": "confirm",
+      "params": {
+       "fast": 20,
+       "slow": 50
+      }
+     },
+     {
+      "key": "sma_trend",
+      "enabled": false,
+      "mode": "confirm",
+      "params": {
+       "fast": 50,
+       "slow": 200
+      }
+     },
+     {
+      "key": "macd",
+      "enabled": true,
+      "mode": "confirm",
+      "params": {
+       "fast": 81,
+       "slow": 50,
+       "signal": 53
+      }
+     },
+     {
+      "key": "vwap",
+      "enabled": false,
+      "mode": "confirm",
+      "params": {}
+     },
+     {
+      "key": "keltner",
+      "enabled": true,
+      "mode": "confirm",
+      "params": {
+       "n": 118,
+       "m": 2
+      }
+     },
+     {
+      "key": "obv",
+      "enabled": false,
+      "mode": "confirm",
+      "params": {
+       "slope": 20
+      }
+     },
+     {
+      "key": "cci",
+      "enabled": false,
+      "mode": "both",
+      "params": {
+       "n": 20,
+       "threshold": 100
+      }
+     },
+     {
+      "key": "rsi",
+      "enabled": true,
+      "mode": "both",
+      "params": {
+       "n": 30,
+       "lower": 13,
+       "upper": 73
+      }
+     },
+     {
+      "key": "stochastic",
+      "enabled": false,
+      "mode": "both",
+      "params": {
+       "n": 14,
+       "d": 3,
+       "lower": 20,
+       "upper": 80
+      }
+     },
+     {
+      "key": "mfi",
+      "enabled": false,
+      "mode": "both",
+      "params": {
+       "n": 14,
+       "lower": 20,
+       "upper": 80
+      }
+     },
+     {
+      "key": "bollinger",
+      "enabled": true,
+      "mode": "veto",
+      "params": {
+       "n": 72,
+       "k": 2.8
+      }
+     },
+     {
+      "key": "adx",
+      "enabled": false,
+      "mode": "veto",
+      "params": {
+       "n": 14,
+       "threshold": 25
+      }
+     },
+     {
+      "key": "structure_trend",
+      "enabled": true,
+      "mode": "both",
+      "params": {
+       "swing_l": 15
+      }
+     },
+     {
+      "key": "order_block",
+      "enabled": true,
+      "mode": "both",
+      "params": {
+       "swing_l": 13
+      }
+     },
+     {
+      "key": "fvg",
+      "enabled": true,
+      "mode": "both",
+      "params": {
+       "lookback": 45
+      }
+     },
+     {
+      "key": "ifvg",
+      "enabled": false,
+      "mode": "both",
+      "params": {}
+     },
+     {
+      "key": "breaker",
+      "enabled": false,
+      "mode": "both",
+      "params": {
+       "swing_l": 2
+      }
+     },
+     {
+      "key": "cisd",
+      "enabled": false,
+      "mode": "both",
+      "params": {}
+     }
+    ],
+    "k": 2,
+    "gen": {},
+    "veto_as_flip": false,
+    "retrace_amount": 0,
+    "retrace_unit": "atr_mult",
+    "wait_bars": 0,
+    "long_sl_soft": null,
+    "long_sl_hard": null,
+    "long_tp": null,
+    "short_sl_soft": null,
+    "short_sl_hard": null,
+    "short_tp": null
+   },
+   "split_ts": 1767290400
+  }
+ }
+]

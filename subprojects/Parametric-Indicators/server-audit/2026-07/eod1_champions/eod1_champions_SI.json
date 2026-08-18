@@ -1,0 +1,261 @@
+{
+ "4h": {
+  "median_pnl": 14878.6,
+  "full_pnl": 61523.7,
+  "full_dd": 8715.7,
+  "win": 62.4,
+  "box": {
+   "sl_soft": 0.2941,
+   "sl_hard": 0.5576,
+   "tp": 0.3322,
+   "gate_pct": 98.58,
+   "dd_limit": 3.1774,
+   "cooldown": 1,
+   "flip": false,
+   "k": 5,
+   "cap_1min": 0,
+   "cap_mode": "eod"
+  },
+  "indicators": {
+   "breaker": {
+    "swing_l": 13
+   },
+   "cci": {
+    "n": 20,
+    "threshold": 50
+   },
+   "cisd": {},
+   "fvg": {
+    "lookback": 34
+   },
+   "keltner": {
+    "n": 46,
+    "m": 1.3
+   },
+   "macd": {
+    "fast": 11,
+    "slow": 23,
+    "signal": 18
+   },
+   "obv": {
+    "slope": 184
+   },
+   "order_block": {
+    "swing_l": 19
+   },
+   "vwap": {}
+  }
+ },
+ "2h": {
+  "median_pnl": 19545.9,
+  "full_pnl": 75357.3,
+  "full_dd": 7477.0,
+  "win": 58.2,
+  "box": {
+   "sl_soft": 0.1615,
+   "sl_hard": 0.2014,
+   "tp": 0.3127,
+   "gate_pct": 99.44,
+   "dd_limit": 5.9378,
+   "cooldown": 0,
+   "flip": false,
+   "k": 4,
+   "cap_1min": 655,
+   "cap_mode": "both"
+  },
+  "indicators": {
+   "breaker": {
+    "swing_l": 7
+   },
+   "cci": {
+    "n": 166,
+    "threshold": 130
+   },
+   "cisd": {},
+   "ema_trend": {
+    "fast": 157,
+    "slow": 157
+   },
+   "ifvg": {},
+   "keltner": {
+    "n": 138,
+    "m": 4.6
+   },
+   "obv": {
+    "slope": 153
+   }
+  }
+ },
+ "1h": {
+  "median_pnl": 7639.3,
+  "full_pnl": 33111.8,
+  "full_dd": 4611.6,
+  "win": 48.8,
+  "box": {
+   "sl_soft": 0.0779,
+   "sl_hard": 0.2521,
+   "tp": 0.1637,
+   "gate_pct": 97.87,
+   "dd_limit": 2.4528,
+   "cooldown": 2,
+   "flip": true,
+   "k": 3,
+   "cap_1min": 59,
+   "cap_mode": "both"
+  },
+  "indicators": {
+   "bollinger": {
+    "n": 155,
+    "k": 4.2
+   },
+   "breaker": {
+    "swing_l": 20
+   },
+   "cci": {
+    "n": 54,
+    "threshold": 145
+   },
+   "cisd": {},
+   "keltner": {
+    "n": 113,
+    "m": 3.0
+   },
+   "macd": {
+    "fast": 2,
+    "slow": 188,
+    "signal": 61
+   },
+   "obv": {
+    "slope": 13
+   },
+   "stochastic": {
+    "n": 82,
+    "d": 28,
+    "lower": 8,
+    "upper": 91
+   }
+  }
+ },
+ "15m": {
+  "median_pnl": 13133.3,
+  "full_pnl": 59586.3,
+  "full_dd": 4603.9,
+  "win": 54.7,
+  "box": {
+   "sl_soft": 0.0522,
+   "sl_hard": 0.0677,
+   "tp": 0.0849,
+   "gate_pct": 99.47,
+   "dd_limit": 1.4726,
+   "cooldown": 0,
+   "flip": true,
+   "k": 1,
+   "cap_1min": 963,
+   "cap_mode": "both"
+  },
+  "indicators": {
+   "breaker": {
+    "swing_l": 9
+   },
+   "ema_trend": {
+    "fast": 84,
+    "slow": 233
+   },
+   "mfi": {
+    "n": 36,
+    "lower": 11,
+    "upper": 54
+   },
+   "sma_trend": {
+    "fast": 253,
+    "slow": 319
+   },
+   "stochastic": {
+    "n": 97,
+    "d": 43,
+    "lower": 1,
+    "upper": 75
+   },
+   "structure_trend": {
+    "swing_l": 1
+   },
+   "vwap": {}
+  }
+ },
+ "5m": {
+  "median_pnl": 9515.4,
+  "full_pnl": 51814.4,
+  "full_dd": 3680.7,
+  "win": 36.0,
+  "box": {
+   "sl_soft": 0.0202,
+   "sl_hard": 0.0269,
+   "tp": 0.0588,
+   "gate_pct": 99.08,
+   "dd_limit": 7.74,
+   "cooldown": 2,
+   "flip": true,
+   "k": 1,
+   "cap_1min": 0,
+   "cap_mode": "eod"
+  },
+  "indicators": {
+   "cci": {
+    "n": 88,
+    "threshold": 135
+   },
+   "cisd": {},
+   "ema_trend": {
+    "fast": 23,
+    "slow": 3
+   },
+   "macd": {
+    "fast": 10,
+    "slow": 60,
+    "signal": 40
+   }
+  }
+ },
+ "2m": {
+  "median_pnl": 12851.2,
+  "full_pnl": 71798.7,
+  "full_dd": 2605.0,
+  "win": 32.7,
+  "box": {
+   "sl_soft": 0.0124,
+   "sl_hard": 0.0152,
+   "tp": 0.0447,
+   "gate_pct": 95.95,
+   "dd_limit": 0.582,
+   "cooldown": 0,
+   "flip": true,
+   "k": 2,
+   "cap_1min": 77,
+   "cap_mode": "both"
+  },
+  "indicators": {
+   "cisd": {},
+   "ema_trend": {
+    "fast": 205,
+    "slow": 350
+   },
+   "keltner": {
+    "n": 17,
+    "m": 4.8
+   },
+   "macd": {
+    "fast": 60,
+    "slow": 127,
+    "signal": 83
+   },
+   "order_block": {
+    "swing_l": 4
+   },
+   "sma_trend": {
+    "fast": 89,
+    "slow": 222
+   },
+   "vwap": {}
+  }
+ }
+}

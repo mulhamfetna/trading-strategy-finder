@@ -13,9 +13,13 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+import roots                                 # the ONE resolver for repo/data roots (#94)
+
 # --- DATA (external inputs; configurable) -------------------------------------------------
 # Default points at the repo's data directory. Override with: export WSG_DATA_ROOT=/path/to/data
-DATA_ROOT = Path(os.environ.get("WSG_DATA_ROOT", "/mnt/data/projects/trading/data"))
+# NEVER a hardcoded absolute path (#94): the literal was one machine's layout, so on any other
+# machine this resolved to a directory that does not exist and the failure looked like broken code.
+DATA_ROOT = Path(os.environ.get("WSG_DATA_ROOT") or (roots.REPO_ROOT / "data"))
 
 # Per-year files inside DATA_ROOT/<year>_data/ :
 #   NQ_4h_<year>.csv        4-hour OHLCV candles      (datetime,open,high,low,close,volume)
@@ -38,6 +42,18 @@ WINNER = dict(
     window="full",         # full | 2025 | 2026
 )
 DD_CAP = 5000.0            # hard max-drawdown goal (manual kill-switch level)
+
+# NOTIONAL BACKTEST ACCOUNT (2026-07-29). Purely a REPORTING baseline: the engine trades exactly one
+# contract and never consults an account balance, so this changes no decision, no trade and no P&L.
+# It exists so a raw dollar figure can be read as a proportion of capital — e.g. the worst single CL
+# trade (-$7,710) is 7.7% of a $100k account rather than a number that looks catastrophic in isolation.
+#
+# ⚠️ It is deliberately NOT added to the equity curve. `equity` is a column in the golden trade ledger
+# (perf/golden/<tf>_trades.csv), so rebasing that series would change all six golden hashes and force a
+# full re-capture. Percentages are derived at report time instead; the ledger stays byte-identical.
+#
+# In a real-money stage this is where a genuine account size and any per-trade cap would live.
+ACCOUNT_SIZE = float(os.environ.get("WSH_ACCOUNT_SIZE", 100_000.0))
 
 # Robust alternative (more cushion): sl 35/40, tp 40 -> +$21,100 @ $3,130 maxDD, 58% win.
 ROBUST_ALT = dict(WINNER, sl_soft=35.0, sl_hard=40.0, tp=40.0)

@@ -1,0 +1,11 @@
+[gate] ── ADOPT GATE VERDICT ──
+  baseline  holdout P/L $     61,601
+  treatment holdout P/L $     18,827   indicators ['apo', 'pivot_camarilla', 'dfa']
+  CONTROL   holdout P/L $     14,039   (placebo votes — the score a search manufactures from noise)   indicators ['hma', 'vidya', 'mama_fama']
+  1. beats baseline?      NO  (Δ $-42,774)
+  2. beats dumb control?  YES  (Δ $+4,788)
+  3. survives noise test? NO  (permutation p=0.12438, null mean $6,655)
+  4. paired CI excludes 0? NO  (Δ $-42,774, 95% CI [-92,499, 6,432], p=0.09414)
+  ⇒ DEFAULT-OFF — CANNOT TELL (underpowered)
+     |observed $42,774| < minimum detectable $71,183 ⇒ this design could NOT have seen an improvement of this size. The null says nothing about the indicators.
+[gate] WROTE optimize/results/adoptgate_verdict_4h.json

@@ -60,10 +60,19 @@ def test_suggest_l2_params_no_tokens_is_backward_compatible():
 
 
 def test_suggested_contributor_runs_in_engine():
+    """Smoke test: a searched contributor config must run in the engine and produce a valid ledger.
+
+    ⚠️ SCOPED DELIBERATELY (#80/#81). Unscoped, `suggest_l2_params` enables roughly half of the registry
+    — ~9 indicators when it was 18, but ~82 now that it is 165 — and this test then runs a REAL backtest
+    with all of them on the 1-minute frame. That is what made `pytest optimize/l2/` stall indefinitely at
+    ~100% CPU. The assertion here is "does not raise / valid ledger", which three indicators prove just
+    as well as eighty-two.
+    """
     from optimize.l2 import optimize as l2opt, payload, engine
     b, cap = _b_cap()
     study = optuna.create_study(directions=["maximize", "maximize", "maximize"])
-    p = l2opt.suggest_l2_params(study.ask(), b, cap, contrib_tokens=["ES"])
+    p = l2opt.suggest_l2_params(study.ask(), b, cap, contrib_tokens=["ES"],
+                                only_inds=("ema_trend", "rsi", "macd"))
     l1 = payload.run_l1_cached("4h")
     r = engine.run_l2(l1, p)            # must not raise; produces a valid ledger
     assert isinstance(r.ledger, list)
