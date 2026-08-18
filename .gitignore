@@ -236,3 +236,4 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !subprojects/Parametric-Indicators/optimize/fundamentals/news4_n3_events_*.csv
 !subprojects/Parametric-Indicators/optimize/fundamentals/news4_n3_result_*.json
 !subprojects/Parametric-Indicators/optimize/fundamentals/news4_n3_*.log
+!docs/NEWS4-DROPPED-SERIES-REPORT-BILINGUAL.html
