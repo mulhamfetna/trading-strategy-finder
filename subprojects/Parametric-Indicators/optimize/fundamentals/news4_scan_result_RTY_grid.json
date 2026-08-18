@@ -1,0 +1,18 @@
+{
+  "instrument": "RTY",
+  "prereg_commit": "b629543",
+  "seed": 117,
+  "spec": {
+    "lead_s": 300,
+    "exit_s": 900,
+    "stop_pct": 0.1,
+    "tp_pct": 0.4,
+    "cost_stressed": 22.5
+  },
+  "n_blocks": 2,
+  "verdicts": {
+    "VOID-TIMESTAMP": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.012)": 1
+  },
+  "data_end": "2026-08-07 16:59:55"
+}

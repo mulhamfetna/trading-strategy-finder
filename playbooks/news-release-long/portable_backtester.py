@@ -129,6 +129,11 @@ def main() -> int:
     cost = SPEC["costs_per_leg_usd"]["stressed"][a.instrument] * a.qty
     ev = pd.read_csv(a.schedule, parse_dates=["et"])
     ev = ev[ev.status == "confirmed"].sort_values("et")
+    # v1.2.0: an instrument may ride a SUBSET of the schedule (ES = CPI only, #139) —
+    # declared in champion.json spec.instruments[<inst>].series; absent = the full schedule.
+    series = SPEC["instruments"][a.instrument].get("series")
+    if series:
+        ev = ev[ev.title.isin(series)]
     print(f"news-release-long v{CHAMP['meta']['version']} · {a.instrument} · qty={a.qty} · "
           f"{len(ev)} releases ({ev.et.min():%Y-%m-%d} .. {ev.et.max():%Y-%m-%d})")
     print(f"spec: long @ close(rel−300s) · SL {STOP_PCT}% (worse-of) · TP {TP_PCT}% (better-of) · "

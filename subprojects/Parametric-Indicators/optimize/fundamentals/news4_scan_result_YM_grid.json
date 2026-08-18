@@ -1,0 +1,32 @@
+{
+  "instrument": "YM",
+  "prereg_commit": "b629543",
+  "seed": 117,
+  "spec": {
+    "lead_s": 300,
+    "exit_s": 900,
+    "stop_pct": 0.1,
+    "tp_pct": 0.4,
+    "cost_stressed": 22.5
+  },
+  "n_blocks": 94,
+  "verdicts": {
+    "VOID-TIMESTAMP": 43,
+    "POWERED-NULL": 32,
+    "SIGNIFICANT-NEGATIVE (p=0.0011)": 3,
+    "VOID-TIMESTAMP (fuzz flip)": 3,
+    "SIGNIFICANT-NEGATIVE (p=0.011)": 2,
+    "EXPLORATORY-POSITIVE": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.015)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.03)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.0075)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.0038)": 1,
+    "SIGNIFICANT-NEGATIVE (p=3.1e-05)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.00046)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.0081)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.029)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.037)": 1,
+    "SIGNIFICANT-NEGATIVE (p=0.031)": 1
+  },
+  "data_end": "2026-08-07 16:59:59"
+}

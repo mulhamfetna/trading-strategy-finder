@@ -220,3 +220,26 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !deploy_out_d4/*.json
 !playbooks/news-release-long/evidence/*
 !playbooks/news-release-long-bundle-v1.1.0.zip
+
+# WS-NEWS4 N1 (#135): the coverage matrix + N2 scan-unit lists are committed evidence —
+# the whole point is a durable record; behind the blanket *.csv they'd exist on one machine only.
+!subprojects/Parametric-Indicators/optimize/fundamentals/news4_coverage_matrix.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/news4_n2_candidates.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/news4_n2_moments.csv
+# WS-NEWS4 N2 (#136): scan evidence — blocks/events/manifests/logs are the committed record the
+# claims ledger reads (claims_news4.py); behind blanket *.csv/*.log they'd exist on one machine only.
+!subprojects/Parametric-Indicators/optimize/fundamentals/news4_scan_blocks_*.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/news4_scan_events_*.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/news4_scan_result_*.json
+!subprojects/Parametric-Indicators/optimize/fundamentals/news4_scan_*.log
+!subprojects/Parametric-Indicators/optimize/fundamentals/news4_n3_blocks_*.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/news4_n3_events_*.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/news4_n3_result_*.json
+!subprojects/Parametric-Indicators/optimize/fundamentals/news4_n3_*.log
+!docs/NEWS4-DROPPED-SERIES-REPORT-BILINGUAL.html
+# WS-ESCPI (#139): study evidence + the two-implementation replay files the ledger reads
+!subprojects/Parametric-Indicators/optimize/fundamentals/wsescpi_*.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/wsescpi_*.json
+!docs/WS-ESCPI-REPORT-BILINGUAL.html
+!playbooks/news-release-long-bundle-v1.2.0.zip
+!subprojects/Parametric-Indicators/optimize/fundamentals/wsescpi_replay_YM*.csv

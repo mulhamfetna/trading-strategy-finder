@@ -1,0 +1,295 @@
+anchor_series,n_moments,n_signatures,top_utc_time,max_block
+Redbook YoY,556,4,12:55,3
+4-Week Bill Auction,556,21,15:30,15
+3-Month Bill Auction,556,18,15:30,5
+EIA Natural Gas Stocks Change,555,20,14:30,3
+MBA 30-Year Mortgage Rate,546,4,11:00,6
+Baker Hughes Oil Rig Count,508,26,17:00,4
+Initial Jobless Claims,438,112,12:30,19
+Fed Williams Speech,272,35,14:00,8
+Fed Bostic Speech,247,36,17:00,7
+17-Week Bill Auction,196,6,15:30,3
+Fed Kashkari Speech,155,24,18:00,7
+15-Year Mortgage Rate,154,13,16:00,9
+Fed Evans Speech,137,21,14:00,7
+NFIB Business Optimism Index,128,1,10:00,1
+Chicago PMI,128,1,13:45,1
+Challenger Job Cuts,128,1,11:30,1
+Consumer Credit Change,126,4,19:00,2
+Dallas Fed Manufacturing Index,126,10,14:30,2
+ADP Employment Change,126,1,12:15,1
+Foreign Bond Investment,126,2,21:00,4
+Industrial Production YoY,126,5,13:15,6
+House Price Index MoM,125,8,13:00,5
+30-Year Bond Auction,124,5,17:00,2
+Factory Orders MoM,123,18,14:00,9
+Construction Spending MoM,123,13,14:00,11
+Business Inventories MoM,123,27,14:00,8
+Wholesale Inventories MoM,122,15,14:00,7
+Monthly Budget Statement,121,7,18:00,3
+7-Year Note Auction,120,7,17:00,2
+Fed Mester Speech,119,13,17:00,9
+Kansas Fed Manufacturing Index,117,4,16:00,3
+CB Leading Index MoM,115,13,14:00,8
+Total Vehicle Sales,115,7,15:00,6
+Fed Balance Sheet,112,2,20:30,2
+Pending Home Sales MoM,112,9,14:00,8
+WASDE Report,111,6,17:00,4
+Fed Bullard Speech,110,8,13:45,4
+Consumer Inflation Expectations,109,1,15:00,1
+3-Year Note Auction,108,6,17:00,2
+10-Year Note Auction,108,3,17:00,2
+CB Consumer Confidence,108,17,14:00,6
+Fed Kaplan Speech,108,4,18:00,3
+Fed Bowman Speech,105,10,17:00,4
+52-Week Bill Auction,102,12,18:00,3
+5-Year Note Auction,100,10,17:00,3
+Fed Harker Speech,99,9,15:00,6
+Fed Barkin Speech,98,9,13:00,6
+Fed Chair Powell Speech,97,4,17:00,2
+2-Year Note Auction,92,8,17:00,3
+Fed Daly Speech,91,9,17:00,2
+JOLTs Job Openings,90,24,14:00,11
+Michigan Consumer Sentiment Final,89,7,14:00,11
+Chicago Fed National Activity Index,89,4,12:30,8
+Fed Waller Speech,88,5,13:00,3
+Existing Home Sales,86,9,14:00,7
+New Home Sales,84,12,14:00,8
+42-Day Bill Auction,84,5,15:30,2
+Personal Spending MoM,83,10,12:30,12
+Michigan Consumer Sentiment Prel,79,9,14:00,11
+FOMC Minutes,79,1,18:00,1
+Housing Starts,77,4,12:30,5
+Markit Manufacturing PMI Final,75,1,13:45,1
+Markit Manufacturing PMI Flash,74,2,13:45,3
+Markit Composite PMI Final,73,2,13:45,3
+20-Year Bond Auction,72,3,17:00,3
+Fed Beige Book,71,1,18:00,1
+NAHB Housing Market Index,70,4,14:00,2
+Fed Press Conference,68,1,18:30,1
+Fed Barr Speech,66,3,16:45,2
+NY Empire State Manufacturing Index,66,4,12:30,8
+Fed Brainard Speech,64,1,18:00,1
+Balance of Trade,63,7,12:30,5
+ISM New York Index,63,1,13:45,1
+LMI Logistics Managers Index,63,1,10:00,1
+Dallas Fed Services Index,57,4,14:30,3
+Import Prices MoM,57,10,12:30,9
+PPI YoY,57,8,13:30,10
+S&P Global Manufacturing PMI Final,53,1,13:45,1
+S&P Global Composite PMI Final,52,1,13:45,2
+S&P Global Manufacturing PMI Flash,52,2,13:45,4
+Wholesale Inventories MoM Adv,51,10,12:30,10
+10-Year TIPS Auction,50,2,17:00,2
+Fed Quarles Speech,48,3,20:00,2
+Fed Cook Speech,47,3,17:30,3
+Fed Dudley Speech,47,2,13:30,6
+ISM Non-Manufacturing PMI,45,6,14:00,6
+Fed Goolsbee Speech,44,4,13:00,8
+Fed Logan Speech,44,2,14:00,2
+IBD/TIPP Economic Optimism,44,5,14:00,7
+Richmond Fed Manufacturing Index,44,9,14:00,5
+Used Car Prices YoY,42,1,13:00,2
+Fed Rosengren Speech,40,1,00:30,1
+Fed Clarida Speech,39,1,13:00,1
+S&P/Case-Shiller Home Price YoY,38,1,13:00,2
+6-Month Bill Auction,38,2,15:30,2
+Building Permits MoM Final,35,3,12:30,3
+Fed George Speech,34,2,18:15,2
+ADP Employment Change Weekly,33,1,12:15,1
+Fed Jefferson Speech,32,1,17:30,1
+Fed Musalem Speech,30,1,22:30,1
+5-Year TIPS Auction,30,1,17:00,1
+NOPA Crush Report,29,2,17:00,2
+NY Fed Bill Purchases 1 to 4 months,29,1,13:20,1
+2-Year FRN Auction,28,6,15:30,2
+RCM/TIPP Economic Optimism Index,28,1,14:10,1
+UN General Assembly,25,1,00:00,1
+154-Day Bill Auction,24,3,15:30,2
+Fed Collins Speech,23,2,14:00,2
+Fed Chair Powell Testimony,23,4,14:00,3
+ISM Services Prices,22,1,14:00,5
+NY Fed Treasury Purchases 10 to 22.5 yrs,22,1,14:30,1
+Fed Kugler Speech,22,1,20:30,1
+Fed Powell Speech,21,2,14:00,2
+Fed Yellen Speech,21,1,14:00,1
+Fed Fischer Speech,20,1,17:30,1
+Employment Cost Index QoQ,20,9,12:30,10
+Fed Hammack Speech,19,1,13:00,1
+NY Fed Treasury Purchases 22.5 to 30 yrs,18,1,14:30,1
+6-Week Bill Auction,16,1,15:30,1
+Quarterly Grain Stocks - Wheat,16,3,16:00,8
+Current Account,16,1,12:30,1
+Jackson Hole Symposium,15,1,00:00,1
+US-China Trade Talks,15,3,00:00,2
+ISM Manufacturing PMI,15,4,15:00,9
+Fed Labor Market Conditions Index (MoM),14,1,15:00,1
+Fed Miran Speech,14,1,14:30,1
+API Weekly Crude Oil Stock,14,1,20:30,1
+International Monetary Market (IMM) Date,14,1,00:00,1
+Treasury Refunding Announcement,14,1,12:30,1
+NY Fed Bill Purchases 4 to 12 months,14,1,13:20,1
+NY Fed Treasury Purchases 2.25 to 4.5 yrs,13,1,14:30,1
+NY Fed Treasury Purchases 4.5 to 7 yrs,13,1,14:30,1
+Total Household Debt,13,1,15:00,1
+NY Fed Treasury Purchases TIPS 1 to 7.5 yrs,13,1,14:30,1
+Fed Schmid Speech,13,1,18:30,1
+Markit Services PMI Flash,13,1,13:45,2
+Loan Officer Survey,13,1,18:00,1
+Fed Lockhart Speech,13,1,17:40,1
+NY Fed Treasury Purchases TIPS 7.5 to 30 yrs,13,1,14:30,1
+30-Year TIPS Auction,12,1,18:00,1
+NY Fed Treasury Purchases 0 to 2.25 yrs,12,1,14:30,1
+IEA Oil Market Report,12,1,09:00,1
+Treasury Refunding Financing Estimates,11,1,19:00,1
+Fed Lacker Speech,11,1,17:00,1
+119-Day Bill Auction,11,3,15:30,2
+NY Fed Treasury Purchases 7 to 10 yrs,11,1,14:30,1
+Independence Day,11,1,00:00,1
+Memorial Day,11,1,00:00,1
+Labor Day,10,1,00:00,1
+Thanksgiving Day,10,1,00:00,1
+Columbus Day,10,1,00:00,1
+Fed Paulson Speech,10,1,16:55,1
+GDP Growth Rate QoQ Adv,10,3,12:30,7
+Unit Labour Costs QoQ Final,9,1,13:30,2
+Veterans Day,8,1,00:00,1
+GDP Growth Rate QoQ 2nd Est,7,2,12:30,5
+"Martin Luther King, Jr. Day",7,1,00:00,1
+GDP Price Index QoQ Final,7,4,12:30,7
+New Year's Day,6,1,00:00,1
+All Car Sales,6,2,19:30,4
+Fed Tarullo Speech,6,1,13:00,1
+Fed Golsbee Speech,6,1,20:45,1
+Jackson Hole Economic Policy Symposium,6,1,12:00,1
+NY Fed Treasury Purchases 0 to 1 yrs,6,1,14:30,1
+Christmas Day,5,1,00:00,1
+USDA Prospective Plantings Report,5,1,16:00,1
+Fed Quarles Testimony,5,1,14:00,1
+Good Friday,5,1,00:00,1
+President Trump Speech,5,1,17:00,1
+Washington’s Birthday,5,1,00:00,1
+Unit Labour Costs QoQ Prel,5,1,12:30,2
+Juneteenth National Independence Day,4,1,00:00,1
+US President Trump Speech,4,1,02:00,1
+Fed Barkins Speech,4,1,14:00,1
+New Year’s Day,4,1,00:00,1
+Jackson Hole Economic Symposium,4,1,00:00,1
+NY Fed Services Activity Index,4,2,12:30,2
+NY Fed Treasury Purchases 1 to 2.5 yrs,3,1,15:30,1
+President's Day,3,1,00:00,1
+Beige Book,3,1,18:00,1
+Martin L. King Day,3,1,00:00,1
+Monetary Policy Report,3,1,16:00,1
+Fed Yellen Testimony,3,1,15:00,1
+Fed Stress Test Results For Big Banks,3,1,20:30,1
+Christmas,3,1,00:00,1
+Fed Bank Stress Test Results,3,1,20:30,1
+Washington's Birthday,3,1,00:00,1
+43-Day Bill Auction,2,1,17:00,1
+Treasury Secretary Yellen Speech,2,1,16:30,1
+President Biden Speech,2,1,00:00,1
+President Trump State of the Union Speech,2,1,02:00,1
+President Trump Statement on Coronavirus,2,1,01:00,1
+Presidential Election,2,1,00:00,1
+President Trump and President Xi Jinping Meeting,2,1,13:00,1
+President Trump Press Conference,2,1,18:00,1
+Presidential Debate,2,1,01:00,1
+Philadelphia Fed Manufacturing Index,2,1,12:30,6
+Non Farm Payrolls Annual Revision,2,1,14:00,1
+Bank Stress Tests,2,1,20:30,1
+NY Fed Treasury Purchases 6 to 10 yrs,2,1,15:30,1
+Veterans Day (Substitute Day),2,1,00:00,1
+14-Day Bill Auction,2,2,16:30,2
+Fed S. Barr Speech,2,1,17:45,1
+Fed Yellen Testimony Before Congress,2,1,14:00,1
+Fed Monetary Policy Report,2,1,16:00,1
+Fed Chair Warsh Testimony,2,1,14:00,1
+21-Day Bill Auction,1,1,15:30,1
+105-Day Bill Auction,1,1,17:00,1
+273-Day Bill Auction,1,1,17:00,1
+23-Day Bill Auction,1,1,16:30,1
+103-Day Bill Auction,1,1,17:00,1
+2023 US Monetary Policy Forum,1,1,13:00,1
+2022 Midterm Elections,1,1,00:00,1
+US-North Korea Summit,1,1,00:00,1
+Vice Presidential Debate,1,1,01:00,1
+US-Russia Summit,1,1,00:00,1
+Fed Daily Speech,1,1,16:30,1
+Fed CCAR Results For Big Banks,1,1,20:30,1
+US Monetary Policy Forum,1,1,12:00,1
+US-China Phase 1 Trade Deal Signature,1,1,16:30,1
+US-Mexico Trade Talks,1,1,00:00,1
+EIA Gasoline Stocks Change,1,1,16:10,7
+Early Market Close in Observance of Independence Day,1,1,00:00,1
+Early Market Close in Observance of Thanksgiving Day,1,1,00:00,1
+EIA Short-Term Energy Outlook,1,1,16:00,1
+Early Market Close in Observance of Christmas Day,1,1,00:00,1
+Fed Barr Testimony,1,1,13:30,1
+Fed Bank Stress Test Results 2nd Round,1,1,21:30,1
+Fed Board Meeting,1,1,00:00,1
+Fed Brainard Testimony,1,1,15:00,1
+G30 International Banking Seminar,1,1,12:00,1
+Financial Accounts of the United States,1,1,16:00,1
+Fed Yellen Testimony HFSC,1,1,15:00,1
+Fed Yellen Testimony SBC,1,1,15:00,1
+Fed Venable Speech,1,1,23:30,1
+Fed Open Board Meeting,1,1,14:30,1
+Fed Quarterly Financial Accounts,1,1,17:00,1
+Fed S. Barr Testimony,1,1,15:00,1
+Fed Goolsbe Speech,1,1,16:45,1
+Fed Duke Speech,1,1,13:00,1
+"Fed Harker, Mester & Lockhart Speech",1,1,16:00,1
+Fed Jeffrey Speech,1,1,14:50,1
+Christmas Day (Substitute Day),1,1,00:00,1
+Christmas (substitute day),1,1,00:00,1
+Core PPI MoM Final,1,1,13:30,3
+Democratic Primaries Super Tuesday,1,1,00:00,1
+Fed CCAR For Big Banks,1,1,20:30,1
+Fed Chair Warsh Speech,1,1,13:00,1
+NY Fed Treasury Purchases FRNs 0 to 2 yrs,1,1,14:30,1
+NY Fed Treasury Purchases FRNs 0 to 20 yrs,1,1,14:30,1
+NY Fed Treasury Purchases 4 to 6 yrs,1,1,14:30,1
+Money Supply,1,1,17:00,1
+Mid-Term Elections,1,1,00:00,1
+78-Day Bill Auction,1,1,18:00,1
+"Birthday of Martin Luther King, Jr.",1,1,00:00,1
+Baker Hughes Total Rigs Count,1,1,17:00,1
+Inflation Rate MoM Final,1,1,13:30,3
+Inauguration Day,1,1,17:00,1
+Independence Day (substitute day),1,1,00:00,1
+Juneteenth,1,1,00:00,1
+Joe Biden's Inauguration,1,1,00:00,1
+MBA Mortgage Applications,1,1,12:00,1
+New Year's Day (Substitute Day),1,1,00:00,1
+NY Fed Treasury Purchases Bill,1,1,15:30,1
+Presidential Elections,1,1,05:00,1
+Presidential Election Results,1,1,07:00,1
+President Trump Speech on Iran Deal,1,1,18:00,1
+President Obama Statement on the Economy,1,1,16:05,1
+President Trump tax speech,1,1,19:00,1
+News Conference on Debt Ceiling,1,1,00:00,1
+President Biden Formal Press Conference,1,1,17:15,1
+President Biden Remarks on the Economy,1,1,17:15,1
+President Biden Speech on Banking System,1,1,13:00,1
+President Biden Speech on Debt Ceiling,1,1,14:45,1
+President Biden Speech on Recovery Package,1,1,00:00,1
+President Biden State of the Union Speech,1,1,00:00,1
+President Biden and President Xi Jinping Virtual Meeting,1,1,00:00,1
+President Obama Speech,1,1,02:00,1
+Obamacare Repeal Vote - Pulled,1,1,19:30,1
+President Biden 2023 Budget Speech,1,1,19:00,1
+President's FY2022 Budget,1,1,18:00,1
+President-Elect Trump Speech,1,1,16:00,1
+Reciprocal Tariff Plan Announcement,1,1,20:00,1
+40-Day Bill Auction,1,1,15:30,1
+48-Day Bill Auction,1,1,15:30,1
+Quarterly Report on Household Debt and Credit Q4,1,1,16:00,1
+69-Day Bill Auction,1,1,17:00,1
+67-Day Bill Auction,1,1,15:30,1
+41-Day Bill Auction,1,1,16:30,2
+Treasury Secretary Lew Speaks,1,1,12:30,1
+Treasury Secretary Mnuchin Speech,1,1,11:45,1
+Treasury Secretary Yellen Senate Confirmation Hearing,1,1,15:00,1
+US Budget Plan FY 2021,1,1,17:30,1
+White House Jobs Announcement,1,1,21:00,1

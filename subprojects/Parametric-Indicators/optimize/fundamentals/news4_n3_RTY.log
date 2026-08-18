@@ -1,0 +1,10 @@
+N3 RTY: bars end 2026-08-07 16:59:55; pv 50.0 stressed $22.5/event; alpha 0.00625; pre-reg 70f29fc
+  block Retail Sales MoM: 113 moments
+  block Durable Goods Orders MoM: 127 moments
+1s bars loaded: 207,039
+  Retail Sales MoM                       n= 101 gross $  -32.41 net $  -54.91 p=1.67e-05 jump 3.33 -> CONFIRMED-NEGATIVE
+  Durable Goods Orders MoM               n= 108 gross $  +10.78 net $  -11.72 p=0.444 jump 2.00 -> POWERED-NULL
+{
+  "Retail Sales MoM": "CONFIRMED-NEGATIVE",
+  "Durable Goods Orders MoM": "POWERED-NULL"
+}
