@@ -16,9 +16,9 @@ champions across 9 markets (~$840k/yr 2026-OOS at the deployed caps), engine gol
 scaled tiers approved by pre-registered rule (NQ/RTY/ES ≤20 worked, YM ≤5),
 ≈ $1.167M/window at max tiers (model-grade). The news research programme is **complete**:
 ~1,300 series×instrument cells measured, the premium grid literally closed, claims ledger
-**40/40 on both machines**. **WS-FUSION is open** (brainstorm + FU ledger, #152), its
-execution plan **approved and paused** by the owner; the owner's direction×size fusion
-candidate is registered as **FU-11 (#162)**, investigation awaiting his word. Everything is
+**40/40 on both machines**. **WS-FUSION is EXECUTING** (brainstorm + FU ledger, #152): the approved
+order is unpaused (owner 2026-08-19) — FU-1 (the event-window audit) ACTIVE, FU-9 next;
+FU-11 (#162, the owner's direction×size candidate) runs its archaeology stage. Everything is
 paper-only until a live gateway; the regime monitor guards all news legs.
 
 ## 1 · Shipped releases (the immutable trail)
