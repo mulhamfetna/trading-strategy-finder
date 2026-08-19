@@ -59,6 +59,9 @@ def main() -> int:
     ap.add_argument("--bars-1s", required=True)
     ap.add_argument("--schedule", default=str(DEFAULT_SCHEDULE))
     ap.add_argument("--floor-year", type=int, default=2024)
+    ap.add_argument("--series", default="",
+                    help="comma-separated schedule titles this leg rides (empty = all; "
+                         "ES/YM scale on 'Inflation Rate MoM' only — RQ-1/RQ-9, #141/#150)")
     ap.add_argument("--out-dir", default="deploy_out_d4")
     a = ap.parse_args()
     inst = a.instrument
@@ -68,6 +71,9 @@ def main() -> int:
     sched = load_schedule(Path(a.schedule))
     ev = sched[(sched.status == "confirmed")
                & (sched.et.dt.year >= a.floor_year)].reset_index(drop=True)
+    series = [x.strip() for x in a.series.split(",") if x.strip()]
+    if series:                       # RQ-1/RQ-9: a leg may scale on a SUBSET of the schedule
+        ev = ev[ev.title.isin(series)].reset_index(drop=True)
     print(f"D4 worked-entry study · {inst} · {len(ev)} releases {a.floor_year}+ · "
           f"entry = VWAP[rel-300s, rel-5s) · bracket active from rel-5s · stressed ${cost1:.2f}")
 
