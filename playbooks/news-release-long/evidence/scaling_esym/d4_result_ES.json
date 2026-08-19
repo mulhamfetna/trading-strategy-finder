@@ -1,0 +1,42 @@
+{
+ "instrument": "ES",
+ "floor_year": 2024,
+ "n_events": 29,
+ "v1_vwap_mismatches": 0,
+ "v3_shifted_mean": -435.28566898566453,
+ "v3_delta": 942.7505202473985,
+ "v3_pass": true,
+ "entry_delta_mean": 60.22356828240751,
+ "single_gross_mean": 581.9422413793102,
+ "worked_gross_mean": 507.46485126173394,
+ "cost_of_working_per_event": 74.47739011757625,
+ "outcome_changes": 2,
+ "pre_stops_avoided": 0,
+ "economics": [
+  {
+   "qty": 1,
+   "worked_net_mean": 454.96485126173394,
+   "worked_net_total": 13193.980686590285,
+   "single_net_total": 15353.824999999997
+  },
+  {
+   "qty": 5,
+   "worked_net_mean": 2274.824256308669,
+   "worked_net_total": 65969.90343295141,
+   "single_net_total": 76769.12499999999
+  },
+  {
+   "qty": 10,
+   "worked_net_mean": 4549.648512617338,
+   "worked_net_total": 131939.80686590282,
+   "single_net_total": 153538.24999999997
+  },
+  {
+   "qty": 20,
+   "worked_net_mean": 9099.297025234677,
+   "worked_net_total": 263879.61373180564,
+   "single_net_total": 307076.49999999994
+  }
+ ],
+ "model_note": "build window unprotected by design (reported, not netted); bracket active from release-5s; entry = window VWAP"
+}

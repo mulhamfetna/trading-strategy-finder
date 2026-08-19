@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WS-NEWS4 — The Dropped News Series: the Complete Gap Record · سلاسل الأخبار المُهمَلة: السجل الكامل لسدّ الفجوات</title>
+<style>
+  :root{--l0:#0b1e3d;--l0b:#16305c;--l1:#1d3a6e;--l1b:#27508f;--l2:#0e5e56;--l2b:#15806f;
+        --l3:#5b3b8f;--l3b:#7452ab;--gold:#d4a017;--green:#1d9e57;--red:#c0392b;--amber:#e67e22;
+        --bg:#f4f6fa;--card:#fff;--ink:#1c2333;--mut:#5f6775;--line:#dfe4ee}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Tahoma,"Noto Naskh Arabic",Arial,sans-serif;line-height:1.7;font-size:15.5px}
+  header{background:linear-gradient(135deg,var(--l0),var(--l1) 45%,var(--l3));color:#fff;padding:30px 26px}
+  header h1{margin:0 0 4px;font-size:24px} header .sub{opacity:.9;font-size:14px}
+  .wrap{max-width:1150px;margin:0 auto;padding:20px 16px 70px}
+  details{background:var(--card);border:1px solid var(--line);border-radius:12px;margin:14px 0;overflow:hidden;box-shadow:0 1px 3px rgba(10,20,50,.06)}
+  summary{cursor:pointer;color:#fff;padding:12px 18px;font-weight:700;font-size:16.5px;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"▾";float:inline-end;opacity:.8}
+  details[open]>summary::after{content:"▴"}
+  .L0>summary{background:linear-gradient(90deg,var(--l0),var(--l0b))}
+  .L1>summary{background:linear-gradient(90deg,var(--l1),var(--l1b))}
+  .L2>summary{background:linear-gradient(90deg,var(--l2),var(--l2b))}
+  .L3>summary{background:linear-gradient(90deg,var(--l3),var(--l3b));font-size:15.5px}
+  .body{padding:14px 20px}
+  .lvchip{display:inline-block;color:#fff;border-radius:10px;padding:1px 10px;font-size:11.5px;font-weight:700;margin-inline-end:6px}
+  .lv0{background:var(--l0)} .lv1{background:var(--l1)} .lv2{background:var(--l2)} .lv3{background:var(--l3)}
+  h3{margin:14px 0 6px;color:var(--l1)}
+  .ar{direction:rtl;text-align:right;unicode-bidi:embed;background:#f8fafd;border-inline-start:4px solid var(--l2);
+      border-radius:8px;padding:10px 14px;margin:10px 0}
+  .num{font-family:Consolas,monospace;white-space:nowrap;direction:ltr;unicode-bidi:embed}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13.5px}
+  th{background:#eef2f9;padding:6px 9px;border:1px solid var(--line)} td{padding:6px 9px;border:1px solid var(--line)}
+  .ok{color:var(--green);font-weight:700} .bad{color:var(--red);font-weight:700} .mid{color:var(--amber);font-weight:700}
+  .note{background:#fdf6ec;border-inline-start:4px solid var(--amber);padding:10px 14px;border-radius:8px;margin:10px 0;font-size:14px}
+  .win{background:#eefaf1;border-inline-start:4px solid var(--green);padding:10px 14px;border-radius:8px;margin:10px 0;font-size:14px}
+  .lose{background:#fdefec;border-inline-start:4px solid var(--red);padding:10px 14px;border-radius:8px;margin:10px 0;font-size:14px}
+  .kpis{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;flex:1;min-width:150px}
+  .kpi .v{font-size:20px;font-weight:800;font-family:Consolas,monospace} .kpi .k{font-size:12px;color:var(--mut)}
+  .g .v{color:var(--green)} .b .v{color:var(--l1)} .a .v{color:var(--amber)} .r .v{color:var(--red)} .p .v{color:var(--l3)}
+  .bar{display:flex;align-items:center;gap:10px;margin:5px 0}
+  .bar .lbl{width:300px;font-size:13px;flex-shrink:0}
+  .bar .trk{flex:1;background:#e9edf5;border-radius:6px;height:22px;direction:ltr;position:relative}
+  .bar .fill{height:100%;border-radius:6px;display:flex;align-items:center;justify-content:flex-end;color:#fff;
+             font-size:11.5px;font-family:Consolas,monospace;padding:0 8px;min-width:36px}
+  .fg{background:linear-gradient(90deg,#27ae60,#1d9e57)} .fb{background:linear-gradient(90deg,#3f6ad8,#27508f)}
+  .fgold{background:linear-gradient(90deg,#e0b52e,#c39312)} .fr{background:linear-gradient(90deg,#e74c3c,#c0392b)}
+  .fgrey{background:linear-gradient(90deg,#9aa5b5,#7d8898)}
+  footer{color:var(--mut);font-size:12.5px;margin-top:24px;border-top:1px solid var(--line);padding-top:10px}
+  code{background:#eef2f9;border-radius:4px;padding:1px 5px;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🔍 WS-NEWS4 — The Dropped News Series: the Complete Gap Record</h1>
+  <div class="sub">سلاسل الأخبار المُهمَلة — السجل الكامل لسدّ الفجوات · Issues <span class="num">#134–#138</span> ·
+  <span class="num">2026-08-18</span> · verify suite <span class="num">33/33</span> local <b>and</b> server ·
+  levels: <span class="lvchip lv0">L0 الحكم</span><span class="lvchip lv1">L1 المراحل</span><span class="lvchip lv2">L2 التفاصيل</span><span class="lvchip lv3">L3 المنهج والفخاخ</span></div>
+</header>
+<div class="wrap">
+
+<!-- ======================================================= L0 -->
+<details class="L0" open>
+<summary><span class="lvchip lv0">L0</span> The verdict: nothing else in the calendar pays the ride — and now that is PROVEN, not assumed · الحكم النهائي</summary>
+<div class="body">
+<p>The owner asked: <i>“this study included only three news — what about the rest?”</i>
+The honest answer was that the rest had never been premium-tested. So we tested it — <b>all of it</b>.
+After scanning <b class="num">11,822</b> release moments that no prior study had ever ridden
+(2016→2026, 1-second bars, the frozen deployed trade, harshest costs), the result is:</p>
+
+<div class="kpis">
+  <div class="kpi b"><div class="v">11,822</div><div class="k">untested release moments scanned · لحظة إصدار فُحصت</div></div>
+  <div class="kpi r"><div class="v">0 / 20</div><div class="k">new premiums confirmed (Tier-1) · أرباح جديدة مؤكدة</div></div>
+  <div class="kpi g"><div class="v">+$133.06</div><div class="k">positive control = M3 to the cent · الضبط الموجب طابق M3 حتى السنت</div></div>
+  <div class="kpi p"><div class="v">−$86.10</div><div class="k">Retail: a REAL anti-premium (NQ, gross) · ريتيل: أثر سلبي حقيقي</div></div>
+</div>
+
+<p><b>The deployed set {CPI, NFP, FOMC} is no longer just “the funnel’s winner” — it is the measured
+boundary of what exists in the US economic calendar at this trade shape and these costs.</b>
+Three sharp discoveries came out of the sweep:</p>
+<ol>
+  <li><b>The premium is CPI-concentrated.</b> CPI alone confirms on <i>both</i> deployed instruments
+      (NQ <span class="num">+$309</span>, RTY <span class="num">+$78</span> net/event); NFP and FOMC alone
+      never confirm anywhere. The pooled trade rides CPI.</li>
+  <li><b>Retail Sales carries a REAL negative effect</b> — confirmed on gross, on two independent price
+      files (NQ <span class="num">−$86.10</span>, RTY <span class="num">−$32.41</span> per event). It is the
+      only US macro release with a confirmed <i>negative</i> ride: a documented do-not-ride series.</li>
+  <li><b>POWER ≠ PREMIUM holds at full-calendar scale.</b> Every never-tested candidate genuinely moves
+      the market (release minutes 1.6–8× the quiet baseline) — and still none of them pays the ride.
+      Volatility is everywhere; the premium lives in one place.</li>
+</ol>
+
+<div class="ar"><b>الحكم النهائي:</b> سأل المالك: «الدراسة شملت ثلاثة أخبار فقط — ماذا عن البقية؟» والجواب
+الصادق كان أن البقية لم تُختبر قط لعائد الركوب. ففحصنا <b>كل شيء</b>: <span class="num">11,822</span> لحظة
+إصدار لم تُختبر من قبل (2016→2026، شموع الثانية الواحدة، الصفقة المنشورة نفسها بلا أي تعديل، وأقسى
+التكاليف). النتيجة: <b>صفر أرباح جديدة من 20 اختبارًا مؤكدًا</b> — أي أن المجموعة المنشورة
+{التضخم CPI، الوظائف NFP، الفائدة FOMC} ليست «الفائز من القمع» فحسب، بل هي <b>حدود ما هو موجود
+فعلًا في التقويم الاقتصادي الأميركي</b> عند هذا الشكل وهذه التكاليف. واكتشفنا ثلاث حقائق حادة:
+(1) <b>العائد متركّز في CPI وحده</b> — يتأكد منفردًا على الأداتين (+$309 و+$78 صافيًا لكل حدث) بينما
+NFP وFOMC منفردين لا يتأكدان أبدًا؛ (2) <b>مبيعات التجزئة تحمل أثرًا سلبيًا حقيقيًا</b> مؤكدًا على
+الإجمالي وعلى ملفّي أسعار مستقلين (−$86 و−$32 لكل حدث) — أول سلسلة أميركية «ممنوع ركوبها» بدليل؛
+(3) <b>القوة ≠ العائد على مستوى التقويم كله</b>: كل مرشح يحرّك السوق فعلًا (1.6–8 أضعاف خط الهدوء)
+ومع ذلك لا أحد منها يدفع. التقلب في كل مكان؛ العائد يسكن مكانًا واحدًا.</div>
+
+<div class="win"><b>Why you can trust the zeros:</b> the deployed set was pushed through the <i>identical</i>
+pipeline as a positive control and reproduced the verified M3 result <b>to the cent</b>
+(<span class="num">n=327, net +$133.06</span>). A machine that provably CAN find the premium found
+nothing else — that is what makes the zeros evidence rather than absence of evidence.</div>
+<div class="win"><b>لماذا نثق بالأصفار؟</b> لأن المجموعة المنشورة مُرّرت عبر <b>الخطّ نفسه حرفيًا</b> كضبطٍ
+موجب فأعادت نتيجة M3 المُتحقَّق منها <b>حتى السنت</b> (<span class="num">n=327، +$133.06</span> صافيًا).
+آلةٌ ثبت أنها قادرة على إيجاد العائد لم تجد غيره — هذا ما يجعل الأصفار دليلًا لا غيابَ دليل.</div>
+</div>
+</details>
+
+<!-- ======================================================= L1 -->
+<details class="L1" open>
+<summary><span class="lvchip lv1">L1</span> The three phases: record → scan → deep-dives · المراحل الثلاث: السجل ← المسح ← الغوص</summary>
+<div class="body">
+
+<h3>N1 (#135) — first, the strong record: who was ever tested, for what?</h3>
+<p>Before testing anything we built the authoritative <b>coverage matrix</b>
+(<code>docs/NEWS-COVERAGE-MATRIX.md</code> + machine-readable CSVs), generated <i>from the evidence files
+themselves</i>, never from memory. It exposed the true shape of the gap:</p>
+<div class="bar"><div class="lbl">Direction/jump tested (WS-NEWS2)</div><div class="trk"><div class="fill fb" style="width:35%">82 series × 8 instruments</div></div></div>
+<div class="bar"><div class="lbl">Power tested (M2)</div><div class="trk"><div class="fill fgold" style="width:6%">5 series</div></div></div>
+<div class="bar"><div class="lbl">PREMIUM tested (M1/M3) — the gap</div><div class="trk"><div class="fill fgold" style="width:6%">5 series</div></div></div>
+<div class="bar"><div class="lbl">Premium NEVER tested</div><div class="trk"><div class="fill fr" style="width:97%">230 series → 92 moment-groups → 11,822 moments</div></div></div>
+<div class="ar"><b>المرحلة الأولى — السجل:</b> قبل اختبار أي شيء بنينا «مصفوفة التغطية» المرجعية من ملفات
+الأدلة نفسها لا من الذاكرة. كشفت الشكل الحقيقي للفجوة: اتجاه السعر اختُبر على 82 سلسلة × 8 أدوات،
+لكن <b>عائد الركوب لم يُختبر يومًا إلا على 5 سلاسل</b> — وبقيت 230 سلسلة (تتجمع في 92 «لحظة إصدار»
+مميزة بمجموع 11,822 لحظة) بلا اختبار أبدًا. سبب الإهمال الأصلي كان شرط التحقق من مصدر التوقعات —
+وهو شرط لا تحتاجه صفقة الركوب أصلًا لأنها تحتاج <b>الطوابع الزمنية فقط</b>.</div>
+
+<h3>N2 (#136) — the wide scan: every dropped moment, the frozen trade, pre-registered gates</h3>
+<p>Design frozen and committed <b>before</b> any run (commit <span class="num">a988f17</span>):
+10 justified candidates as the confirmatory family (Bonferroni <span class="num">α=0.05/20</span>),
+~79 more blocks exploratory; jump-gate against fake timestamps; quiet-day controls vs the FULL 39k-event
+calendar; 1,000 shuffled placebos; power analysis mandatory before any “no”.
+<b>Result: zero confirmations, and the zeros are powered</b> — on NQ every candidate’s minimum detectable
+effect (<span class="num">$67–$234</span>) sits below the CPI-sized premium
+(<span class="num">+$309</span>) the same pipeline confirms.</p>
+<div class="ar"><b>المرحلة الثانية — المسح الواسع:</b> جُمِّد التصميم وسُجّل في git <b>قبل</b> أي تشغيل:
+10 مرشحين مبرَّرين كعائلة تأكيدية (بونفيروني α=0.05/20) و~79 كتلة استكشافية؛ بوابة «قفزة الدقيقة» ضد
+الطوابع الزمنية المزيفة؛ أيام هادئة كمجموعة ضابطة مقابل التقويم الكامل (39 ألف حدث)؛ 1000 محاكاة
+عشوائية؛ وتحليل قوة إلزامي قبل أي «لا». <b>النتيجة: صفر تأكيدات، والأصفار «مُقوّاة»</b> — على NQ كل
+مرشح كان أصغر أثرٍ يمكن كشفه عنده (<span class="num">$67–$234</span>) أدنى من عائد بحجم CPI
+(<span class="num">+$309</span>) الذي يؤكده الخطّ نفسه.</div>
+
+<h3>N3 (#137) — the half-measured, finished: 8 pre-registered tests, 5 instruments</h3>
+<table>
+<tr><th>question · السؤال</th><th>result · النتيجة</th></tr>
+<tr><td>Is Retail’s negative hint real? · هل سلبية التجزئة حقيقية؟</td>
+    <td class="bad">YES — CONFIRMED-NEGATIVE on NQ and RTY, on gross, both halves · نعم، مؤكدة على الأداتين</td></tr>
+<tr><td>Durables: null or unknown? · السلع المعمّرة؟</td><td class="ok">POWERED-NULL ×2 — a clean, informative nothing · صفر نظيف مُقوّى</td></tr>
+<tr><td>EIA/API oil inventories on CL · مخزونات النفط على CL</td>
+    <td class="ok">Definitive NO: gross ≈ $0 with n=551/433 while the minutes jump 5–8× · «لا» قاطعة رغم عنف الدقيقة</td></tr>
+<tr><td>Does the trade extend to ES/GC? · هل تمتد الصفقة إلى ES/GC؟</td>
+    <td class="mid">No new surface (both POWERED-NULL) — but ES CPI-alone +$151 t≈3.0 noted for forward confirmation · لا سطح جديدًا، مع ملاحظة مرشح مستقبلي</td></tr>
+</table>
+<div class="ar"><b>المرحلة الثالثة — إنهاء نصف المُختبَر:</b> ثمانية اختبارات مسجّلة مسبقًا على خمس أدوات
+(NQ وRTY وCL وES وGC). سلبية مبيعات التجزئة <b>حقيقية ومؤكدة</b>؛ السلع المعمّرة صفرٌ نظيف؛ مخزونات
+النفط «لا» قاطعة بقوة إحصائية كبيرة؛ ولا امتداد مؤكّدًا للصفقة إلى ES أو الذهب — مع تسجيل إشارة
+وصفية لافتة: CPI وحده على ES يعطي <span class="num">+$151</span> صافيًا (t≈3.0) كمرشح لتأكيد مستقبلي
+فقط، لأن تاريخه استُهلك في هذا القياس.</div>
+</div>
+</details>
+
+<!-- ======================================================= L2: N2 details -->
+<details class="L2">
+<summary><span class="lvchip lv2">L2</span> The scan in full: Tier-1 table, the positive control, CPI concentration · المسح بالتفصيل</summary>
+<div class="body">
+
+<h3>The confirmatory table (Tier-1), NQ — net stressed $/event</h3>
+<table>
+<tr><th>block · الكتلة</th><th>n</th><th>gross</th><th>net</th><th>p</th><th>MDE</th><th>jump×</th><th>verdict</th></tr>
+<tr><td>Initial Jobless Claims (Thu 08:30)</td><td class="num">434</td><td class="num">−5.34</td><td class="num">−27.84</td><td class="num">0.11</td><td class="num">$67</td><td class="num">1.83</td><td class="ok">POWERED-NULL</td></tr>
+<tr><td>PPI MoM</td><td class="num">102</td><td class="num">+26.68</td><td class="num">+4.18</td><td class="num">0.94</td><td class="num">$205</td><td class="num">4.67</td><td>UNDERPOWERED</td></tr>
+<tr><td>Core PCE / Personal block</td><td class="num">113</td><td class="num">+41.08</td><td class="num">+18.58</td><td class="num">0.68</td><td class="num">$177</td><td class="num">2.50</td><td>UNDERPOWERED</td></tr>
+<tr><td>GDP Growth Adv</td><td class="num">33</td><td class="num">−87.52</td><td class="num">−110.02</td><td class="num">0.07</td><td class="num">$234</td><td class="num">3.17</td><td>UNDERPOWERED</td></tr>
+<tr><td>ISM Manufacturing PMI</td><td class="num">128</td><td class="num">−10.88</td><td class="num">−33.38</td><td class="num">0.46</td><td class="num">$177</td><td class="num">2.09</td><td>UNDERPOWERED</td></tr>
+<tr><td>ISM Services PMI</td><td class="num">128</td><td class="num">+15.61</td><td class="num">−6.89</td><td class="num">0.88</td><td class="num">$174</td><td class="num">2.06</td><td>UNDERPOWERED</td></tr>
+<tr><td>JOLTs Job Openings</td><td class="num">127</td><td class="num">−0.01</td><td class="num">−22.51</td><td class="num">0.58</td><td class="num">$157</td><td class="num">1.75</td><td>UNDERPOWERED</td></tr>
+<tr><td>Michigan Sentiment Prel</td><td class="num">127</td><td class="num">−18.67</td><td class="num">−41.17</td><td class="num">0.37</td><td class="num">$177</td><td class="num">1.56</td><td>UNDERPOWERED</td></tr>
+<tr><td>ADP Employment</td><td class="num">126</td><td class="num">−31.33</td><td class="num">−53.83</td><td class="num">0.03</td><td class="num">$99</td><td class="num">3.20</td><td class="ok">POWERED-NULL</td></tr>
+<tr><td>FOMC Minutes</td><td class="num">84</td><td class="num">−35.37</td><td class="num">−57.87</td><td class="num">0.14</td><td class="num">$153</td><td class="num">1.80</td><td>UNDERPOWERED</td></tr>
+</table>
+<p>On RTY, whose per-event noise is far smaller, the same 10 blocks give <b>9 POWERED-NULL</b>
+(MDEs <span class="num">$27–$120</span>) plus one “significant negative” on Jobless Claims that is pure
+<b>cost drag</b>: gross <span class="num">−$6.61</span> — the statistical significance lives entirely in the
+<span class="num">$22.50</span> of costs, not in the market.</p>
+<div class="ar">على RTY، حيث ضجيج الحدث أصغر بكثير، تعطي الكتل العشر نفسها <b>تسعة أصفار مُقوّاة</b>
+(أصغر أثر قابل للكشف $27–$120) إضافة إلى «سلبية معنوية» واحدة في إعانات البطالة هي في حقيقتها
+<b>سحبُ تكاليف</b> لا غير: الإجمالي <span class="num">−$6.61</span> فقط — الدلالة الإحصائية تسكن كاملةً
+في تكاليف الصفقة (<span class="num">$22.50</span>) لا في السوق نفسه.</div>
+
+<h3>The positive control — the reason the zeros mean something</h3>
+<table>
+<tr><th>block</th><th>n</th><th>net $/event</th><th>p</th><th>verdict</th></tr>
+<tr><td>NQ — deployed set {CPI,NFP,FOMC}</td><td class="num">327</td><td class="num ok">+133.06</td><td class="num">4.1e-04</td><td class="ok">CONFIRMED — M3 to the cent</td></tr>
+<tr><td>NQ — CPI alone</td><td class="num">116</td><td class="num ok">+309.02</td><td class="num">2.8e-05</td><td class="ok">CONFIRMED</td></tr>
+<tr><td>NQ — NFP alone</td><td class="num">127</td><td class="num">+78.10</td><td class="num">0.17</td><td>UNDERPOWERED</td></tr>
+<tr><td>NQ — FOMC alone</td><td class="num">84</td><td class="num">−26.82</td><td class="num">0.63</td><td>UNDERPOWERED</td></tr>
+<tr><td>RTY — CPI alone</td><td class="num">102</td><td class="num ok">+78.41</td><td class="num">7.7e-04</td><td class="ok">CONFIRMED</td></tr>
+<tr><td>RTY — deployed set (study floor 2019)</td><td class="num">239</td><td class="num">gross +57.20</td><td colspan="2">matches the committed M3 cell (+57.98) within the known 1-event tie-break</td></tr>
+</table>
+<p><b>CPI concentration across four instruments</b> (net/event, descriptive where not confirmatory):
+NQ <span class="num ok">+$309</span> · RTY <span class="num ok">+$78</span> ·
+ES <span class="num">+$151 (t≈3.0)</span> · GC <span class="num">+$80 (t≈1.8)</span> —
+while NFP and FOMC hover at zero or negative net everywhere. The announcement premium, at this trade
+shape, is <b>an inflation-print phenomenon</b>.</p>
+<div class="ar"><b>تركّز CPI عبر أربع أدوات:</b> صافي الحدث الواحد: ناسداك <span class="num">+$309</span>،
+راسل <span class="num">+$78</span>، إس&amp;بي <span class="num">+$151</span> (وصفيًا، t≈3.0)، الذهب
+<span class="num">+$80</span> (t≈1.8) — بينما يحوم NFP وFOMC حول الصفر أو تحته صافيًا في كل مكان.
+عائدُ الإعلان، عند هذا الشكل من الصفقة، <b>ظاهرةُ «طبعة التضخم»</b> تحديدًا.</div>
+
+<h3>Tier-2 (~79 exploratory blocks): zero positives; what the “negatives” really are</h3>
+<p>No exploratory positive anywhere. The FDR-flagged “significant negatives” split cleanly in two once
+you read <i>gross</i> next to <i>net</i>: (a) <b>cost drag</b> — Treasury auctions, Fed speeches, Baker
+Hughes, where gross is −$3…−$25 and the $22.50 does the rest; (b) a handful of <b>larger gross negatives</b>
+(IBD/TIPP <span class="num">−$103</span> n=40, Wholesale Inv. Adv <span class="num">−$98</span> n=49,
+42-Day Bill <span class="num">−$84</span> n=84 — NQ gross) that stay unpromotable: small n, history consumed,
+and shorting them is a different study with its own multiplicity debt. 33 NQ blocks are
+<b>VOID-TIMESTAMP</b> — their calendar minute does not move price (jump ≤1.2×), so no verdict about a
+premium is even claimable there (Redbook, MBA, NFIB, Monthly Budget, most auction stamps, half the Fed speeches).</p>
+<div class="ar"><b>الطبقة الاستكشافية (~79 كتلة): صفر إيجابيات.</b> أما «السلبيات المعنوية» فتنقسم بوضوح
+عند قراءة الإجمالي بجانب الصافي: (أ) <b>سحب تكاليف</b> — مزادات الخزانة وخطب الفيدرالي وعدّاد الحفارات،
+حيث الإجمالي −$3…−$25 والباقي تصنعه التكاليف؛ (ب) حفنة سلبيات إجمالية أكبر (IBD/TIPP −$103،
+المخزونات بالجملة −$98، أذون 42 يومًا −$84) تبقى غير قابلة للترقية: عينات صغيرة وتاريخ مستهلَك،
+وبيعها على المكشوف دراسةٌ أخرى بديونها الإحصائية الخاصة. و33 كتلة على NQ حكمها
+<b>«طابع زمني باطل»</b> — دقيقتها لا تحرك السعر أصلًا (قفزة ≤1.2×) فلا يجوز ادّعاء أي حكم عن عائدها.</div>
+</div>
+</details>
+
+<!-- ======================================================= L2: N3 details -->
+<details class="L2">
+<summary><span class="lvchip lv2">L2</span> The deep-dives in full: Retail’s anti-premium, oil, ES/GC · الغوص العميق بالتفصيل</summary>
+<div class="body">
+
+<h3>Retail Sales — the only confirmed do-not-ride series</h3>
+<table>
+<tr><th></th><th>n</th><th>gross $/event</th><th>net</th><th>p</th><th>half1 / half2 (gross)</th><th>jump×</th></tr>
+<tr><td>NQ</td><td class="num">113</td><td class="num bad">−86.10</td><td class="num">−108.60</td><td class="num">7.2e-04</td><td class="num">−27 / −144</td><td class="num">4.17</td></tr>
+<tr><td>RTY</td><td class="num">101</td><td class="num bad">−32.41</td><td class="num">−54.91</td><td class="num">1.7e-05</td><td class="num">−22 / −42</td><td class="num">3.33</td></tr>
+</table>
+<p>Three defenses make this real and not an artifact: it is negative on <b>gross</b> (so it is not the
+costs); it replicates on <b>two independent price files</b>; and at the very same 08:30 clock the deployed
+set rides <i>positive</i> while Durables rides flat — so it is <b>series-specific</b>, not a morning effect.
+In plain terms: in the 20 minutes around a Retail Sales print, NQ systematically moves <i>against</i> an
+early long. M1’s old grid hint (−$98) was true. Whether the SHORT side of this is tradeable was
+deliberately not tested here (it was not pre-registered); it is recorded as an open question.</p>
+<div class="ar"><b>مبيعات التجزئة — السلسلة الوحيدة المؤكدة «ممنوع ركوبها».</b> ثلاثة دفاعات تجعلها حقيقية
+لا وهمًا: سلبيةٌ على <b>الإجمالي</b> (فليست التكاليف)، وتتكرر على <b>ملفّي أسعار مستقلين</b>، وفي التوقيت
+نفسه (08:30) تركب المجموعة المنشورة <i>موجبةً</i> والسلع المعمّرة محايدةً — فهي <b>خاصة بالسلسلة</b> لا
+أثرَ صباحٍ عام. بلغة بسيطة: في العشرين دقيقة حول طبعة التجزئة يتحرك ناسداك <i>ضدّ</i> الشراء المبكر
+بانتظام. إشارة M1 القديمة (−$98) كانت صادقة. أما هل يُتاجَر بجانبها القصير؟ لم يُختبر عمدًا هنا
+(لم يكن مسجّلًا مسبقًا) وسُجّل سؤالًا مفتوحًا.</div>
+
+<h3>Oil inventories (EIA/API on CL) — violence without payment</h3>
+<div class="bar"><div class="lbl">EIA minute jump vs quiet baseline</div><div class="trk"><div class="fill fb" style="width:53%">5.33×</div></div></div>
+<div class="bar"><div class="lbl">API minute jump vs quiet baseline</div><div class="trk"><div class="fill fb" style="width:80%">8.00×</div></div></div>
+<div class="bar"><div class="lbl">EIA gross $/event (n=551)</div><div class="trk"><div class="fill fgrey" style="width:4%">−$1.41</div></div></div>
+<div class="bar"><div class="lbl">API gross $/event (n=433)</div><div class="trk"><div class="fill fgrey" style="width:5%">+$5.27</div></div></div>
+<p>The strongest POWER ≠ PREMIUM datapoint in the whole programme: the most violent scheduled minutes in
+the oil tape, measured with heavy power (MDE <span class="num">$20–$21</span>/event), pay exactly nothing
+gross. M1’s old “VOID” (which came from a consensus-provenance restriction the ride never needed)
+upgrades to a definitive exclusion.</p>
+<div class="ar"><b>مخزونات النفط — عنفٌ بلا أجر.</b> أقوى نقطة «القوة ≠ العائد» في البرنامج كله: أعنف
+الدقائق المجدولة في شريط النفط، مقيسةً بقوة إحصائية ثقيلة (أصغر أثر قابل للكشف $20–$21 للحدث)،
+تدفع صفرًا بالضبط على الإجمالي. حكمُ M1 القديم «باطل» (الذي جاء من شرط مصدر التوقعات، وهو شرط لا
+تحتاجه صفقة الركوب) يترقّى إلى استبعادٍ قاطع.</div>
+
+<h3>ES and GC — the deployed trade does not extend (at these costs)</h3>
+<table>
+<tr><th></th><th>n</th><th>gross</th><th>net</th><th>p</th><th>MDE</th><th>verdict</th></tr>
+<tr><td>ES — deployed set</td><td class="num">327</td><td class="num">+107.54</td><td class="num">+55.04</td><td class="num">0.034</td><td class="num">$93</td><td>POWERED-NULL</td></tr>
+<tr><td>GC — deployed set</td><td class="num">324</td><td class="num">+50.98</td><td class="num">+8.48</td><td class="num">0.74</td><td class="num">$89</td><td>POWERED-NULL</td></tr>
+</table>
+<p>ES leans positive but does not clear the pre-registered bar, and its costs
+(<span class="num">$52.50</span>/event stressed — the ES tick is $12.50) eat half the gross. The
+descriptive slice inside those same events is the part worth remembering:
+<b>ES CPI-alone nets +$151.37 (t≈3.0)</b> — the 4th instrument in a row where CPI carries whatever exists.
+Per protocol it cannot be promoted from this data (its history is consumed by this very measurement);
+it is filed as a <b>forward-confirmation candidate</b>: pre-register, then let future CPI prints vote.</p>
+<div class="ar"><b>إس&amp;بي والذهب — لا امتداد مؤكدًا.</b> يميل ES إلى الإيجاب لكنه لا يعبر العتبة المسجلة
+مسبقًا، وتكاليفه (<span class="num">$52.50</span> للحدث) تأكل نصف الإجمالي. الجزء الجدير بالحفظ هو
+الشريحة الوصفية داخل الأحداث نفسها: <b>CPI وحده على ES يصفّي +$151.37 (t≈3.0)</b> — رابع أداة على
+التوالي يحمل فيها CPI كلَّ ما هو موجود. بروتوكوليًا لا يجوز ترقيته من هذه البيانات (تاريخه استُهلك في
+هذا القياس ذاته) فسُجّل <b>مرشحًا للتأكيد الأمامي</b>: تسجيل مسبق، ثم ندع طبعات CPI المقبلة تصوّت.</div>
+</div>
+</details>
+
+<!-- ======================================================= L3 -->
+<details class="L3">
+<summary><span class="lvchip lv3">L3</span> Method, the bug the control caught, traps for the future, and what stays open · المنهج والفخاخ وما بقي مفتوحًا</summary>
+<div class="body">
+
+<h3>The discipline that held</h3>
+<ul>
+<li><b>Pre-registration before every run</b> — N2 (<span class="num">a988f17</span>) and N3
+    (<span class="num">70f29fc</span>) committed with tests, alphas, the $150 powered-null line and blind
+    spots frozen <i>before</i> results existed. Nothing drifted afterwards.</li>
+<li><b>The verdict ladder</b>: jump gate first (a block whose minute doesn’t move price gets
+    VOID-TIMESTAMP, never “no premium”); then t-test → chronological half-split → quiet-day floor →
+    1,000-placebo noise check; negatives split into POWERED-NULL (MDE ≤ $150) vs UNDERPOWERED
+    (“cannot tell” — never dressed as “no”).</li>
+<li><b>V1/V2/V3 + claims ledger</b>: 6 new claims, 18 checks, each triple failing for a <i>different</i>
+    reason — suite <b class="num">33/33</b> green on the local machine <i>and</i> the server.</li>
+</ul>
+<div class="ar"><b>الانضباط الذي صمد:</b> تسجيل مسبق قبل كل تشغيل (بالاختبارات والعتبات والنقاط العمياء
+مجمّدةً قبل وجود النتائج)؛ سلّم أحكام يبدأ ببوابة القفزة (الكتلة التي لا تحرك دقيقتُها السعرَ حكمُها
+«طابع باطل» لا «لا عائد»)؛ ثم اختبار t فنصفا التاريخ فأرضية الأيام الهادئة فمحاكاة الضجيج؛ والسلبيات
+تنقسم إلى «صفر مُقوّى» أو «غير مُقوّى — لا نستطيع الجزم» ولا تُلبَس أبدًا ثوبَ «لا». وسجلّ الادعاءات:
+6 ادعاءات جديدة و18 فحصًا، والحزمة <b class="num">33/33</b> خضراء محليًا وعلى الخادم.</div>
+
+<h3>⭐ The bug the positive control caught — the day’s best save</h3>
+<div class="lose"><b>What happened:</b> the first cut of the quiet-day gate was coded two-sided. The 08:30
+quiet-day ride is itself significantly <i>negative</i> (≈ <span class="num">−$50</span> net — cost drag plus
+quiet-morning drift), so the gate wrongly vetoed <b>CPI itself</b> (verdict FAILED-GATES on a
+p=2.8e-05 positive!). The pre-registration’s wording — the control must not itself show a
+<i>positive</i> premium — was right; the code was wrong. Fixed to the registered wording
+(commit <span class="num">778492c</span>), every scan re-run after the fix, thresholds untouched.
+<b>Without the positive control this bug would have silently hardened the “zero” story.</b></div>
+<div class="ar"><b>⭐ الخطأ الذي اصطاده الضبطُ الموجب — أفضل إنقاذ في اليوم:</b> النسخة الأولى من بوابة
+الأيام الهادئة كُتبت ثنائية الاتجاه، وركوبُ الأيام الهادئة عند 08:30 <i>سلبيٌّ معنويًا</i> بذاته
+(≈ <span class="num">−$50</span> صافيًا: سحبُ تكاليف + انجراف صباح هادئ)، فرفضت البوابةُ خطأً
+<b>CPI نفسه</b> رغم p=2.8e-05! صياغة التسجيل المسبق كانت صحيحة («يجب ألا يُظهر الضابطُ عائدًا
+<i>موجبًا</i>») والكودُ هو الخاطئ. أُصلح إلى الصياغة المسجلة وأُعيدت كل عمليات المسح بعد الإصلاح دون
+مسّ أي عتبة. <b>لولا الضبط الموجب لتصلّبت قصةُ «الصفر» على خطأٍ صامت.</b></div>
+
+<h3>Traps recorded for every future calendar study</h3>
+<ul>
+<li><b>Initial Jobless Claims carries TradingView importance 0</b> — any importance≥1 filter silently
+    drops the single highest-frequency macro release (556 usable events).</li>
+<li><b>Title renames split series</b>: ISM Non-Manufacturing↔ISM Services, Markit↔S&amp;P Global,
+    “4-Week”↔“4-week”. Without the merge map a series loses half its history invisibly.</li>
+<li><b>The scan unit is the MINUTE, not the title</b> — the NFP minute carries up to 19 co-released
+    titles; counting titles double-counts moments.</li>
+<li><b>Window overlap</b>: a 12:15 ADP ride is still open at a 12:30 CPI print — without the overlap
+    exclusion, CPI’s premium leaks into ADP’s measurement.</li>
+<li><b>Read gross next to net before narrating any “significant negative”</b> — on a $22.50 cost line,
+    low-variance instruments make pure cost drag look like an anti-premium.</li>
+<li><b>Server venv facts</b>: <code>data_2010_1s/venv</code> needed scipy via <code>python3 -m pip</code>
+    (the pip binary is broken), and the blanket-gitignored evidence CSVs
+    (<code>forecast_previous_*</code>, <code>alfred_revision_*</code>) had to be copied for the ledger
+    to go green there.</li>
+</ul>
+<div class="ar"><b>فخاخ مسجلة لكل دراسة تقويم قادمة:</b> «إعانات البطالة الأولية» تحمل أهمية 0 في
+TradingView فيُسقطها أي مرشح أهمية بصمت رغم كونها الأعلى تكرارًا (556 حدثًا)؛ إعادةُ تسمية العناوين
+تشطر السلسلةَ الواحدة (ISM غير الصناعي ↔ خدمي، Markit ↔ S&amp;P Global)؛ وحدةُ المسح هي <b>الدقيقة</b>
+لا العنوان (دقيقة NFP تحمل حتى 19 عنوانًا)؛ تداخلُ النوافذ (ركوب ADP في 12:15 ما زال مفتوحًا عند
+طبعة CPI في 12:30)؛ واقرأ الإجمالي بجانب الصافي قبل رواية أي «سلبية معنوية» — على خط تكاليف
+$22.50 يجعل انخفاضُ التباين سحبَ التكاليف يبدو أثرًا عكسيًا.</div>
+
+<h3>What stays open — the honest hand-off to WS-FUSION</h3>
+<ul>
+<li><b>The declared blind spot of the whole sweep</b>: a premium with a different <i>shape</i> — the short
+    side, other stop/TP geometry, earlier entries, or entries <i>conditional on tape state</i> — is outside
+    everything tested here. That conditional door is exactly where <b>WS-FUSION (indicators × news)</b>
+    begins.</li>
+<li><b>Retail’s short side</b> — a real negative exists; whether it is monetizable short was not
+    pre-registered and remains untested.</li>
+<li><b>ES CPI-alone (+$151, t≈3.0)</b> — forward-confirmation candidate only.</li>
+<li><b>Timestamp provenance</b> beyond the 4 ALFRED-verified series rests on TradingView alone,
+    defended only by the jump gate.</li>
+</ul>
+<div class="ar"><b>ما بقي مفتوحًا — تسليمٌ صادق إلى WS-FUSION:</b> النقطة العمياء المعلنة للمسح كله هي
+أن أي عائد <b>بشكلٍ مختلف</b> — الجانب القصير، هندسة وقف/هدف أخرى، دخول أبكر، أو دخول <b>مشروط
+بحالة الشريط</b> — يقع خارج كل ما اختُبر هنا. هذا البابُ الشرطي هو بالضبط حيث يبدأ اندماجُ المؤشرات
+بالأخبار. ويبقى مفتوحًا: الجانبُ القصير للتجزئة (السلبية حقيقية لكن تحويلها لصفقة لم يُسجَّل مسبقًا)،
+ومرشحُ ES CPI للتأكيد الأمامي، ومصدرُ الطوابع الزمنية خارج السلاسل الأربع المتحقَّق منها.</div>
+
+<h3>What went well / what went wrong · ما نجح وما أخفق</h3>
+<div class="win"><b>Well:</b> the whole gap (record → scan → deep-dives) closed in one day because every
+piece reused the parity-proven executor instead of re-implementing fills; the positive control both
+validated the pipeline and caught a live bug; pre-registration kept 170+ tests honest; and the question
+“what about the rest?” now has a permanent, regenerable answer.</div>
+<div class="lose"><b>Wrong (and kept):</b> the two-sided control gate (caught pre-results, fixed, re-run);
+the descriptive ES/GC “CPI-alone” runner block self-excluded via the overlap rule (worked around by
+slicing the deployed-set events — runner artifact, confirmatory tests unaffected); GDP Adv arrived at
+n=33 &lt; the pre-registered ~42 because covered-minute exclusion bit harder than estimated (declared,
+verdict honest: UNDERPOWERED); and the server needed two environment fixes before the ledger went green there.</div>
+<div class="ar"><b>ما نجح:</b> أُغلقت الفجوة كاملة في يوم واحد لأن كل قطعة أعادت استخدام المنفّذ المُثبت
+التكافؤ بدل إعادة كتابة التعبئة؛ الضبطُ الموجب تحقق من الخط واصطاد خطأً حيًا؛ والتسجيلُ المسبق حفظ
+صدقَ أكثر من 170 اختبارًا. <b>ما أخفق (وسُجّل):</b> بوابة الضابط ثنائية الاتجاه (اصطيدت قبل النتائج
+وأُصلحت وأُعيد التشغيل)؛ كتلة «CPI وحده» الوصفية استبعدت نفسها بقاعدة التداخل (عولجت بتشريح أحداث
+المجموعة المنشورة — عيبُ مشغّلٍ لا يمسّ الاختبارات التأكيدية)؛ وGDP جاء بعينة 33 دون التقدير المسبق
+~42 لأن استبعاد الدقائق المغطاة قضم أكثر من المتوقع (أُعلن، والحكم صادق: غير مُقوّى)؛ والخادم احتاج
+إصلاحين بيئيين قبل اخضرار السجل هناك.</div>
+</div>
+</details>
+
+<footer>
+WS-NEWS4 (#134–#138) · evidence: <code>docs/NEWS-COVERAGE-MATRIX.md</code> ·
+<code>news4_coverage_matrix.py / news4_premium_scan.py / news4_n3_deepdive.py</code> ·
+committed results <code>news4_scan_* / news4_n3_*</code> · claims <code>optimize/verify/claims_news4.py</code> (suite 33/33) ·
+pre-registrations <code>docs/NEWS4-N2-PREREGISTRATION.md</code> (a988f17), <code>docs/NEWS4-N3-PREREGISTRATION.md</code> (70f29fc) ·
+companion reports: <a href="NEWS-PROGRAMME-VISUAL-REPORT-EN.html">news programme (EN)</a> ·
+<a href="NEWS-PROGRAMME-VISUAL-REPORT-AR.html">التقرير البصري (عربي)</a> ·
+<a href="NEWS-PROGRAMME-GLOSSARY-BILINGUAL.html">bilingual glossary · المسرد</a> ·
+Generated 2026-08-18 · Mulham Fetna · <a href="https://github.com/mulhamfetna/trading-strategy-finder">mulhamfetna/trading-strategy-finder</a>
+</footer>
+</div>
+</body>
+</html>

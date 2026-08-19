@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The News Layer — Final State: What Pays, What Doesn't, and Why · طبقة الأخبار: الحالة النهائية — ما يربح وما لا يربح ولماذا</title>
+<style>
+  :root{--l0:#0b1e3d;--l0b:#16305c;--l1:#1d3a6e;--l1b:#27508f;--l2:#0e5e56;--l2b:#15806f;
+        --l3:#5b3b8f;--l3b:#7452ab;--gold:#d4a017;--green:#1d9e57;--red:#c0392b;--amber:#e67e22;
+        --bg:#f4f6fa;--card:#fff;--ink:#1c2333;--mut:#5f6775;--line:#dfe4ee}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Tahoma,"Noto Naskh Arabic",Arial,sans-serif;line-height:1.7;font-size:15.5px}
+  header{background:linear-gradient(135deg,var(--l0),var(--l1) 45%,var(--green));color:#fff;padding:30px 26px}
+  header h1{margin:0 0 4px;font-size:24px} header .sub{opacity:.92;font-size:14px}
+  .wrap{max-width:1200px;margin:0 auto;padding:20px 16px 70px}
+  details{background:var(--card);border:1px solid var(--line);border-radius:12px;margin:14px 0;overflow:hidden;box-shadow:0 1px 3px rgba(10,20,50,.06)}
+  summary{cursor:pointer;color:#fff;padding:12px 18px;font-weight:700;font-size:16.5px;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"▾";float:inline-end;opacity:.8}
+  details[open]>summary::after{content:"▴"}
+  .L0>summary{background:linear-gradient(90deg,var(--l0),var(--l0b))}
+  .L1>summary{background:linear-gradient(90deg,var(--l1),var(--l1b))}
+  .L2>summary{background:linear-gradient(90deg,var(--l2),var(--l2b))}
+  .L3>summary{background:linear-gradient(90deg,var(--l3),var(--l3b))}
+  .body{padding:14px 20px}
+  .lvchip{display:inline-block;color:#fff;border-radius:10px;padding:1px 10px;font-size:11.5px;font-weight:700;margin-inline-end:6px}
+  .lv0{background:var(--l0)} .lv1{background:var(--l1)} .lv2{background:var(--l2)} .lv3{background:var(--l3)}
+  h3{margin:14px 0 6px;color:var(--l1)}
+  .ar{direction:rtl;text-align:right;unicode-bidi:embed;background:#f8fafd;border-inline-start:4px solid var(--l2);
+      border-radius:8px;padding:10px 14px;margin:10px 0}
+  .num{font-family:Consolas,monospace;white-space:nowrap;direction:ltr;unicode-bidi:embed}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+  th{background:#eef2f9;padding:6px 8px;border:1px solid var(--line)} td{padding:5px 8px;border:1px solid var(--line);text-align:center}
+  td.l{text-align:left}
+  .ok{color:var(--green);font-weight:700} .bad{color:var(--red);font-weight:700} .mid{color:var(--amber);font-weight:700} .mut{color:var(--mut)}
+  .dep{background:#eefaf1;font-weight:700} .neg{background:#fdefec} .void{background:#f1f3f7;color:#8a93a3} .nul{background:#fbfbfd;color:#5f6775}
+  .note{background:#fdf6ec;border-inline-start:4px solid var(--amber);padding:10px 14px;border-radius:8px;margin:10px 0;font-size:14px}
+  .win{background:#eefaf1;border-inline-start:4px solid var(--green);padding:10px 14px;border-radius:8px;margin:10px 0;font-size:14px}
+  .kpis{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;flex:1;min-width:150px}
+  .kpi .v{font-size:20px;font-weight:800;font-family:Consolas,monospace} .kpi .k{font-size:12px;color:var(--mut)}
+  .g .v{color:var(--green)} .b .v{color:var(--l1)} .a .v{color:var(--amber)} .r .v{color:var(--red)}
+  footer{color:var(--mut);font-size:12.5px;margin-top:24px;border-top:1px solid var(--line);padding-top:10px}
+  code{background:#eef2f9;border-radius:4px;padding:1px 5px;font-size:13px}
+  .legend span{display:inline-block;border-radius:6px;padding:1px 8px;font-size:12px;margin-inline-end:6px;border:1px solid var(--line)}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏁 The News Layer — Final State: What Pays, What Doesn't, and Why</h1>
+  <div class="sub">طبقة الأخبار — الحالة النهائية: ما يربح وما لا يربح ولماذا ·
+  <span class="num">v5.4.2 · 2026-08-19</span> · ledger <span class="num">40/40</span> ·
+  <span class="lvchip lv0">L0 الخلاصة</span><span class="lvchip lv1">L1 لماذا</span><span class="lvchip lv2">L2 البنية والأرباح</span><span class="lvchip lv3">L3 المصفوفة الكاملة</span></div>
+</header>
+<div class="wrap">
+
+<!-- L0 -->
+<details class="L0" open>
+<summary><span class="lvchip lv0">L0</span> The whole story in one card · القصة كلها في بطاقة</summary>
+<div class="body">
+<p>After ~1,300 measured series×instrument cells across five workstreams, the US economic calendar
+contains, at our trade shape and our costs, <b>exactly one harvestable thing</b>: the
+<b>announcement premium of the CPI print on stock-index futures</b>. It is deployed on all four
+index legs. Everything else is a powered null, an unverdictable minute, the fee schedule made
+visible — or, in one famous case, a confirmed <i>negative</i>.</p>
+<div class="kpis">
+  <div class="kpi g"><div class="v">4 legs</div><div class="k">deployed: NQ·RTY (3 series) + ES·YM (CPI) · الأرجل المنشورة</div></div>
+  <div class="kpi g"><div class="v">$67,767</div><div class="k">2024→2026 net stressed, qty=1/leg · صافي النافذة</div></div>
+  <div class="kpi b"><div class="v">≈ $26k/yr</div><div class="k">recent-regime pace at 1 contract/leg · الوتيرة الأخيرة</div></div>
+  <div class="kpi r"><div class="v">1 anti</div><div class="k">Retail Sales — the confirmed do-not-ride · السلسلة المحظورة</div></div>
+</div>
+<div class="ar"><b>الخلاصة:</b> بعد قياس نحو 1,300 خلية «سلسلة×أداة» عبر خمس ورشات، يحتوي التقويم
+الاقتصادي الأميركي — عند شكل صفقتنا وتكاليفنا — على <b>شيء واحد قابل للحصاد بالضبط</b>: علاوة إعلان
+<b>طبعة التضخم CPI على عقود مؤشرات الأسهم</b>. وهي الآن منشورة على الأرجل الأربعة كلها. كل ما عداها:
+أصفارٌ مُقوّاة، أو دقائق غير قابلة للحكم، أو جدولُ الرسوم وقد صار مرئيًا — وفي حالة شهيرة واحدة،
+أثرٌ <i>سلبي</i> مؤكد (مبيعات التجزئة). نافذة 2024→2026 بعقد واحد لكل رجل تصفّي
+<b class="num">$67,767</b> بأقسى التكاليف، بوتيرة حديثة ≈ <b class="num">$26 ألف/سنة</b>.</div>
+</div>
+</details>
+
+<!-- L1 -->
+<details class="L1" open>
+<summary><span class="lvchip lv1">L1</span> What became profitable, what didn't — and WHY · ما ربح وما لم يربح ولماذا</summary>
+<div class="body">
+<table>
+<tr><th>family · العائلة</th><th>verdict</th><th>the why · السبب</th></tr>
+<tr class="dep"><td class="l">CPI on stock indexes (NQ +$309 · ES +$151 · YM +$108 · RTY +$78 net/ev)</td>
+<td class="ok">PROFITABLE — all DEPLOYED</td>
+<td class="l">The one moment the market systematically pays to hold risk through: macro uncertainty resolves at 08:30 and equity indexes reprice UP through it on average (the announcement-premium mechanism). Ordered by index beta; convex (small stop, big target) so the +4R tail pays for the losing median.</td></tr>
+<tr><td class="l">NFP / FOMC (inside the NQ+RTY pooled trade)</td><td class="mid">carried, not standalone</td>
+<td class="l">Alone they never confirm anywhere (net ≈ 0 to negative); the pooled {CPI,NFP,FOMC} trade was confirmed as a SET on NQ/RTY and stays deployed as verified. On new instruments only CPI shipped.</td></tr>
+<tr class="neg"><td class="l">Retail Sales (gross-negative on 7 instruments)</td><td class="bad">ANTI-PREMIUM — do-not-ride</td>
+<td class="l">The only release where riding long systematically LOSES on gross across the whole market. Mechanism unproven (RQ-2 will ask if the short side pays); status: confirmed exclusion.</td></tr>
+<tr class="nul"><td class="l">The other ~90 calendar moments (Jobless Claims, PPI, ISM, GDP, JOLTs, ADP, Michigan, Minutes, auctions, speeches…)</td><td>POWERED NULLS / UNDERPOWERED</td>
+<td class="l">They genuinely move price (jump gates 1.6–8×) yet pay nothing — <b>POWER ≠ PREMIUM</b>. On NQ every one of them could have shown a CPI-sized premium and didn't.</td></tr>
+<tr class="nul"><td class="l">Energy inventories (EIA/API on CL; EIA-natgas on NG)</td><td>definitive NO</td>
+<td class="l">The most violent scheduled minutes in their tapes (5–8.5×) gross ≈ $0 at n=551/433/552 — volatility without direction, measured with the heaviest power in the programme.</td></tr>
+<tr class="nul"><td class="l">Metals at CPI (HG gross +$80, SI +$48/ev)</td><td class="mid">cost-drowned</td>
+<td class="l">Positive gross, eaten by $52.50/$102.50 cost lines. Not deployable at current cost structure; queued (RQ-5: micro contracts / measured spreads).</td></tr>
+<tr class="void"><td class="l">370 VOID-TIMESTAMP cells (Redbook, MBA, NFIB, most auction stamps, half the Fed speeches…)</td><td>unverdictable</td>
+<td class="l">Their calendar minute does not move that tape (jump ≤1.2×) — the timestamp can't be trusted, so no premium verdict is claimable either way. Recorded, not guessed.</td></tr>
+</table>
+<div class="ar"><b>القراءة:</b> الرابح الوحيد هو علاوة CPI على المؤشرات (مرتّبة ببيتا المؤشر: ناسداك ثم
+إس&amp;بي ثم داو ثم راسل). NFP وFOMC «محمولان» داخل صفقة NQ/RTY المجمّعة المؤكدة ولا يؤكَّدان منفردين.
+التجزئة <b>عكسية مؤكدة</b> على سبع أدوات. وبقية التقويم: إما أصفار مُقوّاة رغم عنف الدقيقة
+(<b>القوة ≠ العائد</b>)، أو مخزونات طاقة تتحرك بعنف وتدفع صفرًا، أو معادن موجبة الإجمالي تأكلها
+التكاليف، أو 370 خلية بطوابع زمنية لا تحرك السعر أصلًا فلا حكم عليها.</div>
+</div>
+</details>
+
+<!-- L2 -->
+<details class="L2" open>
+<summary><span class="lvchip lv2">L2</span> The deployed structure in detail + the profit tables · البنية المنشورة والأرباح</summary>
+<div class="body">
+
+<h3>The one trade, four legs · الصفقة الواحدة بأربعة أرجل</h3>
+<p>Every leg runs the SAME frozen bracket: <b>LONG at the close of the 1-second bar at
+release−300 s · stop 0.10 % (worse-of line/open) · take-profit 0.40 % (better-of, resting) ·
+both-in-one-bar ⇒ STOP · timed exit at release+900 s</b>. Decisions are mechanical: the schedule
+says when, the executor does the rest.</p>
+<table>
+<tr><th>leg</th><th>series it rides</th><th>point value</th><th>stressed cost/event</th><th>evidence grade</th><th>net/event (full era · 2024→26)</th></tr>
+<tr><td><b>NQ</b></td><td>CPI + NFP + FOMC (the confirmed set)</td><td class="num">$20</td><td class="num">$22.50</td><td class="ok">CONFIRMED (M3, Bonferroni+holdout)</td><td class="num">+$133.06 · +$424.53</td></tr>
+<tr><td><b>RTY</b></td><td>CPI + NFP + FOMC</td><td class="num">$50</td><td class="num">$22.50</td><td class="ok">CONFIRMED (the pre-registered holdout)</td><td class="num">+$35 · +$95.19</td></tr>
+<tr><td><b>ES</b></td><td>CPI only</td><td class="num">$50</td><td class="num">$52.50</td><td class="mid">battery PASS, descriptive grade (owner-accepted)</td><td class="num">+$151.37 · +$529.44</td></tr>
+<tr><td><b>YM</b></td><td>CPI only</td><td class="num">$5</td><td class="num">$22.50</td><td class="mid">grid positive + execution gate ACQUIRE</td><td class="num">+$107.64 · +$355.72</td></tr>
+</table>
+<div class="ar"><b>البنية:</b> أربعة أرجل تنفذ الصفقةَ المجمّدة نفسها. NQ وRTY يركبان الثلاثي المؤكد
+{CPI، الوظائف، الفائدة}؛ ES وYM يركبان <b>CPI فقط</b> (لأن العلاوة متركّزة فيه، وNFP/FOMC صفران على
+الأدوات الجديدة). الجدول أعلاه يبين قيمة النقطة وتكلفة الحدث الأقسى ودرجة الدليل وصافي الحدث.</div>
+
+<h3>Operations · التشغيل</h3>
+<table>
+<tr><th>component</th><th>what it does</th></tr>
+<tr><td class="l"><code>src/deploy/release_executor.py</code></td><td class="l">replay (proof) + paper (intents JSONL). Per-leg: <code>--instrument ES --series "Inflation Rate MoM"</code>; NQ/RTY need no filter. Nothing touches a broker — <b>paper-only until a live gateway</b>.</td></tr>
+<tr><td class="l"><code>src/deploy/schedule.py</code> + <code>release_schedule.csv</code></td><td class="l">the event list (verbatim study selection incl. its tie-break); forward rows marked <code>scheduled</code>.</td></tr>
+<tr><td class="l"><code>src/deploy/regime_monitor.py</code></td><td class="l">rolling 24-CPI net-stressed mean &lt; 0 ⇒ STAND_DOWN, <b>sticky</b> (only an explicit owner <code>--clear</code> un-halts). Guards all four legs — they are one CPI bet.</td></tr>
+<tr><td class="l">quantity rules (v5.4.2, pre-registered rule)</td><td class="l">Worked-entry mode: <b>NQ ≤20 · RTY ≤20 · ES ≤20</b> (participation 0.59%/0.98% at 20, retention 85.9%) · <b>YM ≤5</b> (q10 breaches the lines at 2.67%/6.11%; retention 84.3%). Single-shot: NQ/RTY ≤2, ES/YM ≤1 (YM per the RQ-7 direct fill test). Layer at max approved tiers 2024→26 ≈ <b class="num">$1.167M</b> (≈$450k/yr, worked-entry model figures; margin owner-side).</td></tr>
+</table>
+
+<h3>Profit tables · جداول الأرباح (net stressed, qty=1 per leg)</h3>
+<table>
+<tr><th>leg</th><th>events 2024→26</th><th>net/event</th><th>window total</th><th>share</th></tr>
+<tr><td>NQ (3 series)</td><td class="num">81</td><td class="num">+424.53</td><td class="num">$34,386.93</td><td class="num">50.7%</td></tr>
+<tr><td>ES (CPI)</td><td class="num">29</td><td class="num">+529.44</td><td class="num">$15,353.82</td><td class="num">22.7%</td></tr>
+<tr><td>YM (CPI)</td><td class="num">29</td><td class="num">+355.72</td><td class="num">$10,315.88</td><td class="num">15.2%</td></tr>
+<tr><td>RTY (3 series)</td><td class="num">81</td><td class="num">+95.19</td><td class="num">$7,710.39</td><td class="num">11.4%</td></tr>
+<tr class="dep"><td><b>the layer</b></td><td></td><td></td><td class="num"><b>$67,767.02</b></td><td class="num">100%</td></tr>
+</table>
+<p class="mut">Growth of the layer: NQ+RTY alone $42,097 → +ES $57,451 (+36.5%) → +YM <b>$67,767 (+61% total)</b>.
+Era honesty: the effect is regime-concentrated (2016/17/19/20/23 negative on ES; 2022+ strong everywhere) —
+which is exactly why the regime monitor is not optional. Risk honesty: same-event correlation ES↔NQ 0.78;
+24% of CPI events lose on all index legs; worst joint CPI event −$1,023 (3 legs, 2025-09-11); worst layer
+event −$1,168 (NFP 2026-03-06). Margin at four simultaneous legs: owner-side.</p>
+<div class="ar"><b>نمو الطبقة:</b> NQ+RTY وحدهما $42,097 ← بإضافة ES صارت $57,451 (+36.5%) ← بإضافة YM
+صارت <b class="num">$67,767 (+61% إجمالًا)</b>. <b>صدق المخاطرة:</b> الأرجل الأربعة رهانٌ واحد على دقيقة
+CPI (ارتباط الحدث الواحد 0.78؛ في 24% من الأحداث تخسر أرجل المؤشرات معًا)؛ الأثر متركّز زمنيًا ولهذا
+مراقبُ النظام إلزامي؛ والهامش عند أربعة أرجل متزامنة قرارُ المالك.</div>
+</div>
+</details>
+
+<!-- L3 -->
+<details class="L3">
+<summary><span class="lvchip lv3">L3</span> The full matrix: every instrument × every macro series · المصفوفة الكاملة</summary>
+<div class="body">
+<p>Net stressed $/event at the frozen spec, computed from the committed evidence files
+(grid/posctrl/N3/ESCPI). Colors:
+<span class="legend"><span class="dep">DEPLOYED</span><span class="neg">confirmed/sig negative</span><span class="nul">powered null / underpowered</span><span class="void">VOID-TIMESTAMP</span></span></p>
+<table>
+<tr><th>series \ inst</th><th>NQ</th><th>ES</th><th>YM</th><th>RTY</th><th>GC</th><th>SI</th><th>HG</th><th>CL</th><th>NG</th></tr>
+<tr><td class="l"><b>CPI</b> (Inflation Rate MoM)</td>
+<td class="dep num">+309.02</td><td class="dep num">+151.37</td><td class="dep num">+107.64</td><td class="dep num">+78.41</td>
+<td class="nul num">+80.14ᵈ</td><td class="nul num">−54.47</td><td class="nul num">+27.70</td><td class="neg num">−41.19ᶜ</td><td class="void num">void</td></tr>
+<tr><td class="l"><b>NFP</b> (Non Farm Payrolls)</td>
+<td class="dep num">+78.10ᵖ</td><td class="nul num">+17.91ᵈ</td><td class="nul num">+45.48</td><td class="dep num">+4.06ᵖ</td>
+<td class="nul num">−26.30ᵈ</td><td class="neg num">−124.92</td><td class="neg num">−37.72</td><td class="neg num">−33.11</td><td class="void num">void</td></tr>
+<tr><td class="l"><b>FOMC</b> (Fed Interest Rate Decision)</td>
+<td class="dep num">−26.82ᵖ</td><td class="nul num">−21.86ᵈ</td><td class="nul num">−8.44</td><td class="dep num">−4.97ᵖ</td>
+<td class="nul num">−39.14ᵈ</td><td class="neg num">−103.43</td><td class="nul num">−23.71</td><td class="neg num">−39.55</td><td class="void num">void</td></tr>
+<tr><td class="l"><b>Retail Sales MoM</b></td>
+<td class="neg num">−108.60★</td><td class="neg num">−118.88</td><td class="neg num">−45.01</td><td class="neg num">−54.91★</td>
+<td class="neg num">−88.18</td><td class="neg num">−132.12</td><td class="neg num">−89.80</td><td class="void num">void</td><td class="void num">void</td></tr>
+<tr><td class="l"><b>Durable Goods MoM</b></td>
+<td class="nul num">−13.03</td><td class="neg num">−62.17</td><td class="nul num">−14.93</td><td class="nul num">−11.72</td>
+<td class="neg num">−63.32</td><td class="neg num">−108.02</td><td class="void num">void</td><td class="void num">void</td><td class="void num">void</td></tr>
+<tr><td class="l"><b>EIA Crude Stocks</b></td>
+<td class="nul num">−20.06</td><td class="neg num">−53.46</td><td class="void num">void</td><td class="neg num">−19.41</td>
+<td class="neg num">−36.06</td><td class="void num">void</td><td class="neg num">−62.54</td><td class="nul num">−43.91ᵍ</td><td class="void num">void</td></tr>
+<tr><td class="l"><b>API Crude Stocks</b></td>
+<td class="void num">void</td><td class="void num">void</td><td class="void num">void</td><td class="void num">void</td>
+<td class="void num">void</td><td class="void num">void</td><td class="void num">void</td><td class="nul num">−37.23ᵍ</td><td class="void num">void</td></tr>
+<tr><td class="l"><b>everything else (~90 blocks/inst)</b></td>
+<td class="nul" colspan="9">swept in full on NQ/RTY (N2) and on ES/GC/CL/SI/HG/NG/YM (WS-GRID): zero positives anywhere except YM CPI; census 370 void · 179 sig-neg (mostly the fee schedule) · 106 powered nulls · 5 underpowered</td></tr>
+</table>
+<p class="mut">★ CONFIRMED-NEGATIVE on gross (both halves) · ᵖ from the positive-control run
+(the deployed NQ/RTY trade is confirmed as the pooled SET, +$133.06/+$35 net per event) ·
+ᵈ descriptive slice inside the deployed-set events · ᶜ/ᵍ cost-drag shape (gross ≈ 0: CL CPI gross
++$1.31; CL EIA gross −$1.41, API gross +$5.27) · "void" = the minute does not move that tape
+(jump ≤1.2×), no verdict claimable.</p>
+<div class="ar"><b>قراءة المصفوفة:</b> الصف الأول هو القصة كلها — علاوة CPI موجبة ومنشورة على أعمدة
+المؤشرات الأربعة، وصفرية أو باطلة على السلع والطاقة (وذهبٌ وصفيٌّ عند +$80 تأكله التكاليف نصفًا).
+صف التجزئة أحمر عبر السوق كله. وكل ما تحت ذلك: أصفار مُقوّاة، أو سالبُ تكاليفٍ لا سالبُ سوق
+(اقرأ الإجمالي بجانب الصافي دائمًا)، أو طوابع باطلة. لا توجد خلية بلا حكم مسجّل.</div>
+</div>
+</details>
+
+<footer>
+Sources: <code>NEWS-MASTER-EXPERIMENT-RECORD.md</code> · the per-workstream full records ·
+claims ledger 39/39 (<code>optimize/verify/run.py</code>) · matrix computed from
+<code>news4_scan_blocks_*_grid.csv / *_posctrl.csv / news4_n3_* / wsescpi_*</code> ·
+deployable bundle: <code>playbooks/news-release-long-bundle-v1.3.x.zip</code> (attached to release v5.4.1) ·
+Generated 2026-08-19 · Mulham Fetna · <a href="https://github.com/mulhamfetna/trading-strategy-finder">mulhamfetna/trading-strategy-finder</a>
+</footer>
+</div>
+</body>
+</html>

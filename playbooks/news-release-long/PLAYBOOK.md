@@ -146,3 +146,21 @@ Verdict per the rule fixed in advance: **ACQUIRE**. YM deploys CPI-only at qty=1
 any qty>1 requires its own D3/D4 study first. 2024→2026: n=29, net +$355.72/event
 (+$10,315.88/contract) — the layer's window total becomes **$67,767.02 (+61% vs the pre-ES
 layer)** at one contract per leg.
+
+## 10 · ES & YM scaling — the approved tiers (RQ-1 #141 + RQ-9 #150, 2026-08-19)
+
+The pre-registered rule (participation median ≤2.5% / p95 ≤5% of window volume in worked-entry
+mode; edge retention ≥80%; all D3/D4 hard gates) decided:
+
+| leg | single-shot | worked entry | participation at max tier | retention |
+|---|---|---|---|---|
+| NQ | ≤2 | **≤20** | 1.31% median (D3) | 96% |
+| RTY | ≤2 | **≤20** | tighter | improves +24% |
+| ES | ≤1 | **≤20** | **0.59% / 0.98%** | 85.9% |
+| YM | ≤1 (RQ-7 fill test) | **≤5** — q10 breaches (2.67%/6.11%) | 1.33% / 3.05% | 84.3% |
+
+Worked-entry window economics 2024→2026 (net stressed): ES q20 **+$263,880** · YM q5
+**+$43,481** · NQ+RTY q20 (all 3 series) +$859,141 ⇒ layer at max approved tiers
+**≈ $1.167M for the window (≈ $450k/yr pace)**. The rule capped YM itself — proof it is not a
+rubber stamp. Fills at window VWAP remain a model property; margin at four scaled legs is
+owner-side. Evidence: `evidence/scaling_esym/`; ledger `ESYM-SCALING-TIERS` (40/40).

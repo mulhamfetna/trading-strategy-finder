@@ -373,3 +373,74 @@ register(Claim(
     checks=[Check("V1", "the four ACQ metrics re-derive from per-event data", _acq_v1),
             Check("V2", "an independent fill model reproduces the economics (Δ $0.58)", _acq_v2),
             Check("V3", "'too thin to execute' is FALSE on every measured axis", _acq_v3)]))
+
+
+# =============================================================================================
+# RQ-1 + RQ-9 (#141/#150) — ES & YM CPI scaling: the pre-registered scaled-deploy rule
+# =============================================================================================
+_SCAL = Path(__file__).resolve().parents[4] / "playbooks" / "news-release-long" / "evidence" / "scaling_esym"
+
+
+def _sc_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION: the rule inputs from the committed artefacts. ES q20 worked
+    participation 0.59%/0.98% (≤2.5/≤5) and retention 85.9%; YM q5 1.33%/3.05% pass while
+    q10 (2.67%/6.11%) and q20 breach — highest passing tiers 20 and 5."""
+    w = json.load(open(_SCAL / "window_participation.json"))
+    d4es = json.load(open(_SCAL / "d4_result_ES.json"))
+    d4ym = json.load(open(_SCAL / "d4_result_YM.json"))
+    # retention on NET stressed (cost $52.50 ES / $22.50 YM per contract-event)
+    ret_es = (d4es["worked_gross_mean"] - 52.5) / (d4es["single_gross_mean"] - 52.5)
+    ret_ym = (d4ym["worked_gross_mean"] - 22.5) / (d4ym["single_gross_mean"] - 22.5)
+    ok = (w["ES"]["q20_part_median_pct"] <= 2.5 and w["ES"]["q20_part_p95_pct"] <= 5
+          and w["YM"]["q5_part_median_pct"] <= 2.5 and w["YM"]["q5_part_p95_pct"] <= 5
+          and not (w["YM"]["q10_part_median_pct"] <= 2.5 and w["YM"]["q10_part_p95_pct"] <= 5)
+          and ret_es >= 0.80 and ret_ym >= 0.80)
+    return ok, (f"ES q20 {w['ES']['q20_part_median_pct']}/{w['ES']['q20_part_p95_pct']}% ret "
+                f"{ret_es:.1%}; YM q5 {w['YM']['q5_part_median_pct']}/{w['YM']['q5_part_p95_pct']}% "
+                f"ret {ret_ym:.1%}; YM q10 breaches")
+
+
+def _sc_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT GATES: the D3/D4 hard gates from their own result files — V1 linearity
+    0 mismatches both; V3 volume physics 48.8x/51.0x; D4 dual-path 0 mismatches; D4 shifted-
+    window falsifiers flip by $943/$616."""
+    ok = True
+    msgs = []
+    for i in ("ES", "YM"):
+        d3 = json.load(open(_SCAL / f"d3_result_{i}.json"))
+        d4 = json.load(open(_SCAL / f"d4_result_{i}.json"))
+        d4v1 = d4["v1_vwap_mismatches"] == 0
+        ok &= d3["v1_pass"] and d3["v3_pass"] and d4v1 and d4["v3_pass"]
+        msgs.append(f"{i}: d3 {d3['v1_pass']}/{d3['v3_pass']} d4 {d4v1}/{d4['v3_pass']}")
+    return bool(ok), "; ".join(msgs)
+
+
+def _sc_v3() -> tuple[bool, str]:
+    """V3 — FALSIFIER: 'the rule always approves the max tier' — FALSE: YM's own numbers cap
+    it at 5 (q10 median 2.67%>2.5 AND p95 6.11%>5), and single-shot entries above qty=1 fail
+    the 25% entry-second line on BOTH legs (ES q5 p50 33%, YM q5 250%)."""
+    w = json.load(open(_SCAL / "window_participation.json"))
+    ym_capped = w["YM"]["q10_part_median_pct"] > 2.5 and w["YM"]["q10_part_p95_pct"] > 5
+    return bool(ym_capped), f"YM q10 {w['YM']['q10_part_median_pct']}%/{w['YM']['q10_part_p95_pct']}% -> capped at 5"
+
+
+register(Claim(
+    id="ESYM-SCALING-TIERS",
+    issue="#141",
+    statement="The pre-registered scaled-deploy rule (participation ≤2.5% median / ≤5% p95, "
+              "retention ≥80%, hard gates) approves ES CPI at qty=20 worked (0.59%/0.98%, "
+              "retention 85.9%) and caps YM CPI at qty=5 worked (1.33%/3.05%; q10 breaches at "
+              "2.67%/6.11%). Retentions: ES worked keeps +$454.96 of +$529.44; YM +$299.87 of "
+              "+$355.72. Window economics at approved tiers: ES q20 +$263,880, YM q5 +$43,481 "
+              "(2024→2026, net stressed, worked-entry model).",
+    source="playbooks/news-release-long/evidence/scaling_esym/window_participation.json",
+    value_fn=lambda: json.load(open(_SCAL / "window_participation.json"))["ES"]["q20_part_median_pct"],
+    expect=0.59, tol=0.01,
+    blind_spot="Worked-entry fills at window VWAP remain a MODEL (fair at ≤2.5% participation "
+               "— the same property the deployed NQ/RTY tiers carry); 1s volume bounds "
+               "participation, not book depth; margin at four scaled legs owner-side. YM "
+               "single-shot qty=1 stays governed by RQ-7's direct fill measurement (Δ$0.58), "
+               "which supersedes the participation heuristic at that size.",
+    checks=[Check("V1", "rule inputs re-derive: ES→20, YM→5, YM q10 breaches", _sc_v1),
+            Check("V2", "all D3/D4 hard gates green from their own artefacts", _sc_v2),
+            Check("V3", "the rule is not a rubber stamp (it capped YM)", _sc_v3)]))
