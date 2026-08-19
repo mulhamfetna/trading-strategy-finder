@@ -1,4 +1,16 @@
-# EXECUTIVE SUMMARY — news-release-long v1.1.0
+# EXECUTIVE SUMMARY — news-release-long v1.4.0
+
+> **CURRENT STATE (2026-08-19, v5.4.2 · ledger 40/40):** the layer is DEPLOYED and SCALED —
+> **four legs, one CPI bet**: NQ + RTY (CPI/NFP/FOMC, the confirmed set) + ES (CPI-only,
+> shipped v5.4.0) + YM (CPI-only, acquired through the pre-registered execution gate, v5.4.1).
+> Quantity rules (pre-registered scaling rule, v5.4.2): worked-entry NQ ≤20 · RTY ≤20 ·
+> **ES ≤20** (0.59%/0.98% participation) · **YM ≤5** (q10 rejected by the rule). 2024→2026 at
+> qty=1/leg: **$67,767 net stressed (+61% vs the NQ/RTY-only layer)**; at max approved tiers
+> (worked-entry model): **≈ $1.167M window ≈ $450k/yr pace**. Paper-only until a gateway;
+> regime monitor guards all legs; margin at size owner-side. The text below is the original
+> v1.1.0 summary, kept for provenance.
+
+# ORIGINAL v1.1.0 SUMMARY (2026-08-17)
 **One page. 2026-08-17 · branch `feat/ws-deploy-news-executor` (isolated) · ⛔ merge/live gated on the owner (#127)**
 
 ## What this is

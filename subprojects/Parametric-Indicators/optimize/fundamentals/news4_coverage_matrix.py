@@ -177,7 +177,8 @@ def build() -> pd.DataFrame:
     m["power_status"] = m.apply(status_power, axis=1)
     m["premium_status"] = m.apply(status_premium, axis=1)
     m["deployment_status"] = [
-        "DEPLOYED (NQ+RTY)" if t in deployed else "" for t in m.index
+        ("DEPLOYED (NQ+RTY+ES+YM)" if t == "Inflation Rate MoM" else "DEPLOYED (NQ+RTY)")
+        if t in deployed else "" for t in m.index
     ]
 
     m = m.sort_values("n_usable", ascending=False)
@@ -320,6 +321,58 @@ def render_md(m: pd.DataFrame, cand: pd.DataFrame, moments: pd.DataFrame) -> str
     return "\n".join(L) + "\n"
 
 
+def grid_appendix() -> str:
+    """RQ-6 (#146): the per-instrument premium verdicts appendix — the WS-GRID closure (#140)
+    merged into the generated record. Reads every committed *_grid blocks file; the old
+    single-column premium status above is HISTORICAL once this section exists."""
+    import glob
+    frames = []
+    for f in sorted(glob.glob(str(HERE / "news4_scan_blocks_*_grid.csv"))):
+        inst = Path(f).name.split("_")[3]
+        d = pd.read_csv(f)
+        d["inst"] = inst
+        frames.append(d[["inst", "anchor", "n_filled", "net_stressed_mean", "verdict"]])
+    g = pd.concat(frames)
+    g["anchor"] = g["anchor"].str.replace("^GRID ", "", regex=True)
+
+    def short(v: str) -> str:
+        v = str(v)
+        if v.startswith("EXPLORATORY-POSITIVE"):
+            return "✅POS"
+        if v.startswith("POWERED-NULL"):
+            return "0̶"
+        if v.startswith("UNDERPOWERED"):
+            return "?"
+        if v.startswith("VOID"):
+            return "·void"
+        if "NEGATIVE" in v:
+            return "−sig"
+        return v[:6]
+
+    insts = ["NQ", "ES", "YM", "RTY", "GC", "SI", "HG", "CL", "NG"]
+    L = ["\n## APPENDIX (RQ-6/#146) — per-instrument premium verdicts from the FULL GRID (#140)\n",
+         "The single premium column above is HISTORICAL (pre-grid). This table is the live "
+         "per-cell record for every block the grid ran (NQ/RTY ran only their two missing "
+         "cells here — their full sweep lives in `news4_scan_blocks_{NQ,RTY}.csv`; the "
+         "deployed macro cells live in the posctrl/N3/ESCPI files). Cell = verdict "
+         "(net $/event). Legend: ✅POS exploratory-positive · 0̶ powered-null · ? underpowered "
+         "· −sig significant negative (read gross before narrating — most are cost drag) · "
+         "·void VOID-TIMESTAMP.\n",
+         "| block \\ inst | " + " | ".join(insts) + " |",
+         "|" + "---|" * (len(insts) + 1)]
+    for anchor in sorted(g.anchor.unique()):
+        row = [anchor[:46]]
+        sub = g[g.anchor == anchor].set_index("inst")
+        for i in insts:
+            if i in sub.index:
+                r = sub.loc[i]
+                row.append(f"{short(r.verdict)} ({r.net_stressed_mean:+.0f})")
+            else:
+                row.append("")
+        L.append("| " + " | ".join(row) + " |")
+    return "\n".join(L) + "\n"
+
+
 def main() -> None:
     m = build()
     cand = n2_candidates(m)
@@ -328,7 +381,7 @@ def main() -> None:
     cand.to_csv(HERE / "news4_n2_candidates.csv")
     moments.to_csv(HERE / "news4_n2_moments.csv")
     DOCS.mkdir(exist_ok=True)
-    (DOCS / "NEWS-COVERAGE-MATRIX.md").write_text(render_md(m, cand, moments))
+    (DOCS / "NEWS-COVERAGE-MATRIX.md").write_text(render_md(m, cand, moments) + grid_appendix())
     print(f"series in matrix: {len(m)}")
     print(m["premium_status"].value_counts().to_string())
     print(f"N2 candidate series: {len(cand)}")

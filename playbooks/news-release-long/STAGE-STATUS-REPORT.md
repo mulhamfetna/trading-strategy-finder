@@ -1,3 +1,10 @@
+# STAGE STATUS — news-release-long (updated 2026-08-19, v5.4.2)
+
+**All stages COMPLETE and SHIPPED.** v5.3.0 (NQ/RTY deployed + qty≤20 worked) → v5.4.0
+(ES CPI shipped, #139) → v5.4.1 (YM CPI acquired via the RQ-7 execution gate, #147) → v5.4.2
+(ES ≤20 / YM ≤5 scaled tiers, #141/#150). Every claim ledger-bound (40/40 both machines);
+evidence under `evidence/` incl. `scaling_esym/`. The original stage report follows.
+
 # STAGE STATUS REPORT — WS-DEPLOY (the full picture at 2026-08-17)
 **Branch `feat/ws-deploy-news-executor` · worktree `/mnt/data/projects/trading/deploy-news` ·
 server `~/Mulham/deploy-news` · draft PR #130 · issues #127 (contract) #128 (D1) #129 (D2) #131 (D3) #132 (D4)**
