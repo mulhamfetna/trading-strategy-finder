@@ -52,13 +52,12 @@ per-workstream full records. The one-line-each version:
 
 ## 3 · ACTIVE + QUEUED (the live board)
 
-- **WS-FUSION (#152, ACTIVE-PAUSED)** — brainstorm + FU ledger delivered
-  (`WS-FUSION-BRAINSTORM.md`); execution plan (FU-1→FU-9→FU-2/3→FU-7→FU-5/6)
-  **✅ approved by the owner, ⏸️ paused on his word**. Use-cases FU-1..FU-9 = #153–#161.
+- **WS-FUSION (#152, EXECUTING)** — plan approved and UNPAUSED (2026-08-19): FU-1 ACTIVE
+  (#153), FU-9 next (#161); order FU-1→FU-9→FU-2/3→FU-7→FU-5/6. Use-cases #153–#161.
 - **FU-11 (#162, the owner's flagged candidate)** — Direction × Size fusion: the early-era
   "direction predictable, size not" claim × the confirmed M2 power model ("size predictable,
   direction not"). Three gated stages (archaeology → re-audit under modern discipline →
-  fusion design). **Investigation starts on the owner's word.**
+  fusion design). **Stage 1 (archaeology) ACTIVE; stages 2/3 gated on its outcome.**
 - **Research queue** (`RESEARCH-QUEUE.md`): RQ-4 YM direction row (#144), RQ-5 metals cost
   frontier (#145) — queued. Standing rule: an observation without an RQ/FU number does not exist.
 - **Then**: WS-EARN return (earnings alone → ×indicators → ×news×indicators, reusing the
