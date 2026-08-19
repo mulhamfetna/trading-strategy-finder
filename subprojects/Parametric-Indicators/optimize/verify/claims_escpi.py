@@ -313,3 +313,63 @@ register(Claim(
     checks=[Check("V1", "executor full-era reproduces +$107.64 on n=116", _ymx_v1),
             Check("V2", "floor-2024 replay matches the descriptive slice", _ymx_v2),
             Check("V3", "YM does not bless everything (NFP/FOMC are nulls)", _ymx_v3)]))
+
+
+# =============================================================================================
+# RQ-7 (#147) — the YM CPI execution study: ACQUIRE (pre-reg 6d12509)
+# =============================================================================================
+def _acq_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION: the four ACQ metrics recomputed from the per-event file must match
+    the manifest and each pre-registered line."""
+    e = _ev("wsym_exec_events.csv")
+    r = json.load(open(FUND / "wsym_exec_result.json"))
+    ok = (abs(e.entry_bar_age_s.median() - r["acq1"]["median_s"]) < 0.01
+          and e.entry_bar_age_s.quantile(0.95) <= 60
+          and abs((e.pnl_nextopen.mean() - COST_YM) - r["acq2"]["net_nextopen"]) < 0.01
+          and e.window_vol.median() >= 20 and e.post_seconds.median() >= 300
+          and r["verdict"] == "ACQUIRE")
+    return ok, (f"age med {e.entry_bar_age_s.median():.1f}s · next-open net "
+                f"${e.pnl_nextopen.mean()-COST_YM:+.2f} · window vol {e.window_vol.median():.0f} "
+                f"· verdict {r['verdict']}")
+
+
+def _acq_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT FILL MODEL: the next-open fill is a different execution assumption from
+    the replay's close-of-bar fill; the edge must survive it within $5/event of the base
+    (measured: $0.58). Two fill models, one economics."""
+    e = _ev("wsym_exec_events.csv")
+    base, nxt = e.pnl_base.mean(), e.pnl_nextopen.mean()
+    return bool(abs(base - nxt) < 5.0 and nxt - COST_YM > 50), \
+        f"base ${base-COST_YM:+.2f} vs next-open ${nxt-COST_YM:+.2f} (Δ ${abs(base-nxt):.2f})"
+
+
+def _acq_v3() -> tuple[bool, str]:
+    """V3 — FALSIFIER: 'YM's tape is too thin to execute' (the reason the candidate was held).
+    FALSE on every measured axis: p95 entry staleness 7.2 s, median 364 contracts in the entry
+    window, 4 adverse ticks still leaves +$87.64/event."""
+    e = _ev("wsym_exec_events.csv")
+    ok = bool(e.entry_bar_age_s.quantile(0.95) < 10 and e.window_vol.median() > 300
+              and (e.pnl_base.mean() - COST_YM - 4 * 5.0) > 80)
+    return ok, (f"p95 staleness {e.entry_bar_age_s.quantile(0.95):.1f}s · window vol "
+                f"{e.window_vol.median():.0f} · 4-tick stress ${e.pnl_base.mean()-COST_YM-20:+.2f}")
+
+
+register(Claim(
+    id="YMCPI-EXECUTION-ACQUIRE",
+    issue="#147",
+    statement="The YM CPI execution study (pre-reg 6d12509) passes ALL FOUR pre-registered "
+              "layers: fill staleness median 0.0 s / p95 7.2 s (lines 30/60); the harsher "
+              "next-open fill moves the edge by $0.58 (net +$107.64 → +$107.06, line >$50); "
+              "median entry-window depth 364 contracts (line ≥20; qty=1 ≈ 0.3%); exit tape "
+              "638/900 traded seconds, 4,081 contracts. VERDICT: ACQUIRE — the thin-tape "
+              "objection is measured away at qty=1; YM CPI deploys through the ship pipeline.",
+    source="optimize/fundamentals/wsym_exec_result.json",
+    value_fn=lambda: round(float(json.load(open(FUND / "wsym_exec_result.json"))
+                                 ["acq2"]["net_nextopen"]), 2),
+    expect=107.06, tol=0.01,
+    blind_spot="1-second OHLCV cannot see the quote book — the next-open fill is the best "
+               "tape-only spread proxy; and qty=1 only (median entry BAR volume is 2 contracts "
+               "— any qty>1 needs its own D3/D4 study, the standing RQ pattern).",
+    checks=[Check("V1", "the four ACQ metrics re-derive from per-event data", _acq_v1),
+            Check("V2", "an independent fill model reproduces the economics (Δ $0.58)", _acq_v2),
+            Check("V3", "'too thin to execute' is FALSE on every measured axis", _acq_v3)]))

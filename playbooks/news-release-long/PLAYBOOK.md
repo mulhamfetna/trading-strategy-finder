@@ -130,9 +130,19 @@ Usage (v1.2.0): `python3 portable_backtester.py --bars-1s <ES_1s.csv> --instrume
 `python3 -m src.deploy.release_executor replay|paper --instrument ES --series "Inflation Rate MoM"`.
 Regime monitor guards ES like the rest (CPI net-stressed feed).
 
-## 9 · YM CPI — verified candidate (NOT deployed)
+## 9 · YM CPI — ACQUIRED AND DEPLOYED (RQ-7 execution rule, #147, 2026-08-19)
 
 The full-grid sweep's only positive (+$107.64 net/event, p=0.0016, jump 9.8×, n=116) — walked
 through the same core + dashboard verification as ES (#139/#147). Held back from deployment by
 its thin premarket tape (median 101 traded pre-release seconds ⇒ execution study RQ-7 required)
 and by the owner's word. Evidence grade: grid-exploratory, same consumed-history caveat as ES.
+
+Update 2026-08-19: the pre-registered execution study (`WS-YMCPI-EXECUTION-PREREGISTRATION.md`)
+passed **all four ACQ layers** — fill staleness median 0.0 s / p95 7.2 s; the harsher
+next-open fill moves the edge by **$0.58/event** (net +$107.64 → +$107.06); median entry-window
+depth **364 contracts** (qty=1 ≈ 0.3%); exit tape 638/900 traded seconds, 4,081 contracts.
+Verdict per the rule fixed in advance: **ACQUIRE**. YM deploys CPI-only at qty=1
+(`--instrument YM --series "Inflation Rate MoM"`); the median entry BAR holds 2 contracts, so
+any qty>1 requires its own D3/D4 study first. 2024→2026: n=29, net +$355.72/event
+(+$10,315.88/contract) — the layer's window total becomes **$67,767.02 (+61% vs the pre-ES
+layer)** at one contract per leg.
