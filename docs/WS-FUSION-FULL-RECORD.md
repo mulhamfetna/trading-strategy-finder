@@ -98,3 +98,43 @@ meta-prophet HAR-RV forecast IS already the live entry gate** on every champion.
 not "integrate HAR-RV" but **upgrade the vol engine that already drives the gate with the
 calendar information it is blind to**. Full inventory and the corrected FU-11 context: see
 the analysis document.
+
+## F-4 · FU-13 (#165) — the Exp2 ramp through the deployment battery: NOT-DEPLOYED ✅(verdict)
+
+Pre-registration `FU13-FU14-PREREGISTRATION.md` fixed R/X/M PASS lines and the deploy rule
+before any run. Results (`subprojects/regime-edge/fu13_result.json`, ledger claim
+`FU13-SIZING-RAMP-NOT-DEPLOYED`):
+
+- **R (reproduce)** — EXACT: the original NQ book (found preserved at
+  `~/Mulham/tfm-repro/nq_2426_mtf_log.csv`) gives flat $151,872 / ramp $162,228 (+$10,356
+  equal-risk) — the deploy card to the dollar; overlay OFF is byte-identical.
+- **X (independent book)** — FAIL: the ES 1h+4h combined book was generated fresh with the
+  CURRENT machinery (`shareable/mtf_layer_fusion_backtester/backtest_mtf.py`, ES champions:
+  $57,315 / 263 trades / DD $6,060), the ES causal regime built by the same HMM methodology
+  (16-year ES_1h, TRAIN_END 2024-01-01). The SAME a-priori ramp: **−$18,632** at equal risk
+  (Ret/DD 9.46 → 6.38). Deeper: on ES even RANDOM regime→size maps hurt (median −$12,282;
+  the ramp ranks P27 among 1,000) — the ES book does not reward vol-mapped size dispersion
+  at all, echoing the TimesFM-era "ES is vol-agnostic" asymmetry from the GATING side.
+- **M (pooled)** — FAIL: pooled uplift −$8,276, 90% CI [−$25,557, +$9,069] includes zero.
+- **Verdict per the rule: NOT-DEPLOYED.** The Exp2 magnitude does not generalize beyond its
+  n=1 NQ book; the SECOND TEST's caution was vindicated by the first independent book. The
+  overlay stays EXPERIMENTAL-OFF. Re-open only via new data (the never-built 2010-23
+  bear-inclusive book) and a fresh pre-registration.
+- Incidents: the frozen tfm-repro snapshot crashed on ES (stale code) — the current-tree
+  runner used instead; bundle ES_1h starts 2025 (empty HMM training slice) — the 16-year
+  archive file used; numpy-bool JSON cast.
+
+## F-5 · FU-14 (#166) — the power model productionized: DEPLOYED ✅
+
+`src/deploy/power_forecast.py` — M2's own functions imported, nothing re-implemented.
+- **P (parity)**: all five instruments PASS — max |Δpred| ≤ 1e-16, zero unmatched rows.
+- **S (statistic)**: Spearmans reproduced exactly — NQ .5907 · ES .5719 · RTY .6184 ·
+  GC .4932 · CL .5461.
+- **F (falsifier)**: scrambled series labels collapse the correlation +0.591 → +0.212
+  (the committed shuffle floor).
+- **A (artifact)**: forward mode emits the night-before per-event predicted power
+  (expanding + trailing-24, % and $/contract); the historical `--now 2026-02-01` run
+  produced regime-sane forecasts (CPI t24 0.39% ≈ $2,004/contract on NQ).
+- **D**: golden gate 6/6 re-run green; the module is an INFORMATION layer — no trading
+  consumer; consumers remain separate gated studies (the FU-11 draft is first in line).
+- Ledger claim `FU14-POWER-FORECAST-DEPLOYED`; suite **43/43**.
