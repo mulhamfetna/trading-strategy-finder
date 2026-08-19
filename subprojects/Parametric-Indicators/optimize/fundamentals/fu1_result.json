@@ -1,0 +1,149 @@
+{
+  "prereg": "docs/FU1-PREREGISTRATION.md",
+  "n_tier1_minutes": 1222,
+  "window": [
+    5,
+    15
+  ],
+  "floor": "2016-01-01",
+  "per_tf": [
+    {
+      "tf": "4h",
+      "n_trades": 445,
+      "pv": 20.0,
+      "time_share_pct": 1.013,
+      "entry_in_win": 38,
+      "entry_in_win_pct": 8.539,
+      "entry_density_ratio": 8.43,
+      "pnl_in_mean": 117.28,
+      "pnl_out_mean": 168.93,
+      "pnl_diff": -51.65,
+      "pnl_diff_ci": [
+        -960.6,
+        823.51
+      ],
+      "stop_exits": 196,
+      "stop_in_win_pct": 3.571,
+      "stop_density_ratio": 3.52,
+      "spanning_trades": 76,
+      "giveup_mean": 327.9,
+      "giveup_sd": 2532.82,
+      "giveup_p": 0.2568
+    },
+    {
+      "tf": "2h",
+      "n_trades": 507,
+      "pv": 20.0,
+      "time_share_pct": 1.013,
+      "entry_in_win": 22,
+      "entry_in_win_pct": 4.339,
+      "entry_density_ratio": 4.28,
+      "pnl_in_mean": -43.25,
+      "pnl_out_mean": 124.44,
+      "pnl_diff": -167.69,
+      "pnl_diff_ci": [
+        -946.71,
+        635.86
+      ],
+      "stop_exits": 256,
+      "stop_in_win_pct": 5.859,
+      "stop_density_ratio": 5.78,
+      "spanning_trades": 62,
+      "giveup_mean": 271.73,
+      "giveup_sd": 1780.74,
+      "giveup_p": 0.2116
+    },
+    {
+      "tf": "1h",
+      "n_trades": 913,
+      "pv": 20.0,
+      "time_share_pct": 1.013,
+      "entry_in_win": 39,
+      "entry_in_win_pct": 4.272,
+      "entry_density_ratio": 4.22,
+      "pnl_in_mean": -119.93,
+      "pnl_out_mean": 27.83,
+      "pnl_diff": -147.76,
+      "pnl_diff_ci": [
+        -737.54,
+        448.76
+      ],
+      "stop_exits": 496,
+      "stop_in_win_pct": 3.629,
+      "stop_density_ratio": 3.58,
+      "spanning_trades": 58,
+      "giveup_mean": 182.95,
+      "giveup_sd": 1845.41,
+      "giveup_p": 0.4504
+    },
+    {
+      "tf": "15m",
+      "n_trades": 1993,
+      "pv": 20.0,
+      "time_share_pct": 1.013,
+      "entry_in_win": 44,
+      "entry_in_win_pct": 2.208,
+      "entry_density_ratio": 2.18,
+      "pnl_in_mean": -33.14,
+      "pnl_out_mean": 13.7,
+      "pnl_diff": -46.84,
+      "pnl_diff_ci": [
+        -286.58,
+        192.17
+      ],
+      "stop_exits": 1149,
+      "stop_in_win_pct": 2.263,
+      "stop_density_ratio": 2.23,
+      "spanning_trades": 26,
+      "giveup_mean": -88.04,
+      "giveup_sd": 782.9,
+      "giveup_p": 0.547
+    },
+    {
+      "tf": "5m",
+      "n_trades": 1416,
+      "pv": 20.0,
+      "time_share_pct": 1.013,
+      "entry_in_win": 10,
+      "entry_in_win_pct": 0.706,
+      "entry_density_ratio": 0.7,
+      "pnl_in_mean": -56.5,
+      "pnl_out_mean": -7.96,
+      "pnl_diff": -48.54,
+      "pnl_diff_ci": [
+        -409.21,
+        301.48
+      ],
+      "stop_exits": 668,
+      "stop_in_win_pct": 2.096,
+      "stop_density_ratio": 2.07,
+      "spanning_trades": 16,
+      "giveup_mean": -132.0,
+      "giveup_sd": 580.67,
+      "giveup_p": 0.3476
+    },
+    {
+      "tf": "2m",
+      "n_trades": 4187,
+      "pv": 20.0,
+      "time_share_pct": 1.013,
+      "entry_in_win": 72,
+      "entry_in_win_pct": 1.72,
+      "entry_density_ratio": 1.7,
+      "pnl_in_mean": 1.47,
+      "pnl_out_mean": -0.4,
+      "pnl_diff": 1.87,
+      "pnl_diff_ci": [
+        -101.46,
+        102.5
+      ],
+      "stop_exits": 1987,
+      "stop_in_win_pct": 2.214,
+      "stop_density_ratio": 2.19,
+      "spanning_trades": 9,
+      "giveup_mean": -163.44,
+      "giveup_sd": 430.69,
+      "giveup_p": 0.2466
+    }
+  ]
+}

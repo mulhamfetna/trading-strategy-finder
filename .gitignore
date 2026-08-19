@@ -252,3 +252,10 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !playbooks/news-release-long-bundle-v1.4.0.zip
 !playbooks/news-release-long/evidence/scaling_esym/*
 !playbooks/news-release-long-bundle-v1.4.1.zip
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu1_*.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu1_result.json
+!subprojects/regime-edge/data/*.csv
+!subprojects/regime-edge/fu13_result.json
+!playbooks/power-forecast/*
+!playbooks/power-forecast-bundle-v1.0.0.zip
+!docs/power_forecast_NQ.jsonl

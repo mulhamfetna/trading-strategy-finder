@@ -1,0 +1,27 @@
+{
+  "prereg": "docs/FU13-FU14-PREREGISTRATION.md",
+  "R": {
+    "nq_flat_total": 151872.0,
+    "nq_ramp_total": 162228.41,
+    "pass": true
+  },
+  "X": {
+    "es_uplift": -18632.31,
+    "pass": false
+  },
+  "M": {
+    "nq_uplift": 10356.41,
+    "pooled_uplift": -8275.9,
+    "ci90": [
+      -25556.67,
+      9068.92
+    ],
+    "pass": false
+  },
+  "es_random_maps": {
+    "real_delta": -18632.31,
+    "percentile_of_1000": 27.500000000000004,
+    "random_median": -12281.75
+  },
+  "verdict": "NOT-DEPLOYED"
+}
