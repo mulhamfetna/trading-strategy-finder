@@ -113,3 +113,13 @@ flowchart TD
 5. **Pre-register or perish** — every gate that embarrassed us (the two-sided control, the 150s line) was survivable *because* it was written down first.
 6. **Positive controls are not optional** — one caught a live bug that would have silently hardened a zero.
 7. **A verdict for every cell** — VOID-with-cause and powered-null are recorded states; silence is the only forbidden outcome.
+
+## Era 8 — RQ-1 + RQ-9 (#141/#150): the scaling of the new legs → v5.4.2
+
+| # | experiment | result → finding |
+|---|---|---|
+| 8.1 | Pre-registration of the scaled-deploy rule (before any run) | Participation median ≤2.5%/p95 ≤5% (worked mode) + retention ≥80% + the D3/D4 hard gates; "deploy each leg at the highest passing tier"; YM's borderline (≈5.5% naive estimate at q20) called out in advance — *the rule decides, not preference*. |
+| 8.2 | D3 participation battery (ES, YM; CPI-only via the new `--series` filter) | Hard gates green both legs (V1 linearity to the cent; volume physics 48.8×/51.0×). The entry-second wall replicates: single-shot dies above qty=1 on both (ES q5 = 33% of the entry second; YM q1 already 50%). |
+| 8.3 | D4 worked-entry validation (ES, YM) | Gates green (dual-path VWAP 0 mismatches; shifted-window falsifiers flip by $943/$616). Retention: ES **85.9%** (+$454.96 of +$529.44), YM **84.3%** (+$299.87 of +$355.72) — both clear the 80% line. |
+| 8.4 | Window-participation measurement | ES window median **3,389 contracts** ⇒ q20 = **0.59%/0.98%** — approved at **20**. YM window median 375 ⇒ q5 = 1.33%/3.05% ✓ but q10 = **2.67%/6.11% breaches both lines** ⇒ **capped at 5**. The rule rejected a tier — it is not a rubber stamp. |
+| 8.5 | Scaled deployment (v5.4.2) | Per-leg quantity rules shipped in playbook v1.4.0. Worked-entry window economics 2024→2026: ES q20 +$263,880 · YM q5 +$43,481 · NQ+RTY q20 +$859,141 ⇒ **layer at max approved tiers ≈ $1.167M/window (≈$450k/yr pace)** — a model-grade figure (VWAP fills at ≤2.5% participation), margin owner-side. Reconciliation recorded: YM single-shot qty=1 stays governed by RQ-7's direct fill measurement (Δ$0.58), which supersedes the participation heuristic at that size. |

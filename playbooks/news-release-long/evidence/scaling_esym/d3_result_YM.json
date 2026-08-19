@@ -1,0 +1,84 @@
+{
+ "instrument": "YM",
+ "floor_year": 2024,
+ "n_events": 29,
+ "qtys": [
+  1,
+  5,
+  10,
+  20
+ ],
+ "v1_mismatches": 0,
+ "v1_pass": true,
+ "v3_exit_over_entry_volume": 51.0,
+ "v3_pass": true,
+ "participation": [
+  {
+   "qty": 1,
+   "entry_particip_p50": 0.5,
+   "entry_particip_p95": 1.0,
+   "exit_particip_p50": 0.00980392156862745,
+   "exit_particip_p95": 0.08896103896103894,
+   "entry_over25pct_share": 0.6206896551724138,
+   "exit_over25pct_share": 0.0
+  },
+  {
+   "qty": 5,
+   "entry_particip_p50": 2.5,
+   "entry_particip_p95": 5.0,
+   "exit_particip_p50": 0.049019607843137254,
+   "exit_particip_p95": 0.44480519480519465,
+   "entry_over25pct_share": 0.9655172413793104,
+   "exit_over25pct_share": 0.13043478260869565
+  },
+  {
+   "qty": 10,
+   "entry_particip_p50": 5.0,
+   "entry_particip_p95": 10.0,
+   "exit_particip_p50": 0.09803921568627451,
+   "exit_particip_p95": 0.8896103896103893,
+   "entry_over25pct_share": 1.0,
+   "exit_over25pct_share": 0.21739130434782608
+  },
+  {
+   "qty": 20,
+   "entry_particip_p50": 10.0,
+   "entry_particip_p95": 20.0,
+   "exit_particip_p50": 0.19607843137254902,
+   "exit_particip_p95": 1.7792207792207786,
+   "entry_over25pct_share": 1.0,
+   "exit_over25pct_share": 0.391304347826087
+  }
+ ],
+ "economics": [
+  {
+   "qty": 1,
+   "net_mean": 355.72000000000116,
+   "net_total": 10315.880000000034,
+   "worst_event": -260.8050000000003,
+   "minus_2R_budget": -429.63
+  },
+  {
+   "qty": 5,
+   "net_mean": 1778.6000000000058,
+   "net_total": 51579.40000000017,
+   "worst_event": -1304.0250000000015,
+   "minus_2R_budget": -2148.15
+  },
+  {
+   "qty": 10,
+   "net_mean": 3557.2000000000116,
+   "net_total": 103158.80000000034,
+   "worst_event": -2608.050000000003,
+   "minus_2R_budget": -4296.3
+  },
+  {
+   "qty": 20,
+   "net_mean": 7114.400000000023,
+   "net_total": 206317.60000000068,
+   "worst_event": -5216.100000000006,
+   "minus_2R_budget": -8592.6
+  }
+ ],
+ "blind_spot": "book depth and queue position are invisible to bar data; participation ratios are the measurable proxy, not a fill guarantee"
+}

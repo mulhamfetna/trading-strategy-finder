@@ -135,7 +135,7 @@ says when, the executor does the rest.</p>
 <tr><td class="l"><code>src/deploy/release_executor.py</code></td><td class="l">replay (proof) + paper (intents JSONL). Per-leg: <code>--instrument ES --series "Inflation Rate MoM"</code>; NQ/RTY need no filter. Nothing touches a broker — <b>paper-only until a live gateway</b>.</td></tr>
 <tr><td class="l"><code>src/deploy/schedule.py</code> + <code>release_schedule.csv</code></td><td class="l">the event list (verbatim study selection incl. its tie-break); forward rows marked <code>scheduled</code>.</td></tr>
 <tr><td class="l"><code>src/deploy/regime_monitor.py</code></td><td class="l">rolling 24-CPI net-stressed mean &lt; 0 ⇒ STAND_DOWN, <b>sticky</b> (only an explicit owner <code>--clear</code> un-halts). Guards all four legs — they are one CPI bet.</td></tr>
-<tr><td class="l">quantity rules</td><td class="l">NQ/RTY: qty 1–2 as verified; up to 20 via the validated worked entry (D4). ES: qty=1 (RQ-1 scaling study queued). <b>YM: qty=1 HARD</b> (entry bar median 2 contracts) until its own study.</td></tr>
+<tr><td class="l">quantity rules (v5.4.2, pre-registered rule)</td><td class="l">Worked-entry mode: <b>NQ ≤20 · RTY ≤20 · ES ≤20</b> (participation 0.59%/0.98% at 20, retention 85.9%) · <b>YM ≤5</b> (q10 breaches the lines at 2.67%/6.11%; retention 84.3%). Single-shot: NQ/RTY ≤2, ES/YM ≤1 (YM per the RQ-7 direct fill test). Layer at max approved tiers 2024→26 ≈ <b class="num">$1.167M</b> (≈$450k/yr, worked-entry model figures; margin owner-side).</td></tr>
 </table>
 
 <h3>Profit tables · جداول الأرباح (net stressed, qty=1 per leg)</h3>

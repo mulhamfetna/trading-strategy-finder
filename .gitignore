@@ -249,3 +249,5 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !playbooks/news-release-long-bundle-v1.3.1.zip
 !docs/NEWS-FINAL-STATE-REPORT-BILINGUAL.html
 !playbooks/news-release-long/reports/*
+!playbooks/news-release-long-bundle-v1.4.0.zip
+!playbooks/news-release-long/evidence/scaling_esym/*
