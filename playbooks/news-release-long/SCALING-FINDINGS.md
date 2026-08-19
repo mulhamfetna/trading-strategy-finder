@@ -70,3 +70,22 @@ falsifier passed (the release explosion is present: 33×/18.6×). D4 — V1 dual
 mismatches + the generalized bracket collapses byte-identically to the parity-proven code · V3
 shifted-window falsifier flips NQ +$429 → −$534 (anchoring real). Stressed costs deployed
 end-to-end, including the regime monitor (net-stressed input, stand-down proven by test).
+
+
+---
+
+# UPDATE 2026-08-19 — ES & YM scaling (RQ-1 #141 / RQ-9 #150, shipped v5.4.2)
+
+The same D3/D4 battery, CPI-only, floor 2024, judged by a rule pre-registered before the runs
+(participation median ≤2.5% / p95 ≤5% in worked-entry mode; retention ≥80%; all hard gates):
+
+| leg | approved tier (worked) | participation at tier | retention | window net at tier (2024→26) |
+|---|---|---|---|---|
+| ES | **qty ≤ 20** | 0.59% / 0.98% (window median 3,389 contracts) | 85.9% | +$263,880 |
+| YM | **qty ≤ 5** — q10 REJECTED (2.67%/6.11%) | 1.33% / 3.05% (window median 375) | 84.3% | +$43,481 |
+
+Hard gates: V1 linearity to the cent (both) · V3 volume physics 48.8×/51.0× · D4 dual-path
+VWAP 0 mismatches · shifted-window falsifiers flip $943/$616. Single-shot entries stay qty=1
+on both legs (entry-second wall; YM qty=1 governed by RQ-7's direct fill test, Δ$0.58).
+Layer at max approved tiers ≈ **$1.167M window / ~$450k/yr pace** (worked-entry model figures).
+Evidence: `evidence/scaling_esym/` · ledger claim `ESYM-SCALING-TIERS`.

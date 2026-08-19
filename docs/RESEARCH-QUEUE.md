@@ -21,7 +21,7 @@ with the verdict. This file is the index — the design detail lives in each ite
 | RQ-6 | **Coverage-matrix regeneration** — merge the 661 grid verdicts into `NEWS-COVERAGE-MATRIX.md` so the premium column shows per-instrument status instead of the superseded "NEVER" | WS-GRID documentation debt | #146 | QUEUED |
 | RQ-7 | **YM CPI promotion path** — the grid's only positive (+$107.64 net, p=0.0016, jump 9.8×; thin tape median 101 pre-release seconds ⇒ execution study required, not just statistics) | WS-GRID + the ESCPI descriptive; same data as #139's evidence — rides on the same owner decision | #147 | **CLOSED-ACQUIRED** — the pre-registered execution study passed all four ACQ layers (staleness p95 7.2s; next-open Δ$0.58; depth 364; exit 638s/4081); YM CPI deployed in v5.4.1; qty>1 still gated on its own D3/D4 study |
 | RQ-9 | **YM CPI scaling** — D3/D4 battery for the fourth leg | v5.4.1's qty>1 prohibition | #150 | **CLOSED-DEPLOYED-CAPPED** — q5 passes (1.33%/3.05%), q10 breaches (2.67%/6.11%) ⇒ YM qty≤5 worked; shipped v5.4.2 |
-| RQ-8 | **WS-FUSION** — indicators × news (opens with deep brainstorming + a follow-up system); then the **WS-EARN return** (earnings alone → ×indicators → ×news×indicators) | owner roadmap 2026-08-18 | opens at owner green-light | PIPELINE (next after the current series) |
+| RQ-8 | **WS-FUSION** — indicators × news (opens with deep brainstorming + a follow-up system); then the **WS-EARN return** (earnings alone → ×indicators → ×news×indicators) | owner roadmap 2026-08-18 | **#152** | **ACTIVE** — opened 2026-08-19 with the deep brainstorm + the use-case follow-up ledger (owner instruction: "proceed to newsxindicators") |
 
 ## Standing intake rule (for every future workstream)
 

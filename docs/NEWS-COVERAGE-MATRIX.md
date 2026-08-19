@@ -30,20 +30,20 @@ Premium $ figures are the M1 grid indicator (LONG, lead 5 min, stop 0.10%, no TP
 | Baker Hughes Oil Rig Count | 509 | -1 | 17:00 | 70% (Baker Hughes Total Rig C) | NEVER | NEVER | NEVER |  |  |
 | API Crude Oil Stock Change | 457 | 0 | 20:30 | 2% (Fed Brainard Speech) | TESTED | TESTED | PARTIAL (CL only, provenance unverified) | CL +11$ (n=286) |  |
 | 8-Week Bill Auction | 380 | -1 | 15:30 | 100% (4-Week Bill Auction) | NEVER | NEVER | NEVER |  |  |
-| EIA Crude Oil Imports Change | 345 | -1 | 14:30 | 100% (EIA Gasoline Production ) | NEVER | NEVER | NEVER |  |  |
+| EIA Crude Oil Imports Change | 345 | -1 | 14:30 | 100% (EIA Refinery Crude Runs ) | NEVER | NEVER | NEVER |  |  |
 | EIA Refinery Crude Runs Change | 345 | -1 | 14:30 | 100% (EIA Gasoline Production ) | NEVER | NEVER | NEVER |  |  |
 | EIA Cushing Crude Oil Stocks Change | 345 | 0 | 14:30 | 100% (EIA Crude Oil Stocks Cha) | NEVER | NEVER | NEVER |  |  |
-| EIA Distillate Stocks Change | 345 | 0 | 14:30 | 100% (EIA Gasoline Production ) | TESTED | NEVER | NEVER |  |  |
-| EIA Distillate Fuel Production Change | 345 | -1 | 14:30 | 100% (EIA Gasoline Production ) | NEVER | NEVER | NEVER |  |  |
-| EIA Gasoline Production Change | 345 | -1 | 14:30 | 100% (EIA Distillate Stocks Ch) | NEVER | NEVER | NEVER |  |  |
-| EIA Heating Oil Stocks Change | 295 | -1 | 14:30 | 100% (EIA Gasoline Production ) | NEVER | NEVER | NEVER |  |  |
+| EIA Distillate Stocks Change | 345 | 0 | 14:30 | 100% (EIA Refinery Crude Runs ) | TESTED | NEVER | NEVER |  |  |
+| EIA Distillate Fuel Production Change | 345 | -1 | 14:30 | 100% (EIA Refinery Crude Runs ) | NEVER | NEVER | NEVER |  |  |
+| EIA Gasoline Production Change | 345 | -1 | 14:30 | 100% (EIA Refinery Crude Runs ) | NEVER | NEVER | NEVER |  |  |
+| EIA Heating Oil Stocks Change | 295 | -1 | 14:30 | 100% (EIA Refinery Crude Runs ) | NEVER | NEVER | NEVER |  |  |
 | Jobless Claims 4-week Average | 295 | 0 | 12:30 | 100% (Initial Jobless Claims) | NEVER | NEVER | NEVER |  |  |
-| Fed Williams Speech | 278 | 0 | 14:00 | 15% (Fed Kaplan Speech) | NEVER | NEVER | NEVER |  |  |
+| Fed Williams Speech | 278 | 0 | 14:00 | 15% (Fed Lockhart Speech) | NEVER | NEVER | NEVER |  |  |
 | Redbook MoM | 271 | -1 | 12:55 | 100% (Redbook YoY) | NEVER | NEVER | NEVER |  |  |
 | Fed Bostic Speech | 256 | 0 | 17:00 | 20% (Fed Kaplan Speech) | NEVER | NEVER | NEVER |  |  |
-| MBA Mortgage Market Index | 249 | -1 | 11:00 | 100% (MBA 30-Year Mortgage Rat) | NEVER | NEVER | NEVER |  |  |
-| MBA Mortgage Refinance Index | 249 | -1 | 11:00 | 100% (MBA 30-Year Mortgage Rat) | NEVER | NEVER | NEVER |  |  |
-| MBA Purchase Index | 249 | -1 | 11:00 | 100% (MBA 30-Year Mortgage Rat) | NEVER | NEVER | NEVER |  |  |
+| MBA Mortgage Market Index | 249 | -1 | 11:00 | 100% (MBA Purchase Index) | NEVER | NEVER | NEVER |  |  |
+| MBA Mortgage Refinance Index | 249 | -1 | 11:00 | 100% (MBA Purchase Index) | NEVER | NEVER | NEVER |  |  |
+| MBA Purchase Index | 249 | -1 | 11:00 | 100% (MBA Mortgage Market Inde) | NEVER | NEVER | NEVER |  |  |
 | Baker Hughes Total Rig Count | 209 | -1 | 17:00 | 100% (Baker Hughes Oil Rig Cou) | NEVER | NEVER | NEVER |  |  |
 | 17-Week Bill Auction | 198 | -1 | 15:30 | 21% (2-Year FRN Auction) | NEVER | NEVER | NEVER |  |  |
 | 15-Year Mortgage Rate | 170 | -1 | 16:00 | 100% (30-Year Mortgage Rate) | NEVER | NEVER | NEVER |  |  |
@@ -52,18 +52,18 @@ Premium $ figures are the M1 grid indicator (LONG, lead 5 min, stop 0.10%, no TP
 | Fed Evans Speech | 144 | 0 | 18:00 | 22% (Fed Bostic Speech) | NEVER | NEVER | NEVER |  |  |
 | Baker Hughes Total Rigs Count | 139 | -1 | 17:00 | 99% (Baker Hughes Oil Rig Cou) | NEVER | NEVER | NEVER |  |  |
 | 52-Week Bill Auction | 139 | -1 | 15:30 | 54% (4-Week Bill Auction) | NEVER | NEVER | NEVER |  |  |
-| Fed Mester Speech | 135 | 0 | 17:00 | 22% (Initial Jobless Claims) | NEVER | NEVER | NEVER |  |  |
-| Chicago Fed National Activity Index | 128 | 0 | 12:30 | 32% (Initial Jobless Claims) | NEVER | NEVER | NEVER |  |  |
+| Fed Mester Speech | 135 | 0 | 17:00 | 22% (Continuing Jobless Claim) | NEVER | NEVER | NEVER |  |  |
+| Chicago Fed National Activity Index | 128 | 0 | 12:30 | 32% (Continuing Jobless Claim) | NEVER | NEVER | NEVER |  |  |
 | Chicago PMI | 128 | 0 | 13:45 | 0% | TESTED | NEVER | NEVER |  |  |
 | Capacity Utilization | 128 | -1 | 13:15 | 100% (Industrial Production Mo) | TESTED | NEVER | NEVER |  |  |
-| Construction Spending MoM | 128 | 0 | 14:00 | 91% (ISM Manufacturing PMI) | TESTED | NEVER | NEVER |  |  |
+| Construction Spending MoM | 128 | 0 | 14:00 | 91% (ISM Manufacturing New Or) | TESTED | NEVER | NEVER |  |  |
 | 2-Year Note Auction | 128 | -1 | 17:00 | 44% (6-Month Bill Auction) | NEVER | NEVER | NEVER |  |  |
 | 10-Year Note Auction | 128 | 0 | 17:00 | 17% (3-Month Bill Auction) | NEVER | NEVER | NEVER |  |  |
 | Consumer Credit Change | 128 | -1 | 19:00 | 4% (Fed George Speech) | TESTED | NEVER | NEVER |  |  |
 | CB Consumer Confidence | 128 | 0 | 14:00 | 76% (Richmond Fed Manufacturi) | TESTED | NEVER | NEVER |  |  |
-| Export Prices YoY | 128 | 0 | 12:30 | 100% (Export Prices MoM) | NEVER | NEVER | NEVER |  |  |
+| Export Prices YoY | 128 | 0 | 12:30 | 100% (Import Prices MoM) | NEVER | NEVER | NEVER |  |  |
 | Core PPI YoY | 128 | 0 | 12:30 | 100% (PPI MoM) | TESTED | NEVER | NEVER |  |  |
-| Export Prices MoM | 128 | 0 | 12:30 | 100% (Export Prices YoY) | TESTED | NEVER | NEVER |  |  |
+| Export Prices MoM | 128 | 0 | 12:30 | 100% (Import Prices MoM) | TESTED | NEVER | NEVER |  |  |
 | Existing Home Sales | 128 | 1 | 14:00 | 100% (Existing Home Sales MoM) | TESTED | NEVER | NEVER |  |  |
 | Existing Home Sales MoM | 128 | 0 | 14:00 | 100% (Existing Home Sales) | TESTED | NEVER | NEVER |  |  |
 | Dallas Fed Manufacturing Index | 128 | 0 | 14:30 | 9% (NY Fed Treasury Purchase) | NEVER | NEVER | NEVER |  |  |
@@ -77,103 +77,103 @@ Premium $ figures are the M1 grid indicator (LONG, lead 5 min, stop 0.10%, no TP
 | Core PCE Price Index MoM | 128 | 1 | 12:30 | 100% (PCE Price Index MoM) | TESTED | NEVER | NEVER |  |  |
 | Monthly Budget Statement | 128 | 0 | 18:00 | 13% (FOMC Minutes) | TESTED | NEVER | NEVER |  |  |
 | New Home Sales | 128 | 0 | 14:00 | 100% (New Home Sales MoM) | TESTED | NEVER | NEVER |  |  |
-| Philadelphia Fed Manufacturing Index | 128 | 0 | 12:30 | 100% (Initial Jobless Claims) | TESTED | NEVER | NEVER |  |  |
+| Philadelphia Fed Manufacturing Index | 128 | 0 | 12:30 | 100% (Continuing Jobless Claim) | TESTED | NEVER | NEVER |  |  |
 | Personal Spending MoM | 128 | 1 | 12:30 | 100% (PCE Price Index MoM) | TESTED | NEVER | NEVER |  |  |
 | PPI YoY | 128 | -1 | 12:30 | 100% (PPI MoM) | TESTED | NEVER | NEVER |  |  |
-| PPI MoM | 128 | 1 | 12:30 | 100% (Core PPI YoY) | TESTED | NEVER | NEVER |  |  |
+| PPI MoM | 128 | 1 | 12:30 | 100% (PPI YoY) | TESTED | NEVER | NEVER |  |  |
 | Retail Sales Ex Autos MoM | 128 | 0 | 12:30 | 100% (Retail Sales YoY) | TESTED | NEVER | NEVER |  |  |
-| Retail Sales MoM | 128 | 1 | 12:30 | 100% (Retail Sales Ex Autos Mo) | TESTED | TESTED | TESTED | CL +8$ (n=121); ES -63$ (n=120); GC -28$ (n=120); NQ -98$ (n=120); RTY -23$ (n=89) |  |
+| Retail Sales MoM | 128 | 1 | 12:30 | 100% (Retail Sales YoY) | TESTED | TESTED | TESTED | CL +8$ (n=121); ES -63$ (n=120); GC -28$ (n=120); NQ -98$ (n=120); RTY -23$ (n=89) |  |
 | Overall Net Capital Flows | 128 | 0 | 20:00 | 100% (Net Long-term TIC Flows) | NEVER | NEVER | NEVER |  |  |
 | Wholesale Inventories MoM | 128 | 0 | 14:00 | 32% (JOLTs Job Openings) | TESTED | NEVER | NEVER |  |  |
 | S&P/Case-Shiller Home Price YoY | 128 | 0 | 13:00 | 100% (S&P/Case-Shiller Home Pr) | TESTED | NEVER | NEVER |  |  |
 | S&P/Case-Shiller Home Price MoM | 128 | 0 | 13:00 | 100% (S&P/Case-Shiller Home Pr) | NEVER | NEVER | NEVER |  |  |
 | Richmond Fed Manufacturing Index | 128 | -1 | 14:00 | 91% (CB Consumer Confidence) | TESTED | NEVER | NEVER |  |  |
 | Retail Sales YoY | 128 | -1 | 12:30 | 100% (Retail Sales Ex Autos Mo) | NEVER | NEVER | NEVER |  |  |
-| Nonfarm Payrolls Private | 128 | -1 | 12:30 | 100% (Average Hourly Earnings ) | TESTED | NEVER | NEVER |  |  |
+| Nonfarm Payrolls Private | 128 | -1 | 12:30 | 100% (Non Farm Payrolls) | TESTED | NEVER | NEVER |  |  |
 | PCE Price Index YoY | 128 | 0 | 12:30 | 100% (PCE Price Index MoM) | TESTED | NEVER | NEVER |  |  |
 | NFIB Business Optimism Index | 128 | -1 | 10:00 | 0% | TESTED | NEVER | NEVER |  |  |
 | NAHB Housing Market Index | 128 | 0 | 14:00 | 48% (Business Inventories MoM) | TESTED | NEVER | NEVER |  |  |
-| ISM Manufacturing Employment | 128 | 0 | 14:00 | 100% (ISM Manufacturing PMI) | TESTED | NEVER | NEVER |  |  |
+| ISM Manufacturing Employment | 128 | 0 | 14:00 | 100% (ISM Manufacturing New Or) | TESTED | NEVER | NEVER |  |  |
 | ISM Manufacturing New Orders | 128 | 0 | 14:00 | 100% (ISM Manufacturing PMI) | NEVER | NEVER | NEVER |  |  |
-| Michigan Consumer Sentiment Final | 128 | 0 | 14:00 | 94% (Michigan 5 Year Inflatio) | TESTED | NEVER | NEVER |  |  |
-| Michigan Consumer Sentiment Prel | 128 | 1 | 14:00 | 95% (Michigan Inflation Expec) | TESTED | NEVER | NEVER |  |  |
+| Michigan Consumer Sentiment Final | 128 | 0 | 14:00 | 94% (Michigan Current Conditi) | TESTED | NEVER | NEVER |  |  |
+| Michigan Consumer Sentiment Prel | 128 | 1 | 14:00 | 95% (Michigan Current Conditi) | TESTED | NEVER | NEVER |  |  |
 | Net Long-term TIC Flows | 128 | 0 | 20:00 | 100% (Overall Net Capital Flow) | TESTED | NEVER | NEVER |  |  |
-| NY Empire State Manufacturing Index | 128 | 0 | 12:30 | 55% (Retail Sales Ex Autos Mo) | TESTED | NEVER | NEVER |  |  |
+| NY Empire State Manufacturing Index | 128 | 0 | 12:30 | 55% (Retail Sales YoY) | TESTED | NEVER | NEVER |  |  |
 | ISM Manufacturing PMI | 128 | 1 | 14:00 | 100% (ISM Manufacturing New Or) | TESTED | NEVER | NEVER |  |  |
-| Import Prices MoM | 128 | 0 | 12:30 | 100% (Export Prices YoY) | TESTED | NEVER | NEVER |  |  |
+| Import Prices MoM | 128 | 0 | 12:30 | 100% (Export Prices MoM) | TESTED | NEVER | NEVER |  |  |
 | Kansas Fed Manufacturing Index | 128 | -1 | 15:00 | 52% (Kansas Fed Composite Ind) | NEVER | NEVER | NEVER |  |  |
 | JOLTs Job Openings | 128 | 1 | 14:00 | 78% (JOLTs Job Quits) | TESTED | NEVER | NEVER |  |  |
-| Manufacturing Production YoY | 128 | -1 | 13:15 | 100% (Capacity Utilization) | NEVER | NEVER | NEVER |  |  |
-| Manufacturing Payrolls | 128 | -1 | 12:30 | 100% (Average Hourly Earnings ) | TESTED | NEVER | NEVER |  |  |
-| Industrial Production MoM | 128 | 0 | 13:15 | 100% (Capacity Utilization) | TESTED | NEVER | NEVER |  |  |
+| Manufacturing Production YoY | 128 | -1 | 13:15 | 100% (Industrial Production Mo) | NEVER | NEVER | NEVER |  |  |
+| Manufacturing Payrolls | 128 | -1 | 12:30 | 100% (Non Farm Payrolls) | TESTED | NEVER | NEVER |  |  |
+| Industrial Production MoM | 128 | 0 | 13:15 | 100% (Industrial Production Yo) | TESTED | NEVER | NEVER |  |  |
 | Industrial Production YoY | 128 | 0 | 13:15 | 100% (Industrial Production Mo) | NEVER | NEVER | NEVER |  |  |
 | Imports | 128 | 0 | 12:30 | 100% (Balance of Trade) | NEVER | NEVER | NEVER |  |  |
-| Import Prices YoY | 128 | 0 | 12:30 | 100% (Export Prices YoY) | NEVER | NEVER | NEVER |  |  |
-| Government Payrolls | 128 | -1 | 12:30 | 100% (Average Hourly Earnings ) | NEVER | NEVER | NEVER |  |  |
+| Import Prices YoY | 128 | 0 | 12:30 | 100% (Import Prices MoM) | NEVER | NEVER | NEVER |  |  |
+| Government Payrolls | 128 | -1 | 12:30 | 100% (Non Farm Payrolls) | NEVER | NEVER | NEVER |  |  |
 | Housing Starts MoM | 128 | 0 | 12:30 | 100% (Housing Starts) | NEVER | NEVER | NEVER |  |  |
 | Housing Starts | 128 | 1 | 12:30 | 100% (Housing Starts MoM) | TESTED | NEVER | NEVER |  |  |
 | House Price Index MoM | 128 | -1 | 13:00 | 73% (S&P/Case-Shiller Home Pr) | TESTED | NEVER | NEVER |  |  |
 | Foreign Bond Investment | 128 | 0 | 20:00 | 100% (Overall Net Capital Flow) | NEVER | NEVER | NEVER |  |  |
-| ISM Manufacturing Prices | 128 | 0 | 14:00 | 100% (ISM Manufacturing PMI) | TESTED | NEVER | NEVER |  |  |
+| ISM Manufacturing Prices | 128 | 0 | 14:00 | 100% (ISM Manufacturing New Or) | TESTED | NEVER | NEVER |  |  |
 | 3-Year Note Auction | 128 | -1 | 17:00 | 20% (6-Month Bill Auction) | NEVER | NEVER | NEVER |  |  |
 | 7-Year Note Auction | 128 | -1 | 17:00 | 16% (Money Supply) | NEVER | NEVER | NEVER |  |  |
-| Balance of Trade | 128 | 1 | 12:30 | 100% (Imports) | TESTED | NEVER | NEVER |  |  |
+| Balance of Trade | 128 | 1 | 12:30 | 100% (Exports) | TESTED | NEVER | NEVER |  |  |
 | ADP Employment Change | 128 | 0 | 12:15 | 0% | TESTED | NEVER | NEVER |  |  |
 | 5-Year Note Auction | 128 | -1 | 17:00 | 38% (3-Month Bill Auction) | NEVER | NEVER | NEVER |  |  |
-| Average Hourly Earnings MoM | 128 | 0 | 12:30 | 100% (Nonfarm Payrolls Private) | TESTED | NEVER | NEVER |  |  |
-| Average Weekly Hours | 128 | -1 | 12:30 | 100% (Average Hourly Earnings ) | TESTED | NEVER | NEVER |  |  |
+| Average Hourly Earnings MoM | 128 | 0 | 12:30 | 100% (Non Farm Payrolls) | TESTED | NEVER | NEVER |  |  |
+| Average Weekly Hours | 128 | -1 | 12:30 | 100% (Non Farm Payrolls) | TESTED | NEVER | NEVER |  |  |
 | Business Inventories MoM | 128 | 0 | 14:00 | 84% (Retail Inventories Ex Au) | TESTED | NEVER | NEVER |  |  |
-| CB Leading Index MoM | 128 | -1 | 14:00 | 45% (Existing Home Sales) | TESTED | NEVER | NEVER |  |  |
+| CB Leading Index MoM | 128 | -1 | 14:00 | 45% (Existing Home Sales MoM) | TESTED | NEVER | NEVER |  |  |
 | 30-Year Bond Auction | 128 | 0 | 17:00 | 7% (Fed Evans Speech) | NEVER | NEVER | NEVER |  |  |
 | Pending Home Sales YoY | 128 | 0 | 14:00 | 100% (Pending Home Sales MoM) | NEVER | NEVER | NEVER |  |  |
 | Pending Home Sales MoM | 128 | 0 | 14:00 | 100% (Pending Home Sales YoY) | TESTED | NEVER | NEVER |  |  |
 | New Home Sales MoM | 128 | 0 | 14:00 | 100% (New Home Sales) | TESTED | NEVER | NEVER |  |  |
-| PCE Price Index MoM | 128 | 0 | 12:30 | 100% (PCE Price Index YoY) | TESTED | NEVER | NEVER |  |  |
-| Non Farm Payrolls | 128 | 1 | 12:30 | 100% (Average Hourly Earnings ) | TESTED | TESTED | TESTED | CL -10$ (n=123); ES +55$ (n=127); GC +41$ (n=124); NQ +65$ (n=127); RTY +33$ (n=90) | DEPLOYED (NQ+RTY) |
-| Core Inflation Rate YoY | 127 | 1 | 12:30 | 100% (Inflation Rate YoY) | TESTED | NEVER | NEVER |  |  |
-| Core Inflation Rate MoM | 127 | 1 | 12:30 | 100% (Core Inflation Rate YoY) | TESTED | NEVER | NEVER |  |  |
-| Participation Rate | 127 | 0 | 12:30 | 100% (Average Hourly Earnings ) | NEVER | NEVER | NEVER |  |  |
-| Inflation Rate YoY | 127 | 1 | 12:30 | 100% (Core Inflation Rate YoY) | TESTED | NEVER | NEVER |  |  |
-| Unemployment Rate | 127 | 1 | 12:30 | 100% (Average Hourly Earnings ) | TESTED | NEVER | NEVER |  |  |
-| Inflation Rate MoM | 127 | 1 | 12:30 | 100% (Core Inflation Rate YoY) | TESTED | TESTED | TESTED | CL +32$ (n=116); ES +219$ (n=116); GC +197$ (n=116); NQ +463$ (n=116); RTY +216$ (n=88) | DEPLOYED (NQ+RTY) |
+| PCE Price Index MoM | 128 | 0 | 12:30 | 100% (Core PCE Price Index YoY) | TESTED | NEVER | NEVER |  |  |
+| Non Farm Payrolls | 128 | 1 | 12:30 | 100% (Participation Rate) | TESTED | TESTED | TESTED | CL -10$ (n=123); ES +55$ (n=127); GC +41$ (n=124); NQ +65$ (n=127); RTY +33$ (n=90) | DEPLOYED (NQ+RTY) |
+| Core Inflation Rate YoY | 127 | 1 | 12:30 | 100% (Core Inflation Rate MoM) | TESTED | NEVER | NEVER |  |  |
+| Core Inflation Rate MoM | 127 | 1 | 12:30 | 100% (Inflation Rate YoY) | TESTED | NEVER | NEVER |  |  |
+| Participation Rate | 127 | 0 | 12:30 | 100% (Non Farm Payrolls) | NEVER | NEVER | NEVER |  |  |
+| Inflation Rate YoY | 127 | 1 | 12:30 | 100% (Core Inflation Rate MoM) | TESTED | NEVER | NEVER |  |  |
+| Unemployment Rate | 127 | 1 | 12:30 | 100% (Non Farm Payrolls) | TESTED | NEVER | NEVER |  |  |
+| Inflation Rate MoM | 127 | 1 | 12:30 | 100% (Core Inflation Rate MoM) | TESTED | TESTED | TESTED | CL +32$ (n=116); ES +219$ (n=116); GC +197$ (n=116); NQ +463$ (n=116); RTY +216$ (n=88) | DEPLOYED (NQ+RTY+ES+YM) |
 | Durable Goods Orders Ex Transp MoM | 127 | 0 | 12:30 | 100% (Durable Goods Orders MoM) | TESTED | NEVER | NEVER |  |  |
 | Fed Kaplan Speech | 125 | 0 | 17:00 | 16% (Fed Bostic Speech) | NEVER | NEVER | NEVER |  |  |
 | Fed Bowman Speech | 123 | 0 | 17:00 | 24% (Fed Bostic Speech) | NEVER | NEVER | NEVER |  |  |
-| Total Vehicle Sales | 123 | 0 | 00:00 | 22% (All Truck Sales) | TESTED | NEVER | NEVER |  |  |
-| Fed Bullard Speech | 122 | 0 | 17:00 | 16% (Export Prices YoY) | NEVER | NEVER | NEVER |  |  |
+| Total Vehicle Sales | 123 | 0 | 00:00 | 22% (Domestic Truck Sales) | TESTED | NEVER | NEVER |  |  |
+| Fed Bullard Speech | 122 | 0 | 17:00 | 16% (Import Prices MoM) | NEVER | NEVER | NEVER |  |  |
 | WASDE Report | 122 | -1 | 16:00 | 16% (15-Year Mortgage Rate) | NEVER | NEVER | NEVER |  |  |
 | Fed Barkin Speech | 121 | 0 | 13:00 | 26% (Fed Bostic Speech) | NEVER | NEVER | NEVER |  |  |
 | Fed Harker Speech | 120 | 0 | 14:00 | 24% (Baker Hughes Oil Rig Cou) | NEVER | NEVER | NEVER |  |  |
-| Durable Goods Orders ex Defense MoM | 116 | -1 | 12:30 | 100% (Durable Goods Orders Ex ) | NEVER | NEVER | NEVER |  |  |
+| Durable Goods Orders ex Defense MoM | 116 | -1 | 12:30 | 100% (Durable Goods Orders MoM) | NEVER | NEVER | NEVER |  |  |
 | Wholesale Inventories MoM Adv | 115 | 0 | 12:30 | 100% (Goods Trade Balance Adv) | TESTED | NEVER | NEVER |  |  |
 | Michigan Current Conditions Prel | 113 | 0 | 14:00 | 100% (Michigan Inflation Expec) | TESTED | NEVER | NEVER |  |  |
-| Michigan 5 Year Inflation Expectations Prel | 113 | 0 | 14:00 | 100% (Michigan Inflation Expec) | NEVER | NEVER | NEVER |  |  |
-| Michigan Consumer Expectations Final | 113 | 0 | 14:00 | 100% (Michigan 5 Year Inflatio) | TESTED | NEVER | NEVER |  |  |
+| Michigan 5 Year Inflation Expectations Prel | 113 | 0 | 14:00 | 100% (Michigan Current Conditi) | NEVER | NEVER | NEVER |  |  |
+| Michigan Consumer Expectations Final | 113 | 0 | 14:00 | 100% (Michigan Current Conditi) | TESTED | NEVER | NEVER |  |  |
 | Fed Balance Sheet | 113 | -1 | 20:30 | 2% (Fed Barkin Speech) | NEVER | NEVER | NEVER |  |  |
-| Michigan 5 Year Inflation Expectations Final | 113 | 0 | 14:00 | 100% (Michigan Consumer Expect) | NEVER | NEVER | NEVER |  |  |
-| Michigan Current Conditions Final | 113 | 0 | 14:00 | 100% (Michigan 5 Year Inflatio) | TESTED | NEVER | NEVER |  |  |
-| Michigan Inflation Expectations Final | 113 | 0 | 14:00 | 100% (Michigan 5 Year Inflatio) | NEVER | NEVER | NEVER |  |  |
+| Michigan 5 Year Inflation Expectations Final | 113 | 0 | 14:00 | 100% (Michigan Current Conditi) | NEVER | NEVER | NEVER |  |  |
+| Michigan Current Conditions Final | 113 | 0 | 14:00 | 100% (Michigan Consumer Expect) | TESTED | NEVER | NEVER |  |  |
+| Michigan Inflation Expectations Final | 113 | 0 | 14:00 | 100% (Michigan Current Conditi) | NEVER | NEVER | NEVER |  |  |
 | Personal Income MoM | 113 | 1 | 12:30 | 100% (PCE Price Index MoM) | TESTED | NEVER | NEVER |  |  |
-| Michigan Inflation Expectations Prel | 113 | 0 | 14:00 | 100% (Michigan Consumer Sentim) | NEVER | NEVER | NEVER |  |  |
+| Michigan Inflation Expectations Prel | 113 | 0 | 14:00 | 100% (Michigan Current Conditi) | NEVER | NEVER | NEVER |  |  |
 | Goods Trade Balance Adv | 112 | 0 | 12:30 | 100% (Wholesale Inventories Mo) | TESTED | NEVER | NEVER |  |  |
-| Michigan Consumer Expectations Prel | 112 | 0 | 14:00 | 100% (Michigan Inflation Expec) | TESTED | NEVER | NEVER |  |  |
+| Michigan Consumer Expectations Prel | 112 | 0 | 14:00 | 100% (Michigan Current Conditi) | TESTED | NEVER | NEVER |  |  |
 | Consumer Inflation Expectations | 112 | -1 | 15:00 | 3% (Fed Bullard Speech) | NEVER | NEVER | NEVER |  |  |
-| Fed Chair Powell Speech | 111 | 1 | 14:00 | 15% (New Home Sales MoM) | NEVER | NEVER | NEVER |  |  |
-| Average Hourly Earnings YoY | 109 | 0 | 12:30 | 100% (Average Hourly Earnings ) | TESTED | NEVER | NEVER |  |  |
+| Fed Chair Powell Speech | 111 | 1 | 14:00 | 15% (New Home Sales) | NEVER | NEVER | NEVER |  |  |
+| Average Hourly Earnings YoY | 109 | 0 | 12:30 | 100% (Non Farm Payrolls) | TESTED | NEVER | NEVER |  |  |
 | 42-Day Bill Auction | 107 | -1 | 15:30 | 60% (119-Day Bill Auction) | NEVER | NEVER | NEVER |  |  |
 | Fed Daly Speech | 104 | 0 | 18:00 | 20% (3-Month Bill Auction) | NEVER | NEVER | NEVER |  |  |
 | Fed Waller Speech | 99 | 0 | 15:00 | 15% (Fed Daly Speech) | NEVER | NEVER | NEVER |  |  |
 | IBD/TIPP Economic Optimism | 95 | 0 | 14:00 | 59% (JOLTs Job Openings) | TESTED | NEVER | NEVER |  |  |
-| Manufacturing Production MoM | 93 | -1 | 13:15 | 100% (Manufacturing Production) | TESTED | NEVER | NEVER |  |  |
-| ISM Non-Manufacturing New Orders | 88 | 0 | 14:00 | 100% (ISM Non-Manufacturing PM) | NEVER | NEVER | NEVER |  |  |
-| ISM Non-Manufacturing PMI | 88 | 1 | 14:00 | 100% (ISM Non-Manufacturing Ne) | TESTED | NEVER | NEVER |  |  |
-| ISM Non-Manufacturing Business Activity | 88 | 0 | 14:00 | 100% (ISM Non-Manufacturing Ne) | TESTED | NEVER | NEVER |  |  |
-| ISM Non-Manufacturing Prices | 88 | 0 | 14:00 | 100% (ISM Non-Manufacturing Ne) | NEVER | NEVER | NEVER |  |  |
-| ISM Non-Manufacturing Employment | 88 | 0 | 14:00 | 100% (ISM Non-Manufacturing Ne) | NEVER | NEVER | NEVER |  |  |
+| Manufacturing Production MoM | 93 | -1 | 13:15 | 100% (Industrial Production Yo) | TESTED | NEVER | NEVER |  |  |
+| ISM Non-Manufacturing New Orders | 88 | 0 | 14:00 | 100% (ISM Non-Manufacturing Bu) | NEVER | NEVER | NEVER |  |  |
+| ISM Non-Manufacturing PMI | 88 | 1 | 14:00 | 100% (ISM Non-Manufacturing Bu) | TESTED | NEVER | NEVER |  |  |
+| ISM Non-Manufacturing Business Activity | 88 | 0 | 14:00 | 100% (ISM Non-Manufacturing PM) | TESTED | NEVER | NEVER |  |  |
+| ISM Non-Manufacturing Prices | 88 | 0 | 14:00 | 100% (ISM Non-Manufacturing Bu) | NEVER | NEVER | NEVER |  |  |
+| ISM Non-Manufacturing Employment | 88 | 0 | 14:00 | 100% (ISM Non-Manufacturing Bu) | NEVER | NEVER | NEVER |  |  |
 | FOMC Minutes | 86 | 1 | 18:00 | 8% (Monthly Budget Statement) | NEVER | NEVER | NEVER |  |  |
 | Fed Interest Rate Decision | 86 | 1 | 18:00 | 49% (FOMC Economic Projection) | TESTED | TESTED | TESTED | CL -12$ (n=84); ES -30$ (n=84); GC +69$ (n=84); NQ -37$ (n=84); RTY +41$ (n=60) | DEPLOYED (NQ+RTY) |
-| Building Permits | 82 | 1 | 12:30 | 100% (Building Permits MoM) | TESTED | NEVER | NEVER |  |  |
-| Building Permits MoM | 82 | 0 | 12:30 | 100% (Building Permits) | NEVER | NEVER | NEVER |  |  |
+| Building Permits | 82 | 1 | 12:30 | 100% (Housing Starts MoM) | TESTED | NEVER | NEVER |  |  |
+| Building Permits MoM | 82 | 0 | 12:30 | 100% (Housing Starts MoM) | NEVER | NEVER | NEVER |  |  |
 | Fed Brainard Speech | 81 | 0 | 18:00 | 21% (30-Year Bond Auction) | NEVER | NEVER | NEVER |  |  |
 | 2-Year FRN Auction | 80 | -1 | 15:30 | 75% (17-Week Bill Auction) | NEVER | NEVER | NEVER |  |  |
 | Fed Barr Speech | 80 | 0 | 14:00 | 20% (Wholesale Inventories Mo) | NEVER | NEVER | NEVER |  |  |
@@ -181,29 +181,29 @@ Premium $ figures are the M1 grid indicator (LONG, lead 5 min, stop 0.10%, no TP
 | 20-Year Bond Auction | 76 | -1 | 17:00 | 8% (Fed Bowman Speech) | NEVER | NEVER | NEVER |  |  |
 | Markit Services PMI Flash | 75 | 1 | 13:45 | 100% (Markit Composite PMI Fla) | NEVER | NEVER | NEVER |  |  |
 | Markit Manufacturing PMI Final | 75 | 0 | 13:45 | 0% | NEVER | NEVER | NEVER |  |  |
-| Markit Manufacturing PMI Flash | 75 | 1 | 13:45 | 83% (Markit Services PMI Flas) | NEVER | NEVER | NEVER |  |  |
+| Markit Manufacturing PMI Flash | 75 | 1 | 13:45 | 83% (Markit Composite PMI Fla) | NEVER | NEVER | NEVER |  |  |
 | Markit Services PMI Final | 75 | 0 | 13:45 | 100% (Markit Composite PMI Fin) | NEVER | NEVER | NEVER |  |  |
 | Markit Composite PMI Flash | 75 | 1 | 13:45 | 100% (Markit Services PMI Flas) | NEVER | NEVER | NEVER |  |  |
 | Markit Composite PMI Final | 75 | 0 | 13:45 | 100% (Markit Services PMI Fina) | NEVER | NEVER | NEVER |  |  |
 | House Price Index YoY | 72 | -1 | 13:00 | 100% (House Price Index MoM) | NEVER | NEVER | NEVER |  |  |
 | Fed Press Conference | 68 | 1 | 18:30 | 0% | NEVER | NEVER | NEVER |  |  |
 | CPI | 67 | 0 | 12:30 | 100% (Core Inflation Rate MoM) | TESTED | NEVER | NEVER |  |  |
-| ISM New York Index | 64 | -1 | 13:45 | 2% (Markit Composite PMI Fin) | NEVER | NEVER | NEVER |  |  |
+| ISM New York Index | 64 | -1 | 13:45 | 2% (Markit Services PMI Fina) | NEVER | NEVER | NEVER |  |  |
 | LMI Logistics Managers Index | 63 | -1 | 10:00 | 0% | NEVER | NEVER | NEVER |  |  |
-| Retail Sales Ex Gas/Autos MoM | 61 | -1 | 12:30 | 100% (Retail Sales Ex Autos Mo) | NEVER | NEVER | NEVER |  |  |
+| Retail Sales Ex Gas/Autos MoM | 61 | -1 | 12:30 | 100% (Retail Sales YoY) | NEVER | NEVER | NEVER |  |  |
 | Fed Quarles Speech | 61 | 0 | 14:00 | 25% (Baker Hughes Oil Rig Cou) | NEVER | NEVER | NEVER |  |  |
-| Philly Fed Prices Paid | 59 | -1 | 12:30 | 100% (Philly Fed New Orders) | NEVER | NEVER | NEVER |  |  |
-| Non Defense Goods Orders Ex Air | 59 | -1 | 12:30 | 100% (Durable Goods Orders Ex ) | TESTED | NEVER | NEVER |  |  |
-| Philly Fed Employment | 59 | 0 | 12:30 | 100% (Philly Fed New Orders) | NEVER | NEVER | NEVER |  |  |
+| Philly Fed Prices Paid | 59 | -1 | 12:30 | 100% (Philadelphia Fed Manufac) | NEVER | NEVER | NEVER |  |  |
+| Non Defense Goods Orders Ex Air | 59 | -1 | 12:30 | 100% (Durable Goods Orders MoM) | TESTED | NEVER | NEVER |  |  |
+| Philly Fed Employment | 59 | 0 | 12:30 | 100% (Philly Fed Prices Paid) | NEVER | NEVER | NEVER |  |  |
 | Kansas Fed Composite Index | 59 | -1 | 15:00 | 100% (Kansas Fed Manufacturing) | NEVER | NEVER | NEVER |  |  |
-| Philly Fed New Orders | 59 | -1 | 12:30 | 100% (Philly Fed CAPEX Index) | NEVER | NEVER | NEVER |  |  |
-| Philly Fed CAPEX Index | 59 | -1 | 12:30 | 100% (Philly Fed New Orders) | NEVER | NEVER | NEVER |  |  |
-| Philly Fed Business Conditions | 59 | -1 | 12:30 | 100% (Philly Fed New Orders) | NEVER | NEVER | NEVER |  |  |
+| Philly Fed New Orders | 59 | -1 | 12:30 | 100% (Philly Fed Prices Paid) | NEVER | NEVER | NEVER |  |  |
+| Philly Fed CAPEX Index | 59 | -1 | 12:30 | 100% (Philly Fed Prices Paid) | NEVER | NEVER | NEVER |  |  |
+| Philly Fed Business Conditions | 59 | -1 | 12:30 | 100% (Philly Fed Prices Paid) | NEVER | NEVER | NEVER |  |  |
 | Richmond Fed Manufacturing Shipments Index | 59 | -1 | 14:00 | 100% (Richmond Fed Manufacturi) | NEVER | NEVER | NEVER |  |  |
 | Retail Inventories Ex Autos MoM | 58 | -1 | 14:00 | 100% (Business Inventories MoM) | NEVER | NEVER | NEVER |  |  |
 | Dallas Fed Services Index | 58 | -1 | 14:30 | 100% (Dallas Fed Services Reve) | NEVER | NEVER | NEVER |  |  |
 | Dallas Fed Services Revenues Index | 58 | -1 | 14:30 | 100% (Dallas Fed Services Inde) | NEVER | NEVER | NEVER |  |  |
-| House Price Index | 58 | -1 | 13:00 | 100% (House Price Index MoM) | NEVER | NEVER | NEVER |  |  |
+| House Price Index | 58 | -1 | 13:00 | 100% (S&P/Case-Shiller Home Pr) | NEVER | NEVER | NEVER |  |  |
 | JOLTs Job Quits | 57 | -1 | 14:00 | 100% (JOLTs Job Openings) | NEVER | NEVER | NEVER |  |  |
 | Fed Goolsbee Speech | 57 | 0 | 15:00 | 28% (Fed Bowman Speech) | NEVER | NEVER | NEVER |  |  |
 | Retail Inventories Ex Autos MoM Adv | 57 | 0 | 12:30 | 100% (Wholesale Inventories Mo) | NEVER | NEVER | NEVER |  |  |
@@ -211,39 +211,39 @@ Premium $ figures are the M1 grid indicator (LONG, lead 5 min, stop 0.10%, no TP
 | 119-Day Bill Auction | 55 | -1 | 15:30 | 85% (42-Day Bill Auction) | NEVER | NEVER | NEVER |  |  |
 | Fed Dudley Speech | 54 | 0 | 12:30 | 15% (CB Leading Index MoM) | NEVER | NEVER | NEVER |  |  |
 | S&P Global Services PMI Flash | 53 | 0 | 13:45 | 100% (S&P Global Manufacturing) | NEVER | NEVER | NEVER |  |  |
-| S&P Global Manufacturing PMI Flash | 53 | 0 | 13:45 | 100% (S&P Global Services PMI ) | NEVER | NEVER | NEVER |  |  |
+| S&P Global Manufacturing PMI Flash | 53 | 0 | 13:45 | 100% (S&P Global Composite PMI) | NEVER | NEVER | NEVER |  |  |
 | S&P Global Services PMI Final | 53 | 0 | 13:45 | 100% (S&P Global Composite PMI) | NEVER | NEVER | NEVER |  |  |
 | S&P Global Composite PMI Final | 53 | 0 | 13:45 | 100% (S&P Global Services PMI ) | NEVER | NEVER | NEVER |  |  |
 | S&P Global Manufacturing PMI Final | 53 | 0 | 13:45 | 0% | NEVER | NEVER | NEVER |  |  |
 | S&P Global Composite PMI Flash | 53 | 0 | 13:45 | 100% (S&P Global Manufacturing) | NEVER | NEVER | NEVER |  |  |
-| 10-Year TIPS Auction | 51 | -1 | 17:00 | 4% (Fed Kaplan Speech) | NEVER | NEVER | NEVER |  |  |
+| 10-Year TIPS Auction | 51 | -1 | 17:00 | 4% (Fed Bostic Speech) | NEVER | NEVER | NEVER |  |  |
 | Fed Logan Speech | 51 | 0 | 16:00 | 16% (Fed Williams Speech) | NEVER | NEVER | NEVER |  |  |
 | Fed Clarida Speech | 50 | 0 | 13:00 | 22% (Fed Quarles Speech) | NEVER | NEVER | NEVER |  |  |
-| Fed Rosengren Speech | 50 | 0 | 12:30 | 20% (Retail Sales Ex Autos Mo) | NEVER | NEVER | NEVER |  |  |
+| Fed Rosengren Speech | 50 | 0 | 12:30 | 20% (Retail Sales YoY) | NEVER | NEVER | NEVER |  |  |
 | Fed Chair Powell Testimony | 49 | 1 | 15:00 | 59% (CB Consumer Confidence) | NEVER | NEVER | NEVER |  |  |
-| Building Permits MoM Prel | 46 | 0 | 12:30 | 100% (Housing Starts) | NEVER | NEVER | NEVER |  |  |
+| Building Permits MoM Prel | 46 | 0 | 12:30 | 100% (Building Permits Prel) | NEVER | NEVER | NEVER |  |  |
 | Building Permits Prel | 46 | 1 | 12:30 | 100% (Building Permits MoM Pre) | NEVER | NEVER | NEVER |  |  |
 | Building Permits MoM Final | 46 | -1 | 12:30 | 98% (Building Permits Final) | NEVER | NEVER | NEVER |  |  |
 | Building Permits Final | 44 | 0 | 12:30 | 100% (Building Permits MoM Fin) | NEVER | NEVER | NEVER |  |  |
 | Fed George Speech | 44 | 0 | 18:00 | 25% (Fed Kaplan Speech) | NEVER | NEVER | NEVER |  |  |
-| Employment Cost Index QoQ | 43 | 0 | 12:30 | 98% (Employment Cost - Wages ) | NEVER | NEVER | NEVER |  |  |
-| Current Account | 42 | 0 | 12:30 | 62% (Initial Jobless Claims) | NEVER | NEVER | NEVER |  |  |
-| Core PCE Prices QoQ Final | 42 | -1 | 12:30 | 100% (GDP Price Index QoQ Fina) | NEVER | NEVER | NEVER |  |  |
+| Employment Cost Index QoQ | 43 | 0 | 12:30 | 98% (Employment Cost - Benefi) | NEVER | NEVER | NEVER |  |  |
+| Current Account | 42 | 0 | 12:30 | 62% (Continuing Jobless Claim) | NEVER | NEVER | NEVER |  |  |
+| Core PCE Prices QoQ Final | 42 | -1 | 12:30 | 100% (GDP Growth Rate QoQ Fina) | NEVER | NEVER | NEVER |  |  |
 | Used Car Prices YoY | 42 | -1 | 13:00 | 100% (Used Car Prices MoM) | NEVER | NEVER | NEVER |  |  |
 | Used Car Prices MoM | 42 | -1 | 13:00 | 100% (Used Car Prices YoY) | NEVER | NEVER | NEVER |  |  |
-| PCE Prices QoQ Final | 42 | -1 | 12:30 | 100% (GDP Price Index QoQ Fina) | NEVER | NEVER | NEVER |  |  |
+| PCE Prices QoQ Final | 42 | -1 | 12:30 | 100% (GDP Growth Rate QoQ Fina) | NEVER | NEVER | NEVER |  |  |
 | Core PCE Prices QoQ Adv | 42 | -1 | 12:30 | 100% (GDP Growth Rate QoQ Adv) | NEVER | NEVER | NEVER |  |  |
 | Unit Labour Costs QoQ Prel | 42 | 0 | 12:30 | 100% (Nonfarm Productivity QoQ) | NEVER | NEVER | NEVER |  |  |
 | GDP Growth Rate QoQ Adv | 42 | 1 | 12:30 | 100% (Core PCE Prices QoQ Adv) | NEVER | NEVER | NEVER |  |  |
-| GDP Growth Rate QoQ Final | 42 | 1 | 12:30 | 100% (GDP Price Index QoQ Fina) | NEVER | NEVER | NEVER |  |  |
-| GDP Price Index QoQ Final | 42 | 0 | 12:30 | 100% (PCE Prices QoQ Final) | NEVER | NEVER | NEVER |  |  |
+| GDP Growth Rate QoQ Final | 42 | 1 | 12:30 | 100% (Core PCE Prices QoQ Fina) | NEVER | NEVER | NEVER |  |  |
+| GDP Price Index QoQ Final | 42 | 0 | 12:30 | 100% (GDP Growth Rate QoQ Fina) | NEVER | NEVER | NEVER |  |  |
 | Nonfarm Productivity QoQ Prel | 42 | 0 | 12:30 | 100% (Unit Labour Costs QoQ Pr) | NEVER | NEVER | NEVER |  |  |
 | Nonfarm Productivity QoQ Final | 41 | 0 | 12:30 | 100% (Unit Labour Costs QoQ Fi) | NEVER | NEVER | NEVER |  |  |
-| CPI s.a | 41 | 0 | 12:30 | 100% (Core Inflation Rate YoY) | NEVER | NEVER | NEVER |  |  |
+| CPI s.a | 41 | 0 | 12:30 | 100% (Core Inflation Rate MoM) | NEVER | NEVER | NEVER |  |  |
 | FOMC Economic Projections | 41 | 1 | 18:00 | 100% (Fed Interest Rate Decisi) | NEVER | NEVER | NEVER |  |  |
 | GDP Price Index QoQ 2nd Est | 41 | 0 | 12:30 | 100% (GDP Growth Rate QoQ 2nd ) | NEVER | NEVER | NEVER |  |  |
-| PCE Prices QoQ Adv | 41 | -1 | 12:30 | 100% (Core PCE Prices QoQ Adv) | NEVER | NEVER | NEVER |  |  |
-| GDP Price Index QoQ Adv | 41 | 0 | 12:30 | 100% (Core PCE Prices QoQ Adv) | NEVER | NEVER | NEVER |  |  |
+| PCE Prices QoQ Adv | 41 | -1 | 12:30 | 100% (GDP Growth Rate QoQ Adv) | NEVER | NEVER | NEVER |  |  |
+| GDP Price Index QoQ Adv | 41 | 0 | 12:30 | 100% (GDP Growth Rate QoQ Adv) | NEVER | NEVER | NEVER |  |  |
 | GDP Growth Rate QoQ 2nd Est | 41 | 1 | 12:30 | 100% (GDP Price Index QoQ 2nd ) | NEVER | NEVER | NEVER |  |  |
 | Unit Labour Costs QoQ Final | 41 | 0 | 12:30 | 100% (Nonfarm Productivity QoQ) | NEVER | NEVER | NEVER |  |  |
 | Fed Jefferson Speech | 40 | 0 | 13:00 | 20% (Fed Mester Speech) | NEVER | NEVER | NEVER |  |  |
@@ -596,3 +596,122 @@ Distinct usable minutes (≥2016) NOT containing any premium-tested series (CPI/
 - **Co-released minutes**: the deployed dedupe-by-minute means e.g. Unemployment Rate (with NFP) and Core CPI (with CPI) are implicitly inside deployed events — the shared-minute column quantifies this per series.
 - Direction/jump coverage is 8 instruments (NQ/ES/RTY/GC/SI/CL/NG/HG) — **YM absent** (0-byte 1m frame, WS-NEWS2).
 - Premium coverage is 5 series × NQ/RTY/ES/GC (+ EIA/API on CL, provenance unverified) — the funnel's provenance restriction does NOT apply to the timestamps-only ride, which is exactly N2's opening.
+
+## APPENDIX (RQ-6/#146) — per-instrument premium verdicts from the FULL GRID (#140)
+
+The single premium column above is HISTORICAL (pre-grid). This table is the live per-cell record for every block the grid ran (NQ/RTY ran only their two missing cells here — their full sweep lives in `news4_scan_blocks_{NQ,RTY}.csv`; the deployed macro cells live in the posctrl/N3/ESCPI files). Cell = verdict (net $/event). Legend: ✅POS exploratory-positive · 0̶ powered-null · ? underpowered · −sig significant negative (read gross before narrating — most are cost drag) · ·void VOID-TIMESTAMP.
+
+| block \ inst | NQ | ES | YM | RTY | GC | SI | HG | CL | NG |
+|---|---|---|---|---|---|---|---|---|---|
+| 10-Year Note Auction |  | −sig (-47) | ·void (-1) |  | −sig (-72) | ·void (-116) | ·void (-45) | ·void (-29) | ·void (-40) |
+| 10-Year TIPS Auction |  | 0̶ (-0) | ·void (+9) |  | 0̶ (-45) | ·void (-73) | 0̶ (-23) | ·void (-56) | ·void (-20) |
+| 15-Year Mortgage Rate |  | 0̶ (-2) | 0̶ (+3) |  |  |  | ·void (-31) | ·void (-30) | ·void (-44) |
+| 17-Week Bill Auction |  | −sig (-56) | 0̶ (-5) |  | 0̶ (-11) | −sig (-103) | ·void (-42) | −sig (-38) | ·void (-47) |
+| 2-Year Note Auction |  | ·void (-55) | ·void (-8) |  | −sig (-49) | ·void (-114) | ·void (-64) | ·void (-58) | ·void (-58) |
+| 20-Year Bond Auction |  | −sig (-74) | 0̶ (-30) |  | 0̶ (-40) | −sig (-97) | −sig (-37) | 0̶ (-6) | −sig (-47) |
+| 3-Month Bill Auction |  |  |  |  | ·void (-61) | ·void (-122) | ·void (-58) | ·void (-41) |  |
+| 3-Year Note Auction |  | ·void (-36) | ·void (-14) |  | ·void (-13) | ·void (-112) | ·void (-34) | ·void (-32) | ·void (-39) |
+| 30-Year Bond Auction |  | 0̶ (-8) | ·void (+2) |  | 0̶ (-28) | ·void (-93) | ·void (-51) | ·void (-41) | ·void (-31) |
+| 30-Year Mortgage Rate |  |  |  |  | 0̶ (-39) | −sig (-106) |  |  |  |
+| 4-Week Bill Auction |  | −sig (-70) | −sig (-33) |  | ·void (-39) | ·void (-104) | ·void (-55) | ·void (-39) | ·void (-43) |
+| 42-Day Bill Auction |  | −sig (-89) | ·void (-37) |  | −sig (-82) | −sig (-132) | ·void (-56) | ·void (-48) | ·void (-31) |
+| 5-Year Note Auction |  | −sig (-85) | ·void (-46) |  | ·void (-43) | ·void (-103) | ·void (-61) | ·void (-67) | ·void (-46) |
+| 52-Week Bill Auction |  | −sig (-59) | 0̶ (-17) |  | ·void (-5) | ·void (-101) | ·void (-42) | ·void (-49) | −sig (-47) |
+| 6-Month Bill Auction |  | −sig (-69) | ·void (-36) |  |  |  | ·void (-54) |  | ·void (-42) |
+| 7-Year Note Auction |  | −sig (-50) | ·void (-18) |  | 0̶ (-12) | ·void (-121) | ·void (-54) | ·void (-50) | ·void (-55) |
+| ADP Employment Change |  | −sig (-70) | −sig (-36) |  | 0̶ (-58) | −sig (-124) | −sig (-50) | −sig (-30) | ·void (-33) |
+| API Crude Oil Stock Change | ·void (-9) | ·void (-42) | ·void (-23) | ·void (-23) | ·void (-36) | ·void (-89) | ·void (-52) |  | ·void (-43) |
+| Baker Hughes Oil Rig Count |  | −sig (-52) | ·void (-26) |  | −sig (-47) | ·void (-96) | ·void (-57) | ·void (-44) | ·void (-44) |
+| Building Permits |  | −sig (-80) | ·void (-48) |  | 0̶ (-16) | ·void (-97) | ·void (-63) | ·void (-57) | ·void (-31) |
+| CB Leading Index MoM |  | 0̶ (-51) | 0̶ (-13) |  | 0̶ (-61) | −sig (-127) | −sig (-71) | −sig (-53) | ·void (-40) |
+| Capacity Utilization |  |  |  |  |  | 0̶ (+21) |  | ·void (-19) |  |
+| Challenger Job Cuts |  | −sig (-41) | 0̶ (-12) |  | 0̶ (-30) | ·void (-66) | ·void (-42) | ·void (-31) | ·void (-46) |
+| Chicago Fed National Activity Index |  | −sig (-62) | −sig (-41) |  | ·void (-54) | ·void (-97) | ·void (-81) | ·void (-57) | ·void (-41) |
+| Chicago PMI |  | −sig (-110) | −sig (-62) |  | 0̶ (-27) | −sig (-89) | ·void (-60) | ·void (-71) | ·void (-32) |
+| Consumer Credit Change |  | ·void (-43) | ·void (-18) |  | ·void (-38) | ·void (-82) | ·void (-43) | ·void (-49) | ·void (-47) |
+| Consumer Inflation Expectations |  | −sig (-77) | ·void (-42) |  | ·void (-69) | ·void (-100) | −sig (-59) | ·void (-38) | ·void (-45) |
+| Core PCE Price Index MoM |  | 0̶ (+13) | 0̶ (+15) |  | −sig (-63) | −sig (-112) | 0̶ (-27) | ·void (-46) | ·void (-42) |
+| Dallas Fed Manufacturing Index |  | ·void (-50) | ·void (-34) |  | 0̶ (-39) | ·void (-103) | ·void (-84) | ·void (-42) | ·void (-34) |
+| Dallas Fed Services Index |  |  | 0̶ (-56) |  | −sig (-94) | −sig (-191) |  |  |  |
+| Dallas Fed Services Revenues Index |  | −sig (-108) |  |  |  |  | −sig (-106) | −sig (-55) | −sig (-42) |
+| Durable Goods Orders MoM |  | −sig (-62) | 0̶ (-15) |  | −sig (-63) | −sig (-108) | ·void (-57) | ·void (-56) | ·void (-42) |
+| EIA Crude Oil Stocks Change | 0̶ (-20) | −sig (-53) | ·void (-26) | −sig (-19) | −sig (-36) | ·void (-104) | −sig (-63) |  | ·void (-41) |
+| EIA Natural Gas Stocks Change |  | −sig (-43) | ·void (-18) |  | −sig (-32) | ·void (-91) | −sig (-42) | −sig (-31) | −sig (-47) |
+| Existing Home Sales |  |  | 0̶ (-9) |  |  |  |  |  | −sig (-52) |
+| Existing Home Sales MoM |  | 0̶ (-25) |  |  | ·void (-108) | −sig (-138) | −sig (-49) | −sig (-55) |  |
+| Exports |  |  | 0̶ (-10) |  | ? (+74) |  | ·void (-59) |  |  |
+| FOMC Minutes |  | −sig (-82) | 0̶ (-14) |  | 0̶ (-19) | −sig (-91) | ·void (-41) | 0̶ (-24) | ·void (-33) |
+| Factory Orders MoM |  |  |  |  |  |  |  | −sig (-66) | ·void (-50) |
+| Factory Orders ex Transportation |  | ·void (-65) | ·void (-24) |  | ·void (-69) | ·void (-120) | ·void (-51) |  |  |
+| Fed Balance Sheet |  | ·void (-68) | ·void (-43) |  | 0̶ (-61) | ·void (-146) | ·void (-73) | ·void (-40) | ·void (-32) |
+| Fed Barkin Speech |  | −sig (-61) | 0̶ (-35) |  | ·void (+26) | ·void (-59) | ·void (-13) | ·void (-59) | ·void (-47) |
+| Fed Barr Speech |  | 0̶ (-58) | ·void (+10) |  | −sig (-96) | −sig (-108) | ·void (-58) | ·void (-75) | ·void (-34) |
+| Fed Beige Book |  | ·void (-11) | ·void (+25) |  | ·void (-10) | ·void (-79) | ·void (-47) | −sig (-36) | ·void (-56) |
+| Fed Bostic Speech |  | −sig (-61) | −sig (-40) |  | ·void (-63) | ·void (-128) | ·void (-73) | ·void (-47) | ·void (-35) |
+| Fed Bowman Speech |  | −sig (-51) | ·void (-16) |  | ·void (-61) | ·void (-168) | ·void (-64) | ·void (-35) | ·void (-43) |
+| Fed Brainard Speech |  | ·void (-81) | ·void (-35) |  | 0̶ (-30) | ·void (-82) | ·void (-61) | ·void (-43) | ·void (-33) |
+| Fed Bullard Speech |  | ·void (-42) | ·void (-13) |  | ·void (-53) | ·void (-96) | ·void (-40) | ·void (-40) | ·void (-50) |
+| Fed Chair Powell Speech |  | 0̶ (-31) | 0̶ (-12) |  | 0̶ (-19) | −sig (-106) | ·void (-29) | ·void (-20) | ·void (-44) |
+| Fed Cook Speech |  | 0̶ (-50) | 0̶ (-10) |  | −sig (-149) | −sig (-160) | ·void (-44) | −sig (-64) | −sig (-38) |
+| Fed Daly Speech |  | ·void (-33) | ·void (-1) |  | ·void (-109) | ·void (-130) | −sig (-64) | ·void (-54) | ·void (-49) |
+| Fed Dudley Speech |  | ·void (-59) | ·void (-13) |  | ·void (-41) | ·void (-102) | ·void (-44) | ·void (-44) | ·void (-46) |
+| Fed Evans Speech |  | ·void (-67) | ·void (-30) |  | 0̶ (-18) | ·void (-111) | ·void (-37) | ·void (-47) | ·void (-39) |
+| Fed Goolsbee Speech |  | 0̶ (-63) | 0̶ (-49) |  | ? (-70) | −sig (-185) | −sig (-52) | −sig (-52) | −sig (-50) |
+| Fed Harker Speech |  | ·void (-55) | −sig (-37) |  | ·void (-37) | ·void (-100) | ·void (-57) | ·void (-51) | ·void (-44) |
+| Fed Interest Rate Decision |  |  | 0̶ (-8) |  |  | −sig (-103) | 0̶ (-24) | −sig (-40) | ·void (-30) |
+| Fed Kaplan Speech |  | ·void (-69) | ·void (-42) |  | ·void (-44) | ·void (-105) | ·void (-49) | ·void (-53) | ·void (-47) |
+| Fed Kashkari Speech |  | ·void (-54) | ·void (-23) |  | 0̶ (-38) | ·void (-106) | ·void (-66) | ·void (-36) | ·void (-45) |
+| Fed Logan Speech |  | 0̶ (-52) | 0̶ (-38) |  | 0̶ (-63) | ? (-78) | 0̶ (-42) | −sig (-45) | −sig (-53) |
+| Fed Mester Speech |  | −sig (-59) | −sig (-30) |  | ·void (-46) | ·void (-118) | ·void (-81) | ·void (-41) | ·void (-33) |
+| Fed Press Conference |  | 0̶ (-49) | ·void (-16) |  | −sig (-97) | −sig (-156) | −sig (-50) | −sig (-76) | ·void (-55) |
+| Fed Quarles Speech |  | ·void (-30) | ·void (+0) |  | ·void (-45) | ·void (-85) | ·void (-40) | ·void (-50) | ·void (-39) |
+| Fed Rosengren Speech |  | ·void (-67) | ·void (-33) |  | ·void (-62) | ·void (-134) | ·void (-40) | ·void (-30) | ·void (-34) |
+| Fed Waller Speech |  | 0̶ (-34) | ·void (+16) |  | ·void (+11) | −sig (-85) | −sig (-45) | ·void (-23) | ·void (-33) |
+| Fed Williams Speech |  | −sig (-61) | 0̶ (-13) |  | ·void (-24) | ·void (-117) | ·void (-58) | ·void (-46) | ·void (-39) |
+| Foreign Bond Investment |  |  | ·void (-16) |  |  |  |  | ·void (-36) | ·void (-50) |
+| GDP Growth Rate QoQ Adv |  | 0̶ (-63) | 0̶ (-9) |  | ? (-50) | −sig (-121) | 0̶ (-37) | 0̶ (-9) | ·void (-42) |
+| House Price Index MoM |  |  |  |  | ·void (-37) |  | ·void (-67) | −sig (-39) | ·void (-40) |
+| IBD/TIPP Economic Optimism |  | −sig (-90) | ·void (-42) |  | ·void (-87) | ·void (-122) | ·void (-47) | 0̶ (-35) | −sig (-48) |
+| ISM Manufacturing PMI |  | 0̶ (-37) | 0̶ (-24) |  | −sig (-70) | −sig (-133) | −sig (-88) | −sig (-57) | −sig (-47) |
+| ISM New York Index |  | ·void (-87) | ·void (-40) |  | ·void (-47) | ·void (-103) | ·void (-74) | ·void (-46) | ·void (-50) |
+| ISM Services PMI |  | 0̶ (-51) | 0̶ (+8) |  | 0̶ (-41) | −sig (-63) | −sig (-66) | −sig (-26) | −sig (-42) |
+| Imports |  | 0̶ (-42) |  |  |  | ·void (-44) |  | ·void (-39) | −sig (-27) |
+| Industrial Production MoM |  |  |  |  |  |  | ·void (-46) |  | ·void (-43) |
+| Inflation Rate MoM |  |  | ✅POS (+108) |  |  | 0̶ (-54) | 0̶ (+28) | −sig (-41) | ·void (-36) |
+| Initial Jobless Claims |  | −sig (-58) | −sig (-25) |  | −sig (-57) | −sig (-105) | −sig (-58) | ·void (-41) | ·void (-44) |
+| JOLTs Job Openings |  | −sig (-66) | −sig (-39) |  | −sig (-69) | −sig (-117) | −sig (-57) | −sig (-33) | ·void (-42) |
+| Kansas Fed Manufacturing Index |  | 0̶ (-26) | 0̶ (-4) |  | ·void (-17) | ·void (-104) | ·void (-48) | ·void (-48) | −sig (-41) |
+| LMI Logistics Managers Index |  | ·void (-52) | 0̶ (-30) |  | −sig (-63) | ·void (-119) | −sig (-53) | 0̶ (-20) | −sig (-54) |
+| MBA 30-Year Mortgage Rate |  | ·void (-44) | ·void (-16) |  | ·void (-52) | ·void (-119) | ·void (-54) | ·void (-41) | ·void (-36) |
+| Manufacturing Production YoY |  | −sig (-52) | 0̶ (-14) |  | 0̶ (-8) |  |  |  |  |
+| Michigan Consumer Sentiment Final |  | 0̶ (+37) | ·void (-22) |  | 0̶ (+27) | −sig (-70) | 0̶ (-8) | ·void (-48) | ·void (-39) |
+| Michigan Consumer Sentiment Prel |  | −sig (-84) | −sig (-50) |  | 0̶ (-39) | −sig (-122) | −sig (-50) | ·void (-51) | ·void (-40) |
+| Monthly Budget Statement |  | ·void (-74) | ·void (-35) |  | ·void (-30) | ·void (-113) | ·void (-41) | ·void (-19) | ·void (-49) |
+| NAHB Housing Market Index |  | ·void (-40) | ·void (-48) |  | ·void (-73) | ·void (-106) | −sig (-46) | ·void (-39) | ·void (-40) |
+| NFIB Business Optimism Index |  | ·void (-83) | ·void (-45) |  | ·void (-64) | ·void (-145) | ·void (-73) | ·void (-42) | −sig (-43) |
+| NY Empire State Manufacturing Index |  | −sig (-91) | −sig (-35) |  | 0̶ (-10) | 0̶ (-83) | −sig (-57) | ·void (-52) | ·void (-49) |
+| Net Long-term TIC Flows |  |  |  |  |  | ·void (-143) |  |  |  |
+| New Home Sales |  | ·void (+3) | ·void (-28) |  | ·void (-15) |  | 0̶ (+4) | ·void (-37) | ·void (-39) |
+| New Home Sales MoM |  |  |  |  |  | ·void (-123) |  |  |  |
+| Non Farm Payrolls |  |  | 0̶ (+45) |  |  | −sig (-125) | −sig (-38) | −sig (-33) | ·void (-49) |
+| Overall Net Capital Flows |  | ·void (-36) |  |  | ·void (-54) |  | ·void (-58) |  |  |
+| PPI MoM |  | 0̶ (-31) | 0̶ (+7) |  | 0̶ (-6) | −sig (-106) | −sig (-47) | −sig (-41) | ·void (-33) |
+| Pending Home Sales MoM |  |  | ·void (-51) |  | ·void (-25) | ·void (-102) | −sig (-36) | ·void (-55) |  |
+| Pending Home Sales YoY |  | ·void (-69) |  |  |  |  |  |  | ·void (-42) |
+| Redbook YoY |  | −sig (-58) | ·void (-25) |  | ·void (-59) | ·void (-117) | ·void (-38) | −sig (-42) | ·void (-43) |
+| Retail Sales MoM |  | −sig (-119) | −sig (-45) |  | −sig (-88) | −sig (-132) | −sig (-90) | ·void (-38) | ·void (-47) |
+| Richmond Fed Manufacturing Index |  | ·void (-34) | ·void (-22) |  | ·void (-33) | −sig (-101) | −sig (-46) | 0̶ (-23) | ·void (-41) |
+| S&P Global Composite PMI Final |  |  |  |  | −sig (-111) | −sig (-195) | −sig (-68) |  | ·void (-26) |
+| S&P Global Composite PMI Flash |  |  |  |  |  | −sig (-69) |  |  |  |
+| S&P Global Manufacturing PMI Final |  | 0̶ (-15) | 0̶ (-1) |  | 0̶ (+2) | 0̶ (-60) | −sig (-67) | −sig (-32) | ·void (-41) |
+| S&P Global Manufacturing PMI Flash |  | 0̶ (-10) | 0̶ (+13) |  |  |  |  | −sig (-45) |  |
+| S&P Global Services PMI Final |  | 0̶ (-49) | 0̶ (-23) |  | 0̶ (-67) | 0̶ (-81) |  | ·void (-41) |  |
+| S&P Global Services PMI Flash |  |  |  |  | 0̶ (-0) |  | −sig (-66) |  | ·void (-35) |
+| S&P/Case-Shiller Home Price MoM |  | ·void (-54) | 0̶ (-27) |  |  |  |  | ·void (-49) | −sig (-41) |
+| S&P/Case-Shiller Home Price YoY |  | ·void (-44) | ·void (-28) |  | ·void (-12) | ·void (-88) | −sig (-48) |  |  |
+| Total Vehicle Sales |  | −sig (-76) | −sig (-29) |  | ·void (-50) | −sig (-115) | ·void (-57) | −sig (-34) | ·void (-34) |
+| Used Car Prices MoM |  |  |  |  |  |  | −sig (-86) |  | −sig (-53) |
+| Used Car Prices YoY |  | 0̶ (-28) |  |  | ? (-43) | −sig (-205) |  |  |  |
+| WASDE Report |  | −sig (-57) | −sig (-38) |  | ·void (-37) | ·void (-109) | ·void (-55) | ·void (-41) | ·void (-42) |
+| Wholesale Inventories MoM |  | 0̶ (-35) | 0̶ (-3) |  | ·void (-7) | ·void (-104) | 0̶ (-19) | −sig (-50) | −sig (-49) |
+| Wholesale Inventories MoM Adv |  | −sig (-114) | −sig (-53) |  | ·void (-70) | −sig (-139) | ·void (-58) | ·void (-52) | ·void (-37) |
