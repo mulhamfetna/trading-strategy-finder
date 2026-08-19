@@ -32,7 +32,7 @@ import tv_calendar                                                 # noqa: E402
 HERE = Path(__file__).resolve().parent
 PRE_MIN, POST_MIN = 5, 15
 FLOOR = np.datetime64("2016-01-01")
-STOP_REASONS = {"SL_SOFT", "SL_HARD", "sl_soft", "sl_hard", "STOP", "stop"}
+STOP_REASONS = {"STOP_LOSS_HARD", "STOP_LOSS_SOFT"}   # fast_engine.REASON_NAME
 
 
 def tier1_minutes() -> np.ndarray:
