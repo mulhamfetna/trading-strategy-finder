@@ -67,6 +67,7 @@ QUEUED → ACTIVE → CLOSED-<verdict>. This file is the index; design detail li
 
 | ID | use-case | mechanism | design sketch | status |
 |---|---|---|---|---|
+| **FU-11** (#162) | **Direction × Size fusion — the owner's breakthrough candidate** (registered 2026-08-19, flagged by the owner) | The news side predicts SIZE without direction (M2 power model, ρ≈0.5 night-before, confirmed); an early-era study claimed price-side DIRECTION prediction without size — if BOTH claims survive modern scrutiny, size × direction = a complete forecast. ⚠️ The old direction claim is IMMATURE-ERA and must first be located and re-audited with today's data/power/discipline (WS-NEWS2 killed *surprise-based* direction — the old claim is price/indicator-based, a different mechanism, not yet contradicted). | Step 1: locate the old study artifacts + extract its exact claim/method. Step 2: re-audit that claim alone (modern data, controls, holdouts). Step 3: only if it survives — the fusion design (direction from tape, size from the power model, geometry from both). | QUEUED — awaiting the owner's go after the progress record |
 | **FU-9** (#161) | **The event-state dataset** — one table: per (event, instrument): pre-release indicator vector + ride outcome + box-book state | Build once, every B-case consumes it; prevents each study from re-touching (and re-consuming) the data differently. Also the natural bridge to WS-EARN (same schema, earnings timestamps). | Per CPI/NFP/FOMC/Retail event × 4 legs: the 165 indicators evaluated at rel−300s (1m frame, the deployed convention), ride P&L (have), box-book open-position state (from FU-1). Versioned, committed, ledger-bound. | QUEUED (proposed second) |
 | **FU-10** | **This ledger + intake rule** | The owner's "strong follow-up system". | This document + one issue per FU + the intake rule above. | ACTIVE (this doc) |
 
@@ -76,7 +77,9 @@ the release minute (ES leads YM?) · news-aware exit for the box (close-before-r
 of veto) · VIX/breadth exogenous fusion (parked programme) tie-in. Promote by giving one an FU
 number + issue — never by silently starting work.
 
-## 4 · Proposed execution order (the recommendation, owner's call)
+## 4 · Execution order — ✅ APPROVED BY THE OWNER, ⏸️ PAUSED (2026-08-19)
+
+**The owner approved this plan verbatim and paused it** ("save your suggested plan i approve it but i will pause it for now"). No FU work runs until the owner unpauses; the ledger keeps accepting new FU registrations meanwhile (the intake rule never pauses).
 
 ```mermaid
 flowchart LR
