@@ -58,14 +58,14 @@ def main() -> int:
     d_nq, d_es = float(nqs.sum() - nqf.sum()), float(ess.sum() - esf.sum())
 
     # R: the deploy-card expectations (pre-registered)
-    r_ok = (abs(nqf.sum() - 151872) < 1 and abs(nqs.sum() - 162228) < 1)
+    r_ok = bool(abs(nqf.sum() - 151872) < 1 and abs(nqs.sum() - 162228) < 1)
     # X: independent-book direction
-    x_ok = d_es > 0
+    x_ok = bool(d_es > 0)
     # M: pooled bootstrap
     pool = np.concatenate([nqs - nqf, ess - esf])
     sims = [RNG.choice(pool, len(pool)).sum() for _ in range(10_000)]
     ci = (float(np.percentile(sims, 5)), float(np.percentile(sims, 95)))
-    m_ok = ci[0] > 0
+    m_ok = bool(ci[0] > 0)
     es_real, es_pctile, es_rand_med = random_map_rank(es_b, es_r)
 
     verdict = "DEPLOY" if (r_ok and x_ok and m_ok) else "NOT-DEPLOYED"
