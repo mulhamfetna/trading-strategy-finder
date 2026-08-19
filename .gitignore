@@ -243,3 +243,6 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !docs/WS-ESCPI-REPORT-BILINGUAL.html
 !playbooks/news-release-long-bundle-v1.2.0.zip
 !subprojects/Parametric-Indicators/optimize/fundamentals/wsescpi_replay_YM*.csv
+!playbooks/news-release-long-bundle-v1.3.0.zip
+!subprojects/Parametric-Indicators/optimize/fundamentals/wsym_exec_events.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/wsym_exec_result.json
