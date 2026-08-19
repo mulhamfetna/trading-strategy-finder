@@ -2,10 +2,10 @@
   "meta": {
     "name": "news-release-long",
     "title": "The Announcement-Premium Bracket (LONG through scheduled macro releases)",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "created": "2026-08-17",
     "branch": "feat/ws-deploy-news-executor",
-    "status": "DEPLOYED \u2014 NQ/RTY (3 series, v5.3.0) + ES CPI-only (#139, v5.4.0) + YM CPI-only (ACQUIRED per the pre-registered RQ-7 execution rule, #147, v5.4.1). Paper-only until a live gateway; regime monitor GO required.",
+    "status": "DEPLOYED, SCALED \u2014 NQ/RTY (3 series) + ES/YM (CPI-only); per-leg quantity rules below (RQ-1/#141 + RQ-9/#150, pre-registered rule, 2026-08-19). Paper-only until a live gateway; regime monitor GO required.",
     "study_window_note": "Operative window 2024->2026 per owner instruction; 2010+/2016+ history retained for study reference only.",
     "provenance": {
       "confirmed_in": "WS-NEWS3 M3 (#117) at Bonferroni alpha/54 + chronological half-split",
@@ -37,7 +37,8 @@
       "portable_backtester.py",
       "schedule_2024plus.csv",
       "evidence/ (D3+D4 per-event CSVs + result JSONs + dashboard report screenshots)",
-      "reports/ (bilingual scale-context + stressed-costs HTML)"
+      "reports/ (bilingual scale-context + stressed-costs HTML)",
+      "reports/ (master experiment record \u00b7 final-state report with the full profit matrix \u00b7 the ES-CPI and dropped-series bilingual reports)"
     ]
   },
   "spec": {
@@ -352,5 +353,46 @@
       },
       "verdict": "ACQUIRE"
     }
-  }
+  },
+  "quantity_rules": {
+    "rule_provenance": "docs/WS-SCALING-ESYM-PREREGISTRATION.md (filed before the runs); NQ/RTY from D3/D4 (#131/#132, v5.3.0)",
+    "NQ": {
+      "single_shot_max": 2,
+      "worked_entry_max": 20,
+      "basis": "D3/D4: worked keeps 96% of edge; 1.31% median window participation at 20"
+    },
+    "RTY": {
+      "single_shot_max": 2,
+      "worked_entry_max": 20,
+      "basis": "D3/D4: worked IMPROVES +24% (premarket whipsaws avoided)"
+    },
+    "ES": {
+      "single_shot_max": 1,
+      "worked_entry_max": 20,
+      "basis": "RQ-1: participation 0.59%/0.98% at 20; retention 85.9%; gates green"
+    },
+    "YM": {
+      "single_shot_max": 1,
+      "worked_entry_max": 5,
+      "basis": "RQ-9: q5 1.33%/3.05% passes, q10 2.67%/6.11% breaches the pre-registered lines; retention 84.3%; single-shot qty=1 per RQ-7 direct fill measurement (\u0394$0.58)"
+    }
+  },
+  "scaling_2024_2026_worked_entry": {
+    "model_note": "worked entry = VWAP[rel-300s, rel-5s), bracket from rel-5s; fills at window VWAP assumed (fair at <=2.5% participation) \u2014 a model property, reported, never netted away",
+    "ES": {
+      "q20_net_total": 263880.0,
+      "q20_net_per_event": 9099.3
+    },
+    "YM": {
+      "q5_net_total": 43481.0,
+      "q5_net_per_event": 1499.35
+    },
+    "NQ_RTY_combined_q20": {
+      "net_total": 859141.0,
+      "source": "D4 (#132), all 3 series"
+    },
+    "layer_at_max_approved_tiers_window_total": 1166502.0,
+    "annual_pace_note": "approximately $450k/yr at max approved tiers; margin at four scaled legs owner-side"
+  },
+  "evidence_scaling_esym": "evidence/scaling_esym/ (d3/d4 events+results per leg + window_participation.json); ledger claim ESYM-SCALING-TIERS"
 }

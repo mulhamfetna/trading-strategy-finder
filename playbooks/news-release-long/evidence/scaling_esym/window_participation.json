@@ -1,0 +1,24 @@
+{
+ "ES": {
+  "n": 29,
+  "window_vol_median": 3389.0,
+  "window_vol_p5": 2043.0,
+  "q5_part_median_pct": 0.15,
+  "q5_part_p95_pct": 0.24,
+  "q10_part_median_pct": 0.3,
+  "q10_part_p95_pct": 0.49,
+  "q20_part_median_pct": 0.59,
+  "q20_part_p95_pct": 0.98
+ },
+ "YM": {
+  "n": 29,
+  "window_vol_median": 375.0,
+  "window_vol_p5": 163.8,
+  "q5_part_median_pct": 1.33,
+  "q5_part_p95_pct": 3.05,
+  "q10_part_median_pct": 2.67,
+  "q10_part_p95_pct": 6.11,
+  "q20_part_median_pct": 5.33,
+  "q20_part_p95_pct": 12.22
+ }
+}
