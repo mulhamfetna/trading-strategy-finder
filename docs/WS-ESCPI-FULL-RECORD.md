@@ -216,3 +216,36 @@ pace recently, ≈ $1.2k/yr full-era). Three honest qualifiers: (a) small dollar
 point value makes it the smallest of the four index legs; (b) same consumed-history evidence
 grade as ES (the owner's acceptance covers the grade); (c) the thin premarket tape is a real
 execution risk the replay cannot price — RQ-7 must run before deployment.
+
+---
+
+# ADDENDUM 2 — RQ-7: the YM execution walk and the ACQUIRE (2026-08-19)
+
+## 20 · Experiment E15 — the execution study (pre-reg `6d12509`, filed first)
+The owner ordered the remaining verification layers walked "and either acquiring it or not."
+The open layer was execution: every YM number assumed the replay's close-of-bar fill on a tape
+whose 300-second entry window trades a median of only 101 seconds. Four measurements, each
+with an a-priori PASS line fixed before running (`wsym_execution_study.py`, n=116):
+
+| layer | measured | line | verdict |
+|---|---|---|---|
+| ACQ-1 fill staleness | median **0.0 s**, p95 **7.2 s** | ≤30 / ≤60 | PASS |
+| ACQ-2 next-open fill (harsher model) | net +$107.64 → **+$107.06** (Δ **$0.58**; entry shift ≈ 0.0 ticks) | > $50 | PASS |
+| ACQ-3 entry depth | median window volume **364** contracts (entry bar 2) | ≥ 20 | PASS |
+| ACQ-4 exit tape | **638**/900 traded seconds, **4,081** contracts | ≥300 / ≥200 | PASS |
+
+Flat stress (reported): 2 adverse ticks → +$97.64; 4 → +$87.64. **VERDICT: ACQUIRE** — the
+thin-tape objection dissolves at qty=1: the tape is thin *between* prints but fresh and deep
+exactly where this trade lives. The lesson worth keeping: *the window-seconds statistic that
+voided the original holdout measured the wrong thing for execution — traded-seconds density is
+not fill quality; the entry second itself is where liquidity concentrates on CPI mornings.*
+
+## 21 · The acquisition (the ship pipeline, third pass)
+Ledger claim `YMCPI-EXECUTION-ACQUIRE` (V1 metrics re-derive · V2 an independent fill model
+reproduces the economics · V3 "too thin to execute" falsified on every axis) — suite **39/39**.
+Playbook v1.3.0: YM in `spec.instruments` (CPI-only), costs, performance, the execution-study
+block; portable backtester covers YM through the same series filter. Isolation 18/18; golden
+6/6; the executor already knew YM (E12). Layer 2024→2026 at qty=1 per leg:
+NQ $34,386.93 + RTY $7,710.39 + ES $15,353.82 + **YM $10,315.88 = $67,767.02** (+61% vs the
+pre-ES layer). Caveat stamped everywhere: four legs, ONE bet on CPI minutes — the regime
+monitor guards all of them; qty>1 on YM is forbidden until its own D3/D4 study (queued).
