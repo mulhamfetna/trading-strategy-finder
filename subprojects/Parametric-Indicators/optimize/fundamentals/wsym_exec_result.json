@@ -1,0 +1,26 @@
+{
+  "prereg_commit": "6d12509",
+  "n": 116,
+  "acq1": {
+    "median_s": 0.0,
+    "p95_s": 7.25,
+    "pass": true
+  },
+  "acq2": {
+    "net_base": 107.64034482758595,
+    "net_nextopen": 107.06366379310316,
+    "entry_shift_ticks_mean": 0.02586206896551724,
+    "pass": true
+  },
+  "acq3": {
+    "window_vol_median": 364.5,
+    "entry_bar_vol_median": 2.0,
+    "pass": true
+  },
+  "acq4": {
+    "post_seconds_median": 638.5,
+    "post_vol_median": 4081.0,
+    "pass": true
+  },
+  "verdict": "ACQUIRE"
+}
