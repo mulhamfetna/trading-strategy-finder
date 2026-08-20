@@ -1,13 +1,15 @@
 # The News Programme — Master Experiment Record
 
-**Every experiment, its result and its finding, across the entire programme (2026-06 → 2026-08-19).
-Current through v5.4.3: all profitable news deployed and scaled, the premium grid literally
-closed, the fusion workstream executing, ledger 43/43 on both machines.**
+**Every experiment, its result and its finding, across the entire programme (2026-06 → 2026-08-20).
+Current through v5.4.3 + FU-11 Stage 1: all profitable news deployed and scaled, the premium
+grid literally closed, the fusion workstream executing (the fused size engine has WON its
+forecast-quality stage), ledger 44/44 on both machines.**
 
 This is the master index. Each workstream's full detail lives in its own record —
 `NEWS-PROGRAMME-FULL-RECORD.md` (WS-NEWS2/3), `WS-NEWS4-FULL-RECORD.md`,
-`WS-ESCPI-FULL-RECORD.md` (+ 2 addenda), `WS-GRID-RESULTS.md` — and every number below is
-bound to the claims ledger (`optimize/verify/run.py`, 43/43) or a committed evidence file.
+`WS-ESCPI-FULL-RECORD.md` (+ 2 addenda), `WS-GRID-RESULTS.md`, `WS-FUSION-FULL-RECORD.md`
+(F-0…F-6) — and every number below is bound to the claims ledger
+(`optimize/verify/run.py`, 44/44) or a committed evidence file.
 
 ```mermaid
 flowchart TD
@@ -20,6 +22,9 @@ flowchart TD
   G --> H[RQ-7 #147\nexecution gate: YM ACQUIRED v5.4.1]
   F --> I[THE LAYER: 4 legs, one CPI bet\n$67,767 net 2024-26 at qty=1/leg]
   H --> I
+  I --> J[WS-FUSION #152+\nFU-1 audit · FU-13 killed · FU-14 deployed]
+  J --> K[FU-11 Stage 1 PASS 4/4\nfused vol forecast beats the live gate]
+  K --> L[Consumers armed, each gated\nre-gate · ramp · geometry · stops]
 ```
 
 ---
@@ -141,3 +146,34 @@ flowchart TD
 | 9.6 | The registrations and saves around the arc | FU-11's fused-size design SAVED as a standing file (`FU11-FUSED-SIZE-DESIGN-DRAFT.md`) per the owner's word; the system-layers analysis updated to v5.4.3 (two deployed forecast layers now; the killed ramp recorded); `ACHIEVEMENTS-SUMMARY.md` written — the release trail v5.2.0→v5.4.3, the laws, the kill list as an achievement. |
 | 9.7 | FU-15 (#168) registered — the owner's dual-sided bracket | Simultaneous LONG+SHORT with power-informed SL/TP = a stop-replicated straddle monetizing forecastable SIZE with dead direction; killers pre-declared (two-way sweep double-stop — 94% of stop-outs are 1-sec sweeps; doubled costs; the losing median event; overlap with the deployed LONG ride). **Parked by owner behind FU-11.** |
 | 9.8 | FU-11 Stage 1 (#162): the fused size engine's forecast-quality stage | **PASS 4/4 pre-registered lines (2026-08-20).** Adding the calendar terms the live vol engine is blind to (event dummy + M2 night-before power) beats BOTH the deployed fixed-weight HAR and the fitted HAR-LS on the engine's own target: NQ 1h event bars QLIKE 8.11→7.64→**0.48** (deployed→fitted→fused), diff +7.16 CI [+4.96,+9.69]; cross-instrument 4/4 (ES +8.69, RTY +21.42, GC +6.43, CL +0.29) + NQ 4h +3.25; overall QLIKE improves too (0.548→0.487). Placebo collapses to the dummy level everywhere ⇒ **POWER-AWARE, not merely calendar-aware** (D→C −0.72 QLIKE the shuffle cannot reach). ⭐⭐ Insight: **the live gate is catastrophically wrong exactly on release bars** (QLIKE ≈8 vs ~0.5 everyday) — its weakness is its information set, not its weights (HAR-LS barely helps). Honest note: gains halve in 2025+ vs 2024. Claim `FU11-STAGE1-FUSED-FORECAST-WINS`, **44/44 both machines**. Nothing deployed; consumers ①–④ armed, each own pre-reg. |
+
+---
+
+## The programme state as of 2026-08-20 (the running verdict)
+
+**Deployed and earning (paper-only until a live gateway; regime monitor GO required):**
+
+| layer | what it is | the number of record |
+|---|---|---|
+| The news layer (v5.4.2) | 4 legs, one CPI bet: NQ+RTY (CPI/NFP/FOMC) + ES (CPI) + YM (CPI); frozen ride LONG rel−300s, S 0.10% worse-of, TP 0.40% better-of, exit +900s; stressed costs lead | $67,767 net 2024→2026 at qty=1/leg; ≈$1.167M/window model-grade at max approved tiers (NQ/RTY/ES ≤20, YM ≤5 worked-entry; ⛔ YM >5 needs its own study) |
+| The box book | 55 champions / 9 markets (context, not news) | ≈$840k/yr 2026-OOS at deployed caps |
+| HAR-RV vol gate | the live entry gate of every champion (`volatility.py`) | the system's FIRST deployed forecast |
+| Power-forecast layer (v5.4.3) | FU-14: night-before event-size forecasts, information-only | parity 5/5 ≤1e-16; ρ≈0.5–0.62; the SECOND deployed forecast |
+
+**Killed, with cause (the kill list is an asset):** direction prediction (3 independent
+routes) · surprise-based post-jump edge (612 pairs) · all non-CPI new premiums (WS-NEWS4,
+powered) · vol/uncertainty GATING of the vol-seeking box (TimesFM, Chronos-2) · regime
+HMM/jump edges · the Exp2 sizing ramp as-deployed (FU-13: ES reverses it) · Retail longs
+(confirmed ANTI-premium on 7 instruments — a tradeable-short question parked in FU-8).
+
+**The laws the programme keeps re-proving:** POWER ≠ PREMIUM · the CPI premium is an
+equity-index phenomenon ordered by beta (NQ>ES>YM>RTY) · size is forecastable, direction is
+not · read gross beside net (cost drag masquerades as anti-premium) · traded-seconds density
+≠ fill quality · same-seed agreement ≠ replication.
+
+**The fusion frontier (era 9, open):** FU-11 Stage 1 PASSED — the live vol engine's one
+blindness (the calendar) is now proven repairable, and the repair is power-aware. Armed and
+waiting, each behind its own pre-registration: the four fused-forecast consumers (re-gate ·
+sizing ramp · news geometry · box stops), FU-9's event-state dataset, FU-2's veto replay,
+and the parked FU-15 dual-sided bracket. Ledger **44/44 both machines**; every number above
+is claim-bound.
