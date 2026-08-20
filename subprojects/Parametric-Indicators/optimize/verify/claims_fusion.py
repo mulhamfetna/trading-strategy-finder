@@ -597,3 +597,77 @@ register(Claim(
     checks=[Check("V1", "per-TF deltas fully re-derive from FU-9 + FU-1 committed files", _fu3_v1),
             Check("V2", "positive on all 6 frames; evidence active on the true book span", _fu3_v2),
             Check("V3", "perm control passes yet the verdict stays NULL by the CI rule", _fu3_v3)]))
+
+
+# =============================================================================================
+# FU-7 (#159) — power-scaled news geometry: CLOSED-NULL (the placebo owns the gain)
+# =============================================================================================
+def _fu7() -> dict:
+    return json.load(open(FUND / "fu7_result.json"))
+
+
+def _fu7_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION: the pooled delta must equal the committed per-event diff series'
+    sum AND the per-leg deltas' sum; per-leg delta must equal scaled − frozen."""
+    r = _fu7()
+    d = pd.read_csv(FUND / "fu7_event_diff.csv")
+    if abs(d["diff"].sum() - r["pooled"]["delta_net"]) > 0.5:
+        return False, f"event series {d['diff'].sum():.0f} vs pooled {r['pooled']['delta_net']}"
+    ls = sum(v["delta_net"] for v in r["per_leg"].values())
+    if abs(ls - r["pooled"]["delta_net"]) > 0.5:
+        return False, f"per-leg sum {ls:.0f} vs pooled"
+    for leg, v in r["per_leg"].items():
+        if abs((v["scaled_net"] - v["frozen_net"]) - v["delta_net"]) > 0.01:
+            return False, f"{leg}: delta != scaled − frozen"
+    return True, f"pooled {r['pooled']['delta_net']:+,.0f} re-derives from event series + legs"
+
+
+def _fu7_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT ANCHOR: the frozen arm reproduced the committed replay evidence to
+    the cent on all 307 overlapping events (also the constant-patching leakage proof)."""
+    r = _fu7()
+    par = {k: v["parity_overlap"] for k, v in r["per_leg"].items()}
+    if sum(par.values()) != 307 or any(v <= 0 for v in par.values()):
+        return False, f"parity overlaps {par} != the 307 committed events"
+    return True, f"frozen-arm cent-parity on {par} (Σ=307)"
+
+
+def _fu7_v3() -> tuple[bool, str]:
+    """V3 — THE FALSIFIER AS THE FINDING: CI90 is POSITIVE yet the within-series placebo's
+    median (+$15,949) exceeds half the real delta — the gain is bracket-WIDTH bias, not
+    power ALIGNMENT — and the verdict must therefore be CLOSED-NULL despite the positive CI
+    (rule integrity: the appealing CI did not override the failed placebo line)."""
+    r = _fu7()
+    p = r["pooled"]
+    ok = (p["boot90_ci"][0] > 0 and p["placebo_median"] > 0.5 * p["delta_net"]
+          and r["verdict"] == "CLOSED-NULL")
+    return ok, (f"CI {p['boot90_ci']} positive BUT placebo median {p['placebo_median']:+,.0f}"
+                f" ≈ {100*p['placebo_median']/p['delta_net']:.0f}% of real "
+                f"{p['delta_net']:+,.0f} -> {r['verdict']}")
+
+
+register(Claim(
+    id="FU7-POWER-GEOMETRY-CLOSED-NULL",
+    issue="#159",
+    statement="Power-scaled news-leg geometry CLOSES NULL: scaling the frozen bracket by the "
+              "night-before within-series power ratio (clip [0.5,2], constant 1:4 R:R) adds "
+              "+$20,559 net-stressed over 840 deployed-leg events with a POSITIVE CI90 "
+              "[+$4,160, +$37,319] — but the shuffled-power placebo keeps +$15,949 (≈78% of "
+              "the gain): WIDER BRACKETS HELP REGARDLESS OF WHICH EVENT GETS THE WIDTH. The "
+              "power forecast's alignment contributes ≈$4.6k, inside noise; the gain is "
+              "width bias, concentrated in the recent era (halves +$179 / +$20,380) and in "
+              "NQ/RTY (+$8,869/+$13,799; ES +$94, YM −$2,203). The frozen geometry STANDS. "
+              "The residual observation — the frozen 0.10/0.40% bracket may be generically "
+              "tight in the recent era — is parked as an explicit overfit-hazard question, "
+              "not acted on.",
+    source="optimize/fundamentals/fu7_result.json + fu7_event_diff.csv",
+    value_fn=lambda: _fu7()["pooled"]["delta_net"],
+    expect=20559.11, tol=1.0,
+    blind_spot="One mapping (not searched — by design); expanding pred_exp only (t24 "
+               "variant not run); qty=1 single-shot replay grade; the four legs share CPI "
+               "moments; the placebo preserves the r DISTRIBUTION so it cannot separate "
+               "'width helps' from 'width helps recently' — that question is parked, not "
+               "answered.",
+    checks=[Check("V1", "pooled delta re-derives from the event series and per-leg books", _fu7_v1),
+            Check("V2", "frozen-arm cent-parity on all 307 committed events", _fu7_v2),
+            Check("V3", "positive CI overridden by the failed placebo line (rule integrity)", _fu7_v3)]))

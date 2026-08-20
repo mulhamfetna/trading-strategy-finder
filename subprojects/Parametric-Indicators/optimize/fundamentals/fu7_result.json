@@ -1,0 +1,79 @@
+{
+  "per_leg": {
+    "NQ": {
+      "events": 327,
+      "scaled_events": 271,
+      "parity_overlap": 81,
+      "frozen_net": 43511.21,
+      "scaled_net": 52380.49,
+      "delta_net": 8869.28,
+      "r_range": [
+        0.664,
+        2.0
+      ]
+    },
+    "RTY": {
+      "events": 281,
+      "scaled_events": 190,
+      "parity_overlap": 81,
+      "frozen_net": 8074.99,
+      "scaled_net": 21874.22,
+      "delta_net": 13799.23,
+      "r_range": [
+        0.64,
+        2.0
+      ]
+    },
+    "ES": {
+      "events": 116,
+      "scaled_events": 99,
+      "parity_overlap": 29,
+      "frozen_net": 17558.45,
+      "scaled_net": 17652.73,
+      "delta_net": 94.28,
+      "r_range": [
+        0.967,
+        2.0
+      ]
+    },
+    "YM": {
+      "events": 116,
+      "scaled_events": 100,
+      "parity_overlap": 116,
+      "frozen_net": 12486.28,
+      "scaled_net": 10282.89,
+      "delta_net": -2203.39,
+      "r_range": [
+        1.0,
+        2.0
+      ]
+    }
+  },
+  "pooled": {
+    "delta_net": 20559.4,
+    "n_events": 840,
+    "boot90_ci": [
+      4159.570429768132,
+      37318.92968503243
+    ],
+    "placebo_median": 15949.03,
+    "placebo_p95": 26012.48,
+    "eras": {
+      "h1": 179.24,
+      "h2": 20380.17,
+      "split": "2021-09-22"
+    }
+  },
+  "power": {
+    "sd_event_diff": 347.29,
+    "mde_total": 16557.59
+  },
+  "config": {
+    "clip": [
+      0.5,
+      2.0
+    ],
+    "scaler": "pred_exp / causal within-series median (>=8 priors), else r=1"
+  },
+  "verdict": "CLOSED-NULL"
+}
