@@ -5,7 +5,7 @@ single experiment and its results and outcomes and insights"). This is the NARRA
 companion to the master index (`NEWS-MASTER-EXPERIMENT-RECORD.md`): where the index gives one
 row per experiment, this report tells each experiment's story in plain language — what we
 did, what happened in dollars, what went well, what went wrong, and what we learned. Every
-number here already lives in a committed evidence file or the claims ledger (59/59 on both
+number here already lives in a committed evidence file or the claims ledger (60/60 on both
 machines); nothing is from memory.**
 
 ```mermaid
@@ -796,6 +796,28 @@ own blindness schedule — every night it can say which coming hours its live vo
 gate will mis-forecast, by how much, and on which calendar's authority. What consumes that
 information remains gated behind the fusion era's consumer laws.
 
+
+---
+
+## Era 11 — XNI phase 3 (open)
+
+### 11.1 · X-1 — the collision census (the calendars resolve independently)
+**What we did:** phase 3's opening measurement, with its born constraint made mechanical —
+the census and its power analysis ran first, and a pre-registered n≥30 gate decided which
+collision types could ever have an outcome read. **What the census said:** collisions are
+NOT rare at the top-12 scale — of ~560 macro events since 2016, 63 had a mega-cap earnings
+print in the prior eighteen hours and 118 had one within a day. Both types cleared the
+gate. **What the outcomes said:** on the registered primary (NQ), collision mornings jump
+no harder than matched same-series control mornings — both types' CIs contain zero and both
+sit below their within-series shuffle bars. One texture recorded and not promoted: on ES,
+the earnings-night type clears every registered line alone (+0.358, CI-clear, above
+shuffle) — but the primary is NQ, no pooled rule existed, and none was invented after the
+fact; the ledger's V2 check verifies the non-promotion permanently. **Insight — the phase's
+first law:** the two forecastable calendars resolve INDEPENDENTLY. Compound power therefore
+composes additively from the two certified forecasts — the collision flag X-3 wants needs
+no interaction statistics, and the parked dual-sided bracket gains nothing beyond the two
+forecasts it already has. An honest null that simplifies every design downstream of it.
+
 ---
 
 ## Where the programme stands (2026-08-20)
@@ -810,5 +832,5 @@ two-calendar forecast layer — the gate's nightly blindness schedule; routing, 
 fitting). Deliberate holds: FU-4 gated-off, FU-15 parked, FU-11 consumers ①④
 low-priority. **Phase 3 — earnings × news × indicators — is initiating** with its own
 brainstorm and numbered ledger.
-**The ledger**: 59/59 claims green on both machines; every number in this report is bound
+**The ledger**: 60/60 claims green on both machines; every number in this report is bound
 to it or to a committed evidence file.
