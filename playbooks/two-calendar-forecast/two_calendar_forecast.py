@@ -158,6 +158,26 @@ def forecast(inst: str, now: pd.Timestamp, horizon: int, earn_file: str | None,
                          "event_et": str(r.event_et),
                          "pred_power_pct": round(p_hist, 4),
                          "bar_lift_rv_pts": round(b_e[-2] + b_e[-1] * p_hist, 2)})
+    # X-3 (docs/X3-PREREGISTRATION.md): collision flag + additive compound lift.
+    # Law #1 (X-1): the calendars resolve independently => composition is ADDITIVE;
+    # max per counterpart calendar avoids double-counting clustered prints.
+    for r in rows:
+        t_r = pd.Timestamp(r["event_et"])
+        best = None
+        flag = None
+        for o in rows:
+            if o is r or o["calendar"] == r["calendar"]:
+                continue
+            dh = (t_r - pd.Timestamp(o["event_et"])).total_seconds() / 3600.0
+            if abs(dh) <= 24.0:
+                flag = "T1" if (0.0 < dh <= 18.0 and flag != "T1") else (flag or "T2")
+                if o.get("bar_lift_rv_pts") is not None:
+                    lift_o = o["bar_lift_rv_pts"]
+                    best = lift_o if best is None else max(best, lift_o)
+        r["collision"] = flag
+        if flag is not None and best is not None and r.get("bar_lift_rv_pts") is not None:
+            r["compound_lift_rv_pts"] = round(r["bar_lift_rv_pts"] + best, 2)
+
     out_dir.mkdir(parents=True, exist_ok=True)
     dest = out_dir / f"two_calendar_forecast_{inst}.jsonl"
     with dest.open("w") as fh:

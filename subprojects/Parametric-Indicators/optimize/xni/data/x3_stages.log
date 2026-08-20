@@ -1,0 +1,9 @@
+E-D1 verify NQ: macro 0.478888 vs committed 0.478888 (Δ0.0e+00) · earn 0.794457 vs 0.794457 (Δ0.0e+00) · union identity Δ0.0e+00 -> PASS
+E-D1 verify ES: macro 0.584417 vs committed 0.584417 (Δ0.0e+00) · earn 0.768676 vs 0.768676 (Δ0.0e+00) · union identity Δ0.0e+00 -> PASS
+E-D1 forecast NQ: 101 upcoming known events within 365d of 2025-01-01 00:00:00 -> deploy_out_x3/two_calendar_forecast_NQ.jsonl
+   {'calendar': 'macro', 'event': 'Non Farm Payrolls', 'event_et': '2025-01-10 08:30:00', 'pred_power_pct': 0.1759, 'bar_lift_rv_pts': 69.07, 'collision': None}
+   {'calendar': 'macro', 'event': 'Inflation Rate MoM', 'event_et': '2025-01-15 08:30:00', 'pred_power_pct': 0.1397, 'bar_lift_rv_pts': 55.65, 'collision': None}
+   {'calendar': 'macro', 'event': 'Retail Sales MoM', 'event_et': '2025-01-16 08:30:00', 'pred_power_pct': 0.057, 'bar_lift_rv_pts': 24.93, 'collision': None}
+   {'calendar': 'macro', 'event': 'Durable Goods Orders MoM', 'event_et': '2025-01-28 08:30:00', 'pred_power_pct': 0.0232, 'bar_lift_rv_pts': 12.35, 'collision': None}
+   {'calendar': 'macro', 'event': 'Fed Interest Rate Decision', 'event_et': '2025-01-29 14:00:00', 'pred_power_pct': 0.1461, 'bar_lift_rv_pts': 58.01, 'collision': 'T2', 'compound_lift_rv_pts': 73.5}
+X3_STAGES_DONE

@@ -56,7 +56,41 @@ def rolling_state(events: pd.DataFrame) -> pd.DataFrame:
     return cpi[["et", "pnl_used", "roll24", "state"]]
 
 
-def current_state(events: pd.DataFrame, state_file: Path) -> dict:
+def compound_context(cpi_ets: pd.Series) -> pd.DataFrame:
+    """X-5b (docs/X5B-PREREGISTRATION.md): the compound-power CONTEXT per CPI event —
+    pred_exp + the MAX top-12 earnings pred within ±24h (X-5's exact definition; X-3's
+    law-#1 additive composition). INFORMATION ONLY — nothing here may ever gate."""
+    import numpy as np
+    repo = Path(__file__).resolve().parents[2]
+    pi = repo / "subprojects" / "Parametric-Indicators" / "optimize"
+    d = pd.read_csv(pi / "fundamentals" / "fu9_event_state_NQ.csv", parse_dates=["et"],
+                    usecols=["et", "title", "pred_exp"])
+    d = d[d.title == CPI_TITLE]
+    earn = pd.read_csv(pi / "earnings" / "data" / "ep1_events_NQ.csv",
+                       parse_dates=["event_et"])
+    e_et = earn.event_et.to_numpy()
+    e_p = earn.pred.to_numpy(float)
+    rows = []
+    hist = []
+    for t in pd.to_datetime(cpi_ets):
+        base = d.loc[d.et == t, "pred_exp"]
+        base = float(base.iloc[0]) if len(base) and np.isfinite(base.iloc[0]) else None
+        comp = None
+        if base is not None:
+            dh = np.abs((t.to_datetime64() - e_et) / np.timedelta64(1, "h"))
+            near = e_p[(dh <= 24.0) & np.isfinite(e_p)]
+            comp = round(base + (float(near.max()) if len(near) else 0.0), 4)
+        note = None
+        if comp is not None:
+            prior = [x for x in hist if x is not None]
+            if len(prior) >= 8:
+                note = "high" if comp > float(np.median(prior)) else "low"
+            hist.append(comp)
+        rows.append({"compound_power_pct": comp, "power_regime_note": note})
+    return pd.DataFrame(rows, index=range(len(rows)))
+
+
+def current_state(events: pd.DataFrame, state_file: Path, context: bool = False) -> dict:
     """The operational answer: GO or STAND_DOWN right now — with stickiness applied."""
     walk = rolling_state(events)
     latest = walk.iloc[-1]
@@ -70,6 +104,11 @@ def current_state(events: pd.DataFrame, state_file: Path) -> dict:
            "as_of": str(latest.et), "sticky": sticky,
            "rule": f"rolling mean of last {WINDOW} CPI-event P&Ls < $0 => STAND_DOWN (sticky; "
                    f"clearing is an OWNER action)"}
+    if context:
+        ctx = compound_context(walk.et).iloc[-1]
+        out["context"] = {"compound_power_pct": ctx.compound_power_pct,
+                          "power_regime_note": ctx.power_regime_note,
+                          "authority": "information only — never gates (X-5b)"}
     state_file.parent.mkdir(parents=True, exist_ok=True)
     state_file.write_text(json.dumps(sticky, indent=1))
     return out
@@ -82,6 +121,8 @@ def main() -> int:
     ap.add_argument("--history", action="store_true", help="print the full historical state walk")
     ap.add_argument("--clear", action="store_true",
                     help="OWNER ACTION: clear a sticky STAND_DOWN")
+    ap.add_argument("--context", action="store_true",
+                    help="X-5b: add the compound-power CONTEXT field (information only)")
     a = ap.parse_args()
 
     sf = Path(a.state_file)
@@ -95,15 +136,21 @@ def main() -> int:
     ev = pd.read_csv(a.events)
     if a.history:
         walk = rolling_state(ev)
+        if a.context:
+            walk = pd.concat([walk, compound_context(walk.et)], axis=1)
         flips = walk[walk.state.ne(walk.state.shift())]
         print(f"CPI events {len(walk)} · window {WINDOW}")
         for _, r in flips.iterrows():
             r24 = f"{r.roll24:+.2f}" if pd.notna(r.roll24) else "n/a"
-            print(f"  {str(r.et)[:10]}  -> {r.state:<10} (roll24 {r24})")
+            cx = ""
+            if a.context and "compound_power_pct" in walk.columns and \
+                    pd.notna(r.get("compound_power_pct")):
+                cx = f" · compound {r.compound_power_pct:.3f}% ({r.power_regime_note})"
+            print(f"  {str(r.et)[:10]}  -> {r.state:<10} (roll24 {r24}){cx}")
         share = (walk.state == "STAND_DOWN").mean()
         print(f"  time in STAND_DOWN: {share:.1%} of evaluable CPI events")
         return 0
-    print(json.dumps(current_state(ev, sf), indent=1))
+    print(json.dumps(current_state(ev, sf, context=a.context), indent=1))
     return 0
 
 

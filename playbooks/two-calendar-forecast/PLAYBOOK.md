@@ -10,8 +10,10 @@ on earnings bars, plain HAR-LS elsewhere. INFORMATION ONLY — no trading consum
   plus the union count-weighted identity.
 - `scramble --instrument NQ` — per-calendar power-scramble falsifiers (must collapse).
 - `forecast --instrument NQ --now <date> [--horizon-days 30] [--earnings-dates file.csv]`
-  — JSONL of upcoming known events with the night-before predicted power and the routed
-  bar-level vol lift (rv points the blind HAR would miss). Macro is fully forward-capable
+  — JSONL of upcoming known events with the night-before predicted power, the routed
+  bar-level vol lift (rv points the blind HAR would miss), and — X-3 — the `collision`
+  flag (T1/T2, X-1's frozen windows) with the ADDITIVE `compound_lift_rv_pts` (phase law
+  #1: the calendars resolve independently; composition needs no interaction term). Macro is fully forward-capable
   (TV calendar); earnings need a user-supplied dates file (EDGAR is historical — declared).
 
 **Certified numbers behind it**: macro event-bar QLIKE 8.11→0.48 (NQ; FU-11, 4/4 lines);

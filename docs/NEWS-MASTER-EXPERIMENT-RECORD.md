@@ -1,15 +1,15 @@
 # The News Programme — Master Experiment Record
 
 **Every experiment, its result and its finding, across the entire programme (2026-06 → 2026-08-20).
-Current through v5.4.3 + FU-11 Stage 1: all profitable news deployed and scaled, the premium
+Current through **v5.5.0**: all profitable news deployed and scaled, the premium
 grid literally closed, the fusion workstream executing (the fused size engine has WON its
-forecast-quality stage), ledger 59/59 on both machines.**
+forecast-quality stage), ledger 64/64 on both machines.**
 
 This is the master index. **The verbose NARRATIVE companion — every experiment told in full (what ran, the dollars, what went well/wrong, the insight) — is `PROGRAMME-COMPLETE-EXPERIMENT-REPORT.md`.** Each workstream's full detail lives in its own record —
 `NEWS-PROGRAMME-FULL-RECORD.md` (WS-NEWS2/3), `WS-NEWS4-FULL-RECORD.md`,
 `WS-ESCPI-FULL-RECORD.md` (+ 2 addenda), `WS-GRID-RESULTS.md`, `WS-FUSION-FULL-RECORD.md`
 (F-0…F-7) — and every number below is bound to the claims ledger
-(`optimize/verify/run.py`, 59/59) or a committed evidence file.
+(`optimize/verify/run.py`, 64/64) or a committed evidence file.
 
 ```mermaid
 flowchart TD
@@ -169,6 +169,18 @@ flowchart TD
 | 10.6 | E-X2 v2: powered tolerances | **FAIL ⇒ v1 CONFIRMED at proper power (2026-08-20).** Under the house-standard CI form (both instruments required): NQ line 2 is **CLEAR-negative** (C_e−C_j = −0.0013, CI [−0.0024,−0.0003], just above its MDE 0.0011) — **v1's near-miss was a true detection, not noise**; ES composes cleanly 4/4. ⭐ The powered line worked in BOTH directions (passed the noise-level macro diff; detected the real earnings diff). Single-calendar models stand PERMANENTLY. ⭐ Engineering insight: model-level composition interferes; **ROUTING-level composition** (each certified model on its own calendar's bars) is interference-free by construction — the natural E-D1 design, owner's word required. Claim `EX2V2-INTERFERENCE-CONFIRMED`, **58/58**. |
 | 10.7 | E-D1: the two-calendar forecast layer | ⭐ **DEPLOYED-ON-BRANCH (2026-08-20).** The routing pattern productionized (fitted composition never used — its NQ interference is CI-proven): parity **Δ0.0e+00 exact** vs committed FU-11+E-X1 evidence (both instruments, union identity included); both scramble falsifiers collapse; artifact regime-sane (NFP +71.9 rv pts night-before); **golden 6/6 ALL MATCH** (no engine path touched, statically + gate-proven). Information-only, zero income by design; playbook v1.0.0; release ship = the owner's pipeline. Claim `ED1-TWO-CALENDAR-DEPLOYED`, **59/59**. |
 
+
+## Era 11 — XNI phase 3 (#172+): earnings × news × indicators
+
+| # | experiment | result → finding |
+|---|---|---|
+| 11.1 | X-1 (#173): the collision census + compound power | **CLOSED-INDEPENDENT both types (2026-08-20).** Census cleared its own gate (T1 63/64, T2 118 — collisions NOT rare at top-12 scale): NQ primary Δlog(jump) T1 +0.1723 [−0.06,+0.40], T2 +0.0494 [−0.14,+0.24] — ∋0 and below shuffle p95. ⭐ ES T1 clears every line ALONE (+0.3580 [+0.12,+0.58]) — single-witness texture, NOT promoted (V2 ledger-verified). **Phase law #1: the calendars resolve independently — compound power composes ADDITIVELY, no interaction term.** Claim `X1-CALENDARS-INDEPENDENT`, **60/60**. |
+| 11.2 | X-3: the compound-power artifact | **SHIPPED-ON-BRANCH (2026-08-20)** — a composition, not a study (law #1 ⇒ additive, no interaction stats): the E-D1 artifact gains the collision flag + `compound_lift_rv_pts`. Lines green: parity Δ0.0e+00 post-change · census consistency 22.6% vs 22.4% (ratio 1.009) · all 44 compound rows re-derive additively ROW BY ROW in the claim. ⭐ Incident of record: **the claim's own V3 caught a real bug on pass one** (a 0.0 floor silently erasing negative counterpart lifts — the certified model's honest negatives must be respected); fixed within the hour. Claim `X3-COMPOUND-ARTIFACT-SHIPPED`, **61/61**. |
+| 11.3 | X-5: monitor × compound power | **INFORMATIVE — regime-dominant, honestly decomposed (2026-08-20).** Monitor rolling-24 health ~ compound power: Spearman **+0.9057** CI [0.86,0.93] (n=93, eras +0.54/+0.73) — but the within-year shuffle bar reaches **0.879**: the ANNUAL regime carries the bulk (era-2's CPI-power-era law re-measured at the monitor level); the event-level increment is the 0.027 margin (V3 verifies the decomposition is stated, permanently). Consequence as registered: a REPORT context field may be added (X-5b armed, own parity gate, trigger never changes). Claim `X5-MONITOR-POWER-INFORMATIVE`, **62/62**. |
+| 11.4 | X-5b: the monitor's context field | **SHIPPED-ON-BRANCH (2026-08-20)** — X-5's registered consequence, exactly and no more: optional `--context` (compound power + a zero-authority regime label with the "never gates" string). **Trigger untouched, proven 3 ways**: byte-equal rolling_state on committed evidence · static source proof · defaults OFF. Definition parity 29/29 at 1e-9. Claim `X5B-MONITOR-CONTEXT-SHIPPED`, **63/63**. |
+| 11.5 | X-4: blindness-hours observability | **SHIPPED-ON-BRANCH (2026-08-20).** `/api/backtest` trades gain `event_window` + meta counts + the never-gates authority string. Books untouched (post-change response JSON-EQUAL to the pre-captured reference); tagger proven by positive controls + 65/65 re-derivation (the 4h book's all-blank tags are CORRECT); ⭐ the visual gate ran THE HOUSE WAY — ssh tunnel + Playwright, branch figures ≡ production ($166,554/$13,963), screenshot committed. Incidents kept: wrong-interpreter restart, missing data-root env, and the owner's correction — **NEVER Claude-in-Chrome; tunnel+Playwright is the standard** (memorized). Claim `X4-BLINDNESS-OBSERVABILITY-SHIPPED`, **64/64**. |
+| 11.6 | XNI phase closure + the roadmap completes | **CLOSED (2026-08-20).** Six studies, one day: law #1 (independence) + three shipped information artifacts (X-3/X-4/X-5b, all parity-proven, all never-gates) + one honestly decomposed correlation + two parked-with-cause rows. Closing bilingual report `XNI-CLOSING-REPORT-BILINGUAL.html`. ⭐⭐ **The owner's three-step roadmap (earnings → ×indicators → ×news×indicators) is COMPLETE** — total finding: scheduled violence is rankable from its own history (the only forecastable quantity, twice productionized); nothing else predicts it; the edge stays where it was earned. Ledger **64/64**. |
+
 ---
 
 ## The programme state as of 2026-08-20 (the running verdict)
@@ -197,5 +209,5 @@ not · read gross beside net (cost drag masquerades as anti-premium) · traded-s
 blindness (the calendar) is now proven repairable, and the repair is power-aware. Armed and
 waiting, each behind its own pre-registration: the four fused-forecast consumers (re-gate ·
 sizing ramp · news geometry · box stops), FU-9's event-state dataset, FU-2's veto replay,
-and the parked FU-15 dual-sided bracket. Ledger **59/59 both machines**; every number above
+and the parked FU-15 dual-sided bracket. Ledger **64/64 both machines**; every number above
 is claim-bound.

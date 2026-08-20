@@ -1,0 +1,36 @@
+{
+  "instrument": "NQ",
+  "n_macro": 563,
+  "n_earn": 366,
+  "census": {
+    "T1": 63,
+    "T2": 118,
+    "earnings_side_24h": 190
+  },
+  "types": {
+    "T1": {
+      "n": 63,
+      "mde_logjump": 0.4156,
+      "n_matched": 63,
+      "mean_logjump_diff": 0.1723,
+      "boot90_ci": [
+        -0.0631,
+        0.3985
+      ],
+      "shuffle_p95": 0.263,
+      "verdict": "CLOSED-INDEPENDENT"
+    },
+    "T2": {
+      "n": 118,
+      "mde_logjump": 0.3036,
+      "n_matched": 118,
+      "mean_logjump_diff": 0.0494,
+      "boot90_ci": [
+        -0.1443,
+        0.2409
+      ],
+      "shuffle_p95": 0.2049,
+      "verdict": "CLOSED-INDEPENDENT"
+    }
+  }
+}
