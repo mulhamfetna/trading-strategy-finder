@@ -1,10 +1,19 @@
-# SYSTEM LAYERS — the Full Breakdown (FU-12; UPDATED to v5.4.3)
+# SYSTEM LAYERS — the Full Breakdown (FU-12; UPDATED to v5.5.0)
 
 > **Update 2026-08-19 (v5.4.3):** since first publication the pipeline resolved both of §3's
 > open items — **3.7 (M2 power model) is now DEPLOYED** as the system's second forecast layer
 > (`src/deploy/power_forecast.py`, information-only), and **3.6 (the Exp2 sizing ramp) was
 > tested to destruction and NOT deployed** (the independent ES book reversed it). The tables
 > below carry the updated statuses; §4's study (FU-11) now has BOTH of its ingredients live.
+>
+> **Update 2026-08-20 (v5.5.0 RELEASED):** the architecture now carries **THREE deployed
+> forecast components on two rails**: rail 1 — the tape rail — the HAR-RV gate (3.1) live
+> inside every champion; rail 2 — the calendar rail — the power layer (3.7, night-before
+> event SIZE) and the NEW **two-calendar forecast layer (E-D1)**, which ROUTES the two
+> certified repairs (FU-11 macro, E-X1 earnings) and emits the gate's nightly blindness
+> schedule. Routing, never fitting, is the architecture law (E-X2v2: fitted composition
+> interferes on NQ, CI-proven). Consumers of all calendar information remain gated by the
+> fusion-era laws; income structure unchanged (§5).
 >
 > **Update 2026-08-20 (WS-FUSION CLOSED, ledger 52/52):** §4's study RAN and its Stage 1
 > **WON** (the fused forecast beats the live engine on all 6 runs, power-aware by placebo) —
@@ -48,13 +57,13 @@ flowchart TD
 | **Signal (L1)** | turn weekly/monthly BOXES into long/short/hold per decision bar | box CSV + decision frame | `decision_signals` → int stream | the strategy's identity: box direction, 1 entry/candle, flip=reverse-only | LIVE (55 champions / 9 markets, ≈$840k/yr 2026-OOS) |
 | **Volatility engine** | forecast next-bar realized vol | 1m returns → `compute_rv_pts` → `har_forecast` (`volatility.py`) | `vf` array; gate threshold = causal in-sample percentile | **the system's first deployed forecast** (since v5.4.3 joined by the power layer) — entries allowed only when `vf ≤ gate_pct` threshold (skips the top forecast-vol tail) | LIVE inside every champion (§3.1) |
 | **Power-forecast layer** (NEW, v5.4.3) | forecast each scheduled release's move SIZE, night-before | committed M2 evidence pipeline (calendar + 1m realized jumps) | nightly JSONL: per-event predicted power (%, $/contract), expanding + trailing-24 | INFORMATION ONLY — no trading consumer; parity-bound to the M2 evidence (5/5 exact); consumers are separate gated studies | LIVE v5.4.3 (`power_forecast.py`, playbook bundle v1.0.0) |
-| **Two-calendar forecast layer** (NEW, E-D1, on-branch) | describe the live vol gate's blindness schedule (which hours, how much, which calendar) | the two certified repair models (FU-11 macro, E-X1 earnings), ROUTED — never fitted jointly (E-X2v2) | nightly JSONL: per known event the night-before bar-level rv lift | INFORMATION ONLY; parity Δ=0 to both committed evidences; no engine import (golden-proven) | DEPLOYED-ON-BRANCH (release = owner's pipeline) |
+| **Two-calendar forecast layer** (NEW, E-D1, on-branch) | describe the live vol gate's blindness schedule (which hours, how much, which calendar) | the two certified repair models (FU-11 macro, E-X1 earnings), ROUTED — never fitted jointly (E-X2v2) | nightly JSONL: per known event the night-before bar-level rv lift | INFORMATION ONLY; parity Δ=0 to both committed evidences; no engine import (golden-proven) | **RELEASED v5.5.0** (bundle v1.0.0) |
 | **Indicator (165-registry)** | per-bar confirm/veto votes on L1 entries | decision+1m frames (1-min indicator frame DEFAULT) | vote/veto masks folded into `entry_gate` | budget ≤2s/full pass; nan-safe warmup; adopt-gate default-OFF | LIVE (champions use subsets) |
 | **L2** | manage L1's DROPPED signals (a second book on the leftovers) | L1's dropped-signal stream | additional trades, own SL/TP | never touch L1's own trades | LIVE (optimize/l2) |
 | **MTF fusion** | fuse layers across timeframes (e.g. 1h+4h) | per-layer TF books | the fusion book (NQ $173,789 reference) | residual default byte-identical | LIVE |
 | **Execution engine** | fills, stops, caps, qty | signals+gates+1m stream | trades with GAP-01-honest fills; `exit_reason`; qty-linear P&L | engine.py ≡ fast_engine parity; golden gate 6/6 is its lock | LIVE |
 | **News layer** | the 4-leg CPI ride beside the box book | `release_schedule.csv` → executor (`--series` per leg) | replay evidence / paper intents; net-stressed feed | frozen spec; regime monitor sticky-halt; per-leg qty rules (NQ/RTY/ES ≤20 worked, YM ≤5) | LIVE v5.4.2, paper-only |
-| **Optimizer + verify** | find params; keep every number honest | search spaces, archives | champions; golden baselines; claims ledger (52/52) | cold-start default; fresh-seed replication; `expect` never adjusted | LIVE (research arm has its own open queue #81-#108) |
+| **Optimizer + verify** | find params; keep every number honest | search spaces, archives | champions; golden baselines; claims ledger (59/59) | cold-start default; fresh-seed replication; `expect` never adjusted | LIVE (research arm has its own open queue #81-#108) |
 | **Ops** | run & inspect | all of the above | dashboard :8200/:8250, control centre :8350, playbook bundles, releases | dashboard restart on backend change; UI-verification rule; LOCAL=truth | LIVE |
 
 ## 2 · Who earns what (the income map, 2024→2026 window, qty=1 units)

@@ -1,0 +1,4 @@
+P parity (JSON-equal after stripping new fields + run_ms): True
+counts: {'macro': 0, 'earnings': 0, 'both': 0, 'authority': 'observability only — never gates (X-4)'}
+tag distribution: {'': 65}
+X4_P_OK

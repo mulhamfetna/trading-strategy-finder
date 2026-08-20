@@ -58,11 +58,11 @@ geometry — is now a MEASURED choice. Per-layer profit attribution: `SYSTEM-LAY
 ## The scoreboard (releases)
 
 v5.2.0 box milestone → v5.3.0 news layer (NQ/RTY) → v5.4.0 ES CPI → v5.4.1 YM CPI (execution
-gate) → v5.4.2 scaled tiers → **v5.4.3 power-forecast layer + the FU-13 honest kill**.
+gate) → v5.4.2 scaled tiers → v5.4.3 power-forecast layer + the FU-13 honest kill → **v5.5.0 the two-calendar forecast layer (E-D1) + WS-FUSION closure + era 10 (the WS-EARN return: earnings power forecastable, the blindness law spans both calendars, three refused near-misses, the powered-tolerance law)**.
 
 ## What is next (the live queue, in order)
 
-**The WS-EARN return** (owner's roadmap ③): earnings alone → earnings × indicators →
-earnings × news × indicators — starting warm from `WS-EARN-HANDOFF.md` (E-P1 the earnings
-power model first). Deliberate holds: FU-15 (parked), FU-4 (gated-off), FU-11 consumers
-①④ (low-priority). Every item has an issue; nothing exists without a number.
+**Phase 3 of the roadmap: earnings × news × indicators** — initiating with its own
+brainstorm + numbered ledger (the WS-FUSION opening pattern). Deliberate holds: FU-15
+(parked), FU-4 (gated-off), FU-11 consumers ①④ (low-priority), E-X2v2 lesson bound.
+Every item has an issue; nothing exists without a number.

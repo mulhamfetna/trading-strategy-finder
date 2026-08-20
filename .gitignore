@@ -306,3 +306,19 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !subprojects/Parametric-Indicators/optimize/earnings/data/ed1_golden.log
 !playbooks/two-calendar-forecast/PLAYBOOK.md
 !playbooks/two-calendar-forecast-bundle-v1.0.0.zip
+# X-1 (#173): collision-census evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/xni/data/x1_result_NQ.json
+!subprojects/Parametric-Indicators/optimize/xni/data/x1_result_ES.json
+# X-3: compound-artifact evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/xni/data/x3_stages.log
+!subprojects/Parametric-Indicators/optimize/xni/data/x3_artifact_2025_NQ.jsonl
+# X-5: monitor-power evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/xni/data/x5_result.json
+# X-5b: monitor-context evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/xni/data/x5b_parity.log
+# X-4: dashboard-observability evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/xni/data/x4_parity.log
+!subprojects/Parametric-Indicators/optimize/xni/data/x4_cline.log
+!subprojects/Parametric-Indicators/optimize/xni/data/x4_dashboard_8250.png
+!docs/XNI-CLOSING-REPORT-BILINGUAL.html
+!playbooks/two-calendar-forecast-bundle-v1.1.0.zip

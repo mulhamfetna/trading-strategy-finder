@@ -1,0 +1,36 @@
+{
+  "instrument": "ES",
+  "n_macro": 550,
+  "n_earn": 366,
+  "census": {
+    "T1": 64,
+    "T2": 118,
+    "earnings_side_24h": 189
+  },
+  "types": {
+    "T1": {
+      "n": 64,
+      "mde_logjump": 0.3825,
+      "n_matched": 64,
+      "mean_logjump_diff": 0.358,
+      "boot90_ci": [
+        0.1225,
+        0.5845
+      ],
+      "shuffle_p95": 0.2543,
+      "verdict": "SUPER-ADDITIVE-CANDIDATE"
+    },
+    "T2": {
+      "n": 118,
+      "mde_logjump": 0.2817,
+      "n_matched": 118,
+      "mean_logjump_diff": 0.1156,
+      "boot90_ci": [
+        -0.0846,
+        0.3096
+      ],
+      "shuffle_p95": 0.189,
+      "verdict": "CLOSED-INDEPENDENT"
+    }
+  }
+}

@@ -203,3 +203,10 @@ playbook `playbooks/two-calendar-forecast/`, v1.0.0). ZERO income by design (the
 rule). The release/merge ship remains the owner's standing pipeline — not executed here.
 Ledger: `ED1-TWO-CALENDAR-DEPLOYED`, **59/59 both machines**. Incident kept: a claims-path
 typo (parents[0]→[1]) caught by the ledger's own first run.
+
+## The ship (2026-08-20)
+
+**v5.5.0 RELEASED** (PRs #170 → #171, merged clean; golden 6/6; ledger 59/59): E-D1 + the
+era-10 freight + the WS-FUSION closure, with the two-calendar playbook bundle v1.0.0
+attached. The standing pipeline executed end-to-end; the worktree remains on
+`research/legacy-18-baseline`. Phase 3 (×news×indicators) initiates next.

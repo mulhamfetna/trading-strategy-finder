@@ -1,0 +1,101 @@
+{"calendar": "macro", "event": "Non Farm Payrolls", "event_et": "2025-01-10 08:30:00", "pred_power_pct": 0.1759, "bar_lift_rv_pts": 69.07, "collision": null}
+{"calendar": "macro", "event": "Inflation Rate MoM", "event_et": "2025-01-15 08:30:00", "pred_power_pct": 0.1397, "bar_lift_rv_pts": 55.65, "collision": null}
+{"calendar": "macro", "event": "Retail Sales MoM", "event_et": "2025-01-16 08:30:00", "pred_power_pct": 0.057, "bar_lift_rv_pts": 24.93, "collision": null}
+{"calendar": "macro", "event": "Durable Goods Orders MoM", "event_et": "2025-01-28 08:30:00", "pred_power_pct": 0.0232, "bar_lift_rv_pts": 12.35, "collision": null}
+{"calendar": "macro", "event": "Fed Interest Rate Decision", "event_et": "2025-01-29 14:00:00", "pred_power_pct": 0.1461, "bar_lift_rv_pts": 58.01, "collision": "T2", "compound_lift_rv_pts": 73.5}
+{"calendar": "macro", "event": "Non Farm Payrolls", "event_et": "2025-02-07 08:30:00", "pred_power_pct": 0.1759, "bar_lift_rv_pts": 69.07, "collision": "T1", "compound_lift_rv_pts": 70.48}
+{"calendar": "macro", "event": "Inflation Rate MoM", "event_et": "2025-02-12 08:30:00", "pred_power_pct": 0.1397, "bar_lift_rv_pts": 55.65, "collision": null}
+{"calendar": "macro", "event": "Retail Sales MoM", "event_et": "2025-02-14 08:30:00", "pred_power_pct": 0.057, "bar_lift_rv_pts": 24.93, "collision": null}
+{"calendar": "macro", "event": "Durable Goods Orders MoM", "event_et": "2025-02-27 08:30:00", "pred_power_pct": 0.0232, "bar_lift_rv_pts": 12.35, "collision": "T1", "compound_lift_rv_pts": 21.42}
+{"calendar": "macro", "event": "Non Farm Payrolls", "event_et": "2025-03-07 08:30:00", "pred_power_pct": 0.1759, "bar_lift_rv_pts": 69.07, "collision": "T1", "compound_lift_rv_pts": 67.69}
+{"calendar": "macro", "event": "Inflation Rate MoM", "event_et": "2025-03-12 08:30:00", "pred_power_pct": 0.1397, "bar_lift_rv_pts": 55.65, "collision": null}
+{"calendar": "macro", "event": "Retail Sales MoM", "event_et": "2025-03-17 08:30:00", "pred_power_pct": 0.057, "bar_lift_rv_pts": 24.93, "collision": null}
+{"calendar": "macro", "event": "Fed Interest Rate Decision", "event_et": "2025-03-19 14:00:00", "pred_power_pct": 0.1461, "bar_lift_rv_pts": 58.01, "collision": null}
+{"calendar": "macro", "event": "Durable Goods Orders MoM", "event_et": "2025-03-26 08:30:00", "pred_power_pct": 0.0232, "bar_lift_rv_pts": 12.35, "collision": null}
+{"calendar": "macro", "event": "Non Farm Payrolls", "event_et": "2025-04-04 08:30:00", "pred_power_pct": 0.1759, "bar_lift_rv_pts": 69.07, "collision": null}
+{"calendar": "macro", "event": "Inflation Rate MoM", "event_et": "2025-04-10 08:30:00", "pred_power_pct": 0.1397, "bar_lift_rv_pts": 55.65, "collision": null}
+{"calendar": "macro", "event": "Retail Sales MoM", "event_et": "2025-04-16 08:30:00", "pred_power_pct": 0.057, "bar_lift_rv_pts": 24.93, "collision": null}
+{"calendar": "macro", "event": "Durable Goods Orders MoM", "event_et": "2025-04-24 08:30:00", "pred_power_pct": 0.0232, "bar_lift_rv_pts": 12.35, "collision": "T2", "compound_lift_rv_pts": 35.7}
+{"calendar": "macro", "event": "Non Farm Payrolls", "event_et": "2025-05-02 08:30:00", "pred_power_pct": 0.1759, "bar_lift_rv_pts": 69.07, "collision": "T1", "compound_lift_rv_pts": 111.81}
+{"calendar": "macro", "event": "Fed Interest Rate Decision", "event_et": "2025-05-07 14:00:00", "pred_power_pct": 0.1461, "bar_lift_rv_pts": 58.01, "collision": "T2", "compound_lift_rv_pts": 60.13}
+{"calendar": "macro", "event": "Inflation Rate MoM", "event_et": "2025-05-13 08:30:00", "pred_power_pct": 0.1397, "bar_lift_rv_pts": 55.65, "collision": null}
+{"calendar": "macro", "event": "Retail Sales MoM", "event_et": "2025-05-15 08:30:00", "pred_power_pct": 0.057, "bar_lift_rv_pts": 24.93, "collision": null}
+{"calendar": "macro", "event": "Durable Goods Orders MoM", "event_et": "2025-05-27 08:30:00", "pred_power_pct": 0.0232, "bar_lift_rv_pts": 12.35, "collision": null}
+{"calendar": "macro", "event": "Non Farm Payrolls", "event_et": "2025-06-06 08:30:00", "pred_power_pct": 0.1759, "bar_lift_rv_pts": 69.07, "collision": "T1", "compound_lift_rv_pts": 67.69}
+{"calendar": "macro", "event": "Inflation Rate MoM", "event_et": "2025-06-11 08:30:00", "pred_power_pct": 0.1397, "bar_lift_rv_pts": 55.65, "collision": null}
+{"calendar": "macro", "event": "Retail Sales MoM", "event_et": "2025-06-17 08:30:00", "pred_power_pct": 0.057, "bar_lift_rv_pts": 24.93, "collision": null}
+{"calendar": "macro", "event": "Fed Interest Rate Decision", "event_et": "2025-06-18 14:00:00", "pred_power_pct": 0.1461, "bar_lift_rv_pts": 58.01, "collision": null}
+{"calendar": "macro", "event": "Durable Goods Orders MoM", "event_et": "2025-06-26 08:30:00", "pred_power_pct": 0.0232, "bar_lift_rv_pts": 12.35, "collision": "T1", "compound_lift_rv_pts": 16.89}
+{"calendar": "macro", "event": "Non Farm Payrolls", "event_et": "2025-07-03 08:30:00", "pred_power_pct": 0.1759, "bar_lift_rv_pts": 69.07, "collision": null}
+{"calendar": "macro", "event": "Inflation Rate MoM", "event_et": "2025-07-15 08:30:00", "pred_power_pct": 0.1397, "bar_lift_rv_pts": 55.65, "collision": null}
+{"calendar": "macro", "event": "Retail Sales MoM", "event_et": "2025-07-17 08:30:00", "pred_power_pct": 0.057, "bar_lift_rv_pts": 24.93, "collision": "T2", "compound_lift_rv_pts": 23.64}
+{"calendar": "macro", "event": "Durable Goods Orders MoM", "event_et": "2025-07-25 08:30:00", "pred_power_pct": 0.0232, "bar_lift_rv_pts": 12.35, "collision": "T1", "compound_lift_rv_pts": 13.51}
+{"calendar": "macro", "event": "Fed Interest Rate Decision", "event_et": "2025-07-30 14:00:00", "pred_power_pct": 0.1461, "bar_lift_rv_pts": 58.01, "collision": "T2", "compound_lift_rv_pts": 73.5}
+{"calendar": "macro", "event": "Non Farm Payrolls", "event_et": "2025-08-01 08:30:00", "pred_power_pct": 0.1759, "bar_lift_rv_pts": 69.07, "collision": "T1", "compound_lift_rv_pts": 111.81}
+{"calendar": "macro", "event": "Inflation Rate MoM", "event_et": "2025-08-12 08:30:00", "pred_power_pct": 0.1397, "bar_lift_rv_pts": 55.65, "collision": null}
+{"calendar": "macro", "event": "Retail Sales MoM", "event_et": "2025-08-15 08:30:00", "pred_power_pct": 0.057, "bar_lift_rv_pts": 24.93, "collision": null}
+{"calendar": "macro", "event": "Durable Goods Orders MoM", "event_et": "2025-08-26 08:30:00", "pred_power_pct": 0.0232, "bar_lift_rv_pts": 12.35, "collision": null}
+{"calendar": "macro", "event": "Non Farm Payrolls", "event_et": "2025-09-05 08:30:00", "pred_power_pct": 0.1759, "bar_lift_rv_pts": 69.07, "collision": "T1", "compound_lift_rv_pts": 67.69}
+{"calendar": "macro", "event": "Inflation Rate MoM", "event_et": "2025-09-11 08:30:00", "pred_power_pct": 0.1397, "bar_lift_rv_pts": 55.65, "collision": null}
+{"calendar": "macro", "event": "Retail Sales MoM", "event_et": "2025-09-16 08:30:00", "pred_power_pct": 0.057, "bar_lift_rv_pts": 24.93, "collision": null}
+{"calendar": "macro", "event": "Fed Interest Rate Decision", "event_et": "2025-09-17 14:00:00", "pred_power_pct": 0.1461, "bar_lift_rv_pts": 58.01, "collision": null}
+{"calendar": "macro", "event": "Durable Goods Orders MoM", "event_et": "2025-09-25 08:30:00", "pred_power_pct": 0.0232, "bar_lift_rv_pts": 12.35, "collision": null}
+{"calendar": "macro", "event": "Inflation Rate MoM", "event_et": "2025-10-24 08:30:00", "pred_power_pct": 0.1397, "bar_lift_rv_pts": 55.65, "collision": "T1", "compound_lift_rv_pts": 56.81}
+{"calendar": "macro", "event": "Fed Interest Rate Decision", "event_et": "2025-10-29 14:00:00", "pred_power_pct": 0.1461, "bar_lift_rv_pts": 58.01, "collision": "T2", "compound_lift_rv_pts": 81.36}
+{"calendar": "macro", "event": "Non Farm Payrolls", "event_et": "2025-11-20 08:30:00", "pred_power_pct": 0.1759, "bar_lift_rv_pts": 69.07, "collision": "T1", "compound_lift_rv_pts": 78.14}
+{"calendar": "macro", "event": "Retail Sales MoM", "event_et": "2025-11-25 08:30:00", "pred_power_pct": 0.057, "bar_lift_rv_pts": 24.93, "collision": null}
+{"calendar": "macro", "event": "Durable Goods Orders MoM", "event_et": "2025-11-26 08:30:00", "pred_power_pct": 0.0232, "bar_lift_rv_pts": 12.35, "collision": null}
+{"calendar": "macro", "event": "Fed Interest Rate Decision", "event_et": "2025-12-10 14:00:00", "pred_power_pct": 0.1461, "bar_lift_rv_pts": 58.01, "collision": null}
+{"calendar": "macro", "event": "Non Farm Payrolls", "event_et": "2025-12-16 08:30:00", "pred_power_pct": 0.1759, "bar_lift_rv_pts": 69.07, "collision": null}
+{"calendar": "macro", "event": "Non Farm Payrolls", "event_et": "2025-12-16 08:30:00", "pred_power_pct": 0.1759, "bar_lift_rv_pts": 69.07, "collision": null}
+{"calendar": "macro", "event": "Retail Sales MoM", "event_et": "2025-12-16 08:30:00", "pred_power_pct": 0.057, "bar_lift_rv_pts": 24.93, "collision": null}
+{"calendar": "macro", "event": "Inflation Rate MoM", "event_et": "2025-12-18 08:30:00", "pred_power_pct": 0.1397, "bar_lift_rv_pts": 55.65, "collision": "T1", "compound_lift_rv_pts": 60.19}
+{"calendar": "macro", "event": "Durable Goods Orders MoM", "event_et": "2025-12-23 08:30:00", "pred_power_pct": 0.0232, "bar_lift_rv_pts": 12.35, "collision": null}
+{"calendar": "earnings", "event": "AAPL", "event_et": "2025-01-30 16:30:23", "pred_power_pct": 0.223, "bar_lift_rv_pts": 42.74, "collision": null}
+{"calendar": "earnings", "event": "AAPL", "event_et": "2025-05-01 16:30:21", "pred_power_pct": 0.223, "bar_lift_rv_pts": 42.74, "collision": "T2", "compound_lift_rv_pts": 111.81}
+{"calendar": "earnings", "event": "AAPL", "event_et": "2025-07-31 16:30:25", "pred_power_pct": 0.223, "bar_lift_rv_pts": 42.74, "collision": "T2", "compound_lift_rv_pts": 111.81}
+{"calendar": "earnings", "event": "AAPL", "event_et": "2025-10-30 16:30:35", "pred_power_pct": 0.223, "bar_lift_rv_pts": 42.74, "collision": null}
+{"calendar": "earnings", "event": "AMD", "event_et": "2025-02-04 16:17:17", "pred_power_pct": 0.037, "bar_lift_rv_pts": 2.12, "collision": null}
+{"calendar": "earnings", "event": "AMD", "event_et": "2025-05-06 16:16:45", "pred_power_pct": 0.037, "bar_lift_rv_pts": 2.12, "collision": "T2", "compound_lift_rv_pts": 60.13}
+{"calendar": "earnings", "event": "AMD", "event_et": "2025-08-05 16:16:31", "pred_power_pct": 0.037, "bar_lift_rv_pts": 2.12, "collision": null}
+{"calendar": "earnings", "event": "AMD", "event_et": "2025-11-04 16:16:10", "pred_power_pct": 0.037, "bar_lift_rv_pts": 2.12, "collision": null}
+{"calendar": "earnings", "event": "AMZN", "event_et": "2025-02-06 16:09:12", "pred_power_pct": 0.0337, "bar_lift_rv_pts": 1.41, "collision": "T2", "compound_lift_rv_pts": 70.48}
+{"calendar": "earnings", "event": "AMZN", "event_et": "2025-05-01 16:15:00", "pred_power_pct": 0.0337, "bar_lift_rv_pts": 1.41, "collision": "T2", "compound_lift_rv_pts": 70.48}
+{"calendar": "earnings", "event": "AMZN", "event_et": "2025-07-31 16:13:17", "pred_power_pct": 0.0337, "bar_lift_rv_pts": 1.41, "collision": "T2", "compound_lift_rv_pts": 70.48}
+{"calendar": "earnings", "event": "AMZN", "event_et": "2025-10-30 16:13:01", "pred_power_pct": 0.0337, "bar_lift_rv_pts": 1.41, "collision": null}
+{"calendar": "earnings", "event": "AVGO", "event_et": "2025-03-06 16:19:37", "pred_power_pct": 0.0209, "bar_lift_rv_pts": -1.38, "collision": "T2", "compound_lift_rv_pts": 67.69}
+{"calendar": "earnings", "event": "AVGO", "event_et": "2025-06-05 16:27:02", "pred_power_pct": 0.0209, "bar_lift_rv_pts": -1.38, "collision": "T2", "compound_lift_rv_pts": 67.69}
+{"calendar": "earnings", "event": "AVGO", "event_et": "2025-09-04 16:19:50", "pred_power_pct": 0.0209, "bar_lift_rv_pts": -1.38, "collision": "T2", "compound_lift_rv_pts": 67.69}
+{"calendar": "earnings", "event": "AVGO", "event_et": "2025-12-11 16:17:37", "pred_power_pct": 0.0209, "bar_lift_rv_pts": -1.38, "collision": null}
+{"calendar": "earnings", "event": "GOOGL", "event_et": "2025-02-04 16:01:27", "pred_power_pct": 0.1342, "bar_lift_rv_pts": 23.35, "collision": null}
+{"calendar": "earnings", "event": "GOOGL", "event_et": "2025-04-24 16:01:26", "pred_power_pct": 0.1342, "bar_lift_rv_pts": 23.35, "collision": "T1", "compound_lift_rv_pts": 35.7}
+{"calendar": "earnings", "event": "GOOGL", "event_et": "2025-07-23 16:01:33", "pred_power_pct": 0.1342, "bar_lift_rv_pts": 23.35, "collision": null}
+{"calendar": "earnings", "event": "GOOGL", "event_et": "2025-10-29 16:01:48", "pred_power_pct": 0.1342, "bar_lift_rv_pts": 23.35, "collision": "T1", "compound_lift_rv_pts": 81.36}
+{"calendar": "earnings", "event": "INTC", "event_et": "2025-01-30 16:13:45", "pred_power_pct": 0.0326, "bar_lift_rv_pts": 1.16, "collision": null}
+{"calendar": "earnings", "event": "INTC", "event_et": "2025-04-24 16:05:05", "pred_power_pct": 0.0326, "bar_lift_rv_pts": 1.16, "collision": "T1", "compound_lift_rv_pts": 13.51}
+{"calendar": "earnings", "event": "INTC", "event_et": "2025-07-24 16:04:12", "pred_power_pct": 0.0326, "bar_lift_rv_pts": 1.16, "collision": "T2", "compound_lift_rv_pts": 13.51}
+{"calendar": "earnings", "event": "INTC", "event_et": "2025-10-23 16:10:22", "pred_power_pct": 0.0326, "bar_lift_rv_pts": 1.16, "collision": "T2", "compound_lift_rv_pts": 56.81}
+{"calendar": "earnings", "event": "META", "event_et": "2025-01-29 16:47:14", "pred_power_pct": 0.0508, "bar_lift_rv_pts": 5.14, "collision": "T1", "compound_lift_rv_pts": 63.15}
+{"calendar": "earnings", "event": "META", "event_et": "2025-04-30 16:16:00", "pred_power_pct": 0.0508, "bar_lift_rv_pts": 5.14, "collision": null}
+{"calendar": "earnings", "event": "META", "event_et": "2025-07-30 16:13:01", "pred_power_pct": 0.0508, "bar_lift_rv_pts": 5.14, "collision": "T1", "compound_lift_rv_pts": 63.15}
+{"calendar": "earnings", "event": "META", "event_et": "2025-10-29 16:08:34", "pred_power_pct": 0.0508, "bar_lift_rv_pts": 5.14, "collision": "T1", "compound_lift_rv_pts": 63.15}
+{"calendar": "earnings", "event": "MSFT", "event_et": "2025-01-29 16:08:56", "pred_power_pct": 0.0982, "bar_lift_rv_pts": 15.49, "collision": "T1", "compound_lift_rv_pts": 73.5}
+{"calendar": "earnings", "event": "MSFT", "event_et": "2025-04-30 16:06:03", "pred_power_pct": 0.0982, "bar_lift_rv_pts": 15.49, "collision": null}
+{"calendar": "earnings", "event": "MSFT", "event_et": "2025-07-30 16:08:53", "pred_power_pct": 0.0982, "bar_lift_rv_pts": 15.49, "collision": "T1", "compound_lift_rv_pts": 73.5}
+{"calendar": "earnings", "event": "MSFT", "event_et": "2025-10-29 16:07:42", "pred_power_pct": 0.0982, "bar_lift_rv_pts": 15.49, "collision": "T1", "compound_lift_rv_pts": 73.5}
+{"calendar": "earnings", "event": "MU", "event_et": "2025-03-20 16:00:55", "pred_power_pct": 0.0481, "bar_lift_rv_pts": 4.54, "collision": null}
+{"calendar": "earnings", "event": "MU", "event_et": "2025-06-25 16:03:10", "pred_power_pct": 0.0481, "bar_lift_rv_pts": 4.54, "collision": "T2", "compound_lift_rv_pts": 16.89}
+{"calendar": "earnings", "event": "MU", "event_et": "2025-09-23 16:02:28", "pred_power_pct": 0.0481, "bar_lift_rv_pts": 4.54, "collision": null}
+{"calendar": "earnings", "event": "MU", "event_et": "2025-12-17 16:03:26", "pred_power_pct": 0.0481, "bar_lift_rv_pts": 4.54, "collision": "T2", "compound_lift_rv_pts": 60.19}
+{"calendar": "earnings", "event": "NFLX", "event_et": "2025-01-21 16:02:20", "pred_power_pct": 0.0213, "bar_lift_rv_pts": -1.29, "collision": null}
+{"calendar": "earnings", "event": "NFLX", "event_et": "2025-04-17 16:04:05", "pred_power_pct": 0.0213, "bar_lift_rv_pts": -1.29, "collision": null}
+{"calendar": "earnings", "event": "NFLX", "event_et": "2025-07-17 16:04:28", "pred_power_pct": 0.0213, "bar_lift_rv_pts": -1.29, "collision": "T1", "compound_lift_rv_pts": 23.64}
+{"calendar": "earnings", "event": "NFLX", "event_et": "2025-10-21 16:02:25", "pred_power_pct": 0.0213, "bar_lift_rv_pts": -1.29, "collision": null}
+{"calendar": "earnings", "event": "NVDA", "event_et": "2025-02-26 16:21:32", "pred_power_pct": 0.0688, "bar_lift_rv_pts": 9.07, "collision": "T2", "compound_lift_rv_pts": 21.42}
+{"calendar": "earnings", "event": "NVDA", "event_et": "2025-05-28 16:21:30", "pred_power_pct": 0.0688, "bar_lift_rv_pts": 9.07, "collision": null}
+{"calendar": "earnings", "event": "NVDA", "event_et": "2025-08-27 16:22:14", "pred_power_pct": 0.0688, "bar_lift_rv_pts": 9.07, "collision": null}
+{"calendar": "earnings", "event": "NVDA", "event_et": "2025-11-19 16:20:44", "pred_power_pct": 0.0688, "bar_lift_rv_pts": 9.07, "collision": "T2", "compound_lift_rv_pts": 78.14}
+{"calendar": "earnings", "event": "TSLA", "event_et": "2025-01-29 16:09:13", "pred_power_pct": 0.0125, "bar_lift_rv_pts": -3.23, "collision": "T1", "compound_lift_rv_pts": 54.78}
+{"calendar": "earnings", "event": "TSLA", "event_et": "2025-04-22 16:10:12", "pred_power_pct": 0.0125, "bar_lift_rv_pts": -3.23, "collision": null}
+{"calendar": "earnings", "event": "TSLA", "event_et": "2025-07-23 16:14:09", "pred_power_pct": 0.0125, "bar_lift_rv_pts": -3.23, "collision": null}
+{"calendar": "earnings", "event": "TSLA", "event_et": "2025-10-22 16:06:36", "pred_power_pct": 0.0125, "bar_lift_rv_pts": -3.23, "collision": null}

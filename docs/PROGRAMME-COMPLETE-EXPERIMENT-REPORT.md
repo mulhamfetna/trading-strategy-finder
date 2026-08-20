@@ -5,7 +5,7 @@ single experiment and its results and outcomes and insights"). This is the NARRA
 companion to the master index (`NEWS-MASTER-EXPERIMENT-RECORD.md`): where the index gives one
 row per experiment, this report tells each experiment's story in plain language — what we
 did, what happened in dollars, what went well, what went wrong, and what we learned. Every
-number here already lives in a committed evidence file or the claims ledger (59/59 on both
+number here already lives in a committed evidence file or the claims ledger (64/64 on both
 machines); nothing is from memory.**
 
 ```mermaid
@@ -796,6 +796,112 @@ own blindness schedule — every night it can say which coming hours its live vo
 gate will mis-forecast, by how much, and on which calendar's authority. What consumes that
 information remains gated behind the fusion era's consumer laws.
 
+
+---
+
+## Era 11 — XNI phase 3 (open)
+
+### 11.1 · X-1 — the collision census (the calendars resolve independently)
+**What we did:** phase 3's opening measurement, with its born constraint made mechanical —
+the census and its power analysis ran first, and a pre-registered n≥30 gate decided which
+collision types could ever have an outcome read. **What the census said:** collisions are
+NOT rare at the top-12 scale — of ~560 macro events since 2016, 63 had a mega-cap earnings
+print in the prior eighteen hours and 118 had one within a day. Both types cleared the
+gate. **What the outcomes said:** on the registered primary (NQ), collision mornings jump
+no harder than matched same-series control mornings — both types' CIs contain zero and both
+sit below their within-series shuffle bars. One texture recorded and not promoted: on ES,
+the earnings-night type clears every registered line alone (+0.358, CI-clear, above
+shuffle) — but the primary is NQ, no pooled rule existed, and none was invented after the
+fact; the ledger's V2 check verifies the non-promotion permanently. **Insight — the phase's
+first law:** the two forecastable calendars resolve INDEPENDENTLY. Compound power therefore
+composes additively from the two certified forecasts — the collision flag X-3 wants needs
+no interaction statistics, and the parked dual-sided bracket gains nothing beyond the two
+forecasts it already has. An honest null that simplifies every design downstream of it.
+
+
+### 11.2 · X-3 — the compound-power artifact (a machine check catches its author)
+**What we did:** the first consumer of phase law #1 — since the calendars resolve
+independently, the collision flag and compound lift are pure compositions of two certified
+layers, needing no new statistics. The E-D1 artifact gained both fields under three
+registered lines: parity preserved, census consistency with X-1's own machinery on the same
+window, and row-by-row additive re-derivation of every compound value inside the ledger
+claim itself. **What happened:** parity held at delta zero, the census rates matched at
+ratio 1.009 — and the row-by-row check FAILED on first pass, catching a real bug: a
+`max(best or 0.0, …)` seed had silently floored negative counterpart lifts to zero. The
+earnings model's dummy coefficient is negative, so a tiny-power print carries a NEGATIVE
+lift — the certified model's honest statement, which the composition was quietly erasing.
+Fixed, re-run, all 44 compound rows re-derive (FOMC 2025-01-29: own 58.0 + earnings 15.5 =
+73.5 rv points). **Insight:** write the verification check strict enough to catch yourself,
+and it will — within the hour, before anything shipped wrong. The artifact now tells the
+operator not just which hours the gate is blind to, but which sessions carry BOTH
+calendars' violence at once, additively priced.
+
+
+### 11.3 · X-5 — monitor × compound power (a strong correlation, honestly cut down to size)
+**What we did:** the protective analysis — does the news layer's safety brake (the rolling
+24-CPI health that stands the layer down) co-move with the compound-power regime the system
+can now forecast? Registered as an EXISTENCE test (either sign could be mechanistic), with
+a within-year shuffle as the noise bar and the standing rule that no verdict changes the
+trigger. **What happened:** the headline number is enormous — Spearman +0.906 with a tight
+CI — and the design immediately cut it down to its honest size: the within-year shuffle bar
+itself reaches 0.879, meaning the ANNUAL REGIME carries almost all of it. What X-5 really
+re-measured is era 2's oldest law from a new vantage: the ride pays when CPI power is high,
+and the monitor's health simply tracks that same slow regime. The genuinely event-level
+increment is the 0.027 margin above the shuffle bar — real by the registered rule,
+marginal in size, and the claim's V3 check makes stating that decomposition mandatory
+forever. **Verdict: INFORMATIVE, with the modest registered consequence and no more** —
+a compound-power context field may be added to the monitor's REPORT output under its own
+small parity gate (armed as X-5b); the trigger never changes. **Insight:** the phase's
+second law in miniature — a 0.9 correlation is not information until its regime component
+is priced out; the shuffle design did in one run what enthusiasm never would.
+
+
+### 11.4 · X-5b — the monitor's context field (a consequence delivered exactly, and no more)
+**What we did:** X-5's verdict permitted one thing — a context field in the safety brake's
+REPORT — and X-5b delivered precisely that: an optional flag adding the compound power and
+a zero-authority regime label that carries its own warning string, "information only —
+never gates". **What happened:** shipped with the trigger untouched, proven three
+independent ways — the old and new trigger walks are byte-equal on the committed evidence,
+the trigger function's source contains no reference to the context machinery (a static
+proof the ledger re-checks forever), and the flag defaults off, so without it the module IS
+the old module. The 29 overlapping CPI events match the frozen-file recomputation to nine
+decimal places. **Insight:** the discipline's quietest skill — delivering a registered
+consequence at exactly its registered size. The monitor's operator now sees the power
+regime beside the health number; the brake itself never learned anything new.
+
+
+### 11.5 · X-4 — blindness-hours observability (shipped, with a process correction)
+**What we did:** the dashboard's backtest payload now tags every trade with the event
+window it entered in — macro (FU-1's frozen twenty-minute window) or earnings (±15m of an
+acceptance stamp) — plus meta counts carrying their own authority string, "observability
+only — never gates." **What happened:** all three registered lines green. The books are
+untouched, proven the strongest way available: the post-change response is JSON-equal to a
+reference captured BEFORE the code moved, so the branch's numbers equal production's
+transitively. The tagger was proven by positive controls (it fires on real event minutes,
+stays silent on clean ones) and a 65-for-65 re-derivation — including the honest reading
+that the 4h book's all-blank tags are CORRECT, since 4h entry stamps never land inside
+20-minute windows. And the visual gate ran the house way after an owner correction
+mid-study: NEVER Claude-in-Chrome — the standard is an SSH tunnel plus Playwright, scripted
+and reproducible; both dashboards were driven, the visible figures matched to the dollar,
+and the branch screenshot is committed evidence. **Insight:** three recovered incidents in
+one study (wrong interpreter, missing data roots, wrong browser mechanism) and every one is
+now a memory entry — the process learns at the same rate the system does.
+
+
+### 11.6 · The XNI closure — the roadmap completes
+**What we did:** closed phase 3 against its own definition of done — every X row
+verdicted, the ledger green, the closing bilingual report shipped — and with it the
+owner's three-step roadmap (earnings alone → earnings × indicators → earnings × news ×
+indicators) is COMPLETE. **The total finding, coherent across three eras:** scheduled
+violence is rankable from its own history at ρ≈0.5 on both calendars — the one
+forecastable quantity this programme has ever found, and it was productionized twice.
+Nothing else predicts it: not direction (dead three ways), not tape state (dead on every
+axis, both calendars), not cross-calendar interaction (independent, law #1). So the
+system's edge stays exactly where it was earned — the box book and the CPI ride — and
+every layer added since is information wrapped in authority strings, parity proofs, and
+never-gates guards. What hides between the lines, asked and answered: nothing extra —
+and knowing that with 64 machine-verified claims is worth more than hoping otherwise.
+
 ---
 
 ## Where the programme stands (2026-08-20)
@@ -805,10 +911,10 @@ layer ($67,767 net 2024→26 at qty=1/leg; ≈$1.167M/window model-grade at appr
 near-orthogonal (daily correlation +0.098), both paper-only until a live gateway. **Two
 deployed forecast layers**: the HAR-RV gate (tape memory, inside every champion) and the
 power-forecast layer (calendar, information-only) — and FU-11 Stage 1 has now PROVEN their
-fusion beats either alone as a forecast. **The open queue**: WS-FUSION is CLOSED (its closing bilingual report and the WS-EARN
-hand-off are shipped); deliberate holds only — FU-4 gated-off, FU-15 parked by owner,
-FU-11 consumers ①④ low-priority armed. The next workstream, on the owner's word, is the
-WS-EARN return (earnings alone → ×indicators → ×news×indicators), starting from
-`WS-EARN-HANDOFF.md` with E-P1, the earnings power model.
-**The ledger**: 59/59 claims green on both machines; every number in this report is bound
+fusion beats either alone as a forecast. **The open queue**: THE ROADMAP IS COMPLETE — era 11 (XNI) closed with law #1, three
+shipped information artifacts, and the closing bilingual report. On the table: the next
+release (ships X-3/X-4/X-5b + the annotated bundle); deliberate holds (FU-15 parked,
+FU-4 gated, FU-11 consumers ①④, X-2/X-6 parked-with-cause, the fresh-registration
+hypotheses); owner-side items (live gateway, margin, C4, a forward earnings calendar).
+**The ledger**: 64/64 claims green on both machines; every number in this report is bound
 to it or to a committed evidence file.

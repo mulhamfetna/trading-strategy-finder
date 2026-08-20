@@ -1,0 +1,4 @@
+[X-5b] P trigger parity (rolling_state old==new): True
+[X-5b] C definition parity: 29 checked, 0 mismatches
+[X-5b] context rows with values: 29/29
+X5B_OK
