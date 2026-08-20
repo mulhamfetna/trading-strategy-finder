@@ -325,3 +325,42 @@ FU-3; the box book keeps flat sizing.
 the committed FU-9 + FU-1 files alone; V2 six-frame positivity + true-span evidence; V3 the
 permutation falsifier passes while the verdict stays NULL by the CI rule (rule-integrity
 check). **47/47 both machines.**
+
+## F-10 · FU-7 (#159) — power-scaled news geometry: CLOSED-NULL — the placebo owns the gain ✅ (2026-08-20)
+
+**The second power-layer consumer: scale the frozen bracket (S 0.10%/TP 0.40%, constant 1:4)
+by r = pred_exp / causal within-series median (clip [0.5,2]). Frozen arm reproduced the
+committed replay evidence to the cent on all 307 overlapping events before anything counted
+(also proving the constant-patching leaked nothing).**
+
+**Results (net-stressed, qty=1, ≥2016, the deployed series per leg)**:
+
+| leg | events (scaled) | frozen net | scaled net | Δ |
+|---|---|---|---|---|
+| NQ {CPI,NFP,FOMC} | 327 (271) | $43,511 | $52,380 | **+$8,869** |
+| RTY {CPI,NFP,FOMC} | 281 (190) | $8,075 | $21,874 | **+$13,799** |
+| ES {CPI} | 116 (99) | $17,558 | $17,653 | +$94 |
+| YM {CPI} | 116 (100) | $12,486 | $10,283 | **−$2,203** |
+
+**Pooled: +$20,559 over 840 events, CI90 [+$4,160, +$37,319] — POSITIVE. And the study still
+closes NULL, because the falsifier did its job: the 20 within-series shuffled-power placebos
+keep a median +$15,949 — ≈78% of the real gain.** Scaling brackets by power that belongs to
+the WRONG events works almost as well as scaling by the right ones. The forecast's alignment
+contributes ≈$4.6k — inside noise (MDE $16.6k). The gain is bracket-WIDTH bias: r's
+within-series distribution averages >1, so scored events generally get wider brackets, and
+wider brackets happen to pay in the recent era (halves: +$179 / +$20,380, split 2021-09).
+
+**The insights of record**:
+1. ⭐ **A positive CI is not a positive result** — without the placebo line, FU-7 would have
+   "confirmed" that the power forecast improves geometry, and the conclusion would have been
+   WRONG in mechanism. The pre-registered placebo-collapse requirement is what caught it
+   (ledger V3 checks exactly this rule-integrity property).
+2. The residual observation — the frozen 0.10/0.40% bracket may be generically TIGHT in the
+   recent era (NQ/RTY) — is real money in the point estimate but is EXACTLY the shape of an
+   overfit trap (re-tuning a pre-registered spec on the era that suggested it). Parked in
+   the ledger's parking lot as an explicit hazard-labeled question; not acted on.
+3. YM's negative and ES's zero repeat the instrument-asymmetry law from the sizing side
+   (FU-13): geometry changes do not travel across legs either.
+
+**The frozen geometry STANDS.** Ledger: `FU7-POWER-GEOMETRY-CLOSED-NULL` — **48/48 both
+machines.**

@@ -5,7 +5,7 @@ single experiment and its results and outcomes and insights"). This is the NARRA
 companion to the master index (`NEWS-MASTER-EXPERIMENT-RECORD.md`): where the index gives one
 row per experiment, this report tells each experiment's story in plain language — what we
 did, what happened in dollars, what went well, what went wrong, and what we learned. Every
-number here already lives in a committed evidence file or the claims ledger (47/47 on both
+number here already lives in a committed evidence file or the claims ledger (48/48 on both
 machines); nothing is from memory.**
 
 ```mermaid
@@ -562,6 +562,25 @@ declared Phase 2: the same frozen ramp on OTHER instruments' books (more data an
 mandatory cross-instrument stage in one move), under a fresh pre-registration. Until then
 the box keeps flat sizing.
 
+
+### 9.12 · FU-7 — power-scaled news geometry (a positive CI is not a positive result)
+**What we did:** the second consumer of the power layer — scale each event's stop and
+take-profit by how big the night-before forecast said the move would be (within its own
+series, capped 0.5×–2×, risk-reward held at 1:4), replayed over all 840 deployed-leg events
+with the frozen arm required to match the committed evidence to the cent (it did, 307/307).
+**What happened:** +$20,559 net-stressed, and the bootstrap CI is POSITIVE
+([+$4,160, +$37,319]) — the kind of number that gets believed. **Then the falsifier spoke:**
+scaling by SHUFFLED power — the right widths on the wrong events — keeps +$15,949, about
+78% of the gain. The forecast's actual alignment is worth ≈$4.6k, inside noise. Wider
+brackets simply helped in the recent era (the two halves: +$179 vs +$20,380), mostly on
+NQ/RTY, while YM lost money and ES gained nothing — the instrument-asymmetry law showing up
+on the geometry side exactly as it did on sizing. **Verdict: CLOSED-NULL; the frozen
+geometry stands.** **Insight:** without the pre-registered placebo line this study would
+have "confirmed" the power forecast improves geometry — a wrong-mechanism conclusion with a
+green CI attached. The residual observation (maybe the frozen bracket is generically tight
+in the recent era) is parked with an explicit overfit-hazard label: re-tuning a
+pre-registered spec on the era that suggested it is the classic trap.
+
 ---
 
 ## Where the programme stands (2026-08-20)
@@ -571,8 +590,8 @@ layer ($67,767 net 2024→26 at qty=1/leg; ≈$1.167M/window model-grade at appr
 near-orthogonal (daily correlation +0.098), both paper-only until a live gateway. **Two
 deployed forecast layers**: the HAR-RV gate (tape memory, inside every champion) and the
 power-forecast layer (calendar, information-only) — and FU-11 Stage 1 has now PROVEN their
-fusion beats either alone as a forecast. **The open queue**: FU-7 (power-scaled news geometry), FU-3 Phase 2 (cross-instrument sizing) as the fused forecast's consumer studies, FU-5/6
+fusion beats either alone as a forecast. **The open queue**: FU-5/FU-6 (state studies on the frozen dataset), FU-3 Phase 2 (cross-instrument sizing) as the fused forecast's consumer studies, FU-5/6
 on the frozen dataset, FU-8 (the Retail short), FU-15 (the dual-sided bracket, parked), and
 after WS-FUSION closes — the WS-EARN return, reusing FU-9's schema on earnings timestamps.
-**The ledger**: 47/47 claims green on both machines; every number in this report is bound
+**The ledger**: 48/48 claims green on both machines; every number in this report is bound
 to it or to a committed evidence file.
