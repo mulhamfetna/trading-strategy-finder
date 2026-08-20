@@ -309,3 +309,6 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 # X-1 (#173): collision-census evidence the ledger reads
 !subprojects/Parametric-Indicators/optimize/xni/data/x1_result_NQ.json
 !subprojects/Parametric-Indicators/optimize/xni/data/x1_result_ES.json
+# X-3: compound-artifact evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/xni/data/x3_stages.log
+!subprojects/Parametric-Indicators/optimize/xni/data/x3_artifact_2025_NQ.jsonl
