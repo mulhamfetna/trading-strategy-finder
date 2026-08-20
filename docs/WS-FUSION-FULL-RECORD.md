@@ -202,3 +202,38 @@ lowest priority), ② the sizing ramp with the fused forecast as regime input (F
 demands per-instrument design), ③ FU-7 power-scaled news-leg geometry, ④ box stop distances.
 Queue position: the approved order resumes (FU-9 event-state dataset → FU-2 veto replay →
 FU-3/FU-7 as the consumer implementations).
+
+## F-7 · FU-9 (#161) — the event-state dataset v1: BUILT ✅ (2026-08-20)
+
+**The substrate every B-family study (FU-5/FU-6/FU-8), FU-15's design, and the WS-EARN return
+consume. Spec FROZEN before the build (`docs/FU9-DATASET-SPEC.md`); the dataset is only
+written when its four integrity gates pass — and all 16 (4 gates × 4 legs) passed.**
+
+**Shape**: one row per (event × leg) — 1,765 rows: NQ 449, ES 449, RTY 418 (its 2019 price
+floor), YM 449; series {CPI 116-118, NFP 107-127, FOMC 72-84, Retail 89-120} ≥2016; 342-348
+columns: identity + M2 power context (pred_exp/pred_t24/n_priors/jump_pct) + the frozen ride
+outcome (deployed `run_bracket`, qty=1, stressed costs) + 330 stance columns (cdir/vdir ×165
+registry indicators at DEFAULT params, evaluated on the last 1m bar CLOSED before the
+rel−300s entry, 2,000-bar context, the deployed --ind-1min convention) + NQ box-book state
+per TF from the FU-1 audits.
+
+**The gates**:
+- **C1 replay parity**: on all 307 events overlapping the committed wsescpi replay evidence
+  (NQ 81, ES 29, RTY 81, YM 116) the ride P&L matches **to the cent** — the outcome
+  generator is pinned to the deployed executor's proven behaviour.
+- **C2 repaint falsifier** ⭐: for 25 seeded events × 165 indicators PER LEG, the stance is
+  UNCHANGED when +1h of FUTURE bars is appended to the context — no indicator in the
+  registry repaints. This is now a proven property of the whole library at default params.
+- **C3 uniqueness / C4 coverage**: clean; 2 CPI events lack 1s ride coverage (kept as
+  state-only rows, itemized).
+
+**Incidents kept**: `schedule.load` import name; YM missing from the M-era `FLOOR` dict
+(onboarded v5.4.1 — floor 2016 set explicitly, printed, not silently defaulted).
+**Cost profile** (measure-first): the whole 165-indicator × 449-event evaluation is ~80s/leg;
+the top consumers are rsi_connors/hma (~3s cumulative each) — no dfa-class problem at this
+window size.
+
+**Ledger**: `FU9-EVENT-STATE-DATASET` — V1 cost-identity/alphabet/scope re-derivation, V2
+LOCAL cent-exact re-join vs the independent committed evidence, V3 manifest falsifier +
+non-degeneracy. **45/45 both machines.** v1 FROZEN; the spec's discipline reminder stands:
+the table existing is not permission to scan it.
