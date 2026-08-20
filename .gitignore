@@ -306,3 +306,6 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !subprojects/Parametric-Indicators/optimize/earnings/data/ed1_golden.log
 !playbooks/two-calendar-forecast/PLAYBOOK.md
 !playbooks/two-calendar-forecast-bundle-v1.0.0.zip
+# X-1 (#173): collision-census evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/xni/data/x1_result_NQ.json
+!subprojects/Parametric-Indicators/optimize/xni/data/x1_result_ES.json
