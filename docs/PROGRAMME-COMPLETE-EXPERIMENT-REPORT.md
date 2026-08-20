@@ -887,6 +887,21 @@ and the branch screenshot is committed evidence. **Insight:** three recovered in
 one study (wrong interpreter, missing data roots, wrong browser mechanism) and every one is
 now a memory entry — the process learns at the same rate the system does.
 
+
+### 11.6 · The XNI closure — the roadmap completes
+**What we did:** closed phase 3 against its own definition of done — every X row
+verdicted, the ledger green, the closing bilingual report shipped — and with it the
+owner's three-step roadmap (earnings alone → earnings × indicators → earnings × news ×
+indicators) is COMPLETE. **The total finding, coherent across three eras:** scheduled
+violence is rankable from its own history at ρ≈0.5 on both calendars — the one
+forecastable quantity this programme has ever found, and it was productionized twice.
+Nothing else predicts it: not direction (dead three ways), not tape state (dead on every
+axis, both calendars), not cross-calendar interaction (independent, law #1). So the
+system's edge stays exactly where it was earned — the box book and the CPI ride — and
+every layer added since is information wrapped in authority strings, parity proofs, and
+never-gates guards. What hides between the lines, asked and answered: nothing extra —
+and knowing that with 64 machine-verified claims is worth more than hoping otherwise.
+
 ---
 
 ## Where the programme stands (2026-08-20)
@@ -896,10 +911,10 @@ layer ($67,767 net 2024→26 at qty=1/leg; ≈$1.167M/window model-grade at appr
 near-orthogonal (daily correlation +0.098), both paper-only until a live gateway. **Two
 deployed forecast layers**: the HAR-RV gate (tape memory, inside every champion) and the
 power-forecast layer (calendar, information-only) — and FU-11 Stage 1 has now PROVEN their
-fusion beats either alone as a forecast. **The open queue**: era 10 is complete through **E-D1, released in v5.5.0** (the
-two-calendar forecast layer — the gate's nightly blindness schedule; routing, never
-fitting). Deliberate holds: FU-4 gated-off, FU-15 parked, FU-11 consumers ①④
-low-priority. **Phase 3 — earnings × news × indicators — is initiating** with its own
-brainstorm and numbered ledger.
+fusion beats either alone as a forecast. **The open queue**: THE ROADMAP IS COMPLETE — era 11 (XNI) closed with law #1, three
+shipped information artifacts, and the closing bilingual report. On the table: the next
+release (ships X-3/X-4/X-5b + the annotated bundle); deliberate holds (FU-15 parked,
+FU-4 gated, FU-11 consumers ①④, X-2/X-6 parked-with-cause, the fresh-registration
+hypotheses); owner-side items (live gateway, margin, C4, a forward earnings calendar).
 **The ledger**: 64/64 claims green on both machines; every number in this report is bound
 to it or to a committed evidence file.

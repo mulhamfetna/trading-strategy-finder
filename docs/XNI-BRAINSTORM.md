@@ -69,3 +69,11 @@ power gate would then have its strongest input — still owner-parked).
 tiny) → X-3/X-4 (information consumers, no statistics debt) → X-5 → X-2 (only if the
 census funds it) → X-6 (only if warranted). The phase inherits WS-FUSION's §5 test for
 "done": every row verdicted, ledger green, a closing report, hand-off notes.
+
+## 5 · CLOSED (2026-08-20) — the phase's own §4 test, applied
+
+Every X row carries a verdict (law / shipped / informative-decomposed / parked-with-cause /
+standing rule); the ledger is 100% green (64/64 both machines); the closing bilingual
+report is `XNI-CLOSING-REPORT-BILINGUAL.html`. X-2/X-6 are PARKED-WITH-CAUSE (census-funded
+but low-value under law #1 — deliberately unspent, not dropped). With this closure the
+owner's three-step roadmap (earnings → ×indicators → ×news×indicators) is COMPLETE.

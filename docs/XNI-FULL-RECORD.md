@@ -121,3 +121,14 @@ interpreter (no-numpy system python) then missed the data-root env — the stale
 sync-roots traps, live; and the visual gate was first attempted with Claude-in-Chrome —
 **owner correction of record: NEVER — the standard is ssh-tunnel + Playwright** (saved to
 the feedback memory). Ledger: `X4-BLINDNESS-OBSERVABILITY-SHIPPED`, **64/64 both machines**.
+
+## The closure (2026-08-20)
+
+The phase's own test, satisfied: X-1 law #1 · X-3/X-4/X-5b shipped with parity proofs ·
+X-5 informative-decomposed · X-R1 standing · X-2/X-6 parked-with-cause. Ledger **64/64
+both machines**; closing bilingual report `XNI-CLOSING-REPORT-BILINGUAL.html`. **The
+owner's three-step roadmap is COMPLETE** — the coherent total finding: scheduled violence
+is rankable from its own history (twice productionized); nothing else predicts it
+(direction ×3, state on every axis, cross-calendar interaction); the edge stays where it
+was earned, and every new layer is information under authority strings. This record is
+COMPLETE.
