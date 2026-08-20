@@ -249,3 +249,78 @@ register(Claim(
     checks=[Check("V1", "power context re-derives vs E-P1; schema/alphabet clean", _es1_v1),
             Check("V2", "net = pnl − live stressed cost identity", _es1_v2),
             Check("V3", "8/8 gates incl. repaint falsifier; non-degenerate", _es1_v3)]))
+
+
+# =============================================================================================
+# E-X2 — the joint two-calendar forecast: NOT CERTIFIED (line 2 missed by a hair; rule held)
+# =============================================================================================
+def _ex2(inst: str) -> dict:
+    return json.load(open(EARN / f"ex2_result_{inst}.json"))
+
+
+def _ex2_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION: on both instruments the recorded lines must re-derive from the
+    recorded scores under the registered thresholds (1.001 tolerances; union CI)."""
+    for inst in ("NQ", "ES"):
+        r = _ex2(inst)
+        S = r["scores"]
+        want = {
+            "1_no_macro_degradation": S["Cj"]["macro"] <= 1.001 * S["Cm"]["macro"],
+            "2_no_earn_degradation": S["Cj"]["earn"] <= 1.001 * S["Ce"]["earn"],
+            "3_union_ci": r["decision_union"]["boot90_ci"][0] > 0
+                          and r["decision_union"]["mean_diff_B_minus_Cj"] > 0,
+            "4_overall_single_best": S["Cj"]["overall"] <= 1.001 * min(
+                S["B"]["overall"], S["Cm"]["overall"], S["Ce"]["overall"]),
+        }
+        if {k: bool(v) for k, v in want.items()} != r["lines"]:
+            return False, f"{inst}: lines do not re-derive"
+    return True, "lines re-derive from scores on both instruments"
+
+
+def _ex2_v2() -> tuple[bool, str]:
+    """V2 — THE WITNESS: ES passes ALL FOUR lines (the composition is clean there) and its
+    union differential is CI-positive — the failure is NQ-local and small, not structural."""
+    r = _ex2("ES")
+    ok = all(r["lines"].values()) and r["decision_union"]["boot90_ci"][0] > 0
+    return ok, f"ES lines {r['lines']}; union CI {r['decision_union']['boot90_ci']}"
+
+
+def _ex2_v3() -> tuple[bool, str]:
+    """V3 — BAR INTEGRITY (the third in the series): NQ's line 2 fails by ≈0.05% beyond the
+    registered 0.1% tolerance while lines 1/3/4 pass and the union CI is hugely positive —
+    and the verdict must still be NOT-CERTIFIED. The appealing composition was not promoted
+    over its own registered line."""
+    r = _ex2("NQ")
+    S = r["scores"]
+    ratio = S["Cj"]["earn"] / S["Ce"]["earn"]
+    ok = (not r["lines"]["2_no_earn_degradation"] and 1.001 < ratio < 1.01
+          and r["lines"]["1_no_macro_degradation"] and r["lines"]["3_union_ci"]
+          and r["lines"]["4_overall_single_best"])
+    return ok, f"NQ earn ratio {ratio:.5f} vs 1.001 line; other lines pass — rule held"
+
+
+register(Claim(
+    id="EX2-JOINT-FORECAST-NOT-CERTIFIED",
+    issue="#169",
+    statement="The joint two-calendar forecast is NOT CERTIFIED, by its own registered "
+              "rule: on NQ the joint model degrades earnings-bar QLIKE by 0.15% vs the "
+              "single-calendar model (0.7945→0.7957) against the pre-registered 0.1% "
+              "no-degradation line — a miss of ≈0.05%, and the rule held (the third "
+              "near-miss refused: FU-6's 0.003 AUC, FU-3's CI touch, now this). The "
+              "texture recorded WITH the verdict: ES passes ALL FOUR lines cleanly "
+              "(composition is clean there), the union differential is hugely CI-positive "
+              "on both (NQ +4.52 [3.20,6.09]; ES +5.29), and the joint model is the "
+              "overall single-best forecast on both instruments (NQ 0.4853 vs B 0.5485). "
+              "Consequence: the single-calendar models stand alone as the reference "
+              "repairs; E-D1 (productionization) is NOT armed; a v2 with a freshly "
+              "registered tolerance may be filed later — never a post-hoc widening.",
+    source="optimize/earnings/data/ex2_result_{NQ,ES}.json",
+    value_fn=lambda: round(_ex2("NQ")["decision_union"]["mean_diff_B_minus_Cj"], 4),
+    expect=4.5245, tol=0.0001,
+    blind_spot="n=92 earnings bars makes the 0.1% line noise-sensitive — that is a design "
+               "lesson (tolerances must be powered), recorded for any v2 registration; "
+               "research frames; two instruments; zero overlap bars (08:30 vs 16:30 clocks) "
+               "so no shared-bar stress was actually exercised.",
+    checks=[Check("V1", "lines re-derive from scores under the registered thresholds", _ex2_v1),
+            Check("V2", "ES passes all four lines (the failure is NQ-local, small)", _ex2_v2),
+            Check("V3", "the near-miss was refused — bar integrity, third in the series", _ex2_v3)]))
