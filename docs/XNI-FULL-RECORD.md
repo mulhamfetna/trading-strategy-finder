@@ -79,3 +79,20 @@ never changes. **Armed as X-5b; not built until called.** Incident kept: a claim
 typo (xni/data parents depth), caught by the ledger's first run.
 
 Ledger: `X5-MONITOR-POWER-INFORMATIVE`, **62/62 both machines**.
+
+## X-5b · The monitor's context field: SHIPPED-ON-BRANCH ✅ (2026-08-20)
+
+**X-5's registered consequence, delivered exactly and no more: an OPTIONAL `--context`
+flag on the regime monitor's report — `compound_power_pct` (X-5's definition, X-3's
+additive law) + a median-label regime note carrying the authority string "information only
+— never gates".**
+
+**The trigger is untouched, proven three ways**: (1) the old and new `rolling_state` are
+BYTE-EQUAL on the committed replay evidence (the parity log); (2) the trigger function's
+source contains no context reference (static proof, ledger-checked); (3) the flag and
+parameter default OFF — without them the module IS the old module. Definition parity:
+29/29 CPI events match the frozen-file recomputation to 1e-9.
+
+Runbook note (not code): the LIVE monitor's context source is the nightly two-calendar
+artifact; the frozen research files serve the historical mode. Ledger:
+`X5B-MONITOR-CONTEXT-SHIPPED`, **63/63 both machines**.
