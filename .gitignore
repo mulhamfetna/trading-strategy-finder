@@ -287,3 +287,6 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !subprojects/Parametric-Indicators/optimize/earnings/data/ep1_result.json
 !subprojects/Parametric-Indicators/optimize/earnings/data/ep1_events_NQ.csv
 !subprojects/Parametric-Indicators/optimize/earnings/data/ep1_events_ES.csv
+# E-X1: earnings fused-forecast evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/earnings/data/ex1_result_NQ.json
+!subprojects/Parametric-Indicators/optimize/earnings/data/ex1_result_ES.json

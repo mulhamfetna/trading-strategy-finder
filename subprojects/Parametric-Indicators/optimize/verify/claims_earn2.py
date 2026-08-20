@@ -89,3 +89,77 @@ register(Claim(
     checks=[Check("V1", "NQ primary re-derives from the committed per-event file", _ep1_v1),
             Check("V2", "the ES replication re-derives and clears zero", _ep1_v2),
             Check("V3", "shuffle + control + quintile gates recorded and consistent", _ep1_v3)]))
+
+
+# =============================================================================================
+# E-X1 — earnings × the fused forecast: PASS (the blindness law covers both calendars)
+# =============================================================================================
+def _ex1(inst: str) -> dict:
+    return json.load(open(EARN / f"ex1_result_{inst}.json"))
+
+
+def _ex1_v1() -> tuple[bool, str]:
+    """V1 — INTERNAL RE-DERIVATION: on both instruments the decision differential must equal
+    QLIKE(B,event) − QLIKE(C,event); the CI must bracket it; gain_C_over_D must equal the
+    score difference."""
+    for inst in ("NQ", "ES"):
+        r = _ex1(inst)
+        d = r["decision"]["mean_diff_B_minus_C"]
+        ident = r["scores"]["B"]["event"] - r["scores"]["C"]["event"]
+        lo, hi = r["decision"]["boot90_ci"]
+        g = r["decomposition"]["gain_C_over_D"]
+        gi = r["scores"]["D"]["event"] - r["scores"]["C"]["event"]
+        if not (abs(d - ident) < 1e-9 and lo < d < hi and abs(g - gi) < 1e-9):
+            return False, f"{inst}: identities broken"
+    return True, "identities hold on both instruments"
+
+
+def _ex1_v2() -> tuple[bool, str]:
+    """V2 — THE WITNESS AND THE HONEST ASYMMETRY: the ES differential is CI-positive in
+    sign (the registered line-2 witness) AND the recorded fact stands that on ES the
+    DEPLOYED fixed-weight HAR beats the fused model on earnings bars (A < C) — the pass is
+    recorded WITH its asymmetry, not despite it."""
+    r = _ex1("ES")
+    ok = (r["decision"]["boot90_ci"][0] > 0
+          and r["scores"]["A"]["event"] < r["scores"]["C"]["event"])
+    return ok, (f"ES diff CI {r['decision']['boot90_ci']} > 0; A "
+                f"{r['scores']['A']['event']:.4f} < C {r['scores']['C']['event']:.4f} "
+                f"(deployed weights already good on ES earnings bars)")
+
+
+def _ex1_v3() -> tuple[bool, str]:
+    """V3 — FALSIFIER: on NQ the shuffled-power placebo collapses to the dummy level
+    (placebo gain over D ≤ half of C's gain) while C's gain over D is positive — the power
+    MAGNITUDE carries the repair, as on the macro calendar."""
+    r = _ex1("NQ")
+    g = r["decomposition"]["gain_C_over_D"]
+    pg = r["decomposition"]["placebo_gain_over_D"]
+    ok = g > 0 and pg <= 0.5 * g and all(r["lines"].values())
+    return ok, f"NQ C-over-D {g:+.4f}, placebo {pg:+.4f}; lines {r['lines']}"
+
+
+register(Claim(
+    id="EX1-EARNINGS-FUSED-FORECAST-PASS",
+    issue="#169",
+    statement="E-X1 PASSES its four pre-registered lines: the live vol engine's calendar "
+              "blindness extends to EARNINGS bars and the night-before per-ticker power "
+              "repairs it — NQ test earnings bars (n=92): QLIKE fitted HAR-LS 1.3046 → "
+              "FUSED 0.7945 (deployed 1.0812; dummy-only 0.8569; placebo 0.8569 — exact "
+              "collapse: the power magnitude carries it), differential +0.5101 CI90 "
+              "[+0.344, +0.704]; ES witness positive (+0.0996, CI clear). TWO honest "
+              "asymmetries recorded: the earnings blindness is ≈14× SMALLER than macro "
+              "(B ≈1.3 vs CPI's 7.6 — AMC thin bars + single-ticker dilution + the "
+              "acceptance-lag smear), and on ES the deployed FIXED weights already beat "
+              "every fitted variant on earnings bars. The blindness-and-repair law covers "
+              "both calendars; the joint macro+earnings forecast is the declared follow-up; "
+              "consumers stay behind the fusion-era laws.",
+    source="optimize/earnings/data/ex1_result_{NQ,ES}.json",
+    value_fn=lambda: round(_ex1("NQ")["decision"]["mean_diff_B_minus_C"], 4),
+    expect=0.5101, tol=0.0001,
+    blind_spot="92 test earnings bars (fewer than FU-11's 140); research 1h frames; "
+               "acceptance-lag smears event-bar placement; two instruments only; the "
+               "earnings dummy beta is NEGATIVE with power positive — the dummy alone "
+               "over-corrects, another reason the power term is the load-bearer.",
+    checks=[Check("V1", "decision fields re-derive from score fields, both instruments", _ex1_v1),
+            Check("V2", "ES witness CI-positive; the A<C asymmetry recorded", _ex1_v2),
+            Check("V3", "the placebo collapses on NQ; all lines hold", _ex1_v3)]))
