@@ -118,3 +118,10 @@ powered tolerance may be filed later; never a post-hoc widening.
 **Consequences**: the single-calendar models (FU-11's macro, E-X1's earnings) stand alone
 as the reference repairs; **E-D1 (productionization) is NOT armed.** Ledger:
 `EX2-JOINT-FORECAST-NOT-CERTIFIED`, **56/56 both machines**.
+
+## The workstream queue (owner-ordered, 2026-08-20)
+
+- **E-C1 (ACTIVE)**: the ×indicators conditioning phase — see E-5 below.
+- **E-X2 v2 (QUEUED by owner word)**: the joint two-calendar forecast re-registered with a
+  POWERED tolerance (the E-X2 design law applied: the no-degradation line sized to the
+  event-bar sample's QLIKE noise, fixed before the run). Not scheduled until called.
