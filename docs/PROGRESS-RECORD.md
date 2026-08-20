@@ -10,7 +10,7 @@ issue; labels + milestones organize the board; releases carry the shipped artifa
 ## 0 · The one-paragraph state
 
 Two production income systems plus one information layer, all verified end-to-end
-(claims ledger **59/59 on both machines**). **System 1 — the box strategy**: 55 champions
+(claims ledger **64/64 on both machines**). **System 1 — the box strategy**: 55 champions
 across 9 markets (~$840k/yr 2026-OOS at deployed caps), engine golden-locked (6/6).
 **System 2 — the news layer** (v5.4.2): four legs, one CPI bet — $67,767 net stressed
 2024→2026 at qty=1/leg; scaled tiers approved by rule (NQ/RTY/ES ≤20 worked, YM ≤5),
@@ -37,6 +37,7 @@ schedule; routing, never fitting). **Next (owner-initiated): phase 3 — ×news�
 | [v5.4.2](https://github.com/mulhamfetna/trading-strategy-finder/releases/tag/v5.4.2) | 2026-08-19 | scaled tiers ES ≤20 / YM ≤5 (#141/#150); bundles v1.4.0 + v1.4.1 (docs-current) |
 | [v5.4.3](https://github.com/mulhamfetna/trading-strategy-finder/releases/tag/v5.4.3) | 2026-08-19 | the power-forecast layer deployed (FU-14, information-only, bundle v1.0.0) + the Exp2 sizing ramp honestly killed (FU-13 NOT-DEPLOYED) |
 | [v5.5.0](https://github.com/mulhamfetna/trading-strategy-finder/releases/tag/v5.5.0) | 2026-08-20 | the two-calendar forecast layer (E-D1, routing pattern, information-only; bundle v1.0.0) + WS-FUSION closure + era 10 (the WS-EARN return, 7 studies) |
+| [v5.5.1](https://github.com/mulhamfetna/trading-strategy-finder/releases/tag/v5.5.1) | 2026-08-20 | ⭐⭐ THE ROADMAP COMPLETES: XNI closure (law #1) + X-3 collision-priced artifact (bundle v1.1.0) + X-4 dashboard event-window tags + X-5b monitor context field — all information-only, parity-proven, never-gates |
 
 ## 2 · The workstream history (what is CLOSED, with its verdict)
 
@@ -64,7 +65,7 @@ per-workstream full records. The one-line-each version:
   · E-S1 ✅ (924-row substrate frozen) · E-X2+v2 ✕ (fitted-joint interference confirmed at
   power) · E-C1 ∅ (state-blind extended to size) · **E-D1 ⭐ RELEASED v5.5.0**. C4 human
   check still PENDING (#110, owner-side); forward earnings dates need an owner-supplied
-  calendar. **Phase 3 (×news×indicators) initiating.**
+  calendar. **Phase 3 (XNI) RAN and CLOSED — the roadmap is COMPLETE (v5.5.1); X-2/X-6 parked-with-cause.**
 - **Deliberate holds (not debt)**: FU-15 dual-sided bracket (#168, parked by owner behind
   the closed FU-11 — inherits FU-8's quantified double-stop cost) · FU-4 (gated-off) ·
   FU-11 consumers ① re-gate / ④ stops (low-priority, armed by Stage 1).

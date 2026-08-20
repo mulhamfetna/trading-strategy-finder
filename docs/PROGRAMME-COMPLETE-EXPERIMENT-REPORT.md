@@ -911,9 +911,8 @@ layer ($67,767 net 2024→26 at qty=1/leg; ≈$1.167M/window model-grade at appr
 near-orthogonal (daily correlation +0.098), both paper-only until a live gateway. **Two
 deployed forecast layers**: the HAR-RV gate (tape memory, inside every champion) and the
 power-forecast layer (calendar, information-only) — and FU-11 Stage 1 has now PROVEN their
-fusion beats either alone as a forecast. **The open queue**: THE ROADMAP IS COMPLETE — era 11 (XNI) closed with law #1, three
-shipped information artifacts, and the closing bilingual report. On the table: the next
-release (ships X-3/X-4/X-5b + the annotated bundle); deliberate holds (FU-15 parked,
+fusion beats either alone as a forecast. **The open queue**: THE ROADMAP IS COMPLETE and **SHIPPED (v5.5.1)** — era 11 closed with
+law #1 and its three information artifacts released (bundle v1.1.0). Remaining: deliberate holds (FU-15 parked,
 FU-4 gated, FU-11 consumers ①④, X-2/X-6 parked-with-cause, the fresh-registration
 hypotheses); owner-side items (live gateway, margin, C4, a forward earnings calendar).
 **The ledger**: 64/64 claims green on both machines; every number in this report is bound

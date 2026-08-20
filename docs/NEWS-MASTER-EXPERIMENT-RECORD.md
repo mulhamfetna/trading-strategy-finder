@@ -1,7 +1,7 @@
 # The News Programme — Master Experiment Record
 
 **Every experiment, its result and its finding, across the entire programme (2026-06 → 2026-08-20).
-Current through **v5.5.0**: all profitable news deployed and scaled, the premium
+Current through **v5.5.1** (the roadmap COMPLETE): all profitable news deployed and scaled, the premium
 grid literally closed, the fusion workstream executing (the fused size engine has WON its
 forecast-quality stage), ledger 64/64 on both machines.**
 
