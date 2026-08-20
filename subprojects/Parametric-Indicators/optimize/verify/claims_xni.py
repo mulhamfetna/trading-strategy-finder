@@ -159,3 +159,85 @@ register(Claim(
     checks=[Check("V1", "verify Δ0.0e+00 both instruments AFTER the change", _x3_v1),
             Check("V2", "artifact census rate within ±10% of X-1's, same window", _x3_v2),
             Check("V3", "every compound row re-derives additively from a partner", _x3_v3)]))
+
+
+# =============================================================================================
+# X-5 — monitor × compound power: INFORMATIVE (regime-level, honestly decomposed)
+# =============================================================================================
+def _x5() -> dict:
+    return json.load(open(XNI / "x5_result.json"))
+
+
+def _x5_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION: the Spearman recomputed locally from the frozen FU-9 + E-P1
+    files under the registered definitions must match the manifest."""
+    from scipy import stats
+    import numpy as _np
+    d = pd.read_csv(XNI.parents[1] / "fundamentals" / "fu9_event_state_NQ.csv",
+                    parse_dates=["et"],
+                    usecols=["et", "title", "pred_exp", "ride_net_stressed_usd"])
+    cpi = d[d.title == "Inflation Rate MoM"].dropna(
+        subset=["ride_net_stressed_usd"]).sort_values("et").reset_index(drop=True)
+    health = cpi.ride_net_stressed_usd.rolling(24).mean()
+    earn = pd.read_csv(XNI.parents[1] / "earnings" / "data" / "ep1_events_NQ.csv",
+                       parse_dates=["event_et"])
+    e_et = earn.event_et.to_numpy(); e_p = earn.pred.to_numpy(float)
+    comp = _np.full(len(cpi), _np.nan)
+    for i, r in cpi.iterrows():
+        dh = _np.abs((r.et.to_datetime64() - e_et) / _np.timedelta64(1, "h"))
+        near = e_p[(dh <= 24.0) & _np.isfinite(e_p)]
+        add = float(near.max()) if len(near) else 0.0
+        comp[i] = r.pred_exp + add if _np.isfinite(r.pred_exp) else _np.nan
+    ok = health.notna().to_numpy() & _np.isfinite(comp)
+    rho, _ = stats.spearmanr(health.to_numpy()[ok], comp[ok])
+    m = _x5()
+    good = abs(rho - m["spearman"]) < 5e-4 and int(ok.sum()) == m["n"]
+    return good, f"rho {rho:+.4f} (n={int(ok.sum())}) re-derives"
+
+
+def _x5_v2() -> tuple[bool, str]:
+    """V2 — RULE APPLICATION: the INFORMATIVE verdict re-derives from the recorded fields
+    (CI excludes 0, |rho| > shuffle p95, era signs consistent)."""
+    m = _x5()
+    inf = ((m["boot90_ci"][0] > 0 or m["boot90_ci"][1] < 0)
+           and abs(m["spearman"]) > m["shuffle_p95_abs"]
+           and (m["eras"]["h1"] > 0) == (m["eras"]["h2"] > 0) == (m["spearman"] > 0))
+    return inf == (m["verdict"] == "INFORMATIVE"), \
+        f"verdict {m['verdict']} follows from the fields"
+
+
+def _x5_v3() -> tuple[bool, str]:
+    """V3 — DECOMPOSITION HONESTY: the within-year shuffle bar (0.879) sits just below the
+    real rho (0.906) — the ANNUAL regime carries the bulk; the claim must state the
+    event-level increment is marginal, and the consequence stays report-field-only."""
+    m = _x5()
+    ok = m["shuffle_p95_abs"] > 0.8 and (abs(m["spearman"]) - m["shuffle_p95_abs"]) < 0.05
+    return ok, (f"shuffle bar {m['shuffle_p95_abs']} vs rho {m['spearman']} — "
+                f"regime-level co-movement dominates (margin "
+                f"{abs(m['spearman']) - m['shuffle_p95_abs']:.3f})")
+
+
+register(Claim(
+    id="X5-MONITOR-POWER-INFORMATIVE",
+    issue="#172",
+    statement="X-5 closes INFORMATIVE by its registered rule — with the decomposition "
+              "stated first: the monitor's rolling-24 CPI health and the compound-power "
+              "series co-move at Spearman +0.9057 (CI [0.8625, 0.9317], n=93, both era "
+              "halves positive) — but the within-year shuffle bar itself reaches 0.879, so "
+              "the ANNUAL REGIME carries the bulk: this is the CPI-power-era law (the ride "
+              "pays when CPI power is high) re-measured at the monitor level; the "
+              "event-level increment is the 0.027 margin. Consequence (as registered, no "
+              "more): a compound-power CONTEXT FIELD may be added to the monitor's REPORT "
+              "output under its own small parity gate — the trigger NEVER changes. Armed "
+              "as X-5b; not built until called.",
+    source="optimize/xni/data/x5_result.json",
+    value_fn=lambda: _x5()["spearman"],
+    expect=0.9057, tol=0.0001,
+    blind_spot="Rolling means are autocorrelated (event bootstrap understates CI width — "
+               "declared; block-bootstrap variant is the follow-up's job); n=93; the "
+               "compound series is NQ-only; direction was deliberately unregistered "
+               "(existence test) — the observed sign (healthier when power is high) is "
+               "consistent with era-2's law, not a new finding.",
+    checks=[Check("V1", "rho re-derives from the frozen files under the definitions", _x5_v1),
+            Check("V2", "the verdict follows from the recorded fields", _x5_v2),
+            Check("V3", "regime-dominance decomposition stated (margin < 0.05)", _x5_v3)]))

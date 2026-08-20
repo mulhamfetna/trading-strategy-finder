@@ -312,3 +312,5 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 # X-3: compound-artifact evidence the ledger reads
 !subprojects/Parametric-Indicators/optimize/xni/data/x3_stages.log
 !subprojects/Parametric-Indicators/optimize/xni/data/x3_artifact_2025_NQ.jsonl
+# X-5: monitor-power evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/xni/data/x5_result.json
