@@ -5,7 +5,7 @@ single experiment and its results and outcomes and insights"). This is the NARRA
 companion to the master index (`NEWS-MASTER-EXPERIMENT-RECORD.md`): where the index gives one
 row per experiment, this report tells each experiment's story in plain language — what we
 did, what happened in dollars, what went well, what went wrong, and what we learned. Every
-number here already lives in a committed evidence file or the claims ledger (48/48 on both
+number here already lives in a committed evidence file or the claims ledger (49/49 on both
 machines); nothing is from memory.**
 
 ```mermaid
@@ -581,6 +581,24 @@ green CI attached. The residual observation (maybe the frozen bracket is generic
 in the recent era) is parked with an explicit overfit-hazard label: re-tuning a
 pre-registered spec on the era that suggested it is the classic trap.
 
+
+### 9.13 · FU-5 — the state-gated ride (the discipline holding under temptation)
+**What we did:** the first conditioning study on the frozen event-state dataset, under the
+strictest small-n rules: exactly two mechanism-first conditions with predicted directions
+fixed in writing before any data was read, frozen outcomes, and none of the dataset's 330
+indicator columns touched. **What happened:** both closed NULL. Condition A (enter only when
+the overnight trend agrees with the long ride) measured +$103/event on NQ — inside its own
+shuffle-noise floor, with zero of the three other legs agreeing: the drift-continuation
+idea has no cross-leg existence. Condition B (enter only when the pre-release hour is
+already volatile — predicted to HELP, per the vol-seeking prior) measured −$75/event: the
+OPPOSITE sign, and consistently so — all four legs negative, both era halves negative — yet
+the CI contains zero and the sign contradicts the registration, so the rule closes it
+without flipping the hypothesis. **Insight:** two of them. First, the deployed ride entering
+state-blind is now an evidence-backed CHOICE, not an omission. Second, a texture worth its
+own future study: calendar power pays the premium, but TAPE vol before the release may
+mildly anti-predict it — as if an already-moving tape has pre-spent the move. That
+hypothesis earns a fresh pre-registration or nothing.
+
 ---
 
 ## Where the programme stands (2026-08-20)
@@ -590,8 +608,8 @@ layer ($67,767 net 2024→26 at qty=1/leg; ≈$1.167M/window model-grade at appr
 near-orthogonal (daily correlation +0.098), both paper-only until a live gateway. **Two
 deployed forecast layers**: the HAR-RV gate (tape memory, inside every champion) and the
 power-forecast layer (calendar, information-only) — and FU-11 Stage 1 has now PROVEN their
-fusion beats either alone as a forecast. **The open queue**: FU-5/FU-6 (state studies on the frozen dataset), FU-3 Phase 2 (cross-instrument sizing) as the fused forecast's consumer studies, FU-5/6
+fusion beats either alone as a forecast. **The open queue**: FU-6 (locked-holdout outcome model), FU-3 Phase 2 (cross-instrument sizing) as the fused forecast's consumer studies, FU-5/6
 on the frozen dataset, FU-8 (the Retail short), FU-15 (the dual-sided bracket, parked), and
 after WS-FUSION closes — the WS-EARN return, reusing FU-9's schema on earnings timestamps.
-**The ledger**: 48/48 claims green on both machines; every number in this report is bound
+**The ledger**: 49/49 claims green on both machines; every number in this report is bound
 to it or to a committed evidence file.

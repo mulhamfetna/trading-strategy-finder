@@ -364,3 +364,31 @@ wider brackets happen to pay in the recent era (halves: +$179 / +$20,380, split 
 
 **The frozen geometry STANDS.** Ledger: `FU7-POWER-GEOMETRY-CLOSED-NULL` — **48/48 both
 machines.**
+
+## F-11 · FU-5 (#157) — the state-gated ride: both conditions CLOSED-NULL ✅ (2026-08-20)
+
+**The first conditioning study on the frozen FU-9 substrate — run under the strictest
+small-n discipline: exactly TWO mechanism-first conditions with directions fixed in the
+pre-registration, outcomes frozen (no new bracket runs), none of the 330 stance columns
+read.**
+
+- **A — overnight-trend agreement (predicted +)**: NQ **+$103/event** [−$21, +$227] — inside
+  its own shuffle-noise floor ($115), with **0/3** other legs sign-agreeing. NULL, cleanly:
+  the drift-continuation mechanism has no cross-leg existence at all (WS-NEWS2's direction
+  kill extends to the ride's conditioning).
+- **B — high pre-release tape vol (predicted +)**: NQ **−$75/event** [−$206, +$55] — the
+  **OPPOSITE sign to the prediction**, and eerily consistent: all 3 other legs negative,
+  both era halves negative. But the CI contains zero (MDE $133/event) and the sign
+  contradicts the registration, so the rule closes it NULL — no post-hoc hypothesis flip.
+
+**The texture worth keeping (recorded, not traded)**: the vol-seeking prior FAILED here —
+an already-moving pre-release tape may have PRE-SPENT the event move. The premium is paid by
+CALENDAR power (the scheduled resolution of uncertainty), not by tape vol; the two are
+different quantities, and the tape's version may be mildly anti-predictive for the ride.
+4/4-leg + both-era sign consistency makes this the second "promising unpowered texture" of
+the era (with FU-3's) — it earns a fresh pre-registration or nothing.
+
+**Consequence**: no state gate is armed; the deployed ride keeps entering state-blind —
+which is now an evidence-backed choice, not an omission. Ledger:
+`FU5-STATE-GATE-CLOSED-NULL` (V3 = prediction integrity: B was not flipped post hoc).
+**49/49 both machines.**

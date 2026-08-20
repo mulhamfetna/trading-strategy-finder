@@ -3,13 +3,13 @@
 **Every experiment, its result and its finding, across the entire programme (2026-06 → 2026-08-20).
 Current through v5.4.3 + FU-11 Stage 1: all profitable news deployed and scaled, the premium
 grid literally closed, the fusion workstream executing (the fused size engine has WON its
-forecast-quality stage), ledger 48/48 on both machines.**
+forecast-quality stage), ledger 49/49 on both machines.**
 
 This is the master index. **The verbose NARRATIVE companion — every experiment told in full (what ran, the dollars, what went well/wrong, the insight) — is `PROGRAMME-COMPLETE-EXPERIMENT-REPORT.md`.** Each workstream's full detail lives in its own record —
 `NEWS-PROGRAMME-FULL-RECORD.md` (WS-NEWS2/3), `WS-NEWS4-FULL-RECORD.md`,
 `WS-ESCPI-FULL-RECORD.md` (+ 2 addenda), `WS-GRID-RESULTS.md`, `WS-FUSION-FULL-RECORD.md`
 (F-0…F-7) — and every number below is bound to the claims ledger
-(`optimize/verify/run.py`, 48/48) or a committed evidence file.
+(`optimize/verify/run.py`, 49/49) or a committed evidence file.
 
 ```mermaid
 flowchart TD
@@ -149,6 +149,7 @@ flowchart TD
 | 9.10 | FU-2 (#154): the news-veto replay | **CLOSED-NULL by its pre-registered rule (2026-08-20).** Blocking NQ box entries in [rel−5m,+15m] Tier-1 across all 6 frames (engine-gate veto, full path dependence; all 6 baselines reproduce the committed FU-1 books to the cent): pooled Δnet +$17,221, CI90 [−$36,107,+$71,273], MDE $53,960; ΣΔmaxDD −$1,106 ≈ 0. ⭐ **The mechanism is dead beyond power**: the +3-day SHIFTED-calendar veto gains MORE (+$24,946) — the drift is time-of-day seasonality, release-specific component −$7,725; and on 4h (the 8.4× frame) the veto HURTS (−$3,159, DD +$10,430 worse) — those in-window entries PAY. Recorded expectation (DD win likelier) was wrong. **No stand-aside overlay**; the box book and news layer coexist. Claim `FU2-NEWS-VETO-CLOSED-NULL`, **46/46**. |
 | 9.11 | FU-3 (#155): power-aware box sizing | **CLOSED-NULL by its rule — the strongest null texture yet (2026-08-20).** Exp2 ramp on FU-9's committed night-before power, equal exposure, NQ 6 frames (baselines ≡ FU-1 books): pooled **+$30,338 over the books' true 16.5-month span** (≈18% lift), positive on ALL SIX frames, beats 98% of 1,000 permutations, both post-hoc halves positive — but CI90 [−$2,298,+$63,671] touches zero (MDE $32,887) and the rule holds. ⚠️ **Span correction of record**: the engine champion books span 2025-01→2026-05 (FU-2/FU-3 magnitudes are per ~1.4yr; FU-3's registered era line was degenerate — recorded, verdict unaffected). Phase-2 re-test = the same frozen ramp on OTHER instruments (the FU-13 law), fresh pre-reg. Claim `FU3-POWER-SIZING-CLOSED-NULL`, **47/47**. |
 | 9.12 | FU-7 (#159): power-scaled news geometry | **CLOSED-NULL — the placebo owns the gain (2026-08-20).** Bracket × r (within-series power ratio, clip [0.5,2], constant 1:4) on the deployed legs, frozen arm cent-parity on all 307 committed events: pooled **+$20,559/840ev with a POSITIVE CI90 [+$4,160,+$37,319]** — yet the shuffled-power placebo keeps **+$15,949 (≈78%)**: wider brackets help regardless of WHICH event gets the width; alignment ≈$4.6k, inside noise (MDE $16.6k). Per leg: NQ +$8,869, RTY +$13,799, ES +$94, **YM −$2,203** (the asymmetry law on the geometry side). Gain recent-era (halves +$179/+$20,380). ⭐ **A positive CI is not a positive result** — the pre-registered placebo line prevented a wrong-mechanism confirmation. Frozen geometry STANDS; the "generically tight recent-era bracket" observation parked as an explicit overfit hazard. Claim `FU7-POWER-GEOMETRY-CLOSED-NULL`, **48/48**. |
+| 9.13 | FU-5 (#157): the state-gated ride | **CLOSED-NULL on both pre-registered conditions (2026-08-20).** Frozen FU-9 outcomes, deployed legs, zero stance columns read. A (overnight trend agrees, predicted +): NQ +$103/ev INSIDE the shuffle floor ($115), 0/3 legs agree. B (high pre-release 60m vol, predicted +): NQ **−$75/ev — the OPPOSITE sign** with 4/4 legs and both eras negative yet CI [−$206,+$55] ∋ 0 (MDE $133) — the rule refuses the post-hoc flip. ⭐ Texture of record: an already-moving tape may PRE-SPEND the event move — calendar power pays, tape vol may mildly anti-predict; a fresh-study hypothesis or nothing. The ride stays state-blind BY EVIDENCE. Claim `FU5-STATE-GATE-CLOSED-NULL`, **49/49**. |
 | 9.9 | FU-9 (#161): the event-state dataset v1 | **BUILT, 16/16 gates (2026-08-20).** 1,765 rows (NQ/ES/RTY/YM × {CPI,NFP,FOMC,Retail} ≥2016): M2 power context + the frozen ride outcome (deployed executor primitive — parity **to the cent** on all 307 events overlapping committed evidence) + 330 stance columns (165 registry indicators, default params, last closed 1m bar before rel−300s) + NQ box state. ⭐ The C2 falsifier proved **no indicator in the registry repaints** (+1h future bars appended ⇒ stances unchanged, 25×165 per leg). v1 FROZEN, claim `FU9-EVENT-STATE-DATASET`, **45/45**. The substrate for FU-5/6/8, FU-15, and the WS-EARN return (same schema on earnings timestamps). |
 
 ---
@@ -179,5 +180,5 @@ not · read gross beside net (cost drag masquerades as anti-premium) · traded-s
 blindness (the calendar) is now proven repairable, and the repair is power-aware. Armed and
 waiting, each behind its own pre-registration: the four fused-forecast consumers (re-gate ·
 sizing ramp · news geometry · box stops), FU-9's event-state dataset, FU-2's veto replay,
-and the parked FU-15 dual-sided bracket. Ledger **48/48 both machines**; every number above
+and the parked FU-15 dual-sided bracket. Ledger **49/49 both machines**; every number above
 is claim-bound.
