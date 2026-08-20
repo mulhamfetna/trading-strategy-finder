@@ -58,11 +58,12 @@ geometry — is now a MEASURED choice. Per-layer profit attribution: `SYSTEM-LAY
 ## The scoreboard (releases)
 
 v5.2.0 box milestone → v5.3.0 news layer (NQ/RTY) → v5.4.0 ES CPI → v5.4.1 YM CPI (execution
-gate) → v5.4.2 scaled tiers → v5.4.3 power-forecast layer + the FU-13 honest kill → **v5.5.0 the two-calendar forecast layer (E-D1) + WS-FUSION closure + era 10 (the WS-EARN return: earnings power forecastable, the blindness law spans both calendars, three refused near-misses, the powered-tolerance law)**.
+gate) → v5.4.2 scaled tiers → v5.4.3 power-forecast layer + the FU-13 honest kill → v5.5.0 the two-calendar forecast layer (E-D1) + WS-FUSION closure + era 10 → **v5.5.1 THE ROADMAP COMPLETES: XNI closure (law #1 — the calendars resolve independently) + the three never-gates information artifacts (collision-priced artifact, dashboard event-window tags, monitor context field)**.
 
 ## What is next (the live queue, in order)
 
-**Phase 3 of the roadmap: earnings × news × indicators** — initiating with its own
-brainstorm + numbered ledger (the WS-FUSION opening pattern). Deliberate holds: FU-15
-(parked), FU-4 (gated-off), FU-11 consumers ①④ (low-priority), E-X2v2 lesson bound.
-Every item has an issue; nothing exists without a number.
+**The roadmap is COMPLETE and SHIPPED (v5.5.1).** The board is quiet and green. What
+moves next is owner-side (the live gateway above all — the earned paper income is
+uncollected), the deliberate holds (FU-15 first in line on the owner's word), and the
+fresh-registration hypotheses that wait for future data. Every item has an issue; nothing
+exists without a number.

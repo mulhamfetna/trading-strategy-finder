@@ -57,22 +57,26 @@ per-workstream full records. The one-line-each version:
 | RQ-6 (matrix regen) | #146 | grid verdicts merged into the generated coverage matrix |
 | RQ-3 (forward-confirm) | #143 | superseded — paper-only live operation IS the forward record |
 | RQ-2 (Retail short) | #142 | CLOSED via FU-8: Retail loses BOTH WAYS — the anti-premium is chop, not drift |
+| **WS-EARN return (era 10)** | #109/#169 | **CLOSED 2026-08-20**: earnings power forecastable (ρ .4583/.3323); the vol-gate blindness spans both calendars; the 924-row substrate frozen; fitted-joint interference confirmed at power (the powered-tolerance law); state-blind extended to SIZE; **E-D1 the two-calendar layer RELEASED v5.5.0** |
+| **XNI phase 3 (era 11)** | #172–#173 | **CLOSED 2026-08-20**: law #1 (the calendars resolve independently — compound power is pure addition); X-3/X-4/X-5b information artifacts **RELEASED v5.5.1**; X-5 informative-decomposed; X-2/X-6 parked-with-cause. ⭐⭐ **THE ROADMAP COMPLETE** |
 | **WS-FUSION (time × state)** | #152–#168 | **CLOSED 2026-08-20**: FU-14 deployed + FU-11 Stage 1 WON (the fused forecast beats the live gate); every P&L consumer closed with a law (veto=seasonality; sizing NQ-local ×3 asymmetry proof; geometry=width bias; state gates null; classifier bar held by 0.003; Retail loses both ways); FU-9 dataset built (no-repaint proof); closing bilingual report + WS-EARN hand-off shipped |
 
 ## 3 · ACTIVE + QUEUED (the live board)
 
-- **WS-EARN return — era 10 COMPLETE through E-D1 (tracking #109/#169)**: E-P1 ✅ · E-X1 ✅
-  · E-S1 ✅ (924-row substrate frozen) · E-X2+v2 ✕ (fitted-joint interference confirmed at
-  power) · E-C1 ∅ (state-blind extended to size) · **E-D1 ⭐ RELEASED v5.5.0**. C4 human
-  check still PENDING (#110, owner-side); forward earnings dates need an owner-supplied
-  calendar. **Phase 3 (XNI) RAN and CLOSED — the roadmap is COMPLETE (v5.5.1); X-2/X-6 parked-with-cause.**
-- **Deliberate holds (not debt)**: FU-15 dual-sided bracket (#168, parked by owner behind
-  the closed FU-11 — inherits FU-8's quantified double-stop cost) · FU-4 (gated-off) ·
-  FU-11 consumers ① re-gate / ④ stops (low-priority, armed by Stage 1).
-- **Research queue** (`RESEARCH-QUEUE.md`): RQ-4 YM direction row (#144), RQ-5 metals cost
-  frontier (#145) — queued. Standing rule: an observation without an RQ/FU number does not exist.
-- **Owner-side standing items**: live gateway (paper-only today) · broker margin at scaled
-  size · WS-EARN C4 check (#110).
+**The board is QUIET AND GREEN (2026-08-20, post-v5.5.1)**: no active workstream, no
+unverdicted study, no stale doc. Everything open is deliberate:
+
+- **Owner-side items (the only movers of new profit)**: the LIVE GATEWAY (all income is
+  paper until it — $67,767/window earned and uncollected) · broker margin at the approved
+  tiers · the C4 timestamp spot-check (#110) · a forward earnings calendar (lights up the
+  earnings side of the nightly artifact).
+- **Deliberate holds**: FU-15 dual-sided bracket (#168, parked by owner — first in line on
+  the word) · FU-4 (gated-off) · FU-11 consumers ① re-gate / ④ stops (low-priority) ·
+  X-2/X-6 (parked-with-cause under law #1).
+- **Fresh-registration hypotheses (future data only, never re-tested on consumed history)**:
+  the ES-led T1 super-additivity texture · FU-6's 0.577 tree · FU-3's NQ sizing texture.
+- **Research queue**: RQ-4 (#144), RQ-5 (#145) — queued. The optimizer research arm
+  (#79–#108) keeps its own queue, unchanged by these eras.
 
 ## 4 · The verification state (what "trusted" means right now)
 
