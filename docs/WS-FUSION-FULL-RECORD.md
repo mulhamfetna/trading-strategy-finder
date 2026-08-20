@@ -281,3 +281,47 @@ now with a lowered prior.
 **Ledger**: `FU2-NEWS-VETO-CLOSED-NULL` — V1 pooled-from-daily re-derivation, V2 the 6/6
 FU-1 parity anchors, V3 the shifted-control mechanism kill + mandatory MDE. **46/46 both
 machines.**
+
+## F-9 · FU-3 (#155) — power-aware box sizing: CLOSED-NULL, with the strongest null texture yet ✅ (2026-08-20)
+
+**⚠️ SPAN CORRECTION OF RECORD (applies to F-8 and F-9):** the six engine-loader champion
+books span **2025-01-01 → 2026-05-19 (~16.5 months)**, not 2016→. FU-1's ratios were always
+span-internal (valid); FU-2's and FU-3's dollar magnitudes are per ~1.4 years, not a decade;
+and FU-3's pre-registered era-half line (2016-20 vs 2021→) was structurally degenerate — one
+half had no book. The verdicts are unaffected (both were decided by the CI lines, which are
+span-agnostic); the mis-specification is recorded, not papered over.
+
+**The study**: ramp NQ box trades entered on modeled-event days by the committed night-before
+predicted power (FU-9 v1 `pred_exp`; causal expanding percentile; the Exp2 shape 0.5+pct;
+equal exposure — Σm = n, allocation not leverage). Baselines re-proved against the committed
+FU-1 books (6/6 exact).
+
+**Results (per frame, Δ = ramp − flat at equal exposure)**:
+
+| tf | trades (ramped) | flat net | Δnet | DD flat→ramp |
+|---|---|---|---|---|
+| 4h | 445 (63) | $73,209 | **+$5,185** | $37,609→$39,376 |
+| 2h | 507 (74) | $59,401 | **+$4,137** | $33,014→$32,662 |
+| 1h | 913 (137) | $19,650 | **+$9,351** | $83,340→$80,793 |
+| 15m | 1,993 (279) | $25,242 | **+$3,734** | $37,343→$39,315 |
+| 5m | 1,416 (200) | −$11,759 | **+$5,259** | $27,761→$24,196 |
+| 2m | 4,187 (606) | −$1,551 | **+$2,673** | $27,961→$27,299 |
+
+**Pooled: +$30,338 over 16.5 months — an ≈18% lift on the $164k flat book — POSITIVE ON ALL
+SIX FRAMES, beating 98.0% of 1,000 event-day permutations (the alignment is real at p≈0.02),
+both post-hoc within-span halves positive (+$8,334 / +$22,004).** And yet: the day-bootstrap
+90% CI is **[−$2,298, +$63,671]** — it touches zero (MDE $32,887; the observed effect sits
+just under its own detectability) — so the pre-registered rule says **CLOSED-NULL**, and the
+rule holds. No line was bent toward the appealing texture.
+
+**The reading**: this is what "promising but underpowered on n=1" looks like — precisely the
+shape FU-13 punished when it was believed too early (the Exp2 ramp's +$10,356 on the same
+instrument's MTF book reversed on ES). The legitimate re-test is the DECLARED Phase 2:
+the same frozen ramp on OTHER instruments' books (more data AND the FU-13-mandated
+cross-instrument stage in one move), under a fresh pre-registration. Nothing ships from
+FU-3; the box book keeps flat sizing.
+
+**Ledger**: `FU3-POWER-SIZING-CLOSED-NULL` — V1 re-derives every per-TF delta locally from
+the committed FU-9 + FU-1 files alone; V2 six-frame positivity + true-span evidence; V3 the
+permutation falsifier passes while the verdict stays NULL by the CI rule (rule-integrity
+check). **47/47 both machines.**

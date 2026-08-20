@@ -3,13 +3,13 @@
 **Every experiment, its result and its finding, across the entire programme (2026-06 → 2026-08-20).
 Current through v5.4.3 + FU-11 Stage 1: all profitable news deployed and scaled, the premium
 grid literally closed, the fusion workstream executing (the fused size engine has WON its
-forecast-quality stage), ledger 46/46 on both machines.**
+forecast-quality stage), ledger 47/47 on both machines.**
 
 This is the master index. **The verbose NARRATIVE companion — every experiment told in full (what ran, the dollars, what went well/wrong, the insight) — is `PROGRAMME-COMPLETE-EXPERIMENT-REPORT.md`.** Each workstream's full detail lives in its own record —
 `NEWS-PROGRAMME-FULL-RECORD.md` (WS-NEWS2/3), `WS-NEWS4-FULL-RECORD.md`,
 `WS-ESCPI-FULL-RECORD.md` (+ 2 addenda), `WS-GRID-RESULTS.md`, `WS-FUSION-FULL-RECORD.md`
 (F-0…F-7) — and every number below is bound to the claims ledger
-(`optimize/verify/run.py`, 46/46) or a committed evidence file.
+(`optimize/verify/run.py`, 47/47) or a committed evidence file.
 
 ```mermaid
 flowchart TD
@@ -147,6 +147,7 @@ flowchart TD
 | 9.7 | FU-15 (#168) registered — the owner's dual-sided bracket | Simultaneous LONG+SHORT with power-informed SL/TP = a stop-replicated straddle monetizing forecastable SIZE with dead direction; killers pre-declared (two-way sweep double-stop — 94% of stop-outs are 1-sec sweeps; doubled costs; the losing median event; overlap with the deployed LONG ride). **Parked by owner behind FU-11.** |
 | 9.8 | FU-11 Stage 1 (#162): the fused size engine's forecast-quality stage | **PASS 4/4 pre-registered lines (2026-08-20).** Adding the calendar terms the live vol engine is blind to (event dummy + M2 night-before power) beats BOTH the deployed fixed-weight HAR and the fitted HAR-LS on the engine's own target: NQ 1h event bars QLIKE 8.11→7.64→**0.48** (deployed→fitted→fused), diff +7.16 CI [+4.96,+9.69]; cross-instrument 4/4 (ES +8.69, RTY +21.42, GC +6.43, CL +0.29) + NQ 4h +3.25; overall QLIKE improves too (0.548→0.487). Placebo collapses to the dummy level everywhere ⇒ **POWER-AWARE, not merely calendar-aware** (D→C −0.72 QLIKE the shuffle cannot reach). ⭐⭐ Insight: **the live gate is catastrophically wrong exactly on release bars** (QLIKE ≈8 vs ~0.5 everyday) — its weakness is its information set, not its weights (HAR-LS barely helps). Honest note: gains halve in 2025+ vs 2024. Claim `FU11-STAGE1-FUSED-FORECAST-WINS`, **44/44 both machines**. Nothing deployed; consumers ①–④ armed, each own pre-reg. |
 | 9.10 | FU-2 (#154): the news-veto replay | **CLOSED-NULL by its pre-registered rule (2026-08-20).** Blocking NQ box entries in [rel−5m,+15m] Tier-1 across all 6 frames (engine-gate veto, full path dependence; all 6 baselines reproduce the committed FU-1 books to the cent): pooled Δnet +$17,221, CI90 [−$36,107,+$71,273], MDE $53,960; ΣΔmaxDD −$1,106 ≈ 0. ⭐ **The mechanism is dead beyond power**: the +3-day SHIFTED-calendar veto gains MORE (+$24,946) — the drift is time-of-day seasonality, release-specific component −$7,725; and on 4h (the 8.4× frame) the veto HURTS (−$3,159, DD +$10,430 worse) — those in-window entries PAY. Recorded expectation (DD win likelier) was wrong. **No stand-aside overlay**; the box book and news layer coexist. Claim `FU2-NEWS-VETO-CLOSED-NULL`, **46/46**. |
+| 9.11 | FU-3 (#155): power-aware box sizing | **CLOSED-NULL by its rule — the strongest null texture yet (2026-08-20).** Exp2 ramp on FU-9's committed night-before power, equal exposure, NQ 6 frames (baselines ≡ FU-1 books): pooled **+$30,338 over the books' true 16.5-month span** (≈18% lift), positive on ALL SIX frames, beats 98% of 1,000 permutations, both post-hoc halves positive — but CI90 [−$2,298,+$63,671] touches zero (MDE $32,887) and the rule holds. ⚠️ **Span correction of record**: the engine champion books span 2025-01→2026-05 (FU-2/FU-3 magnitudes are per ~1.4yr; FU-3's registered era line was degenerate — recorded, verdict unaffected). Phase-2 re-test = the same frozen ramp on OTHER instruments (the FU-13 law), fresh pre-reg. Claim `FU3-POWER-SIZING-CLOSED-NULL`, **47/47**. |
 | 9.9 | FU-9 (#161): the event-state dataset v1 | **BUILT, 16/16 gates (2026-08-20).** 1,765 rows (NQ/ES/RTY/YM × {CPI,NFP,FOMC,Retail} ≥2016): M2 power context + the frozen ride outcome (deployed executor primitive — parity **to the cent** on all 307 events overlapping committed evidence) + 330 stance columns (165 registry indicators, default params, last closed 1m bar before rel−300s) + NQ box state. ⭐ The C2 falsifier proved **no indicator in the registry repaints** (+1h future bars appended ⇒ stances unchanged, 25×165 per leg). v1 FROZEN, claim `FU9-EVENT-STATE-DATASET`, **45/45**. The substrate for FU-5/6/8, FU-15, and the WS-EARN return (same schema on earnings timestamps). |
 
 ---
@@ -177,5 +178,5 @@ not · read gross beside net (cost drag masquerades as anti-premium) · traded-s
 blindness (the calendar) is now proven repairable, and the repair is power-aware. Armed and
 waiting, each behind its own pre-registration: the four fused-forecast consumers (re-gate ·
 sizing ramp · news geometry · box stops), FU-9's event-state dataset, FU-2's veto replay,
-and the parked FU-15 dual-sided bracket. Ledger **46/46 both machines**; every number above
+and the parked FU-15 dual-sided bracket. Ledger **47/47 both machines**; every number above
 is claim-bound.

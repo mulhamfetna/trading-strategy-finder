@@ -5,7 +5,7 @@ single experiment and its results and outcomes and insights"). This is the NARRA
 companion to the master index (`NEWS-MASTER-EXPERIMENT-RECORD.md`): where the index gives one
 row per experiment, this report tells each experiment's story in plain language — what we
 did, what happened in dollars, what went well, what went wrong, and what we learned. Every
-number here already lives in a committed evidence file or the claims ledger (46/46 on both
+number here already lives in a committed evidence file or the claims ledger (47/47 on both
 machines); nothing is from memory.**
 
 ```mermaid
@@ -542,6 +542,26 @@ expectation that the drawdown improvement was the likelier win — wrong, ΔDD �
 EARNING at the events, not bleeding — no stand-aside overlay will be built, and the
 close-before-release parking-lot idea inherits a lowered prior.
 
+
+### 9.11 · FU-3 — power-aware box sizing (the strongest null we have ever recorded)
+**What we did:** the first consumer of the proven power forecast — ramp the box book's
+trades on modeled-event days by the committed night-before predicted power (the Exp2 shape,
+equal exposure so it is allocation, not leverage), on all six NQ frames with baselines
+re-proven against the committed FU-1 books. **What happened:** +$30,338 pooled — and here a
+correction had to be made first: the engine's champion books span 2025-01 to 2026-05, about
+16.5 months (NOT 2016 onward; FU-2's and FU-3's dollar figures are per ~1.4 years, and
+FU-3's registered era-split line was structurally empty on one side — recorded openly, the
+verdicts unaffected). Over that span +$30,338 is an ≈18% lift on the $164k flat book,
+POSITIVE ON EVERY FRAME, beating 98% of 1,000 random event-day permutations, with both
+within-span halves positive. **And still CLOSED-NULL:** the day-bootstrap 90% CI
+[−$2,298, +$63,671] touches zero — the observed effect sits just under its own minimum
+detectable size ($32,887) — and the pre-registered rule holds without bending. **Insight:**
+this is exactly what "promising but underpowered on one instrument, one era" looks like —
+the same shape FU-13 punished when it was believed too early. The legitimate re-test is the
+declared Phase 2: the same frozen ramp on OTHER instruments' books (more data and the
+mandatory cross-instrument stage in one move), under a fresh pre-registration. Until then
+the box keeps flat sizing.
+
 ---
 
 ## Where the programme stands (2026-08-20)
@@ -551,8 +571,8 @@ layer ($67,767 net 2024→26 at qty=1/leg; ≈$1.167M/window model-grade at appr
 near-orthogonal (daily correlation +0.098), both paper-only until a live gateway. **Two
 deployed forecast layers**: the HAR-RV gate (tape memory, inside every champion) and the
 power-forecast layer (calendar, information-only) — and FU-11 Stage 1 has now PROVEN their
-fusion beats either alone as a forecast. **The open queue**: FU-3/FU-7 as the fused forecast's consumer studies, FU-5/6
+fusion beats either alone as a forecast. **The open queue**: FU-7 (power-scaled news geometry), FU-3 Phase 2 (cross-instrument sizing) as the fused forecast's consumer studies, FU-5/6
 on the frozen dataset, FU-8 (the Retail short), FU-15 (the dual-sided bracket, parked), and
 after WS-FUSION closes — the WS-EARN return, reusing FU-9's schema on earnings timestamps.
-**The ledger**: 46/46 claims green on both machines; every number in this report is bound
+**The ledger**: 47/47 claims green on both machines; every number in this report is bound
 to it or to a committed evidence file.
