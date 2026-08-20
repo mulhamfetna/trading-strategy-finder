@@ -9,17 +9,19 @@ issue; labels + milestones organize the board; releases carry the shipped artifa
 
 ## 0 · The one-paragraph state
 
-Two production systems, both verified end-to-end. **System 1 — the box strategy**: 55
-champions across 9 markets (~$840k/yr 2026-OOS at the deployed caps), engine golden-locked
-(6/6 baselines). **System 2 — the news layer** (v5.4.2): four legs, one CPI bet — NQ + RTY
-(CPI/NFP/FOMC) + ES (CPI) + YM (CPI) — $67,767 net stressed 2024→2026 at qty=1/leg,
-scaled tiers approved by pre-registered rule (NQ/RTY/ES ≤20 worked, YM ≤5),
-≈ $1.167M/window at max tiers (model-grade). The news research programme is **complete**:
-~1,300 series×instrument cells measured, the premium grid literally closed, claims ledger
-**40/40 on both machines**. **WS-FUSION is EXECUTING** (brainstorm + FU ledger, #152): the approved
-order is unpaused (owner 2026-08-19) — FU-1 (the event-window audit) ACTIVE, FU-9 next;
-FU-11 (#162, the owner's direction×size candidate) runs its archaeology stage. Everything is
-paper-only until a live gateway; the regime monitor guards all news legs.
+Two production income systems plus one information layer, all verified end-to-end
+(claims ledger **52/52 on both machines**). **System 1 — the box strategy**: 55 champions
+across 9 markets (~$840k/yr 2026-OOS at deployed caps), engine golden-locked (6/6).
+**System 2 — the news layer** (v5.4.2): four legs, one CPI bet — $67,767 net stressed
+2024→2026 at qty=1/leg; scaled tiers approved by rule (NQ/RTY/ES ≤20 worked, YM ≤5),
+≈$1.167M/window model-grade. **The power-forecast layer** (v5.4.3, FU-14): night-before
+event-size forecasts, information-only. **WS-FUSION is CLOSED (2026-08-20)**: 14
+pre-registered studies in 2 days — the fused forecast WON its quality stage (the live vol
+gate's one blindness proven repairable), every P&L consumer closed under its own rule, and
+the deployed structure (state-blind entry, flat sizing, frozen geometry) is now VALIDATED
+BY MEASUREMENT; per-layer profit attribution lives in `SYSTEM-LAYERS-ANALYSIS.md` §5.
+Everything paper-only until a live gateway; the regime monitor guards all news legs.
+**Next (owner's word): the WS-EARN return**, starting warm from `WS-EARN-HANDOFF.md`.
 
 ## 1 · Shipped releases (the immutable trail)
 
@@ -49,24 +51,27 @@ per-workstream full records. The one-line-each version:
 | RQ-1/RQ-9 (scaling) | #141/#150 | ES ≤20 approved; YM capped at 5 BY THE RULE → v5.4.2 |
 | RQ-6 (matrix regen) | #146 | grid verdicts merged into the generated coverage matrix |
 | RQ-3 (forward-confirm) | #143 | superseded — paper-only live operation IS the forward record |
-| RQ-2 (Retail short) | #142 | absorbed into FU-8 (#160) |
+| RQ-2 (Retail short) | #142 | CLOSED via FU-8: Retail loses BOTH WAYS — the anti-premium is chop, not drift |
+| **WS-FUSION (time × state)** | #152–#168 | **CLOSED 2026-08-20**: FU-14 deployed + FU-11 Stage 1 WON (the fused forecast beats the live gate); every P&L consumer closed with a law (veto=seasonality; sizing NQ-local ×3 asymmetry proof; geometry=width bias; state gates null; classifier bar held by 0.003; Retail loses both ways); FU-9 dataset built (no-repaint proof); closing bilingual report + WS-EARN hand-off shipped |
 
 ## 3 · ACTIVE + QUEUED (the live board)
 
-- **WS-FUSION (#152, EXECUTING)** — plan approved and UNPAUSED (2026-08-19): FU-1 ACTIVE
-  (#153), FU-9 next (#161); order FU-1→FU-9→FU-2/3→FU-7→FU-5/6. Use-cases #153–#161.
-- **FU-11 (#162, the owner's flagged candidate)** — Direction × Size fusion: the early-era
-  "direction predictable, size not" claim × the confirmed M2 power model ("size predictable,
-  direction not"). Three gated stages (archaeology → re-audit under modern discipline →
-  fusion design). **Stage 1 (archaeology) ACTIVE; stages 2/3 gated on its outcome.**
+- **NEXT WORKSTREAM (awaiting the owner's word): the WS-EARN return** — earnings alone →
+  ×indicators → ×news×indicators; starts warm from `WS-EARN-HANDOFF.md` (E-P1 earnings
+  power model → E-S1 event-state dataset on the FU-9 schema → E-X1 earnings × the fused
+  forecast). Prior state: H1 rejected 0/8 (783 events); EDGAR timestamp traps recorded;
+  C4 human check still PENDING (#110, owner-side).
+- **Deliberate holds (not debt)**: FU-15 dual-sided bracket (#168, parked by owner behind
+  the closed FU-11 — inherits FU-8's quantified double-stop cost) · FU-4 (gated-off) ·
+  FU-11 consumers ① re-gate / ④ stops (low-priority, armed by Stage 1).
 - **Research queue** (`RESEARCH-QUEUE.md`): RQ-4 YM direction row (#144), RQ-5 metals cost
   frontier (#145) — queued. Standing rule: an observation without an RQ/FU number does not exist.
-- **Then**: WS-EARN return (earnings alone → ×indicators → ×news×indicators, reusing the
-  news machinery + FU-9's schema).
+- **Owner-side standing items**: live gateway (paper-only today) · broker margin at scaled
+  size · WS-EARN C4 check (#110).
 
 ## 4 · The verification state (what "trusted" means right now)
 
-Claims ledger **40/40** (local AND server; `optimize/verify/run.py`) · engine golden gate
+Claims ledger **52/52** (local AND server; `optimize/verify/run.py`) · engine golden gate
 **6/6 baselines MATCH** · executor replay parity to the cent on all four legs · portable
 bundle `--verify` PASS NQ/RTY/ES/YM · dashboard branch ≡ production (screenshot evidence) ·
 isolation battery 18/18. Every published number is ledger-bound or re-derivable from a

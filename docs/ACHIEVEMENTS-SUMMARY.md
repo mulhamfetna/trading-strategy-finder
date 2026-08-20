@@ -41,6 +41,20 @@ TimesFM gate · Chronos-2 gate · regime HMM · direction forecasting (twice) ·
 cells · the Exp2 sizing ramp's deployment. Every kill is a pre-registered verdict with
 committed evidence — the system's edge is partly THAT it cannot talk itself into maybes.
 
+## The fusion era (2026-08-19 → 20): 14 studies, one law-book
+
+WS-FUSION closed in two days with ledger 52/52: the fused volatility forecast WON its
+quality stage (⭐⭐ the live gate is blind exactly on release bars — error ≈16× everyday —
+and the calendar repairs it, power-aware by placebo), the FU-9 event-state dataset was
+built (1,765 rows, ride parity to the cent, and the proof that NO registry indicator
+repaints), and then EVERY attempt to convert state or forecast into new P&L died under its
+own pre-registered rule — the veto (seasonality), power sizing (NQ-local: the asymmetry
+law's third proof), power geometry (width bias: a positive CI overridden by its own
+placebo), state gates (null, one inverted), the library classifier (missed its bar by
+0.003 and the bar held), and the Retail short (⭐ Retail loses BOTH WAYS — the anti-premium
+is chop, not drift). The deployed system's design — state-blind entry, flat sizing, frozen
+geometry — is now a MEASURED choice. Per-layer profit attribution: `SYSTEM-LAYERS-ANALYSIS.md` §5.
+
 ## The scoreboard (releases)
 
 v5.2.0 box milestone → v5.3.0 news layer (NQ/RTY) → v5.4.0 ES CPI → v5.4.1 YM CPI (execution
@@ -48,6 +62,7 @@ gate) → v5.4.2 scaled tiers → **v5.4.3 power-forecast layer + the FU-13 hone
 
 ## What is next (the live queue, in order)
 
-The **FU-11 fused size engine** (design saved: upgrade the live HAR-RV gate with the calendar
-terms it cannot see) → FU-9 event-state dataset → FU-2 news-veto replay (armed) → FU-3/FU-7 →
-FU-5/6 → then the WS-EARN return. Every item has an issue; nothing exists without a number.
+**The WS-EARN return** (owner's roadmap ③): earnings alone → earnings × indicators →
+earnings × news × indicators — starting warm from `WS-EARN-HANDOFF.md` (E-P1 the earnings
+power model first). Deliberate holds: FU-15 (parked), FU-4 (gated-off), FU-11 consumers
+①④ (low-priority). Every item has an issue; nothing exists without a number.

@@ -484,3 +484,11 @@ must exclude exactly these; the parked design inherits this number.
 **Ledger**: `FU8-RETAIL-SHORT-CLOSED` — V2 verifies the both-ways fact on all four legs.
 **52/52 both machines.** WS-FUSION's active queue is now EMPTY (FU-4 gated-off, FU-15
 parked by owner, consumers ①④ low-priority); the closing report is next.
+
+## F-15 · The closure (2026-08-20)
+
+The workstream's own §5 test, satisfied: every active FU verdicted (F-1…F-14), ledger
+52/52 both machines, the closing bilingual report (`WS-FUSION-CLOSING-REPORT-BILINGUAL.html`)
+and the WS-EARN hand-off (`WS-EARN-HANDOFF.md`) shipped, the system-layers analysis carrying
+the settled state (§4) and the profit attribution (§5). Deliberate holds: FU-4 gated-off ·
+FU-15 parked (#168) · consumers ①④ low-priority. This record is COMPLETE.
