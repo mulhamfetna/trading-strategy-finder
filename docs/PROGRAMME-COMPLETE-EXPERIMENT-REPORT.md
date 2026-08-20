@@ -5,7 +5,7 @@ single experiment and its results and outcomes and insights"). This is the NARRA
 companion to the master index (`NEWS-MASTER-EXPERIMENT-RECORD.md`): where the index gives one
 row per experiment, this report tells each experiment's story in plain language — what we
 did, what happened in dollars, what went well, what went wrong, and what we learned. Every
-number here already lives in a committed evidence file or the claims ledger (49/49 on both
+number here already lives in a committed evidence file or the claims ledger (50/50 on both
 machines); nothing is from memory.**
 
 ```mermaid
@@ -599,6 +599,26 @@ own future study: calendar power pays the premium, but TAPE vol before the relea
 mildly anti-predict it — as if an already-moving tape has pre-spent the move. That
 hypothesis earns a fresh pre-registration or nothing.
 
+
+### 9.14 · FU-6 — per-event outcome prediction (the bar that held by 0.003)
+**What we did:** the study everyone knows is an overfit trap, run as one on purpose — the
+full indicator-library stance vector (291 usable columns) against ride outcomes, with two
+FIXED models, locked holdouts (train on NQ before 2022; one look at NQ 2022-onward; one look
+at the untouched ES/RTY/YM legs), and a label-shuffle floor. **What happened:** the logistic
+did exactly what the pre-registration predicted it might — memorized the training slice
+(AUC 0.9996) and collapsed below its own noise floor on the holdout (0.558 vs floor 0.590).
+The depth-3 tree is the interesting one: holdout AUC 0.577 against the pre-registered 0.58
+bar — a miss of three thousandths — and the near-miss arrived dressed for promotion: above
+its shuffle floor, a CI-positive money split (predicted-top-half beat bottom-half by
++$335/event, CI [+$63, +$615]), all three untouched legs directionally above 0.5. **The bar
+held.** Both models closed NULL; the tree's finding is recorded as an exploration-generated
+hypothesis that can earn a fresh confirmatory pre-registration on future events — and
+nothing else. **Insight:** with FU-5 and FU-6 both closed, the B-family is complete and its
+collective verdict is now a measured fact: the deployed ride entering state-blind is the
+CORRECT design — the premium's edge lives in the calendar (which event, and its power
+regime), not in the pre-release tape. The ledger's V3 check on this claim verifies the
+near-miss was not promoted; that check existing is the whole point of the discipline.
+
 ---
 
 ## Where the programme stands (2026-08-20)
@@ -608,8 +628,8 @@ layer ($67,767 net 2024→26 at qty=1/leg; ≈$1.167M/window model-grade at appr
 near-orthogonal (daily correlation +0.098), both paper-only until a live gateway. **Two
 deployed forecast layers**: the HAR-RV gate (tape memory, inside every champion) and the
 power-forecast layer (calendar, information-only) — and FU-11 Stage 1 has now PROVEN their
-fusion beats either alone as a forecast. **The open queue**: FU-6 (locked-holdout outcome model), FU-3 Phase 2 (cross-instrument sizing) as the fused forecast's consumer studies, FU-5/6
+fusion beats either alone as a forecast. **The open queue**: FU-3 Phase 2 (cross-instrument sizing) as the fused forecast's consumer studies, FU-5/6
 on the frozen dataset, FU-8 (the Retail short), FU-15 (the dual-sided bracket, parked), and
 after WS-FUSION closes — the WS-EARN return, reusing FU-9's schema on earnings timestamps.
-**The ledger**: 49/49 claims green on both machines; every number in this report is bound
+**The ledger**: 50/50 claims green on both machines; every number in this report is bound
 to it or to a committed evidence file.

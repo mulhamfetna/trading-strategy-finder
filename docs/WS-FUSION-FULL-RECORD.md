@@ -392,3 +392,31 @@ the era (with FU-3's) — it earns a fresh pre-registration or nothing.
 which is now an evidence-backed choice, not an omission. Ledger:
 `FU5-STATE-GATE-CLOSED-NULL` (V3 = prediction integrity: B was not flipped post hoc).
 **49/49 both machines.**
+
+## F-12 · FU-6 (#158) — per-event outcome prediction: CLOSED-NULL — the B-family completes ✅ (2026-08-20)
+
+**The overfit trap, run as one: the full 291-usable-column stance vector against ride
+outcomes, EXPLORATION-GRADE — two fixed models, locked holdouts (TRAIN NQ<2022 n=182;
+HOLDOUT-1 NQ≥2022 n=145; HOLDOUT-2 ES/RTY/YM untouched), one look each, label-shuffle
+control, promotion only ever via a fresh pre-registration.**
+
+- **Logistic (L2, C=1)**: train AUC **0.9996** → holdout **0.5581**, BELOW its own shuffle
+  floor (0.5904). Total in-sample memorization collapsing to noise — the pre-registration's
+  declared blind spot ("the logistic may saturate; only the holdouts speak") observed
+  verbatim. NULL.
+- **Depth-3 tree**: train 0.7012 → holdout **0.577** — a **0.003 near-miss** of the
+  pre-registered 0.58 bar, and the near-miss came dressed for promotion: above its shuffle
+  floor (0.5691), money split top-minus-bottom **+$335/event CI90 [+$63, +$615]**, and 3/3
+  HOLDOUT-2 legs above 0.5 (0.501/0.547/0.520). **The bar held.** NULL — with the finding
+  recorded as an exploration-generated HYPOTHESIS eligible only for a fresh confirmatory
+  pre-registration on future events.
+
+**What the B-family now says as a whole** (FU-5 + FU-6, on the FU-9 substrate FU-1 armed):
+the deployed ride entering STATE-BLIND is measured, not assumed — two mechanism-first
+engineered states fail (one inverts), the full library barely beats noise through the
+strictest honest lens, and every appealing artifact along the way (B's 4/4-leg inversion,
+the tree's money split) is parked as a hypothesis rather than traded. The premium's edge
+lives in the CALENDAR (which event, its power regime), not in the pre-release tape.
+
+**Ledger**: `FU6-OUTCOME-MODEL-CLOSED-NULL` — V2 verifies the saturation-collapse signature,
+V3 verifies the near-miss was NOT promoted (bar integrity). **50/50 both machines.**
