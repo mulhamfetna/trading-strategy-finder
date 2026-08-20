@@ -904,16 +904,18 @@ and knowing that with 64 machine-verified claims is worth more than hoping other
 
 ---
 
-## Where the programme stands (2026-08-20)
+## Where the programme stands (2026-08-20, v5.5.1 — the roadmap complete)
 
 **Two income engines**: the box book (≈$840k/yr 2026-OOS at deployed caps) and the news
-layer ($67,767 net 2024→26 at qty=1/leg; ≈$1.167M/window model-grade at approved tiers) —
-near-orthogonal (daily correlation +0.098), both paper-only until a live gateway. **Two
-deployed forecast layers**: the HAR-RV gate (tape memory, inside every champion) and the
-power-forecast layer (calendar, information-only) — and FU-11 Stage 1 has now PROVEN their
-fusion beats either alone as a forecast. **The open queue**: THE ROADMAP IS COMPLETE and **SHIPPED (v5.5.1)** — era 11 closed with
-law #1 and its three information artifacts released (bundle v1.1.0). Remaining: deliberate holds (FU-15 parked,
-FU-4 gated, FU-11 consumers ①④, X-2/X-6 parked-with-cause, the fresh-registration
-hypotheses); owner-side items (live gateway, margin, C4, a forward earnings calendar).
+layer ($67,767 net/window 2024→26 at qty=1; ≈$1.167M/window model-grade at approved
+tiers) — near-orthogonal, both PAPER until the owner's gateway. **Two forecast rails**:
+tape (the HAR-RV gate inside every champion) and calendar (the power layer + the
+two-calendar layer, collision-priced under law #1). **Three observability surfaces**, every
+one behind a never-gates authority string. **The validated design**: state-blind entry,
+flat sizing, frozen geometry — measured correct on every axis anyone proposed to improve,
+across three eras and both calendars. **Open by design only**: the owner-side items
+(gateway · margin · C4 · a forward earnings calendar), the deliberate holds (FU-15 first
+in line on the owner's word; FU-4; consumers ①④; X-2/X-6), and three
+fresh-registration hypotheses waiting for data that does not exist yet.
 **The ledger**: 64/64 claims green on both machines; every number in this report is bound
 to it or to a committed evidence file.

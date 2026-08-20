@@ -205,9 +205,12 @@ equity-index phenomenon ordered by beta (NQ>ES>YM>RTY) · size is forecastable, 
 not · read gross beside net (cost drag masquerades as anti-premium) · traded-seconds density
 ≠ fill quality · same-seed agreement ≠ replication.
 
-**The fusion frontier (era 9, open):** FU-11 Stage 1 PASSED — the live vol engine's one
-blindness (the calendar) is now proven repairable, and the repair is power-aware. Armed and
-waiting, each behind its own pre-registration: the four fused-forecast consumers (re-gate ·
-sizing ramp · news geometry · box stops), FU-9's event-state dataset, FU-2's veto replay,
-and the parked FU-15 dual-sided bracket. Ledger **64/64 both machines**; every number above
+**The frontier (post-roadmap, v5.5.1)**: the three-step roadmap is COMPLETE and shipped.
+The coherent total finding: scheduled violence is rankable from its own history (ρ≈0.5,
+both calendars — productionized twice, now collision-priced); nothing else predicts it
+(direction ×3, tape state on every axis, cross-calendar interaction); the edge stays where
+it was earned, armored by 30+ pre-registered validations. Open by design only: the
+owner-side items (gateway, margin, C4, a forward earnings calendar), the deliberate holds
+(FU-15 first in line), and the fresh-registration hypotheses awaiting future data.
+Ledger **64/64 both machines**; every number above
 is claim-bound.
