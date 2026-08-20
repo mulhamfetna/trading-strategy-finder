@@ -301,3 +301,7 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 # E-X2 v2: powered-tolerance evidence the ledger reads
 !subprojects/Parametric-Indicators/optimize/earnings/data/ex2v2_result_NQ.json
 !subprojects/Parametric-Indicators/optimize/earnings/data/ex2v2_result_ES.json
+# E-D1: two-calendar layer stage evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/earnings/data/ed1_stages.log
+!subprojects/Parametric-Indicators/optimize/earnings/data/ed1_golden.log
+!playbooks/two-calendar-forecast/PLAYBOOK.md

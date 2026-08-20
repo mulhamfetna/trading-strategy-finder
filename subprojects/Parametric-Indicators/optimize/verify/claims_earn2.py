@@ -472,3 +472,70 @@ register(Claim(
     checks=[Check("V1", "lines re-derive from CIs under the registered forms", _ex2v2_v1),
             Check("V2", "NQ clear-negative + ES all-pass: v1's geography confirmed", _ex2v2_v2),
             Check("V3", "the powered line detects the real effect AND passes noise", _ex2v2_v3)]))
+
+
+# =============================================================================================
+# E-D1 — the two-calendar forecast layer: DEPLOYED-ON-BRANCH (routing pattern)
+# =============================================================================================
+def _ed1_log(name: str) -> str:
+    return (EARN / name).read_text()
+
+
+def _ed1_v1() -> tuple[bool, str]:
+    """V1 — PARITY RECORD + CROSS-CHECK: both instruments' verify lines PASS, and the
+    reference values quoted in the log match the committed FU-11/E-X1 JSONs verbatim."""
+    log = _ed1_log("ed1_stages.log")
+    if log.count("-> PASS") < 2:
+        return False, "fewer than 2 verify PASS lines"
+    fu = json.load(open(EARN.parents[1] / "fundamentals" / "fu11_stage1_NQ_60m.json"))
+    ex = json.load(open(EARN / "ex1_result_NQ.json"))
+    m_ref = fu["scores"]["C_fused"]["event"]["qlike"]
+    e_ref = ex["scores"]["C"]["event"]
+    ok = f"{m_ref:.6f}" in log and f"{e_ref:.6f}" in log and "Δ0.0e+00" in log
+    return ok, f"parity PASS ×2; committed refs {m_ref:.6f}/{e_ref:.6f} verbatim; Δ=0"
+
+
+def _ed1_v2() -> tuple[bool, str]:
+    """V2 — FALSIFIER RECORD: both per-calendar scrambles COLLAPSE; no FAIL anywhere in
+    the stage log."""
+    log = _ed1_log("ed1_stages.log")
+    ok = log.count("COLLAPSES (PASS)") == 2 and "FAIL" not in log
+    return ok, "2/2 scrambles collapse; no FAIL in the stage log"
+
+
+def _ed1_v3() -> tuple[bool, str]:
+    """V3 — SYSTEM UNTOUCHED: golden 6/6 ALL MATCH with exit 0; the artifact emitted
+    events; the module SOURCE imports no engine path (static no-touch proof)."""
+    g = _ed1_log("ed1_golden.log")
+    src = (Path(__file__).resolve().parents[4] / "src" / "deploy"
+           / "two_calendar_forecast.py").read_text()
+    ok = (g.count("MATCH") >= 6 and "GOLDEN_EXIT=0" in g
+          and "E-D1 forecast NQ: 4 upcoming" in _ed1_log("ed1_stages.log")
+          and "fast_engine" not in src)
+    return ok, "golden 6/6 exit 0; artifact 4 events; module imports no engine path"
+
+
+register(Claim(
+    id="ED1-TWO-CALENDAR-DEPLOYED",
+    issue="#169",
+    statement="The two-calendar forecast layer is DEPLOYED-ON-BRANCH "
+              "(src/deploy/two_calendar_forecast.py, ROUTING pattern — the E-X2v2 insight: "
+              "each certified single-calendar model on its own calendar's bars; fitted "
+              "composition never used): parity vs the committed FU-11 and E-X1 evidence is "
+              "EXACT (Δ0.0e+00 on macro, earnings and the union identity, NQ AND ES); both "
+              "per-calendar scramble falsifiers collapse; the forward artifact emits "
+              "regime-sane night-before bar lifts (NFP +71.9 rv pts, CPI +69.9, Durables "
+              "+12.3 for 2026-02); golden gate 6/6 ALL MATCH (no engine path touched — "
+              "static AND gate-proven). INFORMATION ONLY — zero trading consumers; zero "
+              "income by design (the FU-14 rule); the release/merge ship remains the "
+              "owner's standing pipeline.",
+    source="optimize/earnings/data/ed1_stages.log + ed1_golden.log + the module",
+    value_fn=lambda: _ed1_log("ed1_golden.log").count("MATCH") - 1,
+    expect=6, tol=0,
+    blind_spot="Forward earnings dates need an owner-supplied calendar (EDGAR historical); "
+               "research 1h frames (the certified models' grade — champions' session "
+               "frames remain consumer-①'s declared territory); log-based evidence "
+               "(committed machine output, the news4 precedent).",
+    checks=[Check("V1", "parity PASS ×2 with committed refs verbatim in the log", _ed1_v1),
+            Check("V2", "both per-calendar scrambles collapse", _ed1_v2),
+            Check("V3", "golden 6/6 + artifact + static no-engine-import proof", _ed1_v3)]))
