@@ -5,7 +5,7 @@ single experiment and its results and outcomes and insights"). This is the NARRA
 companion to the master index (`NEWS-MASTER-EXPERIMENT-RECORD.md`): where the index gives one
 row per experiment, this report tells each experiment's story in plain language — what we
 did, what happened in dollars, what went well, what went wrong, and what we learned. Every
-number here already lives in a committed evidence file or the claims ledger (51/51 on both
+number here already lives in a committed evidence file or the claims ledger (52/52 on both
 machines); nothing is from memory.**
 
 ```mermaid
@@ -638,6 +638,27 @@ ramp reversal, and now the L1 power ramp flat-lining everywhere but NQ). The box
 sizing on every instrument; this question re-opens only when genuinely new events have
 accumulated, under a fresh pre-registration.
 
+
+### 9.16 · FU-8 — the Retail short (the anti-premium's true face)
+**What we did:** the last active fusion study. Its original design waited for FU-5/FU-6 to
+identify signal-bearing state variables; they identified none, so the pre-registration
+removed the state-filter rationale BY EVIDENCE and asked the plain question: the calendar's
+one confirmed anti-premium — Retail Sales, gross-negative for the long ride on seven
+instruments — can it be harvested by simply shorting the frozen geometry? The long side was
+re-run as a parity anchor and matched the frozen dataset to the cent on every leg.
+**What happened:** the short LOSES everywhere — NQ −$44.75/event net-stressed, RTY −$26.89,
+ES −$49.98, YM −$29.29; pooled NQ+RTY −$37.15 with a CI of [−$71.38, −$2.77], significantly
+negative, and the era halves disagree (mildly positive before 2022, clearly negative after).
+**The finding that makes the study worth it** ⭐: the long ride's −$78/event gross was never
+a downward drift — the mirrored short captures none of it, grossing −$22 itself on NQ and
+about zero elsewhere. BOTH directions lose. Retail's release minute is a CHOP that stops
+out any bracketed position on either side — the two-way-sweep killer measured with real
+money, M3's 18/18 losing short leg generalized to a fourth series. **Insight:** Retail
+Sales is a fact to avoid (the deployed layer already does), not to trade in any direction
+— and this number is a direct, quantified preview of the double-stop scenario the parked
+FU-15 dual-sided bracket must survive: on chop-class events, a two-sided structure pays
+both stops. RQ-2 closes with this study.
+
 ---
 
 ## Where the programme stands (2026-08-20)
@@ -647,8 +668,8 @@ layer ($67,767 net 2024→26 at qty=1/leg; ≈$1.167M/window model-grade at appr
 near-orthogonal (daily correlation +0.098), both paper-only until a live gateway. **Two
 deployed forecast layers**: the HAR-RV gate (tape memory, inside every champion) and the
 power-forecast layer (calendar, information-only) — and FU-11 Stage 1 has now PROVEN their
-fusion beats either alone as a forecast. **The open queue**: FU-8 (the Retail short × state, the last active FU) as the fused forecast's consumer studies, FU-5/6
+fusion beats either alone as a forecast. **The open queue**: EMPTY of active FUs — FU-4 gated-off, FU-15 parked by owner, FU-11 consumers ①④ low-priority; the WS-FUSION closing report and the WS-EARN hand-off are next as the fused forecast's consumer studies, FU-5/6
 on the frozen dataset, FU-8 (the Retail short), FU-15 (the dual-sided bracket, parked), and
 after WS-FUSION closes — the WS-EARN return, reusing FU-9's schema on earnings timestamps.
-**The ledger**: 51/51 claims green on both machines; every number in this report is bound
+**The ledger**: 52/52 claims green on both machines; every number in this report is bound
 to it or to a committed evidence file.

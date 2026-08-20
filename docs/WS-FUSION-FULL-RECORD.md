@@ -447,3 +447,40 @@ relaunched.
 
 **Ledger**: `FU3P2-CROSS-SIZING-CLOSED-NULL` — V3 verifies the generalization falsification
 (≈0 pooled, perm<50, NQ-driven combined). **51/51 both machines.**
+
+## F-14 · FU-8 (#160) — the Retail short: CLOSED — Retail loses BOTH WAYS ✅ (2026-08-20)
+
+**The last active FU. Design evolution recorded first: the state-filter rationale was
+REMOVED by FU-5/FU-6's evidence, reducing FU-8 to the plain question — does the frozen
+geometry, mirrored short, pay on the calendar's one confirmed anti-premium? The LONG parity
+anchor reproduced FU-9's stored rides to the cent on every leg before anything counted.**
+
+**Results (net-stressed, qty=1, ≥2016, descriptive grade on consumed history)**:
+
+| leg | events | LONG gross/ev | SHORT gross/ev | SHORT net/ev |
+|---|---|---|---|---|
+| NQ | 120 | −$78.41 | −$22.25 | **−$44.75** |
+| RTY | 89 | −$37.49 | −$4.39 | **−$26.89** |
+| ES | 120 | −$61.72 | +$2.52 | **−$49.98** |
+| YM | 120 | −$22.28 | −$6.79 | **−$29.29** |
+
+**Pooled NQ+RTY: −$37.15/event, CI90 [−$71.38, −$2.77] — significantly NEGATIVE, not
+merely null.** Era halves disagree (+$26.76 pre-2022 / −$100.44 after): whatever residual
+existed is gone. Verdict by the registered rule: **CLOSED** — no forward arm, and RQ-2
+(#142) closes with it.
+
+**⭐ THE FINDING — the anti-premium's true nature**: the long ride grossing −$78/event was
+never a downward drift a short could harvest — the mirrored short grosses only −$22 (NQ)
+and ≈0 elsewhere. BOTH directions lose gross. Retail's release minute is a CHOP that stops
+out any bracketed position on either side: the two-way-sweep killer, now measured with
+real money on 449 leg-events, and M3's 18/18 losing short leg generalized to a fourth
+series. Retail Sales is a fact to AVOID (which the deployed layer already does), not to
+trade in any direction.
+
+**The FU-15 dividend**: this is a direct, quantified preview of FU-15's double-stop
+scenario — on chop-class events a dual-sided bracket pays BOTH stops. FU-15's power gate
+must exclude exactly these; the parked design inherits this number.
+
+**Ledger**: `FU8-RETAIL-SHORT-CLOSED` — V2 verifies the both-ways fact on all four legs.
+**52/52 both machines.** WS-FUSION's active queue is now EMPTY (FU-4 gated-off, FU-15
+parked by owner, consumers ①④ low-priority); the closing report is next.
