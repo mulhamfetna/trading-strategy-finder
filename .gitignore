@@ -274,3 +274,5 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 # FU-5 (#157): state-gate evidence the ledger reads
 !subprojects/Parametric-Indicators/optimize/fundamentals/fu5_result.json
 !subprojects/Parametric-Indicators/optimize/fundamentals/fu5_features.csv
+# FU-6 (#158): outcome-model evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu6_result.json

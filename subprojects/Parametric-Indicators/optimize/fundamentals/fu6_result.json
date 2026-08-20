@@ -1,0 +1,42 @@
+{
+  "n_train": 182,
+  "n_holdout1": 145,
+  "n_features": 291,
+  "models": {
+    "logistic": {
+      "auc_train": 0.9996,
+      "auc_holdout1": 0.5581,
+      "shuffle_p95_auc": 0.5904,
+      "money_top_minus_bottom": 140.63,
+      "money_ci90": [
+        -113.46,
+        395.58
+      ],
+      "auc_holdout2": {
+        "ES": 0.594,
+        "RTY": 0.4557,
+        "YM": 0.5992
+      },
+      "h2_above_half": 2,
+      "verdict": "CLOSED-NULL"
+    },
+    "tree_d3": {
+      "auc_train": 0.7012,
+      "auc_holdout1": 0.577,
+      "shuffle_p95_auc": 0.5691,
+      "money_top_minus_bottom": 335.45,
+      "money_ci90": [
+        62.73,
+        614.76
+      ],
+      "auc_holdout2": {
+        "ES": 0.5012,
+        "RTY": 0.5472,
+        "YM": 0.52
+      },
+      "h2_above_half": 3,
+      "verdict": "CLOSED-NULL"
+    }
+  },
+  "verdict": "CLOSED-NULL"
+}

@@ -754,3 +754,74 @@ register(Claim(
     checks=[Check("V1", "both NQ diffs re-derive from the committed features", _fu5_v1),
             Check("V2", "verdicts follow the registered rule from recorded numbers", _fu5_v2),
             Check("V3", "A inside noise; B opposite its prediction, not flipped post hoc", _fu5_v3)]))
+
+
+# =============================================================================================
+# FU-6 (#158) — per-event outcome prediction: CLOSED-NULL (the B-family completes)
+# =============================================================================================
+def _fu6() -> dict:
+    return json.load(open(FUND / "fu6_result.json"))
+
+
+def _fu6_v1() -> tuple[bool, str]:
+    """V1 — RULE RE-APPLICATION: each model's verdict recomputed from its recorded fields
+    under the registered rule (AUC ≥0.58 ∧ >shuffle-p95 ∧ money CI>0 ∧ ≥2/3 H2) must equal
+    the recorded verdict; the final verdict must follow from the models'."""
+    r = _fu6()
+    for name, m in r["models"].items():
+        armed = (m["auc_holdout1"] >= 0.58 and m["auc_holdout1"] > m["shuffle_p95_auc"]
+                 and m["money_ci90"][0] is not None and m["money_ci90"][0] > 0
+                 and m["h2_above_half"] >= 2)
+        want = "ARMED" if armed else "CLOSED-NULL"
+        if m["verdict"] != want:
+            return False, f"{name}: rule gives {want}, recorded {m['verdict']}"
+    fin = "ARMED" if any(m["verdict"] == "ARMED" for m in r["models"].values()) \
+        else "CLOSED-NULL"
+    return fin == r["verdict"], f"verdicts re-derive; final {r['verdict']}"
+
+
+def _fu6_v2() -> tuple[bool, str]:
+    """V2 — OVERFIT VISIBILITY: the logistic must show the declared saturation signature
+    (train AUC ≈1.0 collapsing on the holdout BELOW its own shuffle floor) — the blind spot
+    predicted in the pre-registration, observed, and fatal exactly as declared."""
+    m = _fu6()["models"]["logistic"]
+    ok = (m["auc_train"] > 0.95 and m["auc_holdout1"] < m["shuffle_p95_auc"])
+    return ok, (f"logistic train {m['auc_train']} vs H1 {m['auc_holdout1']} "
+                f"< shuffle floor {m['shuffle_p95_auc']}")
+
+
+def _fu6_v3() -> tuple[bool, str]:
+    """V3 — BAR INTEGRITY: the tree's near-miss (H1 AUC 0.577 vs the 0.58 bar, money CI
+    positive, 3/3 H2 legs) must NOT have been promoted — the pre-registered bar held by
+    0.003 of AUC with an appealing money split attached."""
+    m = _fu6()["models"]["tree_d3"]
+    ok = (0.5 < m["auc_holdout1"] < 0.58 and m["money_ci90"][0] is not None
+          and m["money_ci90"][0] > 0 and m["h2_above_half"] == 3
+          and m["verdict"] == "CLOSED-NULL")
+    return ok, (f"tree H1 {m['auc_holdout1']} < bar 0.58 with money CI "
+                f"{m['money_ci90']} and 3/3 H2 — verdict stayed {m['verdict']}")
+
+
+register(Claim(
+    id="FU6-OUTCOME-MODEL-CLOSED-NULL",
+    issue="#158",
+    statement="Per-event outcome prediction CLOSES NULL on both fixed models — the B-family "
+              "is COMPLETE: the deployed ride enters state-blind with the full 165-library "
+              "measured. Logistic (L2,C=1): train AUC 0.9996 → holdout 0.5581, BELOW its "
+              "own label-shuffle floor (0.5904) — pure memorization, exactly the declared "
+              "blind spot. Depth-3 tree: holdout AUC 0.577 vs the pre-registered 0.58 bar — "
+              "a 0.003 near-miss carrying an appealing money split (top-half − bottom-half "
+              "+$335/event, CI90 [+$63, +$615]) and 3/3 HOLDOUT-2 legs above 0.5 — and the "
+              "bar HELD: closed null, recorded as an exploration-generated hypothesis "
+              "eligible ONLY for a fresh confirmatory pre-registration on future events, "
+              "never a post-hoc promotion.",
+    source="optimize/fundamentals/fu6_result.json",
+    value_fn=lambda: _fu6()["models"]["tree_d3"]["auc_holdout1"],
+    expect=0.577, tol=0.0001,
+    blind_spot="Exploration grade by design; default-param stances; the tree's money CI is "
+               "one of two model-looks (multiplicity); H1 is one era (2022→); shared CPI "
+               "moments across H2 legs; a near-bar AUC on n=145 is fragile — which is what "
+               "the bar is FOR.",
+    checks=[Check("V1", "verdicts re-derive from the registered rule", _fu6_v1),
+            Check("V2", "the logistic shows the declared saturation-collapse signature", _fu6_v2),
+            Check("V3", "the tree's appealing near-miss was NOT promoted (bar integrity)", _fu6_v3)]))
