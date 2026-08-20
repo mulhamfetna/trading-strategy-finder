@@ -5,7 +5,7 @@ single experiment and its results and outcomes and insights"). This is the NARRA
 companion to the master index (`NEWS-MASTER-EXPERIMENT-RECORD.md`): where the index gives one
 row per experiment, this report tells each experiment's story in plain language — what we
 did, what happened in dollars, what went well, what went wrong, and what we learned. Every
-number here already lives in a committed evidence file or the claims ledger (53/53 on both
+number here already lives in a committed evidence file or the claims ledger (54/54 on both
 machines); nothing is from memory.**
 
 ```mermaid
@@ -681,6 +681,26 @@ behind its own pre-registration: E-S1 (the event-state dataset on the frozen FU-
 over earnings timestamps) and E-X1 (does the live vol gate mis-forecast earnings bars the
 way it mis-forecasts CPI bars?).
 
+
+### 10.2 · E-X1 — earnings × the fused forecast (the law covers both calendars)
+**What we did:** the exact study that proved the live vol engine blind on CPI bars (FU-11),
+with the earnings calendar swapped in — five models on identical rows, the night-before
+per-ticker power as the calendar term, NQ primary and ES as witness. **What happened: PASS
+on all four registered lines.** On NQ's 92 test earnings bars the fitted baseline's error
+(QLIKE 1.30) drops to 0.79 fused — differential +0.51 with CI [+0.34, +0.70] — and the
+shuffled-power placebo collapses exactly to the dummy level: the power MAGNITUDE carries
+the repair, just as on macro. The ES witness is positive and CI-clear. **The two honest
+asymmetries recorded with the pass:** the earnings blindness is about fourteen times
+SMALLER than the macro one (1.3 vs CPI's 7.6, against ≈0.5 on ordinary bars — thin
+after-hours bars, one ticker diluted into an index, and the acceptance-lag smear all shrink
+it); and on ES the deployed fixed weights already beat every fitted variant on earnings
+bars — the fusion repairs the fitted model's gap without dethroning production there.
+A detail worth keeping: the earnings dummy's coefficient is NEGATIVE while the power term
+is strongly positive — merely knowing "tonight has earnings" over-corrects; knowing HOW BIG
+is the load-bearing information. **Insight:** the blindness-and-repair law now covers both
+calendars, macro and earnings — the joint two-calendar forecast is the declared follow-up,
+and every consumer stays behind the fusion era's consumer laws.
+
 ---
 
 ## Where the programme stands (2026-08-20)
@@ -695,5 +715,5 @@ hand-off are shipped); deliberate holds only — FU-4 gated-off, FU-15 parked by
 FU-11 consumers ①④ low-priority armed. The next workstream, on the owner's word, is the
 WS-EARN return (earnings alone → ×indicators → ×news×indicators), starting from
 `WS-EARN-HANDOFF.md` with E-P1, the earnings power model.
-**The ledger**: 53/53 claims green on both machines; every number in this report is bound
+**The ledger**: 54/54 claims green on both machines; every number in this report is bound
 to it or to a committed evidence file.

@@ -40,3 +40,35 @@ claim payment (H1's 0/8 already showed the frozen ride does not collect here).
 dataset on the FU-9 schema over earnings timestamps; **E-X1** — earnings × the fused
 forecast (does the live vol gate mis-forecast earnings bars the way it mis-forecasts CPI
 bars?). Ledger: `EP1-EARNINGS-POWER-FORECASTABLE`, **53/53 both machines**.
+
+## E-2 · E-X1 — earnings × the fused forecast: PASS ✅ (2026-08-20)
+
+**FU-11's machinery verbatim, the earnings calendar swapped in. Question: is the live vol
+engine as blind on earnings bars as on CPI bars, and does the night-before per-ticker power
+repair it?**
+
+| run | n evt bars | A deployed | B HAR-LS | D dummy | **C fused** | placebo | diff (B−C) | CI90 |
+|---|---|---|---|---|---|---|---|---|
+| NQ 1h | 92 | 1.0812 | 1.3046 | 0.8569 | **0.7945** | 0.8569 | **+0.5101** | [+0.344, +0.704] |
+| ES 1h | 92 | 0.7321 | 0.8683 | 1.2045 | 0.7687 | 1.2078 | +0.0996 | [+0.021, +0.183] |
+
+**Verdict: PASS on the four registered lines** (NQ primary CI-positive with C beating A;
+ES witness positive in sign; no harm off-event; the placebo collapses EXACTLY to the dummy
+level on NQ — the power magnitude carries the repair, as on macro).
+
+**The two honest asymmetries of record**:
+1. **The earnings blindness is ≈14× SMALLER than macro's** — the fitted baseline's
+   earnings-bar QLIKE is ≈1.3 vs CPI's 7.6 (vs ≈0.5 everyday). AMC thin bars, single-ticker
+   dilution of an index move, and the acceptance-lag smear all shrink it. Real, repairable,
+   but a different order of magnitude.
+2. **On ES the deployed FIXED weights beat every fitted variant on earnings bars**
+   (A 0.732 < C 0.769) — the fusion repairs the fitted model's gap without beating the
+   production forecast there. The pass is recorded WITH this fact, not despite it.
+
+Also: the earnings dummy's beta is NEGATIVE with the power term strongly positive — knowing
+"an earnings bar" alone over-corrects; knowing HOW BIG is the load-bearing information.
+
+**Consequences**: the blindness-and-repair law now covers BOTH calendars; the joint
+(macro + earnings) forecast is the declared follow-up; all consumers stay behind the
+fusion-era consumer laws. Ledger: `EX1-EARNINGS-FUSED-FORECAST-PASS`, **54/54 both
+machines**. Next armed item: **E-S1** (the event-state dataset, FU-9 schema).
