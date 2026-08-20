@@ -324,3 +324,75 @@ register(Claim(
     checks=[Check("V1", "lines re-derive from scores under the registered thresholds", _ex2_v1),
             Check("V2", "ES passes all four lines (the failure is NQ-local, small)", _ex2_v2),
             Check("V3", "the near-miss was refused — bar integrity, third in the series", _ex2_v3)]))
+
+
+# =============================================================================================
+# E-C1 — earnings × indicators: CLOSED-NULL (the conditioning phase closes)
+# =============================================================================================
+def _ec1() -> dict:
+    return json.load(open(EARN / "ec1_result.json"))
+
+
+def _ec1_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION: the P_hist baseline rho on HOLDOUT-1 recomputed locally from the
+    frozen E-S1 file must match the manifest (the anchor both deltas hang on)."""
+    from scipy import stats
+    d = pd.read_csv(EARN / "es1_event_state_NQ.csv", parse_dates=["et"])
+    d = d.dropna(subset=["pred", "jump_pct"])
+    h1 = d[d.et >= "2023-01-01"]
+    r = float(stats.spearmanr(h1.pred, h1.jump_pct)[0])
+    m = _ec1()
+    ok = abs(r - m["baseline_rho"]["h1"]) < 5e-4 and len(h1) == m["n_h1"]
+    return ok, f"H1 baseline rho {r:+.4f} (n={len(h1)}) re-derives"
+
+
+def _ec1_v2() -> tuple[bool, str]:
+    """V2 — RULE INTEGRITY: both models' verdicts follow the registered ARMED rule from
+    their recorded fields (deltas CI-clear NEGATIVE ⇒ nothing armed), and the ES holdout
+    deltas are negative too — the degradation replicates on the untouched instrument."""
+    r = _ec1()
+    for name, m in r["models"].items():
+        armed = m["delta_h1"] > 0 and m["delta_ci90"][0] > 0 \
+            and m["delta_h1"] > m["perm_p95"] and m["delta_h2"] > 0
+        if armed or m["verdict"] != "CLOSED-NULL":
+            return False, f"{name}: rule violated"
+        if not (m["delta_ci90"][1] < 0 and m["delta_h2"] < 0):
+            return False, f"{name}: expected CI-clear negative + ES-negative"
+    return True, "both models CI-clear negative on H1 AND negative on untouched ES"
+
+
+def _ec1_v3() -> tuple[bool, str]:
+    """V3 — ATTRIBUTION HONESTY: the permuted-stance controls ALSO degrade (ridge perm95
+    −0.30) — most of the loss is the extra degrees of freedom, not information; and the
+    record admits the CONTRARIAN clause was under-instrumented (no permuted 5th percentile
+    recorded), so 'state actively misleads' stays an open note, never a claimed finding."""
+    r = _ec1()
+    ridge = r["models"]["ridge"]
+    ok = ridge["perm_p95"] < -0.1 and ridge["delta_h1"] < ridge["perm_p95"]
+    return ok, (f"ridge perm95 {ridge['perm_p95']:+.4f} (dof noise dominates); real "
+                f"{ridge['delta_h1']:+.4f}; contrarian question left OPEN by design")
+
+
+register(Claim(
+    id="EC1-STATE-ADDS-NO-SIZE",
+    issue="#169",
+    statement="Earnings × indicators CLOSES NULL on both fixed models — and the "
+              "conditioning phase CLOSES with the state-blind law extended to SIZE: adding "
+              "the 292-usable-column stance vector to P_hist DEGRADES holdout size ranking "
+              "(ridge Δ −0.3930 CI [−0.5569, −0.2212]; tree Δ −0.1313 CI [−0.2061, "
+              "−0.0586]; both also negative on the untouched ES holdout), with the "
+              "permuted-stance controls showing most of the loss is pure degrees-of-freedom "
+              "noise (ridge perm95 −0.30). P_hist ALONE is the best size forecast measured. "
+              "The state-blind result now spans: direction (3 proofs), outcomes (FU-5/6), "
+              "macro conditioning (FU-2/3/7), and earnings SIZE (this) — the library "
+              "measures the tape; it does not predict the calendar.",
+    source="optimize/earnings/data/ec1_result.json",
+    value_fn=lambda: _ec1()["models"]["ridge"]["delta_h1"],
+    expect=-0.393, tol=0.0001,
+    blind_spot="The CONTRARIAN clause was under-instrumented (no permuted 5th percentile "
+               "recorded) — whether real stances mislead BEYOND dof noise stays an open "
+               "note, not a finding; n_train=191 with 293 features leans on regularization; "
+               "two models, one look each; E-S1's declarations inherit.",
+    checks=[Check("V1", "the P_hist holdout baseline re-derives from the frozen E-S1 file", _ec1_v1),
+            Check("V2", "verdicts follow the rule; degradation replicates on ES", _ec1_v2),
+            Check("V3", "dof-noise attribution honest; contrarian left open by design", _ec1_v3)]))

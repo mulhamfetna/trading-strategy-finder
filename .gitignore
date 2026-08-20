@@ -296,3 +296,5 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 # E-X2: joint-forecast evidence the ledger reads
 !subprojects/Parametric-Indicators/optimize/earnings/data/ex2_result_NQ.json
 !subprojects/Parametric-Indicators/optimize/earnings/data/ex2_result_ES.json
+# E-C1: state-vs-size evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/earnings/data/ec1_result.json
