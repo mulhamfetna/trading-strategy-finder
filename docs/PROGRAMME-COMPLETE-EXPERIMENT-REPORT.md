@@ -5,7 +5,7 @@ single experiment and its results and outcomes and insights"). This is the NARRA
 companion to the master index (`NEWS-MASTER-EXPERIMENT-RECORD.md`): where the index gives one
 row per experiment, this report tells each experiment's story in plain language — what we
 did, what happened in dollars, what went well, what went wrong, and what we learned. Every
-number here already lives in a committed evidence file or the claims ledger (57/57 on both
+number here already lives in a committed evidence file or the claims ledger (58/58 on both
 machines); nothing is from memory.**
 
 ```mermaid
@@ -757,6 +757,26 @@ outcomes (FU-5/FU-6), macro P&L conditioning (FU-2/3/7), and earnings size (this
 the dumbest defensible predictor, twice deployed-grade — remains the best size forecast
 this programme has ever measured. The conditioning phase closes by its own rule.
 
+
+### 10.6 · E-X2 v2 — the powered re-test (v1 was right all along)
+**What we did:** the owner-ordered re-test of the joint two-calendar model under properly
+POWERED tolerances — with the uncomfortable fact stated inside the registration itself: v2
+was filed after v1's numbers were known, so its legitimacy rests on the tolerance being the
+house-standard paired-bootstrap CI (not a tuned constant), on v2 being STRICTER than v1
+cross-instrument (both NQ and ES must pass everything), and on v1's verdict standing
+untouched. **What happened: v2 FAILED — which is v1 CONFIRMED at proper power.** The NQ
+earnings-bar degradation came back statistically REAL: paired differential −0.0013 with CI
+[−0.0024, −0.0003], sitting just above its own detection floor (MDE 0.0011). The
+fixed-ratio near-miss that v1's rule refused was a true detection, not noise. ES composes
+cleanly on all four lines. **Insight, twice over:** first, the powered line demonstrated
+its worth in both directions in one run — it passed the genuinely-noise macro difference
+and detected the genuinely-real earnings one. Second, the engineering conclusion: fitting
+ONE model across two calendars makes them share regression capacity and interfere (on NQ);
+but composing at the ROUTING level — each certified single-calendar model applied to its
+own calendar's bars — is interference-free by construction and inherits each model's own
+certification. That routing pattern is the natural design for E-D1, the two-calendar
+information layer — awaiting the owner's word, never smuggled.
+
 ---
 
 ## Where the programme stands (2026-08-20)
@@ -771,5 +791,5 @@ hand-off are shipped); deliberate holds only — FU-4 gated-off, FU-15 parked by
 FU-11 consumers ①④ low-priority armed. The next workstream, on the owner's word, is the
 WS-EARN return (earnings alone → ×indicators → ×news×indicators), starting from
 `WS-EARN-HANDOFF.md` with E-P1, the earnings power model.
-**The ledger**: 57/57 claims green on both machines; every number in this report is bound
+**The ledger**: 58/58 claims green on both machines; every number in this report is bound
 to it or to a committed evidence file.

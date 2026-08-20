@@ -154,3 +154,32 @@ predict the calendar.
 **Ledger**: `EC1-STATE-ADDS-NO-SIZE`, **57/57 both machines**. Queue: E-X2 v2 (powered
 tolerance) QUEUED by owner word; the roadmap's third phase (×news×indicators) awaits the
 owner with this phase's law as its prior.
+
+## E-6 · E-X2 v2 — powered tolerances: FAIL, and thereby v1 CONFIRMED ✅(verdict) (2026-08-20)
+
+**The owner-ordered re-test under the powered-tolerance law, with the post-v1 legitimacy
+question answered inside the registration (house-standard CI form, added strictness — both
+instruments must pass — and v1's verdict standing untouched).**
+
+| line (paired boot CI form) | NQ | ES |
+|---|---|---|
+| 1 no macro degradation | ✅ mean −0.0002, CI [−0.0004, 0.0] | ✅ 0.0 [−0.0001, +0.0002] |
+| 2 no earnings degradation | **❌ mean −0.0013, CI [−0.0024, −0.0003] — CLEAR-negative** | ✅ +0.0006 [0.0, +0.0013] |
+| 3 union decision | ✅ +4.52 [3.17, 6.08] | ✅ +5.29 [3.73, 7.07] |
+| 4 no rival overall | ✅ | ✅ |
+
+**The finding**: the powered line did exactly what it exists to do — in BOTH directions. It
+passes the noise-level macro difference (line 1) and it DETECTS the earnings degradation as
+real (mean −0.0013 vs its own MDE 0.0011, just above the detection floor). **v1's
+fixed-ratio near-miss was a true detection, not noise.** The interference is NQ-local (ES
+composes cleanly), tiny in absolute terms, and fatal only to one thing: a FITTED joint
+model on NQ.
+
+**Verdict**: the single-calendar models (FU-11's macro, E-X1's earnings) stand PERMANENTLY
+as the reference repairs. **The engineering insight of record**: composition at the MODEL
+level interferes; composition at the ROUTING level — each certified model applied to its
+own calendar's bars — is interference-free BY CONSTRUCTION and inherits each model's
+certification. That is the natural E-D1 design (an FU-14-pattern information layer),
+awaiting the owner's word.
+
+**Ledger**: `EX2V2-INTERFERENCE-CONFIRMED`, **58/58 both machines**.
