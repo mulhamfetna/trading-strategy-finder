@@ -5,7 +5,7 @@ single experiment and its results and outcomes and insights"). This is the NARRA
 companion to the master index (`NEWS-MASTER-EXPERIMENT-RECORD.md`): where the index gives one
 row per experiment, this report tells each experiment's story in plain language — what we
 did, what happened in dollars, what went well, what went wrong, and what we learned. Every
-number here already lives in a committed evidence file or the claims ledger (55/55 on both
+number here already lives in a committed evidence file or the claims ledger (56/56 on both
 machines); nothing is from memory.**
 
 ```mermaid
@@ -717,6 +717,27 @@ macro calendar, state-conditioning measured approximately zero everywhere it was
 Any earnings conditioning study starts from that prior, with a mechanism, a locked holdout,
 and its own pre-registration — or it does not start.
 
+
+### 10.4 · E-X2 — the joint two-calendar forecast (the third refused near-miss)
+**What we did:** asked whether ONE model carrying both calendars' terms — macro dummy and
+power, earnings dummy and power — delivers both repairs at once, under four registered
+composition lines (no degradation on either calendar's bars, a positive union CI, overall
+single-best). No new placebo arms: each power term had already survived its own falsifier;
+this tested composition, not existence. **What happened:** ES composes cleanly — all four
+lines pass. NQ passes three, and fails the earnings no-degradation line at ratio 1.0015
+against the registered 1.001 — the joint model is worse on NQ earnings bars by fifteen
+hundredths of a percent, five hundredths beyond tolerance. **The rule held: NOT CERTIFIED**
+— even though the union differential is hugely positive on both instruments and the joint
+model is the overall single-best forecast on both. This is the programme's third refused
+near-miss (FU-6's 0.003 of AUC, FU-3's CI touching zero, now this), and the claim's own V3
+check machine-verifies the refusal forever. **Insight:** a genuine design lesson came out
+of the miss — TOLERANCES MUST BE POWERED like any other registered line: a 0.1%
+no-degradation bound evaluated on 92 noisy bars is itself a noise-sensitive instrument.
+A v2 may be filed with a freshly registered, powered tolerance; the one thing that will
+never happen is widening the line after seeing the data. Until then the single-calendar
+models stand alone as the reference repairs, and E-D1 (productionizing a joint forecast)
+stays un-armed.
+
 ---
 
 ## Where the programme stands (2026-08-20)
@@ -731,5 +752,5 @@ hand-off are shipped); deliberate holds only — FU-4 gated-off, FU-15 parked by
 FU-11 consumers ①④ low-priority armed. The next workstream, on the owner's word, is the
 WS-EARN return (earnings alone → ×indicators → ×news×indicators), starting from
 `WS-EARN-HANDOFF.md` with E-P1, the earnings power model.
-**The ledger**: 55/55 claims green on both machines; every number in this report is bound
+**The ledger**: 56/56 claims green on both machines; every number in this report is bound
 to it or to a committed evidence file.

@@ -3,13 +3,13 @@
 **Every experiment, its result and its finding, across the entire programme (2026-06 → 2026-08-20).
 Current through v5.4.3 + FU-11 Stage 1: all profitable news deployed and scaled, the premium
 grid literally closed, the fusion workstream executing (the fused size engine has WON its
-forecast-quality stage), ledger 55/55 on both machines.**
+forecast-quality stage), ledger 56/56 on both machines.**
 
 This is the master index. **The verbose NARRATIVE companion — every experiment told in full (what ran, the dollars, what went well/wrong, the insight) — is `PROGRAMME-COMPLETE-EXPERIMENT-REPORT.md`.** Each workstream's full detail lives in its own record —
 `NEWS-PROGRAMME-FULL-RECORD.md` (WS-NEWS2/3), `WS-NEWS4-FULL-RECORD.md`,
 `WS-ESCPI-FULL-RECORD.md` (+ 2 addenda), `WS-GRID-RESULTS.md`, `WS-FUSION-FULL-RECORD.md`
 (F-0…F-7) — and every number below is bound to the claims ledger
-(`optimize/verify/run.py`, 55/55) or a committed evidence file.
+(`optimize/verify/run.py`, 56/56) or a committed evidence file.
 
 ```mermaid
 flowchart TD
@@ -164,6 +164,7 @@ flowchart TD
 | 10.1 | E-P1 (#169): the earnings power model | **PASS 5/5 (2026-08-20).** P_hist per TICKER on the committed 783-event/12-ticker/16y table: NQ pooled OOS Spearman **+0.4583** CI [+0.3733,+0.5356] (n=366); FULL independent ES replication **+0.3323** CI-lo +0.2379; quintiles ordered; 200 ticker-shuffles beaten; clean-minute control materially weaker. ⭐ **The M2 law extends to earnings** — a ticker's own history ranks tomorrow night's index violence at the same ρ≈0.5 magnitude as macro. POWER ≠ PREMIUM stands (H1 was 0/8). E-S1 + E-X1 ARMED. Claim `EP1-EARNINGS-POWER-FORECASTABLE`, **53/53**. |
 | 10.2 | E-X1: earnings × the fused forecast | **PASS 4/4 lines (2026-08-20).** FU-11's machinery, earnings calendar: NQ test earnings bars (n=92) QLIKE fitted 1.3046 → **fused 0.7945** (deployed 1.0812), diff **+0.5101** CI [+0.344,+0.704]; placebo collapses EXACTLY to dummy; ES witness +0.0996 CI-clear. ⭐ Two asymmetries recorded: earnings blindness ≈**14× smaller** than macro (1.3 vs 7.6 — AMC thin bars, single-ticker dilution, acceptance smear); on ES the deployed FIXED weights already beat all fitted variants (A<C). The dummy beta is NEGATIVE, power positive — HOW BIG is the load-bearer. **The blindness-and-repair law covers both calendars**; joint macro+earnings forecast = declared follow-up. Claim `EX1-EARNINGS-FUSED-FORECAST-PASS`, **54/54**. |
 | 10.3 | E-S1: the earnings event-state dataset v1 | **BUILT, 8/8 gates (2026-08-20).** The FU-9 schema on the earnings calendar: 462 rows × 341 cols per leg (NQ+ES; 924 total) — E-P1 power context parity-anchored EXACTLY (366 scored rows), the frozen macro bracket as REFERENCE outcome (432/462 with 1s coverage; H1's rejection stands), the 165-stance vector at stamp−300s, and the repaint falsifier green again on earnings frames. v1 FROZEN; the ×indicators substrate exists, bound to mechanism-first locked-holdout pre-regs (macro state-conditioning measured ≈0). Claim `ES1-EVENT-STATE-DATASET`, **55/55**. |
+| 10.4 | E-X2: the joint two-calendar forecast | **NOT CERTIFIED by its own rule (2026-08-20) — the THIRD refused near-miss.** One model, both calendars: ES passes 4/4 lines; NQ passes 1/3/4 but line 2 (earnings-bar no-degradation ≤1.001×) misses at ratio **1.0015** — and the rule held. Texture with the verdict: union diff hugely CI-positive both instruments (NQ +4.52, ES +5.29); the joint is the overall single-best forecast on both (NQ 0.4853 vs B 0.5485). ⭐ Design lesson: **tolerances must be POWERED** (0.1% on n=92 QLIKE is noise-sensitive) — a v2 needs a fresh registered tolerance, never post-hoc widening. Single-calendar models stand; E-D1 NOT armed. Claim `EX2-JOINT-FORECAST-NOT-CERTIFIED`, **56/56**. |
 
 ---
 
@@ -193,5 +194,5 @@ not · read gross beside net (cost drag masquerades as anti-premium) · traded-s
 blindness (the calendar) is now proven repairable, and the repair is power-aware. Armed and
 waiting, each behind its own pre-registration: the four fused-forecast consumers (re-gate ·
 sizing ramp · news geometry · box stops), FU-9's event-state dataset, FU-2's veto replay,
-and the parked FU-15 dual-sided bracket. Ledger **55/55 both machines**; every number above
+and the parked FU-15 dual-sided bracket. Ledger **56/56 both machines**; every number above
 is claim-bound.

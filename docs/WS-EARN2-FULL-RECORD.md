@@ -89,3 +89,32 @@ V2 the live-executor cost identity; V3 the 8 manifest gates + non-degeneracy). *
 both machines.** The ×indicators phase now has its substrate — and stays bound to
 mechanism-first, locked-holdout pre-registrations (macro state-conditioning measured ≈zero
 in the fusion era; the earnings edition starts with that prior).
+
+## E-4 · E-X2 — the joint two-calendar forecast: NOT CERTIFIED ✅(verdict) (2026-08-20)
+
+**The composition question: does ONE model carrying both calendars' terms deliver both
+repairs simultaneously? Four lines registered; no new placebo arms (each power term had
+already survived its own falsifier — this tested composition, not existence).**
+
+| line | NQ | ES |
+|---|---|---|
+| 1 no macro degradation (≤1.001×) | ✅ 0.4789→0.4791 | ✅ 0.5844→0.5844 |
+| 2 no earnings degradation (≤1.001×) | **❌ 0.7945→0.7957 (ratio 1.0015)** | ✅ 0.7687→0.7680 |
+| 3 union-bar CI90 > 0 | ✅ +4.52 [3.20, 6.09] | ✅ +5.29 [3.79, 7.04] |
+| 4 overall single-best | ✅ 0.4853 vs B 0.5485 | ✅ 0.4771 vs B 0.5546 |
+
+**Verdict by the registered rule: NOT CERTIFIED** — NQ's earnings-bar degradation (0.15%)
+exceeds the 0.1% line by ≈0.05%, and the rule held. **The third refused near-miss** (FU-6's
+0.003 AUC · FU-3's CI touch · this) — bar integrity is now a programme signature, verified
+by the claim's own V3 check every ledger run.
+
+**The texture recorded WITH the verdict**: ES composes cleanly (4/4); the union
+differential is hugely positive on both instruments; the joint model is the overall
+single-best forecast on both. The failure is NQ-local, tiny, and on 92 noisy bars — which
+is precisely the design lesson: **tolerances must be POWERED like any other line** (a 0.1%
+no-degradation line on n=92 QLIKE is noise-sensitive). A v2 with a freshly registered,
+powered tolerance may be filed later; never a post-hoc widening.
+
+**Consequences**: the single-calendar models (FU-11's macro, E-X1's earnings) stand alone
+as the reference repairs; **E-D1 (productionization) is NOT armed.** Ledger:
+`EX2-JOINT-FORECAST-NOT-CERTIFIED`, **56/56 both machines**.
