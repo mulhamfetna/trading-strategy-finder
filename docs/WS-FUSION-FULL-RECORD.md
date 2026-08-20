@@ -138,3 +138,67 @@ before any run. Results (`subprojects/regime-edge/fu13_result.json`, ledger clai
 - **D**: golden gate 6/6 re-run green; the module is an INFORMATION layer — no trading
   consumer; consumers remain separate gated studies (the FU-11 draft is first in line).
 - Ledger claim `FU14-POWER-FORECAST-DEPLOYED`; suite **43/43**.
+
+## F-6 · FU-11 Stage 1 (#162) — the fused size engine: FORECAST-QUALITY stage ✅ PASS 4/4
+
+**Owner's "proceed" (2026-08-20) opened execution. Order held: prior-art pass → pre-registration
+(`docs/FU11-STAGE1-PREREGISTRATION.md`, PASS lines fixed) → server runs → ledger → this record.**
+
+**The question**: the live vol engine (`volatility.py` HAR-RV, every champion's entry gate)
+reads tape memory only — it cannot know tomorrow 08:30 is a CPI print. The FU-14 power layer
+knows each release's expected size the night before. Does fusing them produce a measurably
+better forecast of the engine's own target (`rv_pts`)?
+
+**Prior art (recorded pre-run)**: HAR + scheduled-announcement dummies is an established
+published family ("HAR-M"); the recorded risk — the literature's gain may be the DUMMY, not
+the power magnitude — became the mandatory D-arm decomposition.
+
+**Design (fixed pre-run)**: five models on identical rows — A deployed fixed-weight HAR ·
+B fitted HAR-LS (the honest baseline: fusion must beat FITTING) · C fused (B + event dummy +
+M2 night-before expanding power) · D dummy-only · C* shuffled-power placebo ×20. Research
+1h frames from the 16-year 1m archives (NQ/ES/RTY/GC/CL) + NQ 4h; train <2024, test 2024→;
+decision statistic = paired event-bar QLIKE differential (B−C), bootstrap 90% CI.
+
+**Results (test event bars; QLIKE, lower better)**:
+
+| run | n evt | A deployed | B HAR-LS | D dummy | **C fused** | placebo | diff (B−C) | 90% CI |
+|---|---|---|---|---|---|---|---|---|
+| NQ 1h | 140 | 8.11 | 7.64 | 1.20 | **0.48** | 1.21 | **+7.16** | [+4.96, +9.69] |
+| ES 1h | 140 | 9.94 | 9.28 | 1.33 | **0.58** | 1.34 | **+8.69** | [+6.18, +11.62] |
+| RTY 1h | 140 | 25.05 | 22.52 | 2.40 | **1.10** | 2.42 | **+21.42** | [+14.77, +29.27] |
+| GC 1h | 139 | 7.12 | 7.32 | 1.17 | **0.89** | 1.17 | **+6.43** | [+5.17, +7.78] |
+| CL 1h | 380 | 0.47 | 0.61 | 0.41 | **0.32** | 0.41 | **+0.29** | [+0.21, +0.38] |
+| NQ 4h | 140 | 3.84 | 3.55 | 0.47 | **0.31** | 0.47 | **+3.25** | [+2.73, +3.79] |
+
+**Verdict — PASS on all four pre-registered lines**: (1) NQ CI decisively positive; (2)
+cross-instrument 4/4 (needed 3/4); (3) overall test QLIKE not only unharmed but IMPROVED
+(NQ 0.548→0.487, ≈11%); (4) the placebo collapses exactly to the dummy level on every run
+(placebo gain over D is ~0 or negative everywhere) — **the power MAGNITUDE carries the gain:
+the fusion is POWER-AWARE, not merely calendar-aware** (D→C is a further −0.72 QLIKE on NQ
+that shuffled power cannot reach). Era halves both positive on all six runs, with the honest
+note that the gain roughly HALVES in 2025+ vs 2024 (e.g. NQ +10.88 → +4.76) — decisive but
+shrinking; consumers must not assume the 2024 magnitude.
+
+**The insights of record**:
+1. ⭐⭐ **The live gate's forecast is catastrophically wrong exactly on release bars** —
+   event-bar QLIKE ≈8 versus its ~0.5 everyday regime. Every champion's entry gate is blind
+   at the moments the book concentrates into (FU-1). The night-before calendar terms repair
+   most of that error for free.
+2. The fitted HAR-LS barely improves on the deployed fixed weights (7.64 vs 8.11 on NQ event
+   bars) — the deployed engine's weakness is NOT its weights, it is its information set.
+3. CL is the outlier that proves the pattern: its dense weekly calendar (EIA/API era) makes
+   event bars routine (380 in test), so its baseline is already decent (0.47) and the gain
+   small (+0.29) — the fusion matters most where events are RARE and violent (equity indexes).
+4. GC: the deployed HAR beats fitted HAR-LS (7.12 vs 7.32) — fitting can overfit quiet bars;
+   the calendar terms still dominate both.
+
+**Ledger**: `FU11-STAGE1-FUSED-FORECAST-WINS` — V1 internal re-derivation of every decision
+field, V2 CI+era stability on all six runs, V3 the placebo falsifier; **44/44 both machines**.
+
+**What this stage did NOT do (by design)**: change any deployed component, touch any golden
+number, or claim any P&L. Consumers are now ARMED, each behind its own future pre-registration:
+① champions' entry re-gate on ENGINE frames (predicted neutral by the Chronos program rule;
+lowest priority), ② the sizing ramp with the fused forecast as regime input (FU-13's kill
+demands per-instrument design), ③ FU-7 power-scaled news-leg geometry, ④ box stop distances.
+Queue position: the approved order resumes (FU-9 event-state dataset → FU-2 veto replay →
+FU-3/FU-7 as the consumer implementations).
