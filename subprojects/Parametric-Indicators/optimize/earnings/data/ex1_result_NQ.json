@@ -1,0 +1,44 @@
+{
+  "instrument": "NQ",
+  "n_test_event_bars": 92,
+  "scores": {
+    "A": {
+      "event": 1.081201869702019,
+      "overall": 0.5503678192149901
+    },
+    "B": {
+      "event": 1.3045907925714018,
+      "overall": 0.5484953594991344
+    },
+    "C": {
+      "event": 0.7944574737268796,
+      "overall": 0.5464814060113868
+    },
+    "D": {
+      "event": 0.856911897595586,
+      "overall": 0.5468285564741642
+    }
+  },
+  "decision": {
+    "mean_diff_B_minus_C": 0.510133318844522,
+    "boot90_ci": [
+      0.34399710173099574,
+      0.7042250225218865
+    ],
+    "mean_diff_A_minus_C": 0.28674439597513945
+  },
+  "decomposition": {
+    "gain_C_over_D": 0.062454423868706366,
+    "placebo_median": 0.8569229722538496,
+    "placebo_gain_over_D": -1.1074658263665604e-05
+  },
+  "lines": {
+    "1_primary_ci": true,
+    "3_no_harm": true,
+    "4_placebo": true
+  },
+  "power": {
+    "sd_diff": 1.0103903309797158,
+    "mde": 0.17328507959278175
+  }
+}

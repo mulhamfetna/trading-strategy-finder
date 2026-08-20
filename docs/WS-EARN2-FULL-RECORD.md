@@ -1,0 +1,205 @@
+# WS-EARN Return — the Full Record (the owner's roadmap ③)
+
+**Opened 2026-08-20 (owner: "lets go") from `WS-EARN-HANDOFF.md`. Tracking #109; phases get
+their own issues. Everything here is claim-bound (`claims_earn2.py`).**
+
+## E-0 · The opening state (inherited, not re-derived)
+
+From the original WS-EARN (#109–#113): the 783-event / 12-ticker / 16-year timestamp table
+(EDGAR acceptance ET; acceptance ≠ announcement, INTC ~7min; C4 human check owner-pending
+#110); H1 (a ride premium) REJECTED 0/8; announcement minutes move NQ **4.98×** matched
+minutes; the sample supports 2–6 approaches (Stage-2 power discipline). From WS-FUSION: the
+FU-9 schema, the bracket primitive (short included), the per-key power methodology, and the
+laws (calendar pays / tape does not predict / asymmetry first-class / placebo owns positives
+/ near-miss is a miss / anti-premium ≠ drift).
+
+## E-1 · E-P1 (#169) — the earnings power model: PASS 5/5 ✅ (2026-08-20)
+
+**The question**: is earnings-move SIZE forecastable the night before, per ticker, the way
+macro size is (M2, ρ≈0.5)? **Method**: M2's own functions transplanted — P_hist per TICKER
+(expanding median of prior earnings-minute |move|%, shifted, ≥8 priors) vs realized
+jump_pct on the 16-year 1m frames.
+
+**Results**: 462/783 events carry a 1m bar at the stamp (AMC thin sessions — counted);
+366 scored after warmup.
+
+| gate | line | result |
+|---|---|---|
+| 1 primary (NQ) | Fisher CI-lo > 0 | **ρ +0.4583, CI [+0.3733, +0.5356]** ✅ |
+| 2 V1 quintiles | bucket-mean rank ≥ 0.8 | ordered ✅ |
+| 3 ES replication | its own P_hist vs ES moves, CI-lo > 0 | **ρ +0.3323, CI-lo +0.2379** ✅ |
+| 4 V3 falsifier | beat 200 ticker-shuffles' p95 (P_hist rebuilt) | beaten ✅ |
+| 5 control | clean-minute ρ ≤ half real | materially weaker ✅ |
+
+**Verdict: PASS — the M2 law extends to earnings.** A ticker's own history ranks tomorrow
+night's index violence at ρ≈0.46 — the same magnitude as the macro power model that became
+the deployed forecast layer. **POWER ≠ PREMIUM stands**: this ranks violence, it does not
+claim payment (H1's 0/8 already showed the frozen ride does not collect here).
+
+**Armed by this pass** (each behind its own pre-registration): **E-S1** — the event-state
+dataset on the FU-9 schema over earnings timestamps; **E-X1** — earnings × the fused
+forecast (does the live vol gate mis-forecast earnings bars the way it mis-forecasts CPI
+bars?). Ledger: `EP1-EARNINGS-POWER-FORECASTABLE`, **53/53 both machines**.
+
+## E-2 · E-X1 — earnings × the fused forecast: PASS ✅ (2026-08-20)
+
+**FU-11's machinery verbatim, the earnings calendar swapped in. Question: is the live vol
+engine as blind on earnings bars as on CPI bars, and does the night-before per-ticker power
+repair it?**
+
+| run | n evt bars | A deployed | B HAR-LS | D dummy | **C fused** | placebo | diff (B−C) | CI90 |
+|---|---|---|---|---|---|---|---|---|
+| NQ 1h | 92 | 1.0812 | 1.3046 | 0.8569 | **0.7945** | 0.8569 | **+0.5101** | [+0.344, +0.704] |
+| ES 1h | 92 | 0.7321 | 0.8683 | 1.2045 | 0.7687 | 1.2078 | +0.0996 | [+0.021, +0.183] |
+
+**Verdict: PASS on the four registered lines** (NQ primary CI-positive with C beating A;
+ES witness positive in sign; no harm off-event; the placebo collapses EXACTLY to the dummy
+level on NQ — the power magnitude carries the repair, as on macro).
+
+**The two honest asymmetries of record**:
+1. **The earnings blindness is ≈14× SMALLER than macro's** — the fitted baseline's
+   earnings-bar QLIKE is ≈1.3 vs CPI's 7.6 (vs ≈0.5 everyday). AMC thin bars, single-ticker
+   dilution of an index move, and the acceptance-lag smear all shrink it. Real, repairable,
+   but a different order of magnitude.
+2. **On ES the deployed FIXED weights beat every fitted variant on earnings bars**
+   (A 0.732 < C 0.769) — the fusion repairs the fitted model's gap without beating the
+   production forecast there. The pass is recorded WITH this fact, not despite it.
+
+Also: the earnings dummy's beta is NEGATIVE with the power term strongly positive — knowing
+"an earnings bar" alone over-corrects; knowing HOW BIG is the load-bearing information.
+
+**Consequences**: the blindness-and-repair law now covers BOTH calendars; the joint
+(macro + earnings) forecast is the declared follow-up; all consumers stay behind the
+fusion-era consumer laws. Ledger: `EX1-EARNINGS-FUSED-FORECAST-PASS`, **54/54 both
+machines**. Next armed item: **E-S1** (the event-state dataset, FU-9 schema).
+
+## E-3 · E-S1 — the earnings event-state dataset v1: BUILT ✅ (2026-08-20)
+
+**The FU-9 schema over the earnings calendar (spec frozen pre-build). 462 rows × 341
+columns per leg (NQ, ES; 924 total): identity + the E-P1 power context — parity-anchored
+EXACTLY to the committed evidence on all 366 scored rows (gate C1) — + the frozen macro
+bracket as a REFERENCE outcome (432/462 with 1s coverage; H1 already rejected this ride —
+stored as what-it-would-do, the FU-9/Retail precedent) + the 165-stance vector at
+stamp−300s. The repaint falsifier passed again on the earnings frames (25×165 per leg,
++1h future appended, stances unchanged). Builder ~90s/leg, FU-9's machinery reused
+(`stance_rows`, `c2_causality`, `ride_outcomes` imported, not re-implemented).**
+
+**v1 FROZEN.** Ledger: `ES1-EVENT-STATE-DATASET` (V1 re-joins the power context locally;
+V2 the live-executor cost identity; V3 the 8 manifest gates + non-degeneracy). **55/55
+both machines.** The ×indicators phase now has its substrate — and stays bound to
+mechanism-first, locked-holdout pre-registrations (macro state-conditioning measured ≈zero
+in the fusion era; the earnings edition starts with that prior).
+
+## E-4 · E-X2 — the joint two-calendar forecast: NOT CERTIFIED ✅(verdict) (2026-08-20)
+
+**The composition question: does ONE model carrying both calendars' terms deliver both
+repairs simultaneously? Four lines registered; no new placebo arms (each power term had
+already survived its own falsifier — this tested composition, not existence).**
+
+| line | NQ | ES |
+|---|---|---|
+| 1 no macro degradation (≤1.001×) | ✅ 0.4789→0.4791 | ✅ 0.5844→0.5844 |
+| 2 no earnings degradation (≤1.001×) | **❌ 0.7945→0.7957 (ratio 1.0015)** | ✅ 0.7687→0.7680 |
+| 3 union-bar CI90 > 0 | ✅ +4.52 [3.20, 6.09] | ✅ +5.29 [3.79, 7.04] |
+| 4 overall single-best | ✅ 0.4853 vs B 0.5485 | ✅ 0.4771 vs B 0.5546 |
+
+**Verdict by the registered rule: NOT CERTIFIED** — NQ's earnings-bar degradation (0.15%)
+exceeds the 0.1% line by ≈0.05%, and the rule held. **The third refused near-miss** (FU-6's
+0.003 AUC · FU-3's CI touch · this) — bar integrity is now a programme signature, verified
+by the claim's own V3 check every ledger run.
+
+**The texture recorded WITH the verdict**: ES composes cleanly (4/4); the union
+differential is hugely positive on both instruments; the joint model is the overall
+single-best forecast on both. The failure is NQ-local, tiny, and on 92 noisy bars — which
+is precisely the design lesson: **tolerances must be POWERED like any other line** (a 0.1%
+no-degradation line on n=92 QLIKE is noise-sensitive). A v2 with a freshly registered,
+powered tolerance may be filed later; never a post-hoc widening.
+
+**Consequences**: the single-calendar models (FU-11's macro, E-X1's earnings) stand alone
+as the reference repairs; **E-D1 (productionization) is NOT armed.** Ledger:
+`EX2-JOINT-FORECAST-NOT-CERTIFIED`, **56/56 both machines**.
+
+## The workstream queue (owner-ordered, 2026-08-20)
+
+- **E-C1 (ACTIVE)**: the ×indicators conditioning phase — see E-5 below.
+- **E-X2 v2 (QUEUED by owner word)**: the joint two-calendar forecast re-registered with a
+  POWERED tolerance (the E-X2 design law applied: the no-degradation line sized to the
+  event-bar sample's QLIKE noise, fixed before the run). Not scheduled until called.
+
+## E-5 · E-C1 — earnings × indicators: CLOSED-NULL — the conditioning phase closes ✅ (2026-08-20)
+
+**The question chosen under the fusion prior: not "gate a dead trade" but the one live
+quantity — does the stance vector add SIZE information beyond P_hist? Locked holdouts
+(TRAIN NQ<2023 n=191; H1 NQ≥2023 n=175, one look; H2 ES n=366, untouched); two fixed
+models; stance-permutation controls.**
+
+| model | H1 ρ (base 0.3884) | Δ vs P_hist | CI90 | perm p95 | ES Δ | verdict |
+|---|---|---|---|---|---|---|
+| ridge α=1 | −0.0047 | **−0.3930** | [−0.5569, −0.2212] | −0.3015 | −0.1920 | NULL |
+| tree d3 | 0.2571 | **−0.1313** | [−0.2061, −0.0586] | −0.0270 | −0.0438 | NULL |
+
+**Both models are WORSE than P_hist alone — CI-clear — and the degradation replicates on
+the untouched ES holdout.** The permuted-stance controls also degrade heavily (ridge perm95
+−0.30): most of the loss is the extra degrees of freedom, not information. Honesty note
+kept: the CONTRARIAN clause was under-instrumented (no permuted 5th percentile recorded) —
+whether real stances mislead BEYOND dof noise stays an open note, never a claimed finding.
+
+**The phase verdict (by the pre-registered rule): the conditioning phase CLOSES, and the
+state-blind law reaches its strongest form** — the 165-library carries no incremental
+information about the calendar on ANY axis measured: direction (three proofs), ride
+outcomes (FU-5/FU-6), macro P&L conditioning (FU-2/3/7), and now earnings SIZE. P_hist
+alone is the best size forecast measured. The library measures the tape; it does not
+predict the calendar.
+
+**Ledger**: `EC1-STATE-ADDS-NO-SIZE`, **57/57 both machines**. Queue: E-X2 v2 (powered
+tolerance) QUEUED by owner word; the roadmap's third phase (×news×indicators) awaits the
+owner with this phase's law as its prior.
+
+## E-6 · E-X2 v2 — powered tolerances: FAIL, and thereby v1 CONFIRMED ✅(verdict) (2026-08-20)
+
+**The owner-ordered re-test under the powered-tolerance law, with the post-v1 legitimacy
+question answered inside the registration (house-standard CI form, added strictness — both
+instruments must pass — and v1's verdict standing untouched).**
+
+| line (paired boot CI form) | NQ | ES |
+|---|---|---|
+| 1 no macro degradation | ✅ mean −0.0002, CI [−0.0004, 0.0] | ✅ 0.0 [−0.0001, +0.0002] |
+| 2 no earnings degradation | **❌ mean −0.0013, CI [−0.0024, −0.0003] — CLEAR-negative** | ✅ +0.0006 [0.0, +0.0013] |
+| 3 union decision | ✅ +4.52 [3.17, 6.08] | ✅ +5.29 [3.73, 7.07] |
+| 4 no rival overall | ✅ | ✅ |
+
+**The finding**: the powered line did exactly what it exists to do — in BOTH directions. It
+passes the noise-level macro difference (line 1) and it DETECTS the earnings degradation as
+real (mean −0.0013 vs its own MDE 0.0011, just above the detection floor). **v1's
+fixed-ratio near-miss was a true detection, not noise.** The interference is NQ-local (ES
+composes cleanly), tiny in absolute terms, and fatal only to one thing: a FITTED joint
+model on NQ.
+
+**Verdict**: the single-calendar models (FU-11's macro, E-X1's earnings) stand PERMANENTLY
+as the reference repairs. **The engineering insight of record**: composition at the MODEL
+level interferes; composition at the ROUTING level — each certified model applied to its
+own calendar's bars — is interference-free BY CONSTRUCTION and inherits each model's
+certification. That is the natural E-D1 design (an FU-14-pattern information layer),
+awaiting the owner's word.
+
+**Ledger**: `EX2V2-INTERFERENCE-CONFIRMED`, **58/58 both machines**.
+
+## E-7 · E-D1 — the two-calendar forecast layer: DEPLOYED-ON-BRANCH ⭐ (2026-08-20)
+
+**The era's deployable artifact, built by the FU-14 battery on the E-X2v2 routing insight:
+`src/deploy/two_calendar_forecast.py` — the FU-11-certified model on macro bars, the
+E-X1-certified model on earnings bars, plain HAR-LS elsewhere; fitted composition never
+used (its NQ interference is CI-proven).**
+
+| stage | result |
+|---|---|
+| P parity | **Δ0.0e+00 EXACT** vs the committed FU-11 + E-X1 evidence — macro, earnings AND the union count-weighted identity, on NQ AND ES |
+| F falsifiers | both per-calendar scrambles COLLAPSE (macro keeps −0.0063 of a +0.7244 gain; earnings −0.0013 of +0.0625) |
+| A artifact | regime-sane night-before bar lifts for 2026-02: NFP **+71.9 rv pts**, CPI +69.9, Durables +12.3 (macro forward-capable via the TV calendar; earnings need an owner-supplied dates file — declared) |
+| D system | golden gate **6/6 ALL MATCH**, exit 0 — no engine path touched (also proven statically: the module imports no engine) |
+
+**Deploy rule fired: DEPLOYED-ON-BRANCH** as an information layer (module + claim +
+playbook `playbooks/two-calendar-forecast/`, v1.0.0). ZERO income by design (the FU-14
+rule). The release/merge ship remains the owner's standing pipeline — not executed here.
+Ledger: `ED1-TWO-CALENDAR-DEPLOYED`, **59/59 both machines**. Incident kept: a claims-path
+typo (parents[0]→[1]) caught by the ledger's own first run.

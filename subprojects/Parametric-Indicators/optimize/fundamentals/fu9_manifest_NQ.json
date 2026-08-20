@@ -1,0 +1,43 @@
+{
+  "instrument": "NQ",
+  "version": "v1",
+  "rows": 449,
+  "cols": 348,
+  "events_by_series": {
+    "Fed Interest Rate Decision": "84/84",
+    "Inflation Rate MoM": "116/118",
+    "Non Farm Payrolls": "127/127",
+    "Retail Sales MoM": "120/120"
+  },
+  "gates": {
+    "C1_replay_parity": {
+      "pass": true,
+      "msg": "81 overlapping events, max |\u0394| 0.0000"
+    },
+    "C2_causality": {
+      "pass": true,
+      "msg": "25 events x 165 indicators stance-stable under +1h future"
+    },
+    "C3_unique": {
+      "pass": true,
+      "msg": "0 duplicates"
+    },
+    "C4_coverage": {
+      "pass": true,
+      "msg": "{\"Fed Interest Rate Decision\": \"84/84\", \"Inflation Rate MoM\": \"116/118\", \"Non Farm Payrolls\": \"127/127\", \"Retail Sales MoM\": \"120/120\"}"
+    }
+  },
+  "indicator_seconds_top10": {
+    "rsi_connors": 2.79,
+    "hma": 2.61,
+    "aroon": 1.65,
+    "aroon_osc": 1.63,
+    "rvgi": 1.51,
+    "vidya": 1.46,
+    "center_of_gravity": 1.26,
+    "fisher": 1.1,
+    "laguerre_rsi": 1.05,
+    "cmo_chande_dmi": 1.02
+  },
+  "wall_s": 83.4
+}

@@ -1,0 +1,59 @@
+{
+  "per_instrument": {
+    "NQ": {
+      "events": 120,
+      "parity_n": 120,
+      "short_gross_mean": -22.25,
+      "short_net_mean": -44.75,
+      "short_net_total": -5369.97,
+      "long_gross_mean": -78.41
+    },
+    "RTY": {
+      "events": 89,
+      "parity_n": 89,
+      "short_gross_mean": -4.39,
+      "short_net_mean": -26.89,
+      "short_net_total": -2393.35,
+      "long_gross_mean": -37.49
+    },
+    "ES": {
+      "events": 120,
+      "parity_n": 120,
+      "short_gross_mean": 2.52,
+      "short_net_mean": -49.98,
+      "short_net_total": -5998.01,
+      "long_gross_mean": -61.72
+    },
+    "YM": {
+      "events": 120,
+      "parity_n": 120,
+      "short_gross_mean": -6.79,
+      "short_net_mean": -29.29,
+      "short_net_total": -3514.54,
+      "long_gross_mean": -22.28
+    }
+  },
+  "primary_pool_nq_rty": {
+    "n": 209,
+    "net_mean": -37.15,
+    "boot90_ci": [
+      -71.38,
+      -2.77
+    ],
+    "eras": {
+      "h1": 26.76,
+      "h2": -100.44,
+      "split": "2022-01-14"
+    }
+  },
+  "power": {
+    "sd_event_net": 299.21,
+    "mde_mean": 34.05
+  },
+  "witnesses_es_ym_positive": false,
+  "forward_protocol": {
+    "events": 12,
+    "rule": "pooled NQ+RTY net>0 AND >=7/12 events with the descriptive mean's sign"
+  },
+  "verdict": "CLOSED"
+}
