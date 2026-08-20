@@ -506,3 +506,94 @@ register(Claim(
     checks=[Check("V1", "pooled Δ re-derives from the daily series and per-TF books", _fu2_v1),
             Check("V2", "6/6 baselines reproduce the committed FU-1 books", _fu2_v2),
             Check("V3", "shifted control kills the release-specific mechanism; MDE present", _fu2_v3)]))
+
+
+# =============================================================================================
+# FU-3 (#155) — power-aware box sizing: CLOSED-NULL (promising texture, underpowered)
+# =============================================================================================
+def _fu3() -> dict:
+    return json.load(open(FUND / "fu3_result.json"))
+
+
+def _fu3_mult() -> pd.Series:
+    d = pd.read_csv(FUND / "fu9_event_state_NQ.csv", parse_dates=["et"],
+                    usecols=["et", "title", "pred_exp"]).dropna(subset=["pred_exp"])
+    p = d.groupby(d.et.dt.normalize()).pred_exp.max().sort_index()
+    v = p.to_numpy(float)
+    m = np.ones(len(v))
+    for i in range(len(v)):
+        if i >= 20:
+            m[i] = 0.5 + float(np.mean(v[:i] <= v[i]))
+    return pd.Series(m, index=p.index)
+
+
+def _fu3_v1() -> tuple[bool, str]:
+    """V1 — FULL LOCAL RE-DERIVATION from committed inputs only: rebuild the day multipliers
+    from FU-9's pred_exp, apply them (equal-exposure) to the committed FU-1 audit books, and
+    the per-TF deltas must match the manifest to the cent."""
+    r = _fu3()
+    mult = _fu3_mult()
+    for tf, v in r["per_tf"].items():
+        t = pd.read_csv(FUND / f"fu1_audit_{tf}.csv", parse_dates=["entry_time"])
+        md = t.entry_time.dt.normalize().map(mult).fillna(1.0).to_numpy(float)
+        md = md * (len(md) / md.sum())
+        delta = float((t.pnl_usd * (md - 1.0)).sum())
+        if abs(delta - v["delta_net"]) > 0.01:
+            return False, f"{tf}: re-derived {delta:+.2f} vs manifest {v['delta_net']:+.2f}"
+    tot = sum(v["delta_net"] for v in r["per_tf"].values())
+    ok = abs(tot - r["pooled"]["delta_net"]) < 0.5
+    return ok, f"all 6 per-TF deltas re-derive from FU-9 + FU-1 committed files; pooled {tot:+,.0f}"
+
+
+def _fu3_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT MEASUREMENTS: the delta is positive on all SIX semi-independent
+    frames, and the daily-diff evidence is active exactly on the books' span (2025-01 →
+    2026-05 — the span-correction fact of record)."""
+    r = _fu3()
+    neg = [tf for tf, v in r["per_tf"].items() if v["delta_net"] <= 0]
+    if neg:
+        return False, f"frames not positive: {neg}"
+    d = pd.read_csv(FUND / "fu3_daily_diff.csv", parse_dates=["day"])
+    act = d[d.diff_ramp != 0]
+    ok = str(act.day.min().date()) >= "2025-01-01" and str(act.day.max().date()) <= "2026-06-01"
+    return ok, (f"6/6 frames positive; active span {act.day.min().date()}→{act.day.max().date()}"
+                f" (the engine books' true span)")
+
+
+def _fu3_v3() -> tuple[bool, str]:
+    """V3 — FALSIFIER + RULE INTEGRITY: the real map beats ≥95% of 1,000 event-day
+    permutations (alignment is real at p≈0.02) YET the verdict must still be CLOSED-NULL
+    because the pre-registered CI line failed (CI-lo < 0) — proof the rule was applied as
+    registered, not bent toward the appealing texture; MDE present."""
+    r = _fu3()
+    ok = (r["pooled"]["perm_percentile"] >= 95.0
+          and r["pooled"]["boot90_ci"][0] < 0 < r["pooled"]["boot90_ci"][1]
+          and r["verdict"] == "CLOSED-NULL" and r["power"]["mde_total"] > 0)
+    return ok, (f"perm-pct {r['pooled']['perm_percentile']}, CI {r['pooled']['boot90_ci']}, "
+                f"MDE {r['power']['mde_total']:,.0f}, verdict {r['verdict']}")
+
+
+register(Claim(
+    id="FU3-POWER-SIZING-CLOSED-NULL",
+    issue="#155",
+    statement="Power-aware box sizing CLOSES NULL by its pre-registered rule — with the most "
+              "promising texture a null has shown here: ramping NQ box trades by the "
+              "committed night-before power (Exp2 shape, equal exposure) adds +$30,338 "
+              "pooled over the books' TRUE span (2025-01→2026-05, ~16.5 months — an ≈18% "
+              "lift on the $164k flat book), POSITIVE ON ALL SIX FRAMES, beating 98% of "
+              "1,000 event-day permutations, both post-hoc within-span halves positive "
+              "(+$8,334/+$22,004) — but the day-bootstrap 90% CI [−$2,298, +$63,671] "
+              "touches zero (MDE $32,887) and the rule holds. The pre-registered era-half "
+              "line (2016-20 vs 2021→) was structurally DEGENERATE — the engine books span "
+              "2025→ only (span correction of record, also reframing FU-2's magnitudes). "
+              "The legitimate re-test is the declared Phase 2: cross-instrument books "
+              "(the FU-13 law), fresh pre-registration.",
+    source="optimize/fundamentals/fu3_result.json + fu3_daily_diff.csv",
+    value_fn=lambda: _fu3()["pooled"]["delta_net"],
+    expect=30338.14, tol=1.0,
+    blind_spot="NQ-only, one 16.5-month era — exactly the n=1 shape FU-13 punished; the "
+               "ramp shape is inherited (not searched); event days ≈13% of the span's "
+               "days; qty-linear post-book scaling (no market impact modeled).",
+    checks=[Check("V1", "per-TF deltas fully re-derive from FU-9 + FU-1 committed files", _fu3_v1),
+            Check("V2", "positive on all 6 frames; evidence active on the true book span", _fu3_v2),
+            Check("V3", "perm control passes yet the verdict stays NULL by the CI rule", _fu3_v3)]))

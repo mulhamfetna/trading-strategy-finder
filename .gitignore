@@ -265,3 +265,6 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 # FU-2 (#154): veto-replay evidence the ledger reads
 !subprojects/Parametric-Indicators/optimize/fundamentals/fu2_result.json
 !subprojects/Parametric-Indicators/optimize/fundamentals/fu2_daily_diff.csv
+# FU-3 (#155): power-sizing evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu3_result.json
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu3_daily_diff.csv
