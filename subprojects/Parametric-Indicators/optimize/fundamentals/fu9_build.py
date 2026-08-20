@@ -34,7 +34,7 @@ from indicators.base import IndicatorConfig       # noqa: E402
 from indicators import runner as ind_runner       # noqa: E402
 from src.deploy.release_executor import (COST_PER_LEG, PV, Leg, load_1s_windows,  # noqa: E402
                                          run_bracket, LEAD_S, EXIT_S)
-from src.deploy.schedule import load_schedule, DEFAULT_SCHEDULE  # noqa: E402
+from src.deploy.schedule import load as load_schedule, DEFAULT_SCHEDULE  # noqa: E402
 
 WINDOW_BARS = 2000        # 1m context per event (max default warmup = 255)
 STANCE_LAG_S = 360        # stance bar = last 1m bar with Date <= rel - 360s (closed at entry)
@@ -71,7 +71,7 @@ def power_context(inst: str, ev: pd.DataFrame, df1: pd.DataFrame) -> pd.DataFram
                     on=["et", "title"], how="left")
 
 
-def stance_rows(inst: str, ev: pd.DataFrame, df1: pd.DataFrame,
+def stance_rows(ev: pd.DataFrame, df1: pd.DataFrame,
                 inds: dict) -> tuple[pd.DataFrame, dict, list]:
     """The 165-indicator state vector per event, plus per-indicator timing and the raw
     (window, stance_index) handles needed by the C2 falsifier."""
@@ -205,7 +205,7 @@ def main() -> int:
     ev = power_context(inst, ev, df1)
 
     inds = {k: build(k, IndicatorConfig(enabled=True)) for k in sorted(REGISTRY)}
-    states, timing, handles = stance_rows(inst, ev, df1, inds)
+    states, timing, handles = stance_rows(ev, df1, inds)
     top = sorted(timing.items(), key=lambda kv: -kv[1])[:10]
     print("[FU-9] top-10 indicator cost: " +
           ", ".join(f"{k} {v:.1f}s" for k, v in top), flush=True)
