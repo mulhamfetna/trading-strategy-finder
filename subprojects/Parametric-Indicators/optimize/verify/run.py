@@ -19,6 +19,7 @@ import claims_news3  # noqa: F401,E402  — WS-NEWS3 (#124): P1 ride-through cla
 import claims_news4  # noqa: F401,E402  — WS-NEWS4 (#136): wide-series premium scan claims
 import claims_escpi  # noqa: F401,E402  — WS-ESCPI (#139): the ES CPI-alone study claims
 import claims_fusion  # noqa: F401,E402  — WS-FUSION (#152): fusion workstream claims
+import claims_earn2  # noqa: F401,E402  — WS-EARN return (#169): earnings power-model claims
 from harness import run_all, registry  # noqa: E402
 
 

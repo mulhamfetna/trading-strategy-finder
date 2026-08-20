@@ -283,3 +283,7 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !subprojects/Parametric-Indicators/optimize/fundamentals/fu8_result.json
 # WS-FUSION closing report
 !docs/WS-FUSION-CLOSING-REPORT-BILINGUAL.html
+# E-P1 (#169): earnings power-model evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/earnings/data/ep1_result.json
+!subprojects/Parametric-Indicators/optimize/earnings/data/ep1_events_NQ.csv
+!subprojects/Parametric-Indicators/optimize/earnings/data/ep1_events_ES.csv
