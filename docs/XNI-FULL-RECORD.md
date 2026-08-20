@@ -96,3 +96,28 @@ parameter default OFF — without them the module IS the old module. Definition 
 Runbook note (not code): the LIVE monitor's context source is the nightly two-calendar
 artifact; the frozen research files serve the historical mode. Ledger:
 `X5B-MONITOR-CONTEXT-SHIPPED`, **63/63 both machines**.
+
+## X-4 · Blindness-hours observability: SHIPPED-ON-BRANCH ✅ (2026-08-20)
+
+**The dashboard's `/api/backtest` trades now carry `event_window` (macro = FU-1's frozen
+[rel−5,+15] Tier-1 window · earnings = ±15m of a committed acceptance stamp) with meta
+counts and the authority string "observability only — never gates".**
+
+- **P — books untouched, proven**: the post-change response is JSON-EQUAL to a reference
+  captured BEFORE the code moved (the 65-trade WS-G champion run), stripping only the new
+  fields. Since the reference ran the production code, the branch's numbers equal
+  production's transitively.
+- **C — tag correctness**: positive controls fire on real event minutes ('macro' at rel and
+  rel+10m; 'earnings' at a stamp), the clean minute stays clean, and all 65 reference
+  trades re-derive with 0 mismatches. The 4h book's all-blank tags are CORRECT — 4h entry
+  stamps never fall inside 20-minute windows; finer TFs are where the field lights up.
+- **V — the visual gate, THE HOUSE WAY (owner-corrected mid-study)**: SSH tunnel +
+  Playwright — both dashboards clicked Run; the branch's visible dollar figures EQUAL
+  production's ($166,554 P/L · $13,963 DD · …); the branch screenshot is committed
+  evidence (`x4_dashboard_8250.png`).
+
+**Incidents kept (all recovered, all now in memory)**: the restart used the wrong
+interpreter (no-numpy system python) then missed the data-root env — the stale-server and
+sync-roots traps, live; and the visual gate was first attempted with Claude-in-Chrome —
+**owner correction of record: NEVER — the standard is ssh-tunnel + Playwright** (saved to
+the feedback memory). Ledger: `X4-BLINDNESS-OBSERVABILITY-SHIPPED`, **64/64 both machines**.

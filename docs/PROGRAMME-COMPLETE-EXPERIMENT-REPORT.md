@@ -5,7 +5,7 @@ single experiment and its results and outcomes and insights"). This is the NARRA
 companion to the master index (`NEWS-MASTER-EXPERIMENT-RECORD.md`): where the index gives one
 row per experiment, this report tells each experiment's story in plain language — what we
 did, what happened in dollars, what went well, what went wrong, and what we learned. Every
-number here already lives in a committed evidence file or the claims ledger (63/63 on both
+number here already lives in a committed evidence file or the claims ledger (64/64 on both
 machines); nothing is from memory.**
 
 ```mermaid
@@ -869,6 +869,24 @@ decimal places. **Insight:** the discipline's quietest skill — delivering a re
 consequence at exactly its registered size. The monitor's operator now sees the power
 regime beside the health number; the brake itself never learned anything new.
 
+
+### 11.5 · X-4 — blindness-hours observability (shipped, with a process correction)
+**What we did:** the dashboard's backtest payload now tags every trade with the event
+window it entered in — macro (FU-1's frozen twenty-minute window) or earnings (±15m of an
+acceptance stamp) — plus meta counts carrying their own authority string, "observability
+only — never gates." **What happened:** all three registered lines green. The books are
+untouched, proven the strongest way available: the post-change response is JSON-equal to a
+reference captured BEFORE the code moved, so the branch's numbers equal production's
+transitively. The tagger was proven by positive controls (it fires on real event minutes,
+stays silent on clean ones) and a 65-for-65 re-derivation — including the honest reading
+that the 4h book's all-blank tags are CORRECT, since 4h entry stamps never land inside
+20-minute windows. And the visual gate ran the house way after an owner correction
+mid-study: NEVER Claude-in-Chrome — the standard is an SSH tunnel plus Playwright, scripted
+and reproducible; both dashboards were driven, the visible figures matched to the dollar,
+and the branch screenshot is committed evidence. **Insight:** three recovered incidents in
+one study (wrong interpreter, missing data roots, wrong browser mechanism) and every one is
+now a memory entry — the process learns at the same rate the system does.
+
 ---
 
 ## Where the programme stands (2026-08-20)
@@ -883,5 +901,5 @@ two-calendar forecast layer — the gate's nightly blindness schedule; routing, 
 fitting). Deliberate holds: FU-4 gated-off, FU-15 parked, FU-11 consumers ①④
 low-priority. **Phase 3 — earnings × news × indicators — is initiating** with its own
 brainstorm and numbered ledger.
-**The ledger**: 63/63 claims green on both machines; every number in this report is bound
+**The ledger**: 64/64 claims green on both machines; every number in this report is bound
 to it or to a committed evidence file.
