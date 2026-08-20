@@ -276,3 +276,6 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !subprojects/Parametric-Indicators/optimize/fundamentals/fu5_features.csv
 # FU-6 (#158): outcome-model evidence the ledger reads
 !subprojects/Parametric-Indicators/optimize/fundamentals/fu6_result.json
+# FU-3 Phase 2 (#155): cross-instrument sizing evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu3p2_result.json
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu3p2_daily_diff.csv

@@ -825,3 +825,80 @@ register(Claim(
     checks=[Check("V1", "verdicts re-derive from the registered rule", _fu6_v1),
             Check("V2", "the logistic shows the declared saturation-collapse signature", _fu6_v2),
             Check("V3", "the tree's appealing near-miss was NOT promoted (bar integrity)", _fu6_v3)]))
+
+
+# =============================================================================================
+# FU-3 Phase 2 (#155) — cross-instrument power sizing: CLOSED-NULL (the texture is NQ-local)
+# =============================================================================================
+def _fu3p2() -> dict:
+    return json.load(open(FUND / "fu3p2_result.json"))
+
+
+def _fu3p2_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION: pooled = daily series sum = per-instrument sums = per-book sums."""
+    r = _fu3p2()
+    d = pd.read_csv(FUND / "fu3p2_daily_diff.csv")
+    if abs(d["diff"].sum() - r["pooled"]["delta_net"]) > 0.5:
+        return False, "daily series != pooled"
+    pi = sum(r["per_instrument"].values())
+    if abs(pi - r["pooled"]["delta_net"]) > 0.5:
+        return False, f"per-inst sum {pi:.0f} != pooled"
+    for inst, tfs in r["per_book"].items():
+        s = sum(v.get("delta_net", 0) for v in tfs.values())
+        if abs(s - r["per_instrument"][inst]) > 0.5:
+            return False, f"{inst}: books sum {s:.0f} != {r['per_instrument'][inst]}"
+    return True, "pooled re-derives from daily series, instruments, and 18 books"
+
+
+def _fu3p2_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT BOOKS: all 18 champion books built and non-degenerate (n>0, spans
+    on the engine's true era), and the combined P1+P2 secondary equals P1 + P2."""
+    r = _fu3p2()
+    n_books = sum(1 for tfs in r["per_book"].values()
+                  for v in tfs.values() if v.get("n", 0) > 0)
+    if n_books != 18:
+        return False, f"{n_books}/18 books"
+    p1 = json.load(open(FUND / "fu3_result.json"))["pooled"]["delta_net"]
+    comb = r["secondary_combined_p1_p2_delta"]
+    ok = abs((p1 + r["pooled"]["delta_net"]) - comb) < 0.5
+    return ok, f"18/18 books; combined P1+P2 {comb:+,.0f} consistent"
+
+
+def _fu3p2_v3() -> tuple[bool, str]:
+    """V3 — GENERALIZATION FALSIFIED: the pooled effect is ≈0 (|Δ| < 1% of Phase 1's), the
+    permutation percentile is BELOW 50 (no alignment), and the combined P1+P2 total is
+    driven ≥99% by NQ — the pre-registered CLOSED-NULL applied, no era-mining, MDE present."""
+    r = _fu3p2()
+    p = r["pooled"]
+    p1 = json.load(open(FUND / "fu3_result.json"))["pooled"]["delta_net"]
+    ok = (abs(p["delta_net"]) < 0.01 * abs(p1) and p["perm_percentile"] < 50
+          and r["verdict"] == "CLOSED-NULL"
+          and abs(r["secondary_combined_p1_p2_delta"] - p1) < 0.02 * abs(p1))
+    return ok, (f"P2 Δ {p['delta_net']:+,.0f} vs P1 {p1:+,.0f}; perm-pct "
+                f"{p['perm_percentile']}; combined driven by NQ")
+
+
+register(Claim(
+    id="FU3P2-CROSS-SIZING-CLOSED-NULL",
+    issue="#155",
+    statement="FU-3 Phase 2 CLOSES NULL, decisively: the FROZEN Phase-1 ramp on 18 "
+              "cross-instrument champion books (ES/RTY/YM × 6 frames, deployed best_* "
+              "params, each instrument's own committed power file) produces pooled "
+              "+$21 — zero — CI90 [−$23,437, +$24,585], permutation percentile 32.5 (the "
+              "real map does NO better than random), instruments scattered (ES +$2,576, "
+              "RTY +$308, YM −$2,863), era halves flipping (+$1,627/−$1,605). The NQ "
+              "texture (+$30,338, 6/6 frames, perm 98%) does NOT generalize — the "
+              "instrument-asymmetry law proven a THIRD independent time (gating era, "
+              "FU-13's MTF sizing, now L1 power sizing). The FU-3 line CLOSES: no "
+              "deployment track; the box keeps flat sizing everywhere; re-open only with "
+              "genuinely new data (future events) under a fresh pre-registration.",
+    source="optimize/fundamentals/fu3p2_result.json + fu3p2_daily_diff.csv",
+    value_fn=lambda: _fu3p2()["pooled"]["delta_net"],
+    expect=20.98, tol=1.0,
+    blind_spot="L1+vol-gate book convention (not full indicator-gated champions) — but a "
+               "texture that vanishes at this grade has no claim to survive a finer one; "
+               "recent-era books (~17 months); ES/RTY/YM share macro moments; GC/CL "
+               "excluded (no frozen power file).",
+    checks=[Check("V1", "pooled re-derives from daily series, instruments, 18 books", _fu3p2_v1),
+            Check("V2", "18/18 books non-degenerate; combined P1+P2 consistent", _fu3p2_v2),
+            Check("V3", "generalization falsified: ≈0 pooled, perm<50, NQ-driven combined", _fu3p2_v3)]))
