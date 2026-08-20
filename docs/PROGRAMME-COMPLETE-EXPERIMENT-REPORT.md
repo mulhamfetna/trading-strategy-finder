@@ -5,7 +5,7 @@ single experiment and its results and outcomes and insights"). This is the NARRA
 companion to the master index (`NEWS-MASTER-EXPERIMENT-RECORD.md`): where the index gives one
 row per experiment, this report tells each experiment's story in plain language — what we
 did, what happened in dollars, what went well, what went wrong, and what we learned. Every
-number here already lives in a committed evidence file or the claims ledger (61/61 on both
+number here already lives in a committed evidence file or the claims ledger (62/62 on both
 machines); nothing is from memory.**
 
 ```mermaid
@@ -836,6 +836,25 @@ and it will — within the hour, before anything shipped wrong. The artifact now
 operator not just which hours the gate is blind to, but which sessions carry BOTH
 calendars' violence at once, additively priced.
 
+
+### 11.3 · X-5 — monitor × compound power (a strong correlation, honestly cut down to size)
+**What we did:** the protective analysis — does the news layer's safety brake (the rolling
+24-CPI health that stands the layer down) co-move with the compound-power regime the system
+can now forecast? Registered as an EXISTENCE test (either sign could be mechanistic), with
+a within-year shuffle as the noise bar and the standing rule that no verdict changes the
+trigger. **What happened:** the headline number is enormous — Spearman +0.906 with a tight
+CI — and the design immediately cut it down to its honest size: the within-year shuffle bar
+itself reaches 0.879, meaning the ANNUAL REGIME carries almost all of it. What X-5 really
+re-measured is era 2's oldest law from a new vantage: the ride pays when CPI power is high,
+and the monitor's health simply tracks that same slow regime. The genuinely event-level
+increment is the 0.027 margin above the shuffle bar — real by the registered rule,
+marginal in size, and the claim's V3 check makes stating that decomposition mandatory
+forever. **Verdict: INFORMATIVE, with the modest registered consequence and no more** —
+a compound-power context field may be added to the monitor's REPORT output under its own
+small parity gate (armed as X-5b); the trigger never changes. **Insight:** the phase's
+second law in miniature — a 0.9 correlation is not information until its regime component
+is priced out; the shuffle design did in one run what enthusiasm never would.
+
 ---
 
 ## Where the programme stands (2026-08-20)
@@ -850,5 +869,5 @@ two-calendar forecast layer — the gate's nightly blindness schedule; routing, 
 fitting). Deliberate holds: FU-4 gated-off, FU-15 parked, FU-11 consumers ①④
 low-priority. **Phase 3 — earnings × news × indicators — is initiating** with its own
 brainstorm and numbered ledger.
-**The ledger**: 61/61 claims green on both machines; every number in this report is bound
+**The ledger**: 62/62 claims green on both machines; every number in this report is bound
 to it or to a committed evidence file.

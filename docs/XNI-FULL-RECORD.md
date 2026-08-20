@@ -59,3 +59,23 @@ working exactly as designed.
 
 Bundle re-zips at the next release (noted). Ledger: `X3-COMPOUND-ARTIFACT-SHIPPED`,
 **61/61 both machines**.
+
+## X-5 · Monitor × compound power: INFORMATIVE — regime-dominant, honestly decomposed ✅ (2026-08-20)
+
+**The protective analysis (order rationale recorded: before X-4, on committed data only; no
+trigger changes regardless of verdict — the D2 monitor is a deployed protection layer).**
+
+**Result**: the monitor's rolling-24 CPI health co-moves with the compound-power series at
+Spearman **+0.9057** (CI [0.8625, 0.9317], n=93; era halves +0.54/+0.73) — INFORMATIVE by
+the registered rule. **The decomposition stated first**: the within-year shuffle bar itself
+reaches **0.879** — the ANNUAL REGIME carries the bulk of the correlation. This is the
+CPI-power-era law (the ride pays when CPI power is high — era 2's discovery) re-measured at
+the monitor level; the genuinely event-level increment is the **0.027 margin** above the
+shuffle bar. The claim's V3 verifies this decomposition is stated, permanently.
+
+**Consequence (as registered, no more)**: a compound-power CONTEXT FIELD may be added to
+the monitor's REPORT output — information only, its own small parity gate, the trigger
+never changes. **Armed as X-5b; not built until called.** Incident kept: a claims-path
+typo (xni/data parents depth), caught by the ledger's first run.
+
+Ledger: `X5-MONITOR-POWER-INFORMATIVE`, **62/62 both machines**.
