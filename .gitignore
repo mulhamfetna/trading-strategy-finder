@@ -298,3 +298,6 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !subprojects/Parametric-Indicators/optimize/earnings/data/ex2_result_ES.json
 # E-C1: state-vs-size evidence the ledger reads
 !subprojects/Parametric-Indicators/optimize/earnings/data/ec1_result.json
+# E-X2 v2: powered-tolerance evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/earnings/data/ex2v2_result_NQ.json
+!subprojects/Parametric-Indicators/optimize/earnings/data/ex2v2_result_ES.json

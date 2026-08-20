@@ -1,0 +1,66 @@
+{
+  "instrument": "ES",
+  "n_bars": {
+    "macro": 140,
+    "earn": 92,
+    "union": 232,
+    "test": 15361
+  },
+  "lines": {
+    "1_no_macro_degradation": true,
+    "2_no_earn_degradation": true,
+    "3_union_ci": true,
+    "4_no_rival_overall": true
+  },
+  "detail": {
+    "1_macro": {
+      "mean": 0.0,
+      "ci90": [
+        -0.0001,
+        0.0002
+      ],
+      "mde": 0.0001
+    },
+    "2_earn": {
+      "mean": 0.0006,
+      "ci90": [
+        0.0,
+        0.0013
+      ],
+      "mde": 0.0006
+    },
+    "3_union": {
+      "mean": 5.2855,
+      "ci90": [
+        3.7303,
+        7.0749
+      ],
+      "mde": 1.7041
+    },
+    "4_overall_vs_B": {
+      "mean": 0.0775,
+      "ci90": [
+        0.0525,
+        0.1064
+      ],
+      "mde": 0.0271
+    },
+    "4_overall_vs_Cm": {
+      "mean": 0.0011,
+      "ci90": [
+        0.0006,
+        0.0016
+      ],
+      "mde": 0.0005
+    },
+    "4_overall_vs_Ce": {
+      "mean": 0.0764,
+      "ci90": [
+        0.0509,
+        0.106
+      ],
+      "mde": 0.0271
+    }
+  },
+  "all_pass": true
+}

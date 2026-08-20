@@ -396,3 +396,79 @@ register(Claim(
     checks=[Check("V1", "the P_hist holdout baseline re-derives from the frozen E-S1 file", _ec1_v1),
             Check("V2", "verdicts follow the rule; degradation replicates on ES", _ec1_v2),
             Check("V3", "dof-noise attribution honest; contrarian left open by design", _ec1_v3)]))
+
+
+# =============================================================================================
+# E-X2 v2 — powered tolerances: the interference is REAL (v1 confirmed at proper power)
+# =============================================================================================
+def _ex2v2(inst: str) -> dict:
+    return json.load(open(EARN / f"ex2v2_result_{inst}.json"))
+
+
+def _ex2v2_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION: on both instruments each recorded line must re-derive from its
+    recorded CI under the registered forms (fail iff CI-hi<0 for lines 1/2/4; CI-lo>0 for 3)."""
+    for inst in ("NQ", "ES"):
+        r = _ex2v2(inst)
+        d = r["detail"]
+        want = {"1_no_macro_degradation": d["1_macro"]["ci90"][1] >= 0,
+                "2_no_earn_degradation": d["2_earn"]["ci90"][1] >= 0,
+                "3_union_ci": d["3_union"]["mean"] > 0 and d["3_union"]["ci90"][0] > 0,
+                "4_no_rival_overall": all(d[f"4_overall_vs_{x}"]["ci90"][1] >= 0
+                                          for x in ("B", "Cm", "Ce"))}
+        if {k: bool(v) for k, v in want.items()} != r["lines"]:
+            return False, f"{inst}: lines do not re-derive"
+    return True, "lines re-derive from CIs on both instruments"
+
+
+def _ex2v2_v2() -> tuple[bool, str]:
+    """V2 — THE CONFIRMATION STRUCTURE: NQ line 2 is CLEAR-negative (the degradation is
+    significant, not noise — v1's fixed ratio was accidentally right) while ES passes all
+    four — the interference is NQ-local, replicating v1's geography exactly."""
+    nq = _ex2v2("NQ")
+    es = _ex2v2("ES")
+    ok = (nq["detail"]["2_earn"]["ci90"][1] < 0 and not nq["all_pass"]
+          and es["all_pass"])
+    return ok, (f"NQ L2 CI {nq['detail']['2_earn']['ci90']} clear-negative; ES all-pass "
+                f"{es['all_pass']}")
+
+
+def _ex2v2_v3() -> tuple[bool, str]:
+    """V3 — POWER HONESTY: the powered line did its job in BOTH directions — it localizes
+    the real effect (NQ L2 mean −0.0013 vs its MDE 0.0011: just detectable) and it passes
+    the noise-level differences it should pass (NQ L1 mean −0.0002 with CI touching 0)."""
+    nq = _ex2v2("NQ")
+    L1, L2 = nq["detail"]["1_macro"], nq["detail"]["2_earn"]
+    ok = (abs(L2["mean"]) > L2["mde"] and L1["ci90"][1] >= 0
+          and abs(L1["mean"]) <= 2 * L1["mde"])
+    return ok, (f"L2 |mean| {abs(L2['mean'])} > MDE {L2['mde']} (detected); "
+                f"L1 mean {L1['mean']} within noise (passed)")
+
+
+register(Claim(
+    id="EX2V2-INTERFERENCE-CONFIRMED",
+    issue="#169",
+    statement="E-X2 v2 (powered CI-form tolerances, BOTH instruments required) FAILS — and "
+              "thereby CONFIRMS v1 at proper power: the joint model's NQ earnings-bar "
+              "degradation is STATISTICALLY REAL (paired C_e − C_j = −0.0013, CI90 "
+              "[−0.0024, −0.0003], just above its own MDE 0.0011), not noise — v1's "
+              "fixed-ratio near-miss was a true detection. ES passes all four lines "
+              "(composition clean there); the interference is NQ-local, matching v1's "
+              "geography. VERDICT: the single-calendar models (FU-11 macro, E-X1 earnings) "
+              "stand PERMANENTLY as the reference repairs; a fitted joint model is dead on "
+              "NQ. The engineering insight recorded: composition at the MODEL level "
+              "interferes; composition at the ROUTING level (each certified model applied "
+              "to its own calendar's bars) is interference-free BY CONSTRUCTION and "
+              "inherits each model's certification — the natural E-D1 design, awaiting the "
+              "owner's word, never smuggled.",
+    source="optimize/earnings/data/ex2v2_result_{NQ,ES}.json",
+    value_fn=lambda: _ex2v2("NQ")["detail"]["2_earn"]["mean"],
+    expect=-0.0013, tol=0.0001,
+    blind_spot="v2 was registered after v1's numbers were known (declared in the pre-reg; "
+               "legitimacy = house-standard CI form + added strictness + v1 standing); "
+               "the detected degradation is tiny in absolute terms (−0.0013 QLIKE) — real "
+               "and irrelevant to any consumer except a fitted joint model; n≈92 earnings "
+               "bars bounds what the powered line can see (MDEs reported).",
+    checks=[Check("V1", "lines re-derive from CIs under the registered forms", _ex2v2_v1),
+            Check("V2", "NQ clear-negative + ES all-pass: v1's geography confirmed", _ex2v2_v2),
+            Check("V3", "the powered line detects the real effect AND passes noise", _ex2v2_v3)]))
