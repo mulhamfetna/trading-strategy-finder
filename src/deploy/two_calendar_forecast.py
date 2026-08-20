@@ -172,7 +172,8 @@ def forecast(inst: str, now: pd.Timestamp, horizon: int, earn_file: str | None,
             if abs(dh) <= 24.0:
                 flag = "T1" if (0.0 < dh <= 18.0 and flag != "T1") else (flag or "T2")
                 if o.get("bar_lift_rv_pts") is not None:
-                    best = max(best or 0.0, o["bar_lift_rv_pts"])
+                    lift_o = o["bar_lift_rv_pts"]
+                    best = lift_o if best is None else max(best, lift_o)
         r["collision"] = flag
         if flag is not None and best is not None and r.get("bar_lift_rv_pts") is not None:
             r["compound_lift_rv_pts"] = round(r["bar_lift_rv_pts"] + best, 2)
