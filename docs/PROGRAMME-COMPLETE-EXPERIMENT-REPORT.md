@@ -5,7 +5,7 @@ single experiment and its results and outcomes and insights"). This is the NARRA
 companion to the master index (`NEWS-MASTER-EXPERIMENT-RECORD.md`): where the index gives one
 row per experiment, this report tells each experiment's story in plain language — what we
 did, what happened in dollars, what went well, what went wrong, and what we learned. Every
-number here already lives in a committed evidence file or the claims ledger (54/54 on both
+number here already lives in a committed evidence file or the claims ledger (55/55 on both
 machines); nothing is from memory.**
 
 ```mermaid
@@ -701,6 +701,22 @@ is the load-bearing information. **Insight:** the blindness-and-repair law now c
 calendars, macro and earnings — the joint two-calendar forecast is the declared follow-up,
 and every consumer stays behind the fusion era's consumer laws.
 
+
+### 10.3 · E-S1 — the earnings event-state dataset (the substrate, again)
+**What we did:** rebuilt FU-9's frozen table for the earnings calendar — every earnings
+event with a bar (462 per leg, NQ and ES), each carrying the claim-bound power context
+(anchored exactly to E-P1's committed evidence — gate C1), the frozen macro bracket run as
+a REFERENCE outcome (what the deployed geometry WOULD have done — H1's rejection stands;
+the dataset records, it does not endorse), and the full 165-indicator stance vector five
+minutes before the stamp. FU-9's machinery was imported, not re-implemented — including its
+repaint falsifier, which passed again: an extra hour of future bars changes no stance on
+the earnings frames either. **What happened:** 8/8 gates, both legs, ~90 seconds each;
+924 frozen rows committed. **Insight:** the return's ×indicators phase now has its
+substrate on day one — and inherits the fusion era's hardest-won prior with it: on the
+macro calendar, state-conditioning measured approximately zero everywhere it was tried.
+Any earnings conditioning study starts from that prior, with a mechanism, a locked holdout,
+and its own pre-registration — or it does not start.
+
 ---
 
 ## Where the programme stands (2026-08-20)
@@ -715,5 +731,5 @@ hand-off are shipped); deliberate holds only — FU-4 gated-off, FU-15 parked by
 FU-11 consumers ①④ low-priority armed. The next workstream, on the owner's word, is the
 WS-EARN return (earnings alone → ×indicators → ×news×indicators), starting from
 `WS-EARN-HANDOFF.md` with E-P1, the earnings power model.
-**The ledger**: 54/54 claims green on both machines; every number in this report is bound
+**The ledger**: 55/55 claims green on both machines; every number in this report is bound
 to it or to a committed evidence file.

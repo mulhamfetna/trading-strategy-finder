@@ -72,3 +72,20 @@ Also: the earnings dummy's beta is NEGATIVE with the power term strongly positiv
 (macro + earnings) forecast is the declared follow-up; all consumers stay behind the
 fusion-era consumer laws. Ledger: `EX1-EARNINGS-FUSED-FORECAST-PASS`, **54/54 both
 machines**. Next armed item: **E-S1** (the event-state dataset, FU-9 schema).
+
+## E-3 · E-S1 — the earnings event-state dataset v1: BUILT ✅ (2026-08-20)
+
+**The FU-9 schema over the earnings calendar (spec frozen pre-build). 462 rows × 341
+columns per leg (NQ, ES; 924 total): identity + the E-P1 power context — parity-anchored
+EXACTLY to the committed evidence on all 366 scored rows (gate C1) — + the frozen macro
+bracket as a REFERENCE outcome (432/462 with 1s coverage; H1 already rejected this ride —
+stored as what-it-would-do, the FU-9/Retail precedent) + the 165-stance vector at
+stamp−300s. The repaint falsifier passed again on the earnings frames (25×165 per leg,
++1h future appended, stances unchanged). Builder ~90s/leg, FU-9's machinery reused
+(`stance_rows`, `c2_causality`, `ride_outcomes` imported, not re-implemented).**
+
+**v1 FROZEN.** Ledger: `ES1-EVENT-STATE-DATASET` (V1 re-joins the power context locally;
+V2 the live-executor cost identity; V3 the 8 manifest gates + non-degeneracy). **55/55
+both machines.** The ×indicators phase now has its substrate — and stays bound to
+mechanism-first, locked-holdout pre-registrations (macro state-conditioning measured ≈zero
+in the fusion era; the earnings edition starts with that prior).
