@@ -5,6 +5,15 @@
 > (`src/deploy/power_forecast.py`, information-only), and **3.6 (the Exp2 sizing ramp) was
 > tested to destruction and NOT deployed** (the independent ES book reversed it). The tables
 > below carry the updated statuses; §4's study (FU-11) now has BOTH of its ingredients live.
+>
+> **Update 2026-08-20 (WS-FUSION CLOSED, ledger 52/52):** §4's study RAN and its Stage 1
+> **WON** (the fused forecast beats the live engine on all 6 runs, power-aware by placebo) —
+> and then every P&L consumer of it CLOSED null/negative (veto, sizing NQ-local, geometry
+> width-bias, state gates, classifier, Retail short). Consequence for this document: the
+> deployed structure below is now VALIDATED BY MEASUREMENT — state-blind entry, flat sizing
+> and frozen geometry are evidenced choices. §4 rewritten to the settled state; **§5 (NEW)
+> is the owner-ordered PROFIT ATTRIBUTION: what each deployed layer brings, in dollars,
+> with honesty grades.**
 
 **Owner instruction, verbatim intent: before any further fusion study, "full system analysis —
 layers breakdown — each layer of the system: job, income and outcome and responsibilities" —
@@ -44,7 +53,7 @@ flowchart TD
 | **MTF fusion** | fuse layers across timeframes (e.g. 1h+4h) | per-layer TF books | the fusion book (NQ $173,789 reference) | residual default byte-identical | LIVE |
 | **Execution engine** | fills, stops, caps, qty | signals+gates+1m stream | trades with GAP-01-honest fills; `exit_reason`; qty-linear P&L | engine.py ≡ fast_engine parity; golden gate 6/6 is its lock | LIVE |
 | **News layer** | the 4-leg CPI ride beside the box book | `release_schedule.csv` → executor (`--series` per leg) | replay evidence / paper intents; net-stressed feed | frozen spec; regime monitor sticky-halt; per-leg qty rules (NQ/RTY/ES ≤20 worked, YM ≤5) | LIVE v5.4.2, paper-only |
-| **Optimizer + verify** | find params; keep every number honest | search spaces, archives | champions; golden baselines; claims ledger (43/43) | cold-start default; fresh-seed replication; `expect` never adjusted | LIVE (research arm has its own open queue #81-#108) |
+| **Optimizer + verify** | find params; keep every number honest | search spaces, archives | champions; golden baselines; claims ledger (52/52) | cold-start default; fresh-seed replication; `expect` never adjusted | LIVE (research arm has its own open queue #81-#108) |
 | **Ops** | run & inspect | all of the above | dashboard :8200/:8250, control centre :8350, playbook bundles, releases | dashboard restart on backend change; UI-verification rule; LOCAL=truth | LIVE |
 
 ## 2 · Who earns what (the income map, 2024→2026 window, qty=1 units)
@@ -104,3 +113,46 @@ verdict sharpened the consumer list — the Exp2 ramp (consumer ②) is dead as-
 cross-instrument grounds, so a fused-forecast revival of it must treat instrument asymmetry
 as a first-class design axis (per-instrument ramps or NQ-only), not an afterthought. The
 design of record: `docs/FU11-FUSED-SIZE-DESIGN-DRAFT.md`.
+
+**THE SETTLED STATE (2026-08-20, WS-FUSION closed)**: Stage 1 ran and **PASSED 4/4** —
+on release bars the live gate's forecast error is ≈16× its everyday level (QLIKE ≈8 vs
+≈0.5) and the calendar terms repair most of it, power-aware by placebo, on all five
+instruments + NQ 4h (claim `FU11-STAGE1-FUSED-FORECAST-WINS`). Then the consumers ran,
+each under its own pre-registration, and ALL closed: ② sizing (NQ-local, +$21 pooled
+cross-instrument — the asymmetry law's 3rd proof), ③ geometry (the +$20.6k gain was
+bracket-WIDTH bias — the placebo kept 78%), plus the adjacent state studies (FU-5/6 null)
+and the veto (FU-2, seasonality). **The fusion therefore lives at the FORECAST layer and
+nowhere else** — a proven better forecast holding position until a consumer with a
+mechanism worth gating exists (consumers ① re-gate and ④ stops remain low-priority armed).
+The full story: `WS-FUSION-FULL-RECORD.md` F-0…F-14; the closing report:
+`WS-FUSION-CLOSING-REPORT-BILINGUAL.html`.
+
+## 5 · PROFIT ATTRIBUTION — what each deployed layer brings (owner-ordered, 2026-08-20)
+
+Attribution is graded honestly. **Grade A** = a measured with/without or standalone book.
+**Grade B** = embedded in a measured aggregate (no isolated re-derivation exists — saying
+so is the honesty). **Grade C** = deliberately $0 (information/protection by design).
+All dollars are the records' own (ledger-bound or committed evidence); windows named.
+
+| deployed layer | grade | what it brings | the number of record |
+|---|---|---|---|
+| **Box book** (L1 signals + champion params + indicator subsets + vol gate, 55 champions / 9 markets) | A | the system's primary income | **≈$840k/yr** 2026-OOS at deployed caps (the `best_*` set) |
+| **News layer** (4 legs, one CPI bet, v5.4.2) | A | the second, near-orthogonal income stream (daily corr to the box **+0.098**) | **$67,767 net** 2024→2026 at qty=1/leg (≈$26k/yr recent pace); **≈$1.167M/window model-grade** at max approved tiers (NQ/RTY/ES ≤20, YM ≤5, worked entry); measured overlay on the 1h slot: **+31.1% profit for +6.6% DD** |
+| **HAR-RV vol gate** (3.1, inside every champion) | B | entry selection — its dollars are inseparable from the champions it gates (params were optimized WITH it; no with/without book exists). FU-11 proved its forecast is repairable on event bars — a quality fact, not a P&L fact | embedded in the $840k/yr |
+| **Indicator layer** (165-registry, champion subsets) | B | per-bar confirm/veto — same embedding: champions were selected with their votes | embedded in the $840k/yr |
+| **L2 + MTF fusion** | B | the dropped-signal book + cross-TF fusion; the measured combined reference: the NQ 1h+4h combined book **$151,872** (2024→26, FU-13 R-stage, exact) — L1/L2/MTF are not separately re-derived here | inside the combined books |
+| **News regime monitor** (D2, sticky-halt) | C→A | protection: stands the news layer down when the rolling 24-CPI net turns negative; its value realizes only in a bad regime | $0 income by design; GO at build (+$1,231 rolling mean) |
+| **Power-forecast layer** (FU-14, v5.4.3) | C | night-before event-size information (ρ≈0.5–0.62); the record's own rule: **must never be described as income**. Its measured value so far is SCIENTIFIC: it powered FU-11's win and every consumer verdict | **$0 by design** |
+| **GAP-01 honest fills** | C | risk truth, not profit: P&L neutral, drawdown **+9.8%** more honest | $0 by design |
+| **Executor + schedule + playbook bundles** | C | delivery machinery (parity to the cent NQ 327/327 · RTY 238/238 · YM 116/116) | $0 by design |
+
+**The refusals column (what deployment discipline SAVED)**: the same era priced what was
+NOT deployed — the Exp2 ramp would have cost **−$18,632** on ES's book alone (FU-13); the
+un-scaled YM tier q10 breached participation and was refused; every fusion consumer that
+looked positive (FU-7's CI-positive +$20.6k) was refused on mechanism. A kill list with
+numbers is part of the profit record: money not lost is money.
+
+**Reading rule for this table**: grade-B rows must never be quoted as standalone dollar
+contributions — that is how a layer gets credited twice. The system's honest income
+statement is: **box ≈$840k/yr + news $67,767/window (scalable ≈$1.167M/window model-grade),
+near-orthogonal; everything else is selection, protection, information, or delivery.**
