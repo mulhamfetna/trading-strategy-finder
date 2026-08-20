@@ -902,3 +902,79 @@ register(Claim(
     checks=[Check("V1", "pooled re-derives from daily series, instruments, 18 books", _fu3p2_v1),
             Check("V2", "18/18 books non-degenerate; combined P1+P2 consistent", _fu3p2_v2),
             Check("V3", "generalization falsified: ≈0 pooled, perm<50, NQ-driven combined", _fu3p2_v3)]))
+
+
+# =============================================================================================
+# FU-8 (#160) — the Retail short: CLOSED (Retail loses BOTH WAYS; RQ-2 closes)
+# =============================================================================================
+def _fu8() -> dict:
+    return json.load(open(FUND / "fu8_result.json"))
+
+
+def _fu8_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION + PARITY RECORD: per-instrument net means must equal gross minus
+    the deployed stressed cost; the LONG parity anchor ran on every leg (proven generator)."""
+    import sys as _s
+    _s.path.insert(0, str(FUND.parents[3]))
+    from src.deploy.release_executor import COST_PER_LEG
+    r = _fu8()
+    for inst, v in r["per_instrument"].items():
+        if abs((v["short_gross_mean"] - COST_PER_LEG[inst]["stressed"])
+               - v["short_net_mean"]) > 0.01:
+            return False, f"{inst}: net != gross - stressed cost"
+        if v["parity_n"] <= 0 or v["parity_n"] != v["events"]:
+            return False, f"{inst}: parity anchor incomplete ({v['parity_n']}/{v['events']})"
+    return True, "net = gross − stressed on all 4 legs; LONG parity anchored on every event"
+
+
+def _fu8_v2() -> tuple[bool, str]:
+    """V2 — THE BOTH-WAYS FACT: on every leg the LONG grosses negative (the confirmed
+    anti-premium) AND the SHORT's gross is ≤ +$3/event — the mirror capture is absent on
+    all four semi-independent legs, not one."""
+    r = _fu8()
+    for inst, v in r["per_instrument"].items():
+        if not (v["long_gross_mean"] < 0 and v["short_gross_mean"] <= 3.0):
+            return False, f"{inst}: long {v['long_gross_mean']}, short {v['short_gross_mean']}"
+    return True, "long gross < 0 AND short gross ≈≤0 on all 4 legs — both directions lose"
+
+
+def _fu8_v3() -> tuple[bool, str]:
+    """V3 — RULE INTEGRITY + POWER: the primary CI is significantly NEGATIVE (not merely
+    null), the era halves DISAGREE (+$27 pre-2022, −$100 after — no stable residual), the
+    witnesses fail, and the verdict is CLOSED with the MDE present; the forward protocol is
+    recorded but NOT armed."""
+    r = _fu8()
+    p = r["primary_pool_nq_rty"]
+    ok = (p["boot90_ci"][1] < 0 and p["eras"]["h1"] > 0 > p["eras"]["h2"]
+          and not r["witnesses_es_ym_positive"] and r["verdict"] == "CLOSED"
+          and r["power"]["mde_mean"] > 0)
+    return ok, (f"CI {p['boot90_ci']} < 0; eras {p['eras']['h1']}/{p['eras']['h2']}; "
+                f"witnesses False; verdict {r['verdict']}")
+
+
+register(Claim(
+    id="FU8-RETAIL-SHORT-CLOSED",
+    issue="#160",
+    statement="The Retail short CLOSES (and RQ-2/#142 with it): the FROZEN geometry mirrored "
+              "SHORT on Retail Sales loses at stressed costs on every leg — NQ −$44.75/ev, "
+              "RTY −$26.89, ES −$49.98, YM −$29.29; pooled NQ+RTY −$37.15 with CI90 "
+              "[−$71.38, −$2.77] (significantly negative, n=209). ⭐ THE FINDING: Retail "
+              "loses BOTH WAYS — the long grosses −$78.41/ev (the confirmed anti-premium) "
+              "while the mirrored short grosses only −$22.25 (NQ; ≈0 on ES/RTY/YM): the "
+              "anti-premium is NOT a harvestable downward drift, it is a CHOP that stops "
+              "out BOTH bracket directions — the two-way-sweep killer measured with real "
+              "money, and M3's 18/18 losing short leg generalized to Retail. Era halves "
+              "disagree (+$27 pre-2022 / −$100 after): no stable residual. No forward arm; "
+              "state-blind, direction-blind, the calendar's one anti-premium is a fact to "
+              "AVOID, not to trade. Direct input to FU-15's parked design: this is what its "
+              "double-stop scenario costs on chop events.",
+    source="optimize/fundamentals/fu8_result.json",
+    value_fn=lambda: _fu8()["primary_pool_nq_rty"]["net_mean"],
+    expect=-37.15, tol=0.01,
+    blind_spot="Consumed-history descriptive grade (declared — but a significantly NEGATIVE "
+               "descriptive result needs no forward confirmation to close); the frozen "
+               "geometry only (a different bracket was not searched — by design); qty=1; "
+               "shared release minutes across legs.",
+    checks=[Check("V1", "net = gross − stressed cost; LONG parity anchored per leg", _fu8_v1),
+            Check("V2", "both directions lose gross on all 4 legs", _fu8_v2),
+            Check("V3", "CI significantly negative; eras disagree; CLOSED, not armed", _fu8_v3)]))
