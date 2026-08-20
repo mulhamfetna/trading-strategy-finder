@@ -3,13 +3,13 @@
 **Every experiment, its result and its finding, across the entire programme (2026-06 → 2026-08-20).
 Current through v5.4.3 + FU-11 Stage 1: all profitable news deployed and scaled, the premium
 grid literally closed, the fusion workstream executing (the fused size engine has WON its
-forecast-quality stage), ledger 44/44 on both machines.**
+forecast-quality stage), ledger 45/45 on both machines.**
 
 This is the master index. Each workstream's full detail lives in its own record —
 `NEWS-PROGRAMME-FULL-RECORD.md` (WS-NEWS2/3), `WS-NEWS4-FULL-RECORD.md`,
 `WS-ESCPI-FULL-RECORD.md` (+ 2 addenda), `WS-GRID-RESULTS.md`, `WS-FUSION-FULL-RECORD.md`
-(F-0…F-6) — and every number below is bound to the claims ledger
-(`optimize/verify/run.py`, 44/44) or a committed evidence file.
+(F-0…F-7) — and every number below is bound to the claims ledger
+(`optimize/verify/run.py`, 45/45) or a committed evidence file.
 
 ```mermaid
 flowchart TD
@@ -176,5 +176,5 @@ not · read gross beside net (cost drag masquerades as anti-premium) · traded-s
 blindness (the calendar) is now proven repairable, and the repair is power-aware. Armed and
 waiting, each behind its own pre-registration: the four fused-forecast consumers (re-gate ·
 sizing ramp · news geometry · box stops), FU-9's event-state dataset, FU-2's veto replay,
-and the parked FU-15 dual-sided bracket. Ledger **44/44 both machines**; every number above
+and the parked FU-15 dual-sided bracket. Ledger **45/45 both machines**; every number above
 is claim-bound.
