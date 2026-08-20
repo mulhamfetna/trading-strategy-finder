@@ -5,7 +5,7 @@ single experiment and its results and outcomes and insights"). This is the NARRA
 companion to the master index (`NEWS-MASTER-EXPERIMENT-RECORD.md`): where the index gives one
 row per experiment, this report tells each experiment's story in plain language — what we
 did, what happened in dollars, what went well, what went wrong, and what we learned. Every
-number here already lives in a committed evidence file or the claims ledger (45/45 on both
+number here already lives in a committed evidence file or the claims ledger (46/46 on both
 machines); nothing is from memory.**
 
 ```mermaid
@@ -523,6 +523,25 @@ carries its own warning — 330 state columns × ~130 CPI events is a p-hacking 
 the dataset's existence is NOT permission to scan it; FU-5/6/8 remain bound to
 mechanism-first pre-registrations.
 
+
+### 9.10 · FU-2 — the news-veto replay (the counterfactual, answered)
+**What we did:** the study FU-1 armed — replayed the NQ book on all six frames with new
+entries BLOCKED inside [rel−5m, rel+15m] of every Tier-1 minute, implemented through the
+engine's own entry gate so path dependence is real (a vetoed entry can change every later
+trade), with the baseline required to reproduce the committed FU-1 books to the cent (it
+did, 6/6), and a +3-day shifted-calendar control. **What happened: CLOSED-NULL by the
+pre-registered rule.** The pooled effect is +$17,221 with a 90% CI of [−$36,107, +$71,273] —
+the book's daily variance means anything under ≈$54k total is invisible. Drawdown barely
+moves (−$1,106 pooled). **And the mechanism died outright:** the shifted-calendar veto —
+avoiding the same CLOCK windows on days with no release — gains MORE (+$24,946) than the
+real veto; the release-specific component is zero-to-negative. On the 4h frame, where FU-1
+found the 8.4× entry concentration, the veto actually HURTS (−$3,159 with $10,430 MORE
+drawdown): those in-window entries pay. **What went wrong (kept honestly):** our recorded
+expectation that the drawdown improvement was the likelier win — wrong, ΔDD ≈ 0.
+**Insight:** the box book and the news layer coexist; the 8.4× concentration is the book
+EARNING at the events, not bleeding — no stand-aside overlay will be built, and the
+close-before-release parking-lot idea inherits a lowered prior.
+
 ---
 
 ## Where the programme stands (2026-08-20)
@@ -532,9 +551,8 @@ layer ($67,767 net 2024→26 at qty=1/leg; ≈$1.167M/window model-grade at appr
 near-orthogonal (daily correlation +0.098), both paper-only until a live gateway. **Two
 deployed forecast layers**: the HAR-RV gate (tape memory, inside every champion) and the
 power-forecast layer (calendar, information-only) — and FU-11 Stage 1 has now PROVEN their
-fusion beats either alone as a forecast. **The open queue**: FU-2 (does standing the box
-aside during releases pay?), then FU-3/FU-7 as the fused forecast's consumer studies, FU-5/6
+fusion beats either alone as a forecast. **The open queue**: FU-3/FU-7 as the fused forecast's consumer studies, FU-5/6
 on the frozen dataset, FU-8 (the Retail short), FU-15 (the dual-sided bracket, parked), and
 after WS-FUSION closes — the WS-EARN return, reusing FU-9's schema on earnings timestamps.
-**The ledger**: 45/45 claims green on both machines; every number in this report is bound
+**The ledger**: 46/46 claims green on both machines; every number in this report is bound
 to it or to a committed evidence file.
