@@ -259,3 +259,6 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !playbooks/power-forecast/*
 !playbooks/power-forecast-bundle-v1.0.0.zip
 !docs/power_forecast_NQ.jsonl
+# FU-9 (#161): the event-state dataset v1 + manifests the ledger reads
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu9_event_state_*.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu9_manifest_*.json

@@ -326,3 +326,106 @@ register(Claim(
     checks=[Check("V1", "decision fields re-derive from the score fields on all 6 runs", _fu11s1_v1),
             Check("V2", "CI-positive + era-stable on all 6 semi-independent runs", _fu11s1_v2),
             Check("V3", "shuffled-power placebo fails to recover C's gain over D", _fu11s1_v3)]))
+
+
+# =============================================================================================
+# FU-9 (#161) — the event-state dataset v1 (the B-family substrate)
+# =============================================================================================
+_FU9_LEGS = ("NQ", "ES", "RTY", "YM")
+
+
+def _fu9(inst: str) -> pd.DataFrame:
+    return pd.read_csv(FUND / f"fu9_event_state_{inst}.csv", parse_dates=["et"])
+
+
+def _fu9_man(inst: str) -> dict:
+    return json.load(open(FUND / f"fu9_manifest_{inst}.json"))
+
+
+def _fu9_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION from the CSVs themselves: net_stressed must equal pnl − the deployed
+    per-leg stressed cost (an identity against constants imported from the LIVE executor, not
+    from the build); stance columns must stay in the registry's {−1,0,+1,2} alphabet; box-state
+    columns exist exactly on NQ."""
+    import sys as _s
+    _s.path.insert(0, str(FUND.parents[3]))   # the repo root (src/ lives there)
+    from src.deploy.release_executor import COST_PER_LEG
+    tot = 0
+    for inst in _FU9_LEGS:
+        d = _fu9(inst)
+        tot += len(d)
+        m = d.ride_pnl_usd.notna()
+        if not np.allclose(d.loc[m, "ride_net_stressed_usd"],
+                           d.loc[m, "ride_pnl_usd"] - COST_PER_LEG[inst]["stressed"]):
+            return False, f"{inst}: net != pnl - stressed cost"
+        sc = [c for c in d.columns if c.startswith(("cdir_", "vdir_"))]
+        if len(sc) != 330:
+            return False, f"{inst}: {len(sc)} stance columns, expected 330"
+        vals = pd.unique(d[sc].fillna(0).to_numpy().ravel())
+        if not set(np.unique(vals)).issubset({-1.0, 0.0, 1.0, 2.0}):
+            return False, f"{inst}: stance alphabet violated: {sorted(set(vals))[:6]}"
+        has_box = any(c.startswith("box_") for c in d.columns)
+        if has_box != (inst == "NQ"):
+            return False, f"{inst}: box-state columns wrong (present={has_box})"
+    return True, f"{tot} rows across 4 legs; cost identity, alphabet, box scope all hold"
+
+
+def _fu9_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT RECORD: the ride outcomes re-joined LOCALLY against the committed
+    wsescpi replay evidence (a different generator run, committed months/days earlier) must
+    match to the cent on every overlapping event — not trusting the build's own C1 line."""
+    msgs = []
+    for inst in _FU9_LEGS:
+        ref = pd.read_csv(FUND / f"wsescpi_replay_{inst}.csv", parse_dates=["et"])
+        j = ref.merge(_fu9(inst)[["et", "title", "ride_pnl_usd"]],
+                      on=["et", "title"], how="inner")
+        if not len(j):
+            return False, f"{inst}: zero overlap with committed replay evidence"
+        mx = (j.pnl_usd - j.ride_pnl_usd).abs().max()
+        if mx > 0.01:
+            return False, f"{inst}: max |Δ| {mx:.4f}"
+        msgs.append(f"{inst} {len(j)}ev Δ{mx:.2f}")
+    return True, "cent-exact vs committed evidence: " + ", ".join(msgs)
+
+
+def _fu9_v3() -> tuple[bool, str]:
+    """V3 — FALSIFIER + NON-DEGENERACY: every manifest must record the C2 repaint falsifier
+    PASS (stances unchanged when +1h of future bars is appended — 25 events × 165 indicators
+    per leg, server-run), and the state vector must actually VARY (≥60% of cdir columns take
+    ≥2 values) — a constant table would pass V1/V2 and be useless."""
+    for inst in _FU9_LEGS:
+        g = _fu9_man(inst)["gates"]
+        if not all(g[k]["pass"] for k in g):
+            return False, f"{inst}: manifest gate failed: " + \
+                str({k: v["pass"] for k, v in g.items()})
+        d = _fu9(inst)
+        cd = [c for c in d.columns if c.startswith("cdir_")]
+        frac = np.mean([d[c].nunique() > 1 for c in cd])
+        if frac < 0.60:
+            return False, f"{inst}: only {frac:.0%} of cdir columns vary"
+    return True, "all 16 manifest gates PASS incl. the repaint falsifier; state vector varies"
+
+
+register(Claim(
+    id="FU9-EVENT-STATE-DATASET",
+    issue="#161",
+    statement="The event-state dataset v1 is BUILT and gate-clean: 1,765 rows across the four "
+              "deployed legs (NQ 449, ES 449, RTY 418, YM 449) × {CPI, NFP, FOMC, Retail} "
+              "≥2016 — per row: M2 power context (pred_exp/pred_t24/n_priors/jump), the frozen "
+              "ride outcome from the DEPLOYED executor primitive (replay parity to the cent on "
+              "all 307 events overlapping the committed evidence), the 165-registry stance "
+              "vector at the last closed 1m bar before the rel−300s entry (2,000-bar context, "
+              "--ind-1min convention), and NQ box-book state from the FU-1 audits. The C2 "
+              "falsifier proves NO indicator repaints (+1h future bars appended, stances "
+              "unchanged, 25×165 per leg). v1 FROZEN — consumers cite the version; the table "
+              "existing is not permission to scan it (FU-5/6/8 keep their own pre-regs).",
+    source="optimize/fundamentals/fu9_event_state_{INST}.csv + fu9_manifest_{INST}.json",
+    value_fn=lambda: sum(len(_fu9(i)) for i in _FU9_LEGS),
+    expect=1765, tol=0,
+    blind_spot="Default indicator params (the LIBRARY's information, not any champion's); "
+               "cross-series indicator columns structurally neutral in v1 (no ref wired); box "
+               "state NQ-only (FU-1 Phase 1 scope); research 1m frames, not the engine loader; "
+               "2 CPI events lack 1s ride coverage (itemized in C4, kept as state-only rows).",
+    checks=[Check("V1", "cost identity + stance alphabet + box scope re-derive from the CSVs", _fu9_v1),
+            Check("V2", "ride outcomes cent-exact vs the independent committed evidence", _fu9_v2),
+            Check("V3", "repaint falsifier recorded PASS everywhere + non-degeneracy", _fu9_v3)]))
