@@ -237,3 +237,47 @@ window size.
 LOCAL cent-exact re-join vs the independent committed evidence, V3 manifest falsifier +
 non-degeneracy. **45/45 both machines.** v1 FROZEN; the spec's discipline reminder stands:
 the table existing is not permission to scan it.
+
+## F-8 · FU-2 (#154) — the news-veto replay: CLOSED-NULL ✅ (2026-08-20)
+
+**The counterfactual FU-1 armed: does BLOCKING new box entries inside [rel−5m,+15m] Tier-1
+windows pay? Pre-registration (`docs/FU2-PREREGISTRATION.md`) fixed the verdict rule before
+the run; the verdict is the rule's, not ours.**
+
+**Method**: the engine's own entry gate masked on in-window decision bars, through the
+identical `fast_backtest` call FU-1 used — full path dependence (a vetoed entry can change
+every later trade), never log filtering. Built-in parity gate: **all six baselines reproduce
+the committed FU-1 books exactly** (trade counts and totals to the cent). Control: the
++3-day shifted calendar (clock times kept — the seasonality-only veto).
+
+**Results (2016→, engine $, per frame)**:
+
+| tf | base trades / net / maxDD | veto Δnet | veto ΔmaxDD | shifted Δnet |
+|---|---|---|---|---|
+| 4h | 445 / $73,209 / $37,609 | **−$3,159** | **+$10,430 (worse)** | +$15,859 |
+| 2h | 507 / $59,401 / $33,014 | +$6,447 | +$748 | +$5,847 |
+| 1h | 913 / $19,650 / $83,340 | +$10,768 | −$6,202 | +$10,625 |
+| 15m | 1,993 / $25,242 / $37,343 | +$1,705 | −$1,837 | −$2,391 |
+| 5m | 1,416 / −$11,759 / $27,761 | +$583 | −$801 | −$327 |
+| 2m | 4,187 / −$1,551 / $27,961 | +$877 | −$3,444 | −$4,667 |
+
+**Pooled**: Δnet **+$17,221**, day-bootstrap 90% CI **[−$36,107, +$71,273]** (MDE $53,960 —
+the book's daily variance hides anything smaller); ΣΔmaxDD −$1,106 (≈nothing). **Verdict by
+the pre-registered rule: CLOSED-NULL.**
+
+**The mechanism is dead beyond the power question**: the SHIFTED-calendar veto gains MORE
+(+$24,946) than the real one (+$17,221) — the release-specific component is **−$7,725**,
+i.e. zero-to-negative. Whatever drift the veto captures is time-of-day seasonality
+(avoidable on ANY day at those clock times), not the releases. And on the 4h frame — the
+8.4× concentration FU-1 found — the veto HURTS (−$3,159 with DD $10,430 WORSE): those
+in-window entries pay.
+
+**Honesty anchors settled**: the recorded expectation ("the DD improvement is the likelier
+win") was WRONG — ΔDD ≈ 0. FU-1's every-CI-includes-zero was the true answer all along: the
+box book and the news layer coexist; **no stand-aside overlay will be built**.
+Close-before-release (an EXIT-side idea) was not tested and stays in the parking lot,
+now with a lowered prior.
+
+**Ledger**: `FU2-NEWS-VETO-CLOSED-NULL` — V1 pooled-from-daily re-derivation, V2 the 6/6
+FU-1 parity anchors, V3 the shifted-control mechanism kill + mandatory MDE. **46/46 both
+machines.**
