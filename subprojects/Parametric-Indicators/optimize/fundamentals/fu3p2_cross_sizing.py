@@ -24,7 +24,7 @@ from optimize.fast_engine import fast_backtest, signals_to_int     # noqa: E402
 from optimize.fundamentals.champion_params import champion_stops   # noqa: E402
 
 HERE = Path(__file__).resolve().parent
-RESULTS = HERE.parents[1] / "results"
+RESULTS = HERE.parents[0] / "results"
 INSTS = ["ES", "RTY", "YM"]
 TFS = ["4h", "2h", "1h", "15m", "5m", "2m"]
 N_BOOT, N_PERM, SEED, WARMUP = 10000, 1000, 20260820, 20
