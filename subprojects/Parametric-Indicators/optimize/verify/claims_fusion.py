@@ -429,3 +429,80 @@ register(Claim(
     checks=[Check("V1", "cost identity + stance alphabet + box scope re-derive from the CSVs", _fu9_v1),
             Check("V2", "ride outcomes cent-exact vs the independent committed evidence", _fu9_v2),
             Check("V3", "repaint falsifier recorded PASS everywhere + non-degeneracy", _fu9_v3)]))
+
+
+# =============================================================================================
+# FU-2 (#154) — the news-veto replay: CLOSED-NULL
+# =============================================================================================
+def _fu2() -> dict:
+    return json.load(open(FUND / "fu2_result.json"))
+
+
+def _fu2_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION: the pooled Δnet must equal the sum of the committed daily-diff
+    series AND the sum of the per-TF deltas; the per-TF deltas must equal veto.net − base.net."""
+    r = _fu2()
+    d = pd.read_csv(FUND / "fu2_daily_diff.csv")
+    pooled = r["pooled"]["delta_net"]
+    if abs(d.diff_real.sum() - pooled) > 0.5:
+        return False, f"daily series sums {d.diff_real.sum():.0f} vs pooled {pooled}"
+    tf_sum = sum(v["delta_net"] for v in r["per_tf"].values())
+    if abs(tf_sum - pooled) > 0.5:
+        return False, f"per-TF deltas sum {tf_sum:.0f} vs pooled {pooled}"
+    for tf, v in r["per_tf"].items():
+        if abs((v["veto"]["net"] - v["base"]["net"]) - v["delta_net"]) > 0.01:
+            return False, f"{tf}: delta_net != veto − base"
+    return True, f"pooled {pooled:+,.0f} re-derives from daily series and per-TF books"
+
+
+def _fu2_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT RECORD: every baseline reproduced the committed FU-1 book (trade
+    count and total to the cent) — the counterfactual is anchored to proven books, and the
+    verdict is consistent with FU-1's CIs-include-zero finding."""
+    r = _fu2()
+    for tf, v in r["per_tf"].items():
+        p = v["parity_vs_fu1"]
+        if not p["pass"] or p["n"][0] != p["n"][1] or abs(p["total"][0] - p["total"][1]) > 0.01:
+            return False, f"{tf}: baseline/FU-1 parity broken {p}"
+    return True, "6/6 baselines reproduce the committed FU-1 books exactly"
+
+
+def _fu2_v3() -> tuple[bool, str]:
+    """V3 — FALSIFIER + POWER: the shifted-calendar control veto must be recorded and the
+    release-specific component (real − shifted) must be ≤ 0 or inside noise — here the
+    SHIFTED veto gains MORE than the real one, killing the release-specific mechanism; and
+    the mandatory power analysis must be present (a null without an MDE is a shrug)."""
+    r = _fu2()
+    spec = r["pooled"]["delta_net"] - r["pooled"]["delta_net_shifted"]
+    ok = (r["verdict"] == "CLOSED-NULL" and spec <= 0
+          and r["power"]["mde_total"] > 0
+          and r["pooled"]["boot90_ci"][0] < 0 < r["pooled"]["boot90_ci"][1])
+    return ok, (f"release-specific component {spec:+,.0f} (real {r['pooled']['delta_net']:+,.0f}"
+                f" vs shifted {r['pooled']['delta_net_shifted']:+,.0f}); CI "
+                f"{r['pooled']['boot90_ci']}; MDE {r['power']['mde_total']:,.0f}")
+
+
+register(Claim(
+    id="FU2-NEWS-VETO-CLOSED-NULL",
+    issue="#154",
+    statement="The news-veto replay CLOSES NULL by its pre-registered rule: blocking NQ box "
+              "entries in [rel−5m,+15m] Tier-1 windows across all six frames changes pooled "
+              "net by +$17,221 with 90% CI [−$36,107, +$71,273] (MDE $53,960 — the book's "
+              "daily variance hides anything smaller) and ΣΔmaxDD only −$1,106. The "
+              "mechanism is dead beyond the power question: the +3-day SHIFTED-calendar veto "
+              "gains MORE (+$24,946) than the real one — the drift is time-of-day "
+              "seasonality, not the releases; and on the 4h frame (the 8.4× concentration) "
+              "the veto HURTS (−$3,159, DD +$10,430 worse) — those in-window entries pay. "
+              "The recorded expectation (DD improvement likelier) was wrong: ΔDD ≈ 0. "
+              "FU-1's CIs-include-zero stands as the final word: the box book and the news "
+              "layer coexist; no stand-aside overlay.",
+    source="optimize/fundamentals/fu2_result.json + fu2_daily_diff.csv",
+    value_fn=lambda: _fu2()["pooled"]["delta_net"],
+    expect=17221.25, tol=1.0,
+    blind_spot="NQ-only (Phase 1 scope); veto counterfactual assumes our absence changes "
+               "nothing else in the market (qty-1 fine); engine $ gross of commissions "
+               "(direction conservative for any positive Δ); close-before-release (exits) "
+               "was NOT tested — it remains a parking-lot idea, distinct from entry veto.",
+    checks=[Check("V1", "pooled Δ re-derives from the daily series and per-TF books", _fu2_v1),
+            Check("V2", "6/6 baselines reproduce the committed FU-1 books", _fu2_v2),
+            Check("V3", "shifted control kills the release-specific mechanism; MDE present", _fu2_v3)]))

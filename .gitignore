@@ -262,3 +262,6 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 # FU-9 (#161): the event-state dataset v1 + manifests the ledger reads
 !subprojects/Parametric-Indicators/optimize/fundamentals/fu9_event_state_*.csv
 !subprojects/Parametric-Indicators/optimize/fundamentals/fu9_manifest_*.json
+# FU-2 (#154): veto-replay evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu2_result.json
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu2_daily_diff.csv
