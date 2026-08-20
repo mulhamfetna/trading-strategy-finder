@@ -5,7 +5,7 @@ single experiment and its results and outcomes and insights"). This is the NARRA
 companion to the master index (`NEWS-MASTER-EXPERIMENT-RECORD.md`): where the index gives one
 row per experiment, this report tells each experiment's story in plain language — what we
 did, what happened in dollars, what went well, what went wrong, and what we learned. Every
-number here already lives in a committed evidence file or the claims ledger (56/56 on both
+number here already lives in a committed evidence file or the claims ledger (57/57 on both
 machines); nothing is from memory.**
 
 ```mermaid
@@ -738,6 +738,25 @@ never happen is widening the line after seeing the data. Until then the single-c
 models stand alone as the reference repairs, and E-D1 (productionizing a joint forecast)
 stays un-armed.
 
+
+### 10.5 · E-C1 — earnings × indicators (the state-blind law at full strength)
+**What we did:** the roadmap's ×indicators phase, with the question chosen honestly under
+the fusion prior — not "can indicators gate a dead trade" but the one quantity this
+programme has ever been able to forecast: SIZE. Does the full stance vector add anything to
+a ticker's own history (P_hist, holdout ρ 0.388)? Locked holdouts, two fixed models,
+stance-permutation controls. **What happened:** both models came back WORSE than the
+baseline — confidence-interval-clear (ridge Δ −0.393, tree Δ −0.131), replicating in sign
+on the untouched ES holdout — and the permuted controls showed most of the damage is the
+extra degrees of freedom rather than information. One honesty note kept in the claim
+itself: the pre-registration's contrarian clause (state actively misleads?) was
+under-instrumented — no permuted 5th percentile was recorded — so that question stays an
+open note, never a finding. **Insight — the era's capstone law:** the state-blind result
+now spans every axis it has been measured on: direction (three independent proofs), ride
+outcomes (FU-5/FU-6), macro P&L conditioning (FU-2/3/7), and earnings size (this). The
+165-indicator library measures the tape; it does not predict the calendar. P_hist alone —
+the dumbest defensible predictor, twice deployed-grade — remains the best size forecast
+this programme has ever measured. The conditioning phase closes by its own rule.
+
 ---
 
 ## Where the programme stands (2026-08-20)
@@ -752,5 +771,5 @@ hand-off are shipped); deliberate holds only — FU-4 gated-off, FU-15 parked by
 FU-11 consumers ①④ low-priority armed. The next workstream, on the owner's word, is the
 WS-EARN return (earnings alone → ×indicators → ×news×indicators), starting from
 `WS-EARN-HANDOFF.md` with E-P1, the earnings power model.
-**The ledger**: 56/56 claims green on both machines; every number in this report is bound
+**The ledger**: 57/57 claims green on both machines; every number in this report is bound
 to it or to a committed evidence file.

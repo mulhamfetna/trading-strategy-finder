@@ -125,3 +125,32 @@ as the reference repairs; **E-D1 (productionization) is NOT armed.** Ledger:
 - **E-X2 v2 (QUEUED by owner word)**: the joint two-calendar forecast re-registered with a
   POWERED tolerance (the E-X2 design law applied: the no-degradation line sized to the
   event-bar sample's QLIKE noise, fixed before the run). Not scheduled until called.
+
+## E-5 · E-C1 — earnings × indicators: CLOSED-NULL — the conditioning phase closes ✅ (2026-08-20)
+
+**The question chosen under the fusion prior: not "gate a dead trade" but the one live
+quantity — does the stance vector add SIZE information beyond P_hist? Locked holdouts
+(TRAIN NQ<2023 n=191; H1 NQ≥2023 n=175, one look; H2 ES n=366, untouched); two fixed
+models; stance-permutation controls.**
+
+| model | H1 ρ (base 0.3884) | Δ vs P_hist | CI90 | perm p95 | ES Δ | verdict |
+|---|---|---|---|---|---|---|
+| ridge α=1 | −0.0047 | **−0.3930** | [−0.5569, −0.2212] | −0.3015 | −0.1920 | NULL |
+| tree d3 | 0.2571 | **−0.1313** | [−0.2061, −0.0586] | −0.0270 | −0.0438 | NULL |
+
+**Both models are WORSE than P_hist alone — CI-clear — and the degradation replicates on
+the untouched ES holdout.** The permuted-stance controls also degrade heavily (ridge perm95
+−0.30): most of the loss is the extra degrees of freedom, not information. Honesty note
+kept: the CONTRARIAN clause was under-instrumented (no permuted 5th percentile recorded) —
+whether real stances mislead BEYOND dof noise stays an open note, never a claimed finding.
+
+**The phase verdict (by the pre-registered rule): the conditioning phase CLOSES, and the
+state-blind law reaches its strongest form** — the 165-library carries no incremental
+information about the calendar on ANY axis measured: direction (three proofs), ride
+outcomes (FU-5/FU-6), macro P&L conditioning (FU-2/3/7), and now earnings SIZE. P_hist
+alone is the best size forecast measured. The library measures the tape; it does not
+predict the calendar.
+
+**Ledger**: `EC1-STATE-ADDS-NO-SIZE`, **57/57 both machines**. Queue: E-X2 v2 (powered
+tolerance) QUEUED by owner word; the roadmap's third phase (×news×indicators) awaits the
+owner with this phase's law as its prior.
