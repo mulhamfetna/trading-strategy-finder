@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WS-FUSION — Time × State: the Closing Report · دمج الأخبار والمؤشرات: التقرير الختامي</title>
+<style>
+  :root{--l0:#0b1e3d;--l0b:#16305c;--l1:#1d3a6e;--l1b:#27508f;--l2:#0e5e56;--l2b:#15806f;
+        --l3:#5b3b8f;--l3b:#7452ab;--gold:#d4a017;--green:#1d9e57;--red:#c0392b;--amber:#e67e22;
+        --bg:#f4f6fa;--card:#fff;--ink:#1c2333;--mut:#5f6775;--line:#dfe4ee}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Tahoma,"Noto Naskh Arabic",Arial,sans-serif;line-height:1.7;font-size:15.5px}
+  header{background:linear-gradient(135deg,var(--l0),var(--l1) 45%,var(--l3));color:#fff;padding:30px 26px}
+  header h1{margin:0 0 4px;font-size:24px} header .sub{opacity:.9;font-size:14px}
+  .wrap{max-width:1150px;margin:0 auto;padding:20px 16px 70px}
+  details{background:var(--card);border:1px solid var(--line);border-radius:12px;margin:14px 0;overflow:hidden;box-shadow:0 1px 3px rgba(10,20,50,.06)}
+  summary{cursor:pointer;color:#fff;padding:12px 18px;font-weight:700;font-size:16.5px;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"▾";float:inline-end;opacity:.8}
+  details[open]>summary::after{content:"▴"}
+  .L0>summary{background:linear-gradient(90deg,var(--l0),var(--l0b))}
+  .L1>summary{background:linear-gradient(90deg,var(--l1),var(--l1b))}
+  .L2>summary{background:linear-gradient(90deg,var(--l2),var(--l2b))}
+  .L3>summary{background:linear-gradient(90deg,var(--l3),var(--l3b))}
+  .bd{padding:14px 20px}
+  .ar{direction:rtl;text-align:right;unicode-bidi:embed;background:#f8fafd;border-inline-start:4px solid var(--l2);
+      padding:10px 14px;border-radius:8px;margin:10px 0;font-size:15.5px}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px}
+  th{background:#eef2f9;text-align:left;padding:7px 9px;border:1px solid var(--line)}
+  td{padding:6px 9px;border:1px solid var(--line)}
+  .good{color:var(--green);font-weight:700}.bad{color:var(--red);font-weight:700}
+  .amb{color:var(--amber);font-weight:700}
+  .tag{display:inline-block;background:#eef2f9;border:1px solid var(--line);border-radius:20px;
+       padding:1px 10px;font-size:12.5px;margin:1px 3px 1px 0;color:var(--mut)}
+  .big{font-size:17px}
+  code{background:#f0f3f9;border-radius:4px;padding:1px 5px;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <h1>WS-FUSION — Time × State: the Closing Report · دمج الأخبار والمؤشرات: التقرير الختامي</h1>
+  <div class="sub">#152–#168 · 2026-08-19 → 2026-08-20 · claims ledger 52/52 on both machines · every number below is claim-bound</div>
+</header>
+<div class="wrap">
+
+<details class="L0" open>
+<summary>LEVEL 0 — The verdict in one minute · الخلاصة في دقيقة</summary>
+<div class="bd">
+<p class="big">The fusion workstream asked one question: the news side owns <b>TIME</b> (when uncertainty resolves), the indicator side owns <b>STATE</b> (what the tape is doing) — is their product worth money? After 14 studies, every one pre-registered and claim-bound, the answer is precise:</p>
+<ul>
+<li><b class="good">Two things were deployed</b>: the power-forecast layer (FU-14, the system's second live forecast) — and the <b>proof</b> (FU-11 Stage 1) that fusing it with the live volatility gate produces a genuinely better forecast: the gate is catastrophically wrong exactly on release bars (error ≈16× normal) and the calendar repairs it.</li>
+<li><b class="bad">Everything that tried to turn state into money died honestly</b>: the veto (seasonality, not releases), power-sizing (NQ-local, three-time asymmetry law), power-geometry (width bias, not alignment — a positive CI overridden by its own placebo), state gates (null, one inverted), the library classifier (missed its bar by 0.003 and the bar held), the Retail short (<b>Retail loses BOTH ways</b> — the anti-premium is chop, not drift).</li>
+<li><b>The deployed system was validated as-is</b>: state-blind entry, flat sizing, frozen geometry — each is now a <i>measured choice</i>, not an omission.</li>
+</ul>
+<div class="ar"><b>الحكم:</b> سألت ورشة الدمج سؤالاً واحداً: جانب الأخبار يملك «الزمن» (متى يُحسم الغموض) وجانب المؤشرات يملك «الحالة» (ماذا يفعل السوق الآن) — فهل حاصل ضربهما يساوي مالاً؟ بعد أربع عشرة دراسة، كلها مسجَّلة مسبقاً ومثبتة في سجل الادعاءات (52/52)، الجواب دقيق: نُشر شيئان — طبقة توقّع قوة الأخبار (FU-14) والبرهان (FU-11) على أن دمجها مع بوابة التقلب الحية يصلح عماها الوحيد (خطؤها في دقائق الأخبار ≈ 16 ضعف المعتاد). أما كل محاولة لتحويل «الحالة» إلى مال فماتت بشرف: الحجب موسميّة لا أخبار، والتحجيم خاصية NQ وحدها، والهندسة اتساعٌ لا معلومات، وبوابات الحالة صفر، ومصنّف المكتبة أخطأ عتبته بثلاثة أجزاء من الألف فصمدت العتبة، وبيع «ريتيل» يخسر — لأن ريتيل تخسر في الاتجاهين معاً. النظام المنشور كما هو صار خياراً مقاساً لا سهواً.</div>
+</div>
+</details>
+
+<details class="L1">
+<summary>LEVEL 1 — The story of the era · قصة المرحلة</summary>
+<div class="bd">
+<p>The workstream opened with a governance promise: an intake rule (an idea without an FU number does not exist), a use-case ledger, and per-study pre-registrations with verdict rules fixed before any run. It closed 2 days later with every active row resolved — because the substrate work (FU-1's audit, FU-9's dataset) made each following study cheap, and because the rules made each verdict fast.</p>
+<p>The arc: FU-1 proved the box book <b>concentrates into news windows</b> (entries up to 8.4×, stop-outs 2.1–5.8×) — arming the money question. The archaeology (FU-11) corrected an inverted recollection: the old study proved <i>size</i> forecastable and <i>direction</i> dead — so the "breakthrough" became fusing the two SIZE engines. The system analysis (FU-12) then discovered the deployed vol gate IS the old HAR-RV winner — reframing the fusion as "upgrade the live engine with the calendar it cannot see." The owner-ordered verification arc killed one parked winner honestly (FU-13: ES reverses the ramp) and deployed the other (FU-14: the power layer, parity 5/5). Stage 1 (FU-11) then <b>won</b>: the fused forecast beats the live engine on all six runs, power-aware by placebo. And then the consumers ran — and every single one closed null or negative, each teaching a law.</p>
+<div class="ar"><b>القصة:</b> افتُتحت الورشة بوعد حوكمة: قاعدة قيد («فكرة بلا رقم FU لا وجود لها»)، وسجل حالات، وتسجيل مسبق لكل دراسة بقاعدة حكم تُثبَّت قبل أي تشغيل. وأُغلقت بعد يومين وكل صف نشط محسوم — لأن أعمال الأساس (تدقيق FU-1 وقاعدة بيانات FU-9) جعلت كل دراسة تالية رخيصة، ولأن القواعد جعلت كل حكم سريعاً. البداية: الكتاب يتكدّس في نوافذ الأخبار (حتى 8.4×). ثم تصحيح الذاكرة: القديم أثبت أن «الحجم» قابل للتنبؤ و«الاتجاه» ميت. ثم اكتشاف أن بوابة التقلب المنشورة هي نفسها نموذج HAR-RV القديم. ثم قُتل فائز مركون بصدق (FU-13) ونُشر الآخر (FU-14). ثم فازت المرحلة الأولى من الدمج (FU-11) على كل الأسواق الستة. ثم جرى المستهلكون — فأُغلق كل واحد منهم بالنفي، وكلٌّ علّمنا قانوناً.</div>
+</div>
+</details>
+
+<details class="L2">
+<summary>LEVEL 2 — Every study, its number and its verdict · كل دراسة ورقمها وحكمها</summary>
+<div class="bd">
+<table>
+<tr><th>FU</th><th>study</th><th>the decisive number</th><th>verdict</th></tr>
+<tr><td>FU-1</td><td>event-window audit</td><td>entries 8.4×, stops 2.1–5.8× in windows; seasonality 2.16× × release 1.95×</td><td class="good">FOUNDATION ✅</td></tr>
+<tr><td>FU-12</td><td>system layer analysis</td><td>the live vol gate IS HAR-RV; 9-entry vol inventory</td><td class="good">DONE ✅</td></tr>
+<tr><td>FU-13</td><td>Exp2 ramp battery</td><td>R exact; ES reverses −$18,632; pooled CI ∋ 0</td><td class="bad">NOT-DEPLOYED ⛔</td></tr>
+<tr><td>FU-14</td><td>power layer productionized</td><td>parity 5/5 ≤1e-16; scramble +0.591→+0.212</td><td class="good">DEPLOYED ⭐</td></tr>
+<tr><td>FU-11 S1</td><td>the fused size engine</td><td>event-bar QLIKE 8.11→0.48; 6/6 runs CI+; placebo=dummy</td><td class="good">PASS 4/4 ⭐⭐</td></tr>
+<tr><td>FU-9</td><td>event-state dataset v1</td><td>1,765 rows; parity to the cent ×307; NO indicator repaints</td><td class="good">BUILT ✅</td></tr>
+<tr><td>FU-2</td><td>news-veto replay</td><td>+$17,221 ∈ [−$36k,+$71k]; shifted control gains MORE</td><td class="amb">NULL (mechanism dead)</td></tr>
+<tr><td>FU-3</td><td>power sizing (NQ)</td><td>+$30,338, 6/6 frames, perm 98% — CI touches 0</td><td class="amb">NULL (promising)</td></tr>
+<tr><td>FU-3 P2</td><td>cross-instrument sizing</td><td>+$21 pooled on 18 books; perm-pct 32.5</td><td class="bad">NULL (NQ-local)</td></tr>
+<tr><td>FU-7</td><td>power geometry</td><td>+$20,559 CI+ BUT placebo keeps 78%</td><td class="bad">NULL (width bias)</td></tr>
+<tr><td>FU-5</td><td>state-gated ride</td><td>A inside noise; B −$75 OPPOSITE its prediction</td><td class="bad">NULL ×2</td></tr>
+<tr><td>FU-6</td><td>library classifier</td><td>tree H1 AUC 0.577 vs bar 0.58 — the bar held</td><td class="bad">NULL ×2</td></tr>
+<tr><td>FU-8</td><td>the Retail short</td><td>−$37.15/ev CI [−$71,−$3]; BOTH directions lose gross</td><td class="bad">CLOSED (avoid)</td></tr>
+<tr><td>FU-15</td><td>dual-sided bracket</td><td>registered #168; FU-8 quantified its double-stop killer</td><td class="amb">PARKED (owner)</td></tr>
+</table>
+<p><span class="tag">FU-4 gated-off</span><span class="tag">FU-10 = the ledger itself</span><span class="tag">consumers ①④ low-priority</span><span class="tag">every verdict claim-bound, 52/52</span></p>
+<div class="ar"><b>الجدول أعلاه:</b> كل دراسة، رقمها الحاسم، وحكمها. الأخضر = مبنيّ/منشور/فائز؛ الأحمر = مغلق بالنفي مع الدرس؛ الكهرماني = صفر واعد أو مركون. كل رقم في هذا الجدول مربوط بادعاء مُتحقَّق آلياً على الجهازين (52/52) — لا يوجد رقم منشور بلا برهان يعيد اشتقاقه.</div>
+</div>
+</details>
+
+<details class="L3">
+<summary>LEVEL 3 — The laws this era wrote, and the hand-off · القوانين المكتوبة والتسليم</summary>
+<div class="bd">
+<ol>
+<li><b>The calendar pays; the tape does not predict it.</b> Which event, and its power regime — that is the edge. Pre-release tape state adds nothing (and may pre-spend the move).</li>
+<li><b>The instrument-asymmetry law, third proof</b>: a sizing/geometry signal on NQ is an NQ fact until proven elsewhere — it has now failed to travel three separate times.</li>
+<li><b>A positive CI is not a positive result</b> (FU-7): the placebo owns the verdict. And <b>a near-miss is a miss</b> (FU-6): the bar held by 0.003.</li>
+<li><b>Anti-premium ≠ harvestable drift</b> (FU-8): Retail loses both ways — chop pays no one but the house.</li>
+<li><b>The forecast fusion is real</b> (FU-11 S1): the one confirmed positive — parked at the forecast layer until a consumer with a mechanism worth gating arrives.</li>
+</ol>
+<p><b>Hand-off to WS-EARN</b> (the owner's ③): the earnings return inherits — the FU-9 schema verbatim on earnings timestamps (state vector + frozen ride + power context per event), the run_bracket primitive, the power-model methodology (P_hist per ticker), the laws above as priors, and the traps (EDGAR acceptance ≠ announcement; use -index-headers ACCEPTANCE-DATETIME; INTC lags ~7min). Details: <code>docs/WS-EARN-HANDOFF.md</code>.</p>
+<div class="ar"><b>القوانين والتسليم:</b> (1) التقويم يدفع؛ الشريط لا يتنبأ به — الحافة في هوية الحدث ونظام قوته لا في حالة السوق قبله. (2) قانون تباين الأدوات، برهان ثالث: إشارة تحجيم على NQ حقيقةٌ عن NQ وحده حتى يثبت العكس. (3) فاصل ثقة موجب ليس نتيجة موجبة — الدواء الوهمي يملك الحكم؛ والاقتراب من العتبة إخفاق — صمدت العتبة بفارق 0.003. (4) العلاوة السالبة ليست انحداراً قابلاً للحصاد — «ريتيل» تخسر في الاتجاهين. (5) دمج التوقعات حقيقي (FU-11) — الإيجابي الوحيد المؤكد، محفوظ في طبقة التوقع حتى يظهر مستهلك بآلية تستحق. <b>التسليم لورشة الأرباح:</b> ترث مخطط FU-9 حرفياً على طوابع أوقات الأرباح، وأداة الأقواس المنشورة، ومنهجية نموذج القوة، والقوانين أعلاه كأولويات مسبقة، والفخاخ الموثقة (وقت القبول في EDGAR ≠ وقت الإعلان).</div>
+</div>
+</details>
+
+</div>
+</body>
+</html>

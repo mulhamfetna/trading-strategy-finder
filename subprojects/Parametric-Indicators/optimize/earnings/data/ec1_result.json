@@ -1,0 +1,37 @@
+{
+  "n_train": 191,
+  "n_h1": 175,
+  "n_h2": 366,
+  "n_features": 293,
+  "baseline_rho": {
+    "h1": 0.3884,
+    "h2": 0.3323
+  },
+  "models": {
+    "ridge": {
+      "rho_h1": -0.0047,
+      "delta_h1": -0.393,
+      "delta_ci90": [
+        -0.5569,
+        -0.2212
+      ],
+      "perm_p95": -0.3015,
+      "delta_h2": -0.192,
+      "mde": 0.1697,
+      "verdict": "CLOSED-NULL"
+    },
+    "tree_d3": {
+      "rho_h1": 0.2571,
+      "delta_h1": -0.1313,
+      "delta_ci90": [
+        -0.2061,
+        -0.0586
+      ],
+      "perm_p95": -0.027,
+      "delta_h2": -0.0438,
+      "mde": 0.0741,
+      "verdict": "CLOSED-NULL"
+    }
+  },
+  "verdict": "CLOSED-NULL"
+}

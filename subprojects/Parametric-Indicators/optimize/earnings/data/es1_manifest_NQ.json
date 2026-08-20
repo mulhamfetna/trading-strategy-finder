@@ -1,0 +1,27 @@
+{
+  "instrument": "NQ",
+  "version": "v1",
+  "rows": 462,
+  "cols": 341,
+  "scored_pred": 366,
+  "bracket_outcomes": 432,
+  "gates": {
+    "C1_power_parity": {
+      "pass": true,
+      "msg": "366 committed rows exact"
+    },
+    "C2_causality": {
+      "pass": true,
+      "msg": "25 events x 165 indicators stance-stable under +1h future"
+    },
+    "C3_unique": {
+      "pass": true,
+      "msg": "0 duplicates"
+    },
+    "C4_coverage": {
+      "pass": true,
+      "msg": "bracket outcomes 432/462"
+    }
+  },
+  "wall_s": 89.8
+}

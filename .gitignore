@@ -259,3 +259,50 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !playbooks/power-forecast/*
 !playbooks/power-forecast-bundle-v1.0.0.zip
 !docs/power_forecast_NQ.jsonl
+# FU-9 (#161): the event-state dataset v1 + manifests the ledger reads
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu9_event_state_*.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu9_manifest_*.json
+# FU-2 (#154): veto-replay evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu2_result.json
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu2_daily_diff.csv
+# FU-3 (#155): power-sizing evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu3_result.json
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu3_daily_diff.csv
+# FU-7 (#159): power-geometry evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu7_result.json
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu7_event_diff.csv
+# FU-5 (#157): state-gate evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu5_result.json
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu5_features.csv
+# FU-6 (#158): outcome-model evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu6_result.json
+# FU-3 Phase 2 (#155): cross-instrument sizing evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu3p2_result.json
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu3p2_daily_diff.csv
+# FU-8 (#160): Retail-short evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu8_result.json
+# WS-FUSION closing report
+!docs/WS-FUSION-CLOSING-REPORT-BILINGUAL.html
+# E-P1 (#169): earnings power-model evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/earnings/data/ep1_result.json
+!subprojects/Parametric-Indicators/optimize/earnings/data/ep1_events_NQ.csv
+!subprojects/Parametric-Indicators/optimize/earnings/data/ep1_events_ES.csv
+# E-X1: earnings fused-forecast evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/earnings/data/ex1_result_NQ.json
+!subprojects/Parametric-Indicators/optimize/earnings/data/ex1_result_ES.json
+# E-S1: earnings event-state dataset v1 + manifests the ledger reads
+!subprojects/Parametric-Indicators/optimize/earnings/data/es1_event_state_*.csv
+!subprojects/Parametric-Indicators/optimize/earnings/data/es1_manifest_*.json
+# E-X2: joint-forecast evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/earnings/data/ex2_result_NQ.json
+!subprojects/Parametric-Indicators/optimize/earnings/data/ex2_result_ES.json
+# E-C1: state-vs-size evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/earnings/data/ec1_result.json
+# E-X2 v2: powered-tolerance evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/earnings/data/ex2v2_result_NQ.json
+!subprojects/Parametric-Indicators/optimize/earnings/data/ex2v2_result_ES.json
+# E-D1: two-calendar layer stage evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/earnings/data/ed1_stages.log
+!subprojects/Parametric-Indicators/optimize/earnings/data/ed1_golden.log
+!playbooks/two-calendar-forecast/PLAYBOOK.md
+!playbooks/two-calendar-forecast-bundle-v1.0.0.zip

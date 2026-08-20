@@ -1,0 +1,68 @@
+{
+  "instruments": {
+    "NQ": {
+      "n_scored": 366,
+      "spearman": 0.4583,
+      "fisher_ci": [
+        0.3733,
+        0.5356
+      ],
+      "p": 2.0872675980187472e-20,
+      "v1_bucket_spearman": 1.0,
+      "v1_bucket_means": [
+        0.036,
+        0.0444,
+        0.0612,
+        0.1249,
+        0.1852
+      ],
+      "v3_shuffle": {
+        "median": 0.0046,
+        "p95": 0.0796
+      },
+      "control": {
+        "n": 181,
+        "spearman": 0.0796
+      },
+      "power_ratio_event_vs_control": 4.33
+    },
+    "ES": {
+      "n_scored": 366,
+      "spearman": 0.3323,
+      "fisher_ci": [
+        0.2379,
+        0.4205
+      ],
+      "p": 6.96608709268226e-11,
+      "v1_bucket_spearman": 1.0,
+      "v1_bucket_means": [
+        0.0295,
+        0.0335,
+        0.044,
+        0.0448,
+        0.0954
+      ],
+      "v3_shuffle": {
+        "median": 0.0271,
+        "p95": 0.1106
+      },
+      "control": {
+        "n": 197,
+        "spearman": 0.0214
+      },
+      "power_ratio_event_vs_control": 2.65
+    }
+  },
+  "gates": {
+    "1_primary_ci": true,
+    "2_v1_quintiles": true,
+    "3_es_confirm": true,
+    "4_shuffle_beat": true,
+    "5_control_weaker": true
+  },
+  "verdict": "PASS",
+  "power": {
+    "n_scored_nq": 366,
+    "min_detectable_rho": 0.1025
+  }
+}
