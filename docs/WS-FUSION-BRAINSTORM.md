@@ -113,3 +113,12 @@ Every FU row CLOSED with a verdict (deployed / powered-null / parked-with-cause)
 deployed passed the three-stage ship gate; the ledger 100% green; a closing bilingual report in
 the house style; hand-off notes to the WS-EARN return (which reuses FU-9's schema on earnings
 timestamps — the owner's "same high-volatility nature, something hiding between the lines").
+
+## 6 · CLOSED (2026-08-20) — the workstream's own §5 test, applied
+
+Every active FU row carries a verdict (deployed / powered-null / closed-with-cause /
+parked-with-cause); everything deployed passed its gate; the ledger is 100% green (52/52
+both machines); the closing bilingual report is `WS-FUSION-CLOSING-REPORT-BILINGUAL.html`;
+the WS-EARN hand-off is `WS-EARN-HANDOFF.md`. Still-open rows are deliberate states, not
+debt: FU-4 (gated-off), FU-15 (parked by owner, #168), FU-11 consumers ①④ (low-priority,
+armed by S1). The workstream CLOSES.

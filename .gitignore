@@ -281,3 +281,5 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !subprojects/Parametric-Indicators/optimize/fundamentals/fu3p2_daily_diff.csv
 # FU-8 (#160): Retail-short evidence the ledger reads
 !subprojects/Parametric-Indicators/optimize/fundamentals/fu8_result.json
+# WS-FUSION closing report
+!docs/WS-FUSION-CLOSING-REPORT-BILINGUAL.html
