@@ -237,3 +237,92 @@ register(Claim(
     checks=[Check("V1", "in-file trailing-median identity + the server parity record", _fu14_v1),
             Check("V2", "the primary passes its bar on every equity instrument", _fu14_v2),
             Check("V3", "the scramble collapses to the committed shuffle floor", _fu14_v3)]))
+
+
+# =============================================================================================
+# FU-11 Stage 1 (#162) — the fused size engine: forecast-quality verdict
+# =============================================================================================
+_S1_RUNS = [("NQ", 60), ("ES", 60), ("RTY", 60), ("GC", 60), ("CL", 60), ("NQ", 240)]
+
+
+def _s1(inst: str, minutes: int) -> dict:
+    return json.load(open(FUND / f"fu11_stage1_{inst}_{minutes}m.json"))
+
+
+def _fu11s1_v1() -> tuple[bool, str]:
+    """V1 — INTERNAL RE-DERIVATION: on every run, the decision differential must equal the
+    paired identity QLIKE(B,event) − QLIKE(C,event); the CI must bracket its mean; the C-over-D
+    gain must equal the score difference. A manifest whose fields do not re-derive from each
+    other is corrupt."""
+    msgs = []
+    for inst, m in _S1_RUNS:
+        r = _s1(inst, m)
+        d = r["decision"]["mean_qlike_diff_B_minus_C_event"]
+        ident = r["scores"]["B_har_ls"]["event"]["qlike"] - r["scores"]["C_fused"]["event"]["qlike"]
+        lo, hi = r["decision"]["boot90_ci"]
+        g = r["decomposition"]["gain_C_over_D"]
+        g_ident = (r["scores"]["D_dummy"]["event"]["qlike"]
+                   - r["scores"]["C_fused"]["event"]["qlike"])
+        if not (abs(d - ident) < 1e-9 and lo < d < hi and abs(g - g_ident) < 1e-9):
+            return False, f"{inst} {m}m identity broken: diff {d} vs {ident}, CI ({lo},{hi})"
+        msgs.append(f"{inst}{m} {d:+.2f}")
+    return True, "identities hold: " + " ".join(msgs)
+
+
+def _fu11s1_v2() -> tuple[bool, str]:
+    """V2 — INDEPENDENT MEASUREMENTS: five instruments (different price files) plus the 4h
+    frame are semi-independent; the event-bar gain must be CI-positive on every run AND both
+    era halves (2024 vs 2025+) must be positive on every run."""
+    for inst, m in _S1_RUNS:
+        r = _s1(inst, m)
+        if r["decision"]["boot90_ci"][0] <= 0:
+            return False, f"{inst} {m}m CI-lo <= 0"
+        for k, e in r["decision"]["era_halves"].items():
+            if not e["n"] or e["mean_diff_B_minus_C"] <= 0:
+                return False, f"{inst} {m}m era {k} not positive"
+    return True, "CI-lo>0 and both era halves positive on all 6 runs"
+
+
+def _fu11s1_v3() -> tuple[bool, str]:
+    """V3 — FALSIFIER: 'any extra regressor on event bars would do'. FALSE: on every run the
+    shuffled-power placebo (20 refits) fails to recover even half of C's gain over the
+    dummy-only model — the night-before power MAGNITUDE, not the extra degree of freedom,
+    carries the improvement. Also C must beat D outright everywhere (power-aware, not merely
+    calendar-aware)."""
+    msgs = []
+    for inst, m in _S1_RUNS:
+        r = _s1(inst, m)
+        g = r["decomposition"]["gain_C_over_D"]
+        pg = r["falsifier"]["placebo_gain_over_D"]
+        if not (g > 0 and pg <= 0.5 * g):
+            return False, f"{inst} {m}m: placebo gain {pg:.3f} vs C-over-D {g:.3f}"
+        msgs.append(f"{inst}{m} {pg:+.3f}/{g:.3f}")
+    return True, "placebo/C-over-D: " + " ".join(msgs)
+
+
+register(Claim(
+    id="FU11-STAGE1-FUSED-FORECAST-WINS",
+    issue="#162",
+    statement="FU-11 Stage 1 PASSES all four pre-registered lines: adding the calendar terms "
+              "the live vol engine is blind to (event dummy + M2 night-before expanding power) "
+              "beats BOTH the deployed fixed-weight HAR and the fitted HAR-LS as a forecast of "
+              "the engine's own rv_pts. NQ 1h test event bars (n=140): QLIKE deployed 8.11 / "
+              "HAR-LS 7.64 / dummy-only 1.20 / FUSED 0.48; decision differential (B−C) +7.16, "
+              "boot 90% CI [+4.96, +9.69]; cross-instrument 4/4 (ES +8.69, RTY +21.42, GC "
+              "+6.43, CL +0.29) and NQ 4h +3.25 — all CI-positive, both era halves positive "
+              "everywhere; overall test QLIKE also improves (NQ 0.548→0.487); the shuffled-"
+              "power placebo collapses to the dummy level on every run (the power MAGNITUDE "
+              "carries the gain — POWER-AWARE, not merely calendar-aware). Gains halve in "
+              "2025+ vs 2024 but stay decisive. Consumers ①–④ are hereby ARMED, each behind "
+              "its own pre-registration; nothing deployed by this stage.",
+    source="optimize/fundamentals/fu11_stage1_{inst}_{m}.json (6 runs, server 2026-08-20)",
+    value_fn=lambda: round(_s1("NQ", 60)["decision"]["mean_qlike_diff_B_minus_C_event"], 4),
+    expect=7.1634, tol=0.0001,
+    blind_spot="Research floor-to-hour frames, not the engine's session frames (consumer ① "
+               "must re-derive on engine frames); event bars are ~1% of test bars — the gain "
+               "is event-local by construction; the five instruments share macro moments "
+               "(semi-independent, as in every fusion claim); pre-2016 train bars carry "
+               "dummy=0 (conservative bias declared in the pre-reg).",
+    checks=[Check("V1", "decision fields re-derive from the score fields on all 6 runs", _fu11s1_v1),
+            Check("V2", "CI-positive + era-stable on all 6 semi-independent runs", _fu11s1_v2),
+            Check("V3", "shuffled-power placebo fails to recover C's gain over D", _fu11s1_v3)]))
