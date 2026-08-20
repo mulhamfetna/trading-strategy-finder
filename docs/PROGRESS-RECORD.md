@@ -56,11 +56,11 @@ per-workstream full records. The one-line-each version:
 
 ## 3 · ACTIVE + QUEUED (the live board)
 
-- **NEXT WORKSTREAM (awaiting the owner's word): the WS-EARN return** — earnings alone →
-  ×indicators → ×news×indicators; starts warm from `WS-EARN-HANDOFF.md` (E-P1 earnings
-  power model → E-S1 event-state dataset on the FU-9 schema → E-X1 earnings × the fused
-  forecast). Prior state: H1 rejected 0/8 (783 events); EDGAR timestamp traps recorded;
-  C4 human check still PENDING (#110, owner-side).
+- **WS-EARN return — ACTIVE (opened 2026-08-20, tracking #109)**: ✅ **E-P1 PASSED 5/5**
+  (#169) — earnings size IS forecastable night-before (NQ ρ +0.4583, ES replication
+  +0.3323; the M2 law extends). ARMED next: E-S1 (event-state dataset, FU-9 schema) and
+  E-X1 (earnings × the fused forecast), each with its own pre-reg. Prior state: H1
+  rejected 0/8; EDGAR traps recorded; C4 human check still PENDING (#110, owner-side).
 - **Deliberate holds (not debt)**: FU-15 dual-sided bracket (#168, parked by owner behind
   the closed FU-11 — inherits FU-8's quantified double-stop cost) · FU-4 (gated-off) ·
   FU-11 consumers ① re-gate / ④ stops (low-priority, armed by Stage 1).
@@ -71,7 +71,7 @@ per-workstream full records. The one-line-each version:
 
 ## 4 · The verification state (what "trusted" means right now)
 
-Claims ledger **52/52** (local AND server; `optimize/verify/run.py`) · engine golden gate
+Claims ledger **53/53** (local AND server; `optimize/verify/run.py`) · engine golden gate
 **6/6 baselines MATCH** · executor replay parity to the cent on all four legs · portable
 bundle `--verify` PASS NQ/RTY/ES/YM · dashboard branch ≡ production (screenshot evidence) ·
 isolation battery 18/18. Every published number is ledger-bound or re-derivable from a

@@ -3,13 +3,13 @@
 **Every experiment, its result and its finding, across the entire programme (2026-06 → 2026-08-20).
 Current through v5.4.3 + FU-11 Stage 1: all profitable news deployed and scaled, the premium
 grid literally closed, the fusion workstream executing (the fused size engine has WON its
-forecast-quality stage), ledger 52/52 on both machines.**
+forecast-quality stage), ledger 53/53 on both machines.**
 
 This is the master index. **The verbose NARRATIVE companion — every experiment told in full (what ran, the dollars, what went well/wrong, the insight) — is `PROGRAMME-COMPLETE-EXPERIMENT-REPORT.md`.** Each workstream's full detail lives in its own record —
 `NEWS-PROGRAMME-FULL-RECORD.md` (WS-NEWS2/3), `WS-NEWS4-FULL-RECORD.md`,
 `WS-ESCPI-FULL-RECORD.md` (+ 2 addenda), `WS-GRID-RESULTS.md`, `WS-FUSION-FULL-RECORD.md`
 (F-0…F-7) — and every number below is bound to the claims ledger
-(`optimize/verify/run.py`, 52/52) or a committed evidence file.
+(`optimize/verify/run.py`, 53/53) or a committed evidence file.
 
 ```mermaid
 flowchart TD
@@ -156,6 +156,13 @@ flowchart TD
 | 9.17 | WS-FUSION closure + the state pin (2026-08-20) | **The workstream CLOSES against its own §5 test**: every active FU verdicted, ledger 52/52, closing bilingual report (`WS-FUSION-CLOSING-REPORT-BILINGUAL.html`, L0–L3 EN+AR) + WS-EARN hand-off (`WS-EARN-HANDOFF.md`: FU-9 schema on earnings, the primitives, the priors, E-P1/E-S1/E-X1 skeleton). The system-layers analysis gains **§5 PROFIT ATTRIBUTION** (grades A measured / B embedded / C zero-by-design + the refusals column); §4 records the settled state — the fusion lives at the FORECAST layer only. All standing docs pinned current before WS-EARN opens. |
 | 9.9 | FU-9 (#161): the event-state dataset v1 | **BUILT, 16/16 gates (2026-08-20).** 1,765 rows (NQ/ES/RTY/YM × {CPI,NFP,FOMC,Retail} ≥2016): M2 power context + the frozen ride outcome (deployed executor primitive — parity **to the cent** on all 307 events overlapping committed evidence) + 330 stance columns (165 registry indicators, default params, last closed 1m bar before rel−300s) + NQ box state. ⭐ The C2 falsifier proved **no indicator in the registry repaints** (+1h future bars appended ⇒ stances unchanged, 25×165 per leg). v1 FROZEN, claim `FU9-EVENT-STATE-DATASET`, **45/45**. The substrate for FU-5/6/8, FU-15, and the WS-EARN return (same schema on earnings timestamps). |
 
+
+## Era 10 — the WS-EARN return (#169+): earnings through the programme's machinery
+
+| # | experiment | result → finding |
+|---|---|---|
+| 10.1 | E-P1 (#169): the earnings power model | **PASS 5/5 (2026-08-20).** P_hist per TICKER on the committed 783-event/12-ticker/16y table: NQ pooled OOS Spearman **+0.4583** CI [+0.3733,+0.5356] (n=366); FULL independent ES replication **+0.3323** CI-lo +0.2379; quintiles ordered; 200 ticker-shuffles beaten; clean-minute control materially weaker. ⭐ **The M2 law extends to earnings** — a ticker's own history ranks tomorrow night's index violence at the same ρ≈0.5 magnitude as macro. POWER ≠ PREMIUM stands (H1 was 0/8). E-S1 + E-X1 ARMED. Claim `EP1-EARNINGS-POWER-FORECASTABLE`, **53/53**. |
+
 ---
 
 ## The programme state as of 2026-08-20 (the running verdict)
@@ -184,5 +191,5 @@ not · read gross beside net (cost drag masquerades as anti-premium) · traded-s
 blindness (the calendar) is now proven repairable, and the repair is power-aware. Armed and
 waiting, each behind its own pre-registration: the four fused-forecast consumers (re-gate ·
 sizing ramp · news geometry · box stops), FU-9's event-state dataset, FU-2's veto replay,
-and the parked FU-15 dual-sided bracket. Ledger **52/52 both machines**; every number above
+and the parked FU-15 dual-sided bracket. Ledger **53/53 both machines**; every number above
 is claim-bound.

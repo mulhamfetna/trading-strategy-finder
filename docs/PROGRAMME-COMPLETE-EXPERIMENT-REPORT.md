@@ -5,7 +5,7 @@ single experiment and its results and outcomes and insights"). This is the NARRA
 companion to the master index (`NEWS-MASTER-EXPERIMENT-RECORD.md`): where the index gives one
 row per experiment, this report tells each experiment's story in plain language — what we
 did, what happened in dollars, what went well, what went wrong, and what we learned. Every
-number here already lives in a committed evidence file or the claims ledger (52/52 on both
+number here already lives in a committed evidence file or the claims ledger (53/53 on both
 machines); nothing is from memory.**
 
 ```mermaid
@@ -659,6 +659,28 @@ Sales is a fact to avoid (the deployed layer already does), not to trade in any 
 FU-15 dual-sided bracket must survive: on chop-class events, a two-sided structure pays
 both stops. RQ-2 closes with this study.
 
+
+---
+
+## Era 10 — the WS-EARN return (open)
+
+### 10.1 · E-P1 — the earnings power model (the M2 law travels)
+**What we did:** the return's first study, run exactly the way the macro power model was:
+for each of the 12 NDX mega-caps, predict tomorrow night's earnings violence from nothing
+but that ticker's own prior earnings-minute moves (expanding median, shifted, at least 8
+priors), against the committed 783-event 16-year timestamp table. **What happened: PASS on
+all five pre-registered gates.** The prediction ranks realized NQ jumps at Spearman +0.4583
+(CI [+0.37, +0.54], 366 scored events) — and a fully independent replication on ES agrees
+(+0.3323, CI-lo +0.24). Quintiles are ordered, 200 ticker-label shuffles are beaten (so it
+is not generic vol clustering), and the same predictions score materially weaker against
+matched clean minutes. **Insight:** the programme's central forecasting law extends to
+earnings — scheduled violence is rankable from its own history at ρ≈0.5, macro and
+earnings alike. And its central money law stands untouched: POWER ≠ PREMIUM — this ranks
+the violence, the old H1 already proved the frozen ride does not collect it. Armed, each
+behind its own pre-registration: E-S1 (the event-state dataset on the frozen FU-9 schema
+over earnings timestamps) and E-X1 (does the live vol gate mis-forecast earnings bars the
+way it mis-forecasts CPI bars?).
+
 ---
 
 ## Where the programme stands (2026-08-20)
@@ -673,5 +695,5 @@ hand-off are shipped); deliberate holds only — FU-4 gated-off, FU-15 parked by
 FU-11 consumers ①④ low-priority armed. The next workstream, on the owner's word, is the
 WS-EARN return (earnings alone → ×indicators → ×news×indicators), starting from
 `WS-EARN-HANDOFF.md` with E-P1, the earnings power model.
-**The ledger**: 52/52 claims green on both machines; every number in this report is bound
+**The ledger**: 53/53 claims green on both machines; every number in this report is bound
 to it or to a committed evidence file.
