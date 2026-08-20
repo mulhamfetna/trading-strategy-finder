@@ -16,7 +16,6 @@ import sys
 import time
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 HERE = Path(__file__).resolve().parent
@@ -36,7 +35,7 @@ from optimize.fundamentals.fu9_build import (stance_rows, c2_causality,  # noqa:
 TABLE = HERE / "data" / "earnings_timestamps_FINAL_16y.csv"
 
 
-def event_table(inst: str, df1: pd.DataFrame) -> pd.DataFrame:
+def event_table(df1: pd.DataFrame) -> pd.DataFrame:
     d = pd.read_csv(TABLE, usecols=["ticker", "event_et", "session"])
     d["event_et"] = pd.to_datetime(d.event_et)
     d = d.sort_values("event_et").reset_index(drop=True)
@@ -58,7 +57,7 @@ def main() -> int:
     print(f"[E-S1] build {inst} · spec docs/ES1-DATASET-SPEC.md (FU-9 conventions)",
           flush=True)
     df1 = load_1m_extended(inst).sort_values("Date").reset_index(drop=True)
-    ev = event_table(inst, df1)
+    ev = event_table(df1)
     print(f"[E-S1] events with a bar: {len(ev)} · scored (pred): "
           f"{ev.pred.notna().sum()}", flush=True)
 
@@ -88,7 +87,6 @@ def main() -> int:
     dup = int(df.duplicated(["instrument", "et", "title"]).sum())
     gates["C3_unique"] = (dup == 0, f"{dup} duplicates")
     have = int(df.ride_pnl_usd.notna().sum())
-    cov_ok = have >= 0.9 * len(df) * 0.85     # AMC thin sessions — itemized below
     gates["C4_coverage"] = (bool(have > 300), f"bracket outcomes {have}/{len(df)}")
 
     for g, (ok, msg) in gates.items():
