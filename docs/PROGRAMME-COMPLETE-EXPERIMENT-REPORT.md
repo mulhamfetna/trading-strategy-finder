@@ -805,10 +805,10 @@ layer ($67,767 net 2024→26 at qty=1/leg; ≈$1.167M/window model-grade at appr
 near-orthogonal (daily correlation +0.098), both paper-only until a live gateway. **Two
 deployed forecast layers**: the HAR-RV gate (tape memory, inside every champion) and the
 power-forecast layer (calendar, information-only) — and FU-11 Stage 1 has now PROVEN their
-fusion beats either alone as a forecast. **The open queue**: WS-FUSION is CLOSED (its closing bilingual report and the WS-EARN
-hand-off are shipped); deliberate holds only — FU-4 gated-off, FU-15 parked by owner,
-FU-11 consumers ①④ low-priority armed. The next workstream, on the owner's word, is the
-WS-EARN return (earnings alone → ×indicators → ×news×indicators), starting from
-`WS-EARN-HANDOFF.md` with E-P1, the earnings power model.
+fusion beats either alone as a forecast. **The open queue**: era 10 is complete through **E-D1, released in v5.5.0** (the
+two-calendar forecast layer — the gate's nightly blindness schedule; routing, never
+fitting). Deliberate holds: FU-4 gated-off, FU-15 parked, FU-11 consumers ①④
+low-priority. **Phase 3 — earnings × news × indicators — is initiating** with its own
+brainstorm and numbered ledger.
 **The ledger**: 59/59 claims green on both machines; every number in this report is bound
 to it or to a committed evidence file.

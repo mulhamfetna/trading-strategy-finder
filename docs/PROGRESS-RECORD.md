@@ -10,7 +10,7 @@ issue; labels + milestones organize the board; releases carry the shipped artifa
 ## 0 · The one-paragraph state
 
 Two production income systems plus one information layer, all verified end-to-end
-(claims ledger **52/52 on both machines**). **System 1 — the box strategy**: 55 champions
+(claims ledger **59/59 on both machines**). **System 1 — the box strategy**: 55 champions
 across 9 markets (~$840k/yr 2026-OOS at deployed caps), engine golden-locked (6/6).
 **System 2 — the news layer** (v5.4.2): four legs, one CPI bet — $67,767 net stressed
 2024→2026 at qty=1/leg; scaled tiers approved by rule (NQ/RTY/ES ≤20 worked, YM ≤5),
@@ -21,7 +21,10 @@ gate's one blindness proven repairable), every P&L consumer closed under its own
 the deployed structure (state-blind entry, flat sizing, frozen geometry) is now VALIDATED
 BY MEASUREMENT; per-layer profit attribution lives in `SYSTEM-LAYERS-ANALYSIS.md` §5.
 Everything paper-only until a live gateway; the regime monitor guards all news legs.
-**Next (owner's word): the WS-EARN return**, starting warm from `WS-EARN-HANDOFF.md`.
+**The WS-EARN return RAN (era 10, 7 studies, one day)** — earnings power forecastable, the
+blindness law spans both calendars, the E-S1 substrate frozen, state-blind extended to
+size, and **E-D1 released in v5.5.0** (the two-calendar layer: the gate's nightly blindness
+schedule; routing, never fitting). **Next (owner-initiated): phase 3 — ×news×indicators.**
 
 ## 1 · Shipped releases (the immutable trail)
 
@@ -33,6 +36,7 @@ Everything paper-only until a live gateway; the regime monitor guards all news l
 | [v5.4.1](https://github.com/mulhamfetna/trading-strategy-finder/releases/tag/v5.4.1) | 2026-08-19 | YM CPI acquired via the pre-registered execution gate (#147); bundle v1.3.0 |
 | [v5.4.2](https://github.com/mulhamfetna/trading-strategy-finder/releases/tag/v5.4.2) | 2026-08-19 | scaled tiers ES ≤20 / YM ≤5 (#141/#150); bundles v1.4.0 + v1.4.1 (docs-current) |
 | [v5.4.3](https://github.com/mulhamfetna/trading-strategy-finder/releases/tag/v5.4.3) | 2026-08-19 | the power-forecast layer deployed (FU-14, information-only, bundle v1.0.0) + the Exp2 sizing ramp honestly killed (FU-13 NOT-DEPLOYED) |
+| [v5.5.0](https://github.com/mulhamfetna/trading-strategy-finder/releases/tag/v5.5.0) | 2026-08-20 | the two-calendar forecast layer (E-D1, routing pattern, information-only; bundle v1.0.0) + WS-FUSION closure + era 10 (the WS-EARN return, 7 studies) |
 
 ## 2 · The workstream history (what is CLOSED, with its verdict)
 
@@ -56,11 +60,11 @@ per-workstream full records. The one-line-each version:
 
 ## 3 · ACTIVE + QUEUED (the live board)
 
-- **WS-EARN return — ACTIVE (opened 2026-08-20, tracking #109)**: ✅ **E-P1 PASSED 5/5**
-  (#169) — earnings size IS forecastable night-before (NQ ρ +0.4583, ES replication
-  +0.3323; the M2 law extends). ARMED next: E-S1 (event-state dataset, FU-9 schema) and
-  E-X1 (earnings × the fused forecast), each with its own pre-reg. Prior state: H1
-  rejected 0/8; EDGAR traps recorded; C4 human check still PENDING (#110, owner-side).
+- **WS-EARN return — era 10 COMPLETE through E-D1 (tracking #109/#169)**: E-P1 ✅ · E-X1 ✅
+  · E-S1 ✅ (924-row substrate frozen) · E-X2+v2 ✕ (fitted-joint interference confirmed at
+  power) · E-C1 ∅ (state-blind extended to size) · **E-D1 ⭐ RELEASED v5.5.0**. C4 human
+  check still PENDING (#110, owner-side); forward earnings dates need an owner-supplied
+  calendar. **Phase 3 (×news×indicators) initiating.**
 - **Deliberate holds (not debt)**: FU-15 dual-sided bracket (#168, parked by owner behind
   the closed FU-11 — inherits FU-8's quantified double-stop cost) · FU-4 (gated-off) ·
   FU-11 consumers ① re-gate / ④ stops (low-priority, armed by Stage 1).
