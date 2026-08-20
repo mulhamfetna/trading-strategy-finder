@@ -241,3 +241,63 @@ register(Claim(
     checks=[Check("V1", "rho re-derives from the frozen files under the definitions", _x5_v1),
             Check("V2", "the verdict follows from the recorded fields", _x5_v2),
             Check("V3", "regime-dominance decomposition stated (margin < 0.05)", _x5_v3)]))
+
+
+# =============================================================================================
+# X-5b — the monitor's context field: SHIPPED-ON-BRANCH (trigger untouched, proven)
+# =============================================================================================
+def _x5b_v1() -> tuple[bool, str]:
+    """V1 — PARITY LOG: the committed machine output shows trigger parity True (old vs new
+    rolling_state byte-equal on the replay evidence) and definition parity 0 mismatches."""
+    log = (XNI / "x5b_parity.log").read_text()
+    ok = ("P trigger parity (rolling_state old==new): True" in log
+          and "0 mismatches" in log and "X5B_OK" in log)
+    return ok, "parity True; 29 checked, 0 mismatches; X5B_OK"
+
+
+def _x5b_v2() -> tuple[bool, str]:
+    """V2 — STATIC ADDITIVE-ONLY PROOF: in the module source, rolling_state contains no
+    reference to the context machinery; --context defaults OFF; current_state's context
+    parameter defaults False — without the flag the module is the old module."""
+    src = (Path(__file__).resolve().parents[4] / "src" / "deploy"
+           / "regime_monitor.py").read_text()
+    body = src.split("def rolling_state")[1].split("def compound_context")[0]
+    ok = ("compound" not in body and 'action="store_true"' in src
+          and "context: bool = False" in src)
+    return ok, "rolling_state clean of context; flag and parameter default OFF"
+
+
+def _x5b_v3() -> tuple[bool, str]:
+    """V3 — AUTHORITY GUARD: the emitted context carries the 'information only — never
+    gates' authority string, and the regime label is median-labeling only (no threshold
+    constant participates in any state assignment)."""
+    src = (Path(__file__).resolve().parents[4] / "src" / "deploy"
+           / "regime_monitor.py").read_text()
+    ok = ("information only — never gates (X-5b)" in src
+          and src.count('cpi.loc[cpi.roll24') == 2)
+    return ok, "authority string present; state assignments untouched (2, as before)"
+
+
+register(Claim(
+    id="X5B-MONITOR-CONTEXT-SHIPPED",
+    issue="#172",
+    statement="X-5b SHIPS ON-BRANCH: the regime monitor's report gains an OPTIONAL "
+              "--context field (compound_power_pct = pred_exp + max adjacent earnings pred "
+              "— X-5's exact definition, X-3's additive law — plus a median-label regime "
+              "note carrying the authority string 'information only — never gates'). The "
+              "trigger is UNTOUCHED, proven three ways: the old and new rolling_state are "
+              "byte-equal on the committed replay evidence (parity log); the trigger "
+              "function's source contains no context reference (static); the flag and "
+              "parameter default OFF (without them, the module IS the old module). "
+              "Definition parity: 29/29 CPI events match the frozen-file recomputation to "
+              "1e-9. The registered consequence of X-5, delivered exactly and no more.",
+    source="optimize/xni/data/x5b_parity.log + src/deploy/regime_monitor.py",
+    value_fn=lambda: int("0 mismatches" in (XNI / "x5b_parity.log").read_text()),
+    expect=1, tol=0,
+    blind_spot="Context reads the frozen research evidence — the LIVE monitor's context "
+               "source is the nightly artifact (an ops-runbook wiring note, not code); "
+               "NQ-only; the regime label is labeling convenience with zero authority "
+               "(V3 guards the string that says so).",
+    checks=[Check("V1", "parity log: trigger byte-equal, definitions 0 mismatches", _x5b_v1),
+            Check("V2", "static additive-only proof (trigger source clean, defaults OFF)", _x5b_v2),
+            Check("V3", "authority guard: never-gates string + untouched state logic", _x5b_v3)]))

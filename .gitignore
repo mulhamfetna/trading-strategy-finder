@@ -314,3 +314,5 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !subprojects/Parametric-Indicators/optimize/xni/data/x3_artifact_2025_NQ.jsonl
 # X-5: monitor-power evidence the ledger reads
 !subprojects/Parametric-Indicators/optimize/xni/data/x5_result.json
+# X-5b: monitor-context evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/xni/data/x5b_parity.log
