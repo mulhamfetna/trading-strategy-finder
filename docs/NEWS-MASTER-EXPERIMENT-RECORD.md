@@ -5,7 +5,7 @@ Current through v5.4.3 + FU-11 Stage 1: all profitable news deployed and scaled,
 grid literally closed, the fusion workstream executing (the fused size engine has WON its
 forecast-quality stage), ledger 45/45 on both machines.**
 
-This is the master index. Each workstream's full detail lives in its own record —
+This is the master index. **The verbose NARRATIVE companion — every experiment told in full (what ran, the dollars, what went well/wrong, the insight) — is `PROGRAMME-COMPLETE-EXPERIMENT-REPORT.md`.** Each workstream's full detail lives in its own record —
 `NEWS-PROGRAMME-FULL-RECORD.md` (WS-NEWS2/3), `WS-NEWS4-FULL-RECORD.md`,
 `WS-ESCPI-FULL-RECORD.md` (+ 2 addenda), `WS-GRID-RESULTS.md`, `WS-FUSION-FULL-RECORD.md`
 (F-0…F-7) — and every number below is bound to the claims ledger
