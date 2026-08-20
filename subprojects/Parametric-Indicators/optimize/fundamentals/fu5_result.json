@@ -1,0 +1,118 @@
+{
+  "conditions": {
+    "A_trend": {
+      "predicted": "+",
+      "legs": {
+        "NQ": {
+          "n_true": 187,
+          "n_false": 140,
+          "mean_true": 177.06,
+          "mean_false": 74.29,
+          "diff": 102.76,
+          "boot90_ci": [
+            -21.03,
+            226.71
+          ]
+        },
+        "RTY": {
+          "n_true": 153,
+          "n_false": 128,
+          "mean_true": 28.36,
+          "mean_false": 29.19,
+          "diff": -0.83,
+          "boot90_ci": [
+            -45.55,
+            42.49
+          ]
+        },
+        "ES": {
+          "n_true": 63,
+          "n_false": 53,
+          "mean_true": 139.62,
+          "mean_false": 165.33,
+          "diff": -25.72,
+          "boot90_ci": [
+            -195.85,
+            138.88
+          ]
+        },
+        "YM": {
+          "n_true": 57,
+          "n_false": 59,
+          "mean_true": 93.03,
+          "mean_false": 121.76,
+          "diff": -28.73,
+          "boot90_ci": [
+            -141.73,
+            82.14
+          ]
+        }
+      },
+      "eras_nq": {
+        "h1": 10.48,
+        "h2": 162.32
+      },
+      "shuffle_p95_abs": 114.9,
+      "cross_sign_agree": 0,
+      "mde_diff": 125.07,
+      "verdict": "CLOSED-NULL"
+    },
+    "B_vol": {
+      "predicted": "+",
+      "legs": {
+        "NQ": {
+          "n_true": 177,
+          "n_false": 130,
+          "mean_true": 107.64,
+          "mean_false": 182.9,
+          "diff": -75.26,
+          "boot90_ci": [
+            -206.46,
+            55.06
+          ]
+        },
+        "RTY": {
+          "n_true": 160,
+          "n_false": 101,
+          "mean_true": 18.06,
+          "mean_false": 61.85,
+          "diff": -43.78,
+          "boot90_ci": [
+            -92.6,
+            4.85
+          ]
+        },
+        "ES": {
+          "n_true": 46,
+          "n_false": 50,
+          "mean_true": 165.21,
+          "mean_false": 215.19,
+          "diff": -49.98,
+          "boot90_ci": [
+            -242.56,
+            150.07
+          ]
+        },
+        "YM": {
+          "n_true": 50,
+          "n_false": 46,
+          "mean_true": 126.59,
+          "mean_false": 142.95,
+          "diff": -16.37,
+          "boot90_ci": [
+            -150.73,
+            115.98
+          ]
+        }
+      },
+      "eras_nq": {
+        "h1": -23.27,
+        "h2": -122.2
+      },
+      "shuffle_p95_abs": 130.85,
+      "cross_sign_agree": 3,
+      "mde_diff": 133.01,
+      "verdict": "CLOSED-NULL"
+    }
+  }
+}

@@ -271,3 +271,6 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 # FU-7 (#159): power-geometry evidence the ledger reads
 !subprojects/Parametric-Indicators/optimize/fundamentals/fu7_result.json
 !subprojects/Parametric-Indicators/optimize/fundamentals/fu7_event_diff.csv
+# FU-5 (#157): state-gate evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu5_result.json
+!subprojects/Parametric-Indicators/optimize/fundamentals/fu5_features.csv

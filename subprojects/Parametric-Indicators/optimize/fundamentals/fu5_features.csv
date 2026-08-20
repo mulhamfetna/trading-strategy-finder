@@ -1,0 +1,841 @@
+et,title,ride_net_stressed_usd,trend_pos,trend_ok,vol_hi,vol_ok,instrument
+2016-01-08 08:30:00,Non Farm Payrolls,324.5199999999932,False,True,False,False,NQ
+2016-01-20 08:30:00,Inflation Rate MoM,-103.82999999999812,False,True,False,False,NQ
+2016-01-27 14:00:00,Fed Interest Rate Decision,312.5200000000041,False,True,False,False,NQ
+2016-02-05 08:30:00,Non Farm Payrolls,-105.54500000000188,False,True,False,False,NQ
+2016-02-19 08:30:00,Inflation Rate MoM,-107.5,False,True,False,False,NQ
+2016-03-04 08:30:00,Non Farm Payrolls,324.1400000000067,True,True,False,False,NQ
+2016-03-16 08:30:00,Inflation Rate MoM,-109.62499999999636,False,True,False,False,NQ
+2016-03-16 14:00:00,Fed Interest Rate Decision,325.8799999999974,False,True,False,False,NQ
+2016-04-01 08:30:00,Non Farm Payrolls,-111.70500000000176,False,True,False,False,NQ
+2016-04-14 08:30:00,Inflation Rate MoM,107.5,True,True,False,False,NQ
+2016-04-27 14:00:00,Fed Interest Rate Decision,-110.27500000000146,False,True,False,False,NQ
+2016-05-06 08:30:00,Non Farm Payrolls,-108.36499999999432,False,True,False,False,NQ
+2016-05-17 08:30:00,Inflation Rate MoM,-112.5,True,True,False,False,NQ
+2016-06-03 08:30:00,Non Farm Payrolls,-113.125,True,True,False,False,NQ
+2016-06-15 14:00:00,Fed Interest Rate Decision,-110.98500000000058,True,True,False,False,NQ
+2016-06-16 08:30:00,Inflation Rate MoM,2.5,False,True,False,False,NQ
+2016-07-08 08:30:00,Non Farm Payrolls,334.0400000000045,True,True,False,False,NQ
+2016-07-27 14:00:00,Fed Interest Rate Decision,-116.26500000000306,False,True,False,False,NQ
+2016-08-05 08:30:00,Non Farm Payrolls,252.5,True,True,False,False,NQ
+2016-08-16 08:30:00,Inflation Rate MoM,-92.5,False,True,False,False,NQ
+2016-09-02 08:30:00,Non Farm Payrolls,359.940000000006,True,True,False,True,NQ
+2016-09-16 08:30:00,Inflation Rate MoM,-118.5950000000048,False,True,False,True,NQ
+2016-09-21 14:00:00,Fed Interest Rate Decision,-118.52999999999156,False,True,True,True,NQ
+2016-10-07 08:30:00,Non Farm Payrolls,366.5600000000086,False,True,False,True,NQ
+2016-10-18 08:30:00,Inflation Rate MoM,137.5,True,True,False,True,NQ
+2016-11-02 14:00:00,Fed Interest Rate Decision,-117.06000000000132,False,True,True,True,NQ
+2016-11-04 08:30:00,Non Farm Payrolls,-115.95499999999448,False,True,False,True,NQ
+2016-11-17 08:30:00,Inflation Rate MoM,-122.5,True,True,True,True,NQ
+2016-12-02 08:30:00,Non Farm Payrolls,-117.08000000000538,False,True,False,True,NQ
+2016-12-14 14:00:00,Fed Interest Rate Decision,-121.43000000000028,True,True,False,True,NQ
+2016-12-15 08:30:00,Inflation Rate MoM,72.5,False,True,True,True,NQ
+2017-01-06 08:30:00,Non Farm Payrolls,12.5,False,True,False,True,NQ
+2017-01-18 08:30:00,Inflation Rate MoM,-42.5,True,True,False,True,NQ
+2017-02-01 14:00:00,Fed Interest Rate Decision,-125.22499999999128,True,True,False,True,NQ
+2017-02-03 08:30:00,Non Farm Payrolls,207.5,True,True,False,True,NQ
+2017-02-15 08:30:00,Inflation Rate MoM,-127.93999999999868,False,True,False,True,NQ
+2017-03-10 08:30:00,Non Farm Payrolls,67.5,True,True,False,True,NQ
+2017-03-15 14:00:00,Fed Interest Rate Decision,409.1400000000067,True,True,False,True,NQ
+2017-04-07 08:30:00,Non Farm Payrolls,-130.8350000000064,False,True,False,True,NQ
+2017-05-03 14:00:00,Fed Interest Rate Decision,57.5,False,True,True,True,NQ
+2017-05-05 08:30:00,Non Farm Payrolls,167.5,True,True,False,True,NQ
+2017-06-02 08:30:00,Non Farm Payrolls,-139.31000000000495,True,True,False,True,NQ
+2017-06-14 08:30:00,Inflation Rate MoM,-137.90499999999156,True,True,False,True,NQ
+2017-06-14 14:00:00,Fed Interest Rate Decision,-137.81999999999243,True,True,True,True,NQ
+2017-07-07 08:30:00,Non Farm Payrolls,426.0399999999936,True,True,False,True,NQ
+2017-07-26 14:00:00,Fed Interest Rate Decision,-141.44000000000233,True,True,False,True,NQ
+2017-08-04 08:30:00,Non Farm Payrolls,-140.48500000000786,True,True,False,True,NQ
+2017-08-11 08:30:00,Inflation Rate MoM,92.5,True,True,True,True,NQ
+2017-09-01 08:30:00,Non Farm Payrolls,-7.5,True,True,False,True,NQ
+2017-09-14 08:30:00,Inflation Rate MoM,-142.5,False,True,False,True,NQ
+2017-09-20 14:00:00,Fed Interest Rate Decision,-142.00000000000728,False,True,True,True,NQ
+2017-10-06 08:30:00,Non Farm Payrolls,-143.76000000000204,False,True,False,True,NQ
+2017-11-01 14:00:00,Fed Interest Rate Decision,247.5,False,True,True,True,NQ
+2017-11-03 08:30:00,Non Farm Payrolls,102.5,True,True,False,True,NQ
+2017-12-08 08:30:00,Non Farm Payrolls,232.5,True,True,False,True,NQ
+2017-12-13 08:30:00,Inflation Rate MoM,177.5,True,True,True,True,NQ
+2017-12-13 14:00:00,Fed Interest Rate Decision,157.5,True,True,True,True,NQ
+2018-01-05 08:30:00,Non Farm Payrolls,-155.17499999999927,True,True,False,True,NQ
+2018-01-31 14:00:00,Fed Interest Rate Decision,-161.85499999999593,True,True,True,True,NQ
+2018-02-02 08:30:00,Non Farm Payrolls,-160.05999999999403,False,True,True,True,NQ
+2018-02-14 08:30:00,Inflation Rate MoM,-154.375,True,True,True,True,NQ
+2018-03-09 08:30:00,Non Farm Payrolls,542.5,False,True,True,True,NQ
+2018-03-13 08:30:00,Inflation Rate MoM,551.0599999999977,True,True,False,True,NQ
+2018-03-21 14:00:00,Fed Interest Rate Decision,530.9000000000015,True,True,True,True,NQ
+2018-04-06 08:30:00,Non Farm Payrolls,-153.31500000000233,True,True,True,True,NQ
+2018-04-11 08:30:00,Inflation Rate MoM,-153.9300000000003,False,True,True,True,NQ
+2018-05-02 14:00:00,Fed Interest Rate Decision,512.0000000000073,False,True,True,True,NQ
+2018-05-04 08:30:00,Non Farm Payrolls,-155.24499999999534,False,True,True,True,NQ
+2018-05-10 08:30:00,Inflation Rate MoM,312.5,True,True,False,True,NQ
+2018-06-01 08:30:00,Non Farm Payrolls,-162.62000000000626,True,True,False,True,NQ
+2018-06-12 08:30:00,Inflation Rate MoM,7.5,True,True,False,True,NQ
+2018-06-13 14:00:00,Fed Interest Rate Decision,-168.0500000000029,True,True,True,True,NQ
+2018-07-06 08:30:00,Non Farm Payrolls,546.5999999999985,True,True,True,True,NQ
+2018-07-12 08:30:00,Inflation Rate MoM,72.5,True,True,False,True,NQ
+2018-08-01 14:00:00,Fed Interest Rate Decision,-167.77500000000146,False,True,True,True,NQ
+2018-08-03 08:30:00,Non Farm Payrolls,-57.5,True,True,True,True,NQ
+2018-08-10 08:30:00,Inflation Rate MoM,-171.15999999999983,False,True,True,True,NQ
+2018-09-07 08:30:00,Non Farm Payrolls,-171.26500000000306,True,True,False,True,NQ
+2018-09-13 08:30:00,Inflation Rate MoM,207.5,True,True,False,True,NQ
+2018-09-26 14:00:00,Fed Interest Rate Decision,437.5,True,True,False,True,NQ
+2018-10-05 08:30:00,Non Farm Payrolls,-172.26000000000568,False,True,True,True,NQ
+2018-10-11 08:30:00,Inflation Rate MoM,537.559999999994,False,True,True,True,NQ
+2018-11-02 08:30:00,Non Farm Payrolls,-164.05500000000757,True,True,True,True,NQ
+2018-11-08 14:00:00,Fed Interest Rate Decision,-165.63500000000204,False,True,True,True,NQ
+2018-11-14 08:30:00,Inflation Rate MoM,525.679999999993,False,True,True,True,NQ
+2018-12-07 08:30:00,Non Farm Payrolls,521.7000000000007,False,True,True,True,NQ
+2018-12-12 08:30:00,Inflation Rate MoM,-158.29999999999927,True,True,True,True,NQ
+2018-12-19 14:00:00,Fed Interest Rate Decision,502.2199999999975,True,True,True,True,NQ
+2019-01-04 08:30:00,Non Farm Payrolls,-147.4250000000029,True,True,True,True,NQ
+2019-01-11 08:30:00,Inflation Rate MoM,-154.49000000000524,False,True,True,True,NQ
+2019-01-30 14:00:00,Fed Interest Rate Decision,-157.46499999999287,True,True,True,True,NQ
+2019-02-01 08:30:00,Non Farm Payrolls,527.0600000000013,False,True,True,True,NQ
+2019-02-13 08:30:00,Inflation Rate MoM,-163.4399999999914,True,True,False,True,NQ
+2019-03-08 08:30:00,Non Farm Payrolls,-162.7599999999984,False,True,True,True,NQ
+2019-03-12 08:30:00,Inflation Rate MoM,327.5,False,True,False,True,NQ
+2019-03-20 14:00:00,Fed Interest Rate Decision,567.2799999999916,False,True,True,True,NQ
+2019-04-05 08:30:00,Non Farm Payrolls,422.5,True,True,False,True,NQ
+2019-04-10 08:30:00,Inflation Rate MoM,-174.51999999999316,True,True,False,True,NQ
+2019-05-01 14:00:00,Fed Interest Rate Decision,292.5,False,True,True,True,NQ
+2019-05-03 08:30:00,Non Farm Payrolls,-178.174999999992,True,True,True,True,NQ
+2019-05-10 08:30:00,Inflation Rate MoM,-173.4399999999914,False,True,True,True,NQ
+2019-06-07 08:30:00,Non Farm Payrolls,-168.6750000000029,True,True,False,True,NQ
+2019-06-12 08:30:00,Inflation Rate MoM,-117.5,False,True,True,True,NQ
+2019-06-19 14:00:00,Fed Interest Rate Decision,-175.575000000008,False,True,True,True,NQ
+2019-07-05 08:30:00,Non Farm Payrolls,-182.5,False,True,False,True,NQ
+2019-07-11 08:30:00,Inflation Rate MoM,-181.56000000000856,True,True,True,True,NQ
+2019-07-31 14:00:00,Fed Interest Rate Decision,-181.825000000008,False,True,True,True,NQ
+2019-08-02 08:30:00,Non Farm Payrolls,-177.69000000000233,False,True,True,True,NQ
+2019-08-13 08:30:00,Inflation Rate MoM,-173.4150000000045,False,True,True,True,NQ
+2019-09-06 08:30:00,Non Farm Payrolls,-180.09500000000116,False,True,True,True,NQ
+2019-09-12 08:30:00,Inflation Rate MoM,277.5,False,True,True,True,NQ
+2019-09-18 14:00:00,Fed Interest Rate Decision,-180.0250000000051,False,True,True,True,NQ
+2019-10-04 08:30:00,Non Farm Payrolls,-175.27500000000146,False,True,True,True,NQ
+2019-10-10 08:30:00,Inflation Rate MoM,157.5,True,True,True,True,NQ
+2019-10-30 14:00:00,Fed Interest Rate Decision,-183.4399999999914,False,True,False,True,NQ
+2019-11-01 08:30:00,Non Farm Payrolls,472.5,True,True,False,True,NQ
+2019-11-13 08:30:00,Inflation Rate MoM,-27.5,False,True,False,True,NQ
+2019-12-06 08:30:00,Non Farm Payrolls,-189.18499999999767,True,True,False,True,NQ
+2019-12-11 08:30:00,Inflation Rate MoM,52.5,True,True,False,True,NQ
+2019-12-11 14:00:00,Fed Interest Rate Decision,142.5,True,True,False,True,NQ
+2020-01-10 08:30:00,Non Farm Payrolls,-203.29000000001545,True,True,False,True,NQ
+2020-01-14 08:30:00,Inflation Rate MoM,92.5,False,True,True,True,NQ
+2020-01-29 14:00:00,Fed Interest Rate Decision,-205.21499999998923,True,True,True,True,NQ
+2020-02-07 08:30:00,Non Farm Payrolls,-211.05500000001484,False,True,False,True,NQ
+2020-02-13 08:30:00,Inflation Rate MoM,-213.640000000014,False,True,True,True,NQ
+2020-03-06 08:30:00,Non Farm Payrolls,645.2999999999884,False,True,True,True,NQ
+2020-03-11 08:30:00,Inflation Rate MoM,-192.5,False,True,True,True,NQ
+2020-04-03 08:30:00,Non Farm Payrolls,-174.25499999999374,False,True,True,True,NQ
+2020-04-29 14:00:00,Fed Interest Rate Decision,-201.62000000000265,True,True,True,True,NQ
+2020-05-08 08:30:00,Non Farm Payrolls,711.8400000000111,True,True,True,True,NQ
+2020-05-12 08:30:00,Inflation Rate MoM,-208.69500000000696,True,True,True,True,NQ
+2020-06-05 08:30:00,Non Farm Payrolls,-42.5,True,True,True,True,NQ
+2020-06-10 08:30:00,Inflation Rate MoM,117.5,True,True,True,True,NQ
+2020-06-10 14:00:00,Fed Interest Rate Decision,-223.65499999999884,True,True,True,True,NQ
+2020-07-02 08:30:00,Non Farm Payrolls,-229.2450000000099,True,True,False,True,NQ
+2020-07-14 08:30:00,Inflation Rate MoM,-235.21499999998923,False,True,True,True,NQ
+2020-07-29 14:00:00,Fed Interest Rate Decision,-234.900000000016,True,True,True,True,NQ
+2020-08-07 08:30:00,Non Farm Payrolls,-247.02499999999415,False,True,True,True,NQ
+2020-08-12 08:30:00,Inflation Rate MoM,-241.86000000001516,True,True,True,True,NQ
+2020-09-04 08:30:00,Non Farm Payrolls,-255.9400000000096,True,True,True,True,NQ
+2020-09-11 08:30:00,Inflation Rate MoM,-247.52000000000407,True,True,True,True,NQ
+2020-09-16 14:00:00,Fed Interest Rate Decision,884.6600000000035,False,True,True,True,NQ
+2020-10-02 08:30:00,Non Farm Payrolls,-249.56500000000236,False,True,True,True,NQ
+2020-10-13 08:30:00,Inflation Rate MoM,-266.56999999999243,True,True,True,True,NQ
+2020-11-05 14:00:00,Fed Interest Rate Decision,37.5,True,True,True,True,NQ
+2020-11-06 08:30:00,Non Farm Payrolls,-261.84000000001106,False,True,True,True,NQ
+2020-11-12 08:30:00,Inflation Rate MoM,617.5,True,True,True,True,NQ
+2020-12-04 08:30:00,Non Farm Payrolls,-272.36000000000786,True,True,False,True,NQ
+2020-12-10 08:30:00,Inflation Rate MoM,-268.6200000000099,False,True,True,True,NQ
+2020-12-16 14:00:00,Fed Interest Rate Decision,-275.4999999999927,True,True,False,True,NQ
+2021-01-08 08:30:00,Non Farm Payrolls,-282.53499999998894,True,True,False,True,NQ
+2021-01-13 08:30:00,Inflation Rate MoM,342.5,False,True,True,True,NQ
+2021-01-27 14:00:00,Fed Interest Rate Decision,-288.2050000000163,False,True,True,True,NQ
+2021-02-05 08:30:00,Non Farm Payrolls,347.5,True,True,False,True,NQ
+2021-02-10 08:30:00,Inflation Rate MoM,577.5,True,True,False,True,NQ
+2021-03-05 08:30:00,Non Farm Payrolls,-272.5500000000102,True,True,True,True,NQ
+2021-03-10 08:30:00,Inflation Rate MoM,997.2599999999876,False,True,True,True,NQ
+2021-03-17 14:00:00,Fed Interest Rate Decision,1015.8799999999974,False,True,True,True,NQ
+2021-04-02 08:30:00,Non Farm Payrolls,-289.83000000000175,True,True,False,True,NQ
+2021-04-13 08:30:00,Inflation Rate MoM,-298.9349999999831,True,True,False,True,NQ
+2021-04-28 14:00:00,Fed Interest Rate Decision,-300.625,False,True,True,True,NQ
+2021-05-07 08:30:00,Non Farm Payrolls,1068.6999999999898,True,True,False,True,NQ
+2021-05-12 08:30:00,Inflation Rate MoM,-288.1999999999971,False,True,True,True,NQ
+2021-06-04 08:30:00,Non Farm Payrolls,1061.280000000006,True,True,False,True,NQ
+2021-06-10 08:30:00,Inflation Rate MoM,-298.4349999999904,False,True,True,True,NQ
+2021-06-16 14:00:00,Fed Interest Rate Decision,-302.92499999999563,False,True,True,True,NQ
+2021-07-02 08:30:00,Non Farm Payrolls,-314.49000000000524,True,True,False,True,NQ
+2021-07-13 08:30:00,Inflation Rate MoM,-320.8099999999831,True,True,False,True,NQ
+2021-07-28 14:00:00,Fed Interest Rate Decision,-321.864999999998,True,True,True,True,NQ
+2021-08-06 08:30:00,Non Farm Payrolls,-325.515000000014,False,True,False,True,NQ
+2021-08-11 08:30:00,Inflation Rate MoM,1178.780000000006,False,True,False,True,NQ
+2021-09-03 08:30:00,Non Farm Payrolls,-335.0,True,True,False,True,NQ
+2021-09-14 08:30:00,Inflation Rate MoM,1209.9199999999837,False,True,True,True,NQ
+2021-09-22 14:00:00,Fed Interest Rate Decision,-324.90499999999884,True,True,True,True,NQ
+2021-10-08 08:30:00,Non Farm Payrolls,-320.9600000000137,True,True,False,True,NQ
+2021-10-13 08:30:00,Inflation Rate MoM,-316.77999999999884,True,True,False,True,NQ
+2021-11-03 14:00:00,Fed Interest Rate Decision,-341.9800000000032,True,True,False,True,NQ
+2021-11-05 08:30:00,Non Farm Payrolls,-349.7350000000006,True,True,False,True,NQ
+2021-11-10 08:30:00,Inflation Rate MoM,-345.61000000001513,False,True,True,True,NQ
+2021-12-03 08:30:00,Non Farm Payrolls,1259.7200000000155,True,True,True,True,NQ
+2021-12-10 08:30:00,Inflation Rate MoM,-346.36500000000524,True,True,False,True,NQ
+2021-12-15 14:00:00,Fed Interest Rate Decision,-338.5900000000038,False,True,True,True,NQ
+2022-01-07 08:30:00,Non Farm Payrolls,-337.7400000000125,False,True,True,True,NQ
+2022-01-12 08:30:00,Inflation Rate MoM,-340.1499999999942,True,True,True,True,NQ
+2022-01-26 14:00:00,Fed Interest Rate Decision,-312.6450000000113,True,True,True,True,NQ
+2022-02-04 08:30:00,Non Farm Payrolls,-314.44500000001426,False,True,True,True,NQ
+2022-02-10 08:30:00,Inflation Rate MoM,-323.0099999999948,True,True,True,True,NQ
+2022-03-04 08:30:00,Non Farm Payrolls,1090.9800000000178,True,True,True,True,NQ
+2022-03-10 08:30:00,Inflation Rate MoM,1060.8000000000177,False,True,True,True,NQ
+2022-03-16 14:00:00,Fed Interest Rate Decision,-297.1099999999933,True,True,True,True,NQ
+2022-04-01 08:30:00,Non Farm Payrolls,-322.5,True,True,False,True,NQ
+2022-04-12 08:30:00,Inflation Rate MoM,1101.37999999999,True,True,True,True,NQ
+2022-05-04 14:00:00,Fed Interest Rate Decision,1025.9000000000017,False,True,True,True,NQ
+2022-05-06 08:30:00,Non Farm Payrolls,1000.1800000000004,False,True,True,True,NQ
+2022-05-11 08:30:00,Inflation Rate MoM,-272.8949999999895,True,True,True,True,NQ
+2022-06-03 08:30:00,Non Farm Payrolls,-277.6849999999831,False,True,True,True,NQ
+2022-06-10 08:30:00,Inflation Rate MoM,-268.7800000000061,True,True,True,True,NQ
+2022-06-15 14:00:00,Fed Interest Rate Decision,901.280000000006,True,True,True,True,NQ
+2022-07-08 08:30:00,Non Farm Payrolls,-264.419999999991,False,True,True,True,NQ
+2022-07-13 08:30:00,Inflation Rate MoM,-259.4700000000012,True,True,True,True,NQ
+2022-07-27 14:00:00,Fed Interest Rate Decision,-271.28499999998894,True,True,True,True,NQ
+2022-08-05 08:30:00,Non Farm Payrolls,-289.1700000000128,False,True,True,True,NQ
+2022-08-10 08:30:00,Inflation Rate MoM,1024.6600000000035,True,True,True,True,NQ
+2022-09-02 08:30:00,Non Farm Payrolls,-268.3750000000145,False,True,True,True,NQ
+2022-09-13 08:30:00,Inflation Rate MoM,1010.8599999999932,True,True,True,True,NQ
+2022-09-21 14:00:00,Fed Interest Rate Decision,937.7000000000044,True,True,True,True,NQ
+2022-10-07 08:30:00,Non Farm Payrolls,-253.16999999999095,True,True,True,True,NQ
+2022-10-13 08:30:00,Inflation Rate MoM,852.2999999999956,True,True,True,True,NQ
+2022-11-02 14:00:00,Fed Interest Rate Decision,-247.7000000000044,False,True,True,True,NQ
+2022-11-04 08:30:00,Non Farm Payrolls,840.7600000000093,True,True,True,True,NQ
+2022-11-10 08:30:00,Inflation Rate MoM,-240.11500000000524,True,True,True,True,NQ
+2022-12-02 08:30:00,Non Farm Payrolls,-263.2500000000073,True,True,True,True,NQ
+2022-12-13 08:30:00,Inflation Rate MoM,930.3199999999924,True,True,True,True,NQ
+2022-12-14 14:00:00,Fed Interest Rate Decision,-263.5599999999977,True,True,True,True,NQ
+2023-01-06 08:30:00,Non Farm Payrolls,838.5599999999977,False,True,True,True,NQ
+2023-01-12 08:30:00,Inflation Rate MoM,-252.78999999998632,True,True,False,True,NQ
+2023-02-01 14:00:00,Fed Interest Rate Decision,-265.1050000000032,True,True,True,True,NQ
+2023-02-03 08:30:00,Non Farm Payrolls,-277.2950000000128,True,True,True,True,NQ
+2023-02-14 08:30:00,Inflation Rate MoM,-274.30499999998574,True,True,True,True,NQ
+2023-03-10 08:30:00,Non Farm Payrolls,-262.66999999999825,True,True,True,True,NQ
+2023-03-14 08:30:00,Inflation Rate MoM,-265.4449999999997,True,True,True,True,NQ
+2023-03-22 14:00:00,Fed Interest Rate Decision,1011.12000000001,True,True,False,True,NQ
+2023-04-07 08:30:00,Non Farm Payrolls,-285.580000000009,False,True,False,True,NQ
+2023-04-12 08:30:00,Inflation Rate MoM,-284.1050000000177,False,True,False,True,NQ
+2023-05-03 14:00:00,Fed Interest Rate Decision,-286.8700000000172,True,True,True,True,NQ
+2023-05-05 08:30:00,Non Farm Payrolls,-285.044999999991,True,True,False,True,NQ
+2023-05-10 08:30:00,Inflation Rate MoM,1038.199999999997,False,True,False,True,NQ
+2023-06-02 08:30:00,Non Farm Payrolls,-313.24499999998807,True,True,False,True,NQ
+2023-06-13 08:30:00,Inflation Rate MoM,-322.97999999998865,True,True,False,True,NQ
+2023-06-14 14:00:00,Fed Interest Rate Decision,-325.2549999999974,True,True,True,True,NQ
+2023-07-07 08:30:00,Non Farm Payrolls,1194.2199999999866,False,True,False,True,NQ
+2023-07-12 08:30:00,Inflation Rate MoM,1202.1800000000076,True,True,False,True,NQ
+2023-07-26 14:00:00,Fed Interest Rate Decision,-333.63000000001193,False,True,True,True,NQ
+2023-08-04 08:30:00,Non Farm Payrolls,-331.864999999998,False,True,True,True,NQ
+2023-08-10 08:30:00,Inflation Rate MoM,-328.3350000000064,True,True,True,True,NQ
+2023-09-01 08:30:00,Non Farm Payrolls,-333.9600000000064,True,True,False,True,NQ
+2023-09-13 08:30:00,Inflation Rate MoM,-332.4399999999878,False,True,False,True,NQ
+2023-09-20 14:00:00,Fed Interest Rate Decision,-329.9399999999878,True,True,True,True,NQ
+2023-10-06 08:30:00,Non Farm Payrolls,-320.10999999998603,True,True,True,True,NQ
+2023-10-12 08:30:00,Inflation Rate MoM,-331.1249999999927,True,True,False,True,NQ
+2023-11-01 14:00:00,Fed Interest Rate Decision,-314.48499999998603,True,True,True,True,NQ
+2023-11-03 08:30:00,Non Farm Payrolls,-321.6700000000128,True,True,False,True,NQ
+2023-11-14 08:30:00,Inflation Rate MoM,-334.34000000001106,True,True,False,True,NQ
+2023-12-08 08:30:00,Non Farm Payrolls,-342.2850000000108,False,True,False,True,NQ
+2023-12-12 08:30:00,Inflation Rate MoM,-352.4149999999645,True,True,False,True,NQ
+2023-12-13 14:00:00,Fed Interest Rate Decision,1305.4400000000169,True,True,False,True,NQ
+2024-01-05 08:30:00,Non Farm Payrolls,-350.714999999982,False,True,False,True,NQ
+2024-01-11 08:30:00,Inflation Rate MoM,-362.7599999999802,True,True,False,True,NQ
+2024-01-31 14:00:00,Fed Interest Rate Decision,-370.03499999998894,False,True,True,True,NQ
+2024-02-02 08:30:00,Non Farm Payrolls,-374.6549999999843,False,True,False,True,NQ
+2024-02-13 08:30:00,Inflation Rate MoM,-379.5100000000093,False,True,False,True,NQ
+2024-03-08 08:30:00,Non Farm Payrolls,-388.4500000000117,True,True,True,True,NQ
+2024-03-12 08:30:00,Inflation Rate MoM,-388.4799999999814,False,True,False,True,NQ
+2024-03-20 14:00:00,Fed Interest Rate Decision,1439.1999999999823,True,True,True,True,NQ
+2024-04-05 08:30:00,Non Farm Payrolls,-385.3399999999965,True,True,False,True,NQ
+2024-04-10 08:30:00,Inflation Rate MoM,1448.1199999999808,True,True,False,True,NQ
+2024-05-01 14:00:00,Fed Interest Rate Decision,262.5,False,True,True,True,NQ
+2024-05-03 08:30:00,Non Farm Payrolls,1398.2800000000134,True,True,False,True,NQ
+2024-05-15 08:30:00,Inflation Rate MoM,1449.9399999999878,False,True,False,True,NQ
+2024-06-07 08:30:00,Non Farm Payrolls,-404.2850000000181,True,True,False,True,NQ
+2024-06-12 08:30:00,Inflation Rate MoM,1518.7400000000343,True,True,False,True,NQ
+2024-06-12 14:00:00,Fed Interest Rate Decision,-412.7799999999843,True,True,True,True,NQ
+2024-07-05 08:30:00,Non Farm Payrolls,-431.3549999999668,True,True,False,True,NQ
+2024-07-11 08:30:00,Inflation Rate MoM,1647.459999999992,True,True,False,True,NQ
+2024-07-31 14:00:00,Fed Interest Rate Decision,-417.5,True,True,True,True,NQ
+2024-08-02 08:30:00,Non Farm Payrolls,-396.70500000000175,False,True,True,True,NQ
+2024-08-14 08:30:00,Inflation Rate MoM,-404.5399999999791,True,True,False,True,NQ
+2024-09-06 08:30:00,Non Farm Payrolls,-398.4700000000157,False,True,True,True,NQ
+2024-09-11 08:30:00,Inflation Rate MoM,-399.3349999999919,True,True,False,True,NQ
+2024-09-18 14:00:00,Fed Interest Rate Decision,-416.2750000000233,False,True,True,True,NQ
+2024-10-04 08:30:00,Non Farm Payrolls,1582.7799999999845,True,True,True,True,NQ
+2024-10-10 08:30:00,Inflation Rate MoM,-431.26499999998487,False,True,False,True,NQ
+2024-11-01 08:30:00,Non Farm Payrolls,-424.8500000000058,True,True,False,True,NQ
+2024-11-07 14:00:00,Fed Interest Rate Decision,-446.3549999999668,True,True,True,True,NQ
+2024-11-13 08:30:00,Inflation Rate MoM,1668.7799999999695,False,True,False,True,NQ
+2024-12-06 08:30:00,Non Farm Payrolls,-451.9499999999971,True,True,False,True,NQ
+2024-12-11 08:30:00,Inflation Rate MoM,1297.5,True,True,False,True,NQ
+2024-12-18 14:00:00,Fed Interest Rate Decision,-468.4150000000227,False,True,False,True,NQ
+2025-01-10 08:30:00,Non Farm Payrolls,-448.2250000000204,True,True,True,True,NQ
+2025-01-15 08:30:00,Inflation Rate MoM,1657.3999999999796,True,True,False,True,NQ
+2025-01-29 14:00:00,Fed Interest Rate Decision,-452.0249999999942,False,True,True,True,NQ
+2025-02-07 08:30:00,Non Farm Payrolls,-459.375,False,True,False,True,NQ
+2025-02-12 08:30:00,Inflation Rate MoM,-458.839999999982,True,True,False,True,NQ
+2025-03-07 08:30:00,Non Farm Payrolls,-424.5700000000216,False,True,True,True,NQ
+2025-03-12 08:30:00,Inflation Rate MoM,2202.5,True,True,True,True,NQ
+2025-03-19 14:00:00,Fed Interest Rate Decision,-418.8500000000204,True,True,True,True,NQ
+2025-04-04 08:30:00,Non Farm Payrolls,1423.9400000000023,False,True,True,True,NQ
+2025-04-10 08:30:00,Inflation Rate MoM,1482.980000000025,False,True,True,True,NQ
+2025-05-02 08:30:00,Non Farm Payrolls,1572.5600000000122,True,True,False,True,NQ
+2025-05-07 14:00:00,Fed Interest Rate Decision,-418.8549999999668,False,True,True,True,NQ
+2025-05-13 08:30:00,Inflation Rate MoM,1654.4400000000314,True,True,False,True,NQ
+2025-06-06 08:30:00,Non Farm Payrolls,1711.2799999999695,True,True,True,True,NQ
+2025-06-11 08:30:00,Inflation Rate MoM,1732.479999999996,True,True,True,True,NQ
+2025-06-18 14:00:00,Fed Interest Rate Decision,-463.1150000000344,True,True,True,True,NQ
+2025-07-03 08:30:00,Non Farm Payrolls,847.5,True,True,False,True,NQ
+2025-07-15 08:30:00,Inflation Rate MoM,437.5,True,True,False,True,NQ
+2025-07-30 14:00:00,Fed Interest Rate Decision,-493.2650000000285,True,True,False,True,NQ
+2025-08-01 08:30:00,Non Farm Payrolls,-484.945000000007,False,True,True,True,NQ
+2025-08-12 08:30:00,Inflation Rate MoM,1870.3800000000049,True,True,False,True,NQ
+2025-09-05 08:30:00,Non Farm Payrolls,-498.0350000000181,True,True,False,True,NQ
+2025-09-11 08:30:00,Inflation Rate MoM,-501.3450000000012,True,True,False,True,NQ
+2025-09-17 14:00:00,Fed Interest Rate Decision,-511.1699999999837,False,True,False,True,NQ
+2025-10-24 08:30:00,Inflation Rate MoM,2006.840000000011,True,True,False,True,NQ
+2025-10-29 14:00:00,Fed Interest Rate Decision,-547.5650000000314,False,True,False,True,NQ
+2025-11-20 08:30:00,Non Farm Payrolls,1988.2400000000048,False,True,True,True,NQ
+2025-12-10 14:00:00,Fed Interest Rate Decision,2026.359999999986,False,True,True,True,NQ
+2025-12-16 08:30:00,Non Farm Payrolls,-528.5899999999674,True,True,True,True,NQ
+2026-01-09 08:30:00,Non Farm Payrolls,1237.5,True,True,False,True,NQ
+2026-01-13 08:30:00,Inflation Rate MoM,2048.7799999999697,True,True,False,True,NQ
+2026-01-28 14:00:00,Fed Interest Rate Decision,-545.9100000000035,False,True,True,True,NQ
+2026-02-11 08:30:00,Non Farm Payrolls,2002.5,False,True,False,True,NQ
+2026-02-13 08:30:00,Inflation Rate MoM,1952.260000000024,False,True,True,True,NQ
+2026-03-06 08:30:00,Non Farm Payrolls,-1017.5,False,True,True,True,NQ
+2026-03-11 08:30:00,Inflation Rate MoM,-521.7599999999948,False,True,True,True,NQ
+2026-03-18 14:00:00,Fed Interest Rate Decision,-47.5,False,True,True,True,NQ
+2026-04-03 08:30:00,Non Farm Payrolls,-505.57999999997264,False,True,False,True,NQ
+2026-04-10 08:30:00,Inflation Rate MoM,1999.919999999984,True,True,False,True,NQ
+2026-04-29 14:00:00,Fed Interest Rate Decision,-567.1899999999732,False,True,True,True,NQ
+2026-05-08 08:30:00,Non Farm Payrolls,1557.5,True,True,False,True,NQ
+2026-05-12 08:30:00,Inflation Rate MoM,1387.5,False,True,False,True,NQ
+2026-06-05 08:30:00,Non Farm Payrolls,-625.4000000000087,False,True,True,True,NQ
+2026-06-10 08:30:00,Inflation Rate MoM,2273.0799999999726,False,True,True,True,NQ
+2026-06-17 14:00:00,Fed Interest Rate Decision,-631.4800000000105,False,True,True,True,NQ
+2026-07-02 08:30:00,Non Farm Payrolls,2390.179999999964,True,True,True,True,NQ
+2026-07-14 08:30:00,Inflation Rate MoM,2877.5,True,True,True,True,NQ
+2026-07-29 14:00:00,Fed Interest Rate Decision,-576.6700000000128,False,True,True,True,NQ
+2026-08-07 08:30:00,Non Farm Payrolls,-615.6100000000151,True,True,True,True,NQ
+2017-07-26 14:00:00,Fed Interest Rate Decision,-62.499999999997726,False,True,False,False,RTY
+2017-08-11 08:30:00,Inflation Rate MoM,-92.49999999999318,True,True,False,False,RTY
+2017-09-01 08:30:00,Non Farm Payrolls,-32.499999999990905,True,True,False,False,RTY
+2017-09-14 08:30:00,Inflation Rate MoM,-93.74000000000024,False,True,False,False,RTY
+2017-09-20 14:00:00,Fed Interest Rate Decision,-97.5,True,True,False,False,RTY
+2017-10-06 08:30:00,Non Farm Payrolls,-98.14499999999724,False,True,False,False,RTY
+2017-11-01 14:00:00,Fed Interest Rate Decision,274.4200000000001,False,True,False,False,RTY
+2017-11-03 08:30:00,Non Farm Payrolls,-42.50000000000455,False,True,False,False,RTY
+2017-12-08 08:30:00,Non Farm Payrolls,127.5,True,True,False,False,RTY
+2017-12-13 08:30:00,Inflation Rate MoM,-32.499999999990905,False,True,False,False,RTY
+2017-12-13 14:00:00,Fed Interest Rate Decision,7.4999999999954525,True,True,False,False,RTY
+2018-01-05 08:30:00,Non Farm Payrolls,-102.50000000000682,True,True,False,False,RTY
+2018-01-31 14:00:00,Fed Interest Rate Decision,-101.59499999999524,False,True,False,False,RTY
+2018-02-02 08:30:00,Non Farm Payrolls,-102.50000000000682,False,True,False,False,RTY
+2018-02-14 08:30:00,Inflation Rate MoM,-97.5,True,True,False,False,RTY
+2018-03-09 08:30:00,Non Farm Payrolls,-102.50000000000682,False,True,False,False,RTY
+2018-03-13 08:30:00,Inflation Rate MoM,-112.49999999999773,True,True,False,False,RTY
+2018-03-21 14:00:00,Fed Interest Rate Decision,-101.7850000000044,True,True,False,False,RTY
+2018-04-06 08:30:00,Non Farm Payrolls,-99.37499999999544,True,True,False,False,RTY
+2018-04-11 08:30:00,Inflation Rate MoM,-99.26000000000158,False,True,False,False,RTY
+2018-05-02 14:00:00,Fed Interest Rate Decision,107.49999999999544,True,True,True,True,RTY
+2018-05-04 08:30:00,Non Farm Payrolls,-99.76499999999989,False,True,True,True,RTY
+2018-05-10 08:30:00,Inflation Rate MoM,72.50000000000455,False,True,False,True,RTY
+2018-06-01 08:30:00,Non Farm Payrolls,-27.499999999995453,True,True,False,True,RTY
+2018-06-12 08:30:00,Inflation Rate MoM,-22.5,True,True,False,True,RTY
+2018-06-13 14:00:00,Fed Interest Rate Decision,-106.62499999999454,False,True,True,True,RTY
+2018-07-06 08:30:00,Non Farm Payrolls,317.4999999999977,False,True,False,True,RTY
+2018-07-12 08:30:00,Inflation Rate MoM,52.5,True,True,False,True,RTY
+2018-08-01 14:00:00,Fed Interest Rate Decision,-105.74499999999944,False,True,True,True,RTY
+2018-08-03 08:30:00,Non Farm Payrolls,-106.72500000000356,False,True,False,True,RTY
+2018-08-10 08:30:00,Inflation Rate MoM,17.499999999997726,False,True,False,True,RTY
+2018-09-07 08:30:00,Non Farm Payrolls,-108.08500000000322,True,True,False,True,RTY
+2018-09-13 08:30:00,Inflation Rate MoM,47.50000000000455,True,True,False,True,RTY
+2018-09-26 14:00:00,Fed Interest Rate Decision,47.50000000000455,False,True,True,True,RTY
+2018-10-05 08:30:00,Non Farm Payrolls,307.5799999999981,False,True,False,True,RTY
+2018-10-11 08:30:00,Inflation Rate MoM,290.4000000000019,False,True,True,True,RTY
+2018-11-02 08:30:00,Non Farm Payrolls,-102.49999999999544,True,True,True,True,RTY
+2018-11-08 14:00:00,Fed Interest Rate Decision,-101.48000000000138,False,True,True,True,RTY
+2018-11-14 08:30:00,Inflation Rate MoM,281.6399999999953,False,True,True,True,RTY
+2018-12-07 08:30:00,Non Farm Payrolls,272.50000000000455,False,True,True,True,RTY
+2018-12-12 08:30:00,Inflation Rate MoM,-97.5,True,True,True,True,RTY
+2018-12-19 14:00:00,Fed Interest Rate Decision,-92.23000000000413,True,True,True,True,RTY
+2019-01-04 08:30:00,Non Farm Payrolls,-92.49999999999318,True,True,True,True,RTY
+2019-01-11 08:30:00,Inflation Rate MoM,-2.4999999999954525,False,True,True,True,RTY
+2019-01-30 14:00:00,Fed Interest Rate Decision,273.1199999999967,True,True,True,True,RTY
+2019-02-01 08:30:00,Non Farm Payrolls,217.5000000000091,False,True,False,True,RTY
+2019-02-13 08:30:00,Inflation Rate MoM,27.5,False,True,False,True,RTY
+2019-03-08 08:30:00,Non Farm Payrolls,-98.75000000000456,False,True,False,True,RTY
+2019-03-12 08:30:00,Inflation Rate MoM,112.4999999999909,False,True,False,True,RTY
+2019-03-20 14:00:00,Fed Interest Rate Decision,288.0000000000018,False,True,True,True,RTY
+2019-04-05 08:30:00,Non Farm Payrolls,122.50000000000456,True,True,False,True,RTY
+2019-04-10 08:30:00,Inflation Rate MoM,-102.49999999999544,True,True,False,True,RTY
+2019-05-01 14:00:00,Fed Interest Rate Decision,62.500000000002274,False,True,True,True,RTY
+2019-05-03 08:30:00,Non Farm Payrolls,-101.99999999999592,True,True,False,True,RTY
+2019-05-10 08:30:00,Inflation Rate MoM,-102.49999999999544,False,True,True,True,RTY
+2019-06-07 08:30:00,Non Farm Payrolls,-97.99000000000206,True,True,False,True,RTY
+2019-06-12 08:30:00,Inflation Rate MoM,-37.499999999997726,False,True,False,True,RTY
+2019-06-19 14:00:00,Fed Interest Rate Decision,-100.13499999999794,False,True,False,True,RTY
+2019-07-05 08:30:00,Non Farm Payrolls,-101.12499999999956,False,True,False,True,RTY
+2019-07-11 08:30:00,Inflation Rate MoM,-101.07500000000071,True,True,False,True,RTY
+2019-07-31 14:00:00,Fed Interest Rate Decision,-102.42500000000292,True,True,True,True,RTY
+2019-08-02 08:30:00,Non Farm Payrolls,-99.64499999999587,False,True,True,True,RTY
+2019-08-13 08:30:00,Inflation Rate MoM,-97.5,False,True,True,True,RTY
+2019-09-06 08:30:00,Non Farm Payrolls,-98.37499999999636,True,True,False,True,RTY
+2019-09-12 08:30:00,Inflation Rate MoM,77.5,False,True,True,True,RTY
+2019-09-18 14:00:00,Fed Interest Rate Decision,-100.90999999999669,False,True,True,True,RTY
+2019-10-04 08:30:00,Non Farm Payrolls,-96.54999999999971,False,True,True,True,RTY
+2019-10-10 08:30:00,Inflation Rate MoM,82.49999999999545,True,True,True,True,RTY
+2019-10-30 14:00:00,Fed Interest Rate Decision,-100.85000000000036,False,True,True,True,RTY
+2019-11-01 08:30:00,Non Farm Payrolls,290.4199999999969,True,True,False,True,RTY
+2019-11-13 08:30:00,Inflation Rate MoM,-57.500000000002274,False,True,False,True,RTY
+2019-12-06 08:30:00,Non Farm Payrolls,-103.52000000000088,True,True,False,True,RTY
+2019-12-11 08:30:00,Inflation Rate MoM,12.500000000002274,True,True,False,True,RTY
+2019-12-11 14:00:00,Fed Interest Rate Decision,17.499999999997726,False,True,False,True,RTY
+2020-01-10 08:30:00,Non Farm Payrolls,-105.86500000000342,False,True,False,True,RTY
+2020-01-14 08:30:00,Inflation Rate MoM,32.49999999999545,False,True,False,True,RTY
+2020-01-29 14:00:00,Fed Interest Rate Decision,52.5,False,True,True,True,RTY
+2020-02-07 08:30:00,Non Farm Payrolls,-106.24499999999898,False,True,False,True,RTY
+2020-02-13 08:30:00,Inflation Rate MoM,7.4999999999954525,False,True,True,True,RTY
+2020-03-06 08:30:00,Non Farm Payrolls,272.50000000000455,False,True,True,True,RTY
+2020-03-11 08:30:00,Inflation Rate MoM,-87.76000000000067,False,True,True,True,RTY
+2020-04-03 08:30:00,Non Farm Payrolls,-77.49999999999545,False,True,True,True,RTY
+2020-04-29 14:00:00,Fed Interest Rate Decision,-90.70500000000038,True,True,True,True,RTY
+2020-05-08 08:30:00,Non Farm Payrolls,237.199999999998,True,True,True,True,RTY
+2020-05-12 08:30:00,Inflation Rate MoM,-88.88500000000249,True,True,True,True,RTY
+2020-06-05 08:30:00,Non Farm Payrolls,-97.5,True,True,True,True,RTY
+2020-06-10 08:30:00,Inflation Rate MoM,47.49999999999318,False,True,True,True,RTY
+2020-06-10 14:00:00,Fed Interest Rate Decision,273.299999999997,False,True,True,True,RTY
+2020-07-02 08:30:00,Non Farm Payrolls,-94.47499999999764,True,True,True,True,RTY
+2020-07-14 08:30:00,Inflation Rate MoM,-92.94499999999516,True,True,True,True,RTY
+2020-07-29 14:00:00,Fed Interest Rate Decision,-96.94500000000288,True,True,True,True,RTY
+2020-08-07 08:30:00,Non Farm Payrolls,285.1999999999998,False,True,True,True,RTY
+2020-08-12 08:30:00,Inflation Rate MoM,-102.13999999999488,True,True,True,True,RTY
+2020-09-04 08:30:00,Non Farm Payrolls,-100.67000000000009,True,True,True,True,RTY
+2020-09-11 08:30:00,Inflation Rate MoM,-98.11500000000478,True,True,True,True,RTY
+2020-09-16 14:00:00,Fed Interest Rate Decision,292.5000000000091,True,True,True,True,RTY
+2020-10-02 08:30:00,Non Farm Payrolls,-97.81500000000052,False,True,True,True,RTY
+2020-10-13 08:30:00,Inflation Rate MoM,-104.29000000000087,False,True,True,True,RTY
+2020-11-05 14:00:00,Fed Interest Rate Decision,7.500000000006821,True,True,True,True,RTY
+2020-11-06 08:30:00,Non Farm Payrolls,-104.88000000000056,False,True,True,True,RTY
+2020-11-12 08:30:00,Inflation Rate MoM,172.49999999999318,False,True,True,True,RTY
+2020-12-04 08:30:00,Non Farm Payrolls,-115.3199999999947,True,True,False,True,RTY
+2020-12-10 08:30:00,Inflation Rate MoM,-117.60999999999969,False,True,True,True,RTY
+2020-12-16 14:00:00,Fed Interest Rate Decision,-122.5,False,True,True,True,RTY
+2021-01-08 08:30:00,Non Farm Payrolls,-137.5000000000091,False,True,True,True,RTY
+2021-01-13 08:30:00,Inflation Rate MoM,127.5,False,True,True,True,RTY
+2021-01-27 14:00:00,Fed Interest Rate Decision,-129.41999999999098,True,True,True,True,RTY
+2021-02-05 08:30:00,Non Farm Payrolls,-133.3850000000075,True,True,True,True,RTY
+2021-02-10 08:30:00,Inflation Rate MoM,247.50000000000452,True,True,False,True,RTY
+2021-03-05 08:30:00,Non Farm Payrolls,-130.36000000000513,True,True,True,True,RTY
+2021-03-10 08:30:00,Inflation Rate MoM,307.49999999999545,True,True,True,True,RTY
+2021-03-17 14:00:00,Fed Interest Rate Decision,437.3600000000033,False,True,True,True,RTY
+2021-04-02 08:30:00,Non Farm Payrolls,-137.5000000000091,True,True,False,True,RTY
+2021-04-13 08:30:00,Inflation Rate MoM,-133.26000000000477,False,True,True,True,RTY
+2021-04-28 14:00:00,Fed Interest Rate Decision,-137.28500000000622,True,True,False,True,RTY
+2021-05-07 08:30:00,Non Farm Payrolls,-134.72499999998945,True,True,True,True,RTY
+2021-05-12 08:30:00,Inflation Rate MoM,-131.6799999999921,False,True,True,True,RTY
+2021-06-04 08:30:00,Non Farm Payrolls,297.50000000000455,True,True,False,True,RTY
+2021-06-10 08:30:00,Inflation Rate MoM,-138.87499999999363,False,True,True,True,RTY
+2021-06-16 14:00:00,Fed Interest Rate Decision,-137.76499999999942,False,True,True,True,RTY
+2021-07-02 08:30:00,Non Farm Payrolls,442.2600000000011,False,True,False,True,RTY
+2021-07-13 08:30:00,Inflation Rate MoM,-136.03500000000167,False,True,False,True,RTY
+2021-07-28 14:00:00,Fed Interest Rate Decision,-133.05499999999938,True,True,True,True,RTY
+2021-08-06 08:30:00,Non Farm Payrolls,-134.29999999999382,True,True,False,True,RTY
+2021-08-11 08:30:00,Inflation Rate MoM,267.4999999999864,False,True,False,True,RTY
+2021-09-03 08:30:00,Non Farm Payrolls,-137.9649999999947,True,True,False,True,RTY
+2021-09-14 08:30:00,Inflation Rate MoM,424.5600000000104,False,True,True,True,RTY
+2021-09-22 14:00:00,Fed Interest Rate Decision,-133.2050000000072,True,True,True,True,RTY
+2021-10-08 08:30:00,Non Farm Payrolls,-135.26499999999032,True,True,False,True,RTY
+2021-10-13 08:30:00,Inflation Rate MoM,-134.31500000000142,True,True,False,True,RTY
+2021-11-03 14:00:00,Fed Interest Rate Decision,453.4199999999964,True,True,True,True,RTY
+2021-11-05 08:30:00,Non Farm Payrolls,462.5000000000136,True,True,True,True,RTY
+2021-11-10 08:30:00,Inflation Rate MoM,-147.5,True,True,False,True,RTY
+2021-12-03 08:30:00,Non Farm Payrolls,-132.98499999999422,True,True,True,True,RTY
+2021-12-10 08:30:00,Inflation Rate MoM,422.2599999999966,True,True,True,True,RTY
+2021-12-15 14:00:00,Fed Interest Rate Decision,-129.76999999999407,False,True,True,True,RTY
+2022-01-07 08:30:00,Non Farm Payrolls,-132.6799999999912,False,True,True,True,RTY
+2022-01-12 08:30:00,Inflation Rate MoM,-132.26000000000568,True,True,True,True,RTY
+2022-01-26 14:00:00,Fed Interest Rate Decision,-127.50000000000682,True,True,True,True,RTY
+2022-02-04 08:30:00,Non Farm Payrolls,-122.5,False,True,True,True,RTY
+2022-02-10 08:30:00,Inflation Rate MoM,-126.33500000000367,True,True,True,True,RTY
+2022-03-04 08:30:00,Non Farm Payrolls,379.1799999999989,True,True,True,True,RTY
+2022-03-10 08:30:00,Inflation Rate MoM,374.680000000003,False,True,True,True,RTY
+2022-03-16 14:00:00,Fed Interest Rate Decision,-122.85500000000184,True,True,True,True,RTY
+2022-04-01 08:30:00,Non Farm Payrolls,-132.4999999999909,True,True,False,True,RTY
+2022-04-12 08:30:00,Inflation Rate MoM,-122.5,True,True,True,True,RTY
+2022-05-04 14:00:00,Fed Interest Rate Decision,354.98000000000275,False,True,True,True,RTY
+2022-05-06 08:30:00,Non Farm Payrolls,-115.69000000000416,False,True,True,True,RTY
+2022-05-11 08:30:00,Inflation Rate MoM,-111.70000000000528,True,True,True,True,RTY
+2022-06-03 08:30:00,Non Farm Payrolls,-117.50000000000456,False,True,True,True,RTY
+2022-06-10 08:30:00,Inflation Rate MoM,-115.03999999999678,True,True,True,True,RTY
+2022-06-15 14:00:00,Fed Interest Rate Decision,-108.94500000000336,True,True,True,True,RTY
+2022-07-08 08:30:00,Non Farm Payrolls,-111.02500000000418,True,True,True,True,RTY
+2022-07-13 08:30:00,Inflation Rate MoM,325.18000000000256,True,True,True,True,RTY
+2022-07-27 14:00:00,Fed Interest Rate Decision,-113.76999999999724,True,True,True,True,RTY
+2022-08-05 08:30:00,Non Farm Payrolls,-118.04000000000542,False,True,False,True,RTY
+2022-08-10 08:30:00,Inflation Rate MoM,361.3399999999979,True,True,False,True,RTY
+2022-09-02 08:30:00,Non Farm Payrolls,-113.90499999999749,True,True,True,True,RTY
+2022-09-13 08:30:00,Inflation Rate MoM,362.9000000000042,True,True,False,True,RTY
+2022-09-21 14:00:00,Fed Interest Rate Decision,-112.99499999999853,True,True,True,True,RTY
+2022-10-07 08:30:00,Non Farm Payrolls,-112.5000000000091,True,True,True,True,RTY
+2022-10-13 08:30:00,Inflation Rate MoM,320.1399999999944,True,True,True,True,RTY
+2022-11-02 14:00:00,Fed Interest Rate Decision,-117.49999999999318,False,True,True,True,RTY
+2022-11-04 08:30:00,Non Farm Payrolls,-112.27999999999612,True,True,True,True,RTY
+2022-11-10 08:30:00,Inflation Rate MoM,-110.97500000000537,True,True,True,True,RTY
+2022-12-02 08:30:00,Non Farm Payrolls,-116.5900000000056,True,True,True,True,RTY
+2022-12-13 08:30:00,Inflation Rate MoM,346.6000000000031,True,True,True,True,RTY
+2022-12-14 14:00:00,Fed Interest Rate Decision,-115.39999999999736,True,True,True,True,RTY
+2023-01-06 08:30:00,Non Farm Payrolls,-110.57500000000346,False,True,True,True,RTY
+2023-01-12 08:30:00,Inflation Rate MoM,-115.61000000000148,True,True,False,True,RTY
+2023-02-01 14:00:00,Fed Interest Rate Decision,-119.22500000000356,False,True,True,True,RTY
+2023-02-03 08:30:00,Non Farm Payrolls,-122.59999999999764,False,True,False,True,RTY
+2023-02-14 08:30:00,Inflation Rate MoM,-120.00000000000227,True,True,False,True,RTY
+2023-03-10 08:30:00,Non Farm Payrolls,341.279999999997,False,True,True,True,RTY
+2023-03-14 08:30:00,Inflation Rate MoM,-111.76500000000031,True,True,True,True,RTY
+2023-03-22 14:00:00,Fed Interest Rate Decision,342.4999999999977,False,True,True,True,RTY
+2023-04-07 08:30:00,Non Farm Payrolls,-127.50000000000682,False,True,False,True,RTY
+2023-04-12 08:30:00,Inflation Rate MoM,337.320000000002,True,True,False,True,RTY
+2023-05-03 14:00:00,Fed Interest Rate Decision,-110.73999999999614,True,True,True,True,RTY
+2023-05-05 08:30:00,Non Farm Payrolls,-109.60499999999683,True,True,True,True,RTY
+2023-05-10 08:30:00,Inflation Rate MoM,328.52000000000544,False,True,False,True,RTY
+2023-06-02 08:30:00,Non Farm Payrolls,-111.56500000000506,True,True,False,True,RTY
+2023-06-13 08:30:00,Inflation Rate MoM,-117.36500000000431,False,True,False,True,RTY
+2023-06-14 14:00:00,Fed Interest Rate Decision,-117.61999999999716,False,True,True,True,RTY
+2023-07-07 08:30:00,Non Farm Payrolls,-122.5,True,True,True,True,RTY
+2023-07-12 08:30:00,Inflation Rate MoM,372.50000000000455,True,True,False,True,RTY
+2023-07-26 14:00:00,Fed Interest Rate Decision,-121.69999999999618,True,True,False,True,RTY
+2023-08-04 08:30:00,Non Farm Payrolls,-120.8449999999948,False,True,False,True,RTY
+2023-08-10 08:30:00,Inflation Rate MoM,-119.98499999999468,True,True,True,True,RTY
+2023-09-01 08:30:00,Non Farm Payrolls,359.7000000000003,True,True,False,True,RTY
+2023-09-13 08:30:00,Inflation Rate MoM,-116.2750000000051,True,True,False,True,RTY
+2023-09-20 14:00:00,Fed Interest Rate Decision,-115.16999999999824,True,True,False,True,RTY
+2023-10-06 08:30:00,Non Farm Payrolls,-109.89500000000362,True,True,False,True,RTY
+2023-10-12 08:30:00,Inflation Rate MoM,-112.38000000000513,True,True,False,True,RTY
+2023-11-01 14:00:00,Fed Interest Rate Decision,-105.55500000000166,False,True,True,True,RTY
+2023-11-03 08:30:00,Non Farm Payrolls,323.1000000000017,True,True,False,True,RTY
+2023-11-14 08:30:00,Inflation Rate MoM,-108.14499999999953,True,True,False,True,RTY
+2023-12-08 08:30:00,Non Farm Payrolls,-116.21999999999616,True,True,True,True,RTY
+2023-12-12 08:30:00,Inflation Rate MoM,-118.35499999999456,True,True,True,True,RTY
+2023-12-13 14:00:00,Fed Interest Rate Decision,356.21999999999844,False,True,False,True,RTY
+2024-01-05 08:30:00,Non Farm Payrolls,-120.68500000000084,False,True,True,True,RTY
+2024-01-11 08:30:00,Inflation Rate MoM,376.2799999999993,True,True,True,True,RTY
+2024-01-31 14:00:00,Fed Interest Rate Decision,-122.3299999999972,False,True,True,True,RTY
+2024-02-02 08:30:00,Non Farm Payrolls,-121.81500000000142,False,True,False,True,RTY
+2024-02-13 08:30:00,Inflation Rate MoM,-125.08499999999913,False,True,True,True,RTY
+2024-03-08 08:30:00,Non Farm Payrolls,-127.49999999999544,True,True,True,True,RTY
+2024-03-12 08:30:00,Inflation Rate MoM,-127.39000000000031,False,True,False,True,RTY
+2024-03-20 14:00:00,Fed Interest Rate Decision,-125.48499999998968,True,True,True,True,RTY
+2024-04-05 08:30:00,Non Farm Payrolls,-332.50000000001364,True,True,False,True,RTY
+2024-04-10 08:30:00,Inflation Rate MoM,-127.775000000006,True,True,True,True,RTY
+2024-05-01 14:00:00,Fed Interest Rate Decision,-121.82999999999764,True,True,True,True,RTY
+2024-05-03 08:30:00,Non Farm Payrolls,-123.73499999999694,False,True,False,True,RTY
+2024-05-15 08:30:00,Inflation Rate MoM,396.5399999999954,False,True,False,True,RTY
+2024-06-07 08:30:00,Non Farm Payrolls,-125.02499999999144,False,True,False,True,RTY
+2024-06-12 08:30:00,Inflation Rate MoM,384.500000000005,True,True,False,True,RTY
+2024-06-12 14:00:00,Fed Interest Rate Decision,-126.57999999999902,True,True,True,True,RTY
+2024-07-05 08:30:00,Non Farm Payrolls,-124.95499999999764,False,True,False,True,RTY
+2024-07-11 08:30:00,Inflation Rate MoM,391.3999999999896,True,True,False,True,RTY
+2024-07-31 14:00:00,Fed Interest Rate Decision,-136.52000000000498,True,True,True,True,RTY
+2024-08-02 08:30:00,Non Farm Payrolls,-130.7450000000108,False,True,True,True,RTY
+2024-08-14 08:30:00,Inflation Rate MoM,-128.4349999999995,True,True,True,True,RTY
+2024-09-06 08:30:00,Non Farm Payrolls,-128.78999999998996,False,True,True,True,RTY
+2024-09-11 08:30:00,Inflation Rate MoM,-127.44000000001051,True,True,True,True,RTY
+2024-09-18 14:00:00,Fed Interest Rate Decision,-133.94999999999072,False,True,True,True,RTY
+2024-10-04 08:30:00,Non Farm Payrolls,-133.13500000000204,True,True,True,True,RTY
+2024-10-10 08:30:00,Inflation Rate MoM,-133.3449999999948,True,True,True,True,RTY
+2024-11-01 08:30:00,Non Farm Payrolls,-133.20999999999458,True,True,False,True,RTY
+2024-11-07 14:00:00,Fed Interest Rate Decision,-142.43999999999687,False,True,True,True,RTY
+2024-11-13 08:30:00,Inflation Rate MoM,-142.42499999998927,False,True,True,True,RTY
+2024-12-06 08:30:00,Non Farm Payrolls,-142.87499999999,True,True,False,True,RTY
+2024-12-11 08:30:00,Inflation Rate MoM,-142.50000000000455,True,True,False,True,RTY
+2024-12-18 14:00:00,Fed Interest Rate Decision,-141.47500000000036,True,True,True,True,RTY
+2025-01-10 08:30:00,Non Farm Payrolls,-134.91500000000997,True,True,False,True,RTY
+2025-01-15 08:30:00,Inflation Rate MoM,-134.4999999999891,True,True,False,True,RTY
+2025-01-29 14:00:00,Fed Interest Rate Decision,-137.4699999999939,False,True,True,True,RTY
+2025-02-07 08:30:00,Non Farm Payrolls,440.2199999999903,False,True,False,True,RTY
+2025-02-12 08:30:00,Inflation Rate MoM,-137.3300000000063,True,True,False,True,RTY
+2025-03-07 08:30:00,Non Farm Payrolls,-126.170000000011,False,True,True,True,RTY
+2025-03-12 08:30:00,Inflation Rate MoM,385.42000000000144,True,True,True,True,RTY
+2025-03-19 14:00:00,Fed Interest Rate Decision,-126.41500000000632,True,True,True,True,RTY
+2025-04-04 08:30:00,Non Farm Payrolls,347.50000000000455,False,True,True,True,RTY
+2025-04-10 08:30:00,Inflation Rate MoM,-117.50000000000456,False,True,True,True,RTY
+2025-05-02 08:30:00,Non Farm Payrolls,377.1399999999994,True,True,False,True,RTY
+2025-05-07 14:00:00,Fed Interest Rate Decision,-122.19499999999698,False,True,True,True,RTY
+2025-05-13 08:30:00,Inflation Rate MoM,398.400000000006,True,True,True,True,RTY
+2025-06-06 08:30:00,Non Farm Payrolls,399.660000000008,True,True,False,True,RTY
+2025-06-11 08:30:00,Inflation Rate MoM,408.72000000000753,False,True,True,True,RTY
+2025-06-18 14:00:00,Fed Interest Rate Decision,405.3800000000047,True,True,True,True,RTY
+2025-07-03 08:30:00,Non Farm Payrolls,-135.62000000000353,True,True,False,True,RTY
+2025-07-15 08:30:00,Inflation Rate MoM,429.3600000000106,False,True,True,True,RTY
+2025-07-30 14:00:00,Fed Interest Rate Decision,-136.1600000000044,True,True,False,True,RTY
+2025-08-01 08:30:00,Non Farm Payrolls,-132.50000000001364,False,True,True,True,RTY
+2025-08-12 08:30:00,Inflation Rate MoM,424.45999999999,True,True,True,True,RTY
+2025-09-05 08:30:00,Non Farm Payrolls,-141.52999999999793,False,True,False,True,RTY
+2025-09-11 08:30:00,Inflation Rate MoM,-141.7549999999983,True,True,False,True,RTY
+2025-09-17 14:00:00,Fed Interest Rate Decision,465.26000000000295,True,True,True,True,RTY
+2025-10-24 08:30:00,Inflation Rate MoM,478.87999999999465,True,True,False,True,RTY
+2025-10-29 14:00:00,Fed Interest Rate Decision,-152.49999999999545,True,True,True,True,RTY
+2025-11-20 08:30:00,Non Farm Payrolls,-141.09999999999218,False,True,True,True,RTY
+2025-12-10 14:00:00,Fed Interest Rate Decision,483.8200000000052,True,True,True,True,RTY
+2025-12-16 08:30:00,Non Farm Payrolls,487.7799999999888,True,True,False,True,RTY
+2026-01-09 08:30:00,Non Farm Payrolls,502.8400000000056,True,True,False,True,RTY
+2026-01-13 08:30:00,Inflation Rate MoM,506.3000000000011,True,True,False,True,RTY
+2026-01-28 14:00:00,Fed Interest Rate Decision,-155.80000000000837,False,True,True,True,RTY
+2026-02-11 08:30:00,Non Farm Payrolls,516.0999999999967,False,True,False,True,RTY
+2026-02-13 08:30:00,Inflation Rate MoM,501.48000000000593,False,True,True,True,RTY
+2026-03-06 08:30:00,Non Farm Payrolls,-150.72000000001026,False,True,True,True,RTY
+2026-03-11 08:30:00,Inflation Rate MoM,485.1199999999972,False,True,True,True,RTY
+2026-03-18 14:00:00,Fed Interest Rate Decision,82.49999999999545,False,True,True,True,RTY
+2026-04-03 08:30:00,Non Farm Payrolls,-149.16999999999007,False,True,False,True,RTY
+2026-04-10 08:30:00,Inflation Rate MoM,507.8000000000111,True,True,False,True,RTY
+2026-04-29 14:00:00,Fed Interest Rate Decision,-159.60499999999683,False,True,True,True,RTY
+2026-05-08 08:30:00,Non Farm Payrolls,550.2000000000089,True,True,False,True,RTY
+2026-05-12 08:30:00,Inflation Rate MoM,550.5800000000045,False,True,False,True,RTY
+2026-06-05 08:30:00,Non Farm Payrolls,-168.60000000000127,False,True,False,True,RTY
+2026-06-10 08:30:00,Inflation Rate MoM,546.639999999993,False,True,True,True,RTY
+2026-06-17 14:00:00,Fed Interest Rate Decision,-172.53999999998996,True,True,True,True,RTY
+2026-07-02 08:30:00,Non Farm Payrolls,586.4199999999892,True,True,False,True,RTY
+2026-07-14 08:30:00,Inflation Rate MoM,572.4000000000069,True,True,True,True,RTY
+2026-07-29 14:00:00,Fed Interest Rate Decision,563.6400000000003,False,True,True,True,RTY
+2026-08-07 08:30:00,Non Farm Payrolls,581.9399999999996,True,True,False,True,RTY
+2016-01-20 08:30:00,Inflation Rate MoM,-144.62499999999864,False,True,False,False,ES
+2016-02-19 08:30:00,Inflation Rate MoM,-148.0000000000041,False,True,False,False,ES
+2016-03-16 08:30:00,Inflation Rate MoM,-152.72500000000036,False,True,False,False,ES
+2016-04-14 08:30:00,Inflation Rate MoM,110.0,True,True,False,False,ES
+2016-05-17 08:30:00,Inflation Rate MoM,-155.52500000000236,False,True,False,False,ES
+2016-06-16 08:30:00,Inflation Rate MoM,-27.5,False,True,False,False,ES
+2016-08-16 08:30:00,Inflation Rate MoM,-161.6374999999971,False,True,False,False,ES
+2016-09-16 08:30:00,Inflation Rate MoM,-159.14999999999054,False,True,False,False,ES
+2016-10-18 08:30:00,Inflation Rate MoM,97.5,True,True,False,False,ES
+2016-11-17 08:30:00,Inflation Rate MoM,-102.5,False,True,False,False,ES
+2016-12-15 08:30:00,Inflation Rate MoM,60.0,False,True,False,False,ES
+2017-01-18 08:30:00,Inflation Rate MoM,-65.0,True,True,False,False,ES
+2017-02-15 08:30:00,Inflation Rate MoM,-90.0,False,True,False,False,ES
+2017-06-14 08:30:00,Inflation Rate MoM,97.5,True,True,False,False,ES
+2017-08-11 08:30:00,Inflation Rate MoM,72.5,True,True,False,False,ES
+2017-09-14 08:30:00,Inflation Rate MoM,-177.03749999999673,False,True,False,False,ES
+2017-12-13 08:30:00,Inflation Rate MoM,10.0,True,True,False,False,ES
+2018-02-14 08:30:00,Inflation Rate MoM,-186.1999999999989,True,True,False,False,ES
+2018-03-13 08:30:00,Inflation Rate MoM,506.0499999999911,True,True,False,False,ES
+2018-04-11 08:30:00,Inflation Rate MoM,-184.18749999999815,False,True,False,False,ES
+2018-05-10 08:30:00,Inflation Rate MoM,197.5,True,True,False,True,ES
+2018-06-12 08:30:00,Inflation Rate MoM,-27.5,True,True,False,True,ES
+2018-07-12 08:30:00,Inflation Rate MoM,-2.5,True,True,False,True,ES
+2018-08-10 08:30:00,Inflation Rate MoM,10.0,False,True,False,True,ES
+2018-09-13 08:30:00,Inflation Rate MoM,122.5,True,True,False,True,ES
+2018-10-11 08:30:00,Inflation Rate MoM,501.6999999999916,False,True,True,True,ES
+2018-11-14 08:30:00,Inflation Rate MoM,493.6000000000013,False,True,True,True,ES
+2018-12-12 08:30:00,Inflation Rate MoM,60.0,True,True,True,True,ES
+2019-01-11 08:30:00,Inflation Rate MoM,-181.8374999999969,False,True,True,True,ES
+2019-02-13 08:30:00,Inflation Rate MoM,-190.0500000000102,False,True,False,True,ES
+2019-03-12 08:30:00,Inflation Rate MoM,247.5,False,True,False,True,ES
+2019-04-10 08:30:00,Inflation Rate MoM,-196.837500000006,True,True,False,True,ES
+2019-05-10 08:30:00,Inflation Rate MoM,-195.2500000000009,False,True,True,True,ES
+2019-06-12 08:30:00,Inflation Rate MoM,-52.5,False,True,False,True,ES
+2019-07-11 08:30:00,Inflation Rate MoM,-202.77500000001052,True,True,False,True,ES
+2019-08-13 08:30:00,Inflation Rate MoM,-202.5,False,True,True,True,ES
+2019-09-12 08:30:00,Inflation Rate MoM,85.0,False,True,True,True,ES
+2019-10-10 08:30:00,Inflation Rate MoM,110.0,True,True,True,True,ES
+2019-11-13 08:30:00,Inflation Rate MoM,-90.0,False,True,False,True,ES
+2019-12-11 08:30:00,Inflation Rate MoM,-15.0,True,True,False,True,ES
+2020-01-14 08:30:00,Inflation Rate MoM,22.5,False,True,True,True,ES
+2020-02-13 08:30:00,Inflation Rate MoM,10.0,False,True,True,True,ES
+2020-03-11 08:30:00,Inflation Rate MoM,-191.825000000008,False,True,True,True,ES
+2020-05-12 08:30:00,Inflation Rate MoM,-202.5,True,True,True,True,ES
+2020-06-10 08:30:00,Inflation Rate MoM,-52.5,False,True,True,True,ES
+2020-07-14 08:30:00,Inflation Rate MoM,-210.32500000000252,True,True,True,True,ES
+2020-08-12 08:30:00,Inflation Rate MoM,-220.1750000000084,True,True,True,True,ES
+2020-09-11 08:30:00,Inflation Rate MoM,-220.07500000001076,True,True,True,True,ES
+2020-10-13 08:30:00,Inflation Rate MoM,-228.88750000000985,True,True,True,True,ES
+2020-11-12 08:30:00,Inflation Rate MoM,372.5,False,True,True,True,ES
+2020-12-10 08:30:00,Inflation Rate MoM,-235.73749999999563,False,True,True,True,ES
+2021-01-13 08:30:00,Inflation Rate MoM,122.5,False,True,True,True,ES
+2021-02-10 08:30:00,Inflation Rate MoM,385.0,True,True,False,True,ES
+2021-03-10 08:30:00,Inflation Rate MoM,721.7999999999938,False,True,True,True,ES
+2021-04-13 08:30:00,Inflation Rate MoM,-258.100000000004,False,True,True,True,ES
+2021-05-12 08:30:00,Inflation Rate MoM,-259.137499999988,False,True,True,True,ES
+2021-06-10 08:30:00,Inflation Rate MoM,-263.57499999998254,False,True,True,True,ES
+2021-07-13 08:30:00,Inflation Rate MoM,-271.3000000000102,False,True,False,True,ES
+2021-08-11 08:30:00,Inflation Rate MoM,547.5,False,True,False,True,ES
+2021-09-14 08:30:00,Inflation Rate MoM,847.5,False,True,False,True,ES
+2021-10-13 08:30:00,Inflation Rate MoM,-269.9125000000004,True,True,False,True,ES
+2021-11-10 08:30:00,Inflation Rate MoM,-286.00000000000364,True,True,False,True,ES
+2021-12-10 08:30:00,Inflation Rate MoM,882.6500000000215,True,True,False,True,ES
+2022-01-12 08:30:00,Inflation Rate MoM,-288.3374999999796,True,True,True,True,ES
+2022-02-10 08:30:00,Inflation Rate MoM,-281.3250000000062,True,True,True,True,ES
+2022-03-10 08:30:00,Inflation Rate MoM,793.2499999999982,False,True,True,True,ES
+2022-04-12 08:30:00,Inflation Rate MoM,831.0999999999785,True,True,True,True,ES
+2022-05-11 08:30:00,Inflation Rate MoM,-254.53750000000585,True,True,True,True,ES
+2022-06-10 08:30:00,Inflation Rate MoM,-253.4375000000091,True,True,True,True,ES
+2022-07-13 08:30:00,Inflation Rate MoM,715.7499999999891,True,True,True,True,ES
+2022-08-10 08:30:00,Inflation Rate MoM,1222.5,True,True,True,True,ES
+2022-09-13 08:30:00,Inflation Rate MoM,-815.0,True,True,True,True,ES
+2022-10-13 08:30:00,Inflation Rate MoM,672.9500000000007,True,True,True,True,ES
+2022-11-10 08:30:00,Inflation Rate MoM,-240.92500000000652,True,True,True,True,ES
+2022-12-13 08:30:00,Inflation Rate MoM,757.4500000000035,True,True,True,True,ES
+2023-01-12 08:30:00,Inflation Rate MoM,-252.7999999999929,True,True,True,True,ES
+2023-02-14 08:30:00,Inflation Rate MoM,-260.56250000000546,True,True,True,True,ES
+2023-03-14 08:30:00,Inflation Rate MoM,-248.725000000004,True,True,True,True,ES
+2023-04-12 08:30:00,Inflation Rate MoM,-259.53749999997854,True,True,False,True,ES
+2023-05-10 08:30:00,Inflation Rate MoM,773.2999999999811,False,True,False,True,ES
+2023-06-13 08:30:00,Inflation Rate MoM,-272.02500000002146,True,True,False,True,ES
+2023-07-12 08:30:00,Inflation Rate MoM,844.0000000000146,True,True,False,True,ES
+2023-08-10 08:30:00,Inflation Rate MoM,-278.0375000000185,True,True,False,True,ES
+2023-09-13 08:30:00,Inflation Rate MoM,-278.1124999999884,False,True,False,True,ES
+2023-10-12 08:30:00,Inflation Rate MoM,-273.83749999998145,True,True,False,True,ES
+2023-11-14 08:30:00,Inflation Rate MoM,-274.04999999997926,True,True,False,True,ES
+2023-12-12 08:30:00,Inflation Rate MoM,-286.8374999999924,True,True,False,True,ES
+2024-01-11 08:30:00,Inflation Rate MoM,-293.9249999999811,True,True,False,True,ES
+2024-02-13 08:30:00,Inflation Rate MoM,-303.7499999999818,False,True,False,True,ES
+2024-03-12 08:30:00,Inflation Rate MoM,-312.4250000000211,False,True,False,True,ES
+2024-04-10 08:30:00,Inflation Rate MoM,-315.8749999999964,True,True,False,True,ES
+2024-05-15 08:30:00,Inflation Rate MoM,1001.4499999999862,False,True,False,True,ES
+2024-06-12 08:30:00,Inflation Rate MoM,1335.0,True,True,False,True,ES
+2024-07-11 08:30:00,Inflation Rate MoM,1083.199999999997,False,True,False,True,ES
+2024-08-14 08:30:00,Inflation Rate MoM,-325.550000000012,True,True,False,True,ES
+2024-09-11 08:30:00,Inflation Rate MoM,-327.3125000000073,True,True,False,True,ES
+2024-10-10 08:30:00,Inflation Rate MoM,-344.28750000000946,False,True,False,True,ES
+2024-11-13 08:30:00,Inflation Rate MoM,1148.0999999999858,False,True,False,True,ES
+2024-12-11 08:30:00,Inflation Rate MoM,722.5,True,True,False,True,ES
+2025-01-15 08:30:00,Inflation Rate MoM,1128.4000000000196,True,True,False,True,ES
+2025-02-12 08:30:00,Inflation Rate MoM,-357.12499999998727,True,True,False,True,ES
+2025-03-12 08:30:00,Inflation Rate MoM,1072.350000000015,True,True,True,True,ES
+2025-04-10 08:30:00,Inflation Rate MoM,1735.0,False,True,True,True,ES
+2025-05-13 08:30:00,Inflation Rate MoM,1119.6500000000106,True,True,False,True,ES
+2025-06-11 08:30:00,Inflation Rate MoM,1154.5999999999913,False,True,True,True,ES
+2025-07-15 08:30:00,Inflation Rate MoM,222.5,True,True,False,True,ES
+2025-08-12 08:30:00,Inflation Rate MoM,1228.199999999979,False,True,False,True,ES
+2025-09-11 08:30:00,Inflation Rate MoM,-380.1875000000018,True,True,False,True,ES
+2025-10-24 08:30:00,Inflation Rate MoM,1306.5000000000146,True,True,False,True,ES
+2026-01-13 08:30:00,Inflation Rate MoM,1348.650000000007,True,True,False,True,ES
+2026-02-13 08:30:00,Inflation Rate MoM,1314.7000000000023,False,True,True,True,ES
+2026-03-11 08:30:00,Inflation Rate MoM,-391.5625,False,True,True,True,ES
+2026-04-10 08:30:00,Inflation Rate MoM,260.0,True,True,False,True,ES
+2026-05-12 08:30:00,Inflation Rate MoM,485.0,False,True,False,True,ES
+2026-06-10 08:30:00,Inflation Rate MoM,-418.8750000000164,False,True,True,True,ES
+2026-07-14 08:30:00,Inflation Rate MoM,1458.9000000000033,True,True,True,True,ES
+2016-01-20 08:30:00,Inflation Rate MoM,17.5,False,True,False,False,YM
+2016-02-19 08:30:00,Inflation Rate MoM,-104.18499999999769,False,True,False,False,YM
+2016-03-16 08:30:00,Inflation Rate MoM,-112.5,False,True,False,False,YM
+2016-04-14 08:30:00,Inflation Rate MoM,102.5,True,True,False,False,YM
+2016-05-17 08:30:00,Inflation Rate MoM,-110.73500000000422,False,True,False,False,YM
+2016-06-16 08:30:00,Inflation Rate MoM,-12.5,False,True,False,False,YM
+2016-08-16 08:30:00,Inflation Rate MoM,-82.5,False,True,False,False,YM
+2016-09-16 08:30:00,Inflation Rate MoM,-122.5,False,True,False,False,YM
+2016-10-18 08:30:00,Inflation Rate MoM,87.5,True,True,False,False,YM
+2016-11-17 08:30:00,Inflation Rate MoM,-52.5,False,True,False,False,YM
+2016-12-15 08:30:00,Inflation Rate MoM,42.5,False,True,False,False,YM
+2017-01-18 08:30:00,Inflation Rate MoM,2.5,True,True,False,False,YM
+2017-02-15 08:30:00,Inflation Rate MoM,-22.5,True,True,False,False,YM
+2017-06-14 08:30:00,Inflation Rate MoM,-132.5,True,True,False,False,YM
+2017-08-11 08:30:00,Inflation Rate MoM,22.5,False,True,False,False,YM
+2017-09-14 08:30:00,Inflation Rate MoM,-112.5,True,True,False,False,YM
+2017-12-13 08:30:00,Inflation Rate MoM,-22.5,True,True,False,False,YM
+2018-02-14 08:30:00,Inflation Rate MoM,-146.33499999999913,True,True,False,False,YM
+2018-03-13 08:30:00,Inflation Rate MoM,482.9199999999946,True,True,False,False,YM
+2018-04-11 08:30:00,Inflation Rate MoM,-143.22000000000116,False,True,False,False,YM
+2018-05-10 08:30:00,Inflation Rate MoM,177.5,True,True,False,True,YM
+2018-06-12 08:30:00,Inflation Rate MoM,2.5,True,True,False,True,YM
+2018-07-12 08:30:00,Inflation Rate MoM,-12.5,True,True,True,True,YM
+2018-08-10 08:30:00,Inflation Rate MoM,22.5,False,True,False,True,YM
+2018-09-13 08:30:00,Inflation Rate MoM,132.5,True,True,False,True,YM
+2018-10-11 08:30:00,Inflation Rate MoM,485.30000000000655,False,True,True,True,YM
+2018-11-14 08:30:00,Inflation Rate MoM,484.59999999999127,False,True,True,True,YM
+2018-12-12 08:30:00,Inflation Rate MoM,-145.74500000000626,True,True,True,True,YM
+2019-01-11 08:30:00,Inflation Rate MoM,-141.98500000000422,False,True,True,True,YM
+2019-02-13 08:30:00,Inflation Rate MoM,7.5,False,True,False,True,YM
+2019-03-12 08:30:00,Inflation Rate MoM,177.5,False,True,True,True,YM
+2019-04-10 08:30:00,Inflation Rate MoM,-153.4399999999914,True,True,False,True,YM
+2019-05-10 08:30:00,Inflation Rate MoM,-150.94499999999243,False,True,True,True,YM
+2019-06-12 08:30:00,Inflation Rate MoM,-22.5,False,True,False,True,YM
+2019-07-11 08:30:00,Inflation Rate MoM,-157.37999999999374,True,True,True,True,YM
+2019-08-13 08:30:00,Inflation Rate MoM,-151.53000000000247,False,True,True,True,YM
+2019-09-12 08:30:00,Inflation Rate MoM,57.5,False,True,True,True,YM
+2019-10-10 08:30:00,Inflation Rate MoM,127.5,True,True,True,True,YM
+2019-11-13 08:30:00,Inflation Rate MoM,-57.5,False,True,False,True,YM
+2019-12-11 08:30:00,Inflation Rate MoM,-2.5,True,True,False,True,YM
+2020-01-14 08:30:00,Inflation Rate MoM,67.5,False,True,True,True,YM
+2020-02-13 08:30:00,Inflation Rate MoM,7.5,False,True,True,True,YM
+2020-03-11 08:30:00,Inflation Rate MoM,-143.4900000000016,False,True,True,True,YM
+2020-05-12 08:30:00,Inflation Rate MoM,-143.6700000000019,True,True,True,True,YM
+2020-06-10 08:30:00,Inflation Rate MoM,-102.5,False,True,True,True,YM
+2020-07-14 08:30:00,Inflation Rate MoM,-152.90499999999156,True,True,True,True,YM
+2020-08-12 08:30:00,Inflation Rate MoM,-161.82000000000698,True,True,True,True,YM
+2020-09-11 08:30:00,Inflation Rate MoM,-160.25499999999738,False,True,True,True,YM
+2020-10-13 08:30:00,Inflation Rate MoM,-167.5,False,True,True,True,YM
+2020-11-12 08:30:00,Inflation Rate MoM,237.5,False,True,True,True,YM
+2020-12-10 08:30:00,Inflation Rate MoM,-172.72499999999127,False,True,True,True,YM
+2021-01-13 08:30:00,Inflation Rate MoM,57.5,False,True,True,True,YM
+2021-02-10 08:30:00,Inflation Rate MoM,307.5,True,True,False,True,YM
+2021-03-10 08:30:00,Inflation Rate MoM,227.5,True,True,True,True,YM
+2021-04-13 08:30:00,Inflation Rate MoM,142.5,False,True,True,True,YM
+2021-05-12 08:30:00,Inflation Rate MoM,-192.93000000001484,False,True,False,True,YM
+2021-06-10 08:30:00,Inflation Rate MoM,-195.0249999999869,True,True,True,True,YM
+2021-07-13 08:30:00,Inflation Rate MoM,-196.72500000000585,False,True,False,True,YM
+2021-08-11 08:30:00,Inflation Rate MoM,282.5,True,True,False,True,YM
+2021-09-14 08:30:00,Inflation Rate MoM,672.1199999999953,False,True,True,True,YM
+2021-10-13 08:30:00,Inflation Rate MoM,-193.9500000000044,True,True,False,True,YM
+2021-11-10 08:30:00,Inflation Rate MoM,-203.34500000000844,True,True,False,True,YM
+2021-12-10 08:30:00,Inflation Rate MoM,567.5,True,True,False,True,YM
+2022-01-12 08:30:00,Inflation Rate MoM,-203.6799999999857,True,True,True,True,YM
+2022-02-10 08:30:00,Inflation Rate MoM,-201.0399999999936,True,True,True,True,YM
+2022-03-10 08:30:00,Inflation Rate MoM,72.5,False,True,True,True,YM
+2022-04-12 08:30:00,Inflation Rate MoM,662.6199999999881,True,True,True,True,YM
+2022-05-11 08:30:00,Inflation Rate MoM,-184.32000000000696,True,True,True,True,YM
+2022-06-10 08:30:00,Inflation Rate MoM,-183.5200000000077,False,True,True,True,YM
+2022-07-13 08:30:00,Inflation Rate MoM,599.2000000000007,True,True,True,True,YM
+2022-08-10 08:30:00,Inflation Rate MoM,633.760000000002,True,True,False,True,YM
+2022-09-13 08:30:00,Inflation Rate MoM,-186.0649999999987,True,True,True,True,YM
+2022-10-13 08:30:00,Inflation Rate MoM,-170.25499999999738,True,True,True,True,YM
+2022-11-10 08:30:00,Inflation Rate MoM,-192.5,True,True,True,True,YM
+2022-12-13 08:30:00,Inflation Rate MoM,666.939999999995,True,True,True,True,YM
+2023-01-12 08:30:00,Inflation Rate MoM,-193.6799999999857,True,True,True,True,YM
+2023-02-14 08:30:00,Inflation Rate MoM,-194.3249999999898,True,True,False,True,YM
+2023-03-14 08:30:00,Inflation Rate MoM,-184.0400000000045,True,True,True,True,YM
+2023-04-12 08:30:00,Inflation Rate MoM,655.679999999993,True,True,False,True,YM
+2023-05-10 08:30:00,Inflation Rate MoM,649.0599999999904,False,True,True,True,YM
+2023-06-13 08:30:00,Inflation Rate MoM,-194.3700000000172,True,True,False,True,YM
+2023-07-12 08:30:00,Inflation Rate MoM,667.4799999999959,True,True,False,True,YM
+2023-08-10 08:30:00,Inflation Rate MoM,-199.4700000000012,True,True,False,True,YM
+2023-09-13 08:30:00,Inflation Rate MoM,-197.3700000000099,False,True,False,True,YM
+2023-10-12 08:30:00,Inflation Rate MoM,-193.1750000000102,True,True,False,True,YM
+2023-11-14 08:30:00,Inflation Rate MoM,-194.54000000001545,True,True,False,True,YM
+2023-12-12 08:30:00,Inflation Rate MoM,-207.08999999998923,True,True,False,True,YM
+2024-01-11 08:30:00,Inflation Rate MoM,-212.2650000000067,False,True,False,True,YM
+2024-02-13 08:30:00,Inflation Rate MoM,-216.64499999998952,False,True,False,True,YM
+2024-03-12 08:30:00,Inflation Rate MoM,-218.70500000000905,False,True,False,True,YM
+2024-04-10 08:30:00,Inflation Rate MoM,-218.7450000000172,True,True,False,True,YM
+2024-05-15 08:30:00,Inflation Rate MoM,771.140000000014,False,True,False,True,YM
+2024-06-12 08:30:00,Inflation Rate MoM,753.8999999999942,True,True,False,True,YM
+2024-07-11 08:30:00,Inflation Rate MoM,776.9599999999991,False,True,False,True,YM
+2024-08-14 08:30:00,Inflation Rate MoM,-221.88999999998487,True,True,False,True,YM
+2024-09-11 08:30:00,Inflation Rate MoM,-225.8250000000044,False,True,False,True,YM
+2024-10-10 08:30:00,Inflation Rate MoM,-236.43499999998312,False,True,False,True,YM
+2024-11-13 08:30:00,Inflation Rate MoM,857.1399999999994,False,True,False,True,YM
+2024-12-11 08:30:00,Inflation Rate MoM,487.5,False,True,False,True,YM
+2025-01-15 08:30:00,Inflation Rate MoM,836.7599999999948,True,True,False,True,YM
+2025-02-12 08:30:00,Inflation Rate MoM,-245.9300000000076,False,True,False,True,YM
+2025-03-12 08:30:00,Inflation Rate MoM,811.8799999999828,True,True,True,True,YM
+2025-04-10 08:30:00,Inflation Rate MoM,781.4600000000064,False,True,True,True,YM
+2025-05-13 08:30:00,Inflation Rate MoM,17.5,False,True,True,True,YM
+2025-06-11 08:30:00,Inflation Rate MoM,833.660000000018,False,True,True,True,YM
+2025-07-15 08:30:00,Inflation Rate MoM,197.5,False,True,True,True,YM
+2025-08-12 08:30:00,Inflation Rate MoM,862.5,True,True,False,True,YM
+2025-09-11 08:30:00,Inflation Rate MoM,-250.614999999998,True,True,False,True,YM
+2025-10-24 08:30:00,Inflation Rate MoM,917.2200000000156,True,True,False,True,YM
+2026-01-13 08:30:00,Inflation Rate MoM,971.140000000014,False,True,False,True,YM
+2026-02-13 08:30:00,Inflation Rate MoM,392.5,False,True,True,True,YM
+2026-03-11 08:30:00,Inflation Rate MoM,-260.8050000000003,False,True,True,True,YM
+2026-04-10 08:30:00,Inflation Rate MoM,82.5,True,True,False,True,YM
+2026-05-12 08:30:00,Inflation Rate MoM,252.5,False,True,False,True,YM
+2026-06-10 08:30:00,Inflation Rate MoM,992.5,False,True,True,True,YM
+2026-07-14 08:30:00,Inflation Rate MoM,1027.479999999996,False,True,True,True,YM

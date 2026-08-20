@@ -671,3 +671,86 @@ register(Claim(
     checks=[Check("V1", "pooled delta re-derives from the event series and per-leg books", _fu7_v1),
             Check("V2", "frozen-arm cent-parity on all 307 committed events", _fu7_v2),
             Check("V3", "positive CI overridden by the failed placebo line (rule integrity)", _fu7_v3)]))
+
+
+# =============================================================================================
+# FU-5 (#157) — the state-gated ride: both conditions CLOSED-NULL
+# =============================================================================================
+def _fu5() -> dict:
+    return json.load(open(FUND / "fu5_result.json"))
+
+
+def _fu5_v1() -> tuple[bool, str]:
+    """V1 — RE-DERIVATION: both NQ condition differences recomputed from the committed
+    feature file must match the manifest."""
+    r = _fu5()
+    f = pd.read_csv(FUND / "fu5_features.csv", parse_dates=["et"])
+    nq = f[f.instrument == "NQ"]
+    for cond, flag, okc in (("A_trend", "trend_pos", "trend_ok"),
+                            ("B_vol", "vol_hi", "vol_ok")):
+        x = nq[nq[okc]]
+        d = float(x[x[flag]].ride_net_stressed_usd.mean()
+                  - x[~x[flag]].ride_net_stressed_usd.mean())
+        if abs(d - r["conditions"][cond]["legs"]["NQ"]["diff"]) > 0.5:
+            return False, f"{cond}: re-derived {d:+.0f} vs manifest"
+    return True, "both NQ diffs re-derive from the committed features"
+
+
+def _fu5_v2() -> tuple[bool, str]:
+    """V2 — RULE-APPLICATION INTEGRITY: each verdict recomputed from the manifest's own
+    recorded fields under the registered rule must equal the recorded verdict."""
+    r = _fu5()
+    for cond, c in r["conditions"].items():
+        nq = c["legs"]["NQ"]
+        real, ci = nq["diff"], nq["boot90_ci"]
+        armed = (ci[0] > 0 and c["cross_sign_agree"] >= 2
+                 and abs(real) > c["shuffle_p95_abs"])
+        contr = (ci[1] < 0 and c["cross_sign_agree"] >= 2
+                 and abs(real) > c["shuffle_p95_abs"])
+        want = "ARMED" if armed else ("CLOSED-CONTRARIAN" if contr else "CLOSED-NULL")
+        # era line only binds when CI/agree/shuffle pass — both here fail earlier lines
+        if c["verdict"] != want and c["verdict"] != "CLOSED-NULL":
+            return False, f"{cond}: rule gives {want}, recorded {c['verdict']}"
+    return True, "verdicts follow the registered rule from the recorded numbers"
+
+
+def _fu5_v3() -> tuple[bool, str]:
+    """V3 — PREDICTION INTEGRITY: A's effect (+$103) fails even the shuffle-noise floor
+    ($115); B's sign is OPPOSITE its pre-registered prediction (predicted +, observed −$75)
+    with CI ∋ 0 — and the study did NOT flip the hypothesis post hoc (no ARMED, no
+    CONTRARIAN). MDEs present for both nulls."""
+    r = _fu5()
+    A = r["conditions"]["A_trend"]
+    B = r["conditions"]["B_vol"]
+    ok = (abs(A["legs"]["NQ"]["diff"]) < A["shuffle_p95_abs"]
+          and B["legs"]["NQ"]["diff"] < 0 and B["predicted"] == "+"
+          and B["legs"]["NQ"]["boot90_ci"][0] < 0 < B["legs"]["NQ"]["boot90_ci"][1]
+          and A["verdict"] == "CLOSED-NULL" and B["verdict"] == "CLOSED-NULL"
+          and A["mde_diff"] > 0 and B["mde_diff"] > 0)
+    return ok, (f"A +{A['legs']['NQ']['diff']:.0f} < noise {A['shuffle_p95_abs']:.0f}; "
+                f"B {B['legs']['NQ']['diff']:.0f} opposite its '+' prediction, CI ∋ 0; "
+                f"MDEs {A['mde_diff']:.0f}/{B['mde_diff']:.0f}")
+
+
+register(Claim(
+    id="FU5-STATE-GATE-CLOSED-NULL",
+    issue="#157",
+    statement="The state-gated ride CLOSES NULL on both pre-registered conditions (frozen "
+              "FU-9 outcomes, deployed legs, no stance column read): A (overnight-trend "
+              "agreement, predicted +) shows NQ +$103/event — inside the shuffle-noise "
+              "floor ($115) with 0/3 legs agreeing; B (high pre-release 60m vol, predicted "
+              "+) shows NQ −$75/event — the OPPOSITE sign, with 3/3 legs and both eras "
+              "sign-consistent but CI [−$206, +$55] ∋ 0 (MDE $133). Texture recorded, not "
+              "traded: an already-moving tape may PRE-SPEND the event move (calendar power "
+              "pays; tape vol does not) — a fresh-study hypothesis, never a post-hoc flip. "
+              "No gate is armed; the ride keeps entering state-blind.",
+    source="optimize/fundamentals/fu5_result.json + fu5_features.csv",
+    value_fn=lambda: _fu5()["conditions"]["B_vol"]["legs"]["NQ"]["diff"],
+    expect=-75.34, tol=1.0,
+    blind_spot="Two engineered features only (12h/60m windows single choices); qty=1 "
+               "replay-grade outcomes; shared CPI moments across legs; the B texture's "
+               "consistency (4/4 legs, both eras) is suggestive and UNPOWERED — it earns a "
+               "fresh pre-registration or nothing.",
+    checks=[Check("V1", "both NQ diffs re-derive from the committed features", _fu5_v1),
+            Check("V2", "verdicts follow the registered rule from recorded numbers", _fu5_v2),
+            Check("V3", "A inside noise; B opposite its prediction, not flipped post hoc", _fu5_v3)]))
