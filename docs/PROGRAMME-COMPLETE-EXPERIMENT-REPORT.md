@@ -5,7 +5,7 @@ single experiment and its results and outcomes and insights"). This is the NARRA
 companion to the master index (`NEWS-MASTER-EXPERIMENT-RECORD.md`): where the index gives one
 row per experiment, this report tells each experiment's story in plain language — what we
 did, what happened in dollars, what went well, what went wrong, and what we learned. Every
-number here already lives in a committed evidence file or the claims ledger (60/60 on both
+number here already lives in a committed evidence file or the claims ledger (61/61 on both
 machines); nothing is from memory.**
 
 ```mermaid
@@ -818,6 +818,24 @@ composes additively from the two certified forecasts — the collision flag X-3 
 no interaction statistics, and the parked dual-sided bracket gains nothing beyond the two
 forecasts it already has. An honest null that simplifies every design downstream of it.
 
+
+### 11.2 · X-3 — the compound-power artifact (a machine check catches its author)
+**What we did:** the first consumer of phase law #1 — since the calendars resolve
+independently, the collision flag and compound lift are pure compositions of two certified
+layers, needing no new statistics. The E-D1 artifact gained both fields under three
+registered lines: parity preserved, census consistency with X-1's own machinery on the same
+window, and row-by-row additive re-derivation of every compound value inside the ledger
+claim itself. **What happened:** parity held at delta zero, the census rates matched at
+ratio 1.009 — and the row-by-row check FAILED on first pass, catching a real bug: a
+`max(best or 0.0, …)` seed had silently floored negative counterpart lifts to zero. The
+earnings model's dummy coefficient is negative, so a tiny-power print carries a NEGATIVE
+lift — the certified model's honest statement, which the composition was quietly erasing.
+Fixed, re-run, all 44 compound rows re-derive (FOMC 2025-01-29: own 58.0 + earnings 15.5 =
+73.5 rv points). **Insight:** write the verification check strict enough to catch yourself,
+and it will — within the hour, before anything shipped wrong. The artifact now tells the
+operator not just which hours the gate is blind to, but which sessions carry BOTH
+calendars' violence at once, additively priced.
+
 ---
 
 ## Where the programme stands (2026-08-20)
@@ -832,5 +850,5 @@ two-calendar forecast layer — the gate's nightly blindness schedule; routing, 
 fitting). Deliberate holds: FU-4 gated-off, FU-15 parked, FU-11 consumers ①④
 low-priority. **Phase 3 — earnings × news × indicators — is initiating** with its own
 brainstorm and numbered ledger.
-**The ledger**: 60/60 claims green on both machines; every number in this report is bound
+**The ledger**: 61/61 claims green on both machines; every number in this report is bound
 to it or to a committed evidence file.

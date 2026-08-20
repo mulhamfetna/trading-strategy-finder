@@ -36,3 +36,26 @@ the measurable level. Compound power therefore composes ADDITIVELY from the two 
 forecasts — X-3's collision flag needs no interaction statistics, and FU-15's parked gate
 input gains nothing beyond the two forecasts it already has. Ledger:
 `X1-CALENDARS-INDEPENDENT`, **60/60 both machines**.
+
+## X-3 · The compound-power artifact: SHIPPED-ON-BRANCH ✅ (2026-08-20)
+
+**A composition, not a study (law #1: the calendars resolve independently ⇒ ADDITIVE
+composition, no interaction statistics). The E-D1 artifact now carries, per event: the
+`collision` flag (T1/T2, X-1's frozen windows) and `compound_lift_rv_pts` (own lift + the
+max counterpart lift within ±24h).**
+
+Three lines, all green: **P** — verify Δ0.0e+00 both instruments AFTER the change ·
+**C** — census consistency: the 2025 artifact's T1 rate 22.6% vs X-1's own machinery on
+the same window 22.4% (ratio 1.009, inside the registered ±10%) · **A/V3** — every one of
+the 44 compound rows re-derives additively from a ±24h counterpart, checked ROW BY ROW in
+the ledger claim itself (e.g. FOMC 2025-01-29: own 58.0 + earnings 15.5 = 73.5 rv pts).
+
+**The incident worth the record**: the claim's own V3 caught a real composition bug on the
+first pass — a `max(best or 0.0, …)` seed silently FLOORED negative counterpart lifts to
+zero. The earnings model's dummy beta is negative, so a tiny-power print carries a negative
+lift — the certified model's honest statement, which the composition must respect. Fixed,
+re-run, all green. A machine check catching its own author within the hour is the protocol
+working exactly as designed.
+
+Bundle re-zips at the next release (noted). Ledger: `X3-COMPOUND-ARTIFACT-SHIPPED`,
+**61/61 both machines**.
