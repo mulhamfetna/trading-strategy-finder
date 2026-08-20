@@ -305,6 +305,7 @@ class H(BaseHTTPRequestHandler):
             bundle = strategy.get_bundle((params or {}).get("timeframe"), _inst)
             payload = strategy.build_payload(*bundle, params, instrument=_inst)
             payload["meta"]["run_ms"] = round((time.time() - t0) * 1000)
+            _annotate_event_windows(payload)   # X-4: additive observability, never gates
             self._send(200, json.dumps(payload))
             s = payload["meta"]["summary"]
             print(f"backtest [{payload['meta']['params'].get('timeframe','4h')}] {params} -> "
@@ -317,6 +318,73 @@ class H(BaseHTTPRequestHandler):
         except Exception as e:
             import traceback; traceback.print_exc()
             self._send(500, json.dumps({"error": f"Backtest failed: {e}"}))
+
+
+# --- X-4 (docs/X4-PREREGISTRATION.md): blindness-hours OBSERVABILITY -------------------------
+# Additive only — never gates; on any failure the payload is unchanged and the dashboard lives.
+_X4 = {"loaded": False, "macro": None, "earn": None}
+
+
+def _x4_calendars():
+    if _X4["loaded"]:
+        return _X4
+    import numpy as np
+    import pandas as pd
+    try:
+        sys.path.insert(0, str(HERE / "optimize" / "fundamentals"))
+        import tv_calendar
+        cal = tv_calendar.load()
+        c = cal[(cal.importance == 1) & (cal.event_et >= "2016-01-01")]
+        _X4["macro"] = np.sort(c.event_et.dt.floor("min").unique())
+        e = pd.read_csv(HERE / "optimize" / "earnings" / "data"
+                        / "earnings_timestamps_FINAL_16y.csv", usecols=["event_et"])
+        _X4["earn"] = np.sort(pd.to_datetime(e.event_et).values.astype("datetime64[m]"))
+    except Exception as ex:
+        print(f"X-4 calendars unavailable ({ex}) — event_window tags disabled", flush=True)
+        _X4["macro"] = _X4["earn"] = None
+    _X4["loaded"] = True
+    return _X4
+
+
+def _x4_tag(t, macro, earn):
+    """entry inside a macro Tier-1 window [rel-5m, rel+15m] (FU-1's frozen definition) and/or
+    within +-15m of a committed top-12 earnings acceptance stamp."""
+    import numpy as np
+    m = e = False
+    if macro is not None and len(macro):
+        i = int(np.searchsorted(macro, t))
+        for j in (i - 1, i):
+            if 0 <= j < len(macro):
+                d = (t - macro[j]) / np.timedelta64(1, "m")
+                if -5.0 <= d <= 15.0:
+                    m = True
+    if earn is not None and len(earn):
+        i = int(np.searchsorted(earn, t))
+        for j in (i - 1, i):
+            if 0 <= j < len(earn):
+                if abs((t - earn[j]) / np.timedelta64(1, "m")) <= 15.0:
+                    e = True
+    return "both" if (m and e) else ("macro" if m else ("earnings" if e else ""))
+
+
+def _annotate_event_windows(payload):
+    try:
+        cals = _x4_calendars()
+        if cals["macro"] is None and cals["earn"] is None:
+            payload["meta"]["event_window_counts"] = {"context_unavailable": True}
+            return
+        import numpy as np
+        counts = {"macro": 0, "earnings": 0, "both": 0}
+        for t in payload.get("trades") or []:
+            tag = _x4_tag(np.datetime64(str(t["entry_time"])), cals["macro"], cals["earn"])
+            t["event_window"] = tag
+            if tag:
+                counts[tag] += 1
+        payload["meta"]["event_window_counts"] = dict(
+            counts, authority="observability only — never gates (X-4)")
+    except Exception as ex:
+        print(f"X-4 annotation failed ({ex}) — payload unchanged", flush=True)
+
 
 
 def main():
