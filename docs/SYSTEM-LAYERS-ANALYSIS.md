@@ -1,4 +1,10 @@
-# SYSTEM LAYERS — the Full Breakdown (FU-12, owner-injected 2026-08-19)
+# SYSTEM LAYERS — the Full Breakdown (FU-12; UPDATED to v5.4.3)
+
+> **Update 2026-08-19 (v5.4.3):** since first publication the pipeline resolved both of §3's
+> open items — **3.7 (M2 power model) is now DEPLOYED** as the system's second forecast layer
+> (`src/deploy/power_forecast.py`, information-only), and **3.6 (the Exp2 sizing ramp) was
+> tested to destruction and NOT deployed** (the independent ES book reversed it). The tables
+> below carry the updated statuses; §4's study (FU-11) now has BOTH of its ingredients live.
 
 **Owner instruction, verbatim intent: before any further fusion study, "full system analysis —
 layers breakdown — each layer of the system: job, income and outcome and responsibilities" —
@@ -32,6 +38,7 @@ flowchart TD
 | **Data** | one truth for prices & events | Databento raw → 1s/1m/TF continuous frames (9 instruments, 2010→); TradingView calendar (≥2016 usable); box CSVs; ALL_STOCKS registry | aligned frames every layer consumes | continuity rules (volume-dominant contract), ET wall-clock convention, completeness (the YM corruption lesson) | LIVE; YM rebuilt 2026-08-18 |
 | **Signal (L1)** | turn weekly/monthly BOXES into long/short/hold per decision bar | box CSV + decision frame | `decision_signals` → int stream | the strategy's identity: box direction, 1 entry/candle, flip=reverse-only | LIVE (55 champions / 9 markets, ≈$840k/yr 2026-OOS) |
 | **Volatility engine** | forecast next-bar realized vol | 1m returns → `compute_rv_pts` → `har_forecast` (`volatility.py`) | `vf` array; gate threshold = causal in-sample percentile | **the ONLY deployed forecast in the system** — entries allowed only when `vf ≤ gate_pct` threshold (skips the top forecast-vol tail) | LIVE inside every champion (§3.1) |
+| **Power-forecast layer** (NEW, v5.4.3) | forecast each scheduled release's move SIZE, night-before | committed M2 evidence pipeline (calendar + 1m realized jumps) | nightly JSONL: per-event predicted power (%, $/contract), expanding + trailing-24 | INFORMATION ONLY — no trading consumer; parity-bound to the M2 evidence (5/5 exact); consumers are separate gated studies | LIVE v5.4.3 (`power_forecast.py`, playbook bundle v1.0.0) |
 | **Indicator (165-registry)** | per-bar confirm/veto votes on L1 entries | decision+1m frames (1-min indicator frame DEFAULT) | vote/veto masks folded into `entry_gate` | budget ≤2s/full pass; nan-safe warmup; adopt-gate default-OFF | LIVE (champions use subsets) |
 | **L2** | manage L1's DROPPED signals (a second book on the leftovers) | L1's dropped-signal stream | additional trades, own SL/TP | never touch L1's own trades | LIVE (optimize/l2) |
 | **MTF fusion** | fuse layers across timeframes (e.g. 1h+4h) | per-layer TF books | the fusion book (NQ $173,789 reference) | residual default byte-identical | LIVE |
@@ -58,16 +65,17 @@ The owner is right that there are many. Nine, with verdicts:
 | 3.3 | **TimesFM band** (the Google one) | foundation-model forecast band | **NO-GO as a gate** (robustness 0/3 yrs on our replication; direction use FAILS outright) | the vendor-claimed +$20.7k NQ gate did not survive the regime-robustness battery |
 | 3.4 | **Chronos-2 band** (Amazon) | foundation-model forecast band | **NO-GO as a gate** (P(helps)=18%, beats 37% of random vetoes; DD unchanged) | corr 0.71 with the TimesFM band — same forward vol, same failure. ⭐ Program-level conclusion: **vol/uncertainty GATING does not help this vol-seeking book** |
 | 3.5 | **Regime HMM / jump models** | regime classifier | NO-GO | no durable regime edge; the box IS vol-seeking |
-| 3.6 | **Regime-edge Exp2 — size WITH vol** | sizing ramp on realized regime | ⭐ PARKED-WINNER (Ret/DD 5.52→5.90, +$31k, beats 95% of random ramps, all 3 years; n=1, borderline; a dashboard overlay exists OFF-by-default) | inverse-vol targeting HURTS (4.06) — for this book, size WITH vol |
-| 3.7 | **M2 news power model** | calendar forecast of event-day size (night-before, ρ≈0.5; t24 variant) | CONFIRMED, **unconsumed by any live layer** | knows tomorrow's scheduled violence today — information 3.1 cannot see |
+| 3.6 | **Regime-edge Exp2 — size WITH vol** | sizing ramp on realized regime | ⛔ **NOT-DEPLOYED (FU-13, v5.4.3)** — R exact on the NQ book (+$10,356) but the independent ES book REVERSES it (−$18,632; even random regime→size maps hurt on ES, median −$12,282); pooled 90% CI [−$25.6k,+$9.1k] ∋ 0. Overlay stays experimental-off; re-open only via the 2010-23 bear book + fresh pre-reg | the SECOND TEST's n=1 caution vindicated; the ES vol-agnostic asymmetry now proven on the SIZING side too |
+| 3.7 | **M2 news power model** | calendar forecast of event-day size (night-before, ρ≈0.5; t24 variant) | ⭐ **DEPLOYED (FU-14, v5.4.3)** as `src/deploy/power_forecast.py` — parity 5/5 exact vs the committed evidence; nightly forward artifact; information-only | knows tomorrow's scheduled violence today — information 3.1 cannot see; now a live layer awaiting its consumers |
 | 3.8 | **News regime monitor** | rolling P&L-regime guard (24-CPI net-stressed) | DEPLOYED (news legs) | vol-adjacent but P&L-defined; sticky halt |
 | 3.9 | Era-0 vol studies (vol-scaled stops, vol targeting, Kelly, session shape) | research probes | CLOSED (fat per-trade tail ±$1,600 defeats weak edges; session real in tape+risk, not entries) | background facts |
 
-**The structural read**: the system has ONE deployed vol forecaster (3.1, tape-memory), one
-deployed P&L-regime guard (3.8), one parked sizing winner (3.6), one confirmed-but-unconsumed
-calendar size model (3.7), and two foundation-model bands whose GATING use is dead but whose
-information content was never tested as an INPUT to a better forecast (3.3/3.4 — the NO-GO
-verdicts were about the veto use-case, explicitly not about band accuracy).
+**The structural read (v5.4.3)**: the system now has TWO deployed forecast layers — 3.1
+(tape-memory HAR-RV, driving every champion's entry gate) and 3.7 (the calendar power
+forecast, information-only) — one deployed P&L-regime guard (3.8), one KILLED sizing ramp
+(3.6, by its own pre-registered rule), and two foundation-model bands whose gating use is
+dead but whose band accuracy was never tested as a forecast INPUT (3.3/3.4). The two live
+forecasters read DIFFERENT information and have never been combined — §4's study.
 
 ## 4 · FU-11's corrected context (what the fused-size study now actually is)
 
@@ -90,3 +98,9 @@ verdicts were about the veto use-case, explicitly not about band accuracy).
 This ordering — forecast quality first, consumers second — is what the owner's injected
 analysis bought: without §3, the study would have re-derived a deployed component and
 mis-framed two NO-GOs as dead information sources.
+
+**v5.4.3 addendum**: both FU-11 ingredients are now LIVE layers (3.1 and 3.7), and the FU-13
+verdict sharpened the consumer list — the Exp2 ramp (consumer ②) is dead as-is on
+cross-instrument grounds, so a fused-forecast revival of it must treat instrument asymmetry
+as a first-class design axis (per-instrument ramps or NQ-only), not an afterthought. The
+design of record: `docs/FU11-FUSED-SIZE-DESIGN-DRAFT.md`.
