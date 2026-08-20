@@ -62,6 +62,7 @@ QUEUED → ACTIVE → CLOSED-<verdict>. This file is the index; design detail li
 | **FU-6** (#158) | **Per-event outcome prediction** — can indicator votes at rel−300s classify win/lose events? | The 165-library sees the tape the ride enters blind. Even a small true lift on a 36–62% win rate is large in $. Danger: the classic overfit trap — treat as EXPLORATION with a locked holdout. | Build on FU-9's dataset; simple models only (logistic / single trees); train on NQ 2016-21, test on NQ 2022+ AND on ES/YM/RTY untouched; promotion only via fresh pre-registration. | QUEUED |
 | **FU-7** (#159) | **Power-scaled geometry** — S/TP scaled by the predicted move size | Mechanistic, no classification: the frozen 0.10/0.40% geometry is one-size; the M2 model predicts per-event power night-before. A bigger predicted move justifies a proportionally wider bracket (same R:R). | Pre-registered mapping (e.g. S = 0.10% × power-quintile factor); replay per leg; compare vs frozen geometry; the falsifier is a shuffled-power placebo. ⚠️ This CHANGES the confirmed spec — runs as a study, ships only via the full gate. | QUEUED |
 | **FU-8** (#160) | **Retail short × state confirmation** (absorbs RQ-2) | The anti-premium is real on 7 instruments but its short side was never designed; a state filter could be what makes it tradeable at cost. Fresh-design requirement stands (its history is consumed). | Design AFTER FU-5/FU-6 teach us which state variables carry signal; pre-register geometry a priori; forward-era element required. | QUEUED (absorbs #142) |
+| **FU-15** (#168) | **Dual-sided size-informed bracket ("win either way")** — owner idea 2026-08-20: enter LONG and SHORT simultaneously at rel−X, SL/TP designed so the winning leg's TP covers the losing leg's SL plus both costs and still nets positive | Direction is dead (3 independent proofs) but SIZE is forecastable night-before (FU-14 live, ρ≈0.5) — a direction-agnostic structure monetizes size alone. Two legs with independent brackets = a stop-replicated STRADDLE: net ≈ TP − SL − 2×costs on any clean move that clears TP, either direction — and whether the move clears is exactly what the power forecast predicts. Known killers (pre-reg must own them): the two-way sweep double-stop (94% of stop-outs are 1-sec sweeps; FU-1 stop ratios 2.1–5.8× in-window), doubled stressed costs, M3's losing median event, overlap with the deployed LONG ride on the same seconds. | Power-gated: trade only events whose FU-14 predicted power > pre-registered breakeven (both SLs + 2× stressed costs); geometry from the FU-7 power-scaled family; falsifier = shuffled-power placebo; dumb control = ungated straddle on all events; era split + 4-leg cross-instrument holdout. Deep-research-first (news straddles are known prior art — learn why they usually fail) + M-era arm archaeology before any run. | **QUEUED — parked by owner behind FU-11** (the fused size engine) |
 
 ### Family C — substrate and system
 
@@ -83,6 +84,11 @@ number + issue — never by silently starting work.
 ## 4 · Execution order — ✅ APPROVED, ▶️ UNPAUSED (owner, 2026-08-19: "proceed with the newsxindicators")
 
 **Execution began 2026-08-19** in the approved order: FU-1 (the audit) first, FU-9 (the dataset) second. FU-11's stage-1 archaeology (pure search, no statistical cost) runs alongside. Statuses move in the ledger rows as work lands.
+
+**Queue update 2026-08-20 (owner):** FU-15 registered (the dual-sided size-informed bracket,
+#168) and explicitly parked behind FU-11 — the fused size engine runs first; FU-15's design
+will consume FU-11's fused forecast (a better power gate) and FU-7's geometry family when it
+is called.
 
 ```mermaid
 flowchart LR
