@@ -5,7 +5,7 @@ single experiment and its results and outcomes and insights"). This is the NARRA
 companion to the master index (`NEWS-MASTER-EXPERIMENT-RECORD.md`): where the index gives one
 row per experiment, this report tells each experiment's story in plain language — what we
 did, what happened in dollars, what went well, what went wrong, and what we learned. Every
-number here already lives in a committed evidence file or the claims ledger (58/58 on both
+number here already lives in a committed evidence file or the claims ledger (59/59 on both
 machines); nothing is from memory.**
 
 ```mermaid
@@ -777,6 +777,25 @@ own calendar's bars — is interference-free by construction and inherits each m
 certification. That routing pattern is the natural design for E-D1, the two-calendar
 information layer — awaiting the owner's word, never smuggled.
 
+
+### 10.7 · E-D1 — the two-calendar forecast layer (the era's deployable artifact)
+**What we did:** productionized the routing insight through the same battery that deployed
+the power layer (FU-14's pattern): a module that composes the two CERTIFIED single-calendar
+models by routing — macro model on macro bars, earnings model on earnings bars, plain
+HAR-LS elsewhere — never the fitted joint model whose NQ interference E-X2v2 proved.
+**What happened: every stage green.** Parity against the committed FU-11 and E-X1 evidence
+is EXACT — delta zero point zero, on macro bars, earnings bars, and the union identity, on
+both instruments. Both per-calendar scramble falsifiers collapse. The forward artifact
+emits regime-sane night-before bar lifts (for February 2026: NFP +71.9 rv points on its
+hour, CPI +69.9, Durables +12.3 — the ordering the power model predicts). And the golden
+gate came back 6/6 ALL MATCH: the module touches no engine path, proven both statically
+and by the gate itself. **DEPLOYED-ON-BRANCH** as an information layer with its playbook
+(v1.0.0); zero income by design, per the same rule the power layer carries; the
+release/merge ship stays the owner's pipeline. **Insight:** the system now describes its
+own blindness schedule — every night it can say which coming hours its live volatility
+gate will mis-forecast, by how much, and on which calendar's authority. What consumes that
+information remains gated behind the fusion era's consumer laws.
+
 ---
 
 ## Where the programme stands (2026-08-20)
@@ -791,5 +810,5 @@ hand-off are shipped); deliberate holds only — FU-4 gated-off, FU-15 parked by
 FU-11 consumers ①④ low-priority armed. The next workstream, on the owner's word, is the
 WS-EARN return (earnings alone → ×indicators → ×news×indicators), starting from
 `WS-EARN-HANDOFF.md` with E-P1, the earnings power model.
-**The ledger**: 58/58 claims green on both machines; every number in this report is bound
+**The ledger**: 59/59 claims green on both machines; every number in this report is bound
 to it or to a committed evidence file.

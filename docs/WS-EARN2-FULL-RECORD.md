@@ -183,3 +183,23 @@ certification. That is the natural E-D1 design (an FU-14-pattern information lay
 awaiting the owner's word.
 
 **Ledger**: `EX2V2-INTERFERENCE-CONFIRMED`, **58/58 both machines**.
+
+## E-7 · E-D1 — the two-calendar forecast layer: DEPLOYED-ON-BRANCH ⭐ (2026-08-20)
+
+**The era's deployable artifact, built by the FU-14 battery on the E-X2v2 routing insight:
+`src/deploy/two_calendar_forecast.py` — the FU-11-certified model on macro bars, the
+E-X1-certified model on earnings bars, plain HAR-LS elsewhere; fitted composition never
+used (its NQ interference is CI-proven).**
+
+| stage | result |
+|---|---|
+| P parity | **Δ0.0e+00 EXACT** vs the committed FU-11 + E-X1 evidence — macro, earnings AND the union count-weighted identity, on NQ AND ES |
+| F falsifiers | both per-calendar scrambles COLLAPSE (macro keeps −0.0063 of a +0.7244 gain; earnings −0.0013 of +0.0625) |
+| A artifact | regime-sane night-before bar lifts for 2026-02: NFP **+71.9 rv pts**, CPI +69.9, Durables +12.3 (macro forward-capable via the TV calendar; earnings need an owner-supplied dates file — declared) |
+| D system | golden gate **6/6 ALL MATCH**, exit 0 — no engine path touched (also proven statically: the module imports no engine) |
+
+**Deploy rule fired: DEPLOYED-ON-BRANCH** as an information layer (module + claim +
+playbook `playbooks/two-calendar-forecast/`, v1.0.0). ZERO income by design (the FU-14
+rule). The release/merge ship remains the owner's standing pipeline — not executed here.
+Ledger: `ED1-TWO-CALENDAR-DEPLOYED`, **59/59 both machines**. Incident kept: a claims-path
+typo (parents[0]→[1]) caught by the ledger's own first run.
