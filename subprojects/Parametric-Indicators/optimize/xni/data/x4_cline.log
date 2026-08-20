@@ -1,0 +1,7 @@
+[X-4 C] tag(macro rel)     = 'macro'
+[X-4 C] tag(macro rel+10m) = 'macro'
+[X-4 C] tag(macro rel-60m) = ''
+[X-4 C] tag(earn stamp)    = 'earnings'
+[X-4 C] 65-trade re-derivation mismatches: 0
+[X-4 C] calendars: macro_minutes=1222 earn_stamps=783
+X4_C_OK

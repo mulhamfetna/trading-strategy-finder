@@ -316,3 +316,7 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !subprojects/Parametric-Indicators/optimize/xni/data/x5_result.json
 # X-5b: monitor-context evidence the ledger reads
 !subprojects/Parametric-Indicators/optimize/xni/data/x5b_parity.log
+# X-4: dashboard-observability evidence the ledger reads
+!subprojects/Parametric-Indicators/optimize/xni/data/x4_parity.log
+!subprojects/Parametric-Indicators/optimize/xni/data/x4_cline.log
+!subprojects/Parametric-Indicators/optimize/xni/data/x4_dashboard_8250.png

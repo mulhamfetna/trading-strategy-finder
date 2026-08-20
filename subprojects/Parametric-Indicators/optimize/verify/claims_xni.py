@@ -301,3 +301,73 @@ register(Claim(
     checks=[Check("V1", "parity log: trigger byte-equal, definitions 0 mismatches", _x5b_v1),
             Check("V2", "static additive-only proof (trigger source clean, defaults OFF)", _x5b_v2),
             Check("V3", "authority guard: never-gates string + untouched state logic", _x5b_v3)]))
+
+
+# =============================================================================================
+# X-4 — blindness-hours observability: SHIPPED-ON-BRANCH (books untouched, browser-gated)
+# =============================================================================================
+def _x4_v1() -> tuple[bool, str]:
+    """V1 — PARITY LOG: the committed machine output shows the post-change /api/backtest
+    response JSON-EQUAL to the pre-change reference after stripping only the new fields."""
+    log = (XNI / "x4_parity.log").read_text()
+    ok = "P parity (JSON-equal after stripping new fields + run_ms): True" in log \
+        and "X4_P_OK" in log
+    return ok, "response parity True on the 65-trade reference"
+
+
+def _x4_v2() -> tuple[bool, str]:
+    """V2 — TAG CORRECTNESS + POSITIVE CONTROLS: the C-line log shows the tagger firing on
+    a real Tier-1 minute ('macro' at rel and rel+10m), staying clean at rel−60m, firing
+    'earnings' at a real stamp, and re-deriving all 65 reference trades with 0 mismatches
+    (the all-blank 4h book is CORRECT — 4h entry stamps never fall in the 20m windows)."""
+    log = (XNI / "x4_cline.log").read_text()
+    ok = ("tag(macro rel)     = 'macro'" in log and "tag(macro rel-60m) = ''" in log
+          and "tag(earn stamp)    = 'earnings'" in log
+          and "65-trade re-derivation mismatches: 0" in log and "X4_C_OK" in log)
+    return ok, "positive controls fire; clean minute clean; 65/65 re-derive"
+
+
+def _x4_v3() -> tuple[bool, str]:
+    """V3 — THE VISUAL GATE (the house way: SSH tunnel + Playwright) + never-gates guard:
+    the committed branch screenshot exists (>50KB, a real render), the annotation code in
+    the server carries the authority string, and the annotator is additive-only (called
+    after build_payload, wrapped fault-tolerant)."""
+    png = XNI / "x4_dashboard_8250.png"
+    src = (Path(__file__).resolve().parents[2] / "server.py").read_text()
+    ok = (png.exists() and png.stat().st_size > 50_000
+          and "observability only — never gates (X-4)" in src
+          and "_annotate_event_windows(payload)" in src
+          and "payload unchanged" in src)
+    return ok, f"screenshot {png.stat().st_size//1024}KB; authority string + additive call present"
+
+
+register(Claim(
+    id="X4-BLINDNESS-OBSERVABILITY-SHIPPED",
+    issue="#172",
+    statement="X-4 SHIPS ON-BRANCH: /api/backtest trades carry `event_window` "
+              "(macro = FU-1's frozen [rel−5,+15] Tier-1 window; earnings = ±15m of a "
+              "committed acceptance stamp) + meta counts with the authority string "
+              "'observability only — never gates'. Books untouched, proven: the post-change "
+              "response is JSON-EQUAL to the pre-change reference (captured BEFORE the code "
+              "moved) after stripping only the new fields. Tag correctness: positive "
+              "controls fire on real event minutes, the clean minute stays clean, and all "
+              "65 reference trades re-derive with 0 mismatches (the 4h book's all-blank "
+              "tags are CORRECT — 4h entry stamps never fall in 20-minute windows). The "
+              "visual gate ran THE HOUSE WAY — SSH tunnel + Playwright: both dashboards "
+              "clicked Run, the branch's visible dollar figures EQUAL production's "
+              "($166,554 P/L, $13,963 DD, …), branch screenshot committed. Incidents kept: "
+              "a restart with the wrong interpreter then missing data-root env (the "
+              "stale-server + sync-roots traps, both recovered); the Claude-in-Chrome "
+              "attempt corrected by the owner to the tunnel+Playwright standard.",
+    source="optimize/xni/data/x4_{parity,cline}.log + x4_dashboard_8250.png + server.py",
+    value_fn=lambda: int("65-trade re-derivation mismatches: 0"
+                         in (XNI / "x4_cline.log").read_text()),
+    expect=1, tol=0,
+    blind_spot="Production :8200 ships the annotation at the next release (branch-only "
+               "today); a visible UI column is a declared v2 (the payload/CSV consumers "
+               "see the field first); earnings window inherits the acceptance smear; the "
+               "4h default book shows zero tags by construction — finer TFs are where the "
+               "field lights up.",
+    checks=[Check("V1", "response parity True on the pre-captured reference", _x4_v1),
+            Check("V2", "tagger positive controls + 65/65 re-derivation", _x4_v2),
+            Check("V3", "Playwright visual gate + never-gates authority guard", _x4_v3)]))
