@@ -27,7 +27,12 @@ sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(REPO))
 
 import p2_power_model as p2                       # noqa: E402
+import p1_ride_through as _p1                     # noqa: E402
 from p1_ride_through import load_tv_events        # noqa: E402
+
+# YM was onboarded (v5.4.1) after the M-era per-instrument floors were written; it follows
+# the same programme-wide ≥2016 rule. Explicit, printed — not a silent default.
+_p1.FLOOR.setdefault("YM", 2016)
 from extended_data import load_1m_extended        # noqa: E402
 from indicators.library import REGISTRY, build    # noqa: E402
 from indicators.base import IndicatorConfig       # noqa: E402
