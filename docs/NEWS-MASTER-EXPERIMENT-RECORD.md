@@ -3,13 +3,13 @@
 **Every experiment, its result and its finding, across the entire programme (2026-06 → 2026-08-20).
 Current through v5.4.3 + FU-11 Stage 1: all profitable news deployed and scaled, the premium
 grid literally closed, the fusion workstream executing (the fused size engine has WON its
-forecast-quality stage), ledger 50/50 on both machines.**
+forecast-quality stage), ledger 51/51 on both machines.**
 
 This is the master index. **The verbose NARRATIVE companion — every experiment told in full (what ran, the dollars, what went well/wrong, the insight) — is `PROGRAMME-COMPLETE-EXPERIMENT-REPORT.md`.** Each workstream's full detail lives in its own record —
 `NEWS-PROGRAMME-FULL-RECORD.md` (WS-NEWS2/3), `WS-NEWS4-FULL-RECORD.md`,
 `WS-ESCPI-FULL-RECORD.md` (+ 2 addenda), `WS-GRID-RESULTS.md`, `WS-FUSION-FULL-RECORD.md`
 (F-0…F-7) — and every number below is bound to the claims ledger
-(`optimize/verify/run.py`, 50/50) or a committed evidence file.
+(`optimize/verify/run.py`, 51/51) or a committed evidence file.
 
 ```mermaid
 flowchart TD
@@ -151,6 +151,7 @@ flowchart TD
 | 9.12 | FU-7 (#159): power-scaled news geometry | **CLOSED-NULL — the placebo owns the gain (2026-08-20).** Bracket × r (within-series power ratio, clip [0.5,2], constant 1:4) on the deployed legs, frozen arm cent-parity on all 307 committed events: pooled **+$20,559/840ev with a POSITIVE CI90 [+$4,160,+$37,319]** — yet the shuffled-power placebo keeps **+$15,949 (≈78%)**: wider brackets help regardless of WHICH event gets the width; alignment ≈$4.6k, inside noise (MDE $16.6k). Per leg: NQ +$8,869, RTY +$13,799, ES +$94, **YM −$2,203** (the asymmetry law on the geometry side). Gain recent-era (halves +$179/+$20,380). ⭐ **A positive CI is not a positive result** — the pre-registered placebo line prevented a wrong-mechanism confirmation. Frozen geometry STANDS; the "generically tight recent-era bracket" observation parked as an explicit overfit hazard. Claim `FU7-POWER-GEOMETRY-CLOSED-NULL`, **48/48**. |
 | 9.13 | FU-5 (#157): the state-gated ride | **CLOSED-NULL on both pre-registered conditions (2026-08-20).** Frozen FU-9 outcomes, deployed legs, zero stance columns read. A (overnight trend agrees, predicted +): NQ +$103/ev INSIDE the shuffle floor ($115), 0/3 legs agree. B (high pre-release 60m vol, predicted +): NQ **−$75/ev — the OPPOSITE sign** with 4/4 legs and both eras negative yet CI [−$206,+$55] ∋ 0 (MDE $133) — the rule refuses the post-hoc flip. ⭐ Texture of record: an already-moving tape may PRE-SPEND the event move — calendar power pays, tape vol may mildly anti-predict; a fresh-study hypothesis or nothing. The ride stays state-blind BY EVIDENCE. Claim `FU5-STATE-GATE-CLOSED-NULL`, **49/49**. |
 | 9.14 | FU-6 (#158): per-event outcome prediction | **CLOSED-NULL both fixed models — the B-family COMPLETES (2026-08-20).** Locked holdouts on the frozen stance vector (291 usable cols; TRAIN NQ<2022 n=182, H1 NQ≥2022 n=145, H2 ES/RTY/YM untouched). Logistic: train AUC .9996 → H1 .5581 BELOW its shuffle floor (.5904) — memorization collapsing to noise, the declared blind spot verbatim. Tree d3: H1 **0.577 vs the 0.58 bar — a 0.003 near-miss** dressed for promotion (money split +$335/ev CI [+$63,+$615], 3/3 H2 legs >0.5) — **the bar HELD**; recorded as an exploration hypothesis eligible only for fresh confirmatory pre-reg. ⭐ B-family verdict: the ride entering state-blind is MEASURED, not assumed — the premium's edge lives in the CALENDAR, not the pre-release tape. Claim `FU6-OUTCOME-MODEL-CLOSED-NULL`, **50/50**. |
+| 9.15 | FU-3 Phase 2 (#155): cross-instrument power sizing | **CLOSED-NULL — zero, decisively (2026-08-20).** The FROZEN P1 ramp on 18 champion books (ES/RTY/YM × 6 frames, deployed best_* params, own committed power files): pooled **+$21**, CI90 [−$23,437,+$24,585], perm-pct **32.5** (no better than random), ES +$2,576 / RTY +$308 / YM −$2,863, era halves flip. Combined P1+P2 (+$30,360) is ≥99% NQ ⇒ **the sizing texture is NQ-LOCAL; the FU-3 line closes** — the instrument-asymmetry law's THIRD independent proof (gating era, FU-13 MTF, now L1). Flat sizing stays everywhere; re-open only on genuinely new data + fresh pre-reg. Claim `FU3P2-CROSS-SIZING-CLOSED-NULL`, **51/51**. |
 | 9.9 | FU-9 (#161): the event-state dataset v1 | **BUILT, 16/16 gates (2026-08-20).** 1,765 rows (NQ/ES/RTY/YM × {CPI,NFP,FOMC,Retail} ≥2016): M2 power context + the frozen ride outcome (deployed executor primitive — parity **to the cent** on all 307 events overlapping committed evidence) + 330 stance columns (165 registry indicators, default params, last closed 1m bar before rel−300s) + NQ box state. ⭐ The C2 falsifier proved **no indicator in the registry repaints** (+1h future bars appended ⇒ stances unchanged, 25×165 per leg). v1 FROZEN, claim `FU9-EVENT-STATE-DATASET`, **45/45**. The substrate for FU-5/6/8, FU-15, and the WS-EARN return (same schema on earnings timestamps). |
 
 ---
@@ -181,5 +182,5 @@ not · read gross beside net (cost drag masquerades as anti-premium) · traded-s
 blindness (the calendar) is now proven repairable, and the repair is power-aware. Armed and
 waiting, each behind its own pre-registration: the four fused-forecast consumers (re-gate ·
 sizing ramp · news geometry · box stops), FU-9's event-state dataset, FU-2's veto replay,
-and the parked FU-15 dual-sided bracket. Ledger **50/50 both machines**; every number above
+and the parked FU-15 dual-sided bracket. Ledger **51/51 both machines**; every number above
 is claim-bound.

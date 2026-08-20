@@ -420,3 +420,30 @@ lives in the CALENDAR (which event, its power regime), not in the pre-release ta
 
 **Ledger**: `FU6-OUTCOME-MODEL-CLOSED-NULL` — V2 verifies the saturation-collapse signature,
 V3 verifies the near-miss was NOT promoted (bar integrity). **50/50 both machines.**
+
+## F-13 · FU-3 Phase 2 (#155) — cross-instrument power sizing: CLOSED-NULL — the texture is NQ-local ✅ (2026-08-20)
+
+**The re-test Phase 1's own verdict demanded, under its fresh pre-registration: the FROZEN
+ramp (identical shape, warmup, equal exposure; each instrument's OWN committed power file)
+on 18 cross-instrument champion books — ES/RTY/YM × 6 frames at the deployed `best_*` box
+params via the STRICT extractor.**
+
+**Result: zero.** Pooled Δ **+$21** (CI90 [−$23,437, +$24,585]); permutation percentile
+**32.5** — the real power-aligned map does no better than a random one; per instrument
+ES +$2,576 · RTY +$308 · YM −$2,863 (the anchored expectation half-held: YM worst, but ES
+was NOT the weakest — recorded); era halves flip (+$1,627 / −$1,605). The combined P1+P2
+secondary (+$30,360) is ≥99% NQ.
+
+**The verdict and what it closes**: CLOSED-NULL by the registered rule — and with it the
+whole FU-3 line. The NQ texture (+$30,338, 6/6 frames, perm 98%) is an NQ-LOCAL phenomenon.
+This is the **third independent proof of the instrument-asymmetry law** on the sizing
+dimension: the gating era (TimesFM/Chronos), FU-13 (the Exp2 ramp reversing on ES's MTF
+book), and now the L1 power ramp flat-lining on all three other legs. The box keeps flat
+sizing everywhere; re-open only with genuinely NEW data (future events) under a fresh
+pre-registration.
+
+**Incident kept**: results-path typo (optimize/results) — one aborted launch, fixed,
+relaunched.
+
+**Ledger**: `FU3P2-CROSS-SIZING-CLOSED-NULL` — V3 verifies the generalization falsification
+(≈0 pooled, perm<50, NQ-driven combined). **51/51 both machines.**

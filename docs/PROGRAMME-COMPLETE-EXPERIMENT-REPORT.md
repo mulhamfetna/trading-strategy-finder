@@ -5,7 +5,7 @@ single experiment and its results and outcomes and insights"). This is the NARRA
 companion to the master index (`NEWS-MASTER-EXPERIMENT-RECORD.md`): where the index gives one
 row per experiment, this report tells each experiment's story in plain language — what we
 did, what happened in dollars, what went well, what went wrong, and what we learned. Every
-number here already lives in a committed evidence file or the claims ledger (50/50 on both
+number here already lives in a committed evidence file or the claims ledger (51/51 on both
 machines); nothing is from memory.**
 
 ```mermaid
@@ -619,6 +619,25 @@ CORRECT design — the premium's edge lives in the calendar (which event, and it
 regime), not in the pre-release tape. The ledger's V3 check on this claim verifies the
 near-miss was not promoted; that check existing is the whole point of the discipline.
 
+
+### 9.15 · FU-3 Phase 2 — cross-instrument power sizing (the texture was NQ, all along)
+**What we did:** the re-test Phase 1's own verdict demanded, under a fresh pre-registration
+with everything frozen: the identical ramp, warmup, and normalization, applied to eighteen
+champion books the study had never touched — ES, RTY and YM across all six frames, at the
+deployed champion parameters extracted through the strict no-defaults module, each
+instrument ramped by its own committed power history. The expectation was anchored in
+advance: ES weakest (FU-13's reversal), RTY strongest. **What happened: zero.** Pooled
+effect +$21 — twenty-one dollars — with a CI of [−$23,437, +$24,585]; the power-aligned map
+beat only 32.5% of random maps (no alignment at all); the three instruments scattered
+(ES +$2,576, RTY +$308, YM −$2,863 — the anchor half-held: YM worst, ES not weakest,
+recorded); the era halves flipped sign. The combined two-phase total, +$30,360, is more
+than 99% NQ. **Verdict: CLOSED-NULL — and the whole FU-3 line closes with it.** **Insight:**
+the promising Phase-1 texture was an NQ-local phenomenon, and the instrument-asymmetry law
+now has its third independent proof on the sizing dimension (the gating era, FU-13's MTF
+ramp reversal, and now the L1 power ramp flat-lining everywhere but NQ). The box keeps flat
+sizing on every instrument; this question re-opens only when genuinely new events have
+accumulated, under a fresh pre-registration.
+
 ---
 
 ## Where the programme stands (2026-08-20)
@@ -628,8 +647,8 @@ layer ($67,767 net 2024→26 at qty=1/leg; ≈$1.167M/window model-grade at appr
 near-orthogonal (daily correlation +0.098), both paper-only until a live gateway. **Two
 deployed forecast layers**: the HAR-RV gate (tape memory, inside every champion) and the
 power-forecast layer (calendar, information-only) — and FU-11 Stage 1 has now PROVEN their
-fusion beats either alone as a forecast. **The open queue**: FU-3 Phase 2 (cross-instrument sizing) as the fused forecast's consumer studies, FU-5/6
+fusion beats either alone as a forecast. **The open queue**: FU-8 (the Retail short × state, the last active FU) as the fused forecast's consumer studies, FU-5/6
 on the frozen dataset, FU-8 (the Retail short), FU-15 (the dual-sided bracket, parked), and
 after WS-FUSION closes — the WS-EARN return, reusing FU-9's schema on earnings timestamps.
-**The ledger**: 50/50 claims green on both machines; every number in this report is bound
+**The ledger**: 51/51 claims green on both machines; every number in this report is bound
 to it or to a committed evidence file.
