@@ -30,6 +30,7 @@ paper-only until a live gateway; the regime monitor guards all news legs.
 | [v5.4.0](https://github.com/mulhamfetna/trading-strategy-finder/releases/tag/v5.4.0) | 2026-08-18 | ES CPI shipped (#139, descriptive-grade acceptance); bundle v1.2.0 |
 | [v5.4.1](https://github.com/mulhamfetna/trading-strategy-finder/releases/tag/v5.4.1) | 2026-08-19 | YM CPI acquired via the pre-registered execution gate (#147); bundle v1.3.0 |
 | [v5.4.2](https://github.com/mulhamfetna/trading-strategy-finder/releases/tag/v5.4.2) | 2026-08-19 | scaled tiers ES ≤20 / YM ≤5 (#141/#150); bundles v1.4.0 + v1.4.1 (docs-current) |
+| [v5.4.3](https://github.com/mulhamfetna/trading-strategy-finder/releases/tag/v5.4.3) | 2026-08-19 | the power-forecast layer deployed (FU-14, information-only, bundle v1.0.0) + the Exp2 sizing ramp honestly killed (FU-13 NOT-DEPLOYED) |
 
 ## 2 · The workstream history (what is CLOSED, with its verdict)
 

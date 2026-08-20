@@ -1,13 +1,13 @@
 # The News Programme — Master Experiment Record
 
 **Every experiment, its result and its finding, across the entire programme (2026-06 → 2026-08-19).
-Compiled at the programme's completion point: all profitable news deployed (v5.4.1), the premium
-grid literally closed, ledger 39/39 on both machines.**
+Current through v5.4.3: all profitable news deployed and scaled, the premium grid literally
+closed, the fusion workstream executing, ledger 43/43 on both machines.**
 
 This is the master index. Each workstream's full detail lives in its own record —
 `NEWS-PROGRAMME-FULL-RECORD.md` (WS-NEWS2/3), `WS-NEWS4-FULL-RECORD.md`,
 `WS-ESCPI-FULL-RECORD.md` (+ 2 addenda), `WS-GRID-RESULTS.md` — and every number below is
-bound to the claims ledger (`optimize/verify/run.py`, 39/39) or a committed evidence file.
+bound to the claims ledger (`optimize/verify/run.py`, 43/43) or a committed evidence file.
 
 ```mermaid
 flowchart TD
@@ -131,3 +131,11 @@ flowchart TD
 | 9.1 | FU-1 event-window audit (#153, pre-registered definitions) | The NQ book CONCENTRATES into Tier-1 news windows: entry density up to 8.4×, **decomposed by the shifted-calendar control into a 2.16× time-of-day floor × ≈1.95× release-specific pull**; stop-outs 2.1–5.8× on all six frames; in-window P&L worse 5/6 (CIs include zero → FU-2's replay owns the money question); give-up insignificant (era-0 B1 generalizes). Ledger 41/41. |
 | 9.2 | FU-11 archaeology (#162) | The early study is `subprojects/meta-prophet/` and its verbatim verdict — *"price direction is unforecastable, but volatility is"* — is the OPPOSITE of the recollection: 11 models lost to naive on price; HAR/HAR-RV beat naive +16.3% on range/RV. Direction dead by three independent routes; the remembered direction×size fusion has no direction ingredient. Reformulated (owner agreed): fuse the SIZE engines. |
 | 9.3 | FU-12 system layer analysis (#164, owner-injected) | `SYSTEM-LAYERS-ANALYSIS.md`: full layer breakdown + the 9-entry volatility inventory. ⭐ **The deployed box vol-gate IS the meta-prophet HAR-RV forecast** (`volatility.py: vol_forecast`) — so FU-11 becomes "upgrade the live vol engine with the calendar terms it cannot see", forecast-quality stage first, consumers gated after; the FM bands' NO-GOs (gating) do not forbid their audition as forecast INPUTS. |
+
+### Era 9 (continued) — the owner-ordered end-to-end arc (v5.4.3)
+
+| # | experiment | result → finding |
+|---|---|---|
+| 9.4 | FU-13 (#165): the Exp2 sizing ramp through the pre-registered R/X/M deployment battery | **NOT-DEPLOYED by its own rule.** R exact (the preserved NQ book reproduces the deploy card to the dollar: flat $151,872 → ramp $162,228, +$10,356 equal-risk — the machinery proven). X FAIL: a freshly generated independent ES 1h+4h book ($57,315/263 trades) REVERSES the identical a-priori ramp (**−$18,632**; on ES even random regime→size maps lose, median −$12,282 — that book rewards no vol-mapped size dispersion). M FAIL: pooled 90% CI [−$25,557, +$9,069] includes zero. Insights: the SECOND TEST's n=1 caution vindicated by the first out-of-sample book; the "ES is vol-agnostic" asymmetry (known from gating) now proven on the sizing side; instrument asymmetry is a first-class design axis for any revival. Incidents kept: the frozen tfm-repro snapshot crashes on ES; bundle ES_1h starts 2025 (empty HMM train slice — use the 16-year file). |
+| 9.5 | FU-14 (#166): the M2 power model productionized through B/P/S/F/A/D | **DEPLOYED (v5.4.3).** `src/deploy/power_forecast.py` (M2's own functions): parity 5/5 instruments exact (≤1e-16; Spearman NQ .5907 · ES .5719 · RTY .6184 · GC .4932 · CL .5461); scramble falsifier collapses (+0.591→+0.212); night-before forward artifact live (historical `--now` check regime-sane); golden 6/6. **Insight: deployment of a forecast = parity + falsifier + an ops artifact — zero direct P&L by design**; consumers (FU-11/FU-3/FU-7) remain gated studies. Playbook bundle v1.0.0 on the release. |
+| 9.6 | The registrations and saves around the arc | FU-11's fused-size design SAVED as a standing file (`FU11-FUSED-SIZE-DESIGN-DRAFT.md`) per the owner's word; the system-layers analysis updated to v5.4.3 (two deployed forecast layers now; the killed ramp recorded); `ACHIEVEMENTS-SUMMARY.md` written — the release trail v5.2.0→v5.4.3, the laws, the kill list as an achievement. |
