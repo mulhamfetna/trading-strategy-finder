@@ -62,19 +62,35 @@ def main() -> None:
                     continue
                 t0 = time.time()
                 try:
+                    # ⚠️ the page's INITIAL form is a legacy preset — the `best` champion loads
+                    # only on a real (instrument, tf) change event. Force one: prime with a
+                    # different tf, then select the target, and wait for the exact switch line.
                     page.select_option("#inst_select", tok)
+                    primer = "2h" if tf != "2h" else "1h"
+                    page.select_option("#tf_select", primer)
+                    page.wait_for_function(
+                        "() => document.getElementById('status').textContent.startsWith('switched to')",
+                        timeout=60000)
                     page.select_option("#tf_select", tf)
                     page.wait_for_function(
-                        "() => document.getElementById('status').textContent.includes('click Run')",
+                        f"() => document.getElementById('status').textContent.includes('switched to {tok} {tf}')",
                         timeout=60000)
                     page.click("#run")
+                    # the run is finished when all three views are filled; the per-view trade
+                    # count only appears in the status line after (re-)selecting the L1 tab
+                    page.wait_for_function(
+                        "() => document.getElementById('status').textContent.includes('all three tabs filled')",
+                        timeout=RUN_TIMEOUT_MS)
+                    page.click("#viewtabs button[data-view='l1']")
                     page.wait_for_function(
                         "() => /L1 · \\d+ trades/.test(document.getElementById('status').textContent)",
-                        timeout=RUN_TIMEOUT_MS)
+                        timeout=60000)
                     body = page.inner_text("body")
                     m_pnl = re.search(r"([+\-]\$[\d,]+)\s*\n?\s*total P/L", body)
+                    m_dd = re.search(r"(\$[\d,]+)\s*\n?\s*max drawdown", body)
                     m_n = re.search(r"L1 · (\d+) trades", body)
                     seen_pnl = m_pnl.group(1) if m_pnl else None
+                    seen_dd = m_dd.group(1) if m_dd else None
                     seen_n = int(m_n.group(1)) if m_n else None
                     want_pnl = money(exp["pnl"])
                     shot = shots / f"fwd_dash_{key}.png"
@@ -83,6 +99,7 @@ def main() -> None:
                     results[key] = {"status": "ok" if ok else "MISMATCH",
                                     "seen_pnl": seen_pnl, "want_pnl": want_pnl,
                                     "seen_n": seen_n, "want_n": exp["n_trades"],
+                                    "seen_dd": seen_dd, "book_dd": exp.get("max_dd"),
                                     "secs": round(time.time() - t0, 1), "shot": shot.name}
                 except Exception as e:  # noqa: BLE001
                     results[key] = {"status": f"ERROR: {type(e).__name__}: {e}"}
