@@ -904,6 +904,72 @@ and knowing that with 64 machine-verified claims is worth more than hoping other
 
 ---
 
+## Era 12 — WS-FWD (#176): the champions meet the freshest tape (2026-08-21)
+
+The owner's next order after the roadmap closed was disarmingly simple: *the champions'
+books end mid-May; we have data until August — run everything, verify it on the dashboard,
+and tell me per champion what makes money, what loses, why, and what can be fixed.* The
+execution turned out to be three different stories stacked on top of each other.
+
+**The first story is the data.** The August tape existed — but not where the engine looks.
+It lives in the 16-year 1-second dataset (the WS-NEWS/WS-EARN workhorse), which turns out,
+under a zero-tolerance splice gate, to be the *same vendor source* as the engine's candle
+files: 21-day overlaps matched on every instrument with coverage 1.0 and literally zero
+mismatches — open, high, low, close AND volume (volume was made load-bearing because
+vwap/obv/mfi sit in 79 deployed slot-indicator pairs). Every decision-timeframe file was
+then proven exactly reproducible from the 1-minute frame (54/54 proofs — the 4h grid is
+the 18:00-anchored offset-2h bins) before a single resampled bar was trusted. All nine
+instruments now end at 2026-08-07 16:59 ET — in a **parallel data root**, with the
+production files' checksums proven byte-stable and the L1 disk cache TMPDIR-isolated
+(that cache is keyed on parameters, not data; shared, it would happily serve old-tape
+books to new-tape requests). A bonus surfaced during wiring: the owner's `with20d` NQ
+drop — real scraped box rows through June 9 — had been sitting in production since June,
+built but never swapped live. Its candles matched the extension exactly (20,460 overlap
+rows, zero mismatches), so its box rows were adopted: twelve legitimate extra days of NQ
+entry coverage.
+
+**The second story is the boxes — and it is the honest headline.** The strategy's entries
+are born from the scraped box levels, and no fresh scrape exists past June 9 (NQ), May 21
+(ES), June 26 (the other seven). A derivability probe settled whether we could compute
+them ourselves: no — the levels are per-period values of the owner's TradingView-side
+indicator, not reconstructible multiples, and no generator or Pine source exists in any
+repo. Fabricating them would have fabricated entries, so the refusal is enforced by a
+ledger falsifier that scans all 54 books and fails if any entry exists beyond its box end.
+Consequence: **the genuinely-new tape holds only 25 trades (+$1,823, all NQ/ES, late
+May)** — every cell under n=10, so per the pre-registration nobody gets a fresh-window
+verdict. The candles are ready through August; the entries wait on one owner action:
+**a fresh box export**. The moment it lands, the same gated pipeline re-fires unchanged.
+
+**The third story is what the 54 full books say** — and they say sharp things. All 54
+slots ran through the dashboard's own causal path (the NQ 4h anchor closed to the cent:
+$151,056.19/279 = the deployed $151,655.19/277 plus exactly its two fresh trades at
+−$599). Raw aggregate: $2,180,903 — but the 2026 slice is the `best` set's own selection
+window, and the house rule that stressed costs lead restructures everything: at
+$10/round-trip, eight slots flip negative (the entire NG ladder below 4h, CL 2m/5m, HG 2m,
+RTY 2m — NG alone sheds $109k), and at $25/rt seventeen do. The fleet's durable value is
+the slow ladder — every 4h/2h/1h slot at $120–$600 per trade, led by NQ 4h keeping
+$144k of its $151k even at the harsh stress. And one diagnosis nobody had noticed:
+**NQ 5m has been structurally dark since April 25** — its vol gate (gate_pct 30.4, the
+tightest in the fleet against a median near 94) froze its admit quantile on 2025
+volatility, and the hotter 2026 regime clears that bar almost never: 640 of 641
+post-April signals were gate-killed. A deployed slot that silently stopped trading for
+3.5 months is FU-11's regime-blindness lesson wearing a champion's clothes; the fix — a
+recalibration cadence — is a re-optimization decision that belongs to the owner.
+
+What went well: the gates all passed at zero tolerance (retroactively strengthening every
+16y-based study — one source, proven); the anchor closure; the with20d rescue; the
+darkness diagnosis falling out of drop-mix telemetry rather than anecdote. What went
+wrong, kept honestly: a first runner pass that failed loudly on all 54 slots (the L1 view
+validates the L2 dict too), a dashboard visual gate that initially verified the WRONG
+preset (the root page boots a legacy champion — only a real instrument/timeframe change
+event loads the deployed set; caught because 258 ≠ 279 trades), a card-extraction regex
+defeated by CSS uppercase, and a `pkill` that matched its own invoking shell. Every
+incident is in the issue trail. Full report: `docs/WS-FWD-CHAMPIONS-FORWARD-REPORT.md`;
+claims `FWD-EXTENSION-AND-54-BOOKS`, `FWD-FRESH-WINDOW-SLIVER`,
+`FWD-DASHBOARD-VISUAL-GATE`. Next, on the owner's word: the ORB study on all instruments.
+
+---
+
 ## Where the programme stands (2026-08-20, v5.5.1 — the roadmap complete)
 
 **Two income engines**: the box book (≈$840k/yr 2026-OOS at deployed caps) and the news

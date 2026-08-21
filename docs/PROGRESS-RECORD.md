@@ -24,7 +24,11 @@ Everything paper-only until a live gateway; the regime monitor guards all news l
 **The WS-EARN return RAN (era 10, 7 studies, one day)** — earnings power forecastable, the
 blindness law spans both calendars, the E-S1 substrate frozen, state-blind extended to
 size, and **E-D1 released in v5.5.0** (the two-calendar layer: the gate's nightly blindness
-schedule; routing, never fitting). **Next (owner-initiated): phase 3 — ×news×indicators.**
+schedule; routing, never fitting). **Era 12 (WS-FWD, 2026-08-21): the tape is extended to
+2026-08-07 for all 9 instruments under exact gates and all 54 champions re-booked on it —
+but the fresh window is a 25-trade sliver because the scraped BOX feed ends in June; the
+owner's box export is the single unlock. Sharp findings: NQ 5m dark since April (frozen
+gate), 8 slots negative at $10/rt friction (NG ladder).**
 
 ## 1 · Shipped releases (the immutable trail)
 
@@ -60,16 +64,23 @@ per-workstream full records. The one-line-each version:
 | **WS-EARN return (era 10)** | #109/#169 | **CLOSED 2026-08-20**: earnings power forecastable (ρ .4583/.3323); the vol-gate blindness spans both calendars; the 924-row substrate frozen; fitted-joint interference confirmed at power (the powered-tolerance law); state-blind extended to SIZE; **E-D1 the two-calendar layer RELEASED v5.5.0** |
 | **XNI phase 3 (era 11)** | #172–#173 | **CLOSED 2026-08-20**: law #1 (the calendars resolve independently — compound power is pure addition); X-3/X-4/X-5b information artifacts **RELEASED v5.5.1**; X-5 informative-decomposed; X-2/X-6 parked-with-cause. ⭐⭐ **THE ROADMAP COMPLETE** |
 | **WS-FUSION (time × state)** | #152–#168 | **CLOSED 2026-08-20**: FU-14 deployed + FU-11 Stage 1 WON (the fused forecast beats the live gate); every P&L consumer closed with a law (veto=seasonality; sizing NQ-local ×3 asymmetry proof; geometry=width bias; state gates null; classifier bar held by 0.003; Retail loses both ways); FU-9 dataset built (no-repaint proof); closing bilingual report + WS-EARN hand-off shipped |
+| **WS-FWD (era 12 — champions forward run)** | #176 | **CLOSED 2026-08-21**: candles extended to 2026-08-07 all 9 under exact gates (16y set ≡ vendor, 0 mismatches incl. volume; parallel root, prod untouched); 54/54 books rebuilt (NQ 4h anchor closes to the cent); **fresh window = 25 trades only — the scraped BOX FEED ends 06-09/05-21/06-26; owner box export = the unlock**; ⭐ NQ 5m dark since 04-25 (frozen gate quantile vs the 2026 regime); ⭐ 8 slots negative at $10/rt (NG ladder = friction illusion); full report + Playwright-verified dashboard sweep + claims FWD-×3 |
 
 ## 3 · ACTIVE + QUEUED (the live board)
 
-**The board is QUIET AND GREEN (2026-08-20, post-v5.5.1)**: no active workstream, no
+**The board is QUIET AND GREEN (2026-08-21, post-WS-FWD)**: no active workstream, no
 unverdicted study, no stale doc. Everything open is deliberate:
 
 - **Owner-side items (the only movers of new profit)**: the LIVE GATEWAY (all income is
   paper until it — $67,767/window earned and uncollected) · broker margin at the approved
   tiers · the C4 timestamp spot-check (#110) · a forward earnings calendar (lights up the
-  earnings side of the nightly artifact).
+  earnings side of the nightly artifact) · **a fresh BOX export through 2026-08 for all 9
+  instruments (#176 — turns the extended tape into a real ~2-month OOS test of all 54
+  champions; also: a standing box-refresh cadence — the with20d drop sat unswapped since
+  June)** · the prod data-root swap decision · the vol-gate recalibration campaign
+  (NQ 5m dark since April; a re-optimization decision).
+- **Queued next (owner's word)**: the ORB (opening-range-breakout) study on all
+  instruments — new issue + deep-research-first + own pre-registration.
 - **Deliberate holds**: FU-15 dual-sided bracket (#168, parked by owner — first in line on
   the word) · FU-4 (gated-off) · FU-11 consumers ① re-gate / ④ stops (low-priority) ·
   X-2/X-6 (parked-with-cause under law #1).
