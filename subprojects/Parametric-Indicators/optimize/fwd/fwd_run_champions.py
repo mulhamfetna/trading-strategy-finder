@@ -49,7 +49,10 @@ def run_slot(job: tuple[str, str, str]) -> dict:
             out["status"] = "no_champion"
             return out
         l1p = P._champion_layer_params(tf, champs[tf])
-        view = P.build_view_payload(l1p, {}, tf, "l1", instrument=tok)
+        # the l1 view validates the L2 dict too; the L1 book is independent of it (L2 only manages
+        # L1's dropped signals) — use the deterministic scaled-permissive default, never {}.
+        l2p = P._scaled_permissive(tok)
+        view = P.build_view_payload(l1p, l2p, tf, "l1", instrument=tok)
         trades = view["trades"]
         pnl = sum(t["pnl"] for t in trades)
         eq = peak = dd = 0.0
