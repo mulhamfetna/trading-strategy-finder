@@ -9,7 +9,9 @@ workstream: WS-AS (all-stocks-signals)
 
 # WS-AS — Input → Output Data Map
 
-## 1. Source tree (`ALL_STOCKS/`)
+> ⚠️ **Data location changed 2026-08-22:** market data lives ONLY on the server (`~/Mulham/wsg-i`, `~/Mulham/data_2010_1s`); the local checkout has NO data trees. Authoritative map: `docs/DATA-AND-KNOWLEDGE-MAP.md`.
+
+## 1. Source tree (`ALL_STOCKS/` — server path `/home/dev/Mulham/wsg-i/ALL_STOCKS/`, the ONLY copy since 2026-08-22)
 ```
 ALL_STOCKS/
 ├── CANDLES/

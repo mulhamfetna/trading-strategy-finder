@@ -1,5 +1,7 @@
 # SYSTEM LAYERS — the Full Breakdown (FU-12; UPDATED to v5.5.0)
 
+> Data locations (server-only since 2026-08-22): `docs/DATA-AND-KNOWLEDGE-MAP.md`.
+
 > **Update 2026-08-19 (v5.4.3):** since first publication the pipeline resolved both of §3's
 > open items — **3.7 (M2 power model) is now DEPLOYED** as the system's second forecast layer
 > (`src/deploy/power_forecast.py`, information-only), and **3.6 (the Exp2 sizing ramp) was

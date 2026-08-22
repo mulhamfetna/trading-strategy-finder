@@ -9,6 +9,8 @@ branch: research/legacy-18-baseline
 
 # START HERE — `legacy-18-baseline` workstream
 
+> ⚠️ **Data location changed 2026-08-22:** market data lives ONLY on the server (`~/Mulham/wsg-i`, `~/Mulham/data_2010_1s`); the local checkout has NO data trees. Authoritative map: `docs/DATA-AND-KNOWLEDGE-MAP.md`.
+
 **You are one of two agents working on this project on this device, at the same time.** The other
 agent works in `/mnt/data/projects/trading` on branch `dev`. You work **only** here, in
 `/mnt/data/projects/trading/legacy18`, on branch `research/legacy-18-baseline`.
@@ -122,8 +124,10 @@ by code.
 5. **Fresh seeds are not a formality.** An 8/8 result at +55% became 5/8 at −4% on unseen seeds. Two
    runs agreeing on the *same* seeds is not replication.
 6. **No heavy compute on this box without explicit permission.** Default to the server (§6).
-7. **LOCAL is the source of truth.** Every output produced on the server must be `scp`'d back and
-   committed. Nothing authoritative may live only on the server.
+7. **LOCAL (git) is the source of truth for CODE + EVIDENCE.** Every output produced on the server
+   must be `scp`'d back and committed. **MARKET DATA is the exception since 2026-08-22: it lives ONLY
+   on the server** (`docs/DATA-AND-KNOWLEDGE-MAP.md`); the local checkout has no data trees and must
+   never grow them back.
 8. **Stay in this worktree.** Never switch branches or worktrees unless told to out loud.
 9. **Verify, don't assume.** Never conclude from truncated output. ⚠️ `| head -N` on a long run
    **SIGPIPEs the process**, and a filter that misses stderr hides the reason.
@@ -214,9 +218,11 @@ numbers. **Compare against the server, or against your own baseline.**
 The exact package set is frozen in `.wsenv/requirements-lock.txt`. If you need bit-comparability with
 the sibling workstream, pin from theirs instead — but say so out loud when you do.
 
-**Data is symlinked, not copied:** `ALL_STOCKS`, `Full_Canldes_Data` and `data` point at
-`/mnt/data/projects/trading`. A git worktree checks out tracked files only, and the price data is
-untracked. Treat it as **read-only**.
+**Data is NOT local any more (2026-08-22):** `ALL_STOCKS`, `Full_Canldes_Data`, `data`, `2024_data`,
+`2026_last_20_days_data` and all delivery/vendor zips were merged onto the server and deleted here.
+Every data-backed run happens on `amd-trading` with `WSH_DATA_BASE=/home/dev/Mulham/wsg-i
+WSG_DATA_ROOT=/home/dev/Mulham/wsg-i/data` — exact paths and coverage in `docs/DATA-AND-KNOWLEDGE-MAP.md`.
+A local `FileNotFoundError` under `/mnt/data/projects/trading/...` is the rule working, not a bug.
 
 ⚠️ **A residual of #94 lives here:** at least one code path builds a data path from the *checkout*
 rather than from `roots.py`'s `DATA_ROOT` (`tests/test_smc_numba_parity.py` wanted

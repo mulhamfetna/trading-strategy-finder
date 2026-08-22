@@ -1,5 +1,7 @@
 # Full-candles signals — all timeframes
 
+> ⚠️ **Data location changed 2026-08-22:** market data lives ONLY on the server (`~/Mulham/wsg-i`, `~/Mulham/data_2010_1s`); the local checkout has NO data trees. Authoritative map: `docs/DATA-AND-KNOWLEDGE-MAP.md`.
+
 This folder extends the Stage 1 / Stage 2 signal pipeline (previously run only on
 the **4h** candle file) to **all seven timeframes** shipped in the project-root
 `Full_Canldes_Data/` drop:

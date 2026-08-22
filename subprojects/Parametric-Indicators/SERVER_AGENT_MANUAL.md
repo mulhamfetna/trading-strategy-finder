@@ -1,5 +1,7 @@
 # Server Agent Manual — driving the Unified L1·L2·Combined backtest server
 
+> ⚠️ **Data location changed 2026-08-22:** market data lives ONLY on the server (`~/Mulham/wsg-i`, `~/Mulham/data_2010_1s`); the local checkout has NO data trees. Authoritative map: `docs/DATA-AND-KNOWLEDGE-MAP.md`.
+
 A complete, self-contained guide for **another agent** (or human) to operate `server.py` — the HTTP
 backend behind the unified dashboard. Everything an agent needs: how to start it, every endpoint, the
 exact request/response shapes, the parameter schema, ready-to-run `curl` examples, the known-good
@@ -54,8 +56,8 @@ NQ data on disk, via two environment variables:
 
 | Env var | Default | What it points at |
 |---|---|---|
-| `WSH_DATA_BASE` | `/mnt/data/projects/trading` | base dir holding `Full_Canldes_Data/<RAW_DIR>/NQ_<tf>.csv` + `NQ_1m.csv` |
-| `WSG_DATA_ROOT` | `/mnt/data/projects/trading/data` | holds `full_data/NQ_full_data.csv` (per-day box levels) |
+| `WSH_DATA_BASE` | `/mnt/data/projects/trading` (⚠️ EMPTY since 2026-08-22 — always set `/home/dev/Mulham/wsg-i`) | base dir holding `Full_Canldes_Data/<RAW_DIR>/NQ_<tf>.csv` + `NQ_1m.csv` |
+| `WSG_DATA_ROOT` | `/mnt/data/projects/trading/data` (⚠️ EMPTY — set `/home/dev/Mulham/wsg-i/data`) | holds `full_data/NQ_full_data.csv` (per-day box levels) |
 
 A template is shipped as **`.env.example`** (copy to `.env` and edit paths; the server reads the env,
 not a `.env` file directly — `export` them or use your shell/process manager).
