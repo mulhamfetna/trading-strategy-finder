@@ -322,3 +322,10 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !subprojects/Parametric-Indicators/optimize/xni/data/x4_dashboard_8250.png
 !docs/XNI-CLOSING-REPORT-BILINGUAL.html
 !playbooks/two-calendar-forecast-bundle-v1.1.0.zip
+
+# WS-FWD (#176) — forward-OOS evidence (audits, extension gates, books)
+!subprojects/Parametric-Indicators/optimize/fwd/data/*.log
+!subprojects/Parametric-Indicators/optimize/fwd/data/*.json
+!subprojects/Parametric-Indicators/optimize/fwd/data/*.csv
+!subprojects/Parametric-Indicators/optimize/fwd/data/shots/
+!subprojects/Parametric-Indicators/optimize/fwd/data/shots/*.png

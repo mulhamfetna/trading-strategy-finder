@@ -1,7 +1,7 @@
 # The News Programme — Master Experiment Record
 
 **Every experiment, its result and its finding, across the entire programme (2026-06 → 2026-08-20).
-Current through **v5.5.0**: all profitable news deployed and scaled, the premium
+Current through **v5.5.1** (the roadmap COMPLETE): all profitable news deployed and scaled, the premium
 grid literally closed, the fusion workstream executing (the fused size engine has WON its
 forecast-quality stage), ledger 64/64 on both machines.**
 
@@ -183,6 +183,16 @@ flowchart TD
 
 ---
 
+## Era 12 — WS-FWD (#176): the deployed champions on the freshest tape
+
+| # | experiment | result → finding |
+|---|---|---|
+| 12.1 | Phase 0/0.5: the data-currency audit + gated candle extension | **ALL GATES EXACT (2026-08-21).** The August tape lives in the 16-year dataset; splice gates proved it IS the engine's vendor source (9/9 overlaps coverage 1.0, **zero** mismatches incl. volume — volume made load-bearing: vwap/obv/mfi in 79 slot-pairs) and every decision-TF file exactly reproducible from 1m (54/54, 4h grid = offset 2h). All 9 instruments extended to **2026-08-07** in a **parallel root** (prod checksums proven untouched; TMPDIR-isolated L1 cache — the params-keyed cache is data-blind). ⭐ Found + adopted: the owner's shelved `with20d` NQ drop (real scraped box rows to 06-09; candles gate-D-exact on 20,460 rows). |
+| 12.2 | Phase 1/2: 54 champion books + the fresh-window cut | **54/54 books rebuilt through the dashboard's own causal path; the fresh window is a SLIVER by structure.** Anchor closure to the cent: NQ 4h $151,056.19/279 = the deployed anchor $151,655.19/277 + exactly its 2 fresh trades (−$599). Aggregate raw book **$2,180,903** (2025 $1.364M · 2026-to-date $817k — the 2026 part is the `best` set's SELECTION window, not OOS). **Fresh entries: 25 (+$1,823), all NQ/ES late May** — the box feed (owner-scraped, provably not derivable; fabrication forbidden + ledger-falsified) ends 06-09/05-21/06-26, before or at each old candle end. **The unlock is one owner action: a fresh box export through 2026-08.** No fresh cell reaches n=10 ⇒ observations only, no verdicts (enforced as a claim falsifier). |
+| 12.3 | Phase 4: the per-slot WHY (diag pass on all 54) | ⭐⭐ **NQ 5m has been structurally DARK since 2026-04-25** — gate_pct 30.4 (fleet median ≈94), 640/641 post-April signals vol-gate-killed: the frozen 2025 gate quantile admits nothing in the hotter 2026 regime (FU-11's blindness lesson at the slot level; NQ 2m drifting the same way — 97% gate drops in the fresh days vs 63% lifetime). ⭐⭐ **Friction stress restructures the fleet**: at $10/round-trip **8 slots go negative** (the NG ladder below 4h, CL 2m/5m, HG 2m, RTY 2m — NG 2m −$56,910); at $25/rt, 17. Value concentrates in the slow ladder ($120–$600/trade; NQ 4h keeps $144k of $151k at $25/rt). All 54 slots raw-positive in both calendar windows; only CL 1h and ES 5m negative since March. Full report `docs/WS-FWD-CHAMPIONS-FORWARD-REPORT.md`; claims `FWD-*` ×3. |
+
+---
+
 ## The programme state as of 2026-08-20 (the running verdict)
 
 **Deployed and earning (paper-only until a live gateway; regime monitor GO required):**
@@ -205,9 +215,12 @@ equity-index phenomenon ordered by beta (NQ>ES>YM>RTY) · size is forecastable, 
 not · read gross beside net (cost drag masquerades as anti-premium) · traded-seconds density
 ≠ fill quality · same-seed agreement ≠ replication.
 
-**The fusion frontier (era 9, open):** FU-11 Stage 1 PASSED — the live vol engine's one
-blindness (the calendar) is now proven repairable, and the repair is power-aware. Armed and
-waiting, each behind its own pre-registration: the four fused-forecast consumers (re-gate ·
-sizing ramp · news geometry · box stops), FU-9's event-state dataset, FU-2's veto replay,
-and the parked FU-15 dual-sided bracket. Ledger **64/64 both machines**; every number above
+**The frontier (post-roadmap, v5.5.1)**: the three-step roadmap is COMPLETE and shipped.
+The coherent total finding: scheduled violence is rankable from its own history (ρ≈0.5,
+both calendars — productionized twice, now collision-priced); nothing else predicts it
+(direction ×3, tape state on every axis, cross-calendar interaction); the edge stays where
+it was earned, armored by 30+ pre-registered validations. Open by design only: the
+owner-side items (gateway, margin, C4, a forward earnings calendar), the deliberate holds
+(FU-15 first in line), and the fresh-registration hypotheses awaiting future data.
+Ledger **64/64 both machines**; every number above
 is claim-bound.

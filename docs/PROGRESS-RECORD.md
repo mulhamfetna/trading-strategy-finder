@@ -10,7 +10,7 @@ issue; labels + milestones organize the board; releases carry the shipped artifa
 ## 0 · The one-paragraph state
 
 Two production income systems plus one information layer, all verified end-to-end
-(claims ledger **59/59 on both machines**). **System 1 — the box strategy**: 55 champions
+(claims ledger **64/64 on both machines**). **System 1 — the box strategy**: 55 champions
 across 9 markets (~$840k/yr 2026-OOS at deployed caps), engine golden-locked (6/6).
 **System 2 — the news layer** (v5.4.2): four legs, one CPI bet — $67,767 net stressed
 2024→2026 at qty=1/leg; scaled tiers approved by rule (NQ/RTY/ES ≤20 worked, YM ≤5),
@@ -24,7 +24,11 @@ Everything paper-only until a live gateway; the regime monitor guards all news l
 **The WS-EARN return RAN (era 10, 7 studies, one day)** — earnings power forecastable, the
 blindness law spans both calendars, the E-S1 substrate frozen, state-blind extended to
 size, and **E-D1 released in v5.5.0** (the two-calendar layer: the gate's nightly blindness
-schedule; routing, never fitting). **Next (owner-initiated): phase 3 — ×news×indicators.**
+schedule; routing, never fitting). **Era 12 (WS-FWD, 2026-08-21): the tape is extended to
+2026-08-07 for all 9 instruments under exact gates and all 54 champions re-booked on it —
+but the fresh window is a 25-trade sliver because the scraped BOX feed ends in June; the
+owner's box export is the single unlock. Sharp findings: NQ 5m dark since April (frozen
+gate), 8 slots negative at $10/rt friction (NG ladder).**
 
 ## 1 · Shipped releases (the immutable trail)
 
@@ -37,6 +41,7 @@ schedule; routing, never fitting). **Next (owner-initiated): phase 3 — ×news�
 | [v5.4.2](https://github.com/mulhamfetna/trading-strategy-finder/releases/tag/v5.4.2) | 2026-08-19 | scaled tiers ES ≤20 / YM ≤5 (#141/#150); bundles v1.4.0 + v1.4.1 (docs-current) |
 | [v5.4.3](https://github.com/mulhamfetna/trading-strategy-finder/releases/tag/v5.4.3) | 2026-08-19 | the power-forecast layer deployed (FU-14, information-only, bundle v1.0.0) + the Exp2 sizing ramp honestly killed (FU-13 NOT-DEPLOYED) |
 | [v5.5.0](https://github.com/mulhamfetna/trading-strategy-finder/releases/tag/v5.5.0) | 2026-08-20 | the two-calendar forecast layer (E-D1, routing pattern, information-only; bundle v1.0.0) + WS-FUSION closure + era 10 (the WS-EARN return, 7 studies) |
+| [v5.5.1](https://github.com/mulhamfetna/trading-strategy-finder/releases/tag/v5.5.1) | 2026-08-20 | ⭐⭐ THE ROADMAP COMPLETES: XNI closure (law #1) + X-3 collision-priced artifact (bundle v1.1.0) + X-4 dashboard event-window tags + X-5b monitor context field — all information-only, parity-proven, never-gates |
 
 ## 2 · The workstream history (what is CLOSED, with its verdict)
 
@@ -56,22 +61,33 @@ per-workstream full records. The one-line-each version:
 | RQ-6 (matrix regen) | #146 | grid verdicts merged into the generated coverage matrix |
 | RQ-3 (forward-confirm) | #143 | superseded — paper-only live operation IS the forward record |
 | RQ-2 (Retail short) | #142 | CLOSED via FU-8: Retail loses BOTH WAYS — the anti-premium is chop, not drift |
+| **WS-EARN return (era 10)** | #109/#169 | **CLOSED 2026-08-20**: earnings power forecastable (ρ .4583/.3323); the vol-gate blindness spans both calendars; the 924-row substrate frozen; fitted-joint interference confirmed at power (the powered-tolerance law); state-blind extended to SIZE; **E-D1 the two-calendar layer RELEASED v5.5.0** |
+| **XNI phase 3 (era 11)** | #172–#173 | **CLOSED 2026-08-20**: law #1 (the calendars resolve independently — compound power is pure addition); X-3/X-4/X-5b information artifacts **RELEASED v5.5.1**; X-5 informative-decomposed; X-2/X-6 parked-with-cause. ⭐⭐ **THE ROADMAP COMPLETE** |
 | **WS-FUSION (time × state)** | #152–#168 | **CLOSED 2026-08-20**: FU-14 deployed + FU-11 Stage 1 WON (the fused forecast beats the live gate); every P&L consumer closed with a law (veto=seasonality; sizing NQ-local ×3 asymmetry proof; geometry=width bias; state gates null; classifier bar held by 0.003; Retail loses both ways); FU-9 dataset built (no-repaint proof); closing bilingual report + WS-EARN hand-off shipped |
+| **WS-FWD (era 12 — champions forward run)** | #176 | **CLOSED 2026-08-21**: candles extended to 2026-08-07 all 9 under exact gates (16y set ≡ vendor, 0 mismatches incl. volume; parallel root, prod untouched); 54/54 books rebuilt (NQ 4h anchor closes to the cent); **fresh window = 25 trades only — the scraped BOX FEED ends 06-09/05-21/06-26; owner box export = the unlock**; ⭐ NQ 5m dark since 04-25 (frozen gate quantile vs the 2026 regime); ⭐ 8 slots negative at $10/rt (NG ladder = friction illusion); full report + Playwright-verified dashboard sweep + claims FWD-×3 |
 
 ## 3 · ACTIVE + QUEUED (the live board)
 
-- **WS-EARN return — era 10 COMPLETE through E-D1 (tracking #109/#169)**: E-P1 ✅ · E-X1 ✅
-  · E-S1 ✅ (924-row substrate frozen) · E-X2+v2 ✕ (fitted-joint interference confirmed at
-  power) · E-C1 ∅ (state-blind extended to size) · **E-D1 ⭐ RELEASED v5.5.0**. C4 human
-  check still PENDING (#110, owner-side); forward earnings dates need an owner-supplied
-  calendar. **Phase 3 (×news×indicators) initiating.**
-- **Deliberate holds (not debt)**: FU-15 dual-sided bracket (#168, parked by owner behind
-  the closed FU-11 — inherits FU-8's quantified double-stop cost) · FU-4 (gated-off) ·
-  FU-11 consumers ① re-gate / ④ stops (low-priority, armed by Stage 1).
-- **Research queue** (`RESEARCH-QUEUE.md`): RQ-4 YM direction row (#144), RQ-5 metals cost
-  frontier (#145) — queued. Standing rule: an observation without an RQ/FU number does not exist.
-- **Owner-side standing items**: live gateway (paper-only today) · broker margin at scaled
-  size · WS-EARN C4 check (#110).
+**The board is QUIET AND GREEN (2026-08-21, post-WS-FWD)**: no active workstream, no
+unverdicted study, no stale doc. Everything open is deliberate:
+
+- **Owner-side items (the only movers of new profit)**: the LIVE GATEWAY (all income is
+  paper until it — $67,767/window earned and uncollected) · broker margin at the approved
+  tiers · the C4 timestamp spot-check (#110) · a forward earnings calendar (lights up the
+  earnings side of the nightly artifact) · **a fresh BOX export through 2026-08 for all 9
+  instruments (#176 — turns the extended tape into a real ~2-month OOS test of all 54
+  champions; also: a standing box-refresh cadence — the with20d drop sat unswapped since
+  June)** · the prod data-root swap decision · the vol-gate recalibration campaign
+  (NQ 5m dark since April; a re-optimization decision).
+- **Queued next (owner's word)**: the ORB (opening-range-breakout) study on all
+  instruments — new issue + deep-research-first + own pre-registration.
+- **Deliberate holds**: FU-15 dual-sided bracket (#168, parked by owner — first in line on
+  the word) · FU-4 (gated-off) · FU-11 consumers ① re-gate / ④ stops (low-priority) ·
+  X-2/X-6 (parked-with-cause under law #1).
+- **Fresh-registration hypotheses (future data only, never re-tested on consumed history)**:
+  the ES-led T1 super-additivity texture · FU-6's 0.577 tree · FU-3's NQ sizing texture.
+- **Research queue**: RQ-4 (#144), RQ-5 (#145) — queued. The optimizer research arm
+  (#79–#108) keeps its own queue, unchanged by these eras.
 
 ## 4 · The verification state (what "trusted" means right now)
 

@@ -21,6 +21,7 @@ import claims_escpi  # noqa: F401,E402  — WS-ESCPI (#139): the ES CPI-alone st
 import claims_fusion  # noqa: F401,E402  — WS-FUSION (#152): fusion workstream claims
 import claims_earn2  # noqa: F401,E402  — WS-EARN return (#169): earnings power-model claims
 import claims_xni  # noqa: F401,E402  — XNI phase 3 (#172): collision/composition claims
+import claims_fwd  # noqa: F401,E402  — WS-FWD (#176): forward-OOS extension/books/dashboard claims
 from harness import run_all, registry  # noqa: E402
 
 
