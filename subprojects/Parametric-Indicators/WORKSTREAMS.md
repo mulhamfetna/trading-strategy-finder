@@ -8,6 +8,8 @@ generated: 2026-06-30
 
 # WORKSTREAMS — Master Register & Progress Watcher
 
+> ⚠️ **Data location changed 2026-08-22:** market data lives ONLY on the server (`~/Mulham/wsg-i`, `~/Mulham/data_2010_1s`); the local checkout has NO data trees. Authoritative map: `docs/DATA-AND-KNOWLEDGE-MAP.md`.
+
 **This is the one file that lists every workstream we have, maps each to its git *work tree*
 (branch / worktree / tag), and tracks its progress.** It is a router + status board — the detailed
 canonical doc for each stream is linked from its dossier (§4+). Companion to `MASTER.md` (the code

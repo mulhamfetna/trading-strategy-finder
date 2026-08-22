@@ -1,5 +1,7 @@
 # Expansion-Round Playbook
 
+> ⚠️ **Data location changed 2026-08-22:** market data lives ONLY on the server (`~/Mulham/wsg-i`, `~/Mulham/data_2010_1s`); the local checkout has NO data trees. Authoritative map: `docs/DATA-AND-KNOWLEDGE-MAP.md`.
+
 **Read this BEFORE adding indicators, instruments, timeframes, or layers — and again when you finish.**
 **Issue:** #57 · **Origin:** the `dfa` incident in #54 · **Status:** standing rules, not a one-off.
 

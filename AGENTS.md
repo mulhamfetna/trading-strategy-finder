@@ -1,5 +1,7 @@
 # AGENTS.md — Trading Strategy Finder · multi-agent operating manual
 
+> ⚠️ **Data location changed 2026-08-22:** market data lives ONLY on the server (`~/Mulham/wsg-i`, `~/Mulham/data_2010_1s`); the local checkout has NO data trees. Authoritative map: `docs/DATA-AND-KNOWLEDGE-MAP.md`.
+
 **This repository is developed primarily by AI agents working in parallel. This file is the contract
 that lets them do so without colliding. Read it fully before touching anything. GitHub renders it, and
 non-Claude agents read it too — it is the single source of truth for *how we work*, not just *what the

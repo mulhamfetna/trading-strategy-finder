@@ -99,6 +99,15 @@ committed file; `expect` values are never adjusted.
 
 ## 5 · Data & infra assets (and their sharp edges)
 
+- ⭐ **2026-08-22 — ONE source of truth for market data: the SERVER.** Local data trees and all
+  delivery/vendor zips were checksum-merged into `~/Mulham/wsg-i` (131 identical / 0 conflicts /
+  28 pushed / 22 archives verified) and deleted locally (+10 GB). Authoritative map with exact
+  paths, coverage per instrument, env recipes and failure modes: **`docs/DATA-AND-KNOWLEDGE-MAP.md`**.
+  Git stays the truth for code + evidence. Local data-backed runs now fail by design.
+- Engine candles: prod root → NQ/ES 05-19, others Jul 2–8; **extended root `wsg-i/FWD_EXTENDED` →
+  2026-08-07 all 9** (not yet swapped into prod). Box frontier: NQ 06-09 (ext) / ES 05-21 / others
+  06-26 — owner-scraped, not derivable; a fresh box export is the unlock for any forward test.
+
 - 1-second archive, 9 instruments, 2010→2026 (server `~/Mulham/data_2010_1s/`); **YM rebuilt
   from raw 2026-08-18** (was corrupt; its 0-byte 1m frame is fixed — YM fully studyable).
 - TradingView calendar (39,221 events, 649 series; usable ≥2016 — pre-2016 DST-broken).
