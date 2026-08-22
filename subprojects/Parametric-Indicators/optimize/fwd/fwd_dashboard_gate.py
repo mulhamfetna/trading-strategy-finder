@@ -20,8 +20,13 @@ from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
-CHROME = str(Path.home() / ".cache/ms-playwright/chromium-1228/chrome-linux64/chrome")
-URL = "http://127.0.0.1:18250/"
+# Overridable so the SAME script runs on the server (browser next to the dashboard —
+# the local 15GB box froze under the chart-render RAM load, 2026-08-21) or locally via
+# the SSH tunnel. Both modes are scripted Playwright with committed screenshots.
+import os
+CHROME = os.environ.get("WSH_GATE_CHROME",
+                        str(Path.home() / ".cache/ms-playwright/chromium-1228/chrome-linux64/chrome"))
+URL = os.environ.get("WSH_GATE_URL", "http://127.0.0.1:18250/")
 TOKENS = ("NQ", "ES", "GC", "SI", "HG", "CL", "NG", "RTY", "YM")
 TFS = ("4h", "2h", "1h", "15m", "5m", "2m")
 RUN_TIMEOUT_MS = 20 * 60 * 1000
@@ -86,8 +91,9 @@ def main() -> None:
                         "() => /L1 · \\d+ trades/.test(document.getElementById('status').textContent)",
                         timeout=60000)
                     body = page.inner_text("body")
-                    m_pnl = re.search(r"([+\-]\$[\d,]+)\s*\n?\s*total P/L", body)
-                    m_dd = re.search(r"(\$[\d,]+)\s*\n?\s*max drawdown", body)
+                    # .card .k renders uppercase (CSS text-transform) — match case-insensitively
+                    m_pnl = re.search(r"([+\-]\$[\d,]+)\s*\n?\s*total P/L", body, re.IGNORECASE)
+                    m_dd = re.search(r"(\$[\d,]+)\s*\n?\s*max drawdown", body, re.IGNORECASE)
                     m_n = re.search(r"L1 · (\d+) trades", body)
                     seen_pnl = m_pnl.group(1) if m_pnl else None
                     seen_dd = m_dd.group(1) if m_dd else None

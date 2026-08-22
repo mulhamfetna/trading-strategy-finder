@@ -327,3 +327,5 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !subprojects/Parametric-Indicators/optimize/fwd/data/*.log
 !subprojects/Parametric-Indicators/optimize/fwd/data/*.json
 !subprojects/Parametric-Indicators/optimize/fwd/data/*.csv
+!subprojects/Parametric-Indicators/optimize/fwd/data/shots/
+!subprojects/Parametric-Indicators/optimize/fwd/data/shots/*.png

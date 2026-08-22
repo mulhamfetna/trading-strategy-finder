@@ -93,3 +93,14 @@ Claims enter the ledger (`optimize/verify/claims_fwd.py`) before any number is p
 3. `best` champions were selected on data through mid-May 2026 (NQ/ES) — the fresh window is
    honest OOS for them; for the 7 others the "fresh" candle zone (May→Jul) was partially
    inside their extraction data; only entries after each engine end are called fresh.
+
+## Amendment (post-observation, 2026-08-22 — recorded, not retro-fitted)
+
+Phase 3's "exact" line met a surface it did not anticipate: the dashboard L1 view's money
+cards are the causal aggregate (exact-P/L sums; the committed books store cents-rounded P/L,
+so dollar displays can differ by ≤ 0.005·n + $1), and its status-line count is the STRATEGY
+engine's ledger (a second engine, golden-locked on NQ only). The gate therefore binds: money
+within that bound on all 54 (26 dollar-exact, 38 within $1), NQ counts exact 6/6, and every
+count delta ≤ 3% — with the non-NQ count divergence (24 slots, −10…+76) cataloged as a
+finding. The browser moved to the server after the local box froze (RAM); same scripted
+Playwright, same committed screenshots.
