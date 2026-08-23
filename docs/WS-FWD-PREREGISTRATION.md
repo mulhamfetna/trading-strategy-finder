@@ -104,3 +104,26 @@ within that bound on all 54 (26 dollar-exact, 38 within $1), NQ counts exact 6/6
 count delta ≤ 3% — with the non-NQ count divergence (24 slots, −10…+76) cataloged as a
 finding. The browser moved to the server after the local box froze (RAM); same scripted
 Playwright, same committed screenshots.
+
+## Round 2 — the real forward window (#179, filed 2026-08-23 BEFORE the re-run)
+
+The owner's box export (raw 2026-05-18 → 08-07, all 9; merged under gate E, 0 conflicting
+values; engine boxes → 2026-08-06) removes blind spot 1. Everything above stays frozen; only:
+
+- **Inputs:** extended root (candles → 08-07), boxes → 08-06 engine convention. The L1 disk cache
+  under the extended root's `TMPDIR` is wiped before the run (params-keyed, data-blind).
+- **Outputs** go to a NEW evidence dir (`optimize/fwd/data_r2/`, server `FWD_EXTENDED/fwd_books_r2/`);
+  round-1 evidence and its three ledger claims are untouched.
+- **Fresh window** = the same definition (entries after each instrument's pre-extension engine end)
+  — now ~2.5 months of real entries for every slot. Verdict rule unchanged: n ≥ 10 entries for a
+  verdict, reported-only below that; stressed costs ($10/rt, $25/rt) lead every fresh-window number.
+- **ES caveat (declared):** the ES engine box was double-shifted (one business day of lookahead on
+  week/month boundaries) during selection of `best` AND during round 1. Round 2 runs ES on the
+  corrected box, so the ES *full-book* figures are expected to differ from round 1 and from the
+  selection-time figures; the delta is a reported quantity, not a verdict. The ES fresh window is
+  honest OOS on the corrected box.
+- **Dashboard gate:** same bound as the amendment (money within 0.005·n+$1, NQ counts exact,
+  count deltas ≤ 3%), browser on the server.
+- **Blind spot left:** the 2026 portion of the full books is still the selection window of `best`;
+  only the fresh window is OOS. A slot that is positive in-sample and negative fresh is evidence of
+  overfit, not of a broken engine.
