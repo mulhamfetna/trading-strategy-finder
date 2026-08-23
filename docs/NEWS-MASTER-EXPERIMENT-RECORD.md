@@ -194,6 +194,14 @@ flowchart TD
 | 12.5 | Round 2: the REAL fresh window (entries after each pre-extension engine end → 08-06; 3,733 trades) | ⭐⭐⭐ **raw +$29,807 → −$7,523 at $10/rt → −$63,518 at $25/rt.** Fleet $7.98/trade: not distinguishable from zero (t 0.88) but BELOW the in-sample $31.29/trade (decay t −2.53; the window returns 17.6% of the selection-rate expectation $169,814 — pre-registered falsifier fired). Per slot: 44 "consistent" only for lack of power (4h MDE $900–1,400/trade), 3 BELOW at t<−2 (CL 2h, NQ 2m, SI 1h), 7 n<10. 4h is the only rung positive at $25/rt (+$10,106/181); 1h lost everywhere (−$17,769); ES the only instrument positive at $25 (+$17,119); NG/HG/CL ladders below 4h earn $4–7/trade (friction illusions confirmed). Gate darkness spreading: NQ 5m/2m/1h, RTY 15m, ES 2m at 0.5–2% entry rates. |
 | 12.6 | Round 2 dashboard gate (server Playwright, 54 shots, :8250 restarted on the extended root) | Money leg PASS 54/54 (26 dollar-exact, 36 within $1, max Δ $25 vs $45 bound), NQ counts exact 6/6; **count leg FAIL 1/54: ES 15m strategy-engine count 180 vs causal 205 (−12%, bound 3%)** — pinned in claim V3, needs its own issue. Regex fixed for `$-437` negatives. Report `docs/WS-FWD-ROUND2-REPORT.md`; claims `FWD2-*` ×3; ledger 70/70. |
 
+## Era 13 — WS-ORB (#183): opening-range breakout on all nine instruments
+
+| # | step | result |
+|---|---|---|
+| 13.1 | Prior art (deep research, 99 agents, 3-vote verification → `docs/WS-ORB-PRIOR-ART.md`) | Positive ORB evidence is equities-only (Zarattini & Aziz, no slippage, 24% win rate); open replication: gross edge 7 ¢/share, dies at 2 ¢ slippage, 76% of P/L from 2022; only index-futures test (MNQ 2026) FAILS; only peer-reviewed futures study is a vol threshold on crude at zero cost. Nothing for metals/RTY/YM/Globex open. |
+| 13.2 | Pre-registration (two arms, 4 windows, 3 rules + comparator, $25 headline, strict verdict bar, controls; anchor check BEFORE P/L: 7/9 confirmed, SI→07:00, HG→09:00) | `docs/WS-ORB-PREREGISTRATION.md`; reference `optimize/orb/orb_reference.py` + 6 synthetic tests. |
+| 13.3 | Grid on the 16-year tape (225 cells, 1 contract, 90 s on 9 cores) + verdicts + controls | ⭐⭐⭐ **0/225 POSITIVE**; 28 NEGATIVE with power, 58 negative under-powered, 138 under-powered, 1 null. Raw +$1.57M → **−$6.49M at $25/rt**; median gross edge −0.01 ticks; 155/225 cells inside 2 ticks. 5-min window worst (28% powered-negative), R3 worst rule (33%). Best cells NQ $47–73/trade at t≈1.5 (sign reverses pre-2018); NQ Globex 60-min R1 fails the random-anchor control (random 60-min ranges earn up to $113) — wide-range continuation = vol exposure, not an open effect. ORB is NOT an entry family. Report `docs/WS-ORB-REPORT.md`; claim `ORB-GRID-NO-POSITIVE-CELL`; ledger 71/71. |
+
 ---
 
 ## The programme state as of 2026-08-20 (the running verdict)
