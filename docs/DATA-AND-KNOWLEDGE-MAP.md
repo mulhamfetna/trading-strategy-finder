@@ -64,8 +64,9 @@ archives verified) recorded on issue #176.
 Mirror of 2.1 for the files the engine reads, **candles extended to 2026-08-07 16:59 ET for all
 9** under exact gates (Gate A splice parity 9/9 incl. volume; Gate B 54/54 resample proofs;
 Gate C audit; prod checksums untouched). NQ box = the aug2026 box (→ **08-06**, since #179; was with20d → 06-09). Everything else
-symlinked to prod. Own `tmp/` for the L1 cache; `fwd_books/` = the 54 champion books +
-`fwd_run_summary.json` + `fwd_dashboard_gate.json`; `fwd_shots/` = 54 dashboard screenshots.
+symlinked to prod. Own `tmp/` for the L1 cache (⚠️ params-keyed, DATA-BLIND — wipe `tmp/wsh_l1_cache`
+and `tmp/wsh_vote_cache` after ANY candle or box change, or old-data books are served); `fwd_books/` =
+round-1 books; `fwd_books_r2/` = round-2 books (#179: boxes → 08-06, ES corrected) + `shots/`.
 Point a run here with the env line in §1. **Not yet swapped into production** (owner decision).
 
 ### 2.3 `~/Mulham/data_2010_1s` — the 16-YEAR tape (the news / earnings / extension source)

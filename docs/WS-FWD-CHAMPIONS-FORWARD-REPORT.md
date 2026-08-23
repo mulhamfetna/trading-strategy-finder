@@ -4,6 +4,13 @@
 9 instruments × 6 timeframes = 54 slots · evidence: `subprojects/Parametric-Indicators/optimize/fwd/data/`
 (all committed) · claims: `optimize/verify/claims_fwd.py` (3 claims, V1/V2/V3 each) · issue #176.**
 
+> **Superseded for the forward question by `docs/WS-FWD-ROUND2-REPORT.md` (#179, 2026-08-23).** Two
+> corrections to what this report measured: (1) the ES books here ran on a DOUBLE-shifted ES box
+> (one business day of lookahead on week/month boundaries) — ES figures below are not valid;
+> (2) the NQ books here were served from the data-blind L1 cache and never saw the with20d box
+> (the NQ 4h "anchor closure" is a closure on the 05-22 box). The candle-extension gates (A/B/C),
+> the friction-stress structure and the NQ 5m darkness finding stand.
+
 ---
 
 ## 1. The headline, honestly
