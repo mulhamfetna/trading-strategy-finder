@@ -1,0 +1,35 @@
+verdict
+UNDERPOWERED                            138
+NEGATIVE (t) but UNDERPOWERED vs $25     58
+NEGATIVE                                 28
+NULL                                      1
+
+MDE distribution ($/trade): {'count': 225.0, 'mean': 70.2, 'std': 70.2, 'min': 12.3, '25%': 33.5, '50%': 51.2, '75%': 75.0, 'max': 653.6}
+
+cells with t25 > 1 (best of the grid):
+           cell tok    arm  N rule  n_conf  mean25   t25    mde  expl_mean25 yrs_pos  max_year_share  loyo_min  ticks      verdict
+NG_globex_60_R3  NG globex 60   R3     148   66.05 1.781 103.86      -197.08     4/7            0.40    5845.0   6.92 UNDERPOWERED
+  NQ_cash_15_R2  NQ   cash 15   R2    1800   47.28 1.558  84.98       -19.84     7/7            0.44   48036.0   8.46 UNDERPOWERED
+NQ_globex_60_R1  NQ globex 60   R1    1690   72.72 1.542 132.09        26.38     5/7            0.52   58830.0  16.26 UNDERPOWERED
+NQ_globex_60_R2  NQ globex 60   R2    1690   62.44 1.458 119.92         5.82     4/7            0.50   52300.0  19.52 UNDERPOWERED
+   NQ_cash_5_R2  NQ   cash  5   R2    1804   35.22 1.146  86.08       -15.00     6/7            0.64   23141.0   6.98 UNDERPOWERED
+  NQ_cash_30_R1  NQ   cash 30   R1    1785   52.04 1.105 131.86       -48.81     4/7            0.71   26645.0   6.10 UNDERPOWERED
+  NQ_cash_60_R1  NQ   cash 60   R1    1716   49.14 1.093 125.85       -46.61     5/7            0.79   18060.0   6.14 UNDERPOWERED
+  NQ_cash_60_R3  NQ   cash 60   R3    1716   36.47 1.065  95.89       -36.32     4/7            0.86    8610.0   5.91 UNDERPOWERED
+   GC_cash_5_R2  GC   cash  5   R2    1807   15.89 1.029  43.21       -29.51     6/7            0.40   17120.0   1.35 UNDERPOWERED
+
+NEGATIVE by instrument:
+tok
+CL     2
+ES     2
+GC     3
+HG     8
+NG     3
+RTY    3
+SI     3
+YM     4
+
+by rule / arm / N — share of cells NEGATIVE:
+{'C1': 0.0, 'R1': 0.0, 'R2': 0.06, 'R3': 0.33}
+{'cash': 0.12, 'globex': 0.13}
+{0: 0.0, 5: 0.28, 15: 0.17, 30: 0.06, 60: 0.02}
