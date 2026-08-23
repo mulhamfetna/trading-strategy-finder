@@ -21,6 +21,11 @@ Before running anything, **confirm with the user**:
    - Index E-minis: NQ = $20/pt · ES = $50/pt (micros MNQ $2 / MES $5)
 3. **Shift or not** — default is **−1 workday** (business-day) box shift, applied to EVERY non-NQ instrument.
    **NQ is never shifted** (it is the frozen golden anchor).
+   ⚠️ **Check the convention BEFORE shifting** (#179): a raw scrape row D has `dOpen` = the open of session D−1
+   (the 18:00 bar two evenings before D). If row D's `dOpen` already equals the 18:00 open of the evening before
+   D, the file is ALREADY shifted — do not shift it again (ES arrived that way and was double-shifted until
+   2026-08-23, putting next week's levels on Friday rows). `optimize/fwd/fwd_merge_boxes.py --probe` reports
+   the convention of every existing file against a raw drop.
 
 Only after these three answers do you start.
 

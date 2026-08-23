@@ -92,10 +92,12 @@ def main() -> None:
                         timeout=60000)
                     body = page.inner_text("body")
                     # .card .k renders uppercase (CSS text-transform) — match case-insensitively
-                    m_pnl = re.search(r"([+\-]\$[\d,]+)\s*\n?\s*total P/L", body, re.IGNORECASE)
+                    m_pnl = re.search(r"([+\-]\$[\d,]+|\$-[\d,]+)\s*\n?\s*total P/L", body, re.IGNORECASE)  # DB.money renders a negative as "$-437"
                     m_dd = re.search(r"(\$[\d,]+)\s*\n?\s*max drawdown", body, re.IGNORECASE)
                     m_n = re.search(r"L1 · (\d+) trades", body)
                     seen_pnl = m_pnl.group(1) if m_pnl else None
+                    if seen_pnl and seen_pnl.startswith("$-"):
+                        seen_pnl = "-$" + seen_pnl[2:]                    # normalise to the books' "-$435" form
                     seen_dd = m_dd.group(1) if m_dd else None
                     seen_n = int(m_n.group(1)) if m_n else None
                     want_pnl = money(exp["pnl"])

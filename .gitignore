@@ -329,3 +329,11 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !subprojects/Parametric-Indicators/optimize/fwd/data/*.csv
 !subprojects/Parametric-Indicators/optimize/fwd/data/shots/
 !subprojects/Parametric-Indicators/optimize/fwd/data/shots/*.png
+# WS-FWD round 2 (#179) evidence: books, fresh cut, diag, gate JSON, screenshots
+!subprojects/Parametric-Indicators/optimize/fwd/data_r2/
+!subprojects/Parametric-Indicators/optimize/fwd/data_r2/*.log
+!subprojects/Parametric-Indicators/optimize/fwd/data_r2/*.txt
+!subprojects/Parametric-Indicators/optimize/fwd/data_r2/*.json
+!subprojects/Parametric-Indicators/optimize/fwd/data_r2/*.csv
+!subprojects/Parametric-Indicators/optimize/fwd/data_r2/shots/
+!subprojects/Parametric-Indicators/optimize/fwd/data_r2/shots/*.png
