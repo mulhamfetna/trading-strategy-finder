@@ -58,7 +58,7 @@ irrelevant. Level families consumed:
 The separate `*_day_data.csv` / `*_week_data.csv` / `*_month_data.csv` are split views of the same
 data; `_full_data.csv` is the single unified source (drop-in for the original `NQ_full_data.csv`).
 
-## 4. Coverage (verified)
+## 4. Coverage (verified at delivery time, 2026-06; boxes since extended to 2026-08-07 raw / 08-06 shifted for all 9 futures on 2026-08-23 — see `docs/DATA-AND-KNOWLEDGE-MAP.md` §3. ⚠️ ES: the raw file here was already shifted; corrected on #179)
 | Instrument | Candle datetime range | Candle hours | Box Date range |
 |---|---|---|---|
 | NQ | 2025-01-01 18:00 → 2026-05-19 19:00 | 0–16, 18–23 | 2025-01-01 → 2026-05-22 |

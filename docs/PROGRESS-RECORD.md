@@ -105,8 +105,10 @@ committed file; `expect` values are never adjusted.
   paths, coverage per instrument, env recipes and failure modes: **`docs/DATA-AND-KNOWLEDGE-MAP.md`**.
   Git stays the truth for code + evidence. Local data-backed runs now fail by design.
 - Engine candles: prod root → NQ/ES 05-19, others Jul 2–8; **extended root `wsg-i/FWD_EXTENDED` →
-  2026-08-07 all 9** (not yet swapped into prod). Box frontier: NQ 06-09 (ext) / ES 05-21 / others
-  06-26 — owner-scraped, not derivable; a fresh box export is the unlock for any forward test.
+  2026-08-07 all 9** (not yet swapped into prod). Box frontier (since #179, 2026-08-23): **all 9 →
+  2026-08-06** engine convention (owner export 05-18→08-07 merged under gate E, 0 conflicts; prod NQ
+  engine file still 05-22). ⚠️ ES box had been DOUBLE-shifted (1 BDay lookahead) — corrected in #179;
+  ES champion numbers change on re-run.
 
 - 1-second archive, 9 instruments, 2010→2026 (server `~/Mulham/data_2010_1s/`); **YM rebuilt
   from raw 2026-08-18** (was corrupt; its 0-byte 1m frame is fixed — YM fully studyable).

@@ -44,14 +44,16 @@ archives verified) recorded on issue #176.
 | NQ candles (engine's own) | `Full_Canldes_Data/drive-download-20260602T124702Z-3-001/NQ_{1m,2m,5m,15m,1h,2h,4h}.csv` | 2025-01-01 → **2026-05-19** | `datetime,open,high,low,close,volume`; ET-naive; bars labeled by START; 4h grid 18/22/02/06/10/14 |
 | NQ candles, with20d variant | same dir, `NQ_<tf>_with20d.csv` | → 2026-06-09 | built by `build_plus20d_data.py`; NOT live |
 | NQ box (engine reads this) | `data/full_data/NQ_full_data.csv` | box days 2025-01-01 → **2026-05-22** | 53 cols; engine uses Date + 16 W* + 16 M* level columns; daily rows = CLOSING day; `hour>=18 ⇒ next day` mapping |
-| NQ box with20d | `data/full_data/NQ_full_data_with20d.csv` | → 2026-06-09 | real scraped rows, shifted by the proven script; adopted only in the extended root |
+| NQ box with20d | `data/full_data/NQ_full_data_with20d.csv` | → 2026-06-09 | real scraped rows, shifted by the proven script; superseded by the aug2026 box below |
+| NQ box aug2026 (#179) | `data/full_data/NQ_full_data_aug2026.csv` | → **2026-08-06** | with20d + the 2026-08-22 owner export, gate E exact; **the live NQ box of the extended root** (copied there as `NQ_full_data.csv`); prod engine file still the 05-22 one |
 | NQ per-year backend (dashboard 4h view) | `data/{2025_data,2026_data}/NQ_{4h,1m}_<yr>.csv`, `NQ_full_data_<yr>.csv` (+`_with20d`) | 2026 → 05-19 (with20d → 06-09) | the dashboard's second NQ backend; must stay consistent with the box above |
 | 2024 NQ history | `2024_data/NQ2024_Candles/NQ2024_Continuous_Data/NQ2024_<tf>.csv` + `2024_data/NQ2024-Boxs/NQ2024/NQ_{full,day,week,month}_data.csv` | 2024-01-01 → 2024-12-31 | pushed from local 2026-08-22; used by the NQ2024 signal delivery only |
 | NQ 20-day drop (raw) | `2026_last_20_days_data/NQ-2026-last-20-days-{candles,boxs}/NQ-5-6-2026*/` | 2026-05-18 → 06-09 | the source of the with20d files |
 | Non-NQ candles | `ALL_STOCKS/CANDLES/<EXCH>/<TOK>_Continuous_Data/<TOK>_<tf>.csv` — EXCH: CME{ES,RTY,YM} · COMEX{GC,SI,HG} · NYMEX{CL,NG} | ES → 05-19 · GC/SI → 07-02 · RTY/YM → 07-05 · HG → 07-07 · CL/NG → 07-08 | same schema as NQ |
 | ETF candles | `ALL_STOCKS/CANDLES/ETF/{QQQ,SQQQ}_Data/{ETH,RTH}/` | 2025-01-02 → 2026-05-19 | not in the 9-instrument engine; signal deliveries only |
-| Non-NQ boxes RAW (scraped) | `ALL_STOCKS/BOXS/<EXCH>/<TOK>/<TOK>_full_data.csv` (RTY/YM/ES/NQ/ETFs also have `_day/_week/_month`) | NQ/ES/ETF → 05-22 · GC/SI/HG/CL/NG/RTY/YM → **06-29** | raw = UNshifted; the engine never reads these directly |
-| Non-NQ boxes SHIFTED (engine reads) | **in the CODE checkout**: `subprojects/all-stocks-signals/shifted_boxes/<TOK>_full_data_shifted.csv` | → **2026-06-26** (= raw 06-29 shifted −1 business day) | produced by `subprojects/all-stocks-signals/onboard_stock.py`; travels with git, so `earn1`/`code` each carry a copy |
+| Non-NQ boxes RAW (scraped) | `ALL_STOCKS/BOXS/<EXCH>/<TOK>/<TOK>_full_data.csv` (RTY/YM/ES/NQ/ETFs also have `_day/_week/_month`) | all 9 → **2026-08-07** (raw dates; ETF → 05-22) | raw = UNshifted (row D = levels built from session D−1). ⚠️ NQ's file is stored in the SHIFTED convention (never re-shifted). ⚠️ ES's file WAS delivered shifted and got shifted twice (#179) — corrected 2026-08-23 to raw convention (`.pre179` backup). NQ/ES `_day/_week/_month` keep old convention; the Aug export sits alongside as `*_aug2026.csv`. Pre-merge copies: `*.csv.pre179` |
+| Box export archive (2026-08-22 scrape) | `vendor_drops_local/last levels-20260823T103031Z-1-001.zip` (+ unzipped `last levels/FUTURES/<EXCH>/<TOK>/`) | 2026-05-18 → 08-07 raw, 60 rows × 9 | the drop merged by `optimize/fwd/fwd_merge_boxes.py` (gate E report in `optimize/fwd/data/fwd_box_merge_report.json`) |
+| Non-NQ boxes SHIFTED (engine reads) | **in the CODE checkout**: `subprojects/all-stocks-signals/shifted_boxes/<TOK>_full_data_shifted.csv` | → **2026-08-06** (= raw 08-07 shifted −1 business day) | produced by `subprojects/all-stocks-signals/onboard_stock.py`; travels with git, so `earn1`/`code` each carry a copy |
 | bundle data snapshots | `bundle_data_all/` (9 inst, → 07-08) · `bundle_data_clng/` | frozen inputs of the shareable backtester bundles | do not use as the engine root |
 | delivery bundles | `<TOK>_SIGNALS_DELIVERY/` + `.zip` for CL ES GC HG NG RTY SI YM; zips only for NQ NQ2024 NQ2026L20 QQQ-ETH QQQ-RTH SQQQ-ETH SQQQ-RTH (at `wsg-i/` root) | — | customer-facing signal exports (WS-AS) |
 | vendor drop archives | `vendor_drops_local/*.zip` (HG/RTY/YM July drops, drive-download-20260710 ×2, silver-gold candles/levels) | — | the raw files the onboarding SOP consumed; keep for provenance |
@@ -61,7 +63,7 @@ archives verified) recorded on issue #176.
 
 Mirror of 2.1 for the files the engine reads, **candles extended to 2026-08-07 16:59 ET for all
 9** under exact gates (Gate A splice parity 9/9 incl. volume; Gate B 54/54 resample proofs;
-Gate C audit; prod checksums untouched). NQ box = the with20d box (→ 06-09). Everything else
+Gate C audit; prod checksums untouched). NQ box = the aug2026 box (→ **08-06**, since #179; was with20d → 06-09). Everything else
 symlinked to prod. Own `tmp/` for the L1 cache; `fwd_books/` = the 54 champion books +
 `fwd_run_summary.json` + `fwd_dashboard_gate.json`; `fwd_shots/` = 54 dashboard screenshots.
 Point a run here with the env line in §1. **Not yet swapped into production** (owner decision).
@@ -84,24 +86,35 @@ future candle extension (`optimize/fwd/fwd_extend_candles.py`).
 indicator; a derivability probe (ratio census, 4 instruments) showed per-period values, not
 fixed multiples; no generator/Pine source exists in any repo. A new box drop is an **owner
 action** (scrape → raw `<TOK>_full_data.csv` under `ALL_STOCKS/BOXS/...`, NQ under
-`data/full_data/` → run the onboarding shift → commit `shifted_boxes/`). Current box frontier:
-NQ 2026-06-09 (extended root) / 05-22 (prod) · ES 05-21 · all others 06-26.
+`data/full_data/` → run the onboarding shift → commit `shifted_boxes/`). Since #179 the merge
+is a script: `optimize/fwd/fwd_merge_boxes.py --probe` (tells you which convention each existing
+file is in — raw files match a raw drop at shift 0, shifted files at −1 BDay) then `--apply`
+(gate E: every engine column exact on the overlap; NaN↔value on the sparse xT* trend columns is
+a scrape-repaint observation, recorded, existing rows kept). Current box frontier (2026-08-23):
+**all 9 → 2026-08-06 in the engine convention** (NQ only in the extended root; prod NQ still 05-22).
+
+**Box-date convention (load-bearing, #179).** Raw scrape row D = levels built from session D−1
+(row 05-18 has `dOpen` = the open at 05-14 18:00). The engine convention = raw shifted −1 BDay:
+row D carries D's own session/week/month (row 05-18 = first row of the new week, `dOpen` = the
+open at 05-17 18:00). Check a new file against the 1m opens before shifting: if row D's `dOpen`
+already equals the 18:00 open of the evening before D, the file is ALREADY shifted — shifting it
+again puts next week's levels on Friday rows (that was ES until 2026-08-23).
 
 ---
 
-## 3. Per-instrument coverage at a glance (2026-08-22)
+## 3. Per-instrument coverage at a glance (2026-08-23)
 
 | inst | prod candles | extended candles | 16y tape | raw box | shifted box (engine) |
 |---|---|---|---|---|---|
-| NQ | 2026-05-19 | 2026-08-07 | 2010→2026-08-07 | 05-22 (with20d 06-09) | n/a — reads `data/full_data` directly |
-| ES | 05-19 | 08-07 | 2010→08-07 | 05-22 | 05-21 |
-| GC | 07-02 | 08-07 | 2010→08-07 | 06-29 | 06-26 |
-| SI | 07-02 | 08-07 | 2010→08-07 | 06-29 | 06-26 |
-| HG | 07-07 | 08-07 | 2010→08-07 | 06-29 | 06-26 |
-| CL | 07-08 | 08-07 | 2010→08-07 | 06-29 | 06-26 |
-| NG | 07-08 | 08-07 | 2010→08-07 | 06-29 | 06-26 |
-| RTY | 07-05 | 08-07 | 2017→08-07 | 06-29 | 06-26 |
-| YM | 07-05 | 08-07 | 2010→08-07 | 06-29 | 06-26 |
+| NQ | 2026-05-19 | 2026-08-07 | 2010→2026-08-07 | 08-07 (stored shifted = 08-06) | n/a — reads `data/full_data`: prod 05-22 · extended **08-06** |
+| ES | 05-19 | 08-07 | 2010→08-07 | 08-07 | **08-06** (single shift since #179; was double-shifted → 05-21) |
+| GC | 07-02 | 08-07 | 2010→08-07 | 08-07 | **08-06** |
+| SI | 07-02 | 08-07 | 2010→08-07 | 08-07 | **08-06** |
+| HG | 07-07 | 08-07 | 2010→08-07 | 08-07 | **08-06** |
+| CL | 07-08 | 08-07 | 2010→08-07 | 08-07 | **08-06** |
+| NG | 07-08 | 08-07 | 2010→08-07 | 08-07 | **08-06** |
+| RTY | 07-05 | 08-07 | 2017→08-07 | 08-07 | **08-06** |
+| YM | 07-05 | 08-07 | 2010→08-07 | 08-07 | **08-06** |
 
 Point values (engine): NQ 20 · ES 50 · GC 100 · SI 5,000 · HG 25,000 · CL 1,000 · NG 10,000 ·
 RTY 50 · YM 5 (`optimize/instruments.py`). The engine reads exactly three files per (inst, tf):
