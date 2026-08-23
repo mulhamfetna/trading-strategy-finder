@@ -337,3 +337,5 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !subprojects/Parametric-Indicators/optimize/fwd/data_r2/*.csv
 !subprojects/Parametric-Indicators/optimize/fwd/data_r2/shots/
 !subprojects/Parametric-Indicators/optimize/fwd/data_r2/shots/*.png
+# WS-LIVE-PARITY (#182): the live trader's account journal — LOCAL ONLY, NEVER push (owner's order 2026-08-23)
+subprojects/Parametric-Indicators/optimize/live_parity/

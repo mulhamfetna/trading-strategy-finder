@@ -33,14 +33,22 @@ sys.path.insert(0, str(PI))
 TFS = ("4h", "2h", "1h", "15m", "5m", "2m")
 TOKENS = ("NQ", "ES", "GC", "SI", "HG", "CL", "NG", "RTY", "YM")
 SET = "best"
+# Optional: a directory of <prefix>_champions_full[_TOK].json files to run INSTEAD of a registered set
+# (WS-LIVE-PARITY #182 runs the wsh4 set the live trader actually carries). Set via --champ-dir.
+CHAMP_DIR = os.environ.get("WSH_FWD_CHAMP_DIR", "")
+CHAMP_PREFIX = os.environ.get("WSH_FWD_CHAMP_PREFIX", "wsh4")
 
 
 def run_slot(job: tuple[str, str, str]) -> dict:
     tok, tf, outdir = job
     from optimize.l2 import payload as P
-    out = {"instrument": tok, "tf": tf, "set": SET}
+    out = {"instrument": tok, "tf": tf, "set": SET if not CHAMP_DIR else f"{CHAMP_PREFIX}@{CHAMP_DIR}"}
     try:
-        cf = P._instrument_champions_path(tok, SET)
+        if CHAMP_DIR:
+            suf = "" if tok == "NQ" else f"_{tok}"
+            cf = Path(CHAMP_DIR) / f"{CHAMP_PREFIX}_champions_full{suf}.json"
+        else:
+            cf = P._instrument_champions_path(tok, SET)
         if not cf.exists():
             out["status"] = "no_champion_file"
             return out
@@ -94,12 +102,19 @@ def main() -> None:
     ap.add_argument("--jobs", type=int, default=1)
     ap.add_argument("--tokens", default=",".join(TOKENS))
     ap.add_argument("--tfs", default=",".join(TFS))
+    ap.add_argument("--champ-dir", default="", help="run the champion files in this dir (prefix --champ-prefix) instead of the registered set")
+    ap.add_argument("--champ-prefix", default="wsh4")
     args = ap.parse_args()
+    if args.champ_dir:                      # env so spawned workers see the same override
+        os.environ["WSH_FWD_CHAMP_DIR"] = str(Path(args.champ_dir).resolve())
+        os.environ["WSH_FWD_CHAMP_PREFIX"] = args.champ_prefix
+        global CHAMP_DIR, CHAMP_PREFIX
+        CHAMP_DIR, CHAMP_PREFIX = os.environ["WSH_FWD_CHAMP_DIR"], args.champ_prefix
     outdir = Path(args.out).expanduser()
     outdir.mkdir(parents=True, exist_ok=True)
     jobs = [(tok, tf, str(outdir)) for tok in args.tokens.split(",") for tf in args.tfs.split(",")]
 
-    print(f"# WS-FWD phase 1 — {len(jobs)} slots, set={SET}, jobs={args.jobs}, "
+    print(f"# WS-FWD phase 1 — {len(jobs)} slots, set={SET if not CHAMP_DIR else CHAMP_PREFIX + '@' + CHAMP_DIR}, jobs={args.jobs}, "
           f"WSH_DATA_BASE={os.environ.get('WSH_DATA_BASE')!r} TMPDIR={os.environ.get('TMPDIR')!r}", flush=True)
     results = []
     if args.jobs > 1:
