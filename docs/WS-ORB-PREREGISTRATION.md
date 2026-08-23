@@ -32,6 +32,14 @@ change is recorded here as a pre-run note. Anchors are never tuned on P/L.
 Anchor = **18:00 ET** for all 9 (the engine's session boundary and 4h grid origin). Flat rule at **16:59 ET** next
 day (session end). No cash-session notion; weekends/holidays follow the tape.
 
+### Pre-run note (2026-08-23, before any P/L) — anchor check result
+`optimize/orb/orb_anchor_check.py` on the server (median 1-min volume by minute-of-day, 2018–2024, largest jump vs
+the previous 5 minutes within 07:00–10:30): NQ 09:30 (×9.2) · ES 09:30 (×9.7) · RTY 09:30 (×15.7) · YM 09:30 (×10.8)
+· GC 08:20 (×3.0) · CL 09:00 (×4.6) · NG 09:00 (×4.2) — **confirmed**. **SI**: strongest step **07:00** (×5.3; 08:20
+only ×2.1; a second step at 08:00 ×4.2 suggests a DST-split London fix) → anchor moved to 07:00. **HG**: strongest
+step **09:00** (×3.6; 08:20 only ×1.1) → anchor moved to 09:00. Evidence `optimize/orb/data/anchor_check.json`.
+Blind spot added: the SI anchor may be a DST artefact of a 12:00-London event; recorded, not tuned.
+
 ## 3. Opening-range windows
 N ∈ **{5, 15, 30, 60} minutes** from the anchor, in both arms. OR high/low = max/min of the N one-minute bars.
 A range is void if any of its bars is missing.

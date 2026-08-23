@@ -339,3 +339,12 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !subprojects/Parametric-Indicators/optimize/fwd/data_r2/shots/*.png
 # WS-LIVE-PARITY (#182): the live trader's account journal — LOCAL ONLY, NEVER push (owner's order 2026-08-23)
 subprojects/Parametric-Indicators/optimize/live_parity/
+# WS-ORB (#183) evidence: anchor check, grid summary/verdicts/controls (books are 74 MB — kept on the server, not committed)
+!subprojects/Parametric-Indicators/optimize/orb/data/
+!subprojects/Parametric-Indicators/optimize/orb/data/anchor_check.json
+!subprojects/Parametric-Indicators/optimize/orb/data/grid1/
+!subprojects/Parametric-Indicators/optimize/orb/data/grid1/*.json
+!subprojects/Parametric-Indicators/optimize/orb/data/grid1/*.csv
+!subprojects/Parametric-Indicators/optimize/orb/data/grid1/*.txt
+!subprojects/Parametric-Indicators/optimize/orb/data/grid1/run.log
+subprojects/Parametric-Indicators/optimize/orb/data/grid1/orb_book_*.csv
