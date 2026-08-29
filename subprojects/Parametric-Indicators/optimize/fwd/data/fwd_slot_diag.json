@@ -1,0 +1,2817 @@
+{
+ "NQ_4h": {
+  "status": "ok",
+  "gate_pct": 89.6628039906,
+  "k": 1,
+  "dd_limit": 4119.49483449,
+  "cap_mode": "bars",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 14:00:00",
+  "last_entry": "2026-05-24 18:00:00",
+  "idle_days_at_end": 74,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    115
+   ],
+   [
+    "TIME_CAP",
+    113
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    32
+   ],
+   [
+    "STOP_LOSS_HARD",
+    19
+   ]
+  ],
+  "n_entries": 279,
+  "drops_lifetime": [
+   [
+    "veto",
+    358
+   ],
+   [
+    "vol_gate",
+    182
+   ]
+  ],
+  "last60d": {
+   "entries": 0,
+   "drops": [
+    [
+     "vol_gate",
+     4
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.3407,
+  "entry_rate_last60d": 0.0
+ },
+ "NQ_2h": {
+  "status": "ok",
+  "gate_pct": 85.1859817041,
+  "k": 5,
+  "dd_limit": 2334.10743718,
+  "cap_mode": "both",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:00:00",
+  "last_entry": "2026-05-14 00:00:00",
+  "idle_days_at_end": 85,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    95
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    52
+   ],
+   [
+    "END_OF_DAY",
+    27
+   ],
+   [
+    "TIME_CAP",
+    10
+   ],
+   [
+    "STOP_LOSS_HARD",
+    1
+   ]
+  ],
+  "n_entries": 185,
+  "drops_lifetime": [
+   [
+    "veto",
+    619
+   ],
+   [
+    "vol_gate",
+    430
+   ]
+  ],
+  "last60d": {
+   "entries": 0,
+   "drops": [
+    [
+     "vol_gate",
+     5
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.1499,
+  "entry_rate_last60d": 0.0
+ },
+ "NQ_1h": {
+  "status": "ok",
+  "gate_pct": 79.794730824,
+  "k": 1,
+  "dd_limit": 4725.81648627,
+  "cap_mode": "eod",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:00:00",
+  "last_entry": "2026-05-21 22:00:00",
+  "idle_days_at_end": 77,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    57
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    51
+   ],
+   [
+    "END_OF_DAY",
+    20
+   ],
+   [
+    "STOP_LOSS_HARD",
+    2
+   ]
+  ],
+  "n_entries": 130,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    840
+   ],
+   [
+    "veto",
+    781
+   ]
+  ],
+  "last60d": {
+   "entries": 0,
+   "drops": [
+    [
+     "vol_gate",
+     8
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.0742,
+  "entry_rate_last60d": 0.0
+ },
+ "NQ_15m": {
+  "status": "ok",
+  "gate_pct": 99.4309621818,
+  "k": 1,
+  "dd_limit": 103.790770321,
+  "cap_mode": "eod",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:45:00",
+  "last_entry": "2026-05-22 16:30:00",
+  "idle_days_at_end": 77,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    94
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    82
+   ],
+   [
+    "END_OF_DAY",
+    12
+   ],
+   [
+    "STOP_LOSS_HARD",
+    9
+   ]
+  ],
+  "n_entries": 197,
+  "drops_lifetime": [
+   [
+    "veto",
+    2999
+   ],
+   [
+    "vol_gate",
+    87
+   ]
+  ],
+  "last60d": {
+   "entries": 0,
+   "drops": [
+    [
+     "vol_gate",
+     8
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.06,
+  "entry_rate_last60d": 0.0
+ },
+ "NQ_5m": {
+  "status": "ok",
+  "gate_pct": 30.3758434152,
+  "k": 2,
+  "dd_limit": 2608.29656707,
+  "cap_mode": "both",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:55:00",
+  "last_entry": "2026-04-28 19:35:00",
+  "idle_days_at_end": 100,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    51
+   ],
+   [
+    "TIME_CAP",
+    22
+   ],
+   [
+    "STOP_LOSS_HARD",
+    15
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    10
+   ],
+   [
+    "END_OF_DAY",
+    3
+   ]
+  ],
+  "n_entries": 101,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    6236
+   ],
+   [
+    "veto",
+    368
+   ]
+  ],
+  "last60d": {
+   "entries": 0,
+   "drops": [
+    [
+     "vol_gate",
+     47
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.0151,
+  "entry_rate_last60d": 0.0
+ },
+ "NQ_2m": {
+  "status": "ok",
+  "gate_pct": 76.4624050328,
+  "k": 2,
+  "dd_limit": 4304.65398441,
+  "cap_mode": "both",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:58:00",
+  "last_entry": "2026-05-22 16:10:00",
+  "idle_days_at_end": 77,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    262
+   ],
+   [
+    "STOP_LOSS_HARD",
+    253
+   ],
+   [
+    "END_OF_DAY",
+    10
+   ]
+  ],
+  "n_entries": 525,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    6173
+   ],
+   [
+    "veto",
+    3656
+   ]
+  ],
+  "last60d": {
+   "entries": 0,
+   "drops": [
+    [
+     "vol_gate",
+     55
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.0507,
+  "entry_rate_last60d": 0.0
+ },
+ "ES_4h": {
+  "status": "ok",
+  "gate_pct": 72.8618976319,
+  "k": 2,
+  "dd_limit": 617.587886439,
+  "cap_mode": "bars",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 14:00:00",
+  "last_entry": "2026-05-20 06:00:00",
+  "idle_days_at_end": 79,
+  "exit_reasons": [
+   [
+    "TIME_CAP",
+    84
+   ],
+   [
+    "TAKE_PROFIT_HARD",
+    45
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    17
+   ]
+  ],
+  "n_entries": 146,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    402
+   ],
+   [
+    "veto",
+    225
+   ]
+  ],
+  "last60d": {
+   "entries": 0,
+   "drops": []
+  },
+  "entry_rate_lifetime": 0.1889,
+  "entry_rate_last60d": null
+ },
+ "ES_2h": {
+  "status": "ok",
+  "gate_pct": 80.7060314547,
+  "k": 3,
+  "dd_limit": 1241.6806097,
+  "cap_mode": "both",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:00:00",
+  "last_entry": "2026-05-20 08:00:00",
+  "idle_days_at_end": 79,
+  "exit_reasons": [
+   [
+    "END_OF_DAY",
+    71
+   ],
+   [
+    "STOP_LOSS_HARD",
+    67
+   ],
+   [
+    "TAKE_PROFIT_HARD",
+    52
+   ],
+   [
+    "TIME_CAP",
+    30
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    6
+   ]
+  ],
+  "n_entries": 226,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    469
+   ],
+   [
+    "veto",
+    371
+   ]
+  ],
+  "last60d": {
+   "entries": 0,
+   "drops": []
+  },
+  "entry_rate_lifetime": 0.212,
+  "entry_rate_last60d": null
+ },
+ "ES_1h": {
+  "status": "ok",
+  "gate_pct": 79.120276351,
+  "k": 2,
+  "dd_limit": 418.625040733,
+  "cap_mode": "eod",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:00:00",
+  "last_entry": "2026-05-20 03:00:00",
+  "idle_days_at_end": 79,
+  "exit_reasons": [
+   [
+    "STOP_LOSS_HARD",
+    94
+   ],
+   [
+    "TAKE_PROFIT_HARD",
+    85
+   ],
+   [
+    "END_OF_DAY",
+    60
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    2
+   ]
+  ],
+  "n_entries": 241,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    761
+   ],
+   [
+    "veto",
+    614
+   ]
+  ],
+  "last60d": {
+   "entries": 0,
+   "drops": []
+  },
+  "entry_rate_lifetime": 0.1491,
+  "entry_rate_last60d": null
+ },
+ "ES_15m": {
+  "status": "ok",
+  "gate_pct": 83.033185157,
+  "k": 4,
+  "dd_limit": 889.574683484,
+  "cap_mode": "both",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:45:00",
+  "last_entry": "2026-05-21 02:45:00",
+  "idle_days_at_end": 78,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    92
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    64
+   ],
+   [
+    "END_OF_DAY",
+    11
+   ],
+   [
+    "STOP_LOSS_HARD",
+    3
+   ]
+  ],
+  "n_entries": 170,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    1479
+   ],
+   [
+    "veto",
+    1168
+   ]
+  ],
+  "last60d": {
+   "entries": 0,
+   "drops": []
+  },
+  "entry_rate_lifetime": 0.0603,
+  "entry_rate_last60d": null
+ },
+ "ES_5m": {
+  "status": "ok",
+  "gate_pct": 89.4822576812,
+  "k": 2,
+  "dd_limit": 918.503011227,
+  "cap_mode": "bars",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:55:00",
+  "last_entry": "2026-05-14 22:55:00",
+  "idle_days_at_end": 84,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    120
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    27
+   ],
+   [
+    "STOP_LOSS_HARD",
+    3
+   ]
+  ],
+  "n_entries": 150,
+  "drops_lifetime": [
+   [
+    "veto",
+    3740
+   ],
+   [
+    "vol_gate",
+    2021
+   ]
+  ],
+  "last60d": {
+   "entries": 0,
+   "drops": []
+  },
+  "entry_rate_lifetime": 0.0254,
+  "entry_rate_last60d": null
+ },
+ "ES_2m": {
+  "status": "ok",
+  "gate_pct": 93.0600309825,
+  "k": 2,
+  "dd_limit": 1341.30936851,
+  "cap_mode": "bars",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:58:00",
+  "last_entry": "2026-05-21 05:36:00",
+  "idle_days_at_end": 78,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    605
+   ],
+   [
+    "STOP_LOSS_HARD",
+    127
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    10
+   ]
+  ],
+  "n_entries": 742,
+  "drops_lifetime": [
+   [
+    "veto",
+    5755
+   ],
+   [
+    "vol_gate",
+    2482
+   ]
+  ],
+  "last60d": {
+   "entries": 0,
+   "drops": []
+  },
+  "entry_rate_lifetime": 0.0826,
+  "entry_rate_last60d": null
+ },
+ "GC_4h": {
+  "status": "ok",
+  "gate_pct": 97.6394402895,
+  "k": 1,
+  "dd_limit": 707.122894445,
+  "cap_mode": "eod",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 14:00:00",
+  "last_entry": "2026-06-26 10:00:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    132
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    108
+   ],
+   [
+    "END_OF_DAY",
+    70
+   ],
+   [
+    "STOP_LOSS_HARD",
+    1
+   ]
+  ],
+  "n_entries": 311,
+  "drops_lifetime": [
+   [
+    "veto",
+    595
+   ],
+   [
+    "vol_gate",
+    209
+   ]
+  ],
+  "last60d": {
+   "entries": 17,
+   "drops": [
+    [
+     "veto",
+     19
+    ],
+    [
+     "vol_gate",
+     10
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.2789,
+  "entry_rate_last60d": 0.3696
+ },
+ "GC_2h": {
+  "status": "ok",
+  "gate_pct": 93.3829494436,
+  "k": 1,
+  "dd_limit": 168.208572055,
+  "cap_mode": "none",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:00:00",
+  "last_entry": "2026-06-24 06:00:00",
+  "idle_days_at_end": 44,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    170
+   ],
+   [
+    "STOP_LOSS_HARD",
+    162
+   ]
+  ],
+  "n_entries": 332,
+  "drops_lifetime": [
+   [
+    "veto",
+    784
+   ],
+   [
+    "vol_gate",
+    552
+   ]
+  ],
+  "last60d": {
+   "entries": 11,
+   "drops": [
+    [
+     "veto",
+     31
+    ],
+    [
+     "vol_gate",
+     31
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.199,
+  "entry_rate_last60d": 0.1507
+ },
+ "GC_1h": {
+  "status": "ok",
+  "gate_pct": 97.5176969948,
+  "k": 4,
+  "dd_limit": 689.855495942,
+  "cap_mode": "eod",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:00:00",
+  "last_entry": "2026-06-26 09:00:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "STOP_LOSS_SOFT",
+    275
+   ],
+   [
+    "TAKE_PROFIT_HARD",
+    206
+   ],
+   [
+    "END_OF_DAY",
+    81
+   ],
+   [
+    "STOP_LOSS_HARD",
+    9
+   ]
+  ],
+  "n_entries": 571,
+  "drops_lifetime": [
+   [
+    "veto",
+    1302
+   ],
+   [
+    "vol_gate",
+    476
+   ]
+  ],
+  "last60d": {
+   "entries": 24,
+   "drops": [
+    [
+     "veto",
+     53
+    ],
+    [
+     "vol_gate",
+     19
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.2431,
+  "entry_rate_last60d": 0.25
+ },
+ "GC_15m": {
+  "status": "ok",
+  "gate_pct": 98.8973456569,
+  "k": 3,
+  "dd_limit": 384.340125457,
+  "cap_mode": "none",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:45:00",
+  "last_entry": "2026-06-26 14:45:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    1347
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    444
+   ],
+   [
+    "STOP_LOSS_HARD",
+    227
+   ]
+  ],
+  "n_entries": 2018,
+  "drops_lifetime": [
+   [
+    "veto",
+    2007
+   ],
+   [
+    "vol_gate",
+    768
+   ]
+  ],
+  "last60d": {
+   "entries": 104,
+   "drops": [
+    [
+     "veto",
+     79
+    ],
+    [
+     "vol_gate",
+     24
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.421,
+  "entry_rate_last60d": 0.5024
+ },
+ "GC_5m": {
+  "status": "ok",
+  "gate_pct": 87.6441413802,
+  "k": 4,
+  "dd_limit": 380.011129843,
+  "cap_mode": "eod",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:55:00",
+  "last_entry": "2026-06-26 14:20:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "STOP_LOSS_SOFT",
+    249
+   ],
+   [
+    "TAKE_PROFIT_HARD",
+    179
+   ],
+   [
+    "END_OF_DAY",
+    17
+   ],
+   [
+    "STOP_LOSS_HARD",
+    13
+   ]
+  ],
+  "n_entries": 458,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    4479
+   ],
+   [
+    "veto",
+    4442
+   ]
+  ],
+  "last60d": {
+   "entries": 10,
+   "drops": [
+    [
+     "vol_gate",
+     234
+    ],
+    [
+     "veto",
+     141
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.0488,
+  "entry_rate_last60d": 0.026
+ },
+ "GC_2m": {
+  "status": "ok",
+  "gate_pct": 94.7490063798,
+  "k": 3,
+  "dd_limit": 659.308412315,
+  "cap_mode": "both",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:58:00",
+  "last_entry": "2026-06-26 06:28:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    472
+   ],
+   [
+    "STOP_LOSS_HARD",
+    204
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    186
+   ],
+   [
+    "END_OF_DAY",
+    24
+   ]
+  ],
+  "n_entries": 886,
+  "drops_lifetime": [
+   [
+    "veto",
+    8765
+   ],
+   [
+    "vol_gate",
+    4825
+   ]
+  ],
+  "last60d": {
+   "entries": 53,
+   "drops": [
+    [
+     "veto",
+     321
+    ],
+    [
+     "vol_gate",
+     222
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.0612,
+  "entry_rate_last60d": 0.0889
+ },
+ "SI_4h": {
+  "status": "ok",
+  "gate_pct": 98.5829989169,
+  "k": 5,
+  "dd_limit": 3.17740140592,
+  "cap_mode": "eod",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 14:00:00",
+  "last_entry": "2026-06-28 18:00:00",
+  "idle_days_at_end": 39,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    97
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    59
+   ],
+   [
+    "END_OF_DAY",
+    46
+   ],
+   [
+    "STOP_LOSS_HARD",
+    2
+   ]
+  ],
+  "n_entries": 204,
+  "drops_lifetime": [
+   [
+    "veto",
+    441
+   ],
+   [
+    "vol_gate",
+    332
+   ]
+  ],
+  "last60d": {
+   "entries": 4,
+   "drops": [
+    [
+     "veto",
+     22
+    ],
+    [
+     "vol_gate",
+     18
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.2088,
+  "entry_rate_last60d": 0.0909
+ },
+ "SI_2h": {
+  "status": "ok",
+  "gate_pct": 99.438101923,
+  "k": 4,
+  "dd_limit": 5.93775857299,
+  "cap_mode": "both",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:00:00",
+  "last_entry": "2026-06-28 18:00:00",
+  "idle_days_at_end": 39,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    96
+   ],
+   [
+    "STOP_LOSS_HARD",
+    63
+   ],
+   [
+    "END_OF_DAY",
+    24
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    17
+   ],
+   [
+    "TIME_CAP",
+    1
+   ]
+  ],
+  "n_entries": 201,
+  "drops_lifetime": [
+   [
+    "veto",
+    801
+   ],
+   [
+    "vol_gate",
+    237
+   ]
+  ],
+  "last60d": {
+   "entries": 8,
+   "drops": [
+    [
+     "veto",
+     52
+    ],
+    [
+     "vol_gate",
+     4
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.1622,
+  "entry_rate_last60d": 0.125
+ },
+ "SI_1h": {
+  "status": "ok",
+  "gate_pct": 97.8718439336,
+  "k": 3,
+  "dd_limit": 2.45280842738,
+  "cap_mode": "both",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:00:00",
+  "last_entry": "2026-06-23 23:00:00",
+  "idle_days_at_end": 44,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    128
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    122
+   ],
+   [
+    "TIME_CAP",
+    100
+   ],
+   [
+    "END_OF_DAY",
+    14
+   ],
+   [
+    "STOP_LOSS_HARD",
+    10
+   ]
+  ],
+  "n_entries": 374,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    867
+   ],
+   [
+    "veto",
+    710
+   ]
+  ],
+  "last60d": {
+   "entries": 19,
+   "drops": [
+    [
+     "vol_gate",
+     38
+    ],
+    [
+     "veto",
+     33
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.1917,
+  "entry_rate_last60d": 0.2111
+ },
+ "SI_15m": {
+  "status": "ok",
+  "gate_pct": 98.9107578467,
+  "k": 1,
+  "dd_limit": 7.16830137767,
+  "cap_mode": "bars",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:45:00",
+  "last_entry": "2026-06-26 13:30:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    1065
+   ],
+   [
+    "STOP_LOSS_HARD",
+    526
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    199
+   ]
+  ],
+  "n_entries": 1790,
+  "drops_lifetime": [
+   [
+    "veto",
+    1672
+   ],
+   [
+    "vol_gate",
+    1281
+   ]
+  ],
+  "last60d": {
+   "entries": 69,
+   "drops": [
+    [
+     "veto",
+     72
+    ],
+    [
+     "vol_gate",
+     36
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.3774,
+  "entry_rate_last60d": 0.3898
+ },
+ "SI_5m": {
+  "status": "ok",
+  "gate_pct": 99.0806880326,
+  "k": 1,
+  "dd_limit": 7.74000892672,
+  "cap_mode": "eod",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:55:00",
+  "last_entry": "2026-06-26 14:30:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "STOP_LOSS_HARD",
+    1627
+   ],
+   [
+    "TAKE_PROFIT_HARD",
+    907
+   ],
+   [
+    "END_OF_DAY",
+    21
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    4
+   ]
+  ],
+  "n_entries": 2559,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    2115
+   ],
+   [
+    "veto",
+    306
+   ]
+  ],
+  "last60d": {
+   "entries": 117,
+   "drops": [
+    [
+     "vol_gate",
+     55
+    ],
+    [
+     "veto",
+     19
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.5139,
+  "entry_rate_last60d": 0.6126
+ },
+ "SI_2m": {
+  "status": "ok",
+  "gate_pct": 95.9534307468,
+  "k": 2,
+  "dd_limit": 0.582036353313,
+  "cap_mode": "both",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:58:00",
+  "last_entry": "2026-06-26 14:28:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "STOP_LOSS_HARD",
+    2341
+   ],
+   [
+    "TAKE_PROFIT_HARD",
+    1120
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    19
+   ],
+   [
+    "END_OF_DAY",
+    15
+   ],
+   [
+    "TIME_CAP",
+    1
+   ]
+  ],
+  "n_entries": 3496,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    6011
+   ],
+   [
+    "veto",
+    1832
+   ]
+  ],
+  "last60d": {
+   "entries": 108,
+   "drops": [
+    [
+     "vol_gate",
+     307
+    ],
+    [
+     "veto",
+     63
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.3083,
+  "entry_rate_last60d": 0.2259
+ },
+ "HG_4h": {
+  "status": "ok",
+  "gate_pct": 93.1908106848,
+  "k": 4,
+  "dd_limit": 1.02307287095,
+  "cap_mode": "none",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 14:00:00",
+  "last_entry": "2026-06-24 18:00:00",
+  "idle_days_at_end": 43,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    136
+   ],
+   [
+    "STOP_LOSS_HARD",
+    106
+   ]
+  ],
+  "n_entries": 242,
+  "drops_lifetime": [
+   [
+    "veto",
+    524
+   ],
+   [
+    "vol_gate",
+    158
+   ]
+  ],
+  "last60d": {
+   "entries": 9,
+   "drops": [
+    [
+     "veto",
+     16
+    ],
+    [
+     "vol_gate",
+     4
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.2619,
+  "entry_rate_last60d": 0.3103
+ },
+ "HG_2h": {
+  "status": "ok",
+  "gate_pct": 97.2870416517,
+  "k": 2,
+  "dd_limit": 0.956181300313,
+  "cap_mode": "both",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:00:00",
+  "last_entry": "2026-06-25 20:00:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "STOP_LOSS_HARD",
+    384
+   ],
+   [
+    "TAKE_PROFIT_HARD",
+    136
+   ],
+   [
+    "END_OF_DAY",
+    40
+   ],
+   [
+    "TIME_CAP",
+    9
+   ]
+  ],
+  "n_entries": 569,
+  "drops_lifetime": [
+   [
+    "veto",
+    919
+   ],
+   [
+    "vol_gate",
+    108
+   ]
+  ],
+  "last60d": {
+   "entries": 13,
+   "drops": [
+    [
+     "veto",
+     34
+    ],
+    [
+     "vol_gate",
+     1
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.3565,
+  "entry_rate_last60d": 0.2708
+ },
+ "HG_1h": {
+  "status": "ok",
+  "gate_pct": 97.2870416517,
+  "k": 4,
+  "dd_limit": 0.489520432427,
+  "cap_mode": "both",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:00:00",
+  "last_entry": "2026-06-24 06:00:00",
+  "idle_days_at_end": 44,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    298
+   ],
+   [
+    "STOP_LOSS_HARD",
+    111
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    18
+   ],
+   [
+    "END_OF_DAY",
+    13
+   ]
+  ],
+  "n_entries": 440,
+  "drops_lifetime": [
+   [
+    "veto",
+    1695
+   ],
+   [
+    "vol_gate",
+    176
+   ]
+  ],
+  "last60d": {
+   "entries": 13,
+   "drops": [
+    [
+     "veto",
+     53
+    ],
+    [
+     "vol_gate",
+     2
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.1904,
+  "entry_rate_last60d": 0.1912
+ },
+ "HG_15m": {
+  "status": "ok",
+  "gate_pct": 88.8602203203,
+  "k": 2,
+  "dd_limit": 0.87551033392,
+  "cap_mode": "both",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:45:00",
+  "last_entry": "2026-06-26 08:30:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "STOP_LOSS_HARD",
+    2275
+   ],
+   [
+    "TAKE_PROFIT_HARD",
+    409
+   ],
+   [
+    "END_OF_DAY",
+    42
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    16
+   ],
+   [
+    "TIME_CAP",
+    10
+   ]
+  ],
+  "n_entries": 2752,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    1507
+   ],
+   [
+    "veto",
+    292
+   ]
+  ],
+  "last60d": {
+   "entries": 71,
+   "drops": [
+    [
+     "vol_gate",
+     65
+    ],
+    [
+     "veto",
+     6
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.6047,
+  "entry_rate_last60d": 0.5
+ },
+ "HG_5m": {
+  "status": "ok",
+  "gate_pct": 89.6628039906,
+  "k": 1,
+  "dd_limit": 0.499409687515,
+  "cap_mode": "none",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:55:00",
+  "last_entry": "2026-06-26 08:25:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "STOP_LOSS_HARD",
+    1118
+   ],
+   [
+    "TAKE_PROFIT_HARD",
+    534
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    11
+   ]
+  ],
+  "n_entries": 1663,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    2604
+   ],
+   [
+    "veto",
+    837
+   ]
+  ],
+  "last60d": {
+   "entries": 44,
+   "drops": [
+    [
+     "vol_gate",
+     89
+    ],
+    [
+     "veto",
+     25
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.3258,
+  "entry_rate_last60d": 0.2785
+ },
+ "HG_2m": {
+  "status": "ok",
+  "gate_pct": 96.9509570934,
+  "k": 1,
+  "dd_limit": 0.86478223202,
+  "cap_mode": "both",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:58:00",
+  "last_entry": "2026-06-26 09:28:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "STOP_LOSS_HARD",
+    4613
+   ],
+   [
+    "TAKE_PROFIT_HARD",
+    2468
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    37
+   ],
+   [
+    "END_OF_DAY",
+    25
+   ]
+  ],
+  "n_entries": 7143,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    1916
+   ],
+   [
+    "veto",
+    1851
+   ]
+  ],
+  "last60d": {
+   "entries": 199,
+   "drops": [
+    [
+     "vol_gate",
+     51
+    ],
+    [
+     "veto",
+     43
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.6547,
+  "entry_rate_last60d": 0.6792
+ },
+ "CL_4h": {
+  "status": "ok",
+  "gate_pct": 95.8876325967,
+  "k": 2,
+  "dd_limit": 13.5387180914,
+  "cap_mode": "eod",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 14:00:00",
+  "last_entry": "2026-06-26 14:00:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    209
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    121
+   ],
+   [
+    "END_OF_DAY",
+    58
+   ],
+   [
+    "STOP_LOSS_HARD",
+    4
+   ]
+  ],
+  "n_entries": 392,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    321
+   ],
+   [
+    "veto",
+    146
+   ]
+  ],
+  "last60d": {
+   "entries": 8,
+   "drops": [
+    [
+     "vol_gate",
+     25
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.4563,
+  "entry_rate_last60d": 0.2424
+ },
+ "CL_2h": {
+  "status": "ok",
+  "gate_pct": 97.8070009872,
+  "k": 2,
+  "dd_limit": 13.2081772672,
+  "cap_mode": "both",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:00:00",
+  "last_entry": "2026-06-24 22:00:00",
+  "idle_days_at_end": 43,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    114
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    35
+   ],
+   [
+    "TIME_CAP",
+    12
+   ],
+   [
+    "END_OF_DAY",
+    11
+   ],
+   [
+    "STOP_LOSS_HARD",
+    3
+   ]
+  ],
+  "n_entries": 175,
+  "drops_lifetime": [
+   [
+    "veto",
+    793
+   ],
+   [
+    "vol_gate",
+    397
+   ]
+  ],
+  "last60d": {
+   "entries": 10,
+   "drops": [
+    [
+     "veto",
+     26
+    ],
+    [
+     "vol_gate",
+     14
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.1282,
+  "entry_rate_last60d": 0.2
+ },
+ "CL_1h": {
+  "status": "ok",
+  "gate_pct": 96.3290332894,
+  "k": 1,
+  "dd_limit": 3.72682821454,
+  "cap_mode": "both",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:00:00",
+  "last_entry": "2026-06-26 06:00:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "STOP_LOSS_SOFT",
+    273
+   ],
+   [
+    "TAKE_PROFIT_HARD",
+    248
+   ],
+   [
+    "STOP_LOSS_HARD",
+    24
+   ],
+   [
+    "END_OF_DAY",
+    16
+   ]
+  ],
+  "n_entries": 561,
+  "drops_lifetime": [
+   [
+    "veto",
+    690
+   ],
+   [
+    "vol_gate",
+    678
+   ]
+  ],
+  "last60d": {
+   "entries": 17,
+   "drops": [
+    [
+     "vol_gate",
+     40
+    ],
+    [
+     "veto",
+     19
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.2908,
+  "entry_rate_last60d": 0.2237
+ },
+ "CL_15m": {
+  "status": "ok",
+  "gate_pct": 91.1171256123,
+  "k": 2,
+  "dd_limit": 0.958501672056,
+  "cap_mode": "both",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:45:00",
+  "last_entry": "2026-06-26 05:45:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    748
+   ],
+   [
+    "STOP_LOSS_HARD",
+    377
+   ],
+   [
+    "END_OF_DAY",
+    29
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    23
+   ]
+  ],
+  "n_entries": 1177,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    1952
+   ],
+   [
+    "veto",
+    811
+   ]
+  ],
+  "last60d": {
+   "entries": 11,
+   "drops": [
+    [
+     "vol_gate",
+     138
+    ],
+    [
+     "veto",
+     11
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.2987,
+  "entry_rate_last60d": 0.0688
+ },
+ "CL_5m": {
+  "status": "ok",
+  "gate_pct": 97.2870416517,
+  "k": 2,
+  "dd_limit": 1.06553568229,
+  "cap_mode": "both",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:55:00",
+  "last_entry": "2026-06-26 11:50:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "STOP_LOSS_HARD",
+    1516
+   ],
+   [
+    "TAKE_PROFIT_HARD",
+    663
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    145
+   ],
+   [
+    "END_OF_DAY",
+    29
+   ]
+  ],
+  "n_entries": 2353,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    2351
+   ],
+   [
+    "veto",
+    2097
+   ]
+  ],
+  "last60d": {
+   "entries": 91,
+   "drops": [
+    [
+     "vol_gate",
+     116
+    ],
+    [
+     "veto",
+     87
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.346,
+  "entry_rate_last60d": 0.3095
+ },
+ "CL_2m": {
+  "status": "ok",
+  "gate_pct": 92.4110797196,
+  "k": 2,
+  "dd_limit": 6.57022639278,
+  "cap_mode": "both",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:58:00",
+  "last_entry": "2026-06-26 14:22:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "STOP_LOSS_HARD",
+    2797
+   ],
+   [
+    "TAKE_PROFIT_HARD",
+    1829
+   ],
+   [
+    "END_OF_DAY",
+    29
+   ]
+  ],
+  "n_entries": 4655,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    5075
+   ]
+  ],
+  "last60d": {
+   "entries": 148,
+   "drops": [
+    [
+     "vol_gate",
+     305
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.4784,
+  "entry_rate_last60d": 0.3267
+ },
+ "NG_4h": {
+  "status": "ok",
+  "gate_pct": 94.383175507,
+  "k": 3,
+  "dd_limit": 0.297319087944,
+  "cap_mode": "both",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 14:00:00",
+  "last_entry": "2026-06-25 10:00:00",
+  "idle_days_at_end": 43,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    340
+   ],
+   [
+    "STOP_LOSS_HARD",
+    231
+   ],
+   [
+    "END_OF_DAY",
+    26
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    6
+   ]
+  ],
+  "n_entries": 603,
+  "drops_lifetime": [
+   [
+    "veto",
+    259
+   ],
+   [
+    "vol_gate",
+    100
+   ]
+  ],
+  "last60d": {
+   "entries": 22,
+   "drops": [
+    [
+     "veto",
+     12
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.6268,
+  "entry_rate_last60d": 0.6471
+ },
+ "NG_2h": {
+  "status": "ok",
+  "gate_pct": 95.8876325967,
+  "k": 2,
+  "dd_limit": 0.547959954462,
+  "cap_mode": "bars",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:00:00",
+  "last_entry": "2026-06-26 14:00:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "STOP_LOSS_HARD",
+    392
+   ],
+   [
+    "TAKE_PROFIT_HARD",
+    280
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    3
+   ]
+  ],
+  "n_entries": 675,
+  "drops_lifetime": [
+   [
+    "veto",
+    670
+   ],
+   [
+    "vol_gate",
+    140
+   ]
+  ],
+  "last60d": {
+   "entries": 25,
+   "drops": [
+    [
+     "veto",
+     23
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.4545,
+  "entry_rate_last60d": 0.5208
+ },
+ "NG_1h": {
+  "status": "ok",
+  "gate_pct": 93.1908106848,
+  "k": 1,
+  "dd_limit": 0.264147949148,
+  "cap_mode": "none",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:00:00",
+  "last_entry": "2026-06-26 13:00:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "STOP_LOSS_HARD",
+    1084
+   ],
+   [
+    "TAKE_PROFIT_HARD",
+    527
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    123
+   ]
+  ],
+  "n_entries": 1734,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    315
+   ]
+  ],
+  "last60d": {
+   "entries": 66,
+   "drops": []
+  },
+  "entry_rate_lifetime": 0.8463,
+  "entry_rate_last60d": 1.0
+ },
+ "NG_15m": {
+  "status": "ok",
+  "gate_pct": 90.8922403151,
+  "k": 2,
+  "dd_limit": 0.147046318656,
+  "cap_mode": "none",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:45:00",
+  "last_entry": "2026-06-26 13:00:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "STOP_LOSS_HARD",
+    1594
+   ],
+   [
+    "TAKE_PROFIT_HARD",
+    1277
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    44
+   ]
+  ],
+  "n_entries": 2915,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    967
+   ],
+   [
+    "veto",
+    222
+   ]
+  ],
+  "last60d": {
+   "entries": 139,
+   "drops": [
+    [
+     "veto",
+     4
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.7103,
+  "entry_rate_last60d": 0.972
+ },
+ "NG_5m": {
+  "status": "ok",
+  "gate_pct": 98.8021066544,
+  "k": 1,
+  "dd_limit": 0.00355209518484,
+  "cap_mode": "both",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:55:00",
+  "last_entry": "2026-06-26 13:00:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "STOP_LOSS_HARD",
+    4508
+   ],
+   [
+    "TAKE_PROFIT_HARD",
+    2162
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    101
+   ],
+   [
+    "END_OF_DAY",
+    11
+   ]
+  ],
+  "n_entries": 6782,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    337
+   ],
+   [
+    "veto",
+    68
+   ]
+  ],
+  "last60d": {
+   "entries": 246,
+   "drops": [
+    [
+     "veto",
+     2
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.9436,
+  "entry_rate_last60d": 0.9919
+ },
+ "NG_2m": {
+  "status": "ok",
+  "gate_pct": 95.9254964029,
+  "k": 1,
+  "dd_limit": 0.463519950909,
+  "cap_mode": "eod",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:58:00",
+  "last_entry": "2026-06-26 13:00:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "STOP_LOSS_HARD",
+    4287
+   ],
+   [
+    "TAKE_PROFIT_HARD",
+    4100
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    93
+   ],
+   [
+    "END_OF_DAY",
+    6
+   ]
+  ],
+  "n_entries": 8486,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    1695
+   ],
+   [
+    "veto",
+    48
+   ]
+  ],
+  "last60d": {
+   "entries": 323,
+   "drops": [
+    [
+     "vol_gate",
+     15
+    ],
+    [
+     "veto",
+     1
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.8296,
+  "entry_rate_last60d": 0.9528
+ },
+ "RTY_4h": {
+  "status": "ok",
+  "gate_pct": 92.8520764196,
+  "k": 1,
+  "dd_limit": 292.203379626,
+  "cap_mode": "both",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 14:00:00",
+  "last_entry": "2026-06-26 02:00:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "STOP_LOSS_SOFT",
+    134
+   ],
+   [
+    "TAKE_PROFIT_HARD",
+    80
+   ],
+   [
+    "END_OF_DAY",
+    70
+   ],
+   [
+    "TIME_CAP",
+    10
+   ],
+   [
+    "STOP_LOSS_HARD",
+    3
+   ]
+  ],
+  "n_entries": 297,
+  "drops_lifetime": [
+   [
+    "veto",
+    391
+   ],
+   [
+    "vol_gate",
+    178
+   ]
+  ],
+  "last60d": {
+   "entries": 13,
+   "drops": [
+    [
+     "vol_gate",
+     19
+    ],
+    [
+     "veto",
+     11
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.343,
+  "entry_rate_last60d": 0.3023
+ },
+ "RTY_2h": {
+  "status": "ok",
+  "gate_pct": 89.6628039906,
+  "k": 3,
+  "dd_limit": 238.570913721,
+  "cap_mode": "bars",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:00:00",
+  "last_entry": "2026-06-23 08:00:00",
+  "idle_days_at_end": 45,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    134
+   ],
+   [
+    "STOP_LOSS_HARD",
+    21
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    12
+   ],
+   [
+    "TIME_CAP",
+    10
+   ]
+  ],
+  "n_entries": 177,
+  "drops_lifetime": [
+   [
+    "veto",
+    735
+   ],
+   [
+    "vol_gate",
+    431
+   ]
+  ],
+  "last60d": {
+   "entries": 3,
+   "drops": [
+    [
+     "vol_gate",
+     36
+    ],
+    [
+     "veto",
+     24
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.1318,
+  "entry_rate_last60d": 0.0476
+ },
+ "RTY_1h": {
+  "status": "ok",
+  "gate_pct": 98.6730238066,
+  "k": 4,
+  "dd_limit": 332.709747751,
+  "cap_mode": "eod",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:00:00",
+  "last_entry": "2026-06-26 15:00:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    119
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    74
+   ],
+   [
+    "END_OF_DAY",
+    12
+   ],
+   [
+    "STOP_LOSS_HARD",
+    8
+   ]
+  ],
+  "n_entries": 213,
+  "drops_lifetime": [
+   [
+    "veto",
+    1637
+   ],
+   [
+    "vol_gate",
+    77
+   ]
+  ],
+  "last60d": {
+   "entries": 14,
+   "drops": [
+    [
+     "veto",
+     79
+    ],
+    [
+     "vol_gate",
+     5
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.1105,
+  "entry_rate_last60d": 0.1429
+ },
+ "RTY_15m": {
+  "status": "ok",
+  "gate_pct": 78.2951272394,
+  "k": 4,
+  "dd_limit": 476.9774357,
+  "cap_mode": "none",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:45:00",
+  "last_entry": "2026-06-26 00:45:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    60
+   ],
+   [
+    "STOP_LOSS_HARD",
+    52
+   ]
+  ],
+  "n_entries": 112,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    2258
+   ],
+   [
+    "veto",
+    1655
+   ]
+  ],
+  "last60d": {
+   "entries": 3,
+   "drops": [
+    [
+     "vol_gate",
+     148
+    ],
+    [
+     "veto",
+     37
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.0278,
+  "entry_rate_last60d": 0.016
+ },
+ "RTY_5m": {
+  "status": "ok",
+  "gate_pct": 87.654075757,
+  "k": 1,
+  "dd_limit": 240.627785913,
+  "cap_mode": "bars",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:55:00",
+  "last_entry": "2026-06-26 16:50:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    846
+   ],
+   [
+    "STOP_LOSS_HARD",
+    316
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    252
+   ],
+   [
+    "TIME_CAP",
+    2
+   ]
+  ],
+  "n_entries": 1416,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    2828
+   ],
+   [
+    "veto",
+    2116
+   ]
+  ],
+  "last60d": {
+   "entries": 51,
+   "drops": [
+    [
+     "vol_gate",
+     201
+    ],
+    [
+     "veto",
+     68
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.2226,
+  "entry_rate_last60d": 0.1594
+ },
+ "RTY_2m": {
+  "status": "ok",
+  "gate_pct": 81.4321906575,
+  "k": 1,
+  "dd_limit": 109.606751584,
+  "cap_mode": "both",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:58:00",
+  "last_entry": "2026-06-26 05:44:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    1454
+   ],
+   [
+    "STOP_LOSS_HARD",
+    1160
+   ],
+   [
+    "END_OF_DAY",
+    41
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    3
+   ]
+  ],
+  "n_entries": 2658,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    5876
+   ],
+   [
+    "veto",
+    965
+   ]
+  ],
+  "last60d": {
+   "entries": 82,
+   "drops": [
+    [
+     "vol_gate",
+     374
+    ],
+    [
+     "veto",
+     35
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.2798,
+  "entry_rate_last60d": 0.167
+ },
+ "YM_4h": {
+  "status": "ok",
+  "gate_pct": 95.2473781693,
+  "k": 2,
+  "dd_limit": 4539.28171375,
+  "cap_mode": "both",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 14:00:00",
+  "last_entry": "2026-06-22 18:00:00",
+  "idle_days_at_end": 45,
+  "exit_reasons": [
+   [
+    "END_OF_DAY",
+    57
+   ],
+   [
+    "TIME_CAP",
+    49
+   ],
+   [
+    "STOP_LOSS_HARD",
+    31
+   ],
+   [
+    "TAKE_PROFIT_HARD",
+    31
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    20
+   ]
+  ],
+  "n_entries": 188,
+  "drops_lifetime": [
+   [
+    "veto",
+    568
+   ],
+   [
+    "vol_gate",
+    77
+   ]
+  ],
+  "last60d": {
+   "entries": 7,
+   "drops": [
+    [
+     "veto",
+     26
+    ],
+    [
+     "vol_gate",
+     6
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.2257,
+  "entry_rate_last60d": 0.1795
+ },
+ "YM_2h": {
+  "status": "ok",
+  "gate_pct": 55.9790959466,
+  "k": 4,
+  "dd_limit": 6010.91406927,
+  "cap_mode": "eod",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:00:00",
+  "last_entry": "2026-06-22 00:00:00",
+  "idle_days_at_end": 46,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    17
+   ],
+   [
+    "END_OF_DAY",
+    11
+   ],
+   [
+    "STOP_LOSS_HARD",
+    6
+   ]
+  ],
+  "n_entries": 34,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    903
+   ],
+   [
+    "veto",
+    296
+   ]
+  ],
+  "last60d": {
+   "entries": 2,
+   "drops": [
+    [
+     "vol_gate",
+     54
+    ],
+    [
+     "veto",
+     8
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.0276,
+  "entry_rate_last60d": 0.0312
+ },
+ "YM_1h": {
+  "status": "ok",
+  "gate_pct": 97.5201135014,
+  "k": 2,
+  "dd_limit": 9508.62701925,
+  "cap_mode": "both",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:00:00",
+  "last_entry": "2026-06-26 06:00:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    202
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    163
+   ],
+   [
+    "END_OF_DAY",
+    66
+   ],
+   [
+    "TIME_CAP",
+    22
+   ],
+   [
+    "STOP_LOSS_HARD",
+    3
+   ]
+  ],
+  "n_entries": 456,
+  "drops_lifetime": [
+   [
+    "veto",
+    1157
+   ],
+   [
+    "vol_gate",
+    100
+   ]
+  ],
+  "last60d": {
+   "entries": 26,
+   "drops": [
+    [
+     "veto",
+     62
+    ],
+    [
+     "vol_gate",
+     5
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.2662,
+  "entry_rate_last60d": 0.2796
+ },
+ "YM_15m": {
+  "status": "ok",
+  "gate_pct": 99.1634488256,
+  "k": 2,
+  "dd_limit": 2701.52125358,
+  "cap_mode": "eod",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:45:00",
+  "last_entry": "2026-06-26 14:00:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    554
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    352
+   ],
+   [
+    "STOP_LOSS_HARD",
+    84
+   ],
+   [
+    "END_OF_DAY",
+    37
+   ]
+  ],
+  "n_entries": 1027,
+  "drops_lifetime": [
+   [
+    "veto",
+    2077
+   ],
+   [
+    "vol_gate",
+    111
+   ]
+  ],
+  "last60d": {
+   "entries": 74,
+   "drops": [
+    [
+     "veto",
+     109
+    ],
+    [
+     "vol_gate",
+     3
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.3194,
+  "entry_rate_last60d": 0.3978
+ },
+ "YM_5m": {
+  "status": "ok",
+  "gate_pct": 85.804672273,
+  "k": 4,
+  "dd_limit": 3802.56174693,
+  "cap_mode": "none",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:55:00",
+  "last_entry": "2026-06-25 22:00:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    364
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    187
+   ],
+   [
+    "STOP_LOSS_HARD",
+    7
+   ]
+  ],
+  "n_entries": 558,
+  "drops_lifetime": [
+   [
+    "veto",
+    2910
+   ],
+   [
+    "vol_gate",
+    2780
+   ]
+  ],
+  "last60d": {
+   "entries": 22,
+   "drops": [
+    [
+     "vol_gate",
+     175
+    ],
+    [
+     "veto",
+     161
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.0893,
+  "entry_rate_last60d": 0.0615
+ },
+ "YM_2m": {
+  "status": "ok",
+  "gate_pct": 84.332321392,
+  "k": 1,
+  "dd_limit": 6672.68285314,
+  "cap_mode": "none",
+  "n_indicators": 165,
+  "data_end": "2026-08-07 16:58:00",
+  "last_entry": "2026-06-26 11:12:00",
+  "idle_days_at_end": 42,
+  "exit_reasons": [
+   [
+    "TAKE_PROFIT_HARD",
+    645
+   ],
+   [
+    "STOP_LOSS_SOFT",
+    398
+   ],
+   [
+    "STOP_LOSS_HARD",
+    51
+   ]
+  ],
+  "n_entries": 1094,
+  "drops_lifetime": [
+   [
+    "vol_gate",
+    4760
+   ],
+   [
+    "veto",
+    3126
+   ]
+  ],
+  "last60d": {
+   "entries": 66,
+   "drops": [
+    [
+     "vol_gate",
+     288
+    ],
+    [
+     "veto",
+     151
+    ]
+   ]
+  },
+  "entry_rate_lifetime": 0.1218,
+  "entry_rate_last60d": 0.1307
+ }
+}

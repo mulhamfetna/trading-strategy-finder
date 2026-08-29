@@ -1,0 +1,1129 @@
+{
+ "pre_checksums": {
+  "NQ": "72d8e7f95b533ead1dfcd6cf1a30be275b706a4d306fe8f6300cdcc92123e312",
+  "ES": "d65912a69b2f8efa91552df8fb792fecda4d447af64e1e23d345927035dfd9fc",
+  "GC": "7fc5eacf9f84029244f44685c63fb6b16b2d25535882cbe5e6a13565b9ea5b83",
+  "SI": "b83f0336a9e1597efa4177051141b95b82a2d1b03865e6c035a3d6bf9d1313ce",
+  "HG": "f95be1cdffe84824463f7ea2b4bb923097eedfb315a31a6798cb5f58fb990c99",
+  "CL": "dc1c1372e5969442f942aa9bc56e2ab509a1bc71803462bace46a5b173ed6fda",
+  "NG": "697c31f1cd2e0c40cd75a685b3e055c9e74733c5c7bb6737fef219c516b9372b",
+  "RTY": "0d21424c952579b20ccf96ae810131f7f9c3c04a8c7b0f4716548f2e335a118a",
+  "YM": "4bd4c5782eb813499db7fdeb9f190aea224703fafdf40552da872c51f47f9db7"
+ },
+ "NQ": {
+  "minute_path": "/home/dev/Mulham/wsg-i/Full_Canldes_Data/drive-download-20260602T124702Z-3-001/NQ_1m.csv",
+  "big_path": "/home/dev/Mulham/data_2010_1s/NQ_Continuous_Data/NQ_1m.csv",
+  "engine_end": "2026-05-19 19:59:00",
+  "big_end": "2026-08-07 16:59:00",
+  "gate_a": {
+   "engine_rows": 20700,
+   "big_rows": 20700,
+   "common": 20700,
+   "coverage": 1.0,
+   "engine_only": 0,
+   "big_only": 0,
+   "mismatches": {
+    "open": 0,
+    "high": 0,
+    "low": 0,
+    "close": 0,
+    "volume": 0
+   },
+   "pass": true
+  },
+  "fresh_1m_rows": 79199,
+  "gate_b": {
+   "2m": {
+    "vendor_bars": 243503,
+    "rebuilt_common": 243503,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "5m": {
+    "vendor_bars": 97400,
+    "rebuilt_common": 97400,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "15m": {
+    "vendor_bars": 32466,
+    "rebuilt_common": 32466,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "1h": {
+    "vendor_bars": 8120,
+    "rebuilt_common": 8120,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "2h": {
+    "vendor_bars": 4235,
+    "rebuilt_common": 4235,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "4h": {
+    "vendor_bars": 2118,
+    "rebuilt_common": 2118,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   }
+  },
+  "ext_1m": {
+   "path": "/home/dev/Mulham/wsg-i/FWD_EXTENDED/Full_Canldes_Data/drive-download-20260602T124702Z-3-001/NQ_1m.csv",
+   "rows": 566168,
+   "end": "2026-08-07 16:59:00"
+  },
+  "extended_tfs": [
+   "2m",
+   "5m",
+   "15m",
+   "1h",
+   "2h",
+   "4h"
+  ],
+  "appended": true,
+  "prod_sha_stable": true
+ },
+ "ES": {
+  "minute_path": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/ES_Continuous_Data/ES_1m.csv",
+  "big_path": "/home/dev/Mulham/data_2010_1s/ES_Continuous_Data/ES_1m.csv",
+  "engine_end": "2026-05-19 19:59:00",
+  "big_end": "2026-08-07 16:59:00",
+  "gate_a": {
+   "engine_rows": 20700,
+   "big_rows": 20700,
+   "common": 20700,
+   "coverage": 1.0,
+   "engine_only": 0,
+   "big_only": 0,
+   "mismatches": {
+    "open": 0,
+    "high": 0,
+    "low": 0,
+    "close": 0,
+    "volume": 0
+   },
+   "pass": true
+  },
+  "fresh_1m_rows": 79200,
+  "gate_b": {
+   "2m": {
+    "vendor_bars": 243504,
+    "rebuilt_common": 243504,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "5m": {
+    "vendor_bars": 97400,
+    "rebuilt_common": 97400,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "15m": {
+    "vendor_bars": 32466,
+    "rebuilt_common": 32466,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "1h": {
+    "vendor_bars": 8120,
+    "rebuilt_common": 8120,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "2h": {
+    "vendor_bars": 4235,
+    "rebuilt_common": 4235,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "4h": {
+    "vendor_bars": 2118,
+    "rebuilt_common": 2118,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   }
+  },
+  "ext_1m": {
+   "path": "/home/dev/Mulham/wsg-i/FWD_EXTENDED/ALL_STOCKS/CANDLES/CME/ES_Continuous_Data/ES_1m.csv",
+   "rows": 566154,
+   "end": "2026-08-07 16:59:00"
+  },
+  "extended_tfs": [
+   "2m",
+   "5m",
+   "15m",
+   "1h",
+   "2h",
+   "4h"
+  ],
+  "appended": true,
+  "prod_sha_stable": true
+ },
+ "GC": {
+  "minute_path": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/GC_Continuous_Data/GC_1m.csv",
+  "big_path": "/home/dev/Mulham/data_2010_1s/GC_Continuous_Data/GC_1m.csv",
+  "engine_end": "2026-07-02 19:59:00",
+  "big_end": "2026-08-07 16:59:00",
+  "gate_a": {
+   "engine_rows": 20433,
+   "big_rows": 20433,
+   "common": 20433,
+   "coverage": 1.0,
+   "engine_only": 0,
+   "big_only": 0,
+   "mismatches": {
+    "open": 0,
+    "high": 0,
+    "low": 0,
+    "close": 0,
+    "volume": 0
+   },
+   "pass": true
+  },
+  "fresh_1m_rows": 35439,
+  "gate_b": {
+   "2m": {
+    "vendor_bars": 265630,
+    "rebuilt_common": 265630,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "5m": {
+    "vendor_bars": 106255,
+    "rebuilt_common": 106255,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "15m": {
+    "vendor_bars": 35419,
+    "rebuilt_common": 35419,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "1h": {
+    "vendor_bars": 8861,
+    "rebuilt_common": 8861,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "2h": {
+    "vendor_bars": 4623,
+    "rebuilt_common": 4623,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "4h": {
+    "vendor_bars": 2317,
+    "rebuilt_common": 2317,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   }
+  },
+  "ext_1m": {
+   "path": "/home/dev/Mulham/wsg-i/FWD_EXTENDED/ALL_STOCKS/CANDLES/COMEX/GC_Continuous_Data/GC_1m.csv",
+   "rows": 566356,
+   "end": "2026-08-07 16:59:00"
+  },
+  "extended_tfs": [
+   "2m",
+   "5m",
+   "15m",
+   "1h",
+   "2h",
+   "4h"
+  ],
+  "appended": true,
+  "prod_sha_stable": true
+ },
+ "SI": {
+  "minute_path": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/SI_Continuous_Data/SI_1m.csv",
+  "big_path": "/home/dev/Mulham/data_2010_1s/SI_Continuous_Data/SI_1m.csv",
+  "engine_end": "2026-07-02 19:59:00",
+  "big_end": "2026-08-07 16:59:00",
+  "gate_a": {
+   "engine_rows": 19659,
+   "big_rows": 19659,
+   "common": 19659,
+   "coverage": 1.0,
+   "engine_only": 0,
+   "big_only": 0,
+   "mismatches": {
+    "open": 0,
+    "high": 0,
+    "low": 0,
+    "close": 0,
+    "volume": 0
+   },
+   "pass": true
+  },
+  "fresh_1m_rows": 33731,
+  "gate_b": {
+   "2m": {
+    "vendor_bars": 264459,
+    "rebuilt_common": 264459,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "5m": {
+    "vendor_bars": 106244,
+    "rebuilt_common": 106244,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "15m": {
+    "vendor_bars": 35419,
+    "rebuilt_common": 35419,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "1h": {
+    "vendor_bars": 8861,
+    "rebuilt_common": 8861,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "2h": {
+    "vendor_bars": 4623,
+    "rebuilt_common": 4623,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "4h": {
+    "vendor_bars": 2317,
+    "rebuilt_common": 2317,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   }
+  },
+  "ext_1m": {
+   "path": "/home/dev/Mulham/wsg-i/FWD_EXTENDED/ALL_STOCKS/CANDLES/COMEX/SI_Continuous_Data/SI_1m.csv",
+   "rows": 552484,
+   "end": "2026-08-07 16:59:00"
+  },
+  "extended_tfs": [
+   "2m",
+   "5m",
+   "15m",
+   "1h",
+   "2h",
+   "4h"
+  ],
+  "appended": true,
+  "prod_sha_stable": true
+ },
+ "HG": {
+  "minute_path": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/COMEX/HG_Continuous_Data/HG_1m.csv",
+  "big_path": "/home/dev/Mulham/data_2010_1s/HG_Continuous_Data/HG_1m.csv",
+  "engine_end": "2026-07-07 19:59:00",
+  "big_end": "2026-08-07 16:59:00",
+  "gate_a": {
+   "engine_rows": 18676,
+   "big_rows": 18676,
+   "common": 18676,
+   "coverage": 1.0,
+   "engine_only": 0,
+   "big_only": 0,
+   "mismatches": {
+    "open": 0,
+    "high": 0,
+    "low": 0,
+    "close": 0,
+    "volume": 0
+   },
+   "pass": true
+  },
+  "fresh_1m_rows": 29454,
+  "gate_b": {
+   "2m": {
+    "vendor_bars": 262446,
+    "rebuilt_common": 262446,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "5m": {
+    "vendor_bars": 106812,
+    "rebuilt_common": 106812,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "15m": {
+    "vendor_bars": 35678,
+    "rebuilt_common": 35678,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "1h": {
+    "vendor_bars": 8926,
+    "rebuilt_common": 8926,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "2h": {
+    "vendor_bars": 4657,
+    "rebuilt_common": 4657,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "4h": {
+    "vendor_bars": 2334,
+    "rebuilt_common": 2334,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   }
+  },
+  "ext_1m": {
+   "path": "/home/dev/Mulham/wsg-i/FWD_EXTENDED/ALL_STOCKS/CANDLES/COMEX/HG_Continuous_Data/HG_1m.csv",
+   "rows": 530377,
+   "end": "2026-08-07 16:59:00"
+  },
+  "extended_tfs": [
+   "2m",
+   "5m",
+   "15m",
+   "1h",
+   "2h",
+   "4h"
+  ],
+  "appended": true,
+  "prod_sha_stable": true
+ },
+ "CL": {
+  "minute_path": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/NYMEX/CL_Continuous_Data/CL_1m.csv",
+  "big_path": "/home/dev/Mulham/data_2010_1s/CL_Continuous_Data/CL_1m.csv",
+  "engine_end": "2026-07-08 19:59:00",
+  "big_end": "2026-08-07 16:59:00",
+  "gate_a": {
+   "engine_rows": 19965,
+   "big_rows": 19965,
+   "common": 19965,
+   "coverage": 1.0,
+   "engine_only": 0,
+   "big_only": 0,
+   "mismatches": {
+    "open": 0,
+    "high": 0,
+    "low": 0,
+    "close": 0,
+    "volume": 0
+   },
+   "pass": true
+  },
+  "fresh_1m_rows": 30133,
+  "gate_b": {
+   "2m": {
+    "vendor_bars": 267658,
+    "rebuilt_common": 267658,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "5m": {
+    "vendor_bars": 107318,
+    "rebuilt_common": 107318,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "15m": {
+    "vendor_bars": 35777,
+    "rebuilt_common": 35777,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "1h": {
+    "vendor_bars": 8949,
+    "rebuilt_common": 8949,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "2h": {
+    "vendor_bars": 4669,
+    "rebuilt_common": 4669,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "4h": {
+    "vendor_bars": 2340,
+    "rebuilt_common": 2340,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   }
+  },
+  "ext_1m": {
+   "path": "/home/dev/Mulham/wsg-i/FWD_EXTENDED/ALL_STOCKS/CANDLES/NYMEX/CL_Continuous_Data/CL_1m.csv",
+   "rows": 559908,
+   "end": "2026-08-07 16:59:00"
+  },
+  "extended_tfs": [
+   "2m",
+   "5m",
+   "15m",
+   "1h",
+   "2h",
+   "4h"
+  ],
+  "appended": true,
+  "prod_sha_stable": true
+ },
+ "NG": {
+  "minute_path": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/NYMEX/NG_Continuous_Data/NG_1m.csv",
+  "big_path": "/home/dev/Mulham/data_2010_1s/NG_Continuous_Data/NG_1m.csv",
+  "engine_end": "2026-07-08 19:59:00",
+  "big_end": "2026-08-07 16:59:00",
+  "gate_a": {
+   "engine_rows": 17929,
+   "big_rows": 17929,
+   "common": 17929,
+   "coverage": 1.0,
+   "engine_only": 0,
+   "big_only": 0,
+   "mismatches": {
+    "open": 0,
+    "high": 0,
+    "low": 0,
+    "close": 0,
+    "volume": 0
+   },
+   "pass": true
+  },
+  "fresh_1m_rows": 27309,
+  "gate_b": {
+   "2m": {
+    "vendor_bars": 260503,
+    "rebuilt_common": 260503,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "5m": {
+    "vendor_bars": 106985,
+    "rebuilt_common": 106985,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "15m": {
+    "vendor_bars": 35773,
+    "rebuilt_common": 35773,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "1h": {
+    "vendor_bars": 8949,
+    "rebuilt_common": 8949,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "2h": {
+    "vendor_bars": 4669,
+    "rebuilt_common": 4669,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "4h": {
+    "vendor_bars": 2340,
+    "rebuilt_common": 2340,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   }
+  },
+  "ext_1m": {
+   "path": "/home/dev/Mulham/wsg-i/FWD_EXTENDED/ALL_STOCKS/CANDLES/NYMEX/NG_Continuous_Data/NG_1m.csv",
+   "rows": 518942,
+   "end": "2026-08-07 16:59:00"
+  },
+  "extended_tfs": [
+   "2m",
+   "5m",
+   "15m",
+   "1h",
+   "2h",
+   "4h"
+  ],
+  "appended": true,
+  "prod_sha_stable": true
+ },
+ "RTY": {
+  "minute_path": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/RTY_Continuous_Data/RTY_1m.csv",
+  "big_path": "/home/dev/Mulham/data_2010_1s/RTY_Continuous_Data/RTY_1m.csv",
+  "engine_end": "2026-07-05 19:59:00",
+  "big_end": "2026-08-07 16:59:00",
+  "gate_a": {
+   "engine_rows": 19965,
+   "big_rows": 19965,
+   "common": 19965,
+   "coverage": 1.0,
+   "engine_only": 0,
+   "big_only": 0,
+   "mismatches": {
+    "open": 0,
+    "high": 0,
+    "low": 0,
+    "close": 0,
+    "volume": 0
+   },
+   "pass": true
+  },
+  "fresh_1m_rows": 33966,
+  "gate_b": {
+   "2m": {
+    "vendor_bars": 264632,
+    "rebuilt_common": 264632,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "5m": {
+    "vendor_bars": 106338,
+    "rebuilt_common": 106338,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "15m": {
+    "vendor_bars": 35454,
+    "rebuilt_common": 35454,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "1h": {
+    "vendor_bars": 8867,
+    "rebuilt_common": 8867,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "2h": {
+    "vendor_bars": 4625,
+    "rebuilt_common": 4625,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "4h": {
+    "vendor_bars": 2313,
+    "rebuilt_common": 2313,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   }
+  },
+  "ext_1m": {
+   "path": "/home/dev/Mulham/wsg-i/FWD_EXTENDED/ALL_STOCKS/CANDLES/CME/RTY_Continuous_Data/RTY_1m.csv",
+   "rows": 553458,
+   "end": "2026-08-07 16:59:00"
+  },
+  "extended_tfs": [
+   "2m",
+   "5m",
+   "15m",
+   "1h",
+   "2h",
+   "4h"
+  ],
+  "appended": true,
+  "prod_sha_stable": true
+ },
+ "YM": {
+  "minute_path": "/home/dev/Mulham/wsg-i/ALL_STOCKS/CANDLES/CME/YM_Continuous_Data/YM_1m.csv",
+  "big_path": "/home/dev/Mulham/data_2010_1s/YM_Continuous_Data/YM_1m.csv",
+  "engine_end": "2026-07-05 19:59:00",
+  "big_end": "2026-08-07 16:59:00",
+  "gate_a": {
+   "engine_rows": 19962,
+   "big_rows": 19962,
+   "common": 19962,
+   "coverage": 1.0,
+   "engine_only": 0,
+   "big_only": 0,
+   "mismatches": {
+    "open": 0,
+    "high": 0,
+    "low": 0,
+    "close": 0,
+    "volume": 0
+   },
+   "pass": true
+  },
+  "fresh_1m_rows": 33974,
+  "gate_b": {
+   "2m": {
+    "vendor_bars": 265336,
+    "rebuilt_common": 265336,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "5m": {
+    "vendor_bars": 106360,
+    "rebuilt_common": 106360,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "15m": {
+    "vendor_bars": 35454,
+    "rebuilt_common": 35454,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "1h": {
+    "vendor_bars": 8867,
+    "rebuilt_common": 8867,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "2h": {
+    "vendor_bars": 4625,
+    "rebuilt_common": 4625,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   },
+   "4h": {
+    "vendor_bars": 2313,
+    "rebuilt_common": 2313,
+    "vendor_only": 0,
+    "rebuilt_only_inside": 0,
+    "mismatches": {
+     "open": 0,
+     "high": 0,
+     "low": 0,
+     "close": 0,
+     "volume": 0
+    },
+    "pass": true
+   }
+  },
+  "ext_1m": {
+   "path": "/home/dev/Mulham/wsg-i/FWD_EXTENDED/ALL_STOCKS/CANDLES/CME/YM_Continuous_Data/YM_1m.csv",
+   "rows": 557897,
+   "end": "2026-08-07 16:59:00"
+  },
+  "extended_tfs": [
+   "2m",
+   "5m",
+   "15m",
+   "1h",
+   "2h",
+   "4h"
+  ],
+  "appended": true,
+  "prod_sha_stable": true
+ }
+}

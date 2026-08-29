@@ -1,7 +1,7 @@
 # The News Programme — Master Experiment Record
 
 **Every experiment, its result and its finding, across the entire programme (2026-06 → 2026-08-20).
-Current through **v5.5.0**: all profitable news deployed and scaled, the premium
+Current through **v5.5.1** (the roadmap COMPLETE): all profitable news deployed and scaled, the premium
 grid literally closed, the fusion workstream executing (the fused size engine has WON its
 forecast-quality stage), ledger 64/64 on both machines.**
 
@@ -183,6 +183,27 @@ flowchart TD
 
 ---
 
+## Era 12 — WS-FWD (#176): the deployed champions on the freshest tape
+
+| # | experiment | result → finding |
+|---|---|---|
+| 12.1 | Phase 0/0.5: the data-currency audit + gated candle extension | **ALL GATES EXACT (2026-08-21).** The August tape lives in the 16-year dataset; splice gates proved it IS the engine's vendor source (9/9 overlaps coverage 1.0, **zero** mismatches incl. volume — volume made load-bearing: vwap/obv/mfi in 79 slot-pairs) and every decision-TF file exactly reproducible from 1m (54/54, 4h grid = offset 2h). All 9 instruments extended to **2026-08-07** in a **parallel root** (prod checksums proven untouched; TMPDIR-isolated L1 cache — the params-keyed cache is data-blind). ⭐ Found + adopted: the owner's shelved `with20d` NQ drop (real scraped box rows to 06-09; candles gate-D-exact on 20,460 rows). |
+| 12.2 | Phase 1/2: 54 champion books + the fresh-window cut | **54/54 books rebuilt through the dashboard's own causal path; the fresh window is a SLIVER by structure.** Anchor closure to the cent: NQ 4h $151,056.19/279 = the deployed anchor $151,655.19/277 + exactly its 2 fresh trades (−$599). Aggregate raw book **$2,180,903** (2025 $1.364M · 2026-to-date $817k — the 2026 part is the `best` set's SELECTION window, not OOS). **Fresh entries: 25 (+$1,823), all NQ/ES late May** — the box feed (owner-scraped, provably not derivable; fabrication forbidden + ledger-falsified) ends 06-09/05-21/06-26, before or at each old candle end. **The unlock is one owner action: a fresh box export through 2026-08.** No fresh cell reaches n=10 ⇒ observations only, no verdicts (enforced as a claim falsifier). |
+| 12.3 | Phase 4: the per-slot WHY (diag pass on all 54) | ⭐⭐ **NQ 5m has been structurally DARK since 2026-04-25** — gate_pct 30.4 (fleet median ≈94), 640/641 post-April signals vol-gate-killed: the frozen 2025 gate quantile admits nothing in the hotter 2026 regime (FU-11's blindness lesson at the slot level; NQ 2m drifting the same way — 97% gate drops in the fresh days vs 63% lifetime). ⭐⭐ **Friction stress restructures the fleet**: at $10/round-trip **8 slots go negative** (the NG ladder below 4h, CL 2m/5m, HG 2m, RTY 2m — NG 2m −$56,910); at $25/rt, 17. Value concentrates in the slow ladder ($120–$600/trade; NQ 4h keeps $144k of $151k at $25/rt). All 54 slots raw-positive in both calendar windows; only CL 1h and ES 5m negative since March. Full report `docs/WS-FWD-CHAMPIONS-FORWARD-REPORT.md`; claims `FWD-*` ×3. |
+| 12.4 | **Round 2 (#179): owner box export merged (raw 05-18→08-07 × 9, gate E: 16 files, 0 engine-column conflicts, NaN↔value repaint only); boxes → 2026-08-06 all 9** | ⭐⭐ **ES box was DOUBLE-shifted since onboarding** (raw file delivered already shifted; Friday rows carried next week's levels = 1 BDay lookahead) — corrected; ES full books −$30,893 (ES 4h $74,237→$40,432, ES 2m +$12,042→−$435); ES champions were SELECTED on the wrong box. ⭐ Round-1 NQ books were cache-served (data-blind L1 cache; with20d never reached them) — cache wiped for round 2. 42 non-NQ/ES slots identical to round 1 before the old box end (to the cent). |
+| 12.5 | Round 2: the REAL fresh window (entries after each pre-extension engine end → 08-06; 3,733 trades) | ⭐⭐⭐ **raw +$29,807 → −$7,523 at $10/rt → −$63,518 at $25/rt.** Fleet $7.98/trade: not distinguishable from zero (t 0.88) but BELOW the in-sample $31.29/trade (decay t −2.53; the window returns 17.6% of the selection-rate expectation $169,814 — pre-registered falsifier fired). Per slot: 44 "consistent" only for lack of power (4h MDE $900–1,400/trade), 3 BELOW at t<−2 (CL 2h, NQ 2m, SI 1h), 7 n<10. 4h is the only rung positive at $25/rt (+$10,106/181); 1h lost everywhere (−$17,769); ES the only instrument positive at $25 (+$17,119); NG/HG/CL ladders below 4h earn $4–7/trade (friction illusions confirmed). Gate darkness spreading: NQ 5m/2m/1h, RTY 15m, ES 2m at 0.5–2% entry rates. |
+| 12.6 | Round 2 dashboard gate (server Playwright, 54 shots, :8250 restarted on the extended root) | Money leg PASS 54/54 (26 dollar-exact, 36 within $1, max Δ $25 vs $45 bound), NQ counts exact 6/6; **count leg FAIL 1/54: ES 15m strategy-engine count 180 vs causal 205 (−12%, bound 3%)** — pinned in claim V3, needs its own issue. Regex fixed for `$-437` negatives. Report `docs/WS-FWD-ROUND2-REPORT.md`; claims `FWD2-*` ×3; ledger 70/70. |
+
+## Era 13 — WS-ORB (#183): opening-range breakout on all nine instruments
+
+| # | step | result |
+|---|---|---|
+| 13.1 | Prior art (deep research, 99 agents, 3-vote verification → `docs/WS-ORB-PRIOR-ART.md`) | Positive ORB evidence is equities-only (Zarattini & Aziz, no slippage, 24% win rate); open replication: gross edge 7 ¢/share, dies at 2 ¢ slippage, 76% of P/L from 2022; only index-futures test (MNQ 2026) FAILS; only peer-reviewed futures study is a vol threshold on crude at zero cost. Nothing for metals/RTY/YM/Globex open. |
+| 13.2 | Pre-registration (two arms, 4 windows, 3 rules + comparator, $25 headline, strict verdict bar, controls; anchor check BEFORE P/L: 7/9 confirmed, SI→07:00, HG→09:00) | `docs/WS-ORB-PREREGISTRATION.md`; reference `optimize/orb/orb_reference.py` + 6 synthetic tests. |
+| 13.3 | Grid on the 16-year tape (225 cells, 1 contract, 90 s on 9 cores) + verdicts + controls | ⭐⭐⭐ **0/225 POSITIVE**; 28 NEGATIVE with power, 58 negative under-powered, 138 under-powered, 1 null. Raw +$1.57M → **−$6.49M at $25/rt**; median gross edge −0.01 ticks; 155/225 cells inside 2 ticks. 5-min window worst (28% powered-negative), R3 worst rule (33%). Best cells NQ $47–73/trade at t≈1.5 (sign reverses pre-2018); NQ Globex 60-min R1 fails the random-anchor control (random 60-min ranges earn up to $113) — wide-range continuation = vol exposure, not an open effect. ORB is NOT an entry family. Report `docs/WS-ORB-REPORT.md`; claim `ORB-GRID-NO-POSITIVE-CELL`; ledger 71/71. |
+
+---
+
 ## The programme state as of 2026-08-20 (the running verdict)
 
 **Deployed and earning (paper-only until a live gateway; regime monitor GO required):**
@@ -205,9 +226,12 @@ equity-index phenomenon ordered by beta (NQ>ES>YM>RTY) · size is forecastable, 
 not · read gross beside net (cost drag masquerades as anti-premium) · traded-seconds density
 ≠ fill quality · same-seed agreement ≠ replication.
 
-**The fusion frontier (era 9, open):** FU-11 Stage 1 PASSED — the live vol engine's one
-blindness (the calendar) is now proven repairable, and the repair is power-aware. Armed and
-waiting, each behind its own pre-registration: the four fused-forecast consumers (re-gate ·
-sizing ramp · news geometry · box stops), FU-9's event-state dataset, FU-2's veto replay,
-and the parked FU-15 dual-sided bracket. Ledger **64/64 both machines**; every number above
+**The frontier (post-roadmap, v5.5.1)**: the three-step roadmap is COMPLETE and shipped.
+The coherent total finding: scheduled violence is rankable from its own history (ρ≈0.5,
+both calendars — productionized twice, now collision-priced); nothing else predicts it
+(direction ×3, tape state on every axis, cross-calendar interaction); the edge stays where
+it was earned, armored by 30+ pre-registered validations. Open by design only: the
+owner-side items (gateway, margin, C4, a forward earnings calendar), the deliberate holds
+(FU-15 first in line), and the fresh-registration hypotheses awaiting future data.
+Ledger **64/64 both machines**; every number above
 is claim-bound.

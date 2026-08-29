@@ -1,5 +1,7 @@
 # New-Stock Onboarding — Standard Operating Procedure (SOP)
 
+> ⚠️ **Data location changed 2026-08-22:** market data lives ONLY on the server (`~/Mulham/wsg-i`, `~/Mulham/data_2010_1s`); the local checkout has NO data trees. Authoritative map: `docs/DATA-AND-KNOWLEDGE-MAP.md`.
+
 The repeatable pipeline for adding any new instrument (a "stock": futures / ETF / equity) to the box-strategy
 system end-to-end. Encodes the process the user approved on 2026-07-06 while onboarding COMEX Gold (GC) + Silver
 (SI) and re-wiring E-mini S&P (ES).
@@ -19,6 +21,11 @@ Before running anything, **confirm with the user**:
    - Index E-minis: NQ = $20/pt · ES = $50/pt (micros MNQ $2 / MES $5)
 3. **Shift or not** — default is **−1 workday** (business-day) box shift, applied to EVERY non-NQ instrument.
    **NQ is never shifted** (it is the frozen golden anchor).
+   ⚠️ **Check the convention BEFORE shifting** (#179): a raw scrape row D has `dOpen` = the open of session D−1
+   (the 18:00 bar two evenings before D). If row D's `dOpen` already equals the 18:00 open of the evening before
+   D, the file is ALREADY shifted — do not shift it again (ES arrived that way and was double-shifted until
+   2026-08-23, putting next week's levels on Friday rows). `optimize/fwd/fwd_merge_boxes.py --probe` reports
+   the convention of every existing file against a raw drop.
 
 Only after these three answers do you start.
 
@@ -26,8 +33,9 @@ Only after these three answers do you start.
 
 ## STEP 1 — Place the data
 
-Drop the vendor files into the canonical tree the registry anchors on
-(`<repo>/ALL_STOCKS`):
+Drop the vendor files into the canonical tree the registry anchors on — **on the SERVER only**
+(`/home/dev/Mulham/wsg-i/ALL_STOCKS`; since 2026-08-22 there is no local `ALL_STOCKS`, see
+`docs/DATA-AND-KNOWLEDGE-MAP.md`; keep the original zip in `wsg-i/vendor_drops_local/`):
 
 - Candles → `ALL_STOCKS/CANDLES/<EXCHANGE>/<PREFIX>_Continuous_Data/<PREFIX>_<TF>.csv`
   for `TF ∈ {1m,2m,5m,15m,1h,2h,4h}`. Schema: `datetime,open,high,low,close,volume`.

@@ -1,10 +1,23 @@
 # SYSTEM LAYERS — the Full Breakdown (FU-12; UPDATED to v5.5.0)
 
+> Data locations (server-only since 2026-08-22): `docs/DATA-AND-KNOWLEDGE-MAP.md`.
+
 > **Update 2026-08-19 (v5.4.3):** since first publication the pipeline resolved both of §3's
 > open items — **3.7 (M2 power model) is now DEPLOYED** as the system's second forecast layer
 > (`src/deploy/power_forecast.py`, information-only), and **3.6 (the Exp2 sizing ramp) was
 > tested to destruction and NOT deployed** (the independent ES book reversed it). The tables
 > below carry the updated statuses; §4's study (FU-11) now has BOTH of its ingredients live.
+>
+> **Update 2026-08-20 (v5.5.1 — THE ROADMAP-COMPLETE ARCHITECTURE):** the owner's
+> three-step roadmap is complete and shipped. The architecture of record: **two income
+> engines** (the box book · the news layer — unchanged, and now VALIDATED on every axis
+> anyone proposed to improve) + **two forecast rails** (tape: the HAR-RV gate · calendar:
+> the power layer + the two-calendar layer, now collision-priced per law #1) + **three
+> observability surfaces** (the nightly artifact · the dashboard's per-trade
+> `event_window` tags · the monitor's `--context` report field — every one behind a
+> "never gates" authority string). The architecture laws: ROUTING never fitting ·
+> information layers earn $0 BY DESIGN · state is telemetry, never a predictor ·
+> the trigger of a protection layer is never touched by an information change.
 >
 > **Update 2026-08-20 (v5.5.0 RELEASED):** the architecture now carries **THREE deployed
 > forecast components on two rails**: rail 1 — the tape rail — the HAR-RV gate (3.1) live
@@ -57,14 +70,14 @@ flowchart TD
 | **Signal (L1)** | turn weekly/monthly BOXES into long/short/hold per decision bar | box CSV + decision frame | `decision_signals` → int stream | the strategy's identity: box direction, 1 entry/candle, flip=reverse-only | LIVE (55 champions / 9 markets, ≈$840k/yr 2026-OOS) |
 | **Volatility engine** | forecast next-bar realized vol | 1m returns → `compute_rv_pts` → `har_forecast` (`volatility.py`) | `vf` array; gate threshold = causal in-sample percentile | **the system's first deployed forecast** (since v5.4.3 joined by the power layer) — entries allowed only when `vf ≤ gate_pct` threshold (skips the top forecast-vol tail) | LIVE inside every champion (§3.1) |
 | **Power-forecast layer** (NEW, v5.4.3) | forecast each scheduled release's move SIZE, night-before | committed M2 evidence pipeline (calendar + 1m realized jumps) | nightly JSONL: per-event predicted power (%, $/contract), expanding + trailing-24 | INFORMATION ONLY — no trading consumer; parity-bound to the M2 evidence (5/5 exact); consumers are separate gated studies | LIVE v5.4.3 (`power_forecast.py`, playbook bundle v1.0.0) |
-| **Two-calendar forecast layer** (NEW, E-D1, on-branch) | describe the live vol gate's blindness schedule (which hours, how much, which calendar) | the two certified repair models (FU-11 macro, E-X1 earnings), ROUTED — never fitted jointly (E-X2v2) | nightly JSONL: per known event the night-before bar-level rv lift | INFORMATION ONLY; parity Δ=0 to both committed evidences; no engine import (golden-proven) | **RELEASED v5.5.0** (bundle v1.0.0) |
+| **Two-calendar forecast layer** (NEW, E-D1, on-branch) | describe the live vol gate's blindness schedule (which hours, how much, which calendar) | the two certified repair models (FU-11 macro, E-X1 earnings), ROUTED — never fitted jointly (E-X2v2) | nightly JSONL: per known event the night-before bar-level rv lift | INFORMATION ONLY; parity Δ=0 to both committed evidences; no engine import (golden-proven) | **RELEASED v5.5.0→v5.5.1** (bundle v1.1.0 — collision-priced) |
 | **Indicator (165-registry)** | per-bar confirm/veto votes on L1 entries | decision+1m frames (1-min indicator frame DEFAULT) | vote/veto masks folded into `entry_gate` | budget ≤2s/full pass; nan-safe warmup; adopt-gate default-OFF | LIVE (champions use subsets) |
 | **L2** | manage L1's DROPPED signals (a second book on the leftovers) | L1's dropped-signal stream | additional trades, own SL/TP | never touch L1's own trades | LIVE (optimize/l2) |
 | **MTF fusion** | fuse layers across timeframes (e.g. 1h+4h) | per-layer TF books | the fusion book (NQ $173,789 reference) | residual default byte-identical | LIVE |
 | **Execution engine** | fills, stops, caps, qty | signals+gates+1m stream | trades with GAP-01-honest fills; `exit_reason`; qty-linear P&L | engine.py ≡ fast_engine parity; golden gate 6/6 is its lock | LIVE |
-| **News layer** | the 4-leg CPI ride beside the box book | `release_schedule.csv` → executor (`--series` per leg) | replay evidence / paper intents; net-stressed feed | frozen spec; regime monitor sticky-halt; per-leg qty rules (NQ/RTY/ES ≤20 worked, YM ≤5) | LIVE v5.4.2, paper-only |
+| **News layer** | the 4-leg CPI ride beside the box book | `release_schedule.csv` → executor (`--series` per leg) | replay evidence / paper intents; net-stressed feed | frozen spec; regime monitor sticky-halt (now with the X-5b `--context` power-regime report field — trigger untouched, proven 3 ways); per-leg qty rules (NQ/RTY/ES ≤20 worked, YM ≤5) | LIVE v5.4.2, paper-only |
 | **Optimizer + verify** | find params; keep every number honest | search spaces, archives | champions; golden baselines; claims ledger (59/59) | cold-start default; fresh-seed replication; `expect` never adjusted | LIVE (research arm has its own open queue #81-#108) |
-| **Ops** | run & inspect | all of the above | dashboard :8200/:8250, control centre :8350, playbook bundles, releases | dashboard restart on backend change; UI-verification rule; LOCAL=truth | LIVE |
+| **Ops** | run & inspect | all of the above | dashboard :8200/:8250 (trades now carry X-4's `event_window` tags + never-gates meta), control centre :8350, playbook bundles, releases | dashboard restart on backend change; UI verification = SSH tunnel + Playwright ONLY; LOCAL=truth | LIVE v5.5.1 |
 
 ## 2 · Who earns what (the income map, 2024→2026 window, qty=1 units)
 
@@ -162,6 +175,19 @@ NOT deployed — the Exp2 ramp would have cost **−$18,632** on ES's book alone
 un-scaled YM tier q10 breached participation and was refused; every fusion consumer that
 looked positive (FU-7's CI-positive +$20.6k) was refused on mechanism. A kill list with
 numbers is part of the profit record: money not lost is money.
+
+| **Observability surfaces** (X-4 tags · X-5b context · the collision-priced artifact) | C | the operator's awareness layer: which trades touched event windows, which regime the monitor sits in, which coming hours are blind — value realizes in a bad regime, like the monitor itself | **$0 by design** |
+
+**The owner's question, answered on the record (2026-08-20)**: *"how much did the
+fusion/earnings/XNI workstreams add in profit?"* — **$0 of new income, by design.** What
+the $0 purchased: (1) money NOT lost — the refusals column above; (2) the deployed edge
+ARMORED — 30+ pre-registered studies now prove state-blind/flat-sizing/frozen-geometry
+correct on every proposed axis, closing the most likely death-path of a working system
+(the plausible improvement); (3) operational awareness whose value realizes in bad
+regimes. The largest unrealized profit action in the programme remains OWNER-SIDE: the
+live gateway — the news layer's $67,767/window (≈$1.167M model-grade scaled) is earned,
+verified, and uncollected on paper. **These workstreams bought certainty, not cashflow —
+the highest-return purchase available short of going live.**
 
 **Reading rule for this table**: grade-B rows must never be quoted as standalone dollar
 contributions — that is how a layer gets credited twice. The system's honest income

@@ -1,5 +1,7 @@
 # WS-I.10 data provenance — where everything lives
 
+> ⚠️ **Data location changed 2026-08-22:** market data lives ONLY on the server (`~/Mulham/wsg-i`, `~/Mulham/data_2010_1s`); the local checkout has NO data trees. Authoritative map: `docs/DATA-AND-KNOWLEDGE-MAP.md`.
+
 After the all-timeframe NSGA-III sweep, **everything has been pulled off the AMD server to local**.
 Nothing unique remains server-side (the server copy is left only as a redundant backup / resume point).
 

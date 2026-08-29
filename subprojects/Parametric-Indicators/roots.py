@@ -43,6 +43,9 @@ REPO_ROOT: Path = Path(__file__).resolve().parents[2]
 # Machine-specific. WSH_DATA_ROOT is the unambiguous name; WSH_DATA_BASE is the legacy one every
 # existing runner exports. Empty strings are treated as unset — `export WSH_ONLY=''` is a common shape
 # in the shell launchers and an empty root must not silently become Path('.').
+# ⚠️ 2026-08-22: market data lives ONLY on the server (docs/DATA-AND-KNOWLEDGE-MAP.md). The
+# REPO_ROOT fallback below resolves to an EMPTY tree locally — a FileNotFoundError there means
+# "run on the server with WSH_DATA_BASE/WSG_DATA_ROOT set", not a bug.
 DATA_ROOT: Path = Path(
     os.environ.get("WSH_DATA_ROOT") or os.environ.get("WSH_DATA_BASE") or REPO_ROOT
 )

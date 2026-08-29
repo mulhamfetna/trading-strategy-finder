@@ -322,3 +322,29 @@ subprojects/Parametric-Indicators/optimize/fundamentals/alfred_cache/
 !subprojects/Parametric-Indicators/optimize/xni/data/x4_dashboard_8250.png
 !docs/XNI-CLOSING-REPORT-BILINGUAL.html
 !playbooks/two-calendar-forecast-bundle-v1.1.0.zip
+
+# WS-FWD (#176) — forward-OOS evidence (audits, extension gates, books)
+!subprojects/Parametric-Indicators/optimize/fwd/data/*.log
+!subprojects/Parametric-Indicators/optimize/fwd/data/*.json
+!subprojects/Parametric-Indicators/optimize/fwd/data/*.csv
+!subprojects/Parametric-Indicators/optimize/fwd/data/shots/
+!subprojects/Parametric-Indicators/optimize/fwd/data/shots/*.png
+# WS-FWD round 2 (#179) evidence: books, fresh cut, diag, gate JSON, screenshots
+!subprojects/Parametric-Indicators/optimize/fwd/data_r2/
+!subprojects/Parametric-Indicators/optimize/fwd/data_r2/*.log
+!subprojects/Parametric-Indicators/optimize/fwd/data_r2/*.txt
+!subprojects/Parametric-Indicators/optimize/fwd/data_r2/*.json
+!subprojects/Parametric-Indicators/optimize/fwd/data_r2/*.csv
+!subprojects/Parametric-Indicators/optimize/fwd/data_r2/shots/
+!subprojects/Parametric-Indicators/optimize/fwd/data_r2/shots/*.png
+# WS-LIVE-PARITY (#182): the live trader's account journal — LOCAL ONLY, NEVER push (owner's order 2026-08-23)
+subprojects/Parametric-Indicators/optimize/live_parity/
+# WS-ORB (#183) evidence: anchor check, grid summary/verdicts/controls (books are 74 MB — kept on the server, not committed)
+!subprojects/Parametric-Indicators/optimize/orb/data/
+!subprojects/Parametric-Indicators/optimize/orb/data/anchor_check.json
+!subprojects/Parametric-Indicators/optimize/orb/data/grid1/
+!subprojects/Parametric-Indicators/optimize/orb/data/grid1/*.json
+!subprojects/Parametric-Indicators/optimize/orb/data/grid1/*.csv
+!subprojects/Parametric-Indicators/optimize/orb/data/grid1/*.txt
+!subprojects/Parametric-Indicators/optimize/orb/data/grid1/run.log
+subprojects/Parametric-Indicators/optimize/orb/data/grid1/orb_book_*.csv

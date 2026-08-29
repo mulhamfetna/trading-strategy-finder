@@ -1,0 +1,79 @@
+
+=== NQ: best NQ_cash_15_R2 t=1.558 mean25=47.28 | worst NQ_globex_5_R3 t=-3.064 mean25=-29.99 | NEG powered 0 | sum conf@25 all cells 548,169 | cells positive raw 20/25 positive@25 17
+           cell  n_conf  conf_raw   conf_25  mean25   t25    mde   expl_25  fresh_25 yrs_pos  ticks      verdict
+  NQ_cash_15_R2    1800 130098.61  85098.61   47.28 1.558  84.98 -27058.89   3757.18     7/7   8.46 UNDERPOWERED
+NQ_globex_60_R1    1690 165150.00 122900.00   72.72 1.542 132.09   3930.00   -260.00     5/7  16.26 UNDERPOWERED
+NQ_globex_60_R2    1690 147771.18 105521.18   62.44 1.458 119.92    866.82  56855.54     4/7  19.52 UNDERPOWERED
+   NQ_cash_5_R2    1804 108644.64  63544.64   35.22 1.146  86.08 -20534.93  -7435.89     6/7   6.98 UNDERPOWERED
+
+=== ES: best ES_cash_15_R2 t=0.733 mean25=13.09 | worst ES_globex_5_R3 t=-4.448 mean25=-29.61 | NEG powered 2 | sum conf@25 all cells -472,995 | cells positive raw 18/25 positive@25 8
+           cell  n_conf  conf_raw  conf_25  mean25   t25   mde   expl_25  fresh_25 yrs_pos  ticks      verdict
+  ES_cash_15_R2    1800  68570.09 23570.09   13.09 0.733 50.04 -44414.73   5124.20     5/7   1.65 UNDERPOWERED
+ES_globex_60_R2    1657  69107.50 27682.50   16.71 0.642 72.86 -20596.88 -10296.43     4/7   1.91 UNDERPOWERED
+  ES_cash_15_R1    1800  58037.50 13037.50    7.24 0.273 74.39 -63412.50   1812.50     4/7   0.92 UNDERPOWERED
+  ES_cash_30_R1    1793  58137.50 13312.50    7.42 0.272 76.39 -66725.00 -10675.00     4/7   0.56 UNDERPOWERED
+
+=== GC: best GC_cash_5_R2 t=1.029 mean25=15.89 | worst GC_globex_5_R3 t=-6.042 mean25=-32.92 | NEG powered 3 | sum conf@25 all cells -959,879 | cells positive raw 12/25 positive@25 4
+           cell  n_conf  conf_raw  conf_25  mean25   t25    mde   expl_25  fresh_25 yrs_pos  ticks      verdict
+   GC_cash_5_R2    1807  73884.00 28709.00   15.89 1.029  43.21 -55951.71 -20242.07     6/7   1.35 UNDERPOWERED
+   GC_cash_0_C1     248  16840.00 10640.00   42.90 0.612 196.24  18730.00  28630.00     4/7  13.01 UNDERPOWERED
+   GC_cash_5_R1    1806  59340.00 14190.00    7.86 0.449  49.01 -55290.00 -31000.00     4/7   0.75 UNDERPOWERED
+GC_globex_60_R2    1092  28055.14   755.14    0.69 0.024  82.28 -10009.50  38432.00     2/7   4.09 UNDERPOWERED
+
+=== SI: best SI_cash_0_C1 t=0.14 mean25=12.55 | worst SI_cash_5_R3 t=-6.766 mean25=-32.08 | NEG powered 3 | sum conf@25 all cells -1,395,412 | cells positive raw 2/25 positive@25 1
+           cell  n_conf  conf_raw   conf_25  mean25    t25    mde   expl_25  fresh_25 yrs_pos  ticks      verdict
+   SI_cash_0_C1     257   9650.00   3225.00   12.55  0.140 250.30  13725.00   80125.0     4/7   7.66 UNDERPOWERED
+SI_globex_60_R1     144 -12150.00 -15750.00 -109.37 -0.469 653.61 -24375.00  119375.0     1/7  12.36 UNDERPOWERED
+SI_globex_15_R2     682    542.68 -16507.32  -24.20 -0.540 125.55 -30082.86   16960.0     2/7   0.09 UNDERPOWERED
+SI_globex_60_R3     144  -6450.00 -10050.00  -69.79 -0.747 261.76  -9737.50   65962.5     1/7   7.62 UNDERPOWERED
+
+=== HG: best HG_globex_30_R3 t=0.846 mean25=21.73 | worst HG_cash_5_R3 t=-6.623 mean25=-30.43 | NEG powered 8 | sum conf@25 all cells -1,190,939 | cells positive raw 4/25 positive@25 3
+           cell  n_conf  conf_raw  conf_25  mean25    t25    mde  expl_25  fresh_25 yrs_pos  ticks      verdict
+HG_globex_30_R3     231  10793.75  5018.75   21.73  0.846  71.86 -3950.00 -16562.50     4/7  -1.41 UNDERPOWERED
+HG_globex_60_R2      86   3416.43  1266.43   14.73  0.202 204.50  2078.30  -7152.86     5/7  -0.27 UNDERPOWERED
+HG_globex_60_R3      86   2925.00   775.00    9.01  0.139 181.04   393.75  -2681.25     3/7   1.10 UNDERPOWERED
+HG_globex_60_R1      86   -175.00 -2325.00  -27.03 -0.269 281.54  2187.50  -1862.50     4/7   0.81 UNDERPOWERED
+
+=== CL: best CL_cash_0_C1 t=0.169 mean25=10.35 | worst CL_globex_5_R3 t=-3.594 mean25=-22.21 | NEG powered 2 | sum conf@25 all cells -812,624 | cells positive raw 18/25 positive@25 1
+           cell  n_conf  conf_raw  conf_25  mean25    t25    mde  expl_25  fresh_25 yrs_pos  ticks      verdict
+   CL_cash_0_C1     271    9580.0   2805.0   10.35  0.169 171.43   4970.0   -3180.0     4/7   3.37 UNDERPOWERED
+  CL_cash_15_R1    1805   44530.0   -595.0   -0.33 -0.016  58.24 -30510.0  -17595.0     4/7   1.16 UNDERPOWERED
+   CL_cash_5_R1    1806   43230.0  -1920.0   -1.06 -0.056  53.59 -40365.0    6545.0     3/7   1.52 UNDERPOWERED
+CL_globex_60_R1    1131   24080.0  -4195.0   -3.71 -0.116  89.15 -25845.0  -12760.0     3/7  -0.01 UNDERPOWERED
+
+=== NG: best NG_globex_60_R3 t=1.781 mean25=66.05 | worst NG_cash_5_R3 t=-4.085 mean25=-24.81 | NEG powered 3 | sum conf@25 all cells -595,042 | cells positive raw 17/25 positive@25 1
+           cell  n_conf  conf_raw  conf_25  mean25    t25    mde   expl_25  fresh_25 yrs_pos  ticks      verdict
+NG_globex_60_R3     148  13475.00  9775.00   66.05  1.781 103.86  -2365.00   1615.00     4/7   6.92 UNDERPOWERED
+   NG_cash_0_C1     290   5760.00 -1490.00   -5.14 -0.098 146.92   2250.00   -155.00     1/7   2.61 UNDERPOWERED
+NG_globex_15_R2     728  14661.29 -3538.71   -4.86 -0.178  76.43  -9324.93  -2477.71     3/7   1.19 UNDERPOWERED
+  NG_cash_15_R1    1795  35010.00 -9865.00   -5.50 -0.287  53.62 -28535.00 -16275.00     3/7   1.02 UNDERPOWERED
+
+=== RTY: best RTY_globex_60_R2 t=0.234 mean25=9.19 | worst RTY_globex_5_R3 t=-6.655 mean25=-30.14 | NEG powered 3 | sum conf@25 all cells -750,170 | cells positive raw 13/25 positive@25 2
+            cell  n_conf  conf_raw  conf_25  mean25    t25    mde  expl_25  fresh_25 yrs_pos  ticks      verdict
+RTY_globex_60_R2     449  15353.00  4128.00    9.19  0.234 110.03     0.00 -14450.39     2/7   1.70 UNDERPOWERED
+  RTY_cash_60_R3    1663  44225.00  2650.00    1.59  0.118  37.78 -3862.50  -5817.50     5/7   4.35 UNDERPOWERED
+RTY_globex_60_R1     449   3420.00 -7805.00  -17.38 -0.352 138.36     0.00 -22090.00     2/7  -4.57 UNDERPOWERED
+  RTY_cash_15_R2    1793  35155.75 -9669.25   -5.39 -0.466  32.44  -789.43   2230.07     2/7   4.29 UNDERPOWERED
+
+=== YM: best YM_globex_60_R1 t=0.496 mean25=16.4 | worst YM_globex_5_R3 t=-6.081 mean25=-34.59 | NEG powered 4 | sum conf@25 all cells -856,380 | cells positive raw 14/25 positive@25 2
+           cell  n_conf  conf_raw  conf_25  mean25    t25   mde   expl_25  fresh_25 yrs_pos  ticks      verdict
+YM_globex_60_R1    1129   46745.0  18520.0   16.40  0.496 92.58   4195.00  -8335.00     3/7   7.06 UNDERPOWERED
+YM_globex_15_R1    1674   42505.0    655.0    0.39  0.019 58.09 -28665.00  -6095.00     1/7   2.46 UNDERPOWERED
+YM_globex_60_R2    1129   26562.5  -1662.5   -1.47 -0.056 74.04  -2017.93 -18806.43     2/7   1.77 UNDERPOWERED
+YM_globex_30_R1    1363   27875.0  -6200.0   -4.55 -0.178 71.50  -1890.00 -12620.00     1/7   2.74 UNDERPOWERED
+
+GRID totals conf@25: -6,485,272 raw 1,565,353 | cells raw-positive 118 | @25-positive 39 | fresh@25 sum -12,912 fresh cells positive 79
+ticks: median gross edge -0.01 | cells with |edge| < 2 ticks: 155
+by rule conf@25 sum: {'C1': -189360.0, 'R1': -1688718.0, 'R2': -1883026.0, 'R3': -2724169.0}
+by N: {0: -189360.0, 5: -2322687.0, 15: -1710630.0, 30: -1520544.0, 60: -742051.0}
+by arm: {'cash': -3702559.0, 'globex': -2782714.0}
+C1 comparator:          cell  n_conf  conf_25    t25                              verdict
+ NQ_cash_0_C1     275 -38680.0 -0.926                         UNDERPOWERED
+ ES_cash_0_C1     285 -46012.5 -1.636                         UNDERPOWERED
+ GC_cash_0_C1     248  10640.0  0.612                         UNDERPOWERED
+ SI_cash_0_C1     257   3225.0  0.140                         UNDERPOWERED
+ HG_cash_0_C1     300 -32862.5 -3.496 NEGATIVE (t) but UNDERPOWERED vs $25
+ CL_cash_0_C1     271   2805.0  0.169                         UNDERPOWERED
+ NG_cash_0_C1     290  -1490.0 -0.098                         UNDERPOWERED
+RTY_cash_0_C1     279 -28165.0 -1.736                         UNDERPOWERED
+ YM_cash_0_C1     286 -58820.0 -2.541 NEGATIVE (t) but UNDERPOWERED vs $25
