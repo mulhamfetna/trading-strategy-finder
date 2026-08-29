@@ -12,8 +12,8 @@ authors:
     given-names: Mulham
     orcid: "https://orcid.org/0009-0006-4432-798X"
     email: contact@mulhamfetna.com
-version: 5.2.0
-date-released: "2026-07-27"
+version: 5.6.0
+date-released: "2026-08-23"
 license: AGPL-3.0-or-later
 doi: "10.5281/zenodo.21473312"
 identifiers:
