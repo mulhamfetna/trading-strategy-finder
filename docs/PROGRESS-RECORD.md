@@ -70,7 +70,7 @@ per-workstream full records. The one-line-each version:
 
 ## 3 · ACTIVE + QUEUED (the live board)
 
-**The board is QUIET AND GREEN (2026-08-23, post-WS-ORB)**: no active workstream, no
+**The board is QUIET AND GREEN (2026-08-23, post-WS-ORB; research branch merged to main as v5.6.0 and closed — ONE ROOT: `/mnt/data/projects/trading` on `dev`)**: no active workstream, no
 unverdicted study, no stale doc. Everything open is deliberate:
 
 - **Owner-side items (the only movers of new profit)**: the LIVE GATEWAY (all income is
@@ -115,7 +115,7 @@ committed file; `expect` values are never adjusted.
 - 1-second archive, 9 instruments, 2010→2026 (server `~/Mulham/data_2010_1s/`); **YM rebuilt
   from raw 2026-08-18** (was corrupt; its 0-byte 1m frame is fixed — YM fully studyable).
 - TradingView calendar (39,221 events, 649 series; usable ≥2016 — pre-2016 DST-broken).
-- Server: AMD box (123 GB), worktrees `~/Mulham/code`=dev · `~/Mulham/earn1`=legacy18;
+- Server: AMD box (123 GB), single checkout `~/Mulham/code`=dev (`earn1` retired 2026-08-23);
   dashboard :8200 production, :8250 branch; venv `data_2010_1s/venv` (scipy via `python3 -m
   pip`; its pip binary is broken).
 - Known traps live in the memory index and the full records (gitignore blanket rules,

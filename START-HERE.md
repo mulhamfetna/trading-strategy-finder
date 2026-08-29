@@ -1,19 +1,21 @@
 ---
-name: legacy-18-baseline-start-here
-description: "Onboarding for the agent operating the legacy-18-baseline workstream — what this project is, what is already known, what is isolated and why, and the rules that are not negotiable. Read this completely before touching anything."
+name: project-start-here
+description: "Onboarding for any agent on this project (single root since 2026-08-23) — what this project is, what is already known, what is isolated and why, and the rules that are not negotiable. Read this completely before touching anything."
 type: onboarding
 date: 2026-08-03
-workstream: legacy-18-baseline
-branch: research/legacy-18-baseline
+workstream: legacy-18-baseline (CLOSED 2026-08-23 — merged to main, single root)
+branch: dev (feature branches → dev → main)
 ---
 
-# START HERE — `legacy-18-baseline` workstream
+# START HERE — the project onboarding (single root since 2026-08-23)
 
 > ⚠️ **Data location changed 2026-08-22:** market data lives ONLY on the server (`~/Mulham/wsg-i`, `~/Mulham/data_2010_1s`); the local checkout has NO data trees. Authoritative map: `docs/DATA-AND-KNOWLEDGE-MAP.md`.
 
-**You are one of two agents working on this project on this device, at the same time.** The other
-agent works in `/mnt/data/projects/trading` on branch `dev`. You work **only** here, in
-`/mnt/data/projects/trading/legacy18`, on branch `research/legacy-18-baseline`.
+> ✅ **One united root since 2026-08-23.** The `research/legacy-18-baseline` branch (eras 12–13: WS-FWD, data
+> unification, WS-LIVE-PARITY, WS-ORB) was merged `dev → main` as **v5.6.0** and deleted; the `legacy18`
+> worktree is retired. **All work now happens in `/mnt/data/projects/trading` on `dev`** (short-lived feature
+> branches off `dev`, PR → `dev` → `main`). Passages below that describe "this worktree" or "the other agent"
+> are kept as history of the isolation design; the isolation itself no longer exists.
 
 Read this whole file before running anything. It is short on purpose; the deep material is linked.
 
@@ -72,7 +74,7 @@ source .wsenv/env.sh
 
 | resource | isolated? | how |
 |---|---|---|
-| code checkout | ✅ | separate git worktree, branch `research/legacy-18-baseline` |
+| code checkout | (retired 2026-08-23) | was a separate worktree on `research/legacy-18-baseline`; now the single root `/mnt/data/projects/trading` on `dev` |
 | Python env | ✅ | `.venv/` here — use `$WS_PY`, never bare `python3` |
 | **L1 disk cache** | ✅ | `TMPDIR` → `/tmp/ws-legacy18` (sibling uses `/tmp/wsh_l1_cache`). **This is the one that would silently corrupt both workstreams.** See §4. |
 | Optuna studies | ✅ | `optimize/studies/` resolves from `__file__`, so the worktree separates it. `WSH_STORAGE_URL` is force-unset. |
@@ -128,7 +130,7 @@ by code.
    must be `scp`'d back and committed. **MARKET DATA is the exception since 2026-08-22: it lives ONLY
    on the server** (`docs/DATA-AND-KNOWLEDGE-MAP.md`); the local checkout has no data trees and must
    never grow them back.
-8. **Stay in this worktree.** Never switch branches or worktrees unless told to out loud.
+8. **Stay in the single root** (`/mnt/data/projects/trading`, branch `dev`). Never switch branches or create worktrees unless told to out loud.
 9. **Verify, don't assume.** Never conclude from truncated output. ⚠️ `| head -N` on a long run
    **SIGPIPEs the process**, and a filter that misses stderr hides the reason.
 10. **Everything you generate is a LOCAL FILE by default.** Do not publish, upload, email, or post
@@ -145,8 +147,9 @@ ssh amd-trading                      # 78.89.209.212 port 33362, user dev, key ~
 ```
 
 - 32 cores, 123 GB RAM, has numba. **Your local venv also has numba** (the sibling's does not) — see §8b.
-- Server checkout: `~/Mulham/code` — currently tracks `dev`. **You must not repoint it.** Create your
-  own checkout or worktree for this workstream.
+- Server checkout: `~/Mulham/code` — tracks `dev` (serves :8200 and, with the extended-root env, :8250).
+  `~/Mulham/earn1` (the research-branch worktree) was retired 2026-08-23. Do not create new server checkouts
+  without the owner's word.
 - Data root on the server (required, or ~32 tests fail as fake regressions):
   `WSH_DATA_BASE=/home/dev/Mulham/wsg-i WSG_DATA_ROOT=/home/dev/Mulham/wsg-i/data`
 - Server venv: `/home/dev/Mulham/.venv/bin/python3`

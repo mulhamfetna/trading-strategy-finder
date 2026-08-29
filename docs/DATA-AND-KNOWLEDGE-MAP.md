@@ -10,7 +10,7 @@ internalize:
    must never grow them back. `roots.py` still *defaults* the data root to the checkout, so a
    local data-backed run fails with `FileNotFoundError` **by design** (the no-local-compute
    rule). That failure is not a bug in the code; it is the rule working.
-2. **Code, evidence and records live in git** (branches `research/legacy-18-baseline` →
+2. **Code, evidence and records live in git** (feature branches →
    `dev` → `main`) and are mirrored into server worktrees. "Local = source of truth" means
    *git*; "server = source of truth" means *data*. Never confuse the two.
 
@@ -26,11 +26,11 @@ archives verified) recorded on issue #176.
 |---|---|
 | host | `ssh amd-trading` (78.89.209.212 / LAN 192.168.50.62), user `dev`, 32 cores / 123 GB RAM, **no GPU** |
 | python | `/home/dev/Mulham/.venv/bin/python3` (numpy 2.4 · pandas 3.0 · optuna 4.9 · numba 0.65 · playwright + chromium-1228 in `~/.cache/ms-playwright`) |
-| code worktrees | `~/Mulham/code` = production checkout (serves dashboard **:8200**) · `~/Mulham/earn1` = `research/legacy-18-baseline` (branch dashboard **:8250**) · `~/Mulham/wsg-i` = the **data root** (also an old rsync checkout — ⚠️ its code is STALE, never run from it) |
+| code worktrees | `~/Mulham/code` = the ONE code checkout (tracks `dev`; serves **:8200** on the prod root and **:8250** on the extended root) · `~/Mulham/earn1` RETIRED 2026-08-23 (research branch merged to main v5.6.0) · `~/Mulham/wsg-i` = the **data root** (also an old rsync checkout — ⚠️ its code is STALE, never run from it) |
 | env for ANY data-backed run | `WSH_DATA_BASE=/home/dev/Mulham/wsg-i WSG_DATA_ROOT=/home/dev/Mulham/wsg-i/data WSH_16Y_ROOT=/home/dev/Mulham/data_2010_1s` |
 | env for the EXTENDED tape | `WSH_DATA_BASE=/home/dev/Mulham/wsg-i/FWD_EXTENDED WSG_DATA_ROOT=/home/dev/Mulham/wsg-i/FWD_EXTENDED/data TMPDIR=/home/dev/Mulham/wsg-i/FWD_EXTENDED/tmp` |
 | optimizer storage | Postgres container `wsh-pg` at `127.0.0.1:55432`, creds `~/Mulham/wsg-i/pg.env` (⚠️ `get_all_study_summaries()` hangs — use `docker exec wsh-pg psql`) |
-| dashboards | :8200 prod (`~/Mulham/wsg-i/dash.sh refresh` / supervisor), :8250 branch (`cd ~/Mulham/earn1/subprojects/Parametric-Indicators && nohup env <vars> .venv python3 server.py --port 8250`) — **restart after any backend change**; kill by PORT, never `pkill` by name |
+| dashboards | :8200 prod (`~/Mulham/wsg-i/dash.sh refresh` / supervisor), :8250 extended-root (`cd ~/Mulham/code/subprojects/Parametric-Indicators && nohup env <extended-root vars> .venv python3 server.py --port 8250`) — **restart after any backend change**; kill by PORT, never `pkill` by name |
 | L1 disk cache | `$TMPDIR/wsh_l1_cache/*.pkl` — keyed on PARAMS, blind to data ⇒ **every distinct data root needs its own TMPDIR**; clear after any P/L-affecting change |
 
 ---
@@ -53,7 +53,7 @@ archives verified) recorded on issue #176.
 | ETF candles | `ALL_STOCKS/CANDLES/ETF/{QQQ,SQQQ}_Data/{ETH,RTH}/` | 2025-01-02 → 2026-05-19 | not in the 9-instrument engine; signal deliveries only |
 | Non-NQ boxes RAW (scraped) | `ALL_STOCKS/BOXS/<EXCH>/<TOK>/<TOK>_full_data.csv` (RTY/YM/ES/NQ/ETFs also have `_day/_week/_month`) | all 9 → **2026-08-07** (raw dates; ETF → 05-22) | raw = UNshifted (row D = levels built from session D−1). ⚠️ NQ's file is stored in the SHIFTED convention (never re-shifted). ⚠️ ES's file WAS delivered shifted and got shifted twice (#179) — corrected 2026-08-23 to raw convention (`.pre179` backup). NQ/ES `_day/_week/_month` keep old convention; the Aug export sits alongside as `*_aug2026.csv`. Pre-merge copies: `*.csv.pre179` |
 | Box export archive (2026-08-22 scrape) | `vendor_drops_local/last levels-20260823T103031Z-1-001.zip` (+ unzipped `last levels/FUTURES/<EXCH>/<TOK>/`) | 2026-05-18 → 08-07 raw, 60 rows × 9 | the drop merged by `optimize/fwd/fwd_merge_boxes.py` (gate E report in `optimize/fwd/data/fwd_box_merge_report.json`) |
-| Non-NQ boxes SHIFTED (engine reads) | **in the CODE checkout**: `subprojects/all-stocks-signals/shifted_boxes/<TOK>_full_data_shifted.csv` | → **2026-08-06** (= raw 08-07 shifted −1 business day) | produced by `subprojects/all-stocks-signals/onboard_stock.py`; travels with git, so `earn1`/`code` each carry a copy |
+| Non-NQ boxes SHIFTED (engine reads) | **in the CODE checkout**: `subprojects/all-stocks-signals/shifted_boxes/<TOK>_full_data_shifted.csv` | → **2026-08-06** (= raw 08-07 shifted −1 business day) | produced by `subprojects/all-stocks-signals/onboard_stock.py`; travels with git (the `code` checkout) |
 | bundle data snapshots | `bundle_data_all/` (9 inst, → 07-08) · `bundle_data_clng/` | frozen inputs of the shareable backtester bundles | do not use as the engine root |
 | delivery bundles | `<TOK>_SIGNALS_DELIVERY/` + `.zip` for CL ES GC HG NG RTY SI YM; zips only for NQ NQ2024 NQ2026L20 QQQ-ETH QQQ-RTH SQQQ-ETH SQQQ-RTH (at `wsg-i/` root) | — | customer-facing signal exports (WS-AS) |
 | vendor drop archives | `vendor_drops_local/*.zip` (HG/RTY/YM July drops, drive-download-20260710 ×2, silver-gold candles/levels) | — | the raw files the onboarding SOP consumed; keep for provenance |
@@ -143,7 +143,7 @@ decision-TF CSV, 1m CSV, box CSV (`optimize/data.py::load_inputs`).
 ```bash
 # any engine/champion run on PRODUCTION data
 ssh amd-trading
-cd ~/Mulham/earn1/subprojects/Parametric-Indicators     # or ~/Mulham/code/... for the released code
+cd ~/Mulham/code/subprojects/Parametric-Indicators      # the single code checkout (tracks dev)
 env WSH_DATA_BASE=/home/dev/Mulham/wsg-i WSG_DATA_ROOT=/home/dev/Mulham/wsg-i/data \
     WSH_16Y_ROOT=/home/dev/Mulham/data_2010_1s /home/dev/Mulham/.venv/bin/python3 <script>
 
