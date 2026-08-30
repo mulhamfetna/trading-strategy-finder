@@ -314,7 +314,7 @@ command run on 2026-08-30 against this tree. Tracking issue **#189**; backfill p
 |---|---|---|---|
 | ledger on the branch that ships | `dev` 41/43 (2 claims read an untracked file) | **69/71** — the untracked file was **lost** with the worktree (it existed nowhere else: not on the server, not in any archive) | **71/71**, and the ledger now *refuses* untracked evidence |
 | ledger self-test | 5/5 | 5/5 | 5/5 |
-| engine suite from the documented entry point | 1,319 collected, 4 errors, aborts | 1,331 collected, **5** errors, aborts (a hard-coded `legacy18/…` path in one test + the archive) | **1,069 collected, 0 errors** |
+| engine suite from the documented entry point | 1,319 collected, 4 errors, aborts | 1,331 collected, **5** errors, aborts (a hard-coded `legacy18/…` path in one test + the archive) | **1,069 collected, 0 errors; full run 908 passed / 162 skipped / 0 failed** (first clean run: 104 failed + 5 errors, every one a missing server-only data file → now an explicit SKIP naming the path) |
 | root suite | 157 collected, green | 157 collected, green | 131 passed / 26 skipped (data absent), green |
 | CITATION.cff | 5.2.0 | 5.6.0 (bumped in the merge) | 5.6.0 **with the v5.6.0 Zenodo DOI** `10.5281/zenodo.22161256` (minted 2026-08-29) |
 | README citation block / front door | v5.2.0 DOI; `src/` described as frozen v1 | unchanged | v5.6.0 DOI; `src/deploy/` = live layer; two reproducibility tiers; where tests run; CI badge |
@@ -350,11 +350,24 @@ real defects, both fixed at the source: a test with an absolute path into the re
 to its own file and skipping when the table is absent) and the dashboard test that preloads market data on
 import (now skips when the data root is absent, as the root suite already did).
 
+Collecting clean was not the same as running clean. The first full run from the engine directory gave
+**104 failed + 5 errors** — re-run with one-line tracebacks: 208 `FileNotFoundError`s and 2 path-existence
+assertions, **all** pointing at the server-only market data (`Full_Canldes_Data/…` ×193, `data/…` ×10,
+`ALL_STOCKS/…` ×4). Not one genuine defect. The root suite already treats "the data file this test needs is
+not here" as a skip, test by test; the engine suite now does the same through one `conftest.py` hook that
+converts a data-path `FileNotFoundError` into a SKIP naming the path (any other `FileNotFoundError` still
+fails). Result: **908 passed, 162 skipped, 0 failed**. The 162 skips are the honest count of tests that can
+only run on the server — visible, not hidden.
+
+One more defect the run surfaced: the repo's own #94 guard (`test_roots.py`) failed because **my** WS-FWD and
+WS-ORB scripts (and two older FU scripts) carried server paths as literals. Fixed to env-driven roots
+(`WSH_16Y_ROOT`, `WSH_DATA_BASE`); the guard passes again.
+
 ## R3.4 The revised positioning, round 3
 
 The concession in §5 ("the rigor is an era, not yet the repo") stands — #190 is what would retire it. But
 the **artefact** caveat from §1 is gone: what a stranger downloads at v5.6.0 now (a) collects and runs its
-tests from both documented entry points with no data, (b) re-derives all 71 published numbers offline,
+tests green from both documented entry points with no data (908 passed / 162 skipped engine; 131 / 26 root), (b) re-derives all 71 published numbers offline,
 (c) proves its own gate can fail, and (d) will not accept a claim whose evidence is missing — and CI says so
 on every commit. The sentence that round 2 could defend only about *the method* is, for the post-#118 era,
 now defensible about *the download*.
