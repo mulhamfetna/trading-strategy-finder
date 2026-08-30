@@ -348,3 +348,10 @@ subprojects/Parametric-Indicators/optimize/live_parity/
 !subprojects/Parametric-Indicators/optimize/orb/data/grid1/*.txt
 !subprojects/Parametric-Indicators/optimize/orb/data/grid1/run.log
 subprojects/Parametric-Indicators/optimize/orb/data/grid1/orb_book_*.csv
+# #120 evidence (positioning audit 2026-08-29 §3.1): the four TradingView forecast/previous point-in-time
+# evidence files the ledger claims read — were untracked in one worktree, lost with it, regenerated from ALFRED
+# vintages 2026-08-30 (NFP re-derived to the digit: 0.992 / 0.0079). The ledger now REFUSES untracked sources.
+!subprojects/Parametric-Indicators/optimize/fundamentals/forecast_previous_nfp.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/forecast_previous_durables.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/forecast_previous_retail.csv
+!subprojects/Parametric-Indicators/optimize/fundamentals/forecast_previous_cpi.csv
