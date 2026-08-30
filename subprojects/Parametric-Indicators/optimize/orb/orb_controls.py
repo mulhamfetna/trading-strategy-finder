@@ -6,6 +6,7 @@ realised vol (sd of session log close/close) -> mean $25 P/L in bottom / middle 
 from __future__ import annotations
 
 import argparse
+import os
 import json
 import sys
 from pathlib import Path
@@ -48,11 +49,13 @@ def with_anchor(df: pd.DataFrame, arm: str, tok: str, N: int, rule: str, anchor_
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--root", default="/home/dev/Mulham/data_2010_1s")
+    ap.add_argument("--root", default=os.environ.get("WSH_16Y_ROOT", ""), help="16-year 1m tape root (server: $WSH_16Y_ROOT)")
     ap.add_argument("--out", required=True)
     ap.add_argument("--cells", required=True)
     ap.add_argument("--draws", type=int, default=20)
     a = ap.parse_args()
+    if not a.root:
+        raise SystemExit("--root (or $WSH_16Y_ROOT) is required — the 1m tape lives only on the server")
     rng = np.random.default_rng(183)
     res = {}
     cache = {}

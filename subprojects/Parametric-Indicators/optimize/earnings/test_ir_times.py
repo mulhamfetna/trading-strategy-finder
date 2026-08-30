@@ -10,8 +10,13 @@ import urllib.request
 from datetime import datetime
 
 UA = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64)"}
-TABLE = ("/mnt/data/projects/trading/legacy18/subprojects/Parametric-Indicators/"
-         "optimize/earnings/data/earnings_timestamps_FINAL.csv")
+import os
+
+import pytest
+
+TABLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "earnings_timestamps_FINAL.csv")
+if not os.path.exists(TABLE):                       # data-dependent: skip, never fail collection
+    pytest.skip(f"earnings timestamp table not present: {TABLE}", allow_module_level=True)
 
 SITES = {
     "AMD":  "https://ir.amd.com/news-events/press-releases",

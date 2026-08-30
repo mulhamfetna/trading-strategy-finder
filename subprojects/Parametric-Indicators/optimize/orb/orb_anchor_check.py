@@ -5,13 +5,16 @@ Writes optimize/orb/data/anchor_check.json. Anchors are NEVER chosen on P/L."""
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-ROOT = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("/home/dev/Mulham/data_2010_1s")
+ROOT = Path(sys.argv[1] if len(sys.argv) > 1 else os.environ.get("WSH_16Y_ROOT", ""))   # server tape root: $WSH_16Y_ROOT
+if not str(ROOT):
+    raise SystemExit("usage: orb_anchor_check.py <tape_root> [out.json]  (or set $WSH_16Y_ROOT)")
 OUT = Path(sys.argv[2]) if len(sys.argv) > 2 else Path("optimize/orb/data/anchor_check.json")
 DECL = {"NQ": "09:30", "ES": "09:30", "RTY": "09:30", "YM": "09:30", "GC": "08:20", "SI": "08:20", "HG": "08:20", "CL": "09:00", "NG": "09:00"}
 res = {}
