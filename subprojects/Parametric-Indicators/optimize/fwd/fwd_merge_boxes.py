@@ -14,13 +14,14 @@ A mismatch is reported and blocks that file — nothing is patched silently.
 from __future__ import annotations
 
 import argparse
+import os
 import json
 import shutil
 from pathlib import Path
 
 import pandas as pd
 
-PROD = Path("/home/dev/Mulham/wsg-i")
+PROD = Path(os.environ.get("WSH_DATA_BASE", ""))          # the server data root (see docs/DATA-AND-KNOWLEDGE-MAP.md)
 FWD = PROD / "FWD_EXTENDED"
 DROP = PROD / "vendor_drops_local" / "last levels" / "FUTURES"
 EXCH = {"NQ": "CME", "ES": "CME", "RTY": "CME", "YM": "CBOT", "GC": "COMEX", "SI": "COMEX",
@@ -120,6 +121,8 @@ def targets() -> list[tuple[str, str, Path, Path, int, int]]:
 
 
 def main() -> None:
+    if not str(PROD):
+        raise SystemExit("WSH_DATA_BASE must point at the server data root (wsg-i)")
     ap = argparse.ArgumentParser()
     ap.add_argument("--probe", action="store_true")
     ap.add_argument("--apply", action="store_true")

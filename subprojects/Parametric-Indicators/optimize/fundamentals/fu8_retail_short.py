@@ -9,6 +9,8 @@ FU-9's stored rides; pooled NQ+RTY decision, era halves, ES/YM sign witnesses.
 """
 from __future__ import annotations
 
+import os
+
 import argparse
 import json
 import sys
@@ -29,7 +31,7 @@ from src.deploy.release_executor import (COST_PER_LEG, PV, Leg,    # noqa: E402
 INSTS = ["NQ", "RTY", "ES", "YM"]
 RETAIL = "Retail Sales MoM"
 N_BOOT, SEED = 10000, 20260820
-BARS_1S = "/home/dev/Mulham/data_2010_1s/{i}_Continuous_Data/{i}_1s.csv"
+BARS_1S = os.environ.get("WSH_16Y_ROOT", "") + "/{i}_Continuous_Data/{i}_1s.csv"
 
 
 def retail_events(inst: str) -> pd.DataFrame:

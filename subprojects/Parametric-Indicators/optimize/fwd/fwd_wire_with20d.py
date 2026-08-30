@@ -22,8 +22,8 @@ from pathlib import Path
 
 import pandas as pd
 
-PROD = Path("/home/dev/Mulham/wsg-i")
-FWD = Path("/home/dev/Mulham/wsg-i/FWD_EXTENDED")
+PROD = Path(os.environ.get("WSH_PROD_DATA_BASE") or os.environ.get("WSH_DATA_BASE", ""))   # server data root (wsg-i)
+FWD = Path(os.environ.get("WSH_FWD_ROOT", str(PROD / "FWD_EXTENDED") if str(PROD) else ""))
 RAW = "Full_Canldes_Data/drive-download-20260602T124702Z-3-001"
 
 
@@ -34,6 +34,8 @@ def _read(p: Path) -> pd.DataFrame:
 
 
 def main() -> None:
+    if not str(PROD):
+        raise SystemExit("WSH_DATA_BASE (server data root) is required")
     ext = _read(FWD / RAW / "NQ_1m.csv")
     w20 = _read(PROD / RAW / "NQ_1m_with20d.csv")
     cut = pd.Timestamp("2026-05-19 19:59:00")
