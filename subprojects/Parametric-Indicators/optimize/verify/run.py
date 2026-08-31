@@ -27,6 +27,7 @@ import claims_orb  # noqa: F401,E402  — WS-ORB (#183): opening-range breakout 
 import claims_backfill  # noqa: F401,E402  — #190: pre-protocol records (champion set, gap fills, NO-GO verdicts)
 import claims_live  # noqa: F401,E402  — #195: the frozen live allowlist (RUNG-4 phase 1)
 import claims_ui196  # noqa: F401,E402  — #196: one engine per number on the dashboard L1 view
+import claims_gatecal  # noqa: F401,E402  — #198: gate-recalibration cadence (NULL; frozen gates ship)
 from harness import run_all, registry  # noqa: E402
 
 
