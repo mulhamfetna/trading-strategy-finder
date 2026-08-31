@@ -85,3 +85,45 @@ def gate_threshold(vf: np.ndarray, n_split: int, gate_pct: float) -> float:
     pre-window prefix). Callers keep their own `if gate_pct > 0` guard and apply `vf <= gthr`
     against whichever range (full or windowed) they gate."""
     return float(np.percentile(vf[:n_split], float(gate_pct)))
+
+
+def gate_thresholds_recal(vf, dates, n_split: int, gate_pct: float, recal_months: int,
+                          seed_len: int | None = None, random_pct_seed: int = 0):
+    """#198 — per-bar CAUSAL gate thresholds under a fixed recalibration cadence.
+
+    Frozen behaviour (recal_months <= 0) is NOT handled here — callers keep gate_threshold(). This
+    function returns an array thr[0:n] where:
+      * bars before the first recalibration boundary carry the FROZEN threshold
+        percentile(vf[:n_split], gate_pct)  — identical to today's seed;
+      * a boundary is the FIRST bar of every recal_months-th calendar month strictly after the bar at
+        n_split-1 (calendar convention, never tuned);
+      * at each boundary b the threshold becomes percentile(vf[b-L:b], pct) with L = seed_len (default:
+        n_split, the same window LENGTH as the frozen seed) — strictly past bars only (causal);
+      * random_pct_seed > 0 replaces pct at each boundary with rng.uniform(5, 95) from
+        default_rng(random_pct_seed) — the #198 churn control. gate_pct is used otherwise; it is never
+        re-fit here (that would be optimization, #186's territory).
+    """
+    import numpy as _np
+    import pandas as _pd
+    vf = _np.asarray(vf, dtype=float)
+    n = len(vf)
+    L = int(seed_len or n_split)
+    frozen = float(_np.percentile(vf[:n_split], float(gate_pct)))
+    thr = _np.full(n, frozen, dtype=float)
+    if recal_months <= 0 or n_split >= n:
+        return thr
+    months = _pd.PeriodIndex(_pd.DatetimeIndex(_pd.to_datetime(_np.asarray(dates)[:n])), freq="M")
+    first_bar_of_month = _np.r_[True, months[1:] != months[:-1]]
+    rng = _np.random.default_rng(random_pct_seed) if random_pct_seed > 0 else None
+    anchor = None                                     # the month ordinal of the first post-seed boundary
+    cur = frozen
+    for i in range(n_split, n):
+        if first_bar_of_month[i]:
+            ordinal = months[i].year * 12 + months[i].month
+            if anchor is None:
+                anchor = ordinal
+            if (ordinal - anchor) % int(recal_months) == 0 and i >= L:
+                pct = float(rng.uniform(5, 95)) if rng is not None else float(gate_pct)
+                cur = float(_np.percentile(vf[i - L:i], pct))
+        thr[i] = cur
+    return thr
