@@ -31,26 +31,27 @@ def _v1() -> tuple[bool, str]:
 
 
 def _v2() -> tuple[bool, str]:
-    """V2 — EXACTLY ONE GATE LEFT: §8's prerequisite boxes are all checked except the paper executor
-    (#213) and its fill-model line — the clock is blocked by nothing else."""
+    """V2 — NO GATE LEFT: after Amendment 1 every §8 prerequisite box is checked; the track-record clock
+    starts at the next box drop (nothing blocks it but the owner's own scrape)."""
     s = _txt()
     sec = s.split("## 8.")[1].split("## 9.")[0]
     done = len(re.findall(r"- \[x\]", sec))
     open_ = re.findall(r"- \[ \] ([^\n]+)", sec)
-    ok = done >= 5 and len(open_) == 2 and all("#213" in o or "paper fill model" in o for o in open_)
-    return ok, f"{done} done; open: {[o[:50] for o in open_]}"
+    ok = done >= 7 and len(open_) == 0
+    return ok, f"{done} done; open: {len(open_)}"
 
 
 def _v3() -> tuple[bool, str]:
-    """V3 — FALSIFIER (the law is falsifiable): the amendments section is EMPTY at signature (any later
-    change must appear there or V1/V2 flip), the never-list is present with its seven prohibitions, and
-    the mode is PAPER ONLY with the on-demand box guard — the two owner decisions verbatim."""
+    """V3 — FALSIFIER (changes only through the amendment door): exactly ONE amendment exists, dated and
+    attributed (Amendment 1, the owner's replay decision), and the amended mode line cross-references it;
+    the never-list stands. A silent edit anywhere shows up as content without an amendment entry."""
     s = _txt()
     amend = s.split("## 10.")[1]
-    ok = ("*(none)*" in amend and "## 6. The never-list" in s
-          and "PAPER ONLY (owner decision 2026-08-31)" in s
+    n_amend = len(re.findall(r"\*\*Amendment \d+ — ", amend))
+    ok = (n_amend == 1 and '"do the replay version"' in amend and "## 6. The never-list" in s
+          and "FROZEN-REPLAY (owner decisions 2026-08-31; Amendment 1)" in s
           and "on demand** (owner decision 2026-08-31" in s)
-    return ok, "amendments empty; never-list present; paper-only + on-demand boxes recorded"
+    return ok, f"amendments {n_amend} (dated, attributed); mode cross-references A1; never-list present"
 
 
 def _n_signed() -> float:
@@ -64,8 +65,8 @@ register(Claim(
               "deployment layer; the 9-slot allowlist bound by hash; 1 contract; engine exits; frozen "
               "gates; boxes scraped on demand with a 35-day auto-pause guard carrying the staleness risk; "
               "mechanical kill rules; monthly reconciliation with failed months flagged; no verdict before "
-              "6 months; a seven-item never-list. One gate remains before the track-record clock: the "
-              "paper executor and its pre-registered shadow-window verification (#213).",
+              "6 months; a seven-item never-list. The clock starts at the "
+              "next box drop (Amendment 1: frozen-replay mode; no executor, no gate remains).",
     source="docs/LIVE-PROTOCOL.md + optimize/live/live_allowlist.json",
     value_fn=_n_signed,
     expect=1.0,
