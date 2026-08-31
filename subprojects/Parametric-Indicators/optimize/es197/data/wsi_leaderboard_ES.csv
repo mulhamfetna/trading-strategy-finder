@@ -1,0 +1,7 @@
+tf,n_complete,n_feasible,front,median_pnl,worst_dd,win,full_pnl,dd_pct_of_pnl,k,n_indicators,indicators
+4h,4862,2657,288,10263.8,2887.5,58.1,46888.6,7.7,4,8,adx;cisd;ema_trend;keltner;macd;mfi;obv;structure_trend
+2h,5467,4584,120,20207.5,9512.5,59.5,66261.3,13.3,5,10,bollinger;breaker;cisd;ifvg;keltner;mfi;obv;rsi;sma_trend;vwap
+1h,5455,4415,161,17155.8,7703.2,57.2,64656.6,14.7,1,9,bollinger;breaker;cci;ema_trend;fvg;keltner;order_block;rsi;sma_trend
+15m,4971,2595,203,9302.5,3279.3,41.8,28673.7,15.8,1,11,breaker;cci;cisd;ema_trend;fvg;ifvg;keltner;macd;order_block;stochastic;vwap
+5m,5403,4722,412,4309.0,987.5,60.0,11429.5,11.6,2,11,breaker;cci;cisd;ema_trend;ifvg;keltner;macd;mfi;order_block;structure_trend;vwap
+2m,5316,3755,437,7803.4,4085.0,45.4,24683.0,18.6,1,7,bollinger;breaker;cisd;ema_trend;fvg;obv;order_block

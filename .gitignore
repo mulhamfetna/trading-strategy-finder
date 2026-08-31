@@ -355,3 +355,5 @@ subprojects/Parametric-Indicators/optimize/orb/data/grid1/orb_book_*.csv
 !subprojects/Parametric-Indicators/optimize/fundamentals/forecast_previous_durables.csv
 !subprojects/Parametric-Indicators/optimize/fundamentals/forecast_previous_retail.csv
 !subprojects/Parametric-Indicators/optimize/fundamentals/forecast_previous_cpi.csv
+# #197 evidence: the es197b feasible-Pareto fronts + leaderboard (claim ES197-RETAIN-ALL-SIX sources)
+!subprojects/Parametric-Indicators/optimize/es197/data/*.csv
