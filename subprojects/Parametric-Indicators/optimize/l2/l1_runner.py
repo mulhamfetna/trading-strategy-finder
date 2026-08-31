@@ -162,6 +162,17 @@ def run_l1(tf: str = "4h", params: dict | None = None, instrument: str = "NQ") -
     if params["gate_pct"] > 0:
         gthr = gate_threshold(vf_seed, len(vf_seed), params["gate_pct"])
         vol_gate = vf[:n] <= gthr
+        _recal_m = int(params.get("gate_recal_months", 0) or 0)
+        if _recal_m > 0:
+            # #198 hook — cadence recalibration of the SEED only (docs/WS-GATECAL-PREREGISTRATION.md).
+            # Restricted to the full window: a sliced vf would make the trailing seed ambiguous.
+            if window != "full":
+                raise ValueError("gate_recal_months requires window='full' (#198 prereg §1)")
+            from volatility import gate_thresholds_recal            # lazy: same module as gate_threshold
+            thr = gate_thresholds_recal(vf, df_dec["Date"].to_numpy(), n_split, params["gate_pct"],
+                                        _recal_m, seed_len=len(vf_seed),
+                                        random_pct_seed=int(params.get("gate_recal_random_pct_seed", 0) or 0))
+            vol_gate = vf[:n] <= thr[:n]
 
     inds = library.from_specs([s for s in params["indicators"] if s.get("enabled")])
     # MEMOISED (perf): same cached 1-min source + votes the optimizer uses — result-neutral, cached across Runs.
