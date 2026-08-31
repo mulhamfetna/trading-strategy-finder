@@ -237,6 +237,11 @@ def validate_layer_params(p: dict) -> dict:
         # asks for False is rejected above by _reject_gap_fills() rather than silently served the
         # honest model, because silently ignoring a risk-model request is its own kind of lie.
         gap_fills=True,
+        # #198 gate-recalibration hook (docs/WS-GATECAL-PREREGISTRATION.md). Absent/0 => OFF => the
+        # frozen-seed behaviour, byte-identical (proven by test + golden). Explicit off-default, printed
+        # with the rest of the params — never a silent fallback.
+        gate_recal_months=int(p.get("gate_recal_months", 0) or 0),
+        gate_recal_random_pct_seed=int(p.get("gate_recal_random_pct_seed", 0) or 0),
     )
     # optional split long/short SL/TP overrides — each None => fall back to the shared sl_soft/sl_hard/tp
     # (so the default carries all-None and is byte-identical + the use_frozen round-trip still holds).
@@ -680,6 +685,24 @@ def build_view_payload(l1_params: dict, l2_params: dict, tf: str = "4h", view: s
         base["meta"]["box_counts"] = _signals.box_fire_stats(_l1u.df_dec, _l1u.box)
         base["meta"]["n"] = res.n
         base["meta"]["view"] = "l1"
+        # ---- #196: ONE ENGINE PER NUMBER. The money cards on this view already derive from the causal
+        # log (meta.boxes above); but the ledger/status-line kept strategy.build_payload's trades, a
+        # SECOND engine that diverges on non-NQ instruments (ES 15m: 180 trades/$14,033 vs the causal
+        # 205/$28,905 — the round-2 gate failure). Every user-facing surface now reads the causal layer:
+        # trades + equity replaced here; the rich engine contributes only its extra charts (vol/state/
+        # drawdown/events) and the verbose panels. NQ is unchanged in substance (the engines agree there).
+        _rows = [r for r in res.log if r.decision == "entry" and r.layer == "L1"]
+
+        def _ctrade(r):
+            row = {"layer": "L1", "entry_time": r.time, "exit_time": r.exit_time, "direction": r.direction,
+                   "entry_price": float(r.entry_price), "exit_price": float(r.exit_price),
+                   "exit_reason": r.exit_reason, "pnl": round(r.pnl, 2)}
+            row.update(_derive_lines({"entry_price": r.entry_price, "direction": r.direction}, l1p))
+            return row
+
+        base["trades"] = [_ctrade(r) for r in _rows]
+        base["l1_equity"] = _dedupe([{"time": r.exit_time, "value": r.equity}
+                                     for r in sorted(_rows, key=lambda r: r.exit_time)])
         return base
     l1p = validate_layer_params(l1_params)
     l2p = validate_layer_params(l2_params)

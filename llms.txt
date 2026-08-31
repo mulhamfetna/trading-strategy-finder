@@ -1,0 +1,42 @@
+# Trading Strategy Finder
+
+> A reproducible quantitative-trading research framework (futures markets) in which every published
+> number is a machine-verified claim: a ledger of 79 claims, each with three independent verifications
+> that must fail for different reasons and a declared blind spot, replayable offline from committed
+> evidence with no market data. Studies are pre-registered before they run; negative results are
+> published with power analyses; positive results require dumb controls and noise checks. The engine
+> runs on the user's own price-data feed. Author: Mulham Fetna (ORCID 0009-0006-4432-798X).
+> License AGPL-3.0-or-later. Concept DOI: 10.5281/zenodo.21473312.
+
+Key verified findings (claim IDs replayable via `optimize/verify/run.py`):
+
+- Opening-range breakout does not survive realistic costs: 0 of 225 pre-registered cells (9 futures
+  instruments, 2 anchors, 4 windows, 3 exit rules, 16 years of 1-minute data) pass at $25/round-trip;
+  28 cells are negative with power; the 5-minute window is the worst. [ORB-GRID-NO-POSITIVE-CELL]
+- Optimized backtest champions decay out-of-sample: 3,733 forward trades, +$29,807 raw but −$63,518 at
+  $25/round-trip; per-trade mean fell to 17.6% of the selection-window prediction. [FWD2-FRESH-WINDOW]
+- One scheduled-news entry survives Bonferroni + stressed costs: long NQ at release −300 s on
+  CPI/NFP/FOMC, +$133/event net, t = 4.13. [P3-LONG-RELEASE-TRADE-CONFIRMED]
+- The live universe is rule-derived, not hand-picked: 9 of 54 slots admitted by five pre-registered
+  criteria, beating a random-set control. [LIVE-ALLOWLIST-FROZEN]
+- Since 2026-08-31 the deployed parameters and universe are hash-frozen under a signed protocol, so
+  every recorded track-record window is out-of-sample by construction. [LIVE-PROTOCOL-SIGNED]
+
+## Docs
+
+- [README](https://github.com/mulhamfetna/trading-strategy-finder/blob/main/README.md): overview, the
+  two-tier reproducibility model, how to cite.
+- [POSITIONING](https://github.com/mulhamfetna/trading-strategy-finder/blob/main/docs/POSITIONING.md):
+  where this work sits between academic research and trading-firm practice, rung by rung, each cell
+  linked to evidence.
+- [LIVE-PROTOCOL](https://github.com/mulhamfetna/trading-strategy-finder/blob/main/docs/LIVE-PROTOCOL.md):
+  the signed, amendment-only law of the live track record (frozen parameters, kill rules, never-list).
+- [AGENTS](https://github.com/mulhamfetna/trading-strategy-finder/blob/main/AGENTS.md): the operating
+  contract for the AI agents that develop this codebase in parallel.
+- [Claims ledger](https://github.com/mulhamfetna/trading-strategy-finder/tree/main/subprojects/Parametric-Indicators/optimize/verify):
+  the verification harness; `python3 optimize/verify/run.py` replays all 79 claims offline.
+
+## Optional
+
+- [Zenodo archive](https://doi.org/10.5281/zenodo.21473312): versioned, DOI-minted releases.
+- [Author ORCID](https://orcid.org/0009-0006-4432-798X) · [Google Scholar](https://scholar.google.com/citations?user=h1Yvl2QAAAAJ&hl=en)

@@ -10,6 +10,7 @@ per-calendar-year table on the confirmation window. No parameter is chosen here;
 from __future__ import annotations
 
 import argparse
+import os
 import json
 import sys
 from pathlib import Path
@@ -71,11 +72,13 @@ def run_token(tok: str, root: Path, out: Path) -> list[dict]:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--root", default="/home/dev/Mulham/data_2010_1s")
+    ap.add_argument("--root", default=os.environ.get("WSH_16Y_ROOT", ""), help="16-year 1m tape root (server: $WSH_16Y_ROOT)")
     ap.add_argument("--out", required=True)
     ap.add_argument("--tokens", default="NQ,ES,GC,SI,HG,CL,NG,RTY,YM")
     ap.add_argument("--jobs", type=int, default=1)
     a = ap.parse_args()
+    if not a.root:
+        raise SystemExit("--root (or $WSH_16Y_ROOT) is required — the 1m tape lives only on the server")
     out = Path(a.out); out.mkdir(parents=True, exist_ok=True)
     toks = a.tokens.split(",")
     if a.jobs > 1:

@@ -10,7 +10,12 @@ if str(_PI) not in sys.path:
     sys.path.insert(0, str(_PI))
 
 from http.server import ThreadingHTTPServer
-import server                                   # noqa: E402 (runs data preload on import)
+import pytest                                   # noqa: E402
+
+try:
+    import server                               # noqa: E402 (runs data preload on import)
+except FileNotFoundError as _e:                 # market data is server-only (2026-08-22): skip, do not abort collection
+    pytest.skip(f"market data not present for the dashboard preload: {_e}", allow_module_level=True)
 from optimize.l2 import payload                 # noqa: E402
 
 

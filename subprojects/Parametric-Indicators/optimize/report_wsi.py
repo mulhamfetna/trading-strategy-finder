@@ -161,8 +161,11 @@ def _row(t) -> dict:
         # and we spent a day blaming the optimizer's fast engine for "lying". The engine was right every time.
         # Significant digits are scale-free: 12 of them round-trip float64 losslessly at any price level.
         sl_soft=_exact(pr["sl_soft"]), sl_hard=_exact(pr["sl_soft"] + pr["sl_hard_delta"]),
-        tp=_exact(pr["tp"]), gate_pct=_exact(pr["gate_pct"]), dd_limit=_exact(pr["dd_limit"]),
-        cooldown=pr["cooldown"], flip=pr["flip"], k=pr["k"],
+        tp=_exact(pr["tp"]), gate_pct=_exact(pr["gate_pct"]),
+               # dd_limit/cooldown RETIRED from the search 2026-08-01 (optimizer runs them fixed at 0):
+               # post-retirement studies have no such params — read what the trial actually ran with.
+               dd_limit=_exact(pr.get("dd_limit", 0.0)),
+        cooldown=pr.get("cooldown", 0), flip=pr["flip"], k=pr["k"],
         # Time caps. BOTH are searched, so both must round-trip or the rebuilt champion mis-exits.
         # cap_1min is only meaningful when a BAR cap is armed — zero it otherwise so a stale "how many
         # bars" value cannot be mistaken for an active cap downstream.

@@ -886,7 +886,7 @@ def run(tf_name: str, n_trials: int = 200, folds: int = 5, min_trades: int = 5,
               f"win {ua.get('median_win',0):4.1f}%  pause {ua.get('decision_pause_days',0):4.1f}d  | "
               f"full P/L ${fp:>7,.0f} DD ${fd:>6,.0f} ({ratio*100:.0f}%) | "
               f"slS {p['sl_soft']:.0f} slH {p['sl_soft']+p['sl_hard_delta']:.0f} tp {p['tp']:.0f} "
-              f"gate {p['gate_pct']:.0f} dd {p['dd_limit']:.0f} cd {p['cooldown']} flip {p['flip']} "
+              f"gate {p['gate_pct']:.0f} dd {p.get('dd_limit', 0):.0f} cd {p.get('cooldown', 0)} flip {p['flip']} "
               f"K{p.get('k', frozen_k)} +{n_enabled(p)}ind", flush=True)
     return {"timeframe": tf_name, "n_trials": len(study.trials),
             "front": len(front), "front_all": len(study.best_trials), "dur_s": dur}

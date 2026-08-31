@@ -1,0 +1,90 @@
+{
+ "preregistration": "docs/WS-GATECAL-PREREGISTRATION.md",
+ "issue": "#198",
+ "cost_rt": 25.0,
+ "A0": {
+  "full_n": 72103,
+  "fresh_n": 3733,
+  "fresh_raw": 29807.09,
+  "fresh_net10": -7522.91,
+  "fresh_net25": -63517.91,
+  "dark_slots_fresh_entries": {
+   "NQ_5m": 4,
+   "NQ_2m": 20,
+   "NQ_1h": 10,
+   "RTY_15m": 1,
+   "ES_2m": 19
+  }
+ },
+ "A1": {
+  "full_n": 77011,
+  "fresh_n": 5074,
+  "fresh_raw": 59262.38,
+  "fresh_net10": 8522.38,
+  "fresh_net25": -67587.62,
+  "dark_slots_fresh_entries": {
+   "NQ_5m": 5,
+   "NQ_2m": 86,
+   "NQ_1h": 16,
+   "RTY_15m": 2,
+   "ES_2m": 19
+  }
+ },
+ "A2": {
+  "full_n": 79269,
+  "fresh_n": 5023,
+  "fresh_raw": 61347.36,
+  "fresh_net10": 11117.36,
+  "fresh_net25": -64227.64,
+  "dark_slots_fresh_entries": {
+   "NQ_5m": 5,
+   "NQ_2m": 46,
+   "NQ_1h": 16,
+   "RTY_15m": 2,
+   "ES_2m": 18
+  }
+ },
+ "C": {
+  "full_n": 54893,
+  "fresh_n": 1356,
+  "fresh_raw": 7174.26,
+  "fresh_net10": -6385.74,
+  "fresh_net25": -26725.74,
+  "dark_slots_fresh_entries": {
+   "NQ_5m": 1,
+   "NQ_2m": 50,
+   "NQ_1h": 0,
+   "RTY_15m": 1,
+   "ES_2m": 5
+  }
+ },
+ "A1_vs_A0": {
+  "point": -4069.71,
+  "ci95": [
+   -36813.39,
+   32000.72
+  ],
+  "n_sessions": 67
+ },
+ "A2_vs_A0": {
+  "point": -709.73,
+  "ci95": [
+   -32367.79,
+   32587.67
+  ],
+  "n_sessions": 67
+ },
+ "C_vs_A0": {
+  "point": 36792.17,
+  "ci95": [
+   -15097.66,
+   85765.0
+  ],
+  "n_sessions": 67
+ },
+ "churn_floor_C_vs_A0": 36792.17,
+ "verdict": {
+  "A1": "NULL",
+  "A2": "NULL"
+ }
+}

@@ -12,14 +12,17 @@ authors:
     given-names: Mulham
     orcid: "https://orcid.org/0009-0006-4432-798X"
     email: contact@mulhamfetna.com
-version: 5.6.0
-date-released: "2026-08-23"
+version: 5.7.0
+date-released: "2026-08-31"
 license: AGPL-3.0-or-later
 doi: "10.5281/zenodo.21473312"
 identifiers:
   - type: doi
     value: "10.5281/zenodo.21473312"
     description: "The concept DOI (always resolves to the latest version)."
+  - type: doi
+    value: "10.5281/zenodo.22161256"
+    description: "The v5.6.0 version DOI (2026-08-29)."
   - type: doi
     value: "10.5281/zenodo.21473313"
     description: "The v5.0.0 version DOI."
@@ -40,4 +43,9 @@ keywords:
   - extreme value theory
   - market microstructure
   - reproducible research
+  - reproducibility
+  - pre-registration
+  - walk-forward analysis
+  - open science
+  - research software
   - data science

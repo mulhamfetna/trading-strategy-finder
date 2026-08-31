@@ -10,6 +10,8 @@ event bootstrap, era halves on each leg's true span.
 """
 from __future__ import annotations
 
+import os
+
 import argparse
 import json
 import sys
@@ -33,7 +35,7 @@ LEGS = {"NQ": ["Inflation Rate MoM", "Non Farm Payrolls", "Fed Interest Rate Dec
         "ES": ["Inflation Rate MoM"], "YM": ["Inflation Rate MoM"]}
 CLIP_LO, CLIP_HI = 0.5, 2.0
 N_PERM, N_BOOT, SEED = 20, 10000, 20260820
-BARS_1S = "/home/dev/Mulham/data_2010_1s/{i}_Continuous_Data/{i}_1s.csv"
+BARS_1S = os.environ.get("WSH_16Y_ROOT", "") + "/{i}_Continuous_Data/{i}_1s.csv"
 
 
 def leg_events(inst: str) -> pd.DataFrame:

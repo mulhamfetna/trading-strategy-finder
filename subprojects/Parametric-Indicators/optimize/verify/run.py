@@ -24,7 +24,57 @@ import claims_xni  # noqa: F401,E402  — XNI phase 3 (#172): collision/composit
 import claims_fwd  # noqa: F401,E402  — WS-FWD (#176): forward-OOS extension/books/dashboard claims
 import claims_fwd2  # noqa: F401,E402  — WS-FWD round 2 (#179): box refresh, real forward window, ES fix
 import claims_orb  # noqa: F401,E402  — WS-ORB (#183): opening-range breakout grid, 225 cells, no positive
+import claims_backfill  # noqa: F401,E402  — #190: pre-protocol records (champion set, gap fills, NO-GO verdicts)
+import claims_live  # noqa: F401,E402  — #195: the frozen live allowlist (RUNG-4 phase 1)
+import claims_ui196  # noqa: F401,E402  — #196: one engine per number on the dashboard L1 view
+import claims_gatecal  # noqa: F401,E402  — #198: gate-recalibration cadence (NULL; frozen gates ship)
+import claims_es197  # noqa: F401,E402  — #197: ES re-selection on the corrected box (RETAIN x6)
+import claims_protocol  # noqa: F401,E402  — #199: the signed LIVE-PROTOCOL (paper-only)
 from harness import run_all, registry  # noqa: E402
+
+
+def evidence_tracked(verbose: bool = True) -> list[str]:
+    """Positioning audit 2026-08-29 §3.1 — close the CLASS, not the instance.
+
+    A claim whose `source` names a file that is not in git passes where it was written and nowhere else
+    (TV-PREVIOUS-IS-POINT-IN-TIME / TV-FORECAST-NOT-COPIED-FROM-ACTUAL read an untracked CSV for 3 weeks;
+    the ledger only caught it when run in a second checkout). So: every path-like token in every claim's
+    `source` must resolve to at least one git-TRACKED file. Tokens are resolved against the engine dir and
+    the repo root; `{A,B}` braces and `{INST}`-style placeholders become wildcards; free text is ignored.
+    Returns the list of "CLAIM-ID: token" offenders (empty = clean)."""
+    import re as _re
+    import subprocess as _sp
+    from fnmatch import fnmatch as _fn
+    from harness import registry as _registry
+    pi = Path(__file__).resolve().parents[2]          # optimize/verify/run.py -> the engine dir
+    root = pi.parents[1]                                 # -> the repo root (git ls-files paths are relative to it)
+    tracked = set(_sp.run(["git", "ls-files"], capture_output=True, text=True, cwd=str(root)).stdout.split("\n"))
+    rel_pi = str(pi.relative_to(root))
+    bad: list[str] = []
+    for c in _registry():
+        last_dir = ""                                                    # "… gate.json + shots/" -> shots/ is relative to the previous token's dir
+        for tok in _re.findall(r"[A-Za-z0-9_./*{},-]+/[A-Za-z0-9_./*{},-]*", c.source):
+            tok = tok.strip(".,()")
+            if not tok:
+                continue
+            pat = _re.sub(r"\{[^}]*\}", "*", tok)                       # {NQ,RTY} / {INST} -> *
+            if pat.endswith("/"):                                        # a directory: any tracked file under it
+                cands = [pat, f"{rel_pi}/{pat}"] + ([f"{last_dir}/{pat}", f"{rel_pi}/{last_dir}/{pat}"] if last_dir else [])
+                hit = any(f.startswith(cp) for cp in cands for f in tracked if f)
+            else:
+                last = pat.rsplit("/", 1)[-1]
+                if "." not in last and "*" not in last:                  # prose like "p2_power_events/result"
+                    continue
+                cands = [pat, f"{rel_pi}/{pat}"]
+                hit = any(_fn(f, cp) for cp in cands for f in tracked if f)
+                last_dir = pat.rsplit("/", 1)[0] if "/" in pat else last_dir
+            if not hit:
+                bad.append(f"{c.id}: {tok}")
+    if verbose:
+        print(f"EVIDENCE TRACKED  {'OK — every claim source resolves to a git-tracked file' if not bad else 'FAIL'}")
+        for b in bad:
+            print(f"        untracked/missing source: {b}")
+    return bad
 
 
 def main() -> int:
@@ -42,8 +92,12 @@ def main() -> int:
     print("CLAIMS LEDGER — every published number re-derived from the file it came from")
     print("=" * 100)
     ok, total = run_all(verbose=not a.quiet)
+    untracked = evidence_tracked(verbose=True)
     print("\n" + "=" * 100)
     print(f"{ok}/{total} claims pass")
+    if untracked:
+        print(f"\n⚠️ {len(untracked)} CLAIM SOURCE(S) ARE NOT IN GIT — the ledger cannot be re-run elsewhere. Commit the evidence.")
+        ok = -1
     if ok != total:
         print("\n⚠️ A FAILING CLAIM MEANS A PUBLISHED NUMBER NO LONGER MATCHES ITS SOURCE.")
         print("   Fix the document or the code — do NOT adjust `expect` to match. That is how a")

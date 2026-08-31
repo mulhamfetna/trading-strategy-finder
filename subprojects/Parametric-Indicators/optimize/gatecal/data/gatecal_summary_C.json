@@ -1,0 +1,488 @@
+[
+ {
+  "instrument": "NQ",
+  "tf": "4h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 245,
+  "pnl": 121812.05,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_NQ_4h.csv"
+ },
+ {
+  "instrument": "ES",
+  "tf": "4h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 125,
+  "pnl": 19037.68,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_ES_4h.csv"
+ },
+ {
+  "instrument": "ES",
+  "tf": "2h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 193,
+  "pnl": 47318.19,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_ES_2h.csv"
+ },
+ {
+  "instrument": "NQ",
+  "tf": "2h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 159,
+  "pnl": 59397.87,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_NQ_2h.csv"
+ },
+ {
+  "instrument": "NQ",
+  "tf": "1h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 101,
+  "pnl": 56034.78,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_NQ_1h.csv"
+ },
+ {
+  "instrument": "ES",
+  "tf": "1h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 278,
+  "pnl": 49261.92,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_ES_1h.csv"
+ },
+ {
+  "instrument": "GC",
+  "tf": "4h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 250,
+  "pnl": 71372.94,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_GC_4h.csv"
+ },
+ {
+  "instrument": "NQ",
+  "tf": "15m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 150,
+  "pnl": 25871.78,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_NQ_15m.csv"
+ },
+ {
+  "instrument": "ES",
+  "tf": "15m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 170,
+  "pnl": 24661.65,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_ES_15m.csv"
+ },
+ {
+  "instrument": "GC",
+  "tf": "2h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 339,
+  "pnl": 71125.63,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_GC_2h.csv"
+ },
+ {
+  "instrument": "GC",
+  "tf": "1h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 462,
+  "pnl": 62747.1,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_GC_1h.csv"
+ },
+ {
+  "instrument": "SI",
+  "tf": "4h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 215,
+  "pnl": 54197.98,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_SI_4h.csv"
+ },
+ {
+  "instrument": "NQ",
+  "tf": "5m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 110,
+  "pnl": 11684.23,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_NQ_5m.csv"
+ },
+ {
+  "instrument": "GC",
+  "tf": "15m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 1543,
+  "pnl": 53414.92,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_GC_15m.csv"
+ },
+ {
+  "instrument": "SI",
+  "tf": "2h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 149,
+  "pnl": 46951.84,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_SI_2h.csv"
+ },
+ {
+  "instrument": "ES",
+  "tf": "5m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 71,
+  "pnl": 687.72,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_ES_5m.csv"
+ },
+ {
+  "instrument": "SI",
+  "tf": "1h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 304,
+  "pnl": 19993.35,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_SI_1h.csv"
+ },
+ {
+  "instrument": "HG",
+  "tf": "4h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 211,
+  "pnl": 58657.26,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_HG_4h.csv"
+ },
+ {
+  "instrument": "SI",
+  "tf": "15m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 1469,
+  "pnl": 70603.64,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_SI_15m.csv"
+ },
+ {
+  "instrument": "HG",
+  "tf": "2h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 419,
+  "pnl": 16993.93,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_HG_2h.csv"
+ },
+ {
+  "instrument": "GC",
+  "tf": "5m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 507,
+  "pnl": 13268.93,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_GC_5m.csv"
+ },
+ {
+  "instrument": "HG",
+  "tf": "1h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 328,
+  "pnl": 20168.75,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_HG_1h.csv"
+ },
+ {
+  "instrument": "NQ",
+  "tf": "2m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 470,
+  "pnl": 31087.06,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_NQ_2m.csv"
+ },
+ {
+  "instrument": "CL",
+  "tf": "4h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 344,
+  "pnl": 20532.3,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_CL_4h.csv"
+ },
+ {
+  "instrument": "ES",
+  "tf": "2m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 413,
+  "pnl": -1699.41,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_ES_2m.csv"
+ },
+ {
+  "instrument": "SI",
+  "tf": "5m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 2176,
+  "pnl": 32663.89,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_SI_5m.csv"
+ },
+ {
+  "instrument": "HG",
+  "tf": "15m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 2573,
+  "pnl": 23793.57,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_HG_15m.csv"
+ },
+ {
+  "instrument": "CL",
+  "tf": "2h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 156,
+  "pnl": 4123.43,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_CL_2h.csv"
+ },
+ {
+  "instrument": "CL",
+  "tf": "1h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 608,
+  "pnl": 6488.08,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_CL_1h.csv"
+ },
+ {
+  "instrument": "NG",
+  "tf": "4h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 541,
+  "pnl": 25014.08,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_NG_4h.csv"
+ },
+ {
+  "instrument": "CL",
+  "tf": "15m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 1039,
+  "pnl": 14987.76,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_CL_15m.csv"
+ },
+ {
+  "instrument": "GC",
+  "tf": "2m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 755,
+  "pnl": 34550.78,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_GC_2m.csv"
+ },
+ {
+  "instrument": "HG",
+  "tf": "5m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 1517,
+  "pnl": 19482.96,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_HG_5m.csv"
+ },
+ {
+  "instrument": "NG",
+  "tf": "2h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 567,
+  "pnl": 9170.5,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_NG_2h.csv"
+ },
+ {
+  "instrument": "NG",
+  "tf": "1h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 1552,
+  "pnl": 10745.44,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_NG_1h.csv"
+ },
+ {
+  "instrument": "RTY",
+  "tf": "4h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 207,
+  "pnl": 16327.77,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_RTY_4h.csv"
+ },
+ {
+  "instrument": "NG",
+  "tf": "15m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 2215,
+  "pnl": 14312.3,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_NG_15m.csv"
+ },
+ {
+  "instrument": "CL",
+  "tf": "5m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 1764,
+  "pnl": 11555.37,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_CL_5m.csv"
+ },
+ {
+  "instrument": "RTY",
+  "tf": "2h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 132,
+  "pnl": 13112.1,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_RTY_2h.csv"
+ },
+ {
+  "instrument": "RTY",
+  "tf": "1h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 130,
+  "pnl": 11174.72,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_RTY_1h.csv"
+ },
+ {
+  "instrument": "SI",
+  "tf": "2m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 3251,
+  "pnl": 62076.13,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_SI_2m.csv"
+ },
+ {
+  "instrument": "YM",
+  "tf": "4h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 148,
+  "pnl": 27498.24,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_YM_4h.csv"
+ },
+ {
+  "instrument": "RTY",
+  "tf": "15m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 106,
+  "pnl": 7368.67,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_RTY_15m.csv"
+ },
+ {
+  "instrument": "YM",
+  "tf": "2h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 37,
+  "pnl": 22285.05,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_YM_2h.csv"
+ },
+ {
+  "instrument": "YM",
+  "tf": "1h",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 340,
+  "pnl": 27986.66,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_YM_1h.csv"
+ },
+ {
+  "instrument": "NG",
+  "tf": "5m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 5848,
+  "pnl": 26714.99,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_NG_5m.csv"
+ },
+ {
+  "instrument": "HG",
+  "tf": "2m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 5198,
+  "pnl": 39188.82,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_HG_2m.csv"
+ },
+ {
+  "instrument": "RTY",
+  "tf": "5m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 1029,
+  "pnl": 12745.4,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_RTY_5m.csv"
+ },
+ {
+  "instrument": "YM",
+  "tf": "15m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 816,
+  "pnl": 17775.42,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_YM_15m.csv"
+ },
+ {
+  "instrument": "CL",
+  "tf": "2m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 3566,
+  "pnl": 17510.98,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_CL_2m.csv"
+ },
+ {
+  "instrument": "YM",
+  "tf": "5m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 422,
+  "pnl": 14817.6,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_YM_5m.csv"
+ },
+ {
+  "instrument": "NG",
+  "tf": "2m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 6275,
+  "pnl": 21837.38,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_NG_2m.csv"
+ },
+ {
+  "instrument": "RTY",
+  "tf": "2m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 2077,
+  "pnl": 14136.33,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_RTY_2m.csv"
+ },
+ {
+  "instrument": "YM",
+  "tf": "2m",
+  "arm": "C",
+  "status": "ok",
+  "n_trades": 823,
+  "pnl": 19755.15,
+  "book": "/home/dev/Mulham/wsg-i/gatecal/gc_book_C_YM_2m.csv"
+ }
+]

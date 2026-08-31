@@ -94,3 +94,30 @@ jobs:
             optimize/test_xseries_wiring.py \
             indicators/test_reference_alignment.py \
             tests/test_speedopt_equiv.py
+
+  claims-ledger:
+    name: Claims ledger re-derives every published number (data-free)
+    runs-on: ubuntu-latest
+    # optimize/verify/run.py replays 71 claims against COMMITTED evidence (JSON/CSV in the repo) — no market
+    # data. Proven offline 2026-08-29 (positioning audit §3.1). It also refuses any claim whose declared
+    # evidence file is not tracked in git, so a green run here means "an outsider can re-derive the numbers".
+    env:
+      WSH_DATA_BASE: ${{ github.workspace }}
+    defaults:
+      run:
+        working-directory: subprojects/Parametric-Indicators
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          # optuna: some claim checks re-run engine tests in a subprocess and the engine's import chain
+          # reaches the optimizer (same dependency set as the import-smoke job).
+          pip install numpy pandas scipy pytest optuna
+      - name: Ledger self-test (the gate must be able to fail)
+        run: python optimize/verify/run.py --selftest
+      - name: Ledger (every claim + evidence-tracked rule)
+        run: python optimize/verify/run.py --quiet
