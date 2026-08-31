@@ -65,3 +65,15 @@ the round-2 books; V3 the random-trial control), report `docs/WS-ES197-REPORT.md
    changed); improvements may partly be re-fitting to the same noise at the correct alignment.
 3. 20 months of ES box data is short for 5 folds on slow TFs; min-trades pruning may thin 4h/2h candidates.
 4. WS-ESCPI's ES legs are NOT re-examined here (separate follow-up if adoption changes ES 4h/2h).
+
+## Amendment 1 — 2026-08-31, ~4 h into the campaign, BEFORE any study result was read
+**What was observed:** only trial COUNTS and the optimizer's plan line (no objective values, no parameters,
+no Pareto rows). The plan line exposed a budget contradiction inside this document: `--auto-trials
+--trials-per-dim 100` now means **46,600 trials/study** (the indicator registry grew the search to 466
+dims — the #81/#82 scaling debt; #107 argues trials∝dims also RAISES overfitting odds under MinBTL), which
+is ~10 days of compute and contradicts §5's posted budget of ~30–35k trials total.
+**The amendment:** per-study budget fixed at **5,900 trials** — the exact budget of the `cap1` re-optimization
+campaign that produced the deployed incumbents (verified from `wsh-pg`: every `cap1_*` study = 5,900), making
+the fresh candidates apples-to-apples with the incumbents they are judged against; 6 × 5,900 = 35,400 = the
+§5 budget. Mechanics: the six running `es197` studies are RESUMED (same prefix, same settings, Optuna
+`load_if_exists`) with `--trials` set to reach 5,900 total each; nothing else changes. Revised ETA ~30 h.
