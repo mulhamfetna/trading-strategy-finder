@@ -77,3 +77,20 @@ campaign that produced the deployed incumbents (verified from `wsh-pg`: every `c
 the fresh candidates apples-to-apples with the incumbents they are judged against; 6 × 5,900 = 35,400 = the
 §5 budget. Mechanics: the six running `es197` studies are RESUMED (same prefix, same settings, Optuna
 `load_if_exists`) with `--trials` set to reach 5,900 total each; nothing else changes. Revised ETA ~30 h.
+
+## Amendment 2 — 2026-08-31, BEFORE any feasible trial existed (the studies held only PRUNED trials)
+**What was observed:** trial state counts and per-trial parameter counts from `wsh-pg` — no objective
+values (there were none: 0 COMPLETE across ~2,900 trials/study). Direct probe: the incumbent's own
+parameters score VALID under the exact fold objective (folds of 55/35/30/34 trades on ES 4h), so the
+pipeline is sound; the SEARCH SPACE is not. The incumbents' campaigns (cap1/eod1, 2026-07-11/13) searched
+**58–59 params/trial** — the pre-growth 18-indicator registry; `es197` trials carry **454 params/trial**
+(the full 165-indicator registry, which grew on 2026-07-25). In that space a random draw enables dozens of
+indicators and the confirm/veto committee eliminates every entry: feasibility ≈ 0 (live evidence for
+#81/#82/#90 — the search was never re-calibrated after the growth).
+**The amendment:** the fresh campaign searches the SAME space the incumbents came from — the original 18
+indicators (registry positions 0–17) via `--only-indicators`, everything else per Amendment 1 (5,900
+trials/study, fixed `--trials`, folds 5, nsga3, cold start). New prefix **`es197b`** (the `es197` studies
+are abandoned and kept in the DB as the record of the failure; prefixes are never reused). This makes the
+comparison strictly apples-to-apples: same space, same budget, corrected box. Searching the grown registry
+for ES remains open as its own future campaign under #90's recalibration question — deliberately NOT
+smuggled into this one.
