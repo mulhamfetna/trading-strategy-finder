@@ -56,6 +56,7 @@ archives verified) recorded on issue #176.
 | Non-NQ boxes SHIFTED (engine reads) | **in the CODE checkout**: `subprojects/all-stocks-signals/shifted_boxes/<TOK>_full_data_shifted.csv` | → **2026-08-06** (= raw 08-07 shifted −1 business day) | produced by `subprojects/all-stocks-signals/onboard_stock.py`; travels with git (the `code` checkout) |
 | bundle data snapshots | `bundle_data_all/` (9 inst, → 07-08) · `bundle_data_clng/` | frozen inputs of the shareable backtester bundles | do not use as the engine root |
 | delivery bundles | `<TOK>_SIGNALS_DELIVERY/` + `.zip` for CL ES GC HG NG RTY SI YM; zips only for NQ NQ2024 NQ2026L20 QQQ-ETH QQQ-RTH SQQQ-ETH SQQQ-RTH (at `wsg-i/` root) | — | customer-facing signal exports (WS-AS) |
+| repo-generated signal outputs (migrated OFF local 2026-08-30) | `repo_generated/subprojects/all-stocks-signals/{output_shifted,output,output_nq2024}` + `repo_generated/subprojects/signals/full_candles` | 1,511 files, 17 GB | Stage-1/2 signal regenerations + the signals full-candle tree, moved from the local checkout (checksum-verified, 0 diffs) and DELETED locally; regenerable by `onboard_stock.py`; never re-grow them locally |
 | vendor drop archives | `vendor_drops_local/*.zip` (HG/RTY/YM July drops, drive-download-20260710 ×2, silver-gold candles/levels) | — | the raw files the onboarding SOP consumed; keep for provenance |
 | champion bundles | `BOX_STRATEGY_CHAMPIONS_2026-07-14/`, `BOX_STRATEGY_CHAMPIONS_EOD_2026-07-13/` (+zips) | — | ⚠️ built on the 4-dp-rounded champions — STALE, do not ship |
 
