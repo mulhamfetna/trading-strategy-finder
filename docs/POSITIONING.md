@@ -22,7 +22,7 @@ project can *prove*, and to whom.
 
 | dimension | rung | evidence |
 |---|---|---|
-| **Method / verifiability** | **3 — top of the rung** | 71 claims re-derive offline from committed evidence (`optimize/verify/run.py`, CI job `claims-ledger`); the gate proves it can fail (`--selftest`: 5/5 historical defects rejected); it refuses evidence not in git (`evidence_tracked()`); 35+ pre-registrations filed before runs; every claim carries V1/V2/V3 (the third a falsifier) and a declared blind spot (`harness.py` enforces both); null results get the full apparatus (`docs/WS-ORB-REPORT.md`: 0/225 cells, prior art → prereg → grid → controls → claim → bundle → release). Rung-2 papers do none of this; no rung-5 firm does it *in the open*. |
+| **Method / verifiability** | **3 — top of the rung** | 71 claims re-derive offline from committed evidence (`optimize/verify/run.py`, CI job `claims-ledger`); the gate proves it can fail (`--selftest`: 5/5 historical defects rejected); it refuses evidence not in git (`evidence_tracked()`); 35+ pre-registrations filed before runs; every claim carries V1/V2/V3 (the third a falsifier) and a declared blind spot (`harness.py` enforces both); null results get the full apparatus (`docs/WS-ORB-REPORT.md`: 0/225 cells, prior art → prereg → grid → controls → claim → bundle → release). Rung-2 papers do none of this; no rung-5 firm does it *in the open*. Since #190 the load-bearing pre-protocol results are ledger-bound too, as explicit RECORDS (`BEST-SET-SELECTION-RECORD`, `GAP-FILLS-RISK-TRUTH`, `NOGO-VERDICTS-ON-RECORD` — 74 claims total): what was decided is pinned and falsifiable even where the original study predates the protocol. |
 | **Breadth tested to a verdict** | 3 | 9 futures; a 16-year 1-second/1-minute tape; a 165-indicator registry; ~15 workstreams; six literature strategies carried to a verdict (ORB, regime HMM/Jump, Chronos-2 vol gate, TimesFM fusion, daily boxes, intra-candle veto — `docs/PROGRESS-RECORD.md`). Rung 5 tests thousands of signals; per signal, most rung-2 work tested less carefully. |
 | **Data and infrastructure** | 2–3 | 1-second bars, one compute server, no order-book data, no venue, no colocation (`docs/DATA-AND-KNOWLEDGE-MAP.md`). This is a ceiling: rung 5 is not reachable on minute bars. |
 | **Live track record** | **1** | One live account, run *outside* the protocol — the superseded `wsh4` parameter set, a sizing rule the engine never had (qty 2–9), bracket exits: −$22.5k over six weeks; the engine on his own parameters, same window, 1 contract: +$17.5k (WS-LIVE-PARITY #182; analysis local-only). There is **no audited live curve run under the protocol**. This single fact holds the repo below rung 4. |
@@ -80,8 +80,10 @@ microwave link.
   a public protocol, positive or not. Every prerequisite except time and a gateway already exists.
 - **Not reachable, and not the goal:** rung 5.
 - **Already true today, and citable:** rung-3 top on method (`docs/POSITIONING-AUDIT-2026-08-29.md` R3.4).
-  The remaining concession on the *method* side — the pre-protocol results are documented but not ledger-bound
-  — is issue #190, and it is hours of work, not months.
+  The method-side concession was retired on 2026-08-30: the load-bearing pre-protocol results (the deployed
+  champion set, the gap-fill risk model, the three NO-GO verdicts) are ledger-bound as **records** (#190,
+  claims ×3, ledger 74/74) — pinned and falsifiable, honestly labelled as the ledger's weakest tier because
+  their studies predate pre-registration. The gap-filling programme itself is `docs/RUNG4-ROADMAP.md` (#194).
 
 ## 5. The honest-weakness sentence (say it before someone else does)
 
