@@ -25,6 +25,7 @@ import claims_fwd  # noqa: F401,E402  — WS-FWD (#176): forward-OOS extension/b
 import claims_fwd2  # noqa: F401,E402  — WS-FWD round 2 (#179): box refresh, real forward window, ES fix
 import claims_orb  # noqa: F401,E402  — WS-ORB (#183): opening-range breakout grid, 225 cells, no positive
 import claims_backfill  # noqa: F401,E402  — #190: pre-protocol records (champion set, gap fills, NO-GO verdicts)
+import claims_live  # noqa: F401,E402  — #195: the frozen live allowlist (RUNG-4 phase 1)
 from harness import run_all, registry  # noqa: E402
 
 
