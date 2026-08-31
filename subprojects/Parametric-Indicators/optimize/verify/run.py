@@ -29,6 +29,7 @@ import claims_live  # noqa: F401,E402  — #195: the frozen live allowlist (RUNG
 import claims_ui196  # noqa: F401,E402  — #196: one engine per number on the dashboard L1 view
 import claims_gatecal  # noqa: F401,E402  — #198: gate-recalibration cadence (NULL; frozen gates ship)
 import claims_es197  # noqa: F401,E402  — #197: ES re-selection on the corrected box (RETAIN x6)
+import claims_protocol  # noqa: F401,E402  — #199: the signed LIVE-PROTOCOL (paper-only)
 from harness import run_all, registry  # noqa: E402
 
 
