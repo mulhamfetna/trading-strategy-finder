@@ -24,6 +24,9 @@ identifiers:
     value: "10.5281/zenodo.22161256"
     description: "The v5.6.0 version DOI (2026-08-29)."
   - type: doi
+    value: "10.5281/zenodo.22212233"
+    description: "The v5.7.0 version DOI (2026-08-31)."
+  - type: doi
     value: "10.5281/zenodo.21473313"
     description: "The v5.0.0 version DOI."
   - type: doi
