@@ -28,12 +28,51 @@ The frozen **v1.x** era (`src/main/`) is preserved under the `v1.0.0` / `v1.0-wo
 
 1. **Every published number re-derives from committed evidence — anyone, offline.**
    `cd subprojects/Parametric-Indicators && python3 optimize/verify/run.py` replays the claims ledger
-   (71 claims, each with three verifications that must fail for different reasons and a declared blind
+   (79 claims, each with three verifications that must fail for different reasons and a declared blind
    spot) against JSON/CSV files in this repo. No market data needed. `--selftest` proves the gate can fail
    (5 historical defects rejected). The ledger also refuses any claim whose evidence is not in git.
 2. **Recomputing the evidence from raw prices — server-only.** The 1-second/1-minute futures tape is
    licensed and lives only on the compute server (`docs/DATA-AND-KNOWLEDGE-MAP.md`). Tier 1 is what an
    outside reviewer can do today; tier 2 is what the owner can do.
+
+## Findings you can quote (each line is a machine-verified ledger claim)
+
+Every number below re-derives offline from committed evidence via the claims ledger; the bracketed ID is
+the claim to replay. Negative results are published with the same rigor as positive ones — each carries a
+power analysis, and each positive carries a dumb control and a noise check.
+
+**Does opening-range breakout (ORB) survive realistic trading costs?** No. A pre-registered 225-cell grid
+(9 futures instruments × 2 session anchors × 4 window lengths × 3 exit rules, 16 years of 1-minute data,
+2010–2026) produced **zero** cells meeting the positive bar at $25/round-trip; 28 cells are negative *with
+power* (MDE ≤ $25/trade), and the literature's favourite 5-minute window is the worst of the four.
+The best-looking cell fails a random-anchor control — it is volatility expansion, not an "open" effect.
+[`ORB-GRID-NO-POSITIVE-CELL`]
+
+**Do optimized backtest champions hold up on genuinely fresh data?** Mostly no — and we publish that. On
+the first strictly out-of-sample forward window, 3,733 trades earned +$29,807 raw but **−$63,518 at
+$25/round-trip**; the fleet's per-trade mean decayed to 17.6% of what the selection window predicted
+(decay t = −2.53). Only the 4-hour timeframe stayed positive after stressed costs.
+[`FWD2-FRESH-WINDOW`]
+
+**Is anything left after that honesty?** Yes, narrowly. A pre-registered scheduled-news entry (long NQ at
+release −300 s on CPI/NFP/FOMC, fixed stop/target) survives Bonferroni correction and stressed costs at
++$133/event net, t = 4.13 — with its era-concentration declared in the claim itself.
+[`P3-LONG-RELEASE-TRADE-CONFIRMED`]
+
+**How is the live universe chosen?** By a frozen rule, not by hand: five pre-registered criteria applied
+to the forward books admit exactly 9 of 54 instrument/timeframe slots, beating a random-set control.
+[`LIVE-ALLOWLIST-FROZEN`]
+
+## The track record (out-of-sample by construction)
+
+Since **2026-08-31** the deployed parameter set and the 9-slot universe are hash-frozen under a signed,
+amendment-only protocol ([`docs/LIVE-PROTOCOL.md`](docs/LIVE-PROTOCOL.md), claim
+[`LIVE-PROTOCOL-SIGNED`]). Each new data drop is audited against the previous one (a repaint check), then
+replayed with the frozen set — so every recorded window is out-of-sample *by construction*: the
+parameters were pinned and published before the data existed. One contract always, stressed-cost views
+alongside raw, no verdict before the pre-registered power threshold, and a negative outcome is a
+publishable result of the protocol, not a failure of it. Where this places the project among academic and
+industry practice, rung by rung with linked evidence: [`docs/POSITIONING.md`](docs/POSITIONING.md).
 
 ## Run it
 
