@@ -71,10 +71,14 @@ out" a drawdown short of a §3 halt · no reading of dashboard counts that #196 
 - **Executor** (owner/team leader): runs the bot per §1, keeps the journal, executes fixes from #200.
 - **Referee** (this repo's machinery): parity runs, monthly claims, the ledger; CI keeps every number
   re-derivable.
-- **Mode: PAPER ONLY (owner decision 2026-08-31).** The run executes in paper mode on the project's own
-  deployment layer — no broker, no external executor, no real money. Every claim and report is labelled
-  paper. A later upgrade to a real account would be a dated amendment and starts a separate, clearly
-  labelled segment of the record.
+- **Mode: PAPER ONLY, FROZEN-REPLAY (owner decisions 2026-08-31; Amendment 1).** No broker, no external
+  executor, no real money, no daemon. The record grows event-driven from the owner's box drops: each drop
+  passes the gate-E merge INCLUDING the repaint audit against the previous scrape (the honesty seal), then
+  the engine replays the new window with the HASH-FROZEN champion set and allowlist — out-of-sample by
+  construction, because the parameters were pinned before the data existed. Fill convention = the engine's
+  own (gap-at-open, stop-first), stated in every claim. Every claim and report is labelled paper/replay.
+  A forward-running executor remains the documented upgrade if real money ever enters (its unique value —
+  intra-day operational proof and pre-outcome timestamps — only matters there).
 
 ## 8. Prerequisites before signature (the #194 board)
 - [x] #195 allowlist frozen (`LIVE-ALLOWLIST-FROZEN`)
@@ -82,8 +86,8 @@ out" a drawdown short of a §3 halt · no reading of dashboard counts that #196 
 - [x] #196 UI single-engine (`UI-TRADES-SINGLE-ENGINE`)
 - [x] #197 ES adopt/retain outcomes folded in — RETAIN ×6 (`ES197-RETAIN-ALL-SIX`); the deployed set and the allowlist are unchanged
 - [x] external-executor compliance — OUT OF SCOPE by owner decision 2026-08-31 (the external live system is separate from this project)
-- [ ] the in-repo PAPER executor exists and passes its pre-registered shadow-window verification before the clock starts (#213)
-- [ ] paper fill model pre-registered (#213) and written into §4 — in paper mode the 'slippage allowance' becomes the declared fill convention (engine fills), stated in every claim
+- [x] execution mode settled: FROZEN-REPLAY per Amendment 1 (#213 rescoped to the replay tooling; the daemon executor deferred to a real-money upgrade)
+- [x] fill convention declared: the engine's own (gap-at-open, stop-first) — Amendment 1
 - [x] owner decisions: PAPER ONLY; boxes on demand with the 35-day auto-pause guard (§2) — 2026-08-31
 
 ## 9. Signature
@@ -91,4 +95,14 @@ Owner: **Mulham Fetna** · Date: **2026-08-31** · signed in session ("paper onl
 Allowlist sha256[:16]: **40bc5de2b94fa1a4** · Protocol file hash: pinned as this file's git blob via claim `LIVE-PROTOCOL-SIGNED`
 
 ## 10. Amendments (dated, append-only)
-*(none)*
+
+**Amendment 1 — 2026-08-31 (owner: "do the replay version").** Execution mode changed from a
+forward-running paper executor to the **frozen-replay track record**: (cause) under paper-only +
+on-demand boxes, the executor's unique value collapses — the parameter set and allowlist are hash-pinned
+before any future data exists, and the gate-E overlap diff between consecutive scrapes audits the one
+remaining hindsight channel (box repaint; measured in Aug-2026: core levels identical on all 31 overlapping
+days). The replay version keeps ~all of the evidentiary strength at near-zero cost. Mechanics: per box
+drop — gate-E merge + repaint audit → replay of the 9 allowlist slots with the frozen set on the new
+window (window = entries after the previous frontier) → a `LIVE-WINDOW-<date>` ledger claim + report,
+judged by §5's rules. The clock starts at the NEXT box drop. The daemon executor is deferred, documented,
+and would return via a dated amendment only with a real-money upgrade.
