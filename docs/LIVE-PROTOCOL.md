@@ -77,7 +77,7 @@ out" a drawdown short of a §3 halt · no reading of dashboard counts that #196 
 - [x] #195 allowlist frozen (`LIVE-ALLOWLIST-FROZEN`)
 - [x] #198 gate policy decided (`GATECAL-CADENCE-NULL` → frozen)
 - [x] #196 UI single-engine (`UI-TRADES-SINGLE-ENGINE`)
-- [ ] #197 ES adopt/retain outcomes folded in (campaign running)
+- [x] #197 ES adopt/retain outcomes folded in — RETAIN ×6 (`ES197-RETAIN-ALL-SIX`); the deployed set and the allowlist are unchanged
 - [ ] #200 executor compliance: clean parity decomposition on a 2-week window
 - [ ] slippage allowance measured (#200) and written into §4
 - [ ] owner decisions: gateway vs broker-paper; box-export cadence commitment (§2)
