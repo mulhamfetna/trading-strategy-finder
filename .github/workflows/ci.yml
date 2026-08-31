@@ -114,7 +114,9 @@ jobs:
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install numpy pandas scipy pytest
+          # optuna: some claim checks re-run engine tests in a subprocess and the engine's import chain
+          # reaches the optimizer (same dependency set as the import-smoke job).
+          pip install numpy pandas scipy pytest optuna
       - name: Ledger self-test (the gate must be able to fail)
         run: python optimize/verify/run.py --selftest
       - name: Ledger (every claim + evidence-tracked rule)
