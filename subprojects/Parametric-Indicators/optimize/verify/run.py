@@ -24,6 +24,7 @@ import claims_xni  # noqa: F401,E402  — XNI phase 3 (#172): collision/composit
 import claims_fwd  # noqa: F401,E402  — WS-FWD (#176): forward-OOS extension/books/dashboard claims
 import claims_fwd2  # noqa: F401,E402  — WS-FWD round 2 (#179): box refresh, real forward window, ES fix
 import claims_orb  # noqa: F401,E402  — WS-ORB (#183): opening-range breakout grid, 225 cells, no positive
+import claims_backfill  # noqa: F401,E402  — #190: pre-protocol records (champion set, gap fills, NO-GO verdicts)
 from harness import run_all, registry  # noqa: E402
 
 
