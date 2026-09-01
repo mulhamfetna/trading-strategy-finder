@@ -131,7 +131,7 @@ decision-TF CSV, 1m CSV, box CSV (`optimize/data.py::load_inputs`).
 | deployed champion set `best` (+ `incumbent`/`eod`) | `subprojects/Parametric-Indicators/optimize/results/{best,cap1p,eod1p}_champions_full[_<TOK>].json` — ⚠️ `*.csv` there are gitignored |
 | golden gate (NQ 6/6 byte-identical anchors) | `subprojects/Parametric-Indicators/perf/check_golden.py` |
 | claims ledger (67/67) | `subprojects/Parametric-Indicators/optimize/verify/` (`run.py`, `claims_*.py`) |
-| news calendar + release stamps (WS-NEWS2+) | `subprojects/Parametric-Indicators/optimize/fundamentals/data/` (+ `DATA_REQUEST_release_timestamps_2010_2026.csv` at repo root) |
+| news calendar + release stamps (WS-NEWS2+) | `subprojects/Parametric-Indicators/optimize/fundamentals/data/` (+ `docs/DATA-REQUEST-2026-07-13-release_timestamps_2010_2026.csv`) |
 | earnings acceptance stamps / E-S1 dataset | `subprojects/Parametric-Indicators/optimize/earnings/data/` |
 | XNI / fusion / forward evidence | `optimize/xni/data/`, `optimize/fundamentals/*_result*`, `optimize/fwd/data/` (54 books, gate JSON, 54 screenshots) |
 | deployed forecast layers + artifacts | `src/deploy/{power_forecast,two_calendar_forecast,regime_monitor}.py`; playbooks + bundles under `playbooks/` |

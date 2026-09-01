@@ -360,3 +360,21 @@ subprojects/Parametric-Indicators/optimize/orb/data/grid1/orb_book_*.csv
 
 # runtime caches (wiped after any box/data change; never tracked)
 .wsenv/tmp/
+
+# ---- local-only root files (never publish; #226 curation 2026-09-01) ----
+/scratch/
+/outreach-drafts/
+/keys.env
+*.ovpn
+/openvpn.log
+/vpn_connect.sh
+/vpn_kill.sh
+/code
+/data/
+/logs/
+/node_modules/
+/__pycache__/
+/combined_ledger.csv
+/l2_ledger(3).csv
+/last levels*.zip
+/x.md
