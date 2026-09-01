@@ -1,3 +1,8 @@
+> 🗄️ **HISTORICAL (2026-07-13) — REQUEST FULFILLED.** The 16-year 1-second/1-minute tape this
+> document asks for was acquired (server-only since 2026-08-22). Kept as the record of what was
+> requested and why; moved from the repo root 2026-09-01 (#226). Companion CSV:
+> `DATA-REQUEST-2026-07-13-release_timestamps_2010_2026.csv`.
+
 # DATA REQUEST — what to download, and exactly why
 
 **Date:** 2026-07-13 · For: Mulham · From: the fundamental-analysis workstream

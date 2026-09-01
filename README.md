@@ -17,12 +17,18 @@ modelling, and a discipline of pre-registered, power-analysed, cross-instrument-
 | `subprojects/Parametric-Indicators/` | **The current engine** — box-strategy backtester, the fast (numpy) + exact engines (parity-locked), the optimizer, the L2 layer, the dashboard, and the golden regression gate (`perf/`). |
 | `subprojects/Parametric-Indicators/docs/superpowers/` | The research reports — every verdict, discovery, and honest retraction (news "priced in", gap-aware fills, the Asia-cell fluke, …). |
 | `subprojects/Parametric-Indicators/DAILY_REPORTS.md` | The running standup. |
-| `docs/` | Workflow proposals and long-form references. **`docs/POSITIONING.md`** — where this work sits in the field, rung by rung, each cell linked to its evidence; `docs/POSITIONING-AUDIT-2026-08-29.md` — the measured audit behind it. |
-
+| `docs/` | Workflow proposals and long-form references. Era-expired documents are kept under era-labelled names (e.g. `START-HERE-2026-08-legacy18-onboarding.md`) and `docs/archive/` — historical record, not current instructions. **`docs/POSITIONING.md`** — where this work sits in the field, rung by rung, each cell linked to its evidence; `docs/POSITIONING-AUDIT-2026-08-29.md` — the measured audit behind it. |
 | `src/deploy/` | **The live deployment layer** — the news-release executor (`release_executor.py`, v5.3.0–v5.4.2), the deployed power-forecast model (`power_forecast.py`, v5.4.3), the regime monitor and its schedule. The only code that touches an account. Covered by the 157-test root suite. |
+| `deploy_out_d3/`, `deploy_out_d4/` | **Live output directories** of the deployment layer (events/results per instrument). Written by `src/deploy/` — do not move or rename. |
+| `src/api|data|optimization|strategy/`, `scripts/`, `templates/` | **The frozen v1-era stack** (May 2026): the original API, data pipeline, optimizer and strategy code plus its two prep scripts and dashboard template. Frozen — no new work lands here — but still wired together and covered by the root test suite, so it stays runnable. |
+| `frontend/` | **The v1-era dashboard UI** (Vue + Vite, frozen May 2026; `npm install && npm run dev`, backend = `src/api`). The current research dashboard lives in the engine, not here. |
+| `tests/` | The root suite (157 tests): `src/` incl. the live deploy layer + workflow guards. Green without market data. |
+| `playbooks/` | The champion playbooks (37 PDFs) + the portable backtest bundle that reproduces them. |
+| `paper/` | The JOSS software paper (`paper.md` + `paper.bib`); compiled by the "JOSS draft PDF" action. |
 | `subprojects/Parametric-Indicators/shareable/`, `server-audit/` | **Snapshots, not live code** — hand-off bundles and the harvested server archive (#94). Each carries its own README saying so. |
 
-The frozen **v1.x** era (`src/main/`) is preserved under the `v1.0.0` / `v1.0-working` tags.
+The **v1.x era** is preserved two ways: the tagged releases `v1.0.0` / `v1.0-working`, and the frozen
+v1 stack above (kept importable and test-covered rather than deleted).
 
 ## Two tiers of reproducibility (read this before judging the numbers)
 
@@ -103,10 +109,10 @@ per release via Zenodo (badge above).
 
 ```
 Fetna, M. (2026). Trading Strategy Finder: a reproducible quantitative-analysis framework for futures
-trading-strategy discovery and validation (Version 5.6.0) [Software]. Zenodo.
-https://doi.org/10.5281/zenodo.22161256
+trading-strategy discovery and validation (Version 5.7.0) [Software]. Zenodo.
+https://doi.org/10.5281/zenodo.22212233
 ```
 
-Cite the **version you actually used** (the DOI above is v5.6.0). To cite the project in general — always
+Cite the **version you actually used** (the DOI above is v5.7.0). To cite the project in general — always
 resolving to the newest release — use the concept DOI **`10.5281/zenodo.21473312`**. Every version DOI is
 listed in [`CITATION.cff`](CITATION.cff).

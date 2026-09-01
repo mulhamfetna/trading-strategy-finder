@@ -12,8 +12,8 @@ authors:
     given-names: Mulham
     orcid: "https://orcid.org/0009-0006-4432-798X"
     email: contact@mulhamfetna.com
-version: 5.7.0
-date-released: "2026-08-31"
+version: 5.7.1
+date-released: "2026-09-01"
 license: AGPL-3.0-or-later
 doi: "10.5281/zenodo.21473312"
 identifiers:
@@ -23,6 +23,9 @@ identifiers:
   - type: doi
     value: "10.5281/zenodo.22161256"
     description: "The v5.6.0 version DOI (2026-08-29)."
+  - type: doi
+    value: "10.5281/zenodo.22212233"
+    description: "The v5.7.0 version DOI (2026-08-31)."
   - type: doi
     value: "10.5281/zenodo.21473313"
     description: "The v5.0.0 version DOI."
