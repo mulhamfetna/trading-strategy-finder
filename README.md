@@ -17,7 +17,7 @@ modelling, and a discipline of pre-registered, power-analysed, cross-instrument-
 | `subprojects/Parametric-Indicators/` | **The current engine** — box-strategy backtester, the fast (numpy) + exact engines (parity-locked), the optimizer, the L2 layer, the dashboard, and the golden regression gate (`perf/`). |
 | `subprojects/Parametric-Indicators/docs/superpowers/` | The research reports — every verdict, discovery, and honest retraction (news "priced in", gap-aware fills, the Asia-cell fluke, …). |
 | `subprojects/Parametric-Indicators/DAILY_REPORTS.md` | The running standup. |
-| `docs/` | Workflow proposals and long-form references. **`docs/POSITIONING.md`** — where this work sits in the field, rung by rung, each cell linked to its evidence; `docs/POSITIONING-AUDIT-2026-08-29.md` — the measured audit behind it. |
+| `docs/` | Workflow proposals and long-form references. Era-expired documents are kept under era-labelled names (e.g. `START-HERE-2026-08-legacy18-onboarding.md`) and `docs/archive/` — historical record, not current instructions. **`docs/POSITIONING.md`** — where this work sits in the field, rung by rung, each cell linked to its evidence; `docs/POSITIONING-AUDIT-2026-08-29.md` — the measured audit behind it. |
 
 | `src/deploy/` | **The live deployment layer** — the news-release executor (`release_executor.py`, v5.3.0–v5.4.2), the deployed power-forecast model (`power_forecast.py`, v5.4.3), the regime monitor and its schedule. The only code that touches an account. Covered by the 157-test root suite. |
 | `subprojects/Parametric-Indicators/shareable/`, `server-audit/` | **Snapshots, not live code** — hand-off bundles and the harvested server archive (#94). Each carries its own README saying so. |

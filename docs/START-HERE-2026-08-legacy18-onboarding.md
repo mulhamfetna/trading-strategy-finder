@@ -7,6 +7,11 @@ workstream: legacy-18-baseline (CLOSED 2026-08-23 — merged to main, single roo
 branch: dev (feature branches → dev → main)
 ---
 
+> 🗄️ **HISTORICAL (era: Aug 2026, legacy18/single-root migration).** Moved from the repo root
+> 2026-09-01 (#226): the migration it onboards for is complete and its instructions are superseded.
+> For current onboarding read `README.md` + `AGENTS.md`; for data locations `docs/DATA-AND-KNOWLEDGE-MAP.md`.
+
+
 # START HERE — the project onboarding (single root since 2026-08-23)
 
 > ⚠️ **Data location changed 2026-08-22:** market data lives ONLY on the server (`~/Mulham/wsg-i`, `~/Mulham/data_2010_1s`); the local checkout has NO data trees. Authoritative map: `docs/DATA-AND-KNOWLEDGE-MAP.md`.
