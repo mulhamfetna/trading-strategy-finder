@@ -36,6 +36,16 @@ Key verified findings (claim IDs replayable via `optimize/verify/run.py`):
 - [Claims ledger](https://github.com/mulhamfetna/trading-strategy-finder/tree/main/subprojects/Parametric-Indicators/optimize/verify):
   the verification harness; `python3 optimize/verify/run.py` replays all 79 claims offline.
 
+## Papers
+
+- [ORB preprint (doi:10.2139/ssrn.7428398)](https://doi.org/10.2139/ssrn.7428398): Opening-Range
+  Breakout Does Not Survive Trading Costs — the pre-registered 225-cell study; SSRN, 2026.
+- [Methodology preprint (doi:10.2139/ssrn.7428478)](https://doi.org/10.2139/ssrn.7428478): A
+  Machine-Verified Claims Ledger for Trading-Strategy Research; SSRN, 2026.
+- [End-to-end article series](https://mulhamfetna.com/projects/trading-strategy-finder/): six posts
+  covering the whole programme — the ORB null, the calendar sweep, forward decay, the claims
+  ledger, and the frozen track record.
+
 ## Optional
 
 - [Zenodo archive](https://doi.org/10.5281/zenodo.21473312): versioned, DOI-minted releases.
