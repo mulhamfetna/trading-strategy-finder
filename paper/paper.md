@@ -12,8 +12,6 @@ authors:
     orcid: 0009-0006-4432-798X
     corresponding: true
     affiliation: 1
-  - name: Abd Ulfatah Esper
-    affiliation: 1
 affiliations:
   - name: BeInMedia (Nmo AI), Kuwait City, Kuwait
     index: 1
@@ -109,7 +107,7 @@ self-tests, evidence-tracking rules) is domain-portable and documented for reuse
 Generative AI was used substantially in this project, under human direction, and the framework's
 governance was designed with that in mind. AI coding agents (Anthropic Claude-family models,
 operated through the Claude Code environment) wrote large portions of the codebase, documentation,
-and analysis pipeline, and assisted in drafting this paper. The human authors set the research
+and analysis pipeline, and assisted in drafting this paper. The human author and project leadership set the research
 questions, made all core design decisions (the claim schema, engine parity, pre-registration and
 verdict rules, the live protocol), reviewed the agents' outputs, and signed every pre-registration
 and protocol decision. Independently of that review, correctness is enforced mechanically rather
@@ -122,6 +120,8 @@ above guards the verification layer itself.
 
 This software was developed at BeInMedia (Nmo AI) — Kuwait, Dubai, and Doha
 (https://www.beinmedia.com/) — which provided the research infrastructure, computing resources,
-and data licensing that made the project possible.
+and data licensing that made the project possible. The author thanks Abd Ulfatah Esper for his
+contributions to the project's conception, to data acquisition and curation, and for his
+supervision and team leadership throughout.
 
 # References

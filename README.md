@@ -109,10 +109,23 @@ per release via Zenodo (badge above).
 
 ```
 Fetna, M. (2026). Trading Strategy Finder: a reproducible quantitative-analysis framework for futures
-trading-strategy discovery and validation (Version 5.7.0) [Software]. Zenodo.
-https://doi.org/10.5281/zenodo.22212233
+trading-strategy discovery and validation (Version 5.7.1) [Software]. Zenodo.
+https://doi.org/10.5281/zenodo.22229658
 ```
 
-Cite the **version you actually used** (the DOI above is v5.7.0). To cite the project in general — always
+Cite the **version you actually used** (the DOI above is v5.7.1). To cite the project in general — always
 resolving to the newest release — use the concept DOI **`10.5281/zenodo.21473312`**. Every version DOI is
 listed in [`CITATION.cff`](CITATION.cff).
+
+### Preprints
+
+Two companion papers document the flagship study and the verification methodology (both distributed
+on SSRN, 2026-09-14):
+
+- Fetna, M. (2026). *Opening-Range Breakout Does Not Survive Trading Costs: A Pre-Registered
+  225-Cell Study on Sixteen Years of Futures Data.* SSRN. https://doi.org/10.2139/ssrn.7428398
+- Fetna, M. (2026). *A Machine-Verified Claims Ledger for Trading-Strategy Research.* SSRN.
+  https://doi.org/10.2139/ssrn.7428478
+
+The project is also covered end to end by a six-post series:
+[mulhamfetna.com/projects/trading-strategy-finder](https://mulhamfetna.com/projects/trading-strategy-finder/).
