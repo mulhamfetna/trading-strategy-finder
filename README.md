@@ -97,6 +97,12 @@ collected; data-dependent modules skip themselves; the snapshot directories are 
 tag + Release + Zenodo DOI`. Checkpoints are **Releases with DOIs**, never lingering branches. Full rules
 in [`AGENTS.md`](AGENTS.md).
 
+## Strategy validation for your own strategy
+
+I run the same method on client strategies: out-of-sample and cost-stressed tests in Python, with a
+written report of the result. Details: [mulhamfetna.com/services/strategy-validation](https://mulhamfetna.com/services/strategy-validation/).
+Ordering and payment: [Upwork](https://www.upwork.com/freelancers/~01132c092d08a2d084).
+
 ## License
 
 **AGPL-3.0-or-later** — see [`LICENSE`](LICENSE). Strong copyleft: derivatives, including works run as a
